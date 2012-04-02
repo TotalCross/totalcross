@@ -296,12 +296,12 @@ class Table
                         
             if (j == indexCount) // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.  
             {
-               while (--j >= 0)
-                  if (columnNumbers[j] != columns[j])
-                  {
-                     alreadyExists = false;
-                     break;
-                  }
+            while (--j >= 0)
+               if (columnNumbers[j] != columns[j])
+               {
+                  alreadyExists = false;
+                  break;
+               }
             }
             else
                alreadyExists = false; 

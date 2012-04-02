@@ -65,6 +65,11 @@ class SQLElement
    static final int CMD_ALTER_RENAME_COLUMN = 8;
 
    /**
+    * Represents the SQL command <code>ALTER TABLE ADD... (new column definition) </code>.
+    */
+   static final int CMD_ALTER_ADD_COLUMN = 9; // juliana@add_1: added command ALTER TABLE ADD column.
+
+   /**
     * Represents the SQL command <code>SELECT [DISTINCT]...</code>.
     */
    static final int CMD_SELECT = 9;

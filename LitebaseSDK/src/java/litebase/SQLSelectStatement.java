@@ -1307,7 +1307,7 @@ class SQLSelectStatement extends SQLStatement
       }
       else if (!whereClause.sqlbooleanclauseApplyTableIndices(rsList[0].table.columnIndices, hasComposedIndex))
             return;
-
+         
       computeIndex(rsList, rsList.length > 1, -1, null, -1, -1);
 
       if (whereClause.expressionTree == null) // There is no where clause left, since all rows can be returned using the indexes.

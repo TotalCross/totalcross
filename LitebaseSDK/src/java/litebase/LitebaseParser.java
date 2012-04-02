@@ -622,10 +622,33 @@ class LitebaseParser
             
             switch (yylex())
             {
-               case TK_ADD: // Adds a primary key.
-                  if (yylex() != TK_PRIMARY || yylex() != TK_KEY || yylex() != TK_OPEN || colnameCommaList() != TK_CLOSE)
-                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);                  
-                  command = SQLElement.CMD_ALTER_ADD_PK;
+               case TK_ADD: // Adds a primary key or a new column.
+                  
+                  // juliana@add_1: added command ALTER TABLE ADD column.
+                  if ((token = createColumn()) == TK_PRIMARY) // Adds a primary key.
+                  {
+                     if (fieldListSize == 1)
+                        yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+                     if (yylex() != TK_KEY || yylex() != TK_OPEN || colnameCommaList() != TK_CLOSE)
+                        yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);                  
+                     command = SQLElement.CMD_ALTER_ADD_PK;
+                  }
+                  else if (token == -1) // Adds a new column.
+                  {
+                     SQLFieldDefinition field = fieldList[0];
+                     if (field.isNotNull && field.defaultValue == null) // A field declared as not null must have a default value.
+                        yyerror(LitebaseMessage.ERR_NOT_NULL_DEFAULT);
+                     if (field.isPrimaryKey) // The new field can't be declared as a primary key when being added.
+                     {   
+                        if (field.defaultValue != null) // All the keys would be the same.
+                           yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
+                                                                       + tableList[0].tableName);
+                        
+                        yyerror(LitebaseMessage.ERR_PK_CANT_BE_NULL); // All the keys would be null.
+                     }
+                     command = SQLElement.CMD_ALTER_ADD_COLUMN;
+                  }
+                  
                   break;
                
                case TK_DROP: // Drops a primary key.
@@ -804,7 +827,7 @@ class LitebaseParser
                Vm.arrayCopy(selectAux.fieldList, 0, compactFieldList, 0, selectAux.fieldsCount);
                selectAux.fieldList = compactFieldList;
             }
-            
+
             break;
             
          case TK_UPDATE: // Update.
@@ -884,9 +907,11 @@ class LitebaseParser
    private int createColumnCommalist() throws InvalidNumberException
    {
       int token;
+      
       while ((token = createColumn()) == TK_COMMA);
       if (fieldListSize == 0) // The number of columns can't be zero.
          yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+
       return token;      
    }
    
@@ -915,7 +940,7 @@ class LitebaseParser
       columnName = yylval;
       
       // Column type.
-      if ((type = yylex()) == SQLElement.BOOLEAN || type > SQLElement.BLOB)
+      if ((type = yylex()) == SQLElement.BOOLEAN || type > SQLElement.BLOB || type < SQLElement.CHARS)
          yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
       if (type == TK_VARCHAR)
          type = SQLElement.CHARS;
@@ -1036,7 +1061,6 @@ class LitebaseParser
       if ((token = factor(token)) == TK_AND) // term = factor or factor | term
       {
          SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
-         
          (tree.rightTree = auxTree).parent = tree;
          token = term(yylex());
          (tree.leftTree = auxTree).parent = tree;
