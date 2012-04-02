@@ -1044,27 +1044,10 @@ target: companion
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="companion" description="Generates the PDF for TotalCross Companion">
-	<delete file="${target.sdk.path}/docs/TotalCross Companion.pdf" />
-	
-	<!-- Get the Open Office path -->
-	<win32.registry root="HKEY_LOCAL_MACHINE" key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
-		<get property="soffice.path" entry="Path"/>
-	</win32.registry>
-	
-	<java classname="org.artofsolving.jodconverter.cli.Convert" fork="yes" dir="${env.ANT_HOME}/lib">
-		<classpath>
-			<fileset dir="${env.ANT_HOME}/lib">
-				<include name="jodconverter-core*.jar"/>
-			</fileset>
-		</classpath>
-		<!-- set the environment variable office.home with the soffice path -->
-		<sysproperty key="office.home" value="${soffice.path}"/>
-		<arg line='"${source.sdk.path}/docs/TotalCross Companion.odt"'/>
-		<arg line='"${target.sdk.path}/docs/TotalCross Companion.pdf"'/>
-	</java>
-	
-	<available file="${target.sdk.path}/docs/TotalCross Companion.pdf" property="pdf.generated"/>
-	<fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}/.." target="jodconverter" inheritAll="false">
+      <property name="from" value="${source.sdk.path}/docs/TotalCross Companion.odt" />
+      <property name="to" value="${target.sdk.path}/docs/TotalCross Companion.pdf" />
+   </ant>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
