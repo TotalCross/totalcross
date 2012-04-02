@@ -13,7 +13,7 @@ public class StartupIntentReceiver extends BroadcastReceiver
       if (call != no)
       {
          // Create intent which will finally start the Main-Activity.
-         Intent myStarterIntent = new Intent(context, Loader.class);
+         Intent myStarterIntent = new Intent(context, call == 0 ? Loader.class : TCService.class);
          // Set the Launch-Flag to the Intent.
          myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
          // Send the Intent to the OS.

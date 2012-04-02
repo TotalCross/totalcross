@@ -618,7 +618,7 @@ public class Deployer4Android
                if (DeploySettings.autoStart && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
                {
                   Integer it = new Integer();
-                  it.value = 0;
+                  it.value = DeploySettings.isService ? 1 : 0;
                   constant.info = it;
                }
                break;
