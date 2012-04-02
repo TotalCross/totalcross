@@ -16,79 +16,115 @@
 -->
 <project name="TotalCross" default="install" xmlns:ivy="antlib:org.apache.ivy.ant">
 
-	<property environment="env" />
+   <property environment="env" />
 
-	<property name="ant.lib.dir" value="${env.ANT_HOME}/lib" />
+   <property name="ant.lib.dir" value="${env.ANT_HOME}/lib" />
 
-	<property name="ivy.install.version" value="2.2.0" />
-	<property name="ivy.lib.dir" value="${env.EXTLIBS_HOME}" />
-	<property name="ivy.jar.file" value="${ant.lib.dir}/ivy.jar" />
+   <property name="ivy.install.version" value="2.2.0" />
+   <property name="ivy.lib.dir" value="${env.EXTLIBS_HOME}" />
+   <property name="ivy.jar.file" value="${ant.lib.dir}/ivy.jar" />
 
-	<target name="help">
-		<echo message="Type 'ant -p' to list all available targets." />
-	</target>
+   <target name="help">
+      <echo message="Type 'ant -p' to list all available targets." />
+   </target>
 
-	<target name="install" depends="install_ivy, install_extlibs">
-	</target>
+   <target name="install" depends="install_ivy, install_extlibs">
+   </target>
 
-	<target name="install_ivy">
-		<!-- download Ivy from website so that it can be used even without any special installation -->
-		<echo message="installing ivy..." />
-		<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true" />
+   <target name="install_ivy">
+      <!-- download Ivy from website so that it can be used even without any special installation -->
+      <echo message="installing ivy..." />
+      <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+           dest="${ivy.jar.file}"
+           usetimestamp="true" />
 
-		<!-- this instance of ant won't recognize ivy tasks if the jar was downloaded by the previous step. So we have to explicitly load ivy tasks from it. -->
-		<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.jar.file}" />
-	</target>
+      <!-- this instance of ant won't recognize ivy tasks if the jar was downloaded by the previous step. So we have to explicitly load ivy tasks from it. -->
+      <taskdef resource="org/apache/ivy/ant/antlib.xml"
+               uri="antlib:org.apache.ivy.ant"
+               classpath="${ivy.jar.file}" />
+   </target>
 
-	<target name="install_extlibs">
-		<!-- let ivy resolve any other dependencies -->
-		<ivy:configure file="${basedir}/ivysettings.xml" />
-		<ivy:retrieve />
+   <target name="install_extlibs">
+      <!-- let ivy resolve any other dependencies -->
+      <ivy:configure file="${basedir}/ivysettings.xml" />
+      <ivy:retrieve />
 
-		<!-- update jar files in ant lib dir -->
-		<copy todir="${ant.lib.dir}" overwrite="true" preservelastmodified="false">
-			<fileset dir="${ivy.lib.dir}" includes="*.jar" excludes="sigar*.jar" />
-		</copy>
-		<!-- import antcontrib so we can use it below -->
-		<taskdef resource="net/sf/antcontrib/antlib.xml" />
+      <!-- update jar files in ant lib dir -->
+      <copy todir="${ant.lib.dir}" overwrite="true" preservelastmodified="false">
+         <fileset dir="${ivy.lib.dir}" includes="*.jar" excludes="sigar*.jar" />
+      </copy>
+      <!-- import antcontrib so we can use it below -->
+      <taskdef resource="net/sf/antcontrib/antlib.xml" />
 
-		<for param="file">
-			<path>
-				<fileset dir="${ivy.lib.dir}" includes="*.zip" />
-			</path>
-			<sequential>
-				<propertyregex override="yes" property="name" input="@{file}" regexp="([^\.]*)\.zip" replace="\1" />
+      <for param="file">
+         <path>
+            <fileset dir="${ivy.lib.dir}" includes="*.zip" />
+         </path>
+         <sequential>
+            <propertyregex override="yes"
+                           property="name"
+                           input="@{file}"
+                           regexp="([^\.]*)\.zip"
+                           replace="\1" />
 
-				<trycatch>
-					<try>
-						<uptodate property="file.uptodate" targetfile="@{file}">
-							<srcfiles dir="${name}" includes="**/*" />
-						</uptodate>
-					</try>
-					<catch>
-						<property name="file.uptodate" value="false" />
-					</catch>
-					<finally>
-						<echo>${name} - ${file.uptodate}</echo>
-						<if>
-							<equals arg1="${file.uptodate}" arg2="false" />
-							<then>
-								<delete dir="${name}" />
-								<unzip src="@{file}" dest="${ivy.lib.dir}" />
-							</then>
-						</if>
-					</finally>
-				</trycatch>
-			</sequential>
-		</for>
+            <trycatch>
+               <try>
+                  <uptodate property="file.uptodate" targetfile="@{file}">
+                     <srcfiles dir="${name}" includes="**/*" />
+                  </uptodate>
+               </try>
+               <catch>
+                  <property name="file.uptodate" value="false" />
+               </catch>
+               <finally>
+                  <echo>${name} - ${file.uptodate}</echo>
+                  <if>
+                     <equals arg1="${file.uptodate}" arg2="false" />
+                     <then>
+                        <delete dir="${name}" />
+                        <unzip src="@{file}" dest="${ivy.lib.dir}" />
+                     </then>
+                  </if>
+               </finally>
+            </trycatch>
+         </sequential>
+      </for>
 
-		<for param="file">
-			<path>
-				<fileset dir="${ivy.lib.dir}" includes="*.tgz" />
-			</path>
-			<sequential>
-				<untar src="@{file}" dest="${ivy.lib.dir}" compression="gzip" />
-			</sequential>
-		</for>
-	</target>
+      <for param="file">
+         <path>
+            <fileset dir="${ivy.lib.dir}" includes="*.tgz" />
+         </path>
+         <sequential>
+            <untar src="@{file}" dest="${ivy.lib.dir}" compression="gzip" />
+         </sequential>
+      </for>
+   </target>
+
+   <target name="jodconverter" description="Converts OpenOffice/LibreOffice documents">
+      <fail unless="from" />
+      <fail unless="to" />
+
+      <delete file="${to}" />
+
+      <!-- Get the Open Office path -->
+      <win32.registry root="HKEY_LOCAL_MACHINE"
+                      key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
+         <get property="soffice.path" entry="Path" />
+      </win32.registry>
+
+      <java classname="org.artofsolving.jodconverter.cli.Convert" fork="yes" dir="${ant.lib.dir}">
+         <classpath>
+            <fileset dir="${ant.lib.dir}">
+               <include name="jodconverter-core*.jar" />
+            </fileset>
+         </classpath>
+         <!-- set the environment variable office.home with the soffice path -->
+         <sysproperty key="office.home" value="${soffice.path}" />
+         <arg line='"${from}"' />
+         <arg line='"${to}"' />
+      </java>
+
+      <available file="${to}" property="file.generated" />
+      <fail unless="file.generated" message="THE CONVERSION FAILED. PLEASE TRY AGAIN" />
+   </target>
 </project>
