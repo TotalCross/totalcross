@@ -220,17 +220,17 @@ public class Message extends Part
          // TO, CC and BCC
          if (!vRecipients[RecipientType.TO].isEmpty())
          {
-            stream.writeBytes("To: " + vRecipients[RecipientType.TO].toString(""));
+            stream.writeBytes("To: " + vRecipients[RecipientType.TO].toString(", "));
             stream.writeBytes(Convert.CRLF_BYTES);
          }
          if (!vRecipients[RecipientType.CC].isEmpty())
          {
-            stream.writeBytes("Cc: " + vRecipients[RecipientType.CC].toString(""));
+            stream.writeBytes("Cc: " + vRecipients[RecipientType.CC].toString(", "));
             stream.writeBytes(Convert.CRLF_BYTES);
          }
          if (!vRecipients[RecipientType.BCC].isEmpty())
          {
-            stream.writeBytes("Bcc: " + vRecipients[RecipientType.BCC].toString(""));
+            stream.writeBytes("Bcc: " + vRecipients[RecipientType.BCC].toString(", "));
             stream.writeBytes(Convert.CRLF_BYTES);
          }
 
