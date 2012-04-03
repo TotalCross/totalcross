@@ -306,12 +306,10 @@ class PlainDB
    /**
     * Closes the table files.
     *
-    * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
-    * @param useCrypto Indicates if the table uses cryptography.
     * @param updatePos Indicates if <code>finalPos</code> must be re-calculated to shrink the file. 
     * @throws IOException If an internal method throws it.
     */
-   void close(boolean isAscii, boolean useCrypto, boolean updatePos) throws IOException
+   void close(boolean updatePos) throws IOException
    {
       ByteArrayStream tsmdBas = new ByteArrayStream(7);
       DataStreamLB tsmdDs = new DataStreamLB(tsmdBas, useCrypto); // Creates a new stream.

@@ -42,6 +42,7 @@ public class TestTableRecovering extends TestCase
       
       byte[] oneByte = new byte[1];
       byte[] blankBuffer = new byte[1024];
+      String message;
       
       if (AllTests.useCrypto)
       {
@@ -165,16 +166,28 @@ public class TestTableRecovering extends TestCase
             
             driver.executeUpdate("drop table person");
             
-            File file = new File(tablePath, File.CREATE_EMPTY, 1);
-            file.close();
+            new File(tablePath, File.CREATE_EMPTY, 1).close();
+            new File(tablePath + 'o', File.CREATE_EMPTY, 1).close();
             try // Empty file: table corrupted.
             {
                driver.recoverTable("person");
                fail("7");
             }
-            catch (DriverException exception) {}
+            catch (DriverException exception) 
+            {
+               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1); 
+            }
+            try // Empty file: table corrupted.
+            {
+               driver.recoverTable("person");
+               fail("8");
+            }
+            catch (DriverException exception) 
+            {
+               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1);
+            }
             
-            file = new File(tablePath, File.CREATE_EMPTY, 1);
+            File file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.setSize(1024);
             file.writeBytes(blankBuffer);
             file.close();
@@ -182,9 +195,12 @@ public class TestTableRecovering extends TestCase
             try // Blank file: table corrupted.
             {
                driver.recoverTable("person");
-               fail("8");
+               fail("9");
             }
-            catch (DriverException exception) {}            
+            catch (DriverException exception) 
+            {
+               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1);
+            }            
             
             // Erases the file.
             file = new File(tablePath, File.DONT_OPEN, 1);
@@ -193,17 +209,9 @@ public class TestTableRecovering extends TestCase
             driver.closeAll();
          }
       }
-      catch (IllegalArgumentIOException exception) 
-      {
-         fail("9");
-      }
-      catch (FileNotFoundException exception) 
-      {
-         fail("10");
-      }
       catch (IOException exception) 
       {
-         fail("11");
+         fail("10");
       }
    }
 }

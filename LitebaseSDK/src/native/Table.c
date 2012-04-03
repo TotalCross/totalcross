@@ -354,7 +354,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    // juliana@253_8: now Litebase supports weak cryptography.
    if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
 	{
-      plainDB->db.useCrypto = !plainDB->db.useCrypto;
+      // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT), 0);
 		goto error;
 	}
@@ -366,6 +367,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    // juliana@226_8: a table without metadata (with an empty .db, for instance) can't be recovered: it is corrupted.
    if (!plainDB->headerSize) // The header size can't be zero.
    {
+      // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
       return false;
    }
@@ -381,7 +384,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    // Checks if the table strings has the same format of the connection.
 	if ((((flags = *ptr++) & IS_ASCII) != 0) != plainDB->isAscii)
 	{
-      plainDB->isAscii = !plainDB->isAscii;
+      // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT), 0);
 		goto error;
 	}
@@ -407,6 +411,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	// juliana@230_12: improved recover table to take .dbo data into consideration.
 	if (version < VERSION_TABLE - 1)
 	{
+		// juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		nfClose(context, dbFile);
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_VERSION), version);
       goto error;
 	}
@@ -423,6 +429,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	ptr += 16;
    if ((table->columnCount = columnCount) <= 0)
    {
+      // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
 		goto error;
    }

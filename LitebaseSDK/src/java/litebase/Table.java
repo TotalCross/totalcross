@@ -144,7 +144,7 @@ class Table
     * Indicates that a table has been modified and must be marked as not closed properly after opened and before closed.
     */
    boolean isModified;
-
+   
    /**
     * The full name of the table.
     */
@@ -543,7 +543,9 @@ class Table
       if ((((bytes[0] & USE_CRYPTO) != 0 && !plainDB.useCrypto) || ((bytes[0] & USE_CRYPTO) == 0) && plainDB.useCrypto) 
        && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1)) 
       {
-         plainDB.close(plainDB.isAscii, !plainDB.useCrypto, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
       }
       
@@ -552,7 +554,9 @@ class Table
 
       if (plainDB.headerSize == 0) // The header size can't be zero.
       {
-         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       
@@ -565,7 +569,9 @@ class Table
       // Checks if the table strings has the same format of the connection.
       if ((((flags = ds.readByte()) & IS_ASCII) != 0 && !plainDB.isAscii) || ((flags & IS_ASCII) == 0) && plainDB.isAscii) 
       {
-         plainDB.close(!plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
@@ -583,7 +589,9 @@ class Table
       // juliana@230_12: improved recover table to take .dbo data into consideration.
       if ((version = ds.readShort()) < VERSION - 1) // The tables version must be the same as Litebase version.
       {
-         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + (" (" + version) + ')');
       }
       
@@ -604,7 +612,9 @@ class Table
 
       if (n <= 0) // The column count can't be negative.
       {
-         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       byte[] attrs = columnAttrs = new byte[n];
