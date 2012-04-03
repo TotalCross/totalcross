@@ -18,7 +18,7 @@ static uint32 getSecretKeyCreator(uint32 crtr);
 static char romSerialNumber[128];
 static char imei[64];
 static char iccid[30];
-char deviceId[128];
+static char deviceId[128];
 
 #if defined (WINCE) || defined (WIN32)
  #include "win/settings_c.h"
