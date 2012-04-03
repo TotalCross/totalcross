@@ -60,12 +60,16 @@ static void invalidate(Object file)
    File_dontFinalize(file) = true;
 }
 
-#ifdef ANDROID
+#ifdef ANDROID                 
+extern char deviceId[128];
 bool replacePath(NMParams p, char* szPath, bool throwEx)
 {
    if (xstrncmp(szPath,"/sdcard",7) == 0)
-   {
+   {                      
       char path2[MAX_PATHNAME];
+      if (strEqn(deviceId,"samsung",7))
+         xstrcpy(path2, "/sdcard/sd");
+      else 
       if (!getSDCardPath(path2))
       {                                                
          if (throwEx)
