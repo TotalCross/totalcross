@@ -15,7 +15,7 @@
  *********************************************************************************/
 -->
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/extra">
-	<info organisation="superwaba" module="totalcross" />
+	<info organisation="superwaba" module="ant-jars" />
 	<dependencies>
 		<!-- orangevolt: used to access the windows registry -->
 		<dependency org="orangevolt-ant-tasks" name="orangevolt-ant-tasks" rev="1.3.8" />
