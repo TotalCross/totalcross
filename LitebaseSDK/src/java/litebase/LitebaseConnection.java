@@ -1438,7 +1438,7 @@ public class LitebaseConnection
       while (--n >= 0)
       {
          // juliana@253_8: now Litebase supports weak cryptography.
-         (table = (Table)v.items[n]).db.close(table.db.isAscii, table.db.useCrypto, true); // Closes the table files.
+         (table = (Table)v.items[n]).db.close(true); // Closes the table files.
          table.db = null;
 
          // Closes the simple indices.
@@ -2048,7 +2048,7 @@ public class LitebaseConnection
          
          // Closes the table.
          // juliana@253_8: now Litebase supports weak cryptography.
-         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
+         plainDB.close(false); // Closes the table files.
          table.db = null;
          Index idx;
          
@@ -2203,7 +2203,7 @@ public class LitebaseConnection
             
          // Closes the table.
          // juliana@253_8: now Litebase supports weak cryptography.
-         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
+         plainDB.close(false); // Closes the table files.
          table.db = null;
       }
       catch (IOException exception)
