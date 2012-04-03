@@ -36,15 +36,17 @@ unsigned long __cdecl StartVMFromService(void* nnn)
    ret = executeProgram(name);
    if (ret != 0)
    {
-      wsprintf(buf,L"%d",ret);
-      MessageBox(0,buf,L"Service Exit Code",MB_OK);
+      wsprintf(buf,TEXT("%d"),ret);
+      MessageBox(0,buf,TEXT("Service Exit Code"),MB_OK);
    }
    return 0;
 }
 
 TC_API DWORD TSV_Init(DWORD dwData)
 {
+#ifdef WINCE
 	HANDLE hThread = CreateThread( 0, 0, StartVMFromService, 0, 0, 0);
+#endif
 	return 1;
 }
 ///////////////////////////////
