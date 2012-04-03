@@ -72,7 +72,7 @@ target: init
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
-  <condition property="android.ndk.path" value="P:/android-ndk-r4b" else=""><os family="windows" /></condition>
+  <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r4b" else=""><os family="windows" /></condition>
   <property name="apk" value="${android.temp}/Litebase.apk" />
 
   <!-- installshield paths -->
