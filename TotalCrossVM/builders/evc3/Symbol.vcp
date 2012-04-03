@@ -48,7 +48,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /I "P:\extlibs\Windows CE\wce300\PPT2800 PPC\include" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\WindowsCE\winsock2" /I "P:\extlibs\WindowsCE\wce300\PPT2800 PPC\include" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -57,7 +57,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 ScnAPI32.lib RcmAPI32.lib commctrl.lib coredll.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Symbol.dll" /libpath:"output\ce\POCKETPC\ARM" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 ScnAPI32.lib RcmAPI32.lib commctrl.lib coredll.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Symbol.dll" /libpath:"output\ce\POCKETPC\ARM" /libpath:"P:\extlibs\WindowsCE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /debug
 
 !ELSEIF  "$(CFG)" == "Symbol - Win32 (WCE ARM) Debug"
@@ -78,7 +78,7 @@ LINK32=link.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /D "DEBUG" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /FR"../../../../temp/evc3/Symbol/POCKETPC/ARM/Debug" /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\WindowsCE\winsock2" /D "DEBUG" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /FR"../../../../temp/evc3/Symbol/POCKETPC/ARM/Debug" /M$(CECrtMTDebug) /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ScnAPI32.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib RcmAPI32.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\Symbol.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Symbol.dll" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ScnAPI32.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib RcmAPI32.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\Symbol.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Symbol.dll" /libpath:"P:\extlibs\WindowsCE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF
