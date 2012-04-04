@@ -21,14 +21,13 @@
    <property name="ant.lib.dir" value="${env.ANT_HOME}/lib" />
 
    <property name="ivy.install.version" value="2.2.0" />
-   <property name="ivy.lib.dir" value="${env.EXTLIBS_HOME}" />
    <property name="ivy.jar.file" value="${ant.lib.dir}/ivy.jar" />
 
    <target name="help">
       <echo message="Type 'ant -p' to list all available targets." />
    </target>
 
-   <target name="install" depends="install_ivy, install_extlibs">
+   <target name="install" depends="install_ivy, install_dependencies">
    </target>
 
    <target name="install_ivy">
@@ -44,21 +43,39 @@
                classpath="${ivy.jar.file}" />
    </target>
 
-   <target name="install_extlibs">
+   <target name="install_dependencies">
       <!-- let ivy resolve any other dependencies -->
       <ivy:configure file="${basedir}/ivysettings.xml" />
-      <ivy:retrieve />
 
-      <!-- update jar files in ant lib dir -->
-      <copy todir="${ant.lib.dir}" overwrite="true" preservelastmodified="false">
-         <fileset dir="${ivy.lib.dir}" includes="*.jar" excludes="sigar*.jar" />
-      </copy>
+      <!-- force ivy resolution -->
+      <ivy:resolve file="${basedir}/ivy_ant-jars.xml" />
+      <ivy:resolve file="${basedir}/ivy_extlibs.xml" />
+      
+      <!-- retrieve jars used by ant -->
+      <ivy:retrieve file="${basedir}/ivy_ant-jars.xml" module="ant-jars" pattern="${ant.lib.dir}/[artifact]-[revision].[ext]" />
+
       <!-- import antcontrib so we can use it below -->
-      <taskdef resource="net/sf/antcontrib/antlib.xml" />
+      <taskdef resource="net/sf/antcontrib/antlib.xml">
+         <classpath>
+            <fileset dir="${ant.lib.dir}">
+               <include name="ant-contrib*.jar" />
+            </fileset>
+         </classpath>
+      </taskdef>
+      
+      <!-- retrieve extlibs -->
+      <ivy:retrieve file="${basedir}/ivy_extlibs.xml" module="extlibs" pattern="${env.EXTLIBS_HOME}/[artifact]-[revision].[ext]" />
 
+      <!-- remove the suffix "-noversion" -->
+      <move todir="${env.EXTLIBS_HOME}">
+         <fileset dir="${env.EXTLIBS_HOME}" />
+         <mapper type="regexp" from="(.*)-noversion(.*)" to="\1\2" />
+      </move>
+      
+      <!-- for each zip file, delete the local folder and unzip it again -->
       <for param="file">
          <path>
-            <fileset dir="${ivy.lib.dir}" includes="*.zip" />
+            <fileset dir="${env.EXTLIBS_HOME}" includes="*.zip" />
          </path>
          <sequential>
             <propertyregex override="yes"
@@ -66,36 +83,18 @@
                            input="@{file}"
                            regexp="([^\.]*)\.zip"
                            replace="\1" />
-
-            <trycatch>
-               <try>
-                  <uptodate property="file.uptodate" targetfile="@{file}">
-                     <srcfiles dir="${name}" includes="**/*" />
-                  </uptodate>
-               </try>
-               <catch>
-                  <property name="file.uptodate" value="false" />
-               </catch>
-               <finally>
-                  <echo>${name} - ${file.uptodate}</echo>
-                  <if>
-                     <equals arg1="${file.uptodate}" arg2="false" />
-                     <then>
-                        <delete dir="${name}" />
-                        <unzip src="@{file}" dest="${ivy.lib.dir}" />
-                     </then>
-                  </if>
-               </finally>
-            </trycatch>
+            <delete dir="${name}" />
+            <unzip src="@{file}" dest="${env.EXTLIBS_HOME}" />
          </sequential>
       </for>
 
+      <!-- do the same for tgz -->
       <for param="file">
          <path>
-            <fileset dir="${ivy.lib.dir}" includes="*.tgz" />
+            <fileset dir="${env.EXTLIBS_HOME}" includes="*.tgz" />
          </path>
          <sequential>
-            <untar src="@{file}" dest="${ivy.lib.dir}" compression="gzip" />
+            <untar src="@{file}" dest="${env.EXTLIBS_HOME}" compression="gzip" />
          </sequential>
       </for>
    </target>
