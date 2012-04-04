@@ -22,7 +22,7 @@
 		<!-- used by our ant scripts -->
 		<dependency org="ant-contrib" name="ant-contrib" rev="1.0b3" transitive="false" />
 		<!-- jodconverter: used convert the companion to pdf -->
-		<dependency org="org.artofsolving.jodconverter" name="jodconverter-core" rev="3.0-beta-4" transitive="false">
+		<dependency org="org.artofsolving.jodconverter" name="jodconverter-core" rev="3.0-beta-4">
 			<artifact name="jodconverter-core" ext="jar" />
 			<exclude name="sigar" ext="jar" />
 		</dependency>
