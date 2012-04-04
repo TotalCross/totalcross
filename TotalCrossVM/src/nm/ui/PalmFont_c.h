@@ -98,6 +98,7 @@ FontFile loadFontFile(char *fontName)
    FontFile ff;
    TCZFile tcz;
    FILE* f;
+   char fullpath[128];
 
    IF_HEAP_ERROR(fontsHeap)
    {
@@ -109,12 +110,12 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-      f = findFile(fontName);
+      f = findFile(fontName,fullpath);
       if (f == null)
       {
          char fullName[150];
          xstrprintf(fullName,"%s.tcz",fontName); // append a tcz to the font name
-         f = findFile(fullName);
+         f = findFile(fullName,fullpath);
       }
       #ifndef WIN32 // win32 file system is not case sensitive
       if (f == null && 'a' <= fontName[0] && fontName[0] <= 'z')
@@ -125,7 +126,7 @@ FontFile loadFontFile(char *fontName)
       #endif
       if (f != null)
       {
-         tcz = tczOpen(f,null);
+         tcz = tczOpen(f,fullpath,null);
          if (tcz != null)
          {
             ff = newXH(FontFile, fontsHeap);
