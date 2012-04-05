@@ -234,12 +234,12 @@ class Table
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private SQLValue[] gvOlds;
+   SQLValue[] gvOlds;
    
    /**
     * Stores flags from the record. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private byte[] ghas;
+   byte[] ghas;
    
    /**
     * An array to store the primary key values. Used in <code>writeRecord()</code>. 

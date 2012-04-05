@@ -759,15 +759,19 @@ public class LitebaseConnection
             break;
             
          case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN
+            SQLFieldDefinition field = parser.fieldList[0];
             int oldCount = table.columnCount,
                 newCount = oldCount + 1,
-                bytes = (oldCount + 7) >> 3;
-            SQLFieldDefinition field = parser.fieldList[0];
-                        
-            if (((oldCount + 8) >> 3) > ++bytes) // Increases the column nulls if the number of bytes must be increased.
+                bytes = (oldCount + 7) >> 3,
+                hash = field.fieldName.hashCode();
+
+            if (table.htName2index.exists(hash))
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATED_COLUMN_NAME) + field.fieldName);
+                
+            if (((oldCount + 8) >> 3) > bytes) // Increases the column nulls if the number of bytes must be increased.
             {
                byte[][] columnNulls = table.columnNulls;
-               columnNulls[0] = new byte[bytes];
+               columnNulls[0] = new byte[++bytes];
                columnNulls[1] = new byte[bytes];
                if (columnNulls[2] != null)
                   columnNulls[2] = new byte[bytes];
@@ -775,6 +779,8 @@ public class LitebaseConnection
             
             // Increases all the columns.  
             table.storeNulls = new boolean[newCount]; // Store nulls.
+            table.ghas = new byte[newCount];
+            table.gvOlds = new SQLValue[newCount];
             
             // Column attrs.
             byte[] oldAttrs = table.columnAttrs;
@@ -787,7 +793,7 @@ public class LitebaseConnection
             int[] oldHashes = table.columnHashes;
             int[] newHashes = table.columnHashes = new int[newCount];
             Vm.arrayCopy(oldHashes, 0, newHashes, 0, oldCount);
-            newHashes[oldCount] = field.fieldName.hashCode();
+            table.htName2index.put(newHashes[oldCount] = field.fieldName.hashCode(), oldCount);
             
             // Column offsets.
             short[] oldOffsets = table.columnOffsets;
@@ -882,7 +888,7 @@ public class LitebaseConnection
             newDB.driver = this; 
             int newRowSize = newOffsets[newCount] + ((newCount + 7) >> 3) + 4;
             byte[] newBuffer = newDB.basbuf = new byte[newRowSize];
-            newDB.setRowSize(newRowSize, newBuffer );
+            newDB.setRowSize(newRowSize, newBuffer);
             newDB.rowInc = oldDB.rowCount;
 
             // Sets the new streams.
@@ -895,6 +901,13 @@ public class LitebaseConnection
             int length = columnNulls0.length;
             boolean isNull = (record[oldCount] = newDefaultValue) == null;
                         
+            // Saves the new meta data.
+            table.db = newDB;
+            table.columnCount++;
+            table.tableSaveMetaData(Utils.TSMD_EVERYTHING); 
+            table.db = oldDB;
+            table.columnCount--;
+            
             // juliana@230_12
             int crc32,
                 k;
@@ -956,10 +969,7 @@ public class LitebaseConnection
             ((NormalFile)oldDB.dbo).f.delete();
             newDB.rename(table.name, sourcePath);
             table.db = newDB;
-            
-            // Saves the new meta data.
             table.columnCount++;
-            table.tableSaveMetaData(Utils.TSMD_EVERYTHING); 
             
             i = newCount;
             while (--i >= 0) // Recreates the simple indices.
