@@ -72,22 +72,22 @@ class SQLElement
    /**
     * Represents the SQL command <code>SELECT [DISTINCT]...</code>.
     */
-   static final int CMD_SELECT = 9;
+   static final int CMD_SELECT = 10;
 
    /**
     * Represents the SQL command <code>INSERT INTO...</code>.
     */
-   static final int CMD_INSERT = 10;
+   static final int CMD_INSERT = 11;
 
    /**
     * Represents the SQL command <code>UPDATE...</code>.
     */
-   static final int CMD_UPDATE = 11;
+   static final int CMD_UPDATE = 12;
 
    /**
     * Represents the SQL command <code>DELETE [FROM]...</code>.
     */
-   static final int CMD_DELETE = 12;
+   static final int CMD_DELETE = 13;
    
    // SQL Data Types.
    /**
