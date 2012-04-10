@@ -22,7 +22,7 @@ import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 
 /** This class holds the colors used in some user interface dialogs, such as MessageBox,
- * InputDialog, Calculator, Keyboard, Calendar, ToolTip, KeyPad and others.
+ * InputBox, CalculatorBox, KeyboardBox, CalendarBox, ToolTip, KeyPad and others.
  * You can customize it as needed.
  * <p>
  * To correctly change the colors to your own, you must do it in the constructor of your

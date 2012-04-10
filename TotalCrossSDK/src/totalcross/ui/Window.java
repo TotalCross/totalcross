@@ -90,7 +90,7 @@ import totalcross.util.*;
  *     }
  *  }
  *</pre>
- * Blocking popup may be use in InputDialog/MessageBox classes, while non-blocking popup
+ * Blocking popup may be use in InputBox/MessageBox classes, while non-blocking popup
  * is used in MenuBar and other classes.
  * <p> Important note: you can't use popup with a delay to unpop it.
  * In this case, the correct would be to use popupNonBlocking:

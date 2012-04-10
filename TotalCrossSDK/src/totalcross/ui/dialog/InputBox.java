@@ -30,7 +30,7 @@ import totalcross.ui.gfx.*;
     <pre>
     // on some event...
       if (renameDialog == null)
-         renameDialog = new InputDialog("Project Rename","Please enter the new name which will be used for the project:","");
+         renameDialog = new InputBox("Project Rename","Please enter the new name which will be used for the project:","");
       renameDialog.setValue(projectName);
       renameDialog.popup();
       // when window closes...
@@ -80,7 +80,7 @@ public class InputBox extends Window
     */
    public int[] buttonKeys; // guich@tc126_40
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
      * the given label Text, the given Default value for the Edit,
      * and two buttons "Ok" and "Cancel".
      * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
@@ -91,7 +91,7 @@ public class InputBox extends Window
       buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
    }
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
      * the given label Text, the given Default value for the Edit
      * and with the given buttons.
      * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
@@ -101,7 +101,7 @@ public class InputBox extends Window
       this(title,text,defaultValue,buttonCaptions,false,4,6);
    }
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
     * the given label Text, the given Default value for the Edit
     * and with the given buttons.
     * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
