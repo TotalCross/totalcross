@@ -384,7 +384,8 @@ public class LitebaseConnection
             byte[] columnAttrs = new byte[count];
             SQLFieldDefinition field;
             Date tempDateAux = tempDate; // juliana@224_2: improved memory usage on BlackBerry.
-   
+            String defaultValue; 
+            
             // Creates column 0 (rowid).
             names[0] = "rowid";
             types[0] = SQLElement.INT;
@@ -401,11 +402,10 @@ public class LitebaseConnection
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
                   primaryKeyCol = i; // Only one primary key can be defined per table: this is verified during the parsing.
    
-               if (field.defaultValue != null) // Default values: default null has no effect. This is handled by the parser.
+               if ((defaultValue = field.defaultValue) != null) // Default values: default null has no effect. This is handled by the parser.
                {
                   defaultValues[i] = new SQLValue();
                   columnAttrs[i] |= Utils.ATTR_COLUMN_HAS_DEFAULT;  // Sets the default bit.
-                  String defaultValue = field.defaultValue.trim();
                   
                   // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
                   // the type range.
@@ -765,9 +765,12 @@ public class LitebaseConnection
                 bytes = (oldCount + 7) >> 3,
                 hash = field.fieldName.hashCode();
 
-            if (table.htName2index.exists(hash))
+            if (table.htName2index.exists(hash)) // The column name can't exist yet.
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATED_COLUMN_NAME) + field.fieldName);
-                
+            
+            if (oldCount == SQLElement.MAX_NUM_COLUMNS) // The maximum number of columns can't be exceeded.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMNS_OVERFLOW) + field.fieldName);
+            
             if (((oldCount + 8) >> 3) > bytes) // Increases the column nulls if the number of bytes must be increased.
             {
                byte[][] columnNulls = table.columnNulls;
@@ -783,52 +786,45 @@ public class LitebaseConnection
             table.gvOlds = new SQLValue[newCount];
             
             // Column attrs.
-            byte[] oldAttrs = table.columnAttrs;
-            byte[] newAttrs = table.columnAttrs = new byte[newCount];
-            Vm.arrayCopy(oldAttrs, 0, newAttrs, 0, oldCount);
-            newAttrs[oldCount] = (byte)((field.defaultValue != null? Utils.ATTR_COLUMN_HAS_DEFAULT : 0)
-                                      | (field.isNotNull? Utils.ATTR_COLUMN_IS_NOT_NULL : 0)); 
+            byte[] newAttrs = new byte[newCount];
+            Vm.arrayCopy(table.columnAttrs, 0, newAttrs, 0, oldCount);
+            (table.columnAttrs = newAttrs)[oldCount] = (byte)((field.defaultValue != null? Utils.ATTR_COLUMN_HAS_DEFAULT : 0)
+                                                                                         | (field.isNotNull? Utils.ATTR_COLUMN_IS_NOT_NULL : 0)); 
             
             // Column hashes.
-            int[] oldHashes = table.columnHashes;
-            int[] newHashes = table.columnHashes = new int[newCount];
-            Vm.arrayCopy(oldHashes, 0, newHashes, 0, oldCount);
-            table.htName2index.put(newHashes[oldCount] = field.fieldName.hashCode(), oldCount);
+            int[] newHashes = new int[newCount];
+            Vm.arrayCopy(table.columnHashes, 0, newHashes, 0, oldCount);
+            table.htName2index.put((table.columnHashes = newHashes)[oldCount] = hash, oldCount);
             
             // Column offsets.
-            short[] oldOffsets = table.columnOffsets;
-            short[] newOffsets = table.columnOffsets = new short[newCount + 1];
-            Vm.arrayCopy(oldOffsets, 0, newOffsets, 0, newCount);
-            newOffsets[newCount] = (short)(newOffsets[oldCount] + Utils.typeSizes[field.fieldType]);
+            short[] newOffsets = new short[newCount + 1];
+            Vm.arrayCopy(table.columnOffsets, 0, newOffsets, 0, newCount);
+            (table.columnOffsets = newOffsets)[newCount] = (short)(newOffsets[oldCount] + Utils.typeSizes[field.fieldType]);
             
             // Column types.
-            byte[] oldTypes = table.columnTypes;
-            byte[] newTypes = table.columnTypes = new byte[newCount];
-            Vm.arrayCopy(oldTypes, 0, newTypes, 0, oldCount);
-            newTypes[oldCount] = (byte)field.fieldType;
+            byte[] newTypes = new byte[newCount];
+            Vm.arrayCopy(table.columnTypes, 0, newTypes, 0, oldCount);
+            (table.columnTypes = newTypes)[oldCount] = (byte)field.fieldType;
             
             // Column sizes.
-            int[] oldSizes = table.columnSizes;
-            int[] newSizes = table.columnSizes = new int[newCount];
-            Vm.arrayCopy(oldSizes, 0, newSizes, 0, oldCount);
-            newSizes[oldCount] = field.fieldSize;
+            int[] newSizes = new int[newCount];
+            Vm.arrayCopy(table.columnSizes, 0, newSizes, 0, oldCount);
+            (table.columnSizes = newSizes)[oldCount] = field.fieldSize;
             
             // Column names.
-            String[] oldNames = table.columnNames;
-            String[] newNames = table.columnNames = new String[newCount];
-            Vm.arrayCopy(oldNames, 0, newNames, 0, oldCount);
-            newNames[oldCount] = field.fieldName;
+            String[] newNames = new String[newCount];
+            Vm.arrayCopy(table.columnNames, 0, newNames, 0, oldCount);
+            (table.columnNames = newNames)[oldCount] = field.fieldName;
             
             // Default values.
-            SQLValue[] oldDefaultValues = table.defaultValues;
-            SQLValue[] newDefaultValues = table.defaultValues = new SQLValue[newCount];
+            SQLValue[] newDefaultValues = new SQLValue[newCount];
             SQLValue newDefaultValue = null;
-            Vm.arrayCopy(oldDefaultValues, 0, newDefaultValues, 0, oldCount);            
+            Vm.arrayCopy(table.defaultValues, 0, newDefaultValues, 0, oldCount);            
+            table.defaultValues = newDefaultValues;
             String defaultValue = field.defaultValue;
             
             if (defaultValue != null) // Sets the new default value if it exists.
             {
-               defaultValue = defaultValue.trim();
                newDefaultValue = newDefaultValues[oldCount] = new SQLValue();
                
                // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
@@ -875,10 +871,10 @@ public class LitebaseConnection
             }
             
             // Column indices.
-            Index[] oldIndices = table.columnIndices;
-            Index[] newIndices = table.columnIndices = new Index[newCount];
-            Vm.arrayCopy(oldIndices, 0, newIndices, 0, oldCount);
-            
+            Index[] newIndices = new Index[newCount];
+            Vm.arrayCopy(table.columnIndices, 0, newIndices, 0, oldCount);
+            table.columnIndices = newIndices; 
+                  
             // Sets the new plain db.
             PlainDB newDB = new PlainDB(table.name + '_', sourcePath, true),
                     oldDB = table.db; 

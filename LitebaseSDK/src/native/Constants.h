@@ -121,10 +121,11 @@
 #define CMD_ALTER_ADD_PK         6  // ALTER TABLE ... ADD PRIMARY KEY (...) 
 #define CMD_ALTER_RENAME_TABLE   7  // ALTER TABLE ... RENAME TO ...
 #define CMD_ALTER_RENAME_COLUMN  8  // ALTER TABLE ... RENAME ... TO ...
-#define CMD_SELECT               9  // SELECT ...
-#define CMD_INSERT               10 // INSERT INTO ...
-#define CMD_UPDATE               11 // UPDATE ...
-#define CMD_DELETE               12 // DELETE ...
+#define CMD_ALTER_ADD_COLUMN     9  // ALTER TABLE ADD... (new column definition) // juliana@add_1
+#define CMD_SELECT               10 // SELECT ...
+#define CMD_INSERT               11 // INSERT INTO ...
+#define CMD_UPDATE               12 // UPDATE ...
+#define CMD_DELETE               13 // DELETE ...
 
 #define HCROWID    108705909   // hash code for the rowid.
 #define LOGS_INT   1280264019  // LOGS_INT = Convert.chars2int("LOGS");
@@ -356,108 +357,108 @@
 
 // Default value errors.
 #define ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER  25 // "Length of default value is bigger than column size."
+#define ERR_NOT_NULL_DEFAULT                26 // "An added column declared as NOT NULL must have a not null default value."
 
 // Driver errors.  
-#define ERR_DRIVER_CLOSED             26 // "This driver instance was closed and can't be used anymore. Please get a new instance of it."
-#define ERR_RESULTSET_CLOSED          27 // "ResultSet already closed!"
-#define ERR_RESULTSETMETADATA_CLOSED  28 // "ResultSetMetaData can't be used after the ResultSet is closed. "
-#define ERR_INVALID_CRID              29 // "The application id must be four characters long."
-#define ERR_INVALID_INC               30 // "The increment must be greater than 0 or -1."
-#define ERR_ROWITERATOR_CLOSED        31 // "Iterator already closed."
-#define ERR_PREPARED_STMT_CLOSED      32 // "Prepared statement closed. Please prepare it again."
+#define ERR_DRIVER_CLOSED             27 // "This driver instance was closed and can't be used anymore. Please get a new instance of it."
+#define ERR_RESULTSET_CLOSED          28 // "ResultSet already closed!"
+#define ERR_RESULTSETMETADATA_CLOSED  29 // "ResultSetMetaData can't be used after the ResultSet is closed. "
+#define ERR_INVALID_CRID              30 // "The application id must be four characters long."
+#define ERR_INVALID_INC               31 // "The increment must be greater than 0 or -1."
+#define ERR_ROWITERATOR_CLOSED        32 // "Iterator already closed."
+#define ERR_PREPARED_STMT_CLOSED      33 // "Prepared statement closed. Please prepare it again."
 
 // Table errors.
-#define ERR_TABLE_NAME_NOT_FOUND   33 // "Table name not found: "
-#define ERR_TABLE_ALREADY_CREATED  34 // "Table already created: "
-#define ERR_WRONG_STRING_FORMAT    35 // "It is not possible to open a table within a connection with a different string format."
-#define ERR_WRONG_CRYPTO_FORMAT    36 // "It is not possible to open a table within a connection with a different cryptography format."
+#define ERR_TABLE_NAME_NOT_FOUND   34 // "Table name not found: "
+#define ERR_TABLE_ALREADY_CREATED  35 // "Table already created: "
+#define ERR_WRONG_STRING_FORMAT    36 // "It is not possible to open a table within a connection with a different string format."
+#define ERR_WRONG_CRYPTO_FORMAT    37 // "It is not possible to open a table within a connection with a different cryptography format."
    
 // ROWID errors.
-#define ERR_ROWID_CANNOT_BE_CHANGED  37 // "ROWID can't be changed by the user!"
+#define ERR_ROWID_CANNOT_BE_CHANGED  38 // "ROWID can't be changed by the user!"
 
 // Prepared Statement errors.
-#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  38 // "SQL statement does not return result set."
-#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    39 // "SQL statement does not perform updates in the database."
-#define ERR_NOT_ALL_PARAMETERS_DEFINED      40 // "Not all parameters of the query had their values defined."
-#define ERR_PARAMETER_NOT_DEFINED           41 // "A value was not defined for the parameter "
-#define ERR_INVALID_PARAMETER_INDEX         42 // "Invalid parameter index."
+#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  39 // "SQL statement does not return result set."
+#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    40 // "SQL statement does not perform updates in the database."
+#define ERR_NOT_ALL_PARAMETERS_DEFINED      41 // "Not all parameters of the query had their values defined."
+#define ERR_PARAMETER_NOT_DEFINED           42 // "A value was not defined for the parameter "
+#define ERR_INVALID_PARAMETER_INDEX         43 // "Invalid parameter index."
 
 // Rename errors. 
-#define ERR_TABLE_ALREADY_EXIST   43 // "Can't rename table. This table already exists: "
-#define ERR_COLUMN_ALREADY_EXIST  44 // "Column already exists: "
+#define ERR_TABLE_ALREADY_EXIST   44 // "Can't rename table. This table already exists: "
+#define ERR_COLUMN_ALREADY_EXIST  45 // "Column already exists: "
 
 // Alias errors.
-#define ERR_NOT_UNIQUE_ALIAS_TABLE  45 // "Not unique table/alias: "
-#define ERR_DUPLICATE_ALIAS         46 // "This alias is already being used in this expression: " 
-#define ERR_REQUIRED_ALIAS          47 // "An alias is required for the aggregate function column."
+#define ERR_NOT_UNIQUE_ALIAS_TABLE  46 // "Not unique table/alias: "
+#define ERR_DUPLICATE_ALIAS         47 // "This alias is already being used in this expression: " 
+#define ERR_REQUIRED_ALIAS          48 // "An alias is required for the aggregate function column."
 
 // Litebase.execute() error.
-#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  48 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
+#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  49 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
 
 // Order by and group by errors.
-#define ERR_ORDER_GROUPBY_MUST_MATCH   49 // "ORDER BY and GROUP BY clauses must match."
-#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  50 // "No support for virtual columns in SQL queries with GROUP BY clause."
+#define ERR_ORDER_GROUPBY_MUST_MATCH   50 // "ORDER BY and GROUP BY clauses must match."
+#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  51 // "No support for virtual columns in SQL queries with GROUP BY clause."
 
 // Function errors.
-#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    51 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
+#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    52 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
 
 // " is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions."
-#define ERR_IS_NOT_AGGREG_FUNCTION             52
+#define ERR_IS_NOT_AGGREG_FUNCTION             53
 
 // "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
-#define ERR_CANNOT_MIX_AGGREG_FUNCTION         53 
+#define ERR_CANNOT_MIX_AGGREG_FUNCTION         54 
 
-#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  54 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
+#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  55 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
 
 // " was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation funtions."
-#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  55
+#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  56
 
-#define ERR_SUM_AVG_WITH_DATE_DATETIME         56 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
+#define ERR_SUM_AVG_WITH_DATE_DATETIME         57 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
 
 // DATE and DATETIME errors.
-#define ERR_VALUE_ISNOT_DATE      57 // "Value is not a DATE: "
-#define ERR_VALUE_ISNOT_DATETIME  58 // "Value is not a DATETIME: "
+#define ERR_VALUE_ISNOT_DATE      58 // "Value is not a DATE: "
+#define ERR_VALUE_ISNOT_DATETIME  59 // "Value is not a DATETIME: "
 
 // Index errors.
-#define ERR_INDEX_ALREADY_CREATED  59 // "Index already created for column "
-#define ERR_DROP_PRIMARY_KEY       60 // "Can't drop a primary key index with drop index."
-#define ERR_INDEX_LARGE            61 // "Index too large. It can't have more than 32767 nodes."
+#define ERR_INDEX_ALREADY_CREATED  60 // "Index already created for column "
+#define ERR_DROP_PRIMARY_KEY       61 // "Can't drop a primary key index with drop index."
+#define ERR_INDEX_LARGE            62 // "Index too large. It can't have more than 32767 nodes."
 
 // NOT NULL errors. 
-#define ERR_PK_CANT_BE_NULL     62  // "Primary key can't have null." 
-#define ERR_FIELD_CANT_BE_NULL  63  // "Field can't be null: "
-#define ERR_PARAM_NULL          64  // "A parameter in a where clause can't be null."
+#define ERR_PK_CANT_BE_NULL     63  // "Primary key can't have null." 
+#define ERR_FIELD_CANT_BE_NULL  64  // "Field can't be null: "
+#define ERR_PARAM_NULL          65  // "A parameter in a where clause can't be null."
 
 // Result set errors. 
-#define ERR_RS_INV_POS           65 // "ResultSet in invalid record position: ."
-#define ERR_RS_DEC_PLACES_START  66 // "Invalid value for decimal places: . It must range from -1 to 40."
-
+#define ERR_RS_INV_POS           66 // "ResultSet in invalid record position: ."
+#define ERR_RS_DEC_PLACES_START  67 // "Invalid value for decimal places: . It must range from -1 to 40."
 // File errors.
-#define ERR_CANT_READ          67 // "Can't read from table "
-#define ERR_CANT_LOAD_NODE     68 // "Can't load leaf node!"
-#define ERR_TABLE_CORRUPTED    69 // "Table is corrupted: "
-#define ERR_TABLE_NOT_CLOSED   70 // "Table not closed properly: " // juliana@220_2
-#define ERR_TABLE_CLOSED       71 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
-#define ERR_IDX_RECORD_DEL     72 // "Can't find index record position on delete."
-#define ERR_WRONG_VERSION      73 // "The table format is incompatible with Litebase version. Please update your tables."
-#define ERR_WRONG_PREV_VERSION 74 // "The table format is not the previous one: "
-#define ERR_INVALID_PATH       75 // "Invalid path: " // juliana@214_1
-#define ERR_INVALID_POS        76 // "Invalid pos: "
-#define ERR_DB_NOT_FOUND       77 // "Database not found." // juliana@226_10
-#define ERR_TABLE_OPENED       78 // "An opened table can't be recovered or converted: " // juliana@230_12
+#define ERR_CANT_READ          68 // "Can't read from table "
+#define ERR_CANT_LOAD_NODE     69 // "Can't load leaf node!"
+#define ERR_TABLE_CORRUPTED    70 // "Table is corrupted: "
+#define ERR_TABLE_NOT_CLOSED   71 // "Table not closed properly: " // juliana@220_2
+#define ERR_TABLE_CLOSED       72 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
+#define ERR_IDX_RECORD_DEL     73 // "Can't find index record position on delete."
+#define ERR_WRONG_VERSION      74 // "The table format is incompatible with Litebase version. Please update your tables."
+#define ERR_WRONG_PREV_VERSION 75 // "The table format is not the previous one: "
+#define ERR_INVALID_PATH       76 // "Invalid path: " // juliana@214_1
+#define ERR_INVALID_POS        77 // "Invalid pos: "
+#define ERR_DB_NOT_FOUND       78 // "Database not found." // juliana@226_10
+#define ERR_TABLE_OPENED       79 // "An opened table can't be recovered or converted: " // juliana@230_12
 
 // BLOB errors.
-#define ERR_BLOB_TOO_BIG        79 // "The total size of a blob can't be greater then 10 Mb."  
-#define ERR_INVALID_MULTIPLIER  80 // "This is not a valid size multiplier." 
-#define ERR_BLOB_PRIMARY_KEY    81 // "A blob type can't be part of a primary key."
-#define ERR_BLOB_INDEX          82 // "A BLOB column can't be indexed."
-#define ERR_BLOB_WHERE          83 // "A BLOB can't be in the where clause."
-#define ERR_BLOB_STRING         84 // "A BLOB can't be converted to a string."
-#define ERR_BLOB_ORDER_GROUP    85 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
-#define ERR_COMP_BLOBS          86 // "It is not possible to compare BLOBs."
-#define ERR_BLOBS_PREPARED      87 // "It is only possible to insert or update a BLOB through prepared statements."
+#define ERR_BLOB_TOO_BIG        80 // "The total size of a blob can't be greater then 10 Mb."  
+#define ERR_INVALID_MULTIPLIER  81 // "This is not a valid size multiplier." 
+#define ERR_BLOB_PRIMARY_KEY    82 // "A blob type can't be part of a primary key."
+#define ERR_BLOB_INDEX          83 // "A BLOB column can't be indexed."
+#define ERR_BLOB_WHERE          84 // "A BLOB can't be in the where clause."
+#define ERR_BLOB_STRING         85 // "A BLOB can't be converted to a string."
+#define ERR_BLOB_ORDER_GROUP    86 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
+#define ERR_COMP_BLOBS          87 // "It is not possible to compare BLOBs."
+#define ERR_BLOBS_PREPARED      88 // "It is only possible to insert or update a BLOB through prepared statements."
 
-#define TOTAL_ERRORS  88 // Total Litebase possible errors.
+#define TOTAL_ERRORS  89 // Total Litebase possible errors.
 
 #define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied. 
 

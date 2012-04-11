@@ -42,8 +42,6 @@ int32 yylex(LitebaseParser* parser)
       // Ends the lexycal analysis if the end of the file is found
       if (parser->yycurrent == 65535)
       {
-         parser->yycurrent = ' ';
-         parser->yyposition = 0;
          parser->select.sqlHashCode = hash;
          return PARSER_EOF;
       }

@@ -64,7 +64,8 @@ void initLitebaseMessage(void)
 
    // Default value errors.
    errorMsgs_en[ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER] = "Length of default value is bigger than column size.";
-
+   errorMsgs_en[ERR_NOT_NULL_DEFAULT] = "An added column declared as NOT NULL must have a not null default value.";
+ 
 	// Driver errors. 
 	errorMsgs_en[ERR_DRIVER_CLOSED] = "This driver instance was closed and cannot be used anymore. Please get a new instance of it.";
    errorMsgs_en[ERR_RESULTSET_CLOSED] = "ResultSet already closed!";
@@ -200,6 +201,7 @@ void initLitebaseMessage(void)
 
    // Default value errors.
 	errorMsgs_pt[ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER] = "Tamanho do valor padrão é maior que o tamanho definido para a coluna.";
+   errorMsgs_pt[ERR_NOT_NULL_DEFAULT] = "Uma coluna adicionada declarada como NOT NULL deve ter um valor padrão não nulo.";
 
 	// Driver errors. 
 	errorMsgs_pt[ERR_DRIVER_CLOSED] = "Esta instância do driver está fechada e não pode ser mais utilizada. Por favor, obtenha uma nova instância.";
@@ -363,6 +365,7 @@ TESTCASE(getMessage)
 
    // Default value errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER), "Length of default value is bigger than column size.");
+   ASSERT2_EQUALS(Sz, getMessage(ERR_NOT_NULL_DEFAULT), "An added column declared as NOT NULL must have a not null default value.");
 
 	// Driver errors. 
 	ASSERT2_EQUALS(Sz, getMessage(ERR_DRIVER_CLOSED), "This driver instance was closed and cannot be used anymore. Please get a new instance of it.");
@@ -505,6 +508,7 @@ TESTCASE(getMessage)
 
    // Default value errors.
 	ASSERT2_EQUALS(Sz, getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER), "Tamanho do valor padrão é maior que o tamanho definido para a coluna.");
+   ASSERT2_EQUALS(Sz, getMessage(ERR_NOT_NULL_DEFAULT), "Uma coluna adicionada declarada como NOT NULL deve ter um valor padrão não nulo.");
 
 	// Driver errors. 
 	ASSERT2_EQUALS(Sz, getMessage(ERR_DRIVER_CLOSED), 
@@ -661,101 +665,102 @@ TESTCASE(initLitebaseMessage)
 
    // Default value errors.
    ASSERT2_EQUALS(Sz, errorMsgs_en[25], "Length of default value is bigger than column size.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[26], "An added column declared as NOT NULL must have a not null default value.");
 
 	// Driver errors. 
-	ASSERT2_EQUALS(Sz, errorMsgs_en[26], "This driver instance was closed and cannot be used anymore. Please get a new instance of it.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[27], "ResultSet already closed!");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[28], "ResultSetMetaData cannot be used after the ResultSet is closed.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[29], "The application id must be four characters long.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[30], "The increment must be greater than 0 or -1.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[31], "Iterator already closed.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[32], "Prepared statement closed. Please prepare it again.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[27], "This driver instance was closed and cannot be used anymore. Please get a new instance of it.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[28], "ResultSet already closed!");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[29], "ResultSetMetaData cannot be used after the ResultSet is closed.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[30], "The application id must be four characters long.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[31], "The increment must be greater than 0 or -1.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[32], "Iterator already closed.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[33], "Prepared statement closed. Please prepare it again.");
 
    // Table errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_en[33], "Table name not found: %s.");
-	ASSERT2_EQUALS(Sz, errorMsgs_en[34], "Table already created: %s.");
-	ASSERT2_EQUALS(Sz, errorMsgs_en[35], "It is not possible to open a table within a connection with a different string format.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[36], "It is not possible to open a table within a connection with a different cryptography format.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[34], "Table name not found: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[35], "Table already created: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[36], "It is not possible to open a table within a connection with a different string format.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[37], "An added column declared as NOT NULL must have a not null default value.");
  
    // ROWID errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[37], "ROWID can't be changed by the user!");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[38], "ROWID can't be changed by the user!");
 
    // Prepared Statement errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_en[38], "Query does not return result set.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[39], "Query does not perform updates in the database.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[40], "Not all parameters of the query had their values defined.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[41], "A value was not defined for the parameter %d.");
-	ASSERT2_EQUALS(Sz, errorMsgs_en[42], "Invalid parameter index.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[39], "Query does not return result set.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[40], "Query does not perform updates in the database.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[41], "Not all parameters of the query had their values defined.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[42], "A value was not defined for the parameter %d.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[43], "Invalid parameter index.");
 
 	// Rename errors. 
-	ASSERT2_EQUALS(Sz, errorMsgs_en[43], "Can't rename table. This table already exists: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[44], "Column already exists: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[44], "Can't rename table. This table already exists: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[45], "Column already exists: %s.");
 
 	// Alias errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[45], "Not unique table/alias: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[46], "This alias is already being used in this expression: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[47], "An alias is required for the aggregate function column.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[46], "Not unique table/alias: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[47], "This alias is already being used in this expression: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[48], "An alias is required for the aggregate function column.");
 
 	// Litebase.execute() error.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[48], "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute().");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[49], "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute().");
    
 	// Order by and group by errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_en[49], "ORDER BY and GROUP BY clauses must match.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[50], "No support for virtual columns in SQL queries with GROUP BY clause.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[50], "ORDER BY and GROUP BY clauses must match.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[51], "No support for virtual columns in SQL queries with GROUP BY clause.");
    
    // Function errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_en[51], "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause.");
-	ASSERT2_EQUALS(Sz, errorMsgs_en[52], 
+	ASSERT2_EQUALS(Sz, errorMsgs_en[52], "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause.");
+	ASSERT2_EQUALS(Sz, errorMsgs_en[53], 
 	  "%s is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions.");
-	ASSERT2_EQUALS(Sz, errorMsgs_en[53], "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[54], "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[55], 
+	ASSERT2_EQUALS(Sz, errorMsgs_en[54], "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[55], "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[56], 
  "%s was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation funtions."
 );
-   ASSERT2_EQUALS(Sz, errorMsgs_en[56], "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[57], "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields.");
 
    // DATE and DATETIME errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[57], "Value is not a DATE: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[58], "Value is not a DATETIME: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[58], "Value is not a DATE: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[59], "Value is not a DATETIME: %s.");
 
    // Index error.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[59], "Index already created for column %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[60], "Can't drop a primary key index withdrop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[61], "Index too large. It can't have more than 65534 nodes.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[60], "Index already created for column %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[61], "Can't drop a primary key index withdrop index.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[62], "Index too large. It can't have more than 65534 nodes.");
       
    // NOT NULL errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[62], "Primary key can't have null.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[63], "Field can't be null: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[64], "A parameter in a where clause can't be null.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[63], "Primary key can't have null.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[64], "Field can't be null: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[65], "A parameter in a where clause can't be null.");
 
    // Result set errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[65], "ResultSet in invalid record position: %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[66], "Invalid value for decimal places: %d. It must range from -1 to 40.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[66], "ResultSet in invalid record position: %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[67], "Invalid value for decimal places: %d. It must range from -1 to 40.");
 
    // File errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[67], "Can't read from table %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[68], "Can't load leaf node!");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[69], "Table is corrupted: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[70], "Table not closed properly: %s."); // juliana@220_2
-   ASSERT2_EQUALS(Sz, errorMsgs_en[71], "A properly closed table can't be used in recoverTable(): %s."); // juliana@222_2
-	ASSERT2_EQUALS(Sz, errorMsgs_en[72], "Can't find index record position on delete.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[73], "The table format (%d) is incompatible with Litebase version. Please update your tables.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[74], "The table format is not the previous one: %s."); // juliana@220_11
-	ASSERT2_EQUALS(Sz, errorMsgs_en[75], "Invalid path: %s."); // juliana@214_1
-	ASSERT2_EQUALS(Sz, errorMsgs_en[76], "Invalid file position: %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[77], "Database not found.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "An opened table can't be recovered or converted: %s."); // juliana@230_12
+   ASSERT2_EQUALS(Sz, errorMsgs_en[68], "Can't read from table %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[69], "Can't load leaf node!");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[70], "Table is corrupted: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[71], "Table not closed properly: %s."); // juliana@220_2
+   ASSERT2_EQUALS(Sz, errorMsgs_en[72], "A properly closed table can't be used in recoverTable(): %s."); // juliana@222_2
+	ASSERT2_EQUALS(Sz, errorMsgs_en[73], "Can't find index record position on delete.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[74], "The table format (%d) is incompatible with Litebase version. Please update your tables.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[75], "The table format is not the previous one: %s."); // juliana@220_11
+	ASSERT2_EQUALS(Sz, errorMsgs_en[76], "Invalid path: %s."); // juliana@214_1
+	ASSERT2_EQUALS(Sz, errorMsgs_en[77], "Invalid file position: %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "Database not found.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "An opened table can't be recovered or converted: %s."); // juliana@230_12
    
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "The total size of a blob can't be greater then 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "This is not a valid size multiplier.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "A blob type can't be part of a primary key.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A BLOB column can't be indexed.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "A BLOB can't be in the where clause.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "A BLOB can't be converted to a string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[86], "It is not possible to compare BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[87], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "The total size of a blob can't be greater then 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "This is not a valid size multiplier.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A blob type can't be part of a primary key.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "A BLOB column can't be indexed.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "A BLOB can't be in the where clause.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "A BLOB can't be converted to a string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[86], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[87], "It is not possible to compare BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[88], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
 
    // Portuguese messages.
 	// General errors.
@@ -797,101 +802,102 @@ TESTCASE(initLitebaseMessage)
 
    // Default value errors.
 	ASSERT2_EQUALS(Sz, errorMsgs_pt[25], "Tamanho do valor padrão é maior que o tamanho definido para a coluna.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[26], "Uma coluna adicionada declarada como NOT NULL deve ter um valor padrão não nulo.");
 
 	// Driver errors. 
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[26], 
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[27], 
                                       "Esta instância do driver está fechada e não pode ser mais utilizada. Por favor, obtenha uma nova instância.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[27], "ResultSet já está fechado!");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[28], "ResultSetMetaData não pode ser usado depois que o ResultSet estiver fechado.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[29], "O id da aplicação de ter 4 characteres.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[30], "O incremento deve ser maior do que 0 ou -1.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[31], "Iterador já foi fechado.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[32], "Prepared statement fechado. Por favor, prepare-o novamente.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[28], "ResultSet já está fechado!");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[29], "ResultSetMetaData não pode ser usado depois que o ResultSet estiver fechado.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[30], "O id da aplicação de ter 4 characteres.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[31], "O incremento deve ser maior do que 0 ou -1.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[32], "Iterador já foi fechado.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[33], "Prepared statement fechado. Por favor, prepare-o novamente.");
 
 	// Table errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[33], "Nome da tabela não encontrado: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[34], "Tabela já existe: %s.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[35],  "Não é possível abrir uma tabela com uma conexão com um tipo de strings diferente.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[36],  "Não é possível abrir uma tabela com uma conexão com um tipo de criptografia diferente.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[34], "Nome da tabela não encontrado: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[35], "Tabela já existe: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[36],  "Não é possível abrir uma tabela com uma conexão com um tipo de strings diferente.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[37],  "Não é possível abrir uma tabela com uma conexão com um tipo de criptografia diferente.");
 
    // ROWID errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[37], "ROWID não pode ser mudado pelo usuário!");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[38], "ROWID não pode ser mudado pelo usuário!");
 
    // Prepared Statement errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[38], "Comando SQL não retorna um ResultSet.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[39], "Comando SQL não executa uma atualização no banco de dados.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[40], "Nem todos os parâmetros da consulta tiveram seus valores definidos.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[41], "Não foi definido um valor para o parâmetro %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[42], "Invalid parameter index.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[39], "Comando SQL não retorna um ResultSet.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[40], "Comando SQL não executa uma atualização no banco de dados.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[41], "Nem todos os parâmetros da consulta tiveram seus valores definidos.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[42], "Não foi definido um valor para o parâmetro %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[43], "Invalid parameter index.");
    
    // Rename errors. 
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[43], "Não é possível renomear a tabela. Esta tabela já existe: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[44], "Coluna já existe: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[44], "Não é possível renomear a tabela. Esta tabela já existe: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[45], "Coluna já existe: %s.");
 
 	// Alias errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[45], "Nome de tabela/alias repetido: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[46], "Este alias já está sendo utilizado no sql: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[47], "Um alias é necessário para colunas com função de agregação.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[46], "Nome de tabela/alias repetido: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[47], "Este alias já está sendo utilizado no sql: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[48], "Um alias é necessário para colunas com função de agregação.");
    
 	// Litebase.execute() error.
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[48], "Apenas CREATE TABLE e CREATE INDEX são permitidos no Litebase.execute()");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[49], "Apenas CREATE TABLE e CREATE INDEX são permitidos no Litebase.execute()");
    
    // Order by and group by errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[49], "Cláusulas ORDER BY e GROUP BY devem coincidir.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[50], "SQL com cláusula GROUP BY não tem suporte para colunas virtuais.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[50], "Cláusulas ORDER BY e GROUP BY devem coincidir.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[51], "SQL com cláusula GROUP BY não tem suporte para colunas virtuais.");
    
    // Function errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[51], "Todas colunas que nãosão funções de agregação na cláusula SELECT devem estar na cláusula GROUP BY.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[52], 
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[52], "Todas colunas que nãosão funções de agregação na cláusula SELECT devem estar na cláusula GROUP BY.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[53], 
                       "%s não é uma função de agregação. Todos as colunas da cláusula HAVING devem ser listadas no SELECT utilizando alias.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[53], "Não é possivel misturar colunas reais e de agregação no SELECT sem cláusula GROUP BY.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[54], "Não é possível ter funções de agregação com cláusula ORDER BY sem cláusula GROUP BY.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[55], 
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[54], "Não é possivel misturar colunas reais e de agregação no SELECT sem cláusula GROUP BY.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[55], "Não é possível ter funções de agregação com cláusula ORDER BY sem cláusula GROUP BY.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[56], 
 	                   "%s não foi listado no SELECT. Todas as colunas da cláusula HAVING devem ser listadas no SELECT utilizando alias.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[56], "Funções de agregação SUM e AVG não são usadas com colunas do tipo DATE e DATETIME.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[57], "Funções de agregação SUM e AVG não são usadas com colunas do tipo DATE e DATETIME.");
 
    // DATE and DATETIME errors.
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[57], "Valor não é um tipo DATE válido: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[58], "Valor não é um tipo DATETIME válido: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[58], "Valor não é um tipo DATE válido: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[59], "Valor não é um tipo DATETIME válido: %s.");
 
    // Index error.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[59], "Índice já criado para a coluna %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[60], "Não é possível remover uma chave primária usando drop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[61], "Índice muito grande. Ele não pode ter mais do que 65534 nós.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[60], "Índice já criado para a coluna %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[61], "Não é possível remover uma chave primária usando drop index.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[62], "Índice muito grande. Ele não pode ter mais do que 65534 nós.");
       
    // NOT NULL errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[62], "Chave primária não pode ter NULL.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[63], "Coluna não pode ser NULL: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[64], "Um parâmetro em uma where clause não pode ser NULL.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[63], "Chave primária não pode ter NULL.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[64], "Coluna não pode ser NULL: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[65], "Um parâmetro em uma where clause não pode ser NULL.");
 
    // Result set errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[65], "ResultSet em uma posição de registro inválida %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[66], "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[66], "ResultSet em uma posição de registro inválida %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[67], "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40.");
 
    // File errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[67], "Não é possível ler da tabela %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[68], "Não é possível carregar nó folha!");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[69], "Tabela está corrompida: %s.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[70], "Tabela não foi fechada corretamente: %s."); // juliana@220_2
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[71], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s."); // juliana@222_2
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[72], "Não é possível achar a posição de registro no índice na exclusão.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[73], "O formato de tabela (%d) não é compatível com a versão do Litebase. Por favor, atualize suas tabelas.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[74], "O formato de tabela não é o anterior: %s."); // juliana@220_11
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[75], "Caminho inválido: %s."); // juliana@214_1
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[76], "Posição inválida no arquivo: %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "Base de dados não encontrada.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[68], "Não é possível ler da tabela %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[69], "Não é possível carregar nó folha!");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[70], "Tabela está corrompida: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[71], "Tabela não foi fechada corretamente: %s."); // juliana@220_2
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[72], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s."); // juliana@222_2
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[73], "Não é possível achar a posição de registro no índice na exclusão.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[74], "O formato de tabela (%d) não é compatível com a versão do Litebase. Por favor, atualize suas tabelas.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[75], "O formato de tabela não é o anterior: %s."); // juliana@220_11
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[76], "Caminho inválido: %s."); // juliana@214_1
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "Posição inválida no arquivo: %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "Base de dados não encontrada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
 
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "O multiplicador de tamanho não é válido.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "Um tipo BLOB não pode ser parte de uma chave primária.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Uma coluna do tipo BLOB não pode ser indexada.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Um BLOB não pode estar na cláusula WHERE.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Um BLOB não pode ser convertido em uma string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[86], "Não é possível comparar BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[87], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "O multiplicador de tamanho não é válido.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Um tipo BLOB não pode ser parte de uma chave primária.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Uma coluna do tipo BLOB não pode ser indexada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Um BLOB não pode estar na cláusula WHERE.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Um BLOB não pode ser convertido em uma string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[86], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[87], "Não é possível comparar BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[88], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
 
 finish : ;
 }

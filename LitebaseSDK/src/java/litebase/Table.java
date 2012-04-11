@@ -909,7 +909,7 @@ class Table
                   {
                      auxDs.writeByte((ci = compIndices[i]).indexId); // The composed index id.
                      auxDs.writeByte(numberColumns = ci.columns.length); // Number of columns on the composed index.
-                     auxDs.skipBytes(1);
+                     auxDs.writeByte(0); // Ignored.
                      columns = ci.columns;
                      j = -1;
                      while (++j < numberColumns)

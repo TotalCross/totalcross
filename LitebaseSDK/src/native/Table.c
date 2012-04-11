@@ -1860,7 +1860,6 @@ bool renameTableColumn(Context context, Table* table, CharP oldColumn, CharP new
       xstrcpy(table->columnNames[oldIdx], newColumn);
    else
       table->columnNames[oldIdx] = newColumn;
-
    return tableSaveMetaData(context, table, TSMD_EVERYTHING);
 }
 
@@ -2547,7 +2546,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {	
         	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
-               length = MAX((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+               length = MIN((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32, false);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)

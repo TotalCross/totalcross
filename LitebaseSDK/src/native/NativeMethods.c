@@ -1378,6 +1378,7 @@ LB_API void lLC_purge_s(NMParams p)
                   length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                   remain = 0,
                   type,
+                  numberOfBytes = NUMBEROFBYTES(columnCount),
                   slot = table->slot;
             bool useCrypto = dbFile->useCrypto;
             CharP sourcePath = getLitebaseSourcePath(driver);
@@ -1445,7 +1446,7 @@ free:
                         goto free;
                      }
 						
-				      xmemmove(&basbuf[columnOffsets[j]], columnNulls0, NUMBEROFBYTES(j)); 
+				      xmemmove(&basbuf[columnOffsets[j]], columnNulls0, numberOfBytes); 
 						
                   // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                   // juliana@220_4: added a crc32 code for every record. Please update your tables.
@@ -1505,7 +1506,7 @@ free:
          while (--i >= 0)
 
             // juliana@202_14: Corrected the simple index re-creation when purging the table. 
-            if (columnIndexes[i] && !tableReIndex(context, table, i, 0, null))
+            if (columnIndexes[i] && !tableReIndex(context, table, i, false, null))
             {
                table->deletedRowsCount = deleted;
                goto finish;
@@ -1514,7 +1515,7 @@ free:
          // recreate the composed indexes
          if ((i = table->numberComposedIndexes) > 0)
             while (--i >= 0)
-               if (!tableReIndex(context, table, -1, 0, composedIndexes[i]))
+               if (!tableReIndex(context, table, -1, false, composedIndexes[i]))
                {
                   table->deletedRowsCount = deleted;
                   goto finish;

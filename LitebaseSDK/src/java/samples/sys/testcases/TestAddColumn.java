@@ -13,7 +13,7 @@ package samples.sys.testcases;
 
 import litebase.*;
 import totalcross.io.*;
-import totalcross.sys.Time;
+import totalcross.sys.*;
 import totalcross.unit.TestCase;
 
 /**
@@ -242,6 +242,7 @@ public class TestAddColumn extends TestCase
       addAndRecover();
       addAndRowIterator();
       addAndIndices();
+      addTooManyColumns();
    }
    
    /**
@@ -406,6 +407,7 @@ public class TestAddColumn extends TestCase
    {
       ResultSet resultSet = driver.executeQuery("select * from person");
       int i = 100;
+      assertEquals(100, resultSet.getRowCount());
       while (resultSet.next())
       {
          assertEquals("name" + (--i), resultSet.getString("name"));
@@ -554,5 +556,29 @@ public class TestAddColumn extends TestCase
          assertFalse(resultSet.next());
          resultSet.close();
       }
+   }
+   
+   /**
+    * Adds many columns till exceeding the maximum number of columns.
+    */
+   private void addTooManyColumns()
+   {
+      try
+      {
+         int i = Settings.platform.equals(Settings.PALMOS)? 120 : 246;
+         StringBuffer sBuffer = new StringBuffer(50);
+         
+         sBuffer.append("alter table person add a");         
+         while (--i >= 0)
+         {
+            sBuffer.setLength(24);            
+            sBuffer.append(i);
+            sBuffer.append(" int");
+            driver.executeUpdate(sBuffer.toString());
+         }
+         
+         fail("13");
+      }
+      catch (SQLParseException exception) {}
    }
 }
