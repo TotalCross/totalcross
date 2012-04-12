@@ -386,7 +386,8 @@ public class LitebaseConnection
             byte[] columnAttrs = new byte[count];
             SQLFieldDefinition field;
             Date tempDateAux = tempDate; // juliana@224_2: improved memory usage on BlackBerry.
-   
+            String defaultValue;
+            
             // Creates column 0 (rowid).
             names[0] = "rowid";
             types[0] = SQLElement.INT;
@@ -403,11 +404,10 @@ public class LitebaseConnection
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
                   primaryKeyCol = i; // Only one primary key can be defined per table: this is verified during the parsing.
    
-               if (field.defaultValue != null) // Default values: default null has no effect. This is handled by the parser.
+               if ((defaultValue = field.defaultValue) != null) // Default values: default null has no effect. This is handled by the parser.
                {
                   defaultValues[i] = new SQLValue();
                   columnAttrs[i] |= Utils.ATTR_COLUMN_HAS_DEFAULT;  // Sets the default bit.
-                  String defaultValue = field.defaultValue.trim();
                   
                   // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
                   // the type range.
