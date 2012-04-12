@@ -419,9 +419,6 @@ public class LitebaseConnection
                            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
                         defaultValues[i].asString = defaultValue;
                         break;
-                     case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
-                        defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
-                        break;
                      case SQLElement.SHORT:
                         defaultValues[i].asShort = Convert.toShort(defaultValue);
                         break;
@@ -437,6 +434,9 @@ public class LitebaseConnection
                      case SQLElement.DOUBLE:
                         defaultValues[i].asDouble = Convert.toDouble(defaultValue);
                         break;
+                     case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
+                        defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
+                        break;   
                      case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
                         int pos = defaultValue.lastIndexOf(' ');
                         if (pos == -1) // There is no time here.
