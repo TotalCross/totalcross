@@ -269,6 +269,8 @@ public class LitebaseConnection
                      conn.useCrypto = true;
                   else if (paramsSeparated.length == 1)
                      path = params; // Things do not change if there is only one parameter that is the path.
+                  else // Invalid parameter // juliana@253_11: now a DriverException will be throw if an incorrect parameter is passed in LitebaseConnection.getInstance().
+                     throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER) + "tempParam");
                }
             }
            
