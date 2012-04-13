@@ -16,8 +16,7 @@
 
 package totalcross.net.mail;
 
-import totalcross.io.BufferedStream;
-import totalcross.io.IOException;
+import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
@@ -30,7 +29,7 @@ import totalcross.util.Properties;
  */
 public class SMTPTransport extends Transport
 {
-   Socket connection;
+   DataStream connection;
 
    BufferedStream connectionReader;
 
@@ -102,7 +101,7 @@ public class SMTPTransport extends Transport
          message.writeTo(connection);
 
          // END DATA
-         connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
+         ((Socket) connection.getStream()).readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
          issueCommand(Convert.CRLF + "." + Convert.CRLF, 250);
          // QUIT
          issueCommand("QUIT" + Convert.CRLF, 221);
@@ -151,10 +150,10 @@ public class SMTPTransport extends Transport
    {
       boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
 
-      this.connection = connection;
+      this.connection = new DataStream(connection);;
       try
       {
-         connectionReader = new BufferedStream(connection, BufferedStream.READ);
+         connectionReader = new BufferedStream(this.connection, BufferedStream.READ);
          if (!ehlo())
             throw new MessagingException("Failed to greet the remote server.");
          if (requiresTLS && !tlsEnabled)
