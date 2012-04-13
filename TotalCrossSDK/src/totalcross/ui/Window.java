@@ -131,7 +131,7 @@ public class Window extends Container
 
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
-   protected Control _focus;
+   protected Control _focus,focusOnPenUp;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
    public Control firstFocus; // kmeehl@tc100
@@ -941,7 +941,10 @@ public class Window extends Container
       event.timeStamp = timeStamp;
       
       if (event.type == PenEvent.PEN_UP) // guich@320_31: release tempFocus - bruno@tc126: release tempFocus BEFORE posting PEN_UP event
+      {
+         focusOnPenUp = _focus;
          tempFocus = null;
+      }
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)
