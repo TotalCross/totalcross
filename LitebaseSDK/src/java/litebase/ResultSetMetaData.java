@@ -601,10 +601,9 @@ public class ResultSetMetaData
             case SQLElement.DATETIME:
             {
                StringBuffer buffer = resultSet.driver.sBuffer;
-               int dateInt = value.asInt;
                
                buffer.setLength(0);
-               Utils.formatDate(buffer, dateInt);
+               Utils.formatDate(buffer, value.asInt);
                buffer.append(' ');
                Utils.formatTime(buffer, value.asShort);
                return buffer.toString();

@@ -47,6 +47,7 @@ public class TestInvalidArguments extends TestCase
       driver.closeAll();
       testLongPath(); // Tests too long paths.
       testInvalidCrid(); // Tests invalid application id sizes.
+      testInvalidParameter(); // Tests invalid. 
    }
 
    /**
@@ -1372,5 +1373,21 @@ public class TestInvalidArguments extends TestCase
             fail("139");  
          }
       }
+   }
+   
+   private void testInvalidParameter()
+   {
+      try
+      {
+         LitebaseConnection.getInstance("Test", "xpto; chars_type = ascii");
+         fail("140");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         LitebaseConnection.getInstance("Test", "crypto; xpto");
+         fail("141");
+      }
+      catch (DriverException exception) {}
    }
 }
