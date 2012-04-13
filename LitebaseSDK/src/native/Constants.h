@@ -365,7 +365,7 @@
 #define ERR_INVALID_INC               30 // "The increment must be greater than 0 or -1."
 #define ERR_ROWITERATOR_CLOSED        31 // "Iterator already closed."
 #define ERR_PREPARED_STMT_CLOSED      32 // "Prepared statement closed. Please prepare it again."
-#define ERR_INVALID_PARAMETER         33 // "Invalid connection parameter: %s". // juliana@253_11
+#define ERR_INVALID_PARAMETER         33 // "Invalid connection parameter: %s." // juliana@253_11
 
 // Table errors.
 #define ERR_TABLE_NAME_NOT_FOUND   34 // "Table name not found: "
