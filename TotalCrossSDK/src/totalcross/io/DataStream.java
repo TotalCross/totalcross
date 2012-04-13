@@ -916,7 +916,7 @@ public class DataStream extends Stream
       int len = readUnsignedByte();
       if (len == 0)
          return "";
-      readBytes(buffer, 0, len);
+      readBytesInternal(buffer, 0, len);
       return new String(totalcross.sys.Convert.charConverter.bytes2chars(buffer, 0, len));
    }
 
