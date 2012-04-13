@@ -942,7 +942,7 @@ public class Window extends Container
       
       if (event.type == PenEvent.PEN_UP) // guich@320_31: release tempFocus - bruno@tc126: release tempFocus BEFORE posting PEN_UP event
       {
-         focusOnPenUp = _focus;
+         focusOnPenUp = _focus != null && (_focus instanceof Edit || _focus instanceof MultiEdit) ? _focus : null;
          tempFocus = null;
       }
       if (type == MouseEvent.MOUSE_MOVE)
