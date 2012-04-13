@@ -175,7 +175,8 @@ public class TestTableRecovering extends TestCase
             }
             catch (DriverException exception) 
             {
-               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1); 
+               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1 
+                                                                                        || message.indexOf("read") != -1);
             }
             try // Empty file: table corrupted.
             {
@@ -184,7 +185,8 @@ public class TestTableRecovering extends TestCase
             }
             catch (DriverException exception) 
             {
-               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1);
+               assertTrue((message = exception.getMessage()).indexOf("corrupted") != -1 || message.indexOf("format") != -1 
+                                                                                        || message.indexOf("read") != -1);
             }
             
             File file = new File(tablePath, File.CREATE_EMPTY, 1);

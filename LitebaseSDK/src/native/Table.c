@@ -350,7 +350,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       nfClose(context, &plainDB->dbo);
       return false;
    }
-
+   
    // juliana@253_8: now Litebase supports weak cryptography.
    if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
 	{
@@ -368,11 +368,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if (!plainDB->headerSize) // The header size can't be zero.
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
       return false;
    }
-
+   
    // If the header needs to be bigger, re-creates the metadata buffer with the correct size and skips the bytes already read.
    if (plainDB->headerSize != DEFAULT_HEADER)
    {
@@ -386,7 +387,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	{
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT));
 		goto error;
 	}
    
@@ -430,8 +431,9 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if ((table->columnCount = columnCount) <= 0)
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
 		goto error;
    }
 
@@ -1642,7 +1644,6 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    {
 		xstrcpy(table->name, name);
 		plainDB->isAscii = isAscii;
-
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
 			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
    } 
