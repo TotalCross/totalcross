@@ -955,7 +955,12 @@ public class DataStream extends Stream
    
    protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
-      return stream.writeBytes(buf, start, count);
+      int written = 0;
+      do
+      {
+         written += stream.writeBytes(buf, start + written, count - written);
+      } while (written < count);
+      return written;
    }
    
    /**
