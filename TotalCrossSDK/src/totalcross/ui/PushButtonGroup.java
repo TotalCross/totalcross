@@ -580,7 +580,7 @@ public class PushButtonGroup extends Control
             setSelectedIndex(-1);
          }
       } else
-      if ((actLikeButton || (sel == -1 && !atLeastOne)))
+      if (actLikeButton || (sel == -1 && !atLeastOne))
       {
          //Vm.safeSleep(150); - guich@tc130: with this, clicking fast on buttons will make them laggy
          setSelectedIndex(-1);
