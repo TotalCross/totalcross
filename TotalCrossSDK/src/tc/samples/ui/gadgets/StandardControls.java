@@ -214,6 +214,7 @@ public class StandardControls extends Container
          if (event.target == btnInput)
          {
             InputBox id = new InputBox("Attention","Please type your name","");
+            id.yPosition = BOTTOM;
             id.popup();
             if (id.getPressedButtonIndex() == 0)
                lStatus.setText(id.getValue());
