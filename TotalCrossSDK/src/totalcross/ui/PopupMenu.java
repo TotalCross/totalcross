@@ -202,7 +202,7 @@ public class PopupMenu extends Window
       {
          list.height = hh+fmH/3;
          setRect(CENTER,CENTER,KEEP,hm);
-         cancel.setRect(KEEP,BOTTOM-fmH/2,KEEP,KEEP);
+         cancel.setRect(KEEP,BOTTOM-fmH/3,KEEP,KEEP);
       }
    }
    
