@@ -1502,6 +1502,7 @@ public class Edit extends Control
       return false;
    }
    
+   static int clipSel = -2;
    static int showClipboardMenu(Control host)
    {
       try
@@ -1509,7 +1510,7 @@ public class Edit extends Control
          if (clipboardMenu == null)
          {
             String[] names = {cutStr,copyStr,replaceStr,pasteStr,"x"};
-            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,1,true,PushButtonGroup.BUTTON);
+            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON);
             clipboardMenu.setFocusLess(true);
          }
          Container w = host.parent;
@@ -1518,6 +1519,14 @@ public class Edit extends Control
          w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? BOTTOM_OF : (host.y > w.height/2 ? BEFORE-2 : AFTER+2), PREFERRED+4,PREFERRED+4,host);
          clipboardMenu.bringToFront();
          w.repaintNow();
+         clipSel = -2;
+         clipboardMenu.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               clipSel = clipboardMenu.selectedIndex;
+            }
+         });
          
          for (int i = 0; i < 300; i++)
          {
@@ -1525,13 +1534,13 @@ public class Edit extends Control
             if (Event.isAvailable())
             {
                Window.pumpEvents();
-               if (clipboardMenu.selectedIndex != -1)
+               if (clipSel != -2)
                   break;
             }
          }
          w.remove(clipboardMenu);
          
-         return clipboardMenu.selectedIndex;
+         return clipSel;
       }
       catch (Exception e)
       {
