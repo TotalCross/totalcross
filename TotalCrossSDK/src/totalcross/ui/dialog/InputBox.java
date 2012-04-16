@@ -185,6 +185,8 @@ public class InputBox extends Window
    protected void postPopup()
    {
       ed.requestFocus();
+      if (Settings.virtualKeyboard)
+         ed.popupKCC();
       if (Settings.keyboardFocusTraversable) // guich@570_39: use this instead of pen less
          isHighlighting = false; // allow a direct click to dismiss this dialog
    }
