@@ -1502,6 +1502,13 @@ public class Edit extends Control
       return false;
    }
    
+   private static class ClipboardMenuListener implements PressListener
+   {
+      public void controlPressed(ControlEvent e)
+      {
+         clipSel = clipboardMenu.selectedIndex;
+      }
+   }
    static int clipSel = -2;
    static int showClipboardMenu(Control host)
    {
@@ -1509,9 +1516,16 @@ public class Edit extends Control
       {
          if (clipboardMenu == null)
          {
-            String[] names = {cutStr,copyStr,replaceStr,pasteStr,"x"};
-            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON);
+            String[] names = {cutStr,copyStr,replaceStr,pasteStr};
+            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON)
+            {
+               protected boolean willOpenKeyboard()
+               {
+                  return true;
+               }
+            };
             clipboardMenu.setFocusLess(true);
+            clipboardMenu.transparentBackground = true;
          }
          Container w = host.parent;
          clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
@@ -1520,15 +1534,10 @@ public class Edit extends Control
          clipboardMenu.bringToFront();
          w.repaintNow();
          clipSel = -2;
-         clipboardMenu.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               clipSel = clipboardMenu.selectedIndex;
-            }
-         });
-         
-         for (int i = 0; i < 300; i++)
+         PressListener pl;
+         clipboardMenu.addPressListener(pl = new ClipboardMenuListener());
+         int end = Vm.getTimeStamp() + 3000; // make sure we will elapse only 3 seconds
+         while (Vm.getTimeStamp() < end)
          {
             Vm.sleep(10);
             if (Event.isAvailable())
@@ -1538,6 +1547,7 @@ public class Edit extends Control
                   break;
             }
          }
+         clipboardMenu.removePressListener(pl);
          w.remove(clipboardMenu);
          
          return clipSel;
