@@ -1525,12 +1525,13 @@ public class Edit extends Control
                }
             };
             clipboardMenu.setFocusLess(true);
-            clipboardMenu.transparentBackground = true;
          }
-         Container w = host.parent;
-         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
+         Container w = host.getParentWindow();
          clipboardMenu.setSelectedIndex(-1);
-         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? BOTTOM_OF : (host.y > w.height/2 ? BEFORE-2 : AFTER+2), PREFERRED+4,PREFERRED+4,host);
+         Rect cli = host.getAbsoluteRect();
+         int ph = clipboardMenu.getPreferredHeight();
+         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? cli.y+cli.height-ph : (cli.y > w.height/2 ? cli.y-ph : cli.y+cli.height), PREFERRED+4,PREFERRED+4,host);
+         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
          clipboardMenu.bringToFront();
          w.repaintNow();
          clipSel = -2;
