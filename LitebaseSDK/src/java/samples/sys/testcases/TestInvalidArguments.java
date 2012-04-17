@@ -47,7 +47,7 @@ public class TestInvalidArguments extends TestCase
       driver.closeAll();
       testLongPath(); // Tests too long paths.
       testInvalidCrid(); // Tests invalid application id sizes.
-      testInvalidParameter(); // Tests invalid. 
+      testInvalidParameter(); // Tests invalid connection parameter. 
    }
 
    /**

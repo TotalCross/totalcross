@@ -274,7 +274,10 @@ error:
 	      else if (numParams == 1) 
 	         path = tempParams[0]; // Things do not change if there is only one parameter.
 		   else // juliana@253_11: now a DriverException will be throw if an incorrect parameter is passed in LitebaseConnection.getInstance().
+		   {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER), tempParams[i]);
+		      return null;
+		   }
 		}
    }
  
