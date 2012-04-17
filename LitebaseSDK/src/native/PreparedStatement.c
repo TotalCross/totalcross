@@ -389,7 +389,7 @@ void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, u
       if (!paramDefined[length] && record[paramIndexes[length]]) 
          record[paramIndexes[length]]->isNull = true;
 
-   xmemmove(table->storeNulls, storeNulls, table->columnCount);
+   xmemmove(table->storeNulls, storeNulls, NUMBEROFBYTES(table->columnCount));
 }
 
 /**

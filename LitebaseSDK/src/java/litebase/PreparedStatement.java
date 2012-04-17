@@ -386,7 +386,7 @@ public class PreparedStatement
     */
    private void rearrangeNullsInTable(Table table, SQLStatement stmt, boolean isPreparedStmt)
    {
-      boolean[] storeNulls;
+      byte[] storeNulls;
       boolean[] paramDefined;
       SQLValue[] record;
       byte[] paramIndexes;

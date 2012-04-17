@@ -773,17 +773,18 @@ public class LitebaseConnection
             if (oldCount == SQLElement.MAX_NUM_COLUMNS) // The maximum number of columns can't be exceeded.
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMNS_OVERFLOW) + field.fieldName);
             
-            if (((oldCount + 8) >> 3) > bytes) // Increases the column nulls if the number of bytes must be increased.
+            if (((oldCount + 8) >> 3) > bytes) // Increases the nulls fields if the number of bytes must be increased.
             {
                byte[][] columnNulls = table.columnNulls;
                columnNulls[0] = new byte[++bytes];
                columnNulls[1] = new byte[bytes];
+               
                if (columnNulls[2] != null)
                   columnNulls[2] = new byte[bytes];
+               table.storeNulls = new byte[bytes]; 
             }
             
             // Increases all the columns.  
-            table.storeNulls = new boolean[newCount]; // Store nulls.
             table.ghas = new byte[newCount];
             table.gvOlds = new SQLValue[newCount];
             

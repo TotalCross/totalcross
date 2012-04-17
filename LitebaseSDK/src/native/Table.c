@@ -350,7 +350,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       nfClose(context, &plainDB->dbo);
       return false;
    }
-
+   
    // juliana@253_8: now Litebase supports weak cryptography.
    if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
 	{
@@ -368,11 +368,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if (!plainDB->headerSize) // The header size can't be zero.
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
       return false;
    }
-
+   
    // If the header needs to be bigger, re-creates the metadata buffer with the correct size and skips the bytes already read.
    if (plainDB->headerSize != DEFAULT_HEADER)
    {
@@ -386,7 +387,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	{
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT));
 		goto error;
 	}
    
@@ -430,8 +431,9 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if ((table->columnCount = columnCount) <= 0)
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
 		goto error;
    }
 
@@ -441,7 +443,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
    columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
    defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE); 
-   table->storeNulls = (uint8*)TC_heapAlloc(heap, columnCount); 
+   table->storeNulls = (uint8*)TC_heapAlloc(heap, NUMBEROFBYTES(columnCount)); 
 
    xmemmove(columnAttrs, ptr, columnCount); // Reads the column attributes.
 
@@ -943,7 +945,7 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
 	table->columnHashes = hashes; // Sets the column hashes.
    table->columnTypes = types; // Sets the column types.
    table->columnSizes = sizes; // Sets the column sizes.
-	table->storeNulls = TC_heapAlloc(heap, columnCount); // Initializes the arrays for the nulls.
+	table->storeNulls = TC_heapAlloc(heap, numOfBytes); // Initializes the arrays for the nulls.
    table->columnNames = names; // Sets the column names.
 
    // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
@@ -1115,7 +1117,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
       *fields = "rowid"; // Inserts the rowid.
 
    // Cleans the <code>storeNulls</code>.
-   xmemzero(tableStoreNulls, count);
+   xmemzero(tableStoreNulls, NUMBEROFBYTES(count));
    xmemzero(outRecord, (MAXIMUMS + 1) * PTRSIZE); // juliana@225_5.
    
    // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
@@ -1129,7 +1131,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
          return false;
       }
 
-      tableStoreNulls[idx] = storeNulls[i]; 
+      setBit(tableStoreNulls, idx, isBitSet(storeNulls, i)); 
       if ((value = outRecord[idx] = record[i]) && (asChars = value->asChars) && asChars[0] == (JChar)'?' && !asChars[1])
          paramIndexes[numParams++] = idx;
    }
@@ -1642,7 +1644,6 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    {
 		xstrcpy(table->name, name);
 		plainDB->isAscii = isAscii;
-
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
 			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
    } 
@@ -2304,7 +2305,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (columnSizes[i] && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
          tempRecord->length = j;
 
-      if (storeNulls[i]) // If not explicit to store null.
+      if (isBitSet(storeNulls, i)) // If not explicit to store null.
          setBitOn(columnNulls0, i);
       else if (addingNewRecord)
       {
@@ -2718,7 +2719,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
       SQLValue** defaultValues = table->defaultValues;
 
       // The primary key can't be null.
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
+      if ((i != NO_PRIMARY_KEY) && (isBitSet(storeNulls, i) || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
@@ -2734,14 +2735,14 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
    }
    else // Update statement.
    {
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i])) // The primary key can't be null.
+      if ((i != NO_PRIMARY_KEY) && (isBitSet(storeNulls, i))) // The primary key can't be null.
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
       }
       i = nValues;
       while (--i >= 0)
-         if (storeNulls[i] && definedAsNotNull(attrs[i])) // If it is to store a null but a null can't be stored.
+         if (isBitSet(storeNulls, i) && definedAsNotNull(attrs[i])) // If it is to store a null but a null can't be stored.
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_FIELD_CANT_BE_NULL), table->columnNames[i]);
             return false;

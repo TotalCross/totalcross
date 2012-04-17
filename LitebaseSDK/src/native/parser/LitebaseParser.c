@@ -1430,7 +1430,7 @@ finish: ;
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
-TESTCASE(lbError)
+TESTCASE(lbErrorWithMessage)
 {
    LitebaseParser* parser = (LitebaseParser*)xmalloc(sizeof(LitebaseParser));
    
