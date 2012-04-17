@@ -23,6 +23,8 @@ import totalcross.android.compat.*;
 
 import java.util.*;
 
+import android.view.animation.*;
+import android.view.animation.Animation.AnimationListener;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -434,9 +436,79 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return true;
    }
 
+   static class BlinkAnimation extends android.view.animation.Animation {
+      private int totalBlinks;
+      private boolean finishOff;
+      
+      public BlinkAnimation(int totalBlinks, boolean finishOff) {
+         this.totalBlinks = totalBlinks;
+         this.finishOff = finishOff;
+      }
+
+      protected void applyTransformation(float interpolatedTime, android.view.animation.Transformation t) {
+         float period = interpolatedTime * totalBlinks * 3.14f + (finishOff ? 3.14f / 2 : 0);
+         t.setAlpha(Math.abs(FloatMath.cos(period)));
+      }
+
+      public boolean willChangeBounds() {
+         return false;
+      }
+
+      public boolean willChangeTransformationMatrix() {
+         return false;
+      }
+   }
+
    private static final int TRANSITION_NONE = 0;
    private static final int TRANSITION_OPEN = 1;
    private static final int TRANSITION_CLOSE = 2;
+   
+   static class AnimationThread implements Runnable,AnimationListener
+   {
+      boolean animFinished;
+      int trans;
+      ImageView iview;
+      Bitmap bm;
+      
+      void startTransition(int trans)
+      {
+         this.trans = trans;
+         animFinished = false;
+         loader.runOnUiThread(this);
+      }
+      public void run()
+      {
+         if (iview == null)
+         {
+            iview = new ImageView(instance.getContext());
+            iview.setWillNotCacheDrawing(true);
+         }
+         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
+         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
+            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
+         new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
+         iview.setImageBitmap(bm);
+         Animation anim;
+         if (trans == TRANSITION_OPEN)
+            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
+         else
+            anim = AnimationUtils.loadAnimation(loader, android.R.anim.fade_in);
+         anim.setDuration(1000);
+         anim.setAnimationListener(this);
+         iview.startAnimation(anim);
+         ((ViewGroup)instance.getParent()).addView(iview);
+      }
+      public void onAnimationEnd(Animation animation)
+      {
+         ((ViewGroup)instance.getParent()).removeView(iview);
+         animFinished = true;
+      }
+
+      public void onAnimationRepeat(Animation animation) {}
+      public void onAnimationStart(Animation animation) {}
+   }
+   
+   static AnimationThread animt = new AnimationThread();
    
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
@@ -449,6 +521,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          
          switch (transitionEffect)
          {
+            case TRANSITION_CLOSE:
+            case TRANSITION_OPEN:
+            {
+               animt.startTransition(transitionEffect);
+               while (!animt.animFinished)
+                  try {Thread.sleep(50);} catch (Exception ee) {}
+            }
             case TRANSITION_NONE:
             {
                rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
@@ -460,37 +539,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                }
                break;
             }
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-            {
-               int w = instance.getWidth();
-               int h = instance.getHeight();
-               int step = Math.max(w,h) >= 800 ? 32 : 16;
-               int n = Math.min(w,h) / 2;
-               int mx = w/2;
-               int my = h/2;
-               int incX=step,incY=step;
-               if (w > h)
-                  incX = step*w/h + 1;
-                else
-                  incY = step*h/w + 1;
-               int i0 = transitionEffect == TRANSITION_CLOSE ? n : 0;
-               int iinc = transitionEffect == TRANSITION_CLOSE ? -1 : 1;
-               n = n / step + 1; // guich@tc126_17: +1
-               i0 /= step;
-               for (int i =i0; --n >= 0; i+=iinc)
-               {
-                  int minx = (int)(mx - i*incX);
-                  int miny = (int)(my - i*incY);
-                  int maxx = (int)(mx + i*incX);
-                  int maxy = (int)(my + i*incY);
-                  drawImageLine(minx-step,miny-step,maxx+step,miny+step);
-                  drawImageLine(minx-step,miny-step,minx+step,maxy+step);
-                  drawImageLine(maxx-step,miny-step,maxx+step,maxy+step);
-                  drawImageLine(minx-step,maxy-step,maxx+step,maxy+step);
-               }
-               break;
-            }
          }
          //int ela = (int)(System.currentTimeMillis() - ini);
          //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
@@ -498,17 +546,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       catch (Throwable t)
       {
          AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-   }
-   
-   private static void drawImageLine(int minx, int miny, int maxx, int maxy)
-   {
-      rDirty.left = minx; rDirty.top = miny; rDirty.right = maxx; rDirty.bottom = maxy;
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
       }
    }
 
