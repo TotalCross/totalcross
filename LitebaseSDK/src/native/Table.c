@@ -443,7 +443,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
    columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
    defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE); 
-   table->storeNulls = (uint8*)TC_heapAlloc(heap, columnCount); 
+   table->storeNulls = (uint8*)TC_heapAlloc(heap, NUMBEROFBYTES(columnCount)); 
 
    xmemmove(columnAttrs, ptr, columnCount); // Reads the column attributes.
 
@@ -945,7 +945,7 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
 	table->columnHashes = hashes; // Sets the column hashes.
    table->columnTypes = types; // Sets the column types.
    table->columnSizes = sizes; // Sets the column sizes.
-	table->storeNulls = TC_heapAlloc(heap, columnCount); // Initializes the arrays for the nulls.
+	table->storeNulls = TC_heapAlloc(heap, numOfBytes); // Initializes the arrays for the nulls.
    table->columnNames = names; // Sets the column names.
 
    // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
@@ -1117,7 +1117,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
       *fields = "rowid"; // Inserts the rowid.
 
    // Cleans the <code>storeNulls</code>.
-   xmemzero(tableStoreNulls, count);
+   xmemzero(tableStoreNulls, NUMBEROFBYTES(count));
    xmemzero(outRecord, (MAXIMUMS + 1) * PTRSIZE); // juliana@225_5.
    
    // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
@@ -1131,7 +1131,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
          return false;
       }
 
-      tableStoreNulls[idx] = storeNulls[i]; 
+      setBit(tableStoreNulls, idx, isBitSet(storeNulls, i)); 
       if ((value = outRecord[idx] = record[i]) && (asChars = value->asChars) && asChars[0] == (JChar)'?' && !asChars[1])
          paramIndexes[numParams++] = idx;
    }
@@ -2306,7 +2306,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (columnSizes[i] && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
          tempRecord->length = j;
 
-      if (storeNulls[i]) // If not explicit to store null.
+      if (isBitSet(storeNulls, i)) // If not explicit to store null.
          setBitOn(columnNulls0, i);
       else if (addingNewRecord)
       {
@@ -2720,7 +2720,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
       SQLValue** defaultValues = table->defaultValues;
 
       // The primary key can't be null.
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
+      if ((i != NO_PRIMARY_KEY) && (isBitSet(storeNulls, i) || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
@@ -2736,14 +2736,14 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
    }
    else // Update statement.
    {
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i])) // The primary key can't be null.
+      if ((i != NO_PRIMARY_KEY) && (isBitSet(storeNulls, i))) // The primary key can't be null.
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
       }
       i = nValues;
       while (--i >= 0)
-         if (storeNulls[i] && definedAsNotNull(attrs[i])) // If it is to store a null but a null can't be stored.
+         if (isBitSet(storeNulls, i) && definedAsNotNull(attrs[i])) // If it is to store a null but a null can't be stored.
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_FIELD_CANT_BE_NULL), table->columnNames[i]);
             return false;

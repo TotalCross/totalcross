@@ -147,7 +147,7 @@
 #define isBitUnSet(items, index) !(((items)[(index) >> 3] & ((int32)1 << ((index) & 7))))   // Verifies if a bit is unset.
 
 // Checks if a bit is set in a <code>IntVector</code>.
-#define IntVectorisBitSet(v, index) ((v)->items[(index)>>5] & ((int32)1 << ((index) & 31)))
+#define IntVectorisBitSet(v, index) ((v)->items[(index) >> 5] & ((int32)1 << ((index) & 31)))
 
 // Implements a stack using an <code>IntVector</code> or a <code>ShortVector</code>.
 #define IntVectorPop(intVector)              intVector.items[--intVector.size]      // pop

@@ -163,7 +163,7 @@ class Table
    /**
     * Just for the case when the column has a default value but the user explicited the insert or update of a null.
     */
-   boolean[] storeNulls;
+   byte[] storeNulls;
 
    /**
     * The column attributes.
@@ -624,7 +624,7 @@ class Table
       SQLValue[] values = defaultValues = new SQLValue[n];
 
       columnIndices = new Index[n];
-      storeNulls = new boolean[n];
+      storeNulls = new byte[(n + 7) >> 3];
       
       // The number of bytes necessary to store the columns. Each column in a table corresponds to one bit.
       // juliana@201_21: The null columns information must be created before openning the indices when reading the table meta data.
@@ -941,8 +941,8 @@ class Table
     */
    void reorder(SQLStatement stmt) throws SQLParseException, IOException
    {
-      boolean[] nulls;
-      boolean[] tableNulls = storeNulls;
+      byte[] nulls;
+      byte[] tableNulls = storeNulls;
       String[] fields;
       SQLValue[] record;
       byte[] paramIndexes;
@@ -975,14 +975,14 @@ class Table
       SQLValue[] outRecord = new SQLValue[columnCount];
       IntHashtable hashTable = htName2index;
 
-      Convert.fill(tableNulls, 0, columnCount, false); // Cleans the storeNulls.
+      Convert.fill(tableNulls, 0, tableNulls.length, 0); // Cleans the storeNulls.
       
       // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
       while (++i < length) // Makes sure the fields are in db creation order.
          try
          {
             outRecord[idx = hashTable.get(fields[i].hashCode())] = record[i]; // Finds the index of the field on the table and reorders the record.
-            tableNulls[idx] = nulls[i];
+            Utils.setBit(tableNulls, idx, (nulls[i >> 3] & (1 << (i & 7))) != 0);
             if (record[i] != null && record[i].asString != null && record[i].asString.equals("?"))
                paramIndexes[numParams++] = (byte)idx;
          }
@@ -1146,10 +1146,10 @@ class Table
       columnHashes = hashes; // Sets the column hashes.
       columnTypes = types; // Sets the column types.
       columnSizes = sizes; // Sets the column sizes.
-      storeNulls = new boolean[count]; // Initializes the arrays for the nulls.
+      storeNulls = new byte[bytes = (count + 7) >> 3]; // Initializes the arrays for the nulls.
       
       // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
-      columnNulls[0] = new byte[bytes = (count + 7) >> 3]; 
+      columnNulls[0] = new byte[bytes]; 
       columnNulls[1] = new byte[bytes];
 
       computeColumnOffsets(); // Computes the column offests.
@@ -1577,17 +1577,17 @@ class Table
     *           <code>SQLElement.STMT_UPDATE</code>.
     * @throws DriverException If a primary key is or a <code>NOT NULL</code> field is is <code>null</code>.
     */
-   void verifyNullValues(SQLValue[] record, boolean[] storeNullsStmt, int statementType) throws DriverException
+   void verifyNullValues(SQLValue[] record, byte[] storeNullsStmt, int statementType) throws DriverException
    {
       int len = record.length;
       byte[] attrs = columnAttrs;
-      boolean[] nulls = storeNulls;
+      byte[] nulls = storeNulls;
 
       if (statementType == SQLElement.CMD_INSERT) // Insert statement.
       {
          SQLValue[] defaults = defaultValues;
          
-         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && nulls[primaryKeyCol]) // The primary key can't be null.
+         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && (nulls[primaryKeyCol >> 3] & (1 << (primaryKeyCol & 7))) != 0) // The primary key can't be null.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
 
          while (--len > 0) // A not null field can't have a null.
@@ -1596,10 +1596,10 @@ class Table
       }
       else // Update statement.
       {
-         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && nulls[primaryKeyCol]) // The primary key can't be null.
+         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && (nulls[primaryKeyCol >> 3] & (1 << (primaryKeyCol & 7))) != 0) // The primary key can't be null.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
-         while (--len > 0)
-            if (nulls[len] && (attrs[len] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0) // If it is to store a null but a null can't be stored.
+         while (--len > 0) // If it is to store a null but a null can't be stored.
+            if ((nulls[len >> 3] & (1 << (len & 7))) != 0 && (attrs[len] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0) 
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_CANT_BE_NULL) + columnNames[len]);
       }
    }
@@ -2404,7 +2404,7 @@ class Table
       Index idx;
       boolean addingNewRecord = recPos == -1, 
                changePos = false;
-      boolean[] nulls = storeNulls;
+      byte[] nulls = storeNulls;
       byte[] columnNulls0 = columnNulls[0];
       SQLValue[] defaults = defaultValues;
       SQLValue[] auxValues = primaryKeyValues;
@@ -2428,7 +2428,7 @@ class Table
          
          if (addingNewRecord)
          {
-            if (!nulls[i]) // If not explicit to store null.
+            if ((nulls[i >> 3] & (1 << (i & 7))) == 0) // If not explicit to store null.
             {
                if ((attrs[i] & Utils.ATTR_COLUMN_IS_NOT_NULL) == 0) // Can be null.
                {
@@ -2447,7 +2447,7 @@ class Table
                columnNulls0[i >> 3] |= (1 << (i & 7));
          }
          else // Update Statement.
-         if (nulls[i])
+         if ((nulls[i >> 3] & (1 << (i & 7))) != 0)
             columnNulls0[i >> 3] |= (1 << (i & 7));
       }
             
@@ -2462,8 +2462,10 @@ class Table
       {
          i = composedPKCols.length;
          while (--i >= 0) // A field of the composed primary key can't be null.
-         {
-            if (nulls[composedPKCols[i]] || (values[composedPKCols[i]] != null && values[composedPKCols[i]].isNull))
+         {   
+            j = composedPKCols[i];
+            
+            if ((nulls[j >> 3] & (1 << (j & 7))) != 0 || (values[j] != null && values[j].isNull))
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
             auxValues[i] = values[composedPKCols[i]];
          }

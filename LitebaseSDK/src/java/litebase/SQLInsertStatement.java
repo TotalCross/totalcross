@@ -58,7 +58,7 @@ class SQLInsertStatement extends SQLStatement
    /**
     * An array that indicates if a null value will be stored in a field.
     */
-   boolean[] storeNulls;
+   byte[] storeNulls;
 
    /**
     * Constructs an insert statement given the result of the parsing process.
@@ -86,18 +86,18 @@ class SQLInsertStatement extends SQLStatement
          // Gets the fields and stores them.
          String[] fieldsAux = fields = new String[nFields]; 
          String[] fieldNames = parser.fieldNames;
-         storeNulls = new boolean[nFields];
+         storeNulls = new byte[(nFields + 7) >> 3];
          while (--nFields > 0)
             // A field cannot have the same hash code of the rowid.
             if ((fieldsAux[nFields] = fieldNames[nFields - 1]).hashCode() == SQLElement.hcRowId)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ROWID_CANNOT_BE_CHANGED));
       }
       else // The nulls info does not need to be recreated when all the fields are used in the insert.
-         Convert.fill(storeNulls = table.storeNulls, 0, table.columnCount, false);
+         Convert.fill(storeNulls = table.storeNulls, 0, storeNulls.length, 0);
 
       // Number of fields + rowid.
       SQLValue[] recordAux = record = SQLValue.newSQLValues(nFields = parser.fieldValuesSize + 1);  // Gets the values and stores them.
-      boolean[] storeNullsAux = storeNulls;
+      byte[] storeNullsAux = storeNulls;
       String[] fieldValues = parser.fieldValues;
       
       // Allocates space for the list of the parameters. Worst case: all fields are parameters.
@@ -108,7 +108,7 @@ class SQLInsertStatement extends SQLStatement
          if ((value = fieldValues[nFields - 1]) != null) // Only stores values that are not null.
             recordAux[nFields].asString = value;
          else
-            storeNullsAux[nFields] = recordAux[nFields].isNull = true;
+            Utils.setBit(storeNullsAux, nFields, recordAux[nFields].isNull = true);
    }
 
    /**
@@ -126,7 +126,7 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value = record[columnIndex];
       value.asShort = val;
       
-      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
+      Utils.setBit(storeNulls, columnIndex, value.isNull = false); // The value is not null. 
    }
 
    /**
@@ -144,7 +144,7 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value = record[columnIndex];
       value.asInt = val;
       
-      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
+      Utils.setBit(storeNulls, columnIndex, value.isNull = false); // The value is not null. 
    }
 
    /**
@@ -162,7 +162,7 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value = record[columnIndex];
       value.asLong = val;
       
-      value.isNull = storeNulls[columnIndex] = false;  // The value is not null.
+      Utils.setBit(storeNulls, columnIndex, value.isNull = false); // The value is not null. 
    }
 
    /**
@@ -180,7 +180,7 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value = record[columnIndex];
       value.asDouble = val;
       
-      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
+      Utils.setBit(storeNulls, columnIndex, value.isNull = false); // The value is not null. 
    }
 
    /**
@@ -198,7 +198,7 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value = record[columnIndex];
       value.asDouble = val;
       
-      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
+      Utils.setBit(storeNulls, columnIndex, value.isNull = false); // The value is not null. 
    }
 
    // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
@@ -223,7 +223,7 @@ class SQLInsertStatement extends SQLStatement
       // Sets the values of the parameter in its list.
       SQLValue value = record[columnIndex];
       value.asString = val; 
-      storeNulls[columnIndex] = value.isNull = (val == null); 
+      Utils.setBit(storeNulls, columnIndex, value.isNull = (val == null)); // Sets whether the value is or not null.
 
       paramDefined[index] = true;
    }
@@ -242,7 +242,7 @@ class SQLInsertStatement extends SQLStatement
       // Sets the values of the parameter in its list.
       SQLValue value = record[columnIndex];
       value.asBlob = val; 
-      storeNulls[columnIndex] = value.isNull = (val == null); 
+      Utils.setBit(storeNulls, columnIndex, value.isNull = (val == null)); // Sets whether the value is or not null. 
    }
    
    // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
@@ -264,7 +264,7 @@ class SQLInsertStatement extends SQLStatement
       // Sets the null value.
       value.asBlob = null; 
       value.asString = null;
-      storeNulls[columnIndex] = value.isNull = paramDefined[index] = true;
+      Utils.setBit(storeNulls, columnIndex, value.isNull = paramDefined[index] = true); // Sets whether the value is or not null.
    }
 
    /**
@@ -277,15 +277,15 @@ class SQLInsertStatement extends SQLStatement
       SQLValue value;
       SQLValue[] recordAux = record;
       byte[] paramIndexesAux = paramIndexes;
-      boolean[] storeNullsAux = storeNulls;
+      byte[] storeNullsAux = storeNulls;
       
-      totalcross.sys.Convert.fill(paramDefined, 0, paramDefined.length, false);
-
+      Convert.fill(paramDefined, 0, paramDefined.length, false);
+      
       while (--i >= 0)
       {
          (value = recordAux[j = paramIndexesAux[i] & 0xFF]).asString = null;
+         Utils.setBit(storeNullsAux, j, value.isNull = false);
          value.asBlob = null;
-         value.isNull = storeNullsAux[j] = false;
       }
    }
 
