@@ -1134,7 +1134,7 @@ public class Window extends Container
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
          enableUpdateScreen = true;
-         nextTransitionEffect = newWin.transitionEffect;
+         setNextTransitionEffect(newWin.transitionEffect);
          repaintActiveWindows();
       }
    }
@@ -1178,7 +1178,7 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         nextTransitionEffect = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+         setNextTransitionEffect(lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE);
          loadBehind(); // guich@200b4: restore the saved window
          topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
@@ -1320,9 +1320,12 @@ public class Window extends Container
       if (newContainer == null)
          newContainer = mainSwapContainer;
       // add the new container.
-      lastSwappedContainer = newContainer;
       if (newContainer.transitionEffect != TRANSITION_NONE)
-         nextTransitionEffect = newContainer.transitionEffect;
+         setNextTransitionEffect(newContainer.transitionEffect);
+      else
+      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
+      lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
          newContainer.setRect(LEFT,TOP,FILL,FILL);

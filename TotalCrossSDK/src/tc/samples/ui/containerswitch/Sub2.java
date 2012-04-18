@@ -46,12 +46,7 @@ public class Sub2 extends Container
    public void onEvent(Event event)
    {
       if (event.type == ControlEvent.PRESSED)
-      {
          if (event.target == btnGoBack)
-         {
-            nextTransitionEffect = TRANSITION_OPEN;
             MainWindow.getMainWindow().swap(null);
-         }
-      }
    }
 }

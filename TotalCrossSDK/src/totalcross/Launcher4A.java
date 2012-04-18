@@ -133,6 +133,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       surfHolder = getHolder();
       surfHolder.addCallback(this);
       setWillNotDraw(true);
+      setWillNotCacheDrawing(true);
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
@@ -224,6 +225,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             }
          }
          sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
+         sScreenBitmap.eraseColor(0xFFFFFFFF);
          nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
@@ -463,45 +465,87 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int TRANSITION_OPEN = 1;
    private static final int TRANSITION_CLOSE = 2;
    
+   static class ScreenView extends SurfaceView
+   {
+      public ScreenView(Context context)
+      {
+         super(context);
+         setWillNotDraw(false);
+         setWillNotCacheDrawing(true);
+      }
+      
+      public void draw(Canvas c)
+      {
+         c.drawBitmap(sScreenBitmap,0,0,null);
+      }
+   }
+   
    static class AnimationThread implements Runnable,AnimationListener
    {
-      boolean animFinished;
-      int trans;
-      ImageView iview;
       Bitmap bm;
+      java.util.concurrent.CountDownLatch latch;
+      int trans;
+      ImageView oview;
+      ScreenView iview;
       
       void startTransition(int trans)
       {
          this.trans = trans;
-         animFinished = false;
+         latch = new java.util.concurrent.CountDownLatch(1);
          loader.runOnUiThread(this);
+         try {animt.latch.await();} catch (InterruptedException ie) {}
       }
+      
       public void run()
       {
          if (iview == null)
          {
-            iview = new ImageView(instance.getContext());
-            iview.setWillNotCacheDrawing(true);
+            ViewGroup vg = (ViewGroup)instance.getParent();
+            iview = new ScreenView(instance.getContext());
+            oview = new ImageView(instance.getContext());
+            oview.setWillNotCacheDrawing(true);
+            oview.setVisibility(ViewGroup.INVISIBLE);
+            iview.setVisibility(ViewGroup.INVISIBLE);
+            vg.addView(iview);
+            vg.addView(oview);
          }
          // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
          if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
+         {
             bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
-         new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-         iview.setImageBitmap(bm);
+            bm.eraseColor(0xFFFFFFFF);
+            oview.setImageBitmap(bm);
+         }
          Animation anim;
          if (trans == TRANSITION_OPEN)
+         {
+            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
+            oview.setImageBitmap(bm);
             anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
+            anim.setDuration(1000);
+            anim.setAnimationListener(this);
+            oview.startAnimation(anim);
+            oview.setVisibility(ViewGroup.VISIBLE);
+         }
          else
-            anim = AnimationUtils.loadAnimation(loader, android.R.anim.fade_in);
-         anim.setDuration(1000);
-         anim.setAnimationListener(this);
-         iview.startAnimation(anim);
-         ((ViewGroup)instance.getParent()).addView(iview);
+         {
+            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
+            anim.setDuration(1000);
+            anim.setAnimationListener(this);
+
+            oview.setImageBitmap(bm);
+            oview.startAnimation(anim);
+            oview.setVisibility(ViewGroup.VISIBLE);
+            iview.setVisibility(ViewGroup.VISIBLE);
+         }
       }
+      
       public void onAnimationEnd(Animation animation)
       {
-         ((ViewGroup)instance.getParent()).removeView(iview);
-         animFinished = true;
+         drawScreen();
+         oview.setVisibility(ViewGroup.INVISIBLE);
+         iview.setVisibility(ViewGroup.INVISIBLE);
+         latch.countDown();
       }
 
       public void onAnimationRepeat(Animation animation) {}
@@ -509,6 +553,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    static AnimationThread animt = new AnimationThread();
+   
+   static void drawScreen()
+   {
+      Canvas canvas = surfHolder.lockCanvas(rDirty);
+      if (canvas != null)
+      {
+         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
+         surfHolder.unlockCanvasAndPost(canvas);
+      }
+   }
+
+   static void transitionEffectChanged(int type)
+   {
+      if (type == TRANSITION_CLOSE)
+         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
+   }
    
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
@@ -523,22 +583,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
-            {
                animt.startTransition(transitionEffect);
-               while (!animt.animFinished)
-                  try {Thread.sleep(50);} catch (Exception ee) {}
-            }
-            case TRANSITION_NONE:
-            {
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               if (canvas != null)
-               {
-                  canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-                  surfHolder.unlockCanvasAndPost(canvas);
-               }
                break;
-            }
+            case TRANSITION_NONE:
+               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
+               drawScreen();
+               break;
          }
          //int ela = (int)(System.currentTimeMillis() - ini);
          //AndroidUtils.debug((1000/ela) + " fps "+rDirty);

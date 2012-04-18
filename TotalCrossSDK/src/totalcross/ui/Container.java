@@ -89,15 +89,7 @@ public class Container extends Control
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
 
-   /** The transition effect to apply in the next screen update.
-    * After this effect is applied, the next effect is set to TRANSITION_NONE.
-    * @since TotalCross 1.2
-    * @see #transitionEffect
-    * @see #TRANSITION_NONE
-    * @see #TRANSITION_OPEN
-    * @see #TRANSITION_CLOSE
-    */
-   public static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
+   static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
    protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
    int numChildren;
@@ -144,6 +136,31 @@ public class Container extends Control
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
    }
+
+   /** The transition effect to apply in the next screen update.
+    * After this effect is applied, the next effect is set to TRANSITION_NONE.
+    * @since TotalCross 1.2
+    * @see #transitionEffect
+    * @see #TRANSITION_NONE
+    * @see #TRANSITION_OPEN
+    * @see #TRANSITION_CLOSE
+    */
+   static void setNextTransitionEffect(int t)
+   {
+      nextTransitionEffect = t;
+      if (t != TRANSITION_NONE)
+         transitionEffectChanged(t);
+   }
+
+   public static int getNextTransitionEffect()
+   {
+      return nextTransitionEffect;
+   }
+
+   static void transitionEffectChanged(int t)
+   {
+   }
+   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01
