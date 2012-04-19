@@ -485,8 +485,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Bitmap bm;
       java.util.concurrent.CountDownLatch latch;
       int trans;
-      ImageView oview;
-      ScreenView iview;
+      ImageView newView;
+      ScreenView scrView;
       
       void startTransition(int trans)
       {
@@ -498,53 +498,53 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       public void run()
       {
-         if (iview == null)
+         if (scrView == null)
          {
             ViewGroup vg = (ViewGroup)instance.getParent();
-            iview = new ScreenView(instance.getContext());
-            oview = new ImageView(instance.getContext());
-            oview.setWillNotCacheDrawing(true);
-            oview.setVisibility(ViewGroup.INVISIBLE);
-            iview.setVisibility(ViewGroup.INVISIBLE);
-            vg.addView(iview);
-            vg.addView(oview);
+            scrView = new ScreenView(instance.getContext());
+            newView = new ImageView(instance.getContext());
+            newView.setWillNotCacheDrawing(true);
+            newView.setVisibility(ViewGroup.INVISIBLE);
+            scrView.setVisibility(ViewGroup.INVISIBLE);
+            vg.addView(scrView);
+            vg.addView(newView);
          }
          // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
          if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
          {
             bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
             bm.eraseColor(0xFFFFFFFF);
-            oview.setImageBitmap(bm);
+            newView.setImageBitmap(bm);
          }
          Animation anim;
          if (trans == TRANSITION_OPEN)
          {
             new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-            oview.setImageBitmap(bm);
+            newView.setImageBitmap(bm);
             anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
             anim.setDuration(500);
             anim.setAnimationListener(this);
-            oview.setVisibility(ViewGroup.VISIBLE);
-            oview.startAnimation(anim);
+            newView.setVisibility(ViewGroup.VISIBLE);
+            newView.startAnimation(anim);
          }
-         else
+         else // TRANSITION_CLOSE
          {
             anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
             anim.setDuration(500);
             anim.setAnimationListener(this);
 
-            oview.setImageBitmap(bm);
-            oview.setVisibility(ViewGroup.VISIBLE);
-            iview.setVisibility(ViewGroup.VISIBLE);
-            oview.startAnimation(anim);
+            newView.setImageBitmap(bm);
+            newView.setVisibility(ViewGroup.VISIBLE);
+            scrView.setVisibility(ViewGroup.VISIBLE);
+            newView.startAnimation(anim);
          }
       }
       
       public void onAnimationEnd(Animation animation)
       {
          drawScreen();
-         oview.setVisibility(ViewGroup.INVISIBLE);
-         iview.setVisibility(ViewGroup.INVISIBLE);
+         newView.setVisibility(ViewGroup.INVISIBLE);
+         scrView.setVisibility(ViewGroup.INVISIBLE);
          latch.countDown();
       }
 
@@ -584,7 +584,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
                animt.startTransition(transitionEffect);
-               
+               // no break!
             case TRANSITION_NONE:
                rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
                drawScreen();
