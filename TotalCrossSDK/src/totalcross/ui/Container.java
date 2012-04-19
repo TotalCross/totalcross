@@ -154,7 +154,9 @@ public class Container extends Control
 
    public static int getNextTransitionEffect()
    {
-      return nextTransitionEffect;
+      int ret = nextTransitionEffect;
+      nextTransitionEffect = Container.TRANSITION_NONE;
+      return ret;
    }
 
    static void transitionEffectChanged(int t)
