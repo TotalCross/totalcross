@@ -1178,8 +1178,10 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         setNextTransitionEffect(lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE);
-         loadBehind(); // guich@200b4: restore the saved window
+         int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+         if (nextTrans == TRANSITION_NONE)
+            loadBehind(); // guich@200b4: restore the saved window
+         setNextTransitionEffect(nextTrans);
          topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
@@ -1333,8 +1335,8 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
-      firstTarget.requestFocus();
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
+      firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
    }
