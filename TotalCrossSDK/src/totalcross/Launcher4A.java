@@ -522,21 +522,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
             oview.setImageBitmap(bm);
             anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(1000);
+            anim.setDuration(500);
             anim.setAnimationListener(this);
-            oview.startAnimation(anim);
             oview.setVisibility(ViewGroup.VISIBLE);
+            oview.startAnimation(anim);
          }
          else
          {
             anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(1000);
+            anim.setDuration(500);
             anim.setAnimationListener(this);
 
             oview.setImageBitmap(bm);
-            oview.startAnimation(anim);
             oview.setVisibility(ViewGroup.VISIBLE);
             iview.setVisibility(ViewGroup.VISIBLE);
+            oview.startAnimation(anim);
          }
       }
       
@@ -566,7 +566,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    static void transitionEffectChanged(int type)
    {
-      if (type == TRANSITION_CLOSE)
+      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
          new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
    }
    
@@ -584,7 +584,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
                animt.startTransition(transitionEffect);
-               break;
+               
             case TRANSITION_NONE:
                rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
                drawScreen();
