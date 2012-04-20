@@ -963,7 +963,7 @@ public class Window extends Container
       if (event.target != null)
          ((Control)event.target).postEvent(event);
       
-      if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
+      if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
 
