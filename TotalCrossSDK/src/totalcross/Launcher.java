@@ -1748,7 +1748,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       {
          return new UserFont(fontName, suffix);
       }
-      catch (Exception e) {}
+      catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
       return null;
    }
 
@@ -1904,8 +1904,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
-         index = (int)'0' - (int)firstChar;
-         numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+         if (firstChar <= '0' && '0' <= lastChar)
+         {
+            index = (int)'0' - (int)firstChar;
+            numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+         }
       }
 
       // Get the source x coordinate and width of the character
