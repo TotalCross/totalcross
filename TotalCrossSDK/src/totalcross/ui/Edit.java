@@ -538,6 +538,9 @@ public class Edit extends Control
             {
                int i=0,pos=0;
                for (; i < n; pos++)
+                  if (pos >= mask.length)
+                     break;
+                  else
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
@@ -854,6 +857,9 @@ public class Edit extends Control
       {
          int n = Math.min(len,mask.length),i=0,pos=0;
          while (i < n)
+            if (pos >= mask.length)
+               break;
+            else
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i++));
