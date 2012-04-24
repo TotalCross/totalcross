@@ -17,7 +17,6 @@
 #import <UIKit/UIKit.h>
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
-#import <UIKit/UITransitionView.h>
 
 #include "GraphicsPrimitives.h"
 #import "kbdview.h"
@@ -56,7 +55,7 @@
 
 @end
 
-@interface MainView : UITransitionView
+@interface MainView : UIView
 {
    NSMutableArray* _events;
    //NSRecursiveLock* _lock;
