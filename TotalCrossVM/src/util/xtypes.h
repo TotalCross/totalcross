@@ -54,8 +54,11 @@ extern "C" {
  #define inline_ inline
 #endif
 
-#if defined THEOS
+#if defined THEOS || !defined darwin
 #define __unsafe_unretained
+#endif
+
+#if defined THEOS
 #define __bridge
 #endif
 
