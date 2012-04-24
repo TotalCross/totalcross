@@ -472,7 +472,7 @@ class SQLUpdateStatement extends SQLStatement
       {
          String string;
          if ((string = record[i].asString) != null && string.equals("?")) // Identifies the values that are placeholders for parameters.
-            paramIndexes[paramCount++] = (byte)i;
+            paramIndexes[paramCount++] = (short)i;
       }
 
       table.reorder(this);  // Makes sure the fields are in correct order, aligned with the table order.

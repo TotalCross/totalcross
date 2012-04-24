@@ -345,7 +345,7 @@ class SQLInsertStatement extends SQLStatement
       {
          String string;
          if ((string = record[i].asString) != null && string.equals("?")) // Identifies the values that are placeholders for parameters.
-            paramIndexes[paramCount++] = (byte)i;
+            paramIndexes[paramCount++] = (short)i;
       }
 
       if (fields != null) // No fields: The values are ordered.
