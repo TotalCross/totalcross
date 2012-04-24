@@ -387,7 +387,7 @@ public class PreparedStatement
       byte[] storeNulls;
       boolean[] paramDefined;
       SQLValue[] record;
-      byte[] paramIndexes;
+      short[] paramIndexes; // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
       SQLValue value;
       
       if (stmt.type == SQLElement.CMD_INSERT) // Does the right cast.
