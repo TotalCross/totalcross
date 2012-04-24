@@ -9,7 +9,32 @@
  *                                                                               *
  *********************************************************************************/
 
+#define waitUntilStarted()
 
+bool wokeUp()
+{
+   return false;
+}
+
+static void registerWake(bool set)
+{
+   UNUSED(set);
+}
+
+#if defined (darwin)
+void setFullScreen();
+void privateGetWorkingDir(CharP vmPath);
+
+static void getWorkingDir()
+{
+   privateGetWorkingDir(vmPath);
+}
+
+#else
+
+void setFullScreen()
+{
+}
 
 #if defined(linux)
 #include <unistd.h>
@@ -46,19 +71,4 @@ static void getWorkingDir()
    TCHARP2CharPBuf("unknown", exeName);
 }
 #endif
-
-#define waitUntilStarted()
-
-bool wokeUp()
-{
-   return false;
-}
-
-static void registerWake(bool set)
-{
-   UNUSED(set);
-}
-
-static void setFullScreen()
-{
-}
+#endif
