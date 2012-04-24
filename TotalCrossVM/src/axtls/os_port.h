@@ -35,7 +35,9 @@ extern "C" {
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
 #include "tcvm.h"  //flsobral@tc114_36: including tcvm.h to be able to use xmalloc and xfree.
+#if defined(WIN32)
 #include "winsockLib.h"
+#endif
 
 #if defined(WIN32)
 #define STDCALL                 __stdcall
