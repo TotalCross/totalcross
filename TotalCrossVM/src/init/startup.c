@@ -19,8 +19,6 @@
  #include "win/startup_c.h"
 #elif defined(PALMOS)
  #include "palm/startup_c.h"
-#elif defined(darwin)
- #include "darwin/startup_c.h"
 #elif defined(ANDROID)
  #include "android/startup_c.h"
 #else

@@ -226,10 +226,11 @@ VM_FILES =                                     \
 	$(sourcedir)/tcvm/tcvm.c
 
 EXTRA_INIT_FILES = \
-	$(sourcedir)/init/darwin/demo_c.m \
+	$(sourcedir)/init/darwin/demo_c.m          \
+	$(sourcedir)/init/darwin/startup_c.m       \
 	$(sourcedir)/init/darwin/serialnum.m
 
-INIT_FILES =                                   \
+INIT_FILES =                                  \
 	${EXTRA_INIT_FILES}                        \
 	$(sourcedir)/init/demo.c                   \
 	$(sourcedir)/init/startup.c                \
