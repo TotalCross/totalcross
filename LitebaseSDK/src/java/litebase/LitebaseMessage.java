@@ -167,6 +167,7 @@ class LitebaseMessage
     */
    static final int ERR_INVALID_PARAMETER = 27;
    
+   // juliana@prep: added PreparedStatement.close().
    /**
     * "The prepared statement is already closed."
     */
