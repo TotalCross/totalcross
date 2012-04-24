@@ -855,7 +855,7 @@ static void markContexts()
    } while (current != head);
 }
 
-inline void finalizeObject(Object o, Class c) 
+inline_ void finalizeObject(Object o, Class c)
 {
    while (c != null) 
    {

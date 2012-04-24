@@ -48,6 +48,12 @@ extern "C" {
 
 #define PTRSIZE sizeof(void*)
 
+#ifdef darwin
+ #define inline_
+#else
+ #define inline_ inline
+#endif
+
  /////////////////////////////////////////////////////////////////////////
 // Basic types
 // explicit signed types (some compilers consider "char" as unsigned by default for instance).
