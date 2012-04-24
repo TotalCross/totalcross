@@ -54,6 +54,11 @@ extern "C" {
  #define inline_ inline
 #endif
 
+#if defined THEOS
+#define __unsafe_unretained
+#define __bridge
+#endif
+
  /////////////////////////////////////////////////////////////////////////
 // Basic types
 // explicit signed types (some compilers consider "char" as unsigned by default for instance).

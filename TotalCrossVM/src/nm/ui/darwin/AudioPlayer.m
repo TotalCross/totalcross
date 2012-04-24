@@ -10,7 +10,7 @@ static void playbackCallback (
 	AudioQueueBufferRef		bufferReference
 ) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
-	AudioPlayer *player = (AudioPlayer *) inUserData;
+	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 	if ([player donePlayingFile]) return;
 
 	UInt32 numBytes;
@@ -62,7 +62,7 @@ static void propertyListenerCallback (
 	AudioQueuePropertyID	propertyID
 ) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
-	AudioPlayer *player = (AudioPlayer *) inUserData;
+	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 
 	if (player.audioPlayerShouldStopImmediately == YES) {
 		// If the user tapped Stop, update the UI now. After the AudioPlayer object
@@ -170,7 +170,7 @@ static void propertyListenerCallback (
 	AudioQueueNewOutput (
 		&audioFormat,
 		playbackCallback,
-		self,
+		(__bridge void*) self,
 		CFRunLoopGetCurrent (),
 		kCFRunLoopCommonModes,
 		0,								// run loop flags
@@ -193,7 +193,7 @@ static void propertyListenerCallback (
 		[self queueObject],
 		kAudioQueueProperty_IsRunning,
 		propertyListenerCallback,
-		self
+		(__bridge void*) self
 	);
 
 	// copy the audio file's magic cookie to the audio queue object to give it
@@ -228,7 +228,7 @@ static void propertyListenerCallback (
 		);
 
 		playbackCallback (
-			self,
+			(__bridge void*) self,
 			[self queueObject],
 			buffers[bufferIndex]
 		);

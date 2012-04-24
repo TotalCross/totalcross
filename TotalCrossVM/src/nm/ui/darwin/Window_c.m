@@ -29,7 +29,7 @@ void windowSetSIP(Context currentContext, int32 sipOption, Object control, bool 
       TValue ret = executeMethod(currentContext, m, control);
 	  str = [ [ NSString alloc ] initWithCharacters: String_charsStart(ret.asObj) length: String_charsLen(ret.asObj) ];
    }
-   SipArguments *args = [ [ SipArguments alloc ] init: SipArgsMake(sipOption, (id)control, secret, str) ];
+   SipArguments *args = [ [ SipArguments alloc ] init: SipArgsMake(sipOption, (__bridge id)control, secret, str) ];
    [ args retain ];
 
    if (DEVICE_CTX && DEVICE_CTX->_mainview)

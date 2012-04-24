@@ -12,6 +12,7 @@
 
 
 #import <Foundation/Foundation.h>
+#include "xtypes.h"
 
 enum
 {
@@ -24,9 +25,9 @@ enum
 struct SipArgs
 {
    int options;
-   id control;
+   __unsafe_unretained id control;
    bool secret;
-   NSString *text;
+   __unsafe_unretained NSString *text;
 };
 
 typedef struct SipArgs SipArgs;

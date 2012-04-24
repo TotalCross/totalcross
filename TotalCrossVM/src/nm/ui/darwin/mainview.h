@@ -99,9 +99,9 @@
 
 typedef struct
 {
-   UIWindow  *_window;
-   MainView  *_mainview;
-   ChildView *_childview;
+   __unsafe_unretained UIWindow  *_window;
+   __unsafe_unretained MainView  *_mainview;
+   __unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 
 #endif
