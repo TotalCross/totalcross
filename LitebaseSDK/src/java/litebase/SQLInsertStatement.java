@@ -45,10 +45,11 @@ class SQLInsertStatement extends SQLStatement
     */
    int paramCount;
 
+   // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
    /**
     * The array with the indexes of the parameters.
     */
-   byte[] paramIndexes;
+   short[] paramIndexes; 
 
    /**
     * An array that indicates if a parameters is defined or not.
@@ -101,7 +102,8 @@ class SQLInsertStatement extends SQLStatement
       String[] fieldValues = parser.fieldValues;
       
       // Allocates space for the list of the parameters. Worst case: all fields are parameters.
-      paramIndexes = new byte[nFields]; 
+      // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
+      paramIndexes = new short[nFields]; 
       paramDefined = new boolean[nFields];
 
       while (--nFields > 0)
@@ -276,7 +278,9 @@ class SQLInsertStatement extends SQLStatement
           j;
       SQLValue value;
       SQLValue[] recordAux = record;
-      byte[] paramIndexesAux = paramIndexes;
+      
+      // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
+      short[] paramIndexesAux = paramIndexes;
       byte[] storeNullsAux = storeNulls;
       
       Convert.fill(paramDefined, 0, paramDefined.length, false);
