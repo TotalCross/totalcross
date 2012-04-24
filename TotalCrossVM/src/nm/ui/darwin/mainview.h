@@ -15,7 +15,6 @@
 #define MAINVIEW_H
 
 #import <UIKit/UIKit.h>
-#import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UITransitionView.h>
 

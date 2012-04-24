@@ -1,7 +1,6 @@
 #define Object NSObject*
 #import "childview.h"
 #import "mainview.h"
-#import <UIKit/UIHardware.h>
 
 @implementation ChildView
 
