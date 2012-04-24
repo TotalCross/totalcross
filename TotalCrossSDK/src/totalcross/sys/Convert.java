@@ -2208,6 +2208,86 @@ public final class Convert
       int idx = name.lastIndexOf('.');
       return idx == -1 ? name : name.substring(0,idx);
    }
+   
+   /**
+    * Converts 8-bit byte encoding into a 7-bit byte encoding or rather
+    * converts a base-256 encoding into a base-128.
+    * 
+    * This can be useful to write a byte array into a Litebase's String using
+    * a PreparedStatement. The base 64 increases the size in 1/3, while this
+    * base 128 increases by 1/7. Note that the resulting byte array can
+    * be transformed into a String, but this String cannot be used in TEXT files.
+    * 
+    * Copyright (C) 2002 Nick Galbreath. All Rights Reserved.
+    * 
+    * @param ba The input 8-bit byte array
+    * @return A new byte array encoding the input data in a base-128 encoding
+    * @since TotalCross 1.53
+    * @see #to8Bit(byte[])
+    */
+   public static byte[] to7Bit(byte[] ba) 
+   {
+      if (ba == null)
+         return null;
+      int inputOffset = 0;
+      int outputOffset = 0;
+      int len = ba.length;
+      byte[] out = new byte[(len % 7 == 0) ? (len * 8) / 7 : (len * 8) / 7 + 1];
+      int lastBits = 0;
+      int i = 0;
+      while (inputOffset < len) 
+      {
+         int b = ba[inputOffset] & 0xFF;
+         out[outputOffset++] = (byte) (((b << i) | lastBits) & 0x7F);
+         if (i == 7) 
+         {
+            i = 0;
+            lastBits = 0;
+         } 
+         else 
+         {
+            lastBits = b >>> (7 - i);
+            ++inputOffset;
+            ++i;
+         }
+         if (inputOffset == len) 
+            out[outputOffset] = (byte) lastBits;
+      }
+      return out;
+   }
+
+   /**
+    * Restores a base-128 (7-bits per byte) encoding to the orginal base-256
+    * (8-bits per byte) encoding.
+    * 
+    * Copyright (C) 2002 Nick Galbreath. All Rights Reserved.
+    * 
+    * @param ba The input base-128 encoding
+    * @return The original 8-bit data
+    * @since TotalCross 1.53
+    * @see #to7Bit(byte[])
+    */
+   public static byte[] to8Bit(byte[] ba) 
+   {
+      if (ba == null)
+         return null;
+      int len = ba.length;
+      byte[] out = new byte[(len * 7) / 8];
+      int i = 0;
+      int inputOffset = 0;
+      int outputOffset = 0;
+      while (inputOffset < len - 1) 
+      {
+         out[outputOffset++] = (byte) (((ba[inputOffset] & 0xff) >>> i) | (((ba[++inputOffset] & 0xff) << (7 - i))));
+         if (++i == 7) 
+         {
+            i = 0;
+            ++inputOffset;
+         }
+      }
+      return out;
+   }
+
 
    /////// double routines - same of vm //////////////////////////////////
 
