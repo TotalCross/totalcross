@@ -9,10 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-void privateGetWorkingDir(char* vmPath)
+void privateGetWorkingDir(char* vmPath, char* appPath)
 {
-   const char* appPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
-   strcpy(vmPath, appPath);
+   const char* path = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
+   strcpy(appPath, path);
+#if defined THEOS
+   strcpy(vmPath, "/Applications/TotalCross.app/");
+#else
+   strcpy(vmPath, path);
+#endif
 }
 
 extern void privateFullscreen(bool on);
