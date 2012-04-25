@@ -29,6 +29,7 @@ public class NativeMethodsPrototypeGenerator
             System.out.println("Format: NativeMethodsPrototypeGenerator <input-file> <testcase>");
             System.out.println("<input-file>: the file to be parsed");
             System.out.println("<testcase>: if true, creates the stubs for the test cases");
+            System.out.println("<nativeHT>: if true, creates nativeHT.c used by iOS");
          }
          else
          {
@@ -36,7 +37,8 @@ public class NativeMethodsPrototypeGenerator
             readFile(v, new FileInputStream(argv[0]));
             int n = v.size();
             if (n == 0) throw new Exception(argv[0]+" is an empty file");
-            makeTestCases = argv.length == 2;
+            makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
+            makeNativeHT = argv.length >= 3 && (Boolean.valueOf(argv[2]).booleanValue() || argv[2].equalsIgnoreCase("yes"));
 
             for (int i =0; i < n; i++)
             {
@@ -62,12 +64,14 @@ public class NativeMethodsPrototypeGenerator
    }
 
    private static String CRLF = "\r\n";
-   private static Vector prototypes = new Vector(250);
-   private static Vector prototypesH = new Vector(250);
-   private static Vector testcases = new Vector(250);
+   private static Vector prototypes = new Vector(500);
+   private static Vector prototypesH = new Vector(500);
+   private static Vector testcases = new Vector(500);
+   private static Vector iosarray = new Vector(500);
    private static Hashtable htNames = new Hashtable(1023);
    private static int errorCount;
    private static boolean makeTestCases;
+   private static boolean makeNativeHT;
 
    //////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +115,7 @@ public class NativeMethodsPrototypeGenerator
       s += CRLF+"{";
       s += CRLF+"}"+CRLF;
 
+      iosarray.addElement("htPutPtr(&htNativeFuncs, hashCode(\""+funcName+"\"), &"+funcName+");\n");
       prototypes.addElement(s);
       prototypesH.addElement(CRLF+sn+";");
 
@@ -343,6 +348,27 @@ public class NativeMethodsPrototypeGenerator
          if (makeTestCases)
             for (int i =0; i < testcases.size(); i++)
                println(testcases.elementAt(i).toString());
+
+         // ios prototypes
+         if (makeNativeHT)
+         {
+            FileWriter fw = new FileWriter(new File(System.getProperty("user.dir"), "..\\init\\nativeHT.c"));
+            fw.write("#include \"tcvm.h\"\n");
+            fw.write("#include \"NativeMethods.h\"\n");
+            fw.write("#include \"utils.h\"\n\n");
+            fw.write("Hashtable htNativeFuncs;\n\n");
+
+            fw.write("void destroyNativeHT()\n{\n");
+            fw.write("   htFree(&htNativeFuncs,null);\n}\n\n");
+
+            fw.write("void initNativeHT()\n{\n");
+            fw.write("   htNativeFuncs = htNew(" + iosarray.size() + ", null);\n");
+            for (int i = 0; i < iosarray.size(); i++)
+               fw.write("   " + iosarray.elementAt(i).toString());
+            fw.write("}\n");
+
+            fw.close();
+         }
 
          if (fos != null) fos.close();
          System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
