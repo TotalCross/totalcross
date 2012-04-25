@@ -13,6 +13,7 @@
 
 #include "tcvm.h"
 #include "tcz.h"
+#include "nativeHT.h"
 
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
@@ -67,6 +68,7 @@ static Context initAll(CharP* args)
    ok = ok && initDebug();
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
+   initNativeHT();
    if (ok) registerWake(true);
    return ok ? c : null;
 }
@@ -88,6 +90,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    if (tcSettings.showMemoryMessagesAtExit != NULL)
       showMemoryMessagesAtExit = *tcSettings.showMemoryMessagesAtExit; // guich@tc114: save in a global var, since tcSettings will no longer be available
    destroyObjectMemoryManager(); // must be before ClassInfo destroy
+   destroyNativeHT();
    destroyClassInfo();
    xmemzero(&tcSettings, sizeof(tcSettings));
    destroyTCZ();
