@@ -926,6 +926,10 @@ class LitebaseParser
          {
             if ((size = Convert.toInt(yylval)) <= 0)
                yyerror(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT);
+            
+            // juliana@253_15: now an exception is thrown if the size of a CHAR or VARCHAR is greater than 65535. 
+            if (type == SQLElement.CHARS && size > (Convert.MAX_SHORT_VALUE << 1) + 1)
+               yyerror(LitebaseMessage.ERR_CHAR_TOO_BIG);
          }
          else
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
