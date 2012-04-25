@@ -9,23 +9,17 @@ bool allowMainThread();
 {
 }
 - (void)popup:(id)message;
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex;
 @end
 
 @implementation AlertPopup
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-   [ alertView release ];
-}
 
 - (void)popup:(id)message
 {
    [[ self initWithTitle:@"ALERT"
          message: message
          delegate: self
-         cancelButtonTitle: nil
-         otherButtonTitles: @"Continue", nil]
+         cancelButtonTitle: @"Continue"
+         otherButtonTitles: nil, nil]
       show 
    ];
 }
