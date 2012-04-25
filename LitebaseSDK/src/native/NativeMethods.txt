@@ -108,3 +108,4 @@ litebase/PreparedStatement|public native void setDateTime(int index, totalcross.
 litebase/PreparedStatement|public native void setNull(int index) throws SQLParseException;
 litebase/PreparedStatement|public native void clearParameters();
 litebase/PreparedStatement|public native String toString();
+litebase/PreparedStatement|public native void close();

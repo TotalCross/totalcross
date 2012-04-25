@@ -5305,3 +5305,26 @@ finish: ;
 }
 
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+
+//////////////////////////////////////////////////////////////////////////
+// juliana@prep: added PreparedStatement.close().
+/**
+ * Closes a prepared statement.
+ * 
+ * @param p->obj[0] The prepared statement.
+ */
+LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native void close();
+{
+   TRACE("lPS_close")
+   MEMORY_TEST_START
+   if (testPSClosed(p))
+   {
+      Object statement = p->obj[0];
+      Hashtable* htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(statement));
+      Object sqlExpression = OBJ_PreparedStatementSqlExpression(statement);
+      int32 hashCode = TC_JCharPHashCode(String_charsStart(sqlExpression), String_charsLen(sqlExpression));
+      TC_htRemove(htPS, hashCode);
+      freePreparedStatement(statement);
+   }
+   MEMORY_TEST_END
+}

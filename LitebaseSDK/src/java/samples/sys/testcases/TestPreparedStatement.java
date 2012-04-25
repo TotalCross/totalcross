@@ -522,7 +522,6 @@ public class TestPreparedStatement extends TestCase
       catch (DriverException exception) {}
       catch (IllegalStateException exception) {}
       
-      preparedStmt.close();
       preparedStmt = driver.prepareStatement("select * from teste, teste2 where id = id2 and sh1 = ? and x = ?");
       preparedStmt.close();
       

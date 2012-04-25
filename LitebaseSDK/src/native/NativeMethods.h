@@ -1157,6 +1157,13 @@ LB_API void lPS_clearParameters(NMParams p);
  */
 LB_API void lPS_toString(NMParams p);
 
+/**
+ * Closes a prepared statement.
+ * 
+ * @param p->obj[0] The prepared statement.
+ */
+LB_API void lPS_close(NMParams p);
+
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 
 #endif

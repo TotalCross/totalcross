@@ -109,7 +109,7 @@ TC_API void lPS_setDateTime_it(NMParams p);
 TC_API void lPS_setNull_i(NMParams p);
 TC_API void lPS_clearParameters(NMParams p);
 TC_API void lPS_toString(NMParams p);
-TC_API void lPS_psClose(NMParams p);
+TC_API void lPS_close(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next();
@@ -549,5 +549,9 @@ TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_close(NMParams p) // litebase/PreparedStatement public native void close();
 {
 }

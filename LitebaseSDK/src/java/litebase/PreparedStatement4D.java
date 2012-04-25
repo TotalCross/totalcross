@@ -231,5 +231,11 @@ public class PreparedStatement4D
     */
    public native String toString();
    
+   // juliana@prep: added PreparedStatement.close().
+   /**
+    * Closes a prepared statement.
+    */
+   public native void close();
+   
    // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 }
