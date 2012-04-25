@@ -590,7 +590,11 @@ int32 createColumn(LitebaseParser* parser)
          }
          if (size > (10 << 20))  // There is a size limit for a blob!
             return lbError(ERR_BLOB_TOO_BIG, parser);
-      }            
+      }  
+      
+      // juliana@253_15: now an exception is thrown if the size of a CHAR or VARCHAR is greater than 65535. 
+      else if (type == CHARS_TYPE && size > (MAX_SHORT_VALUE << 1) + 1)
+         return lbErrorWithMessage(getMessage(ERR_INVALID_NUMBER), "unsigned short", parser);                
    }   
    
    if ((token = yylex(parser)) == TK_NOCASE) // No case.
