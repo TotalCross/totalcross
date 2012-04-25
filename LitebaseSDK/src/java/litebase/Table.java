@@ -2167,7 +2167,7 @@ class Table
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
-          size = 0,
+          size = 2,
           low, 
           high,
           pivotIndex; // guich@212_3: now using random partition (improves worst case 2000x).
@@ -2177,8 +2177,8 @@ class Table
       String[][] strings = new String[last - first + 1][fieldList.length];
       String[] tempString;
       
-      intVector[size++] = first;
-      intVector[size++] = last;
+      intVector[0] = first;
+      intVector[1] = last;
       
       while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
@@ -2839,15 +2839,15 @@ class Table
       
       // juliana@250_1: corrected a possible crash when doing ordering operations.
       // Not fully sorted.
-      int size = 0,
+      int size = 2,
           low,
           high;
       int[] intVector = db.driver.nodes;
       Random r = new Random();
       SQLValue[] mid;
       
-      intVector[size++] = first;
-      intVector[size++] = last;
+      intVector[0] = first;
+      intVector[1] = last;
       while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
          high = last = intVector[--size];
