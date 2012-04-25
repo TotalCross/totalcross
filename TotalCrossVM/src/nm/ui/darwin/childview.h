@@ -25,7 +25,6 @@
    int shiftY;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
-- (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
 - (void)invalidateScreen:(void*)vscreen;

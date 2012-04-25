@@ -48,12 +48,6 @@ char* createPixelsBuffer(int width, int height);
    return self; 
 }
 
-- (void)dealloc
-{
-   CGContextRelease(bitmapContext); //flsobral@tc126: release last reference to bitmapContext
-   [ super dealloc ];
-}
-
 - (void)invalidateScreen:(void*)vscreen
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
