@@ -19,7 +19,6 @@ TC_API void tumMC_nativeStart(NMParams p);
 TC_API void tumMC_stop(NMParams p);
 TC_API void tumMC_reset(NMParams p);
 TC_API void tumMC_nativeClose(NMParams p);
-TC_API void tumMC_nativeFree(NMParams p);
 TC_API void tumMC_record_iib(NMParams p);
 TC_API void tumC_nativeClick(NMParams p);
 TC_API void tumC_initCamera(NMParams p);
@@ -240,7 +239,6 @@ TC_API void tnS_socketCreate_siib(NMParams p);
 TC_API void tnS_nativeClose(NMParams p);
 TC_API void tnS_readWriteBytes_Biib(NMParams p);
 TC_API void tnSS_serversocketCreate_iiis(NMParams p);
-TC_API void tnSS_accept(NMParams p);
 TC_API void tnSS_nativeClose(NMParams p);
 TC_API void tpCI_loadResources(NMParams p);
 TC_API void tpCI_releaseResources(NMParams p);
@@ -299,11 +297,8 @@ TC_API void tidRD_getState_i(NMParams p);
 TC_API void tidRD_setState_ii(NMParams p);
 TC_API void tidPC_create_iiiii(NMParams p);
 TC_API void tidPC_nativeClose(NMParams p);
-TC_API void tidPC_isOpen(NMParams p);
 TC_API void tidPC_setFlowControl_b(NMParams p);
-TC_API void tidPC_readBytes_Bii(NMParams p);
 TC_API void tidPC_readCheck(NMParams p);
-TC_API void tidPC_writeBytes_Bii(NMParams p);
 TC_API void tidbDA_nativeDiscoveryAgent(NMParams p);
 TC_API void tidbDA_cancelInquiry_d(NMParams p);
 TC_API void tidbDA_cancelServiceSearch_i(NMParams p);
@@ -328,7 +323,6 @@ TC_API void tiPDBF_addRecord_ii(NMParams p);
 TC_API void tiPDBF_resizeRecord_i(NMParams p);
 TC_API void tiPDBF_nativeClose(NMParams p);
 TC_API void tiPDBF_delete(NMParams p);
-TC_API void tiPDBF_listPDBs(NMParams p);
 TC_API void tiPDBF_listPDBs_ii(NMParams p);
 TC_API void tiPDBF_deleteRecord(NMParams p);
 TC_API void tiPDBF_getRecordCount(NMParams p);
@@ -348,7 +342,6 @@ TC_API void tiF_delete(NMParams p);
 TC_API void tiF_exists(NMParams p);
 TC_API void tiF_getSize(NMParams p);
 TC_API void tiF_isDir(NMParams p);
-TC_API void tiF_isOpen(NMParams p);
 TC_API void tiF_listFiles(NMParams p);
 TC_API void tiF_readBytes_Bii(NMParams p);
 TC_API void tiF_rename_s(NMParams p);
@@ -375,7 +368,6 @@ TC_API void tuzZS_available(NMParams p);
 TC_API void tuzZS_getNextEntry(NMParams p);
 TC_API void tuzZS_putNextEntry_z(NMParams p);
 TC_API void tuzZS_closeEntry(NMParams p);
-TC_API void tuzZS_finish(NMParams p);
 TC_API void tuzZS_readBytes_Bii(NMParams p);
 TC_API void tuzZS_writeBytes_Bii(NMParams p);
 TC_API void tuzZS_close(NMParams p);
@@ -507,10 +499,6 @@ TC_API void tumMC_reset(NMParams p) // totalcross/ui/media/MediaClip native publ
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tumMC_nativeClose(NMParams p) // totalcross/ui/media/MediaClip native private void nativeClose();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tumMC_nativeFree(NMParams p) // totalcross/ui/media/MediaClip native private void nativeFree();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1394,10 +1382,6 @@ TC_API void tnSS_serversocketCreate_iiis(NMParams p) // totalcross/net/ServerSoc
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tnSS_accept(NMParams p) // totalcross/net/ServerSocket native public void accept() throws totalcross.io.IOException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tnSS_nativeClose(NMParams p) // totalcross/net/ServerSocket native private void nativeClose() throws totalcross.io.IOException;
 {
 }
@@ -1630,23 +1614,11 @@ TC_API void tidPC_nativeClose(NMParams p) // totalcross/io/device/PortConnector 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidPC_isOpen(NMParams p) // totalcross/io/device/PortConnector native public boolean isOpen();
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConnector native public boolean setFlowControl(boolean on);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidPC_readBytes_Bii(NMParams p) // totalcross/io/device/PortConnector native public int readBytes(byte []buf, int start, int count);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_readCheck(NMParams p) // totalcross/io/device/PortConnector native public int readCheck();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tidPC_writeBytes_Bii(NMParams p) // totalcross/io/device/PortConnector native public int writeBytes(byte []buf, int start, int count);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1746,10 +1718,6 @@ TC_API void tiPDBF_delete(NMParams p) // totalcross/io/PDBFile native public boo
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tiPDBF_listPDBs(NMParams p) // totalcross/io/PDBFile native public static String []listPDBs();
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tiPDBF_listPDBs_ii(NMParams p) // totalcross/io/PDBFile native public static String []listPDBs(int creatorId, int type);
 {
 }
@@ -1823,10 +1791,6 @@ TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getS
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_isDir(NMParams p) // totalcross/io/File native public boolean isDir();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tiF_isOpen(NMParams p) // totalcross/io/File native public boolean isOpen();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1931,10 +1895,6 @@ TC_API void tuzZS_putNextEntry_z(NMParams p) // totalcross/util/zip/ZipStream na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_closeEntry(NMParams p) // totalcross/util/zip/ZipStream native public void closeEntry() throws IOException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuzZS_finish(NMParams p) // totalcross/util/zip/ZipStream native public void finish() throws IOException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2242,11 +2202,6 @@ TESTCASE(tumMC_reset) // totalcross/ui/media/MediaClip native public void reset(
    finish: ;
 }
 TESTCASE(tumMC_nativeClose) // totalcross/ui/media/MediaClip native private void nativeClose();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tumMC_nativeFree) // totalcross/ui/media/MediaClip native private void nativeFree();
 {
    TEST_SKIP;
    finish: ;
@@ -3351,11 +3306,6 @@ TESTCASE(tnSS_serversocketCreate_iiis) // totalcross/net/ServerSocket native voi
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tnSS_accept) // totalcross/net/ServerSocket native public void accept() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tnSS_nativeClose) // totalcross/net/ServerSocket native private void nativeClose() throws totalcross.io.IOException;
 {
    TEST_SKIP;
@@ -3646,27 +3596,12 @@ TESTCASE(tidPC_nativeClose) // totalcross/io/device/PortConnector native private
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tidPC_isOpen) // totalcross/io/device/PortConnector native public boolean isOpen();
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tidPC_setFlowControl_b) // totalcross/io/device/PortConnector native public boolean setFlowControl(boolean on);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tidPC_readBytes_Bii) // totalcross/io/device/PortConnector native public int readBytes(byte []buf, int start, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tidPC_readCheck) // totalcross/io/device/PortConnector native public int readCheck();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidPC_writeBytes_Bii) // totalcross/io/device/PortConnector native public int writeBytes(byte []buf, int start, int count);
 {
    TEST_SKIP;
    finish: ;
@@ -3791,11 +3726,6 @@ TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() 
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tiPDBF_listPDBs) // totalcross/io/PDBFile native public static String []listPDBs();
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static String []listPDBs(int creatorId, int type);
 {
    TEST_SKIP;
@@ -3887,11 +3817,6 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize() throws t
    finish: ;
 }
 TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_isOpen) // totalcross/io/File native public boolean isOpen();
 {
    TEST_SKIP;
    finish: ;
@@ -4022,11 +3947,6 @@ TESTCASE(tuzZS_putNextEntry_z) // totalcross/util/zip/ZipStream native public vo
    finish: ;
 }
 TESTCASE(tuzZS_closeEntry) // totalcross/util/zip/ZipStream native public void closeEntry() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_finish) // totalcross/util/zip/ZipStream native public void finish() throws IOException;
 {
    TEST_SKIP;
    finish: ;
