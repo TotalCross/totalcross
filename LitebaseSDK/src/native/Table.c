@@ -1223,7 +1223,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
          rowSize = plainDB->rowSize;
-   uint32 size = 0;
+   uint32 size = 2;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
@@ -1240,8 +1240,8 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 		}
 	}
 
-   vector[size++] = first;
-   vector[size++] = last;
+   vector[0] = first;
+   vector[1] = last;
    while (size) // guich@212_3: removed recursion (storing in a IntVector).
    {
       high = vector[--size];
@@ -1367,7 +1367,7 @@ void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first
    int32 low,
          high,
          i;
-   uint32 size = 0;
+   uint32 size = 2;
          
    // guich@212_3: checks if the values are already in order.
    i = first;
@@ -1378,8 +1378,8 @@ void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first
       return;
    
    // Not fully sorted?
-   vector[size++] = first;
-   vector[size++] = last;
+   vector[0] = first;
+   vector[1] = last;
    while (size) // guich@212_3: removed recursion (storing in a stack).
    {
       high = vector[--size];
