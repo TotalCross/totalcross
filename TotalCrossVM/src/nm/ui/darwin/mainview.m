@@ -177,9 +177,8 @@ void _debug(const char *format, ...)
    [ self addSubview: child_view ];
 
    if (old_view != nil)
-      [ self transition: 6 fromView: old_view toView: child_view ];
-   else
-      [ self bringSubviewToFront: child_view ];
+      [ self sendSubviewToBack: old_view ];
+   [ self bringSubviewToFront: child_view ];
 
    if (old_view != nil)
    {
@@ -335,19 +334,13 @@ static bool verbose_lock;
    CGRect rect = [ self frame ];
    if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight)
    {
-      height = rect.size.width - statusbar_height;
-      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
-         width = rect.size.height;
-      else
-         width = rect.size.height + statusbar_height;
+      height = rect.size.width;
+      width = rect.size.height;
    }
    else
    {
       width = rect.size.width;
       height = rect.size.height;
-      
-      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
-         height -= statusbar_height;
    }
    realAppH = height;
    current_orientation = orientation;
