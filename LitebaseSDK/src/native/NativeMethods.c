@@ -2206,7 +2206,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
                if (table->version == VERSION_TABLE)
                {  
-                  readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
+                  if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
+                     goto finish;
                   
                   j = columnCount;
                   while (--j)
@@ -2457,8 +2458,8 @@ LB_API void lLC_convert_s(NMParams p)
 
             if (table->version == VERSION_TABLE)
             {
-               readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
-               
+               if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
+                  goto finish;
                j = columnCount;
                while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))

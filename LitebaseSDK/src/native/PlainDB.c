@@ -528,6 +528,14 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 
                // Reads and sets the blob position in the .dbo.
 				   xmove4(&position, buffer);
+				   
+				   // juliana@253_8: now Litebase supports weak cryptography.
+               if (position > dbo->finalPos || position < 0)
+               {
+                  value->length = 0;
+                  return true; 
+               }
+				   
 				   plainDB->setPos(dbo, position);
 
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
