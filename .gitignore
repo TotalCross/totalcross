@@ -1,4 +1,5 @@
 out.txt
+*.DS_Store
 *.tmp
 *.map
 *.user
