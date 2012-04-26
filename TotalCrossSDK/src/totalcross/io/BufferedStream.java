@@ -100,35 +100,31 @@ public class BufferedStream extends Stream
          throw new IllegalArgumentIOException("count", Convert.toString(count));
 
       int r = 0, step, max;
-      while (r != count)
+      if (pos == size) // read next block, if needed
       {
-         if (pos == size) // read next block, if needed
+         pos = 0;
+         size = stream.readBytes(buffer, 0, buffer.length);
+         if (size < 0)
          {
-            pos = 0;
-            size = stream.readBytes(buffer, 0, buffer.length);
-            if (size < 0)
-            {
-               size = 0;
-               if (r == 0)
-                  r = -1;
-               break;
-            }
+            size = 0;
+            if (r == 0)
+               r = -1;
          }
-
-         // Get the maximum to read on this iteration
-         step = count - r;
-         max = size - pos;
-         if (step > max)
-            step = max;
-
-         // Read bytes
-         Vm.arrayCopy(buffer, pos, buf, start, step);
-
-         // Update positions
-         r += step;
-         start += step;
-         pos += step;
       }
+
+      // Get the maximum to read on this iteration
+      step = count - r;
+      max = size - pos;
+      if (step > max)
+         step = max;
+
+      // Read bytes
+      Vm.arrayCopy(buffer, pos, buf, start, step);
+
+      // Update positions
+      r += step;
+      start += step;
+      pos += step;
 
       return r;
    }
