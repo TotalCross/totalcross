@@ -96,7 +96,6 @@ void _debug(const char *format, ...)
 
    _events = nil;
    _lock = [[NSLock alloc] init];
-   [_lock retain];
 
    DEBUG4("initWithFrame: %dx%d,%dx%d\n",
          (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
@@ -181,10 +180,7 @@ void _debug(const char *format, ...)
    [ self bringSubviewToFront: child_view ];
 
    if (old_view != nil)
-   {
       [ old_view removeFromSuperview ];
-      [ old_view release ];
-   }
 
    [ self unlock ];
 }
@@ -209,7 +205,6 @@ void _debug(const char *format, ...)
    {
       DEBUG0("really release kbd_view\n");
       [ kbd_view removeFromSuperview ];
-      [ kbd_view release ];
       kbd_view = nil;
    }
    [ self unlock ];   
@@ -230,17 +225,15 @@ void _debug(const char *format, ...)
       {
          kbd_view.hidden = YES;
          [ kbd_view removeFromSuperview ];
-         [ kbd_view release ];
       }
 
       CGRect rect = [ self frame ];
       kbd_view = [ [ KeyboardView alloc ] initWithFrame: CGRectMake(0, 0, rect.size.width, rect.size.height) params: args ];
       if (kbd_view != null)
       {
-        [ kbd_view retain ];
         [ self addSubview: kbd_view ];
         [ self bringSubviewToFront: kbd_view ];
-     }
+      }
       [ self unlock ];
    }
    DEBUG0("showSIP DONE\n");
@@ -248,8 +241,6 @@ void _debug(const char *format, ...)
 
 - (void)dealloc
 {
-   [_events release];
-   [_lock release];
    [ super dealloc ];
 }
 
@@ -286,8 +277,6 @@ static bool verbose_lock;
    NSArray* events = _events;
    _events = nil;
    [self unlock];
-
-   [events autorelease];
 
    return events;
 }
@@ -359,7 +348,7 @@ static bool verbose_lock;
    if (allowMainThread())
    {
       // must be an object, cannot be a struct
-      SSize *s = [[[ SSize alloc ] set: size ] autorelease ];
+      SSize *s = [[ SSize alloc ] set: size ];
       [ self performSelectorOnMainThread:@selector(doScreenChange:) withObject:s waitUntilDone: YES ];
    }
 }
