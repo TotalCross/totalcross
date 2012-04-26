@@ -133,7 +133,9 @@ typedef struct TConstantPool TConstantPool;
 typedef TConstantPool* ConstantPool;
 
 typedef struct TContext TContext;
+#if defined (darwin) && !defined Context
 typedef TContext* Context;
+#endif
 
 typedef JCharP TJCharP;
 typedef CharP TCharP;
