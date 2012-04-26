@@ -21,6 +21,10 @@
  #include "symbian/nativelib_c.h"
 #else
  #include "posix/nativelib_c.h"
+#if defined (darwin) && !defined (THEOS)
+#undef bool
+#define bool int
+#endif
 #endif
 
 VoidP loadLibrary(const char* libName)
