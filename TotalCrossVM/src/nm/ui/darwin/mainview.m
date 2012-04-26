@@ -26,10 +26,7 @@ void lockDeviceCtx(const char *info)
 {
    DEBUG1("lock DeviceCtx: '%s'\n", info);
    if (!deviceCtxLock)
-   {
       deviceCtxLock = [[NSRecursiveLock alloc] init];
-      [deviceCtxLock retain];
-   }
    [ deviceCtxLock lock ];
    DEBUG0("DeviceCtx locked\n");
 }
@@ -167,11 +164,7 @@ void _debug(const char *format, ...)
      [ child_view setTransform:transEnd];
    }
 
-   if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
-      [ DEVICE_CTX->_childview release ];
-
    DEVICE_CTX->_childview = child_view;
-   [ DEVICE_CTX->_childview retain ];
 
    [ self addSubview: child_view ];
 
@@ -454,10 +447,7 @@ void privateScreenChange(int32 w, int32 h)
 
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
-   {
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-      [ DEVICE_CTX->_window retain ];
-   }
    else
       [ window setFrame: rect ];
 
@@ -468,7 +458,6 @@ void privateScreenChange(int32 w, int32 h)
    if (main_view == nil)
    {
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
-      [ DEVICE_CTX->_mainview retain ];
       DEBUG0("new MainView\n");
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
@@ -540,10 +529,7 @@ bool graphicsStartup(ScreenSurface screen)
    
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
-   {
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-      [ DEVICE_CTX->_window retain ];
-   }
    else
       [ window setFrame: rect ];
    
@@ -554,7 +540,6 @@ bool graphicsStartup(ScreenSurface screen)
    if (main_view == nil)
    {
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
-      [ DEVICE_CTX->_mainview retain ];
       DEBUG0(">> new MainView\n");
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
