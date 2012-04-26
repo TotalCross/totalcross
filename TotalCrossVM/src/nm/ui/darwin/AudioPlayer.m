@@ -64,12 +64,16 @@ static void propertyListenerCallback (
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
 	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 
-	if (player.audioPlayerShouldStopImmediately == YES) {
+	if (player.audioPlayerShouldStopImmediately == YES)
+    {
 		// If the user tapped Stop, update the UI now. After the AudioPlayer object
 		//	and the underlying audio queue object have competely stopped, the
 		//	AudioViewController will release them.
+#if defined (THEOS)
 		[player.notificationDelegate updateUserInterfaceOnAudioQueueStateChange: player];
-	} else {
+#endif
+	}
+    else {
 		// if the file reached the end, update the UI after the run loop has finished.
 		//	This delay is required to ensure that the AudioPlayer class, and the
 		//	underlying audio queue object, are not destroyed while they are still
@@ -320,8 +324,6 @@ static void propertyListenerCallback (
 		queueObject,
 		YES
 	);
-
-	[super dealloc];
 }
 
 @end
