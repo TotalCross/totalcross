@@ -188,6 +188,7 @@ public class Image extends GfxSurface
      *    Vm.sleep(2000);
      * }
      * </pre>
+     * Caution: if reading a JPEG file, the original array contents will be changed!
      * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
      */
    public Image(byte []fullDescription) throws ImageException
