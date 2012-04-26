@@ -57,7 +57,6 @@
 @interface MainView : UIView
 {
    NSMutableArray* _events;
-   //NSRecursiveLock* _lock;
    NSLock* _lock;
    KeyboardView *kbd_view;
    bool child_added;
@@ -75,7 +74,6 @@
 - (void)geometryChanged;
 - (bool)isKbdShown;
 - (int)orientation;
-- (void)dealloc;
 
 - (void)lock:(const char *)info;
 - (void)unlock;
