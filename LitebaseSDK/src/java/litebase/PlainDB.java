@@ -451,15 +451,22 @@ class PlainDB
             }
             else // A blob is being returned to the result set.
             {
-               dbo.setPos(stream.readInt()); // Reads the blob position in the .dbo and sets its position.
-               if (value.asInt != -1)
+               int pos = stream.readInt();
+               
+               if (pos < dbo.finalPos && pos >= 0)
                {
-                  value.asBlob = new byte[dsdbo.readInt()]; // Creates the blob with its size.
-                  if (value.asBlob.length > 0) // juliana@212_8: when reading a file, an exception must not be thrown when reading zero bytes.
-                     dsdbo.readBytes(value.asBlob); // Reads the blob.
+                  dbo.setPos(pos); // Reads the blob position in the .dbo and sets its position.
+                  if (value.asInt != -1)
+                  {
+                     value.asBlob = new byte[dsdbo.readInt()]; // Creates the blob with its size.
+                     if (value.asBlob.length > 0) // juliana@212_8: when reading a file, an exception must not be thrown when reading zero bytes.
+                        dsdbo.readBytes(value.asBlob); // Reads the blob.
+                  }
+                  else
+                     value.asInt = dsdbo.readInt();
                }
                else
-                  value.asInt = dsdbo.readInt();
+                  value.asInt = 0;
             }
       }
       return offset + Utils.typeSizes[colType];
