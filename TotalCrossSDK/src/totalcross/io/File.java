@@ -1323,4 +1323,20 @@ public class File extends RandomAccessStream
          throw new IOException(e.getMessage()); //flsobral@tc126: throw exception on error.
       }
    }
+
+   /** Reads the entire file into a byte array and closes itself. A handy method that can be used like this:
+    * <pre>
+    * byte[] bytes = new File(...,File.READ_ONLY).readAndClose();
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public byte[] readAndClose() throws IOException
+   {
+      int len = getSize();
+      byte[] ret = new byte[len];
+      readBytes(ret,0,len);
+      close();
+      return ret;
+   }
 }

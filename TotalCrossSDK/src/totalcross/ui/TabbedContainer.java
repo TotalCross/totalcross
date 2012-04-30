@@ -910,6 +910,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          case PenEvent.PEN_DRAG:
             if (flick != null)
             {
+               Window w = getParentWindow();
+               if (w != null && w._focus == w.focusOnPenUp)
+                  break;
                DragEvent de = (DragEvent)event;
                if (isScrolling)
                {

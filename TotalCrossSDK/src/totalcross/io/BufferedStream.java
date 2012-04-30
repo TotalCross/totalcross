@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import totalcross.sys.Convert;
@@ -49,6 +47,7 @@ public class BufferedStream extends Stream
    private byte[] buffer;
    private int size;
    private int pos;
+   private byte[] rlbuf;
 
    /** Used for opening this buffered stream for reading. */
    public static final int READ = 0;
@@ -101,35 +100,31 @@ public class BufferedStream extends Stream
          throw new IllegalArgumentIOException("count", Convert.toString(count));
 
       int r = 0, step, max;
-      while (r != count)
+      if (pos == size) // read next block, if needed
       {
-         if (pos == size) // read next block, if needed
+         pos = 0;
+         size = stream.readBytes(buffer, 0, buffer.length);
+         if (size < 0)
          {
-            pos = 0;
-            size = stream.readBytes(buffer, 0, buffer.length);
-            if (size < 0)
-            {
-               size = 0;
-               if (r == 0)
-                  r = -1;
-               break;
-            }
+            size = 0;
+            if (r == 0)
+               r = -1;
          }
-
-         // Get the maximum to read on this iteration
-         step = count - r;
-         max = size - pos;
-         if (step > max)
-            step = max;
-
-         // Read bytes
-         Vm.arrayCopy(buffer, pos, buf, start, step);
-
-         // Update positions
-         r += step;
-         start += step;
-         pos += step;
       }
+
+      // Get the maximum to read on this iteration
+      step = count - r;
+      max = size - pos;
+      if (step > max)
+         step = max;
+
+      // Read bytes
+      Vm.arrayCopy(buffer, pos, buf, start, step);
+
+      // Update positions
+      r += step;
+      start += step;
+      pos += step;
 
       return r;
    }
@@ -197,5 +192,43 @@ public class BufferedStream extends Stream
    {
       return stream;
    }
-   
+
+   /**
+    * Reads a line of text from this socket. Any char lower than space
+    * is considered a new line separator. This method correctly handles newlines
+    * with \\n or \\r\\n.
+    * <br><br>Note: this method is VERY slow since it reads a single character per time. Consider using 
+    * new LineReader(socket) instead.
+    *
+    * @return the read line or <code>null</code> if nothing was read.
+    * @throws totalcross.io.IOException
+    * @since SuperWaba 5.61
+    * @see totalcross.io.LineReader
+    */
+   public String readLine() throws totalcross.io.IOException
+   {
+      if (rlbuf == null) // guich@tc123_31: no longer static and initialized on first use
+         rlbuf = new byte[256];
+
+      byte[] buf = rlbuf;
+      int pos = 0;
+      int r;
+      while ((r = readBytes(buf, pos, 1)) == 1)
+      {
+         if (buf[pos] == '\n') // guich@tc123_47
+         {
+            if (pos > 0 && buf[pos-1] == '\r') // cut last \r
+               pos--;
+            // note that pos must be same of length, otherwise the String will be constructed with one less character
+            break;
+         }
+         if (++pos == buf.length) // reached buffer size?
+         {
+            byte[] temp = new byte[buf.length+256];
+            Vm.arrayCopy(buf, 0, temp, 0, pos);
+            rlbuf = buf = temp;
+         }
+      }
+      return (pos > 0 || r == 1) ? new String(Convert.charConverter.bytes2chars(buf, 0, pos)) : null; // brunosoares@582_11
+   }
 }

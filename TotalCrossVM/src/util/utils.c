@@ -750,7 +750,7 @@ static FILE* updateFile(FILE* fin, CharP name)
    return fin;
 }
 
-FILE* findFile(CharP name)
+FILE* findFile(CharP name, CharP pathOut)
 {
    FILE* f;
    char fullName[MAX_PATHNAME];
@@ -817,7 +817,12 @@ FILE* findFile(CharP name)
    }
 #endif // _DEBUG
 
-   if (f != null) f = updateFile(f, fullName);
+   if (f != null)
+   {
+      f = updateFile(f, fullName); // check if there's a copy of the file available and replace it
+      if (pathOut != null)
+         xstrcpy(pathOut,fullName);
+   }
    return f;
 }
 

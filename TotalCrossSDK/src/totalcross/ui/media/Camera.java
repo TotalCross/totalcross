@@ -19,6 +19,7 @@
 package totalcross.ui.media;
 
 import totalcross.io.*;
+import totalcross.ui.dialog.*;
 
 /**
  * This class is used to enable the camera of the underlying device. The following platforms are supported:
@@ -126,8 +127,9 @@ public class Camera
     */
    public String click() throws IOException
    {
-      new totalcross.ui.dialog.MessageBox("Camera", "Say cheese!", new String[] { "Click" }).popup();
-      return defaultFileName;
+      FileChooserBox fcb = new FileChooserBox("Select a photo",FileChooserBox.defaultButtonCaptions,null);
+      fcb.popup();
+      return fcb.getAnswer();
    }
 
    /** Returns the resolutions that are supported by the device. Works for Windows CE, Blackberry and Android.

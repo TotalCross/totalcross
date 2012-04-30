@@ -330,4 +330,12 @@ public class File4D extends RandomAccessStream
          try {if (fout != null) fout.close();} catch (Exception e) {}
       }
    }
+   public byte[] readAndClose() throws IOException
+   {
+      int len = getSize();
+      byte[] ret = new byte[len];
+      readBytes(ret,0,len);
+      close();
+      return ret;
+   }
 }

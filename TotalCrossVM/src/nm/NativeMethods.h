@@ -129,6 +129,7 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
+TC_API void tuC_transitionEffectChanged_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -443,6 +444,5 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
-
 
 #endif

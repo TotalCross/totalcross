@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
 
 #include "tcvm.h"
 
@@ -33,7 +33,7 @@ void repaintActiveWindows(Context currentContext);
 
 bool initDebug()
 {
-#ifdef WIN32
+#ifndef PALMOS
    debugstr = malloc(16384); // don't use xmalloc!
 #else
    debugstr = malloc(4096);

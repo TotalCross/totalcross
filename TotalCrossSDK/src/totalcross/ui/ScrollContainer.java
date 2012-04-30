@@ -429,7 +429,11 @@ public class ScrollContainer extends Container implements Scrollable
             if (event.target == sbV || event.target == sbH) break;
             if (Settings.fingerTouch)
             {
-               DragEvent de = (DragEvent)event;
+               Window w = getParentWindow();
+               if (w != null && w._focus == w.focusOnPenUp)
+                  break;
+               
+               DragEvent de = (DragEvent)event;               
                int dx = -de.xDelta;
                int dy = -de.yDelta;
                if (isScrolling)

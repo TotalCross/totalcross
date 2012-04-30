@@ -90,7 +90,7 @@ import totalcross.util.*;
  *     }
  *  }
  *</pre>
- * Blocking popup may be use in InputDialog/MessageBox classes, while non-blocking popup
+ * Blocking popup may be use in InputBox/MessageBox classes, while non-blocking popup
  * is used in MenuBar and other classes.
  * <p> Important note: you can't use popup with a delay to unpop it.
  * In this case, the correct would be to use popupNonBlocking:
@@ -131,7 +131,7 @@ public class Window extends Container
 
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
-   protected Control _focus;
+   protected Control _focus,focusOnPenUp;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
    public Control firstFocus; // kmeehl@tc100
@@ -941,7 +941,10 @@ public class Window extends Container
       event.timeStamp = timeStamp;
       
       if (event.type == PenEvent.PEN_UP) // guich@320_31: release tempFocus - bruno@tc126: release tempFocus BEFORE posting PEN_UP event
+      {
+         focusOnPenUp = _focus != null && (_focus instanceof Edit || _focus instanceof MultiEdit) ? _focus : null;
          tempFocus = null;
+      }
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)
@@ -960,7 +963,7 @@ public class Window extends Container
       if (event.target != null)
          ((Control)event.target).postEvent(event);
       
-      if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
+      if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
 
@@ -1131,7 +1134,7 @@ public class Window extends Container
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
          enableUpdateScreen = true;
-         nextTransitionEffect = newWin.transitionEffect;
+         setNextTransitionEffect(newWin.transitionEffect);
          repaintActiveWindows();
       }
    }
@@ -1175,8 +1178,10 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         nextTransitionEffect = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
-         loadBehind(); // guich@200b4: restore the saved window
+         int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+         if (nextTrans == TRANSITION_NONE)
+            loadBehind(); // guich@200b4: restore the saved window
+         setNextTransitionEffect(nextTrans);
          topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
@@ -1317,9 +1322,12 @@ public class Window extends Container
       if (newContainer == null)
          newContainer = mainSwapContainer;
       // add the new container.
-      lastSwappedContainer = newContainer;
       if (newContainer.transitionEffect != TRANSITION_NONE)
-         nextTransitionEffect = newContainer.transitionEffect;
+         setNextTransitionEffect(newContainer.transitionEffect);
+      else
+      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
+      lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
          newContainer.setRect(LEFT,TOP,FILL,FILL);
@@ -1327,8 +1335,8 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
-      firstTarget.requestFocus();
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
+      firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
    }

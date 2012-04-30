@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+-->
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/extra">
+	<info organisation="superwaba" module="extlibs" />
+	<dependencies>
+		<!-- required for palm build -->
+		<dependency org="palm" name="PalmOS5RE" rev="noversion">
+			<artifact name="PalmOS5RE" ext="zip" />
+		</dependency>
+		<dependency org="palm" name="cdk601" rev="noversion">
+			<artifact name="cdk601" ext="zip" />
+		</dependency>
+		<dependency org="palm" name="peal" rev="noversion">
+			<artifact name="peal" ext="zip" />
+		</dependency>
+		<dependency org="palm" name="sdk" rev="5r4">
+			<artifact name="sdk" ext="zip" />
+		</dependency>
+
+		<!-- required for palm build -->
+		<dependency org="win32" name="win32" rev="noversion">
+			<artifact name="win32" ext="zip" />
+		</dependency>
+
+		<!-- required for palm build -->
+		<dependency org="wince" name="SocketScanCE" rev="noversion">
+			<artifact name="SocketScanCE" ext="zip" />
+		</dependency>
+		<dependency org="wince" name="WindowsCE" rev="noversion">
+			<artifact name="WindowsCE" ext="zip" />
+		</dependency>
+		<dependency org="wince" name="wceplatsdk" rev="noversion">
+			<artifact name="wceplatsdk" ext="zip" />
+		</dependency>
+
+		<!-- required for android build -->
+		<dependency org="superwaba" name="android-ndk-tcextra" rev="r4b">
+			<artifact name="android-ndk-tcextra" m:classifier="windows" ext="tgz" />
+		</dependency>
+	</dependencies>
+</ivy-module>

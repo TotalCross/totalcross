@@ -307,6 +307,8 @@ public class XmlTokenizer
                Vm.arrayCopy(oldBuffer, 0, buffer, 0, ofsEnd);
             }
          }
+         if (ofsCur >= ofsEnd) // we already reached the end, there's no need to keep trying any further
+            break;
          ofsEnd = ofsCur + input.readBytes(buffer, ofsCur, buffer.length - ofsCur);
       }
       endTokenize(buffer);

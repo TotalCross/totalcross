@@ -1138,7 +1138,7 @@ public class Grid extends Container implements Scrollable
          {
             Rect r = this.rCheck;
             int h = lineH + r.height;
-            int xx = r.x;
+            int xx = xOffset + r.x;
             if (boldCheck && !drawCheckBox)
                xx-=2;
    
