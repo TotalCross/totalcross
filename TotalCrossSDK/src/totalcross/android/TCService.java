@@ -8,17 +8,6 @@ import android.os.*;
 
 public class TCService extends Service
 {
-   /*
-public class BootReceiver extends BroadcastReceiver {
-
-  @Override
-  public void onReceive(Context context, Intent intent) {
-    context.startService( new Intent(context, UpdaterService.class) );
-    Log.d("BootReceiver", "onReceive'd");
-  }
-
-}
-    */
    static final int DELAY = 30000; // 1/2 a min
    VmRunnable vmRunnable;
    Handler handler;
