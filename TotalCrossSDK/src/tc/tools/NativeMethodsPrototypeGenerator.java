@@ -29,16 +29,28 @@ public class NativeMethodsPrototypeGenerator
             System.out.println("Format: NativeMethodsPrototypeGenerator <input-file> <testcase>");
             System.out.println("<input-file>: the file to be parsed");
             System.out.println("<testcase>: if true, creates the stubs for the test cases");
-            System.out.println("<nativeHT>: if true, creates nativeHT.c used by iOS");
          }
          else
          {
             Vector v = new Vector(100);
-            readFile(v, new FileInputStream(argv[0]));
+            if (argv[0].equals("makeNativeHT"))
+            {
+               Vector v2 = new Vector(100);
+               for (int i = 2 ; i < argv.length ; i++)
+               {
+                  readFile(v2, new FileInputStream(argv[i]));
+                  v.addAll(v2);
+               }
+               makeNativeHT = true;
+               nativeHTPath = argv[1];
+            }
+            else
+            {
+               readFile(v, new FileInputStream(argv[0]));
+               makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
+            }
             int n = v.size();
             if (n == 0) throw new Exception(argv[0]+" is an empty file");
-            makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
-            makeNativeHT = argv.length >= 3 && (Boolean.valueOf(argv[2]).booleanValue() || argv[2].equalsIgnoreCase("yes"));
 
             for (int i =0; i < n; i++)
             {
@@ -72,6 +84,7 @@ public class NativeMethodsPrototypeGenerator
    private static int errorCount;
    private static boolean makeTestCases;
    private static boolean makeNativeHT;
+   private static String nativeHTPath;
 
    //////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////
@@ -336,23 +349,10 @@ public class NativeMethodsPrototypeGenerator
          System.out.println("\nClasses that are not part of the method description must be preceded with the full name (package + classname)");
       else
       {
-         // prototype headers
-         for (int i =0; i < prototypesH.size(); i++)
-            println(prototypesH.elementAt(i).toString());
-         println(CRLF+CRLF);
-
-         // prototype bodies
-         for (int i =0; i < prototypes.size(); i++)
-            println(prototypes.elementAt(i).toString());
-
-         if (makeTestCases)
-            for (int i =0; i < testcases.size(); i++)
-               println(testcases.elementAt(i).toString());
-
          // ios prototypes
          if (makeNativeHT)
          {
-            FileWriter fw = new FileWriter(new File(System.getProperty("user.dir"), "..\\init\\nativeHT.c"));
+            FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeHT.c"));
             fw.write("#include \"tcvm.h\"\n");
             fw.write("#include \"NativeMethods.h\"\n");
             fw.write("#include \"utils.h\"\n\n");
@@ -369,9 +369,25 @@ public class NativeMethodsPrototypeGenerator
 
             fw.close();
          }
+         else
+         {
+            // prototype headers
+            for (int i = 0; i < prototypesH.size(); i++)
+               println(prototypesH.elementAt(i).toString());
+            println(CRLF + CRLF);
 
-         if (fos != null) fos.close();
-         System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+            // prototype bodies
+            for (int i = 0; i < prototypes.size(); i++)
+               println(prototypes.elementAt(i).toString());
+
+            if (makeTestCases)
+               for (int i = 0; i < testcases.size(); i++)
+                  println(testcases.elementAt(i).toString());
+
+            if (fos != null)
+               fos.close();
+            System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+         }
       }
       System.exit(0);
    }
