@@ -174,8 +174,8 @@ uint16 yytable[] =
 };                                       
                                                                                        
 // Classes used.                                                                       
-Class litebaseConnectionClass; // LitebaseConnection                                   
-Class loggerClass;             // Logger                                                                                          
+TCClass litebaseConnectionClass; // LitebaseConnection
+TCClass loggerClass;             // Logger
 
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.

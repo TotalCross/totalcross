@@ -49,8 +49,8 @@ extern uint8 yydefact[];
 extern uint16 yytable[];                                      
                                                                                               
 // Classes used.                                                                              
-extern Class litebaseConnectionClass; // LitebaseConnection                                   
-extern Class loggerClass;             // Logger                                                                                               
+extern TCClass litebaseConnectionClass; // LitebaseConnection
+extern TCClass loggerClass;             // Logger
 
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
