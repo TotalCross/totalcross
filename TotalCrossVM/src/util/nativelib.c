@@ -44,6 +44,9 @@ VoidP getProcAddress(const VoidP module, const char* funcName)
 
 bool attachNativeLib(Context currentContext, CharP name)
 {
+#if defined (darwin) && !defined (THEOS)
+   return strEq(name, "Litebase");
+#else
    VoidP h;
    NativeLib lib;
    TOpenParams params;
@@ -82,6 +85,7 @@ bool attachNativeLib(Context currentContext, CharP name)
       else xfree(lib);
    }
    return false;
+#endif
 }
 
 bool handleEvent(VoidP event)
