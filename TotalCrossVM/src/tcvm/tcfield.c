@@ -34,25 +34,25 @@ static int32 getStaticFieldIndex(CharP fieldName, FieldArray fields)
    return -1;
 }
 
-int32* getStaticFieldInt(Class c, CharP fieldName)
+int32* getStaticFieldInt(TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->i32StaticFields);
    return idx >= 0 ? &c->i32StaticValues[idx] : null;
 }
 
-double* getStaticFieldDouble(Class c, CharP fieldName)
+double* getStaticFieldDouble(TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->v64StaticFields);
    return idx >= 0 ? &c->v64StaticValues[idx] : null;
 }
 
-int64* getStaticFieldLong(Class c, CharP fieldName)
+int64* getStaticFieldLong(TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->v64StaticFields);
    return idx >= 0 ? (int64*)&c->v64StaticValues[idx] : null;
 }
 
-Object* getStaticFieldObject(Class c, CharP fieldName)
+Object* getStaticFieldObject(TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->objStaticFields);
    return idx >= 0 ? &c->objStaticValues[idx] : null;
@@ -62,14 +62,14 @@ Object* getStaticFieldObject(Class c, CharP fieldName)
 // functions used by the vm - these are called only once per field,
 // because the fields are bound after the first call
 
-VoidP getSField_Ref(Context currentContext, Class c, int32 sym, RegType t)
+VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
 {
    uint32 fieldIndex = c->cp->sfieldField[sym];
    uint32 classIndex = c->cp->sfieldClass[sym], len;
    CharP className = c->cp->cls[classIndex];
    CharP fieldName = c->cp->mtdfld[fieldIndex];
    FieldArray fields=null, f;
-   Class ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false);
+   TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false);
    if (ext)
    {
       for (f = fields = ext->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
@@ -109,7 +109,7 @@ inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, Objec
 {
    bool found=false;
    FieldArray fields, f;
-   Class ext = OBJ_CLASS(o);
+   TCClass ext = OBJ_CLASS(o);
    if (ext)
    {
       for (fields = ext->instanceFields[(int32)t], f = fields+ARRAYLENV(fields); --f >= fields;) // guich@tc110_101: must go backwards

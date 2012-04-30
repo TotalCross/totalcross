@@ -207,7 +207,7 @@ bool canLoadLitebase()
 
 TC_API int32 startProgram(Context currentContext)
 {
-   Class c;
+   TCClass c;
 #if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
    Object rasClientInstance;
    Method m;

@@ -16,7 +16,7 @@
 
 // tcclass.c
 extern Hashtable htLoadedClasses;
-extern ClassArray vLoadedClasses;
+extern TCClassArray vLoadedClasses;
 
 // tcexception.c
 extern CharP throwableAsCharP[(int32)ThrowableCount];
@@ -72,7 +72,7 @@ extern TScreenSurface screen;
 #ifdef ANDROID
 extern jmethodID jupdateScreen;
 #endif
-extern Class uiColorsClass;
+extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 
 // mem.c
@@ -98,7 +98,7 @@ extern bool bSipUp; //flsobral@tc114_50: fixed the SIP keyboard button not being
 #endif
 
 // Settings.c
-extern Class settingsClass;
+extern TCClass settingsClass;
 extern TTCSettings tcSettings;
 #if defined (WINCE)
 extern TVirtualKeyboardSettings vkSettings;
@@ -140,7 +140,7 @@ extern Context mainContext,gcContext;
 extern int32 vmTweaks;
 extern bool showKeyCodes;
 extern int32 profilerMaxMem;
-extern Class lockClass;
+extern TCClass lockClass;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(PALMOS) && !defined(WIN32)
@@ -195,7 +195,7 @@ extern jmethodID jtone,jsoundEnable;
 #endif
 
 // ConnectionManager.c
-extern Class connMgrClass;
+extern TCClass connMgrClass;
 
 // win/Socket_c.h
 #ifdef WIN32
