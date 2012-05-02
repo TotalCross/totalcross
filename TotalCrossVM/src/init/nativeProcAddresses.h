@@ -1,7 +1,7 @@
 #if defined (darwin) && !defined (THEOS)
-void initNativeHT();
-void destroyNativeHT();
+#define initNativeProcAddresses() do{ htNativeProcAddresses = htNew(512, null); fillNativeProcAddresses(); }while(0)
+#define destroyNativeProcAddresses() htFree(&htNativeProcAddresses, null)
 #else
-#define destroyNativeHT()
-#define initNativeHT()
+#define initNativeProcAddresses()
+#define destroyNativeProcAddresses()
 #endif

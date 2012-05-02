@@ -170,6 +170,9 @@ jmethodID jalert;
 // nativelib.c
 VoidPs* openNativeLibs;
 
+//native proc addresses for iOS
+Hashtable htNativeProcAddresses;
+
 // tcz.c
 VoidPs* openTCZs;
 
