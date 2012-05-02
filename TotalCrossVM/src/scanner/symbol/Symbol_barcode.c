@@ -144,7 +144,7 @@ static void destroyScanner()
 SCAN_API int32 LibOpen(OpenParams params)
 {
    HMODULE tcvmModule = GetModuleHandle(TEXT("tcvm.dll"));
-   Class scannerClass;
+   TCClass scannerClass;
 
    procDebug = (debugFunc) GetProcAddress(tcvmModule, L"debug");
 
