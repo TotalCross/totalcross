@@ -191,69 +191,85 @@ public class Loader extends Activity
          setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
       }
       
-      achandler = new Handler()
-      {
-         public void handleMessage(Message msg) 
-         {
-            Bundle b = msg.getData();
-            switch (b.getInt("type"))
-            {
-               case LEVEL5:
-                  Level5.getInstance().processMessage(b);
-                  break;
-               case DIAL:
-                  dialNumber(b.getString("dial.number"));
-                  break;
-               case CAMERA:
-                  captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
-                  break;
-               case TITLE:
-                  setTitle(b.getString("setDeviceTitle.title"));
-                  break;
-               case EXEC:
-                  intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
-                  break;
-               case MAP:
-                  callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
-                  break;
-               case INVERT_ORIENTATION:
-                  if (!b.getBoolean("invert"))
-                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                  else
-                  {
-                     boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-                     setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                  }
-                  break;
-               case FULLSCREEN:
-               {
-                  boolean setAndHide = b.getBoolean("fullScreen");
-                  boolean sendEvent = b.getBoolean("sendEvent");
-                  InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                  Window w = getWindow();
-                  if (setAndHide)
-                  {
-                     w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                     w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                     imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
-                     if (sendEvent)
-                        Launcher4A.sendCloseSIPEvent();
-                     Launcher4A.instance.requestLayout();
-                  }
-                  else
-                  {
-                     w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                     w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                     imm.showSoftInput(Launcher4A.instance, 0);
-                  }
-                  break;
-               }
-            }
-         }
-      };
+      achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
       setContentView(new Launcher4A(this, tczname, appPath, cmdline));
       onMainLoop = true;
+   }
+   
+   class EventHandler extends Handler implements Runnable
+   {
+      private boolean to;
+      
+      public void handleMessage(Message msg) 
+      {
+         Bundle b = msg.getData();
+         switch (b.getInt("type"))
+         {
+            case LEVEL5:
+               Level5.getInstance().processMessage(b);
+               break;
+            case DIAL:
+               dialNumber(b.getString("dial.number"));
+               break;
+            case CAMERA:
+               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
+               break;
+            case TITLE:
+               setTitle(b.getString("setDeviceTitle.title"));
+               break;
+            case EXEC:
+               intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
+               break;
+            case MAP:
+               callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
+               break;
+            case INVERT_ORIENTATION:
+               if (!b.getBoolean("invert"))
+                  setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+               else
+               {
+                  boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+                  setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+               }
+               break;
+            case FULLSCREEN:
+            {
+               boolean setAndHide = b.getBoolean("fullScreen");
+               boolean sendEvent = b.getBoolean("sendEvent");
+               InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+               if (setAndHide)
+               {
+                  imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
+                  to = true; postDelayed(this,300);
+                  if (sendEvent)
+                     Launcher4A.sendCloseSIPEvent();
+                  Launcher4A.instance.requestLayout();
+               }
+               else
+               {
+                  imm.showSoftInput(Launcher4A.instance, 0);
+                  to = false; postDelayed(this,300);
+               }
+               break;
+            }
+         }
+      }
+
+      public void run()
+      {
+         Window w = getWindow();
+         if (to)
+         {
+            w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+         }
+         else
+         {
+            w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+         }
+      }
    }
       
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
