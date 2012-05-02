@@ -512,20 +512,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
                goto error;
             }
             exist = false;
-         }
-         else
-         {
-            indexNameTCHARP[indexNameLength - 1] = 'r';
-            if (lbfileExists(indexNameTCHARP, slot))
-            {
-               if ((exist = lbfileDelete(null, indexNameTCHARP, slot, false)))
-               {
-                  fileError(context, exist, indexName);
-                  goto error;
-               }
-               exist = false;
-            } 
-         }         
+         }   
 #else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
@@ -537,19 +524,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
-         else
-         {
-            indexName[indexNameLength - 1] = 'r';
-            if (lbfileExists(indexName, slot))
-            {
-               if ((exist = lbfileDelete(null, indexName, slot, false)))
-               {
-                  fileError(context, exist, indexName);
-                  goto error;
-               }
-               exist = false;
-            } 
-         } 
 #endif
 
          *columnSizesIdx = columnSizes[i];
@@ -692,19 +666,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
-         else
-         {
-            indexNameTCHARP[indexNameLength - 1] = 'r';
-            if (lbfileExists(indexNameTCHARP, slot))
-            {
-               if ((exist = lbfileDelete(null, indexNameTCHARP, slot, false)))
-               {
-                  fileError(context, exist, indexName);
-                  goto error;
-               }
-               exist = false;
-            } 
-         } 
 #else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
@@ -717,19 +678,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
-         else
-         {
-            indexName[indexNameLength - 1] = 'r';
-            if (lbfileExists(indexName, slot))
-            {
-               if ((exist = lbfileDelete(null, indexName, slot, false)))
-               {
-                  fileError(context, exist, indexName);
-                  goto error;
-               }
-               exist = false;
-            } 
-         } 
 #endif
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.
