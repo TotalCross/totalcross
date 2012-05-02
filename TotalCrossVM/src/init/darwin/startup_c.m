@@ -11,13 +11,16 @@
 
 void privateGetWorkingDir(char* vmPath, char* appPath)
 {
-   const char* path = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
-   strcpy(appPath, path);
 #if defined THEOS
-   strcpy(vmPath, "/Applications/TotalCross.app/");
+   const char* _appPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
+   const char* _vmPath = "/Applications/TotalCross.app/";
 #else
-   strcpy(vmPath, path);
+   const char* _appPath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0] cStringUsingEncoding:NSASCIIStringEncoding];
+   const char* _vmPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
+
+   strcpy(vmPath, _vmPath);
+   strcpy(appPath, _appPath);
 }
 
 extern void privateFullscreen(bool on);
