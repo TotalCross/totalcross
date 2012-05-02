@@ -438,29 +438,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return true;
    }
 
-   static class BlinkAnimation extends android.view.animation.Animation {
-      private int totalBlinks;
-      private boolean finishOff;
-      
-      public BlinkAnimation(int totalBlinks, boolean finishOff) {
-         this.totalBlinks = totalBlinks;
-         this.finishOff = finishOff;
-      }
-
-      protected void applyTransformation(float interpolatedTime, android.view.animation.Transformation t) {
-         float period = interpolatedTime * totalBlinks * 3.14f + (finishOff ? 3.14f / 2 : 0);
-         t.setAlpha(Math.abs(FloatMath.cos(period)));
-      }
-
-      public boolean willChangeBounds() {
-         return false;
-      }
-
-      public boolean willChangeTransformationMatrix() {
-         return false;
-      }
-   }
-
    private static final int TRANSITION_NONE = 0;
    private static final int TRANSITION_OPEN = 1;
    private static final int TRANSITION_CLOSE = 2;
