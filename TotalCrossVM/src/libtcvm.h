@@ -15,5 +15,3 @@
 + (NSInteger) startProgram:(Context) context;
 
 @end
-
-int teste();

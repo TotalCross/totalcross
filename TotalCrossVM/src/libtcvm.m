@@ -24,10 +24,4 @@
     return startProgram(context);
 }
 
-
 @end
-
-int teste()
-{
-    return 0;
-}
