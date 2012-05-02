@@ -15,83 +15,89 @@
 
 #include "TCVMLib.h"
 
+#if defined (darwin) && !defined (THEOS)
+#define GETPROCADDRESS(x) x
+#else
+#define GETPROCADDRESS(x) TC_getProcAddress(null, #x)
+#endif
+
 /**
  * Initializes the pointers to TotalCross functions used by Litebase. 
  */
 void initTCVMLib()
 {
-   TC_CharP2JCharP = TC_getProcAddress(null, "CharP2JCharP");
-   TC_CharP2JCharPBuf = TC_getProcAddress(null, "CharP2JCharPBuf");
-   TC_CharPToLower = TC_getProcAddress(null, "CharPToLower");
-   TC_JCharP2CharP = TC_getProcAddress(null, "JCharP2CharP");
-   TC_JCharP2CharPBuf = TC_getProcAddress(null, "JCharP2CharPBuf");
-	TC_JCharPEqualsJCharP = TC_getProcAddress(null, "JCharPEqualsJCharP");
-   TC_JCharPEqualsIgnoreCaseJCharP = TC_getProcAddress(null, "JCharPEqualsIgnoreCaseJCharP");
-   TC_JCharPHashCode = TC_getProcAddress(null, "JCharPHashCode");
-   TC_JCharPIndexOfJChar = TC_getProcAddress(null, "JCharPIndexOfJChar");
-	TC_JCharPLen = TC_getProcAddress(null, "JCharPLen");
-   TC_JCharToLower = TC_getProcAddress(null, "JCharToLower");
-   TC_JCharToUpper = TC_getProcAddress(null, "JCharToUpper");
-   TC_alert = TC_getProcAddress(null, "alert");
-   TC_appendCharP = TC_getProcAddress(null, "appendCharP"); // juliana@230_30
-   TC_appendJCharP = TC_getProcAddress(null, "appendJCharP"); // juliana@230_30
-   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
-   TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
-   TC_createObject = TC_getProcAddress(null, "createObject");
-   TC_createStringObjectFromCharP = TC_getProcAddress(null, "createStringObjectFromCharP");
-   TC_createStringObjectFromTCHARP = TC_getProcAddress(null, "createStringObjectFromTCHARP");;
-   TC_createStringObjectWithLen = TC_getProcAddress(null, "createStringObjectWithLen");
-   TC_debug = TC_getProcAddress(null, "debug");
-   TC_double2str = TC_getProcAddress(null, "double2str");
-   TC_executeMethod = TC_getProcAddress(null, "executeMethod");
-	TC_getApplicationId = TC_getProcAddress(null, "getApplicationId");
-   TC_getAppPath = TC_getProcAddress(null, "getAppPath");
-   TC_getDataPath = TC_getProcAddress(null, "getDataPath");
-   TC_getDateTime = TC_getProcAddress(null, "getDateTime");
-	TC_getErrorMessage = TC_getProcAddress(null, "getErrorMessage");
-   TC_getSettingsPtr = TC_getProcAddress(null, "getSettingsPtr");
-   TC_getTimeStamp = TC_getProcAddress(null, "getTimeStamp");
-   TC_hashCode = TC_getProcAddress(null, "hashCode");
-   TC_hashCodeFmt = TC_getProcAddress(null, "hashCodeFmt");
-   TC_heapAlloc = TC_getProcAddress(null, "heapAlloc");
-   TC_heapDestroyPrivate = TC_getProcAddress(null, "heapDestroyPrivate");
-   TC_hstrdup = TC_getProcAddress(null, "hstrdup");
-   TC_htFree = TC_getProcAddress(null, "htFree");
-   TC_htFreeContext = TC_getProcAddress(null, "htFreeContext");
-   TC_htGet32 = TC_getProcAddress(null, "htGet32");
-   TC_htGet32Inv = TC_getProcAddress(null, "htGet32Inv");
-   TC_htGetPtr = TC_getProcAddress(null, "htGetPtr");
-   TC_htNew = TC_getProcAddress(null, "htNew");
-   TC_htPut32 = TC_getProcAddress(null, "htPut32");
-   TC_htPut32IfNew = TC_getProcAddress(null, "htPut32IfNew");
-   TC_htPutPtr = TC_getProcAddress(null, "htPutPtr");
-   TC_htRemove = TC_getProcAddress(null, "htRemove");
-   TC_int2CRID =  TC_getProcAddress(null, "int2CRID");
-   TC_int2str = TC_getProcAddress(null, "int2str");
-   TC_listFiles = TC_getProcAddress(null, "listFiles");
-   TC_loadClass = TC_getProcAddress(null, "loadClass");
-   TC_long2str = TC_getProcAddress(null, "long2str");
-   TC_privateHeapCreate = TC_getProcAddress(null, "privateHeapCreate");
-   TC_privateHeapSetJump = TC_getProcAddress(null, "privateHeapSetJump");
-   TC_privateXfree = TC_getProcAddress(null, "privateXfree");
-   TC_privateXmalloc = TC_getProcAddress(null, "privateXmalloc");
-   TC_privateXrealloc = TC_getProcAddress(null, "privateXrealloc");
-   TC_setObjectLock = TC_getProcAddress(null, "setObjectLock");
-   TC_str2double = TC_getProcAddress(null, "str2double");
-   TC_str2int = TC_getProcAddress(null, "str2int");
-   TC_str2long = TC_getProcAddress(null, "str2long");
-   TC_throwExceptionNamed = TC_getProcAddress(null, "throwExceptionNamed");
-   TC_throwNullArgumentException = TC_getProcAddress(null, "throwNullArgumentException");
    TC_tiF_create_sii = TC_getProcAddress(null, "tiF_create_sii");
-   TC_toLower = TC_getProcAddress(null, "toLower");
-   TC_trace = TC_getProcAddress(null, "trace");
-   TC_validatePath = TC_getProcAddress(null, "validatePath"); // juliana@214_1
+   TC_CharP2JCharP = GETPROCADDRESS(CharP2JCharP);
+   TC_CharP2JCharPBuf = GETPROCADDRESS(CharP2JCharPBuf);
+   TC_CharPToLower = GETPROCADDRESS(CharPToLower);
+   TC_JCharP2CharP = GETPROCADDRESS(JCharP2CharP);
+   TC_JCharP2CharPBuf = GETPROCADDRESS(JCharP2CharPBuf);
+   TC_JCharPEqualsJCharP = GETPROCADDRESS(JCharPEqualsJCharP);
+   TC_JCharPEqualsIgnoreCaseJCharP = GETPROCADDRESS(JCharPEqualsIgnoreCaseJCharP);
+   TC_JCharPHashCode = GETPROCADDRESS(JCharPHashCode);
+   TC_JCharPIndexOfJChar = GETPROCADDRESS(JCharPIndexOfJChar);
+   TC_JCharPLen = GETPROCADDRESS(JCharPLen);
+   TC_JCharToLower = GETPROCADDRESS(JCharToLower);
+   TC_JCharToUpper = GETPROCADDRESS(JCharToUpper);
+   TC_alert = GETPROCADDRESS(alert);
+   TC_appendCharP = GETPROCADDRESS(appendCharP); // juliana@230_30
+   TC_appendJCharP = GETPROCADDRESS(appendJCharP); // juliana@230_30
+   TC_areClassesCompatible = GETPROCADDRESS(areClassesCompatible);
+   TC_createArrayObject = GETPROCADDRESS(createArrayObject);
+   TC_createObject = GETPROCADDRESS(createObject);
+   TC_createStringObjectFromCharP = GETPROCADDRESS(createStringObjectFromCharP);
+   TC_createStringObjectFromTCHARP = GETPROCADDRESS(createStringObjectFromTCHARP);;
+   TC_createStringObjectWithLen = GETPROCADDRESS(createStringObjectWithLen);
+   TC_debug = GETPROCADDRESS(debug);
+   TC_double2str = GETPROCADDRESS(double2str);
+   TC_executeMethod = GETPROCADDRESS(executeMethod);
+   TC_getApplicationId = GETPROCADDRESS(getApplicationId);
+   TC_getAppPath = GETPROCADDRESS(getAppPath);
+   TC_getDataPath = GETPROCADDRESS(getDataPath);
+   TC_getDateTime = GETPROCADDRESS(getDateTime);
+   TC_getErrorMessage = GETPROCADDRESS(getErrorMessage);
+   TC_getSettingsPtr = GETPROCADDRESS(getSettingsPtr);
+   TC_getTimeStamp = GETPROCADDRESS(getTimeStamp);
+   TC_hashCode = GETPROCADDRESS(hashCode);
+   TC_hashCodeFmt = GETPROCADDRESS(hashCodeFmt);
+   TC_heapAlloc = GETPROCADDRESS(heapAlloc);
+   TC_heapDestroyPrivate = GETPROCADDRESS(heapDestroyPrivate);
+   TC_hstrdup = GETPROCADDRESS(hstrdup);
+   TC_htFree = GETPROCADDRESS(htFree);
+   TC_htFreeContext = GETPROCADDRESS(htFreeContext);
+   TC_htGet32 = GETPROCADDRESS(htGet32);
+   TC_htGet32Inv = GETPROCADDRESS(htGet32Inv);
+   TC_htGetPtr = GETPROCADDRESS(htGetPtr);
+   TC_htNew = GETPROCADDRESS(htNew);
+   TC_htPut32 = GETPROCADDRESS(htPut32);
+   TC_htPut32IfNew = GETPROCADDRESS(htPut32IfNew);
+   TC_htPutPtr = GETPROCADDRESS(htPutPtr);
+   TC_htRemove = GETPROCADDRESS(htRemove);
+   TC_int2CRID =  GETPROCADDRESS(int2CRID);
+   TC_int2str = GETPROCADDRESS(int2str);
+   TC_listFiles = GETPROCADDRESS(listFiles);
+   TC_loadClass = GETPROCADDRESS(loadClass);
+   TC_long2str = GETPROCADDRESS(long2str);
+   TC_privateHeapCreate = GETPROCADDRESS(privateHeapCreate);
+   TC_privateHeapSetJump = GETPROCADDRESS(privateHeapSetJump);
+   TC_privateXfree = GETPROCADDRESS(privateXfree);
+   TC_privateXmalloc = GETPROCADDRESS(privateXmalloc);
+   TC_privateXrealloc = GETPROCADDRESS(privateXrealloc);
+   TC_setObjectLock = GETPROCADDRESS(setObjectLock);
+   TC_str2double = GETPROCADDRESS(str2double);
+   TC_str2int = GETPROCADDRESS(str2int);
+   TC_str2long = GETPROCADDRESS(str2long);
+   TC_throwExceptionNamed = GETPROCADDRESS(throwExceptionNamed);
+   TC_throwNullArgumentException = GETPROCADDRESS(throwNullArgumentException);
+   TC_toLower = GETPROCADDRESS(toLower);
+   TC_trace = GETPROCADDRESS(trace);
+   TC_validatePath = GETPROCADDRESS(validatePath); // juliana@214_1
 #ifdef PALMOS
-   TC_getLastVolume = TC_getProcAddress(null, "getLastVolume");
+   TC_getLastVolume = GETPROCADDRESS(getLastVolume);
 #endif
 #ifdef ENABLE_MEMORY_TEST
-   TC_getCountToReturnNull = TC_getProcAddress(null, "getCountToReturnNull");
-	TC_setCountToReturnNull = TC_getProcAddress(null, "setCountToReturnNull");
+   TC_getCountToReturnNull = GETPROCADDRESS(getCountToReturnNull);
+   TC_setCountToReturnNull = GETPROCADDRESS(setCountToReturnNull);
 #endif 
 }
 
