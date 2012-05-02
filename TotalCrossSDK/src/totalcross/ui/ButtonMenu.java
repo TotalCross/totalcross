@@ -292,6 +292,14 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int rowsPerPage = (height-vgap)/imageH;
       if (rowsPerPage == 0)
          rowsPerPage = 1;
+      if (disposition == MULTIPLE_VERTICAL && height/imageH > rowsPerPage) // guich: prevent problem when the gap is too high and just a few buttons are shown
+      {
+         vgap = height % imageH;
+         rowsPerPage++;
+         pageH = height-vgap;
+         imageH  = imageH0 + vgap;
+      }
+         
       if (disposition == MULTIPLE_HORIZONTAL)
       {
          int rows = pageH / imageH;
