@@ -13,7 +13,7 @@
 
 #include "tcvm.h"
 #include "tcz.h"
-#include "nativeHT.h"
+#include "nativeProcAddresses.h"
 
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
