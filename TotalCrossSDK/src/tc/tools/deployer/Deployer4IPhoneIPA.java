@@ -73,7 +73,7 @@ public class Deployer4IPhoneIPA
       appFolder = newAppFolder;
       
       // Add tcz
-      new TFile(DeploySettings.tczFileName).cp(new TFile(appFolder, DeploySettings.tczFileName));
+      new TFile(DeploySettings.tczFileName).cp(new TFile(appFolder, new File(DeploySettings.tczFileName).getName()));
       // TCBase
       new TFile(DeploySettings.distDir, "vm/TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
       // TCFont
