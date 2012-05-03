@@ -2,7 +2,7 @@
 #include "NativeMethods.h"
 #include "utils.h"
 
-void fillNativeProcAddresses()
+void fillNativeProcAddressesTC()
 {
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);
