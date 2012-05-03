@@ -80,10 +80,8 @@ public class Deployer4IPhoneIPA
 //      new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       new TFile(DeploySettings.distDir, "vm/" + "TCFont.tcz").cp(new TFile(appFolder, "TCFont.tcz"));
       new TFile(DeploySettings.distDir, "vm/" + "TCFontOld.tcz").cp(new TFile(appFolder, "TCFontOld.tcz"));
-      
-      new TFile(DeploySettings.etcDir, "tools/ipa/" + "icon.png").cp(new TFile(appFolder, "icon.png"));
-//      new TFile(DeploySettings.etcDir, "tools/ipa/" + "icon.png").cp(new TFile(appFolder, "tc114x114.png"));
-//      new TFile(DeploySettings.etcDir, "tools/ipa/" + "icon.png").cp(new TFile(appFolder, "icon72x72.png"));
+      // Litebase
+      new TFile(DeploySettings.folderLitebaseSDKDistLIB, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
       
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
