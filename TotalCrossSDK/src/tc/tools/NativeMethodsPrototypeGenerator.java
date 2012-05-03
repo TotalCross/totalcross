@@ -35,14 +35,10 @@ public class NativeMethodsPrototypeGenerator
             Vector v = new Vector(100);
             if (argv[0].equals("makeNativeHT"))
             {
-               Vector v2 = new Vector(100);
-               for (int i = 2 ; i < argv.length ; i++)
-               {
-                  readFile(v2, new FileInputStream(argv[i]));
-                  v.addAll(v2);
-               }
+               nativeHTSuffix = argv[1];
+               nativeHTPath = argv[2];
+               readFile(v, new FileInputStream(argv[3]));
                makeNativeHT = true;
-               nativeHTPath = argv[1];
             }
             else
             {
@@ -84,6 +80,7 @@ public class NativeMethodsPrototypeGenerator
    private static int errorCount;
    private static boolean makeTestCases;
    private static boolean makeNativeHT;
+   private static String nativeHTSuffix;
    private static String nativeHTPath;
 
    //////////////////////////////////////////////////////////////////////////////////
@@ -128,7 +125,7 @@ public class NativeMethodsPrototypeGenerator
       s += CRLF+"{";
       s += CRLF+"}"+CRLF;
 
-      iosarray.addElement("htPutPtr(&htNativeFuncs, hashCode(\""+funcName+"\"), &"+funcName+");\n");
+      iosarray.addElement("htPutPtr(&htNativeProcAddresses, hashCode(\""+funcName+"\"), &"+funcName+");\n");
       prototypes.addElement(s);
       prototypesH.addElement(CRLF+sn+";");
 
@@ -352,17 +349,12 @@ public class NativeMethodsPrototypeGenerator
          // ios prototypes
          if (makeNativeHT)
          {
-            FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeHT.c"));
+            FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeProcAddresses" + nativeHTSuffix + ".c"));
             fw.write("#include \"tcvm.h\"\n");
             fw.write("#include \"NativeMethods.h\"\n");
             fw.write("#include \"utils.h\"\n\n");
-            fw.write("Hashtable htNativeFuncs;\n\n");
 
-            fw.write("void destroyNativeHT()\n{\n");
-            fw.write("   htFree(&htNativeFuncs,null);\n}\n\n");
-
-            fw.write("void initNativeHT()\n{\n");
-            fw.write("   htNativeFuncs = htNew(" + iosarray.size() + ", null);\n");
+            fw.write("void fillNativeProcAddresses" + nativeHTSuffix + "()\n{\n");
             for (int i = 0; i < iosarray.size(); i++)
                fw.write("   " + iosarray.elementAt(i).toString());
             fw.write("}\n");
