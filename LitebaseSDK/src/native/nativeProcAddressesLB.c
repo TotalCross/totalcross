@@ -2,7 +2,7 @@
 #include "NativeMethods.h"
 #include "utils.h"
 
-void fillNativeProcAddresses()
+void fillNativeProcAddressesLB()
 {
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_next"), &lRI_next);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_nextNotSynced"), &lRI_nextNotSynced);
