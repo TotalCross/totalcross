@@ -42,6 +42,8 @@ TC_API void lLC_isOpen_s(NMParams p);
 TC_API void lLC_dropDatabase_ssi(NMParams p);
 TC_API void lLC_isTableProperlyClosed_s(NMParams p);
 TC_API void lLC_listAllTables(NMParams p);
+TC_API void lLC_encryptTables_ssi(NMParams p);
+TC_API void lLC_decryptTables_ssi(NMParams p);
 TC_API void lRS_getResultSetMetaData(NMParams p);
 TC_API void lRS_close(NMParams p);
 TC_API void lRS_beforeFirst(NMParams p);
@@ -281,6 +283,14 @@ TC_API void lLC_isTableProperlyClosed_s(NMParams p) // litebase/LitebaseConnecti
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void lLC_listAllTables(NMParams p) // litebase/LitebaseConnection public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_encryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_decryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void decryptTables(String crid, String sourcePath, int slot);
 {
 }
 //////////////////////////////////////////////////////////////////////////

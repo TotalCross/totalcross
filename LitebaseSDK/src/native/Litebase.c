@@ -1529,6 +1529,175 @@ bool checkParamAndDriver(NMParams params, CharP parameter)
    return true;
 } 
 
+/**
+ * Encrypts or decrypts all the tables of a connection given from the application id.
+ *
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ * @throws DriverException If a file error occurs, not all the tables use the desired cryptography format.
+ * @throws NullPointerException If one of the string parameters is null.
+ */
+void encDecTables(NMParams params, bool toEncrypt)
+{
+   TRACE("encDecTables")
+   Object cridObj = params->obj[0],
+          pathObj = params->obj[1];
+          
+   if (cridObj) 
+      if (pathObj)
+         if (String_charsLen(pathObj) >= MAX_PATHNAME - 4 - DBNAME_SIZE) // The path length can't be greater than the buffer size.
+            TC_throwExceptionNamed(params->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH));
+         else
+         {
+            TCHARPs* list = null;
+
+#ifdef WINCE
+            JCharP cridStr;
+            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
+            char value[DBNAME_SIZE],
+            fullPath[MAX_PATHNAME];
+#else
+            char cridStr[5],
+                 pathStr[MAX_PATHNAME]; 
+            CharP fullPath;
+            CharP value;
+#endif
+
+            int32 i,
+                  j,
+                  k,
+                  error,
+                  count = 0,
+                  slot = params->i32[0],
+                  encByte = toEncrypt? 0 : 1;
+            bool deleted = false;
+            Heap heap = heapCreate();
+            TCHAR buffer[MAX_PATHNAME];
+            NATIVE_FILE file;
+            uint8 bytes[CACHE_INITIAL_SIZE];
+
+#ifdef PALMOS
+            if (slot == -1)
+               slot = TC_getLastVolume();
+#endif
+
+            IF_HEAP_ERROR(heap)
+            {
+               TC_throwExceptionNamed(params->currentContext, "java.lang.OutOfMemoryError", null);
+               
+error:               
+               heapDestroy(heap);
+               return;
+            }
+
+#ifdef WINCE
+            cridStr = String_charsStart(cridObj);
+            xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
+            pathStr[i] = 0;
+            TC_JCharP2CharPBuf(pathStr, i, fullPath);
+#else
+            TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
+            TC_JCharP2CharPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath = pathStr);
+#endif
+
+            if ((error = TC_listFiles(pathStr, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+            {
+               fileError(params->currentContext, error, "");
+               goto error;
+            } 
+            
+            // Before doing anything, checks if all the .db files are marked as decrypted or encrypted.
+            i = count;
+            while (--i >= 0)
+            {
+#ifndef WINCE         
+               value = list->value;
+               if (xstrstr(value, cridStr) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
+#else
+               TC_JCharP2CharPBuf(list->value, -1, value);
+               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false) && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
+#endif
+               {
+                  getFullFileName(value, fullPath, buffer);
+                  if ((error = lbfileCreate(&file, buffer, READ_ONLY, &slot)))
+                  {
+fileError:
+                     fileError(params->currentContext, error, value);
+                     goto error;
+                  }
+                  if ((error = lbfileReadBytes(file, bytes, 0, 4, &j)) || (error = lbfileClose(&file)))
+                     goto fileError; 
+                  if (bytes[0] != encByte || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)    
+                  {
+                     TC_throwExceptionNamed(params->currentContext, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT));
+                     goto error;
+                  }
+               }
+
+               list = list->next;             
+            }
+            
+            i = count;
+            encByte = toEncrypt? 1 : 0;
+            while (--i >= 0)
+            {
+#ifndef WINCE         
+               value = list->value;
+               if (xstrstr(value, cridStr) == value)
+#else
+               TC_JCharP2CharPBuf(list->value, -1, value);
+               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false))
+#endif         
+               {
+                  getFullFileName(value, fullPath, buffer);
+                  if ((error = lbfileCreate(&file, buffer, READ_WRITE, &slot)))
+                     goto fileError;
+                  
+                  count = 0;
+                  if (xstrstr(value, ".db")) // Changes the .db file crypto information.
+                  {
+                     if ((error = lbfileReadBytes(file, bytes, 0, 4, &j)))
+                        goto fileError;
+                     bytes[0] = encByte;
+                     if ((error = lbfileSetPos(file, 0)) || (error = lbfileWriteBytes(file, bytes, 0, 4, &j)))
+                        goto fileError;
+                     count = 4;
+                  }
+                  
+                  // Encrypts or decrypts all the table files data.
+                  while (!(error = lbfileReadBytes(file, bytes, 0, CACHE_INITIAL_SIZE, &j)) && j)
+                  {
+                     k = j;
+                     while (--k >= 0)
+                        bytes[k] ^= 0xAA;
+                        
+                     if ((error = lbfileSetPos(file, count)) || (error = lbfileWriteBytes(file, bytes, 0, j, &j)))
+                        goto fileError;
+                     count += j;      
+                  }
+                  
+                  if (error || (error = lbfileClose(&file)))
+                  {
+                     lbfileClose(&file);
+                     goto fileError;
+                  }
+                     
+               }
+               
+               list = list->next;   
+            }
+            
+            heapDestroy(heap);        
+         
+         }
+      else // The string argument can't be null.
+         TC_throwNullArgumentException(params->currentContext, "sourcePath");
+   else // The string argument can't be null.
+      TC_throwNullArgumentException(params->currentContext, "crid");
+   
+}
+
 #ifdef ENABLE_TEST_SUITE
 
 /**
