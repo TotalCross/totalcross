@@ -238,11 +238,9 @@ public class Loader extends Activity
                Window w = getWindow();
                if (setAndHide)
                {
-                  imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
+                  imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0, Launcher4A.instance.siprecv);
                   w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                   w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                  Launcher4A.sendCloseSIPEvent();
-                  Launcher4A.instance.requestLayout();
                }
                else
                {

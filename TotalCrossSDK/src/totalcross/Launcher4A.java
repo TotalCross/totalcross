@@ -704,9 +704,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setSIP(sipOption,false);
    }
    
+   class SipClosedReceiver extends ResultReceiver
+   {
+      public SipClosedReceiver()
+      {
+         super(null);
+      }
+      public void onReceiveResult(int resultCode, Bundle resultData)
+      {
+         sendCloseSIPEvent();
+      }
+   }
+   public SipClosedReceiver siprecv = new SipClosedReceiver();
+   
    public static void setSIP(int sipOption, boolean sendEvent)
    {
-      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
+      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
       {
          case SIP_HIDE:
@@ -714,10 +727,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             if (Loader.isFullScreen)
                setLoaderFullScreen(true,sendEvent);
             else
-            {
-               imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
-               sendCloseSIPEvent();
-            }
+               imm.hideSoftInputFromWindow(instance.getWindowToken(), 0, instance.siprecv);
             break;
          case SIP_SHOW:
          case SIP_TOP:
