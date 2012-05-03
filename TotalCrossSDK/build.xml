@@ -339,6 +339,7 @@ target: desktop
        <keep name="tc.tools.deployer.*"><field/><method/></keep>
        <keep name="tc.tools.converter.ConverterException" />
        <keep name="tc.Deploy"><field  access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.Deploy$*"><field access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.deployer.LinuxBuildNatives"><field access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.deployer.LinuxBuildNatives$*"><field access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.deployer.IPhoneBuildNatives"><field access="public protected" /><method access="public protected" /></keep>
