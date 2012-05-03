@@ -13,6 +13,8 @@
 		0F003ED1150FEBBF004F0653 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F003ECF150FEBBF004F0653 /* InfoPlist.strings */; };
 		0F003ED4150FEBBF004F0653 /* tcvmTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F003ED3150FEBBF004F0653 /* tcvmTests.m */; };
 		0F75461C1511414C005B3DEC /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F003EB3150FEBBF004F0653 /* libtcvm.a */; };
+		0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F7CBA091552CCB100E9BD43 /* nativeProcAddressesTC.c */; };
+		0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F7CBA0A1552CCB100E9BD43 /* nativeProcAddressesTC.h */; };
 		0F8C8C5A1549CFC700E0967F /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C89FC1549CFC700E0967F /* aes.c */; };
 		0F8C8C5B1549CFC700E0967F /* asn1.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C89FD1549CFC700E0967F /* asn1.c */; };
 		0F8C8C5C1549CFC700E0967F /* axssl_config.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C89FE1549CFC700E0967F /* axssl_config.h */; };
@@ -55,8 +57,6 @@
 		0F8C8C8C1549CFC700E0967F /* demo.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A381549CFC700E0967F /* demo.h */; };
 		0F8C8C8D1549CFC700E0967F /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A391549CFC700E0967F /* globals.c */; };
 		0F8C8C8E1549CFC700E0967F /* globals.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A3A1549CFC700E0967F /* globals.h */; };
-		0F8C8C8F1549CFC700E0967F /* nativeHT.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3B1549CFC700E0967F /* nativeHT.c */; };
-		0F8C8C901549CFC700E0967F /* nativeHT.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A3C1549CFC700E0967F /* nativeHT.h */; };
 		0F8C8C911549CFC700E0967F /* noras.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3E1549CFC700E0967F /* noras.inc */; };
 		0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3F1549CFC700E0967F /* noras_20.inc */; };
 		0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A401549CFC700E0967F /* noras_274.inc */; };
@@ -436,6 +436,8 @@
 		0F003ED2150FEBBF004F0653 /* tcvmTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tcvmTests.h; sourceTree = "<group>"; };
 		0F003ED3150FEBBF004F0653 /* tcvmTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = tcvmTests.m; sourceTree = "<group>"; };
 		0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		0F7CBA091552CCB100E9BD43 /* nativeProcAddressesTC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nativeProcAddressesTC.c; sourceTree = "<group>"; };
+		0F7CBA0A1552CCB100E9BD43 /* nativeProcAddressesTC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nativeProcAddressesTC.h; sourceTree = "<group>"; };
 		0F8C89FC1549CFC700E0967F /* aes.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = aes.c; sourceTree = "<group>"; };
 		0F8C89FD1549CFC700E0967F /* asn1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = asn1.c; sourceTree = "<group>"; };
 		0F8C89FE1549CFC700E0967F /* axssl_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = axssl_config.h; sourceTree = "<group>"; };
@@ -479,8 +481,6 @@
 		0F8C8A381549CFC700E0967F /* demo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = demo.h; sourceTree = "<group>"; };
 		0F8C8A391549CFC700E0967F /* globals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = globals.c; sourceTree = "<group>"; };
 		0F8C8A3A1549CFC700E0967F /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
-		0F8C8A3B1549CFC700E0967F /* nativeHT.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nativeHT.c; sourceTree = "<group>"; };
-		0F8C8A3C1549CFC700E0967F /* nativeHT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nativeHT.h; sourceTree = "<group>"; };
 		0F8C8A3E1549CFC700E0967F /* noras.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras.inc; sourceTree = "<group>"; };
 		0F8C8A3F1549CFC700E0967F /* noras_20.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_20.inc; sourceTree = "<group>"; };
 		0F8C8A401549CFC700E0967F /* noras_274.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_274.inc; sourceTree = "<group>"; };
@@ -1007,14 +1007,14 @@
 		0F8C8A2E1549CFC700E0967F /* init */ = {
 			isa = PBXGroup;
 			children = (
+				0F7CBA091552CCB100E9BD43 /* nativeProcAddressesTC.c */,
+				0F7CBA0A1552CCB100E9BD43 /* nativeProcAddressesTC.h */,
 				0F8C8A321549CFC700E0967F /* compilation.date */,
 				0F8C8A331549CFC700E0967F /* darwin */,
 				0F8C8A371549CFC700E0967F /* demo.c */,
 				0F8C8A381549CFC700E0967F /* demo.h */,
 				0F8C8A391549CFC700E0967F /* globals.c */,
 				0F8C8A3A1549CFC700E0967F /* globals.h */,
-				0F8C8A3B1549CFC700E0967F /* nativeHT.c */,
-				0F8C8A3C1549CFC700E0967F /* nativeHT.h */,
 				0F8C8A3D1549CFC700E0967F /* noras_ids */,
 				0F8C8A461549CFC700E0967F /* posix */,
 				0F8C8A491549CFC700E0967F /* settings.c */,
@@ -1932,7 +1932,6 @@
 				0F8C8C831549CFC700E0967F /* specialkeys.h in Headers */,
 				0F8C8C8C1549CFC700E0967F /* demo.h in Headers */,
 				0F8C8C8E1549CFC700E0967F /* globals.h in Headers */,
-				0F8C8C901549CFC700E0967F /* nativeHT.h in Headers */,
 				0F8C8C981549CFC700E0967F /* settings_c.h in Headers */,
 				0F8C8C991549CFC700E0967F /* startup_c.h in Headers */,
 				0F8C8C9B1549CFC700E0967F /* settings.h in Headers */,
@@ -2121,6 +2120,7 @@
 				0F8C8E351549CFC700E0967F /* zlib.h in Headers */,
 				0F8C8E371549CFC700E0967F /* zutil.h in Headers */,
 				0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */,
+				0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2248,7 +2248,6 @@
 				0F8C8C8A1549CFC700E0967F /* startup_c.m in Sources */,
 				0F8C8C8B1549CFC700E0967F /* demo.c in Sources */,
 				0F8C8C8D1549CFC700E0967F /* globals.c in Sources */,
-				0F8C8C8F1549CFC700E0967F /* nativeHT.c in Sources */,
 				0F8C8C911549CFC700E0967F /* noras.inc in Sources */,
 				0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */,
 				0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */,
@@ -2417,6 +2416,7 @@
 				0F8C8E301549CFC700E0967F /* trees.c in Sources */,
 				0F8C8E321549CFC700E0967F /* uncompr.c in Sources */,
 				0F8C8E361549CFC700E0967F /* zutil.c in Sources */,
+				0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2481,7 +2481,7 @@
 					"$(PROJECT_DIR)/../../src/nm/ui/**",
 					"$(PROJECT_DIR)/../../src/nm/**",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				SDKROOT = iphoneos4.3;
@@ -2514,7 +2514,7 @@
 					"$(PROJECT_DIR)/../../src/nm/ui/**",
 					"$(PROJECT_DIR)/../../src/nm/**",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				SDKROOT = iphoneos4.3;
