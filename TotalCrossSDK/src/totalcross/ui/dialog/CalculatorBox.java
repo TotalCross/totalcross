@@ -34,6 +34,10 @@ public class CalculatorBox extends Window
    private KeyEvent ke = new KeyEvent(),backspace; // guich@421_59
    private boolean showOperations;
    private String ds;
+   // calculator computations
+   private String last = null;
+   private boolean clearNext;
+   private int lastSel=-1;
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
    
@@ -354,10 +358,6 @@ public class CalculatorBox extends Window
       setupUI(true);
    }
 
-   // calculator computations
-   private String last = null;
-   private boolean clearNext;
-   private int lastSel=-1;
    private void compute(int selectedIndex) throws Exception
    {
       switch (selectedIndex)

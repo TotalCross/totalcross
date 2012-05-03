@@ -478,6 +478,22 @@ public class Window extends Container
          _doPaint();
    }
    ////////////////////////////////////////////////////////////////////////////////////
+   class RepaintOnSipClose implements TimerListener
+   {
+      private TimerEvent te;
+      public void timerTriggered(TimerEvent e)
+      {
+         if (te.triggered)
+         {
+            removeTimer(te);
+            removeTimerListener(this);
+            repaintActiveWindows();
+         }
+      }
+   }
+   
+   RepaintOnSipClose rosc = new RepaintOnSipClose();
+   
    /**
     * Called by the VM to post key and pen events.
     */
@@ -558,6 +574,8 @@ public class Window extends Container
          {
             shiftScreen(null,0);
             isSipShown = false;
+            rosc.te = addTimer(300); // must wait the sip close
+            addTimerListener(rosc);
             return;
          }
          if (shiftY != 0) // is the screen shifted?
