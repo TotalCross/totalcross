@@ -716,8 +716,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             else
             {
                imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
-               if (sendEvent)
-                  sendCloseSIPEvent();
+               sendCloseSIPEvent();
             }
             break;
          case SIP_SHOW:

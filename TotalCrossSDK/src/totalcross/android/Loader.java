@@ -197,10 +197,8 @@ public class Loader extends Activity
       onMainLoop = true;
    }
    
-   class EventHandler extends Handler implements Runnable
+   class EventHandler extends Handler 
    {
-      private boolean to;
-      
       public void handleMessage(Message msg) 
       {
          Bundle b = msg.getData();
@@ -236,38 +234,24 @@ public class Loader extends Activity
             case FULLSCREEN:
             {
                boolean setAndHide = b.getBoolean("fullScreen");
-               boolean sendEvent = b.getBoolean("sendEvent");
                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+               Window w = getWindow();
                if (setAndHide)
                {
                   imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
-                  to = true; postDelayed(this,300);
-                  if (sendEvent)
-                     Launcher4A.sendCloseSIPEvent();
+                  w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                  Launcher4A.sendCloseSIPEvent();
                   Launcher4A.instance.requestLayout();
                }
                else
                {
                   imm.showSoftInput(Launcher4A.instance, 0);
-                  to = false; postDelayed(this,300);
+                  w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                  w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                }
                break;
             }
-         }
-      }
-
-      public void run()
-      {
-         Window w = getWindow();
-         if (to)
-         {
-            w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-         }
-         else
-         {
-            w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
          }
       }
    }
