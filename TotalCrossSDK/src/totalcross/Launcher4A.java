@@ -580,8 +580,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
    private final static int SOFT_EXIT = 0x40000000;
+   private final static int SOFT_UNEXIT = 0x40000001;
    static void exit(int ret)
    {
+      if (ret == SOFT_UNEXIT)
+      {
+         AndroidUtils.debug("soft unexit");
+         Intent myStarterIntent = new Intent(loader, Loader.class);
+         loader.startActivity(myStarterIntent);         
+         loader.finish();
+         return;
+      }
+      else
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);

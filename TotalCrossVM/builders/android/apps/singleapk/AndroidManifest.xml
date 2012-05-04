@@ -5,6 +5,11 @@
       android:versionName="!1.0!"
       android:sharedUserId="totalcross.app.sharedid"
     >
+    
+    <!-- ATTENTION: THIS IS FOR THE SINGLE APK - THERE'S ANOTHER MANIFEST FILE 
+    FOR STANDARD APPLICATIONS THAT USE THE VM
+    G:\TotalCross\TotalCrossVM\builders\android\apps\singleapk\AndroidManifest.xml -->
+    
     <application android:icon="@drawable/icon" android:label="Stub"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader"
@@ -25,6 +30,9 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <service android:name=".TCService" />
+
     </application>
     <uses-sdk android:minSdkVersion="4" />
     <uses-permission android:name="android.permission.READ_LOGS" />

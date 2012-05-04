@@ -29,6 +29,7 @@ public class MailService extends MainWindow implements Runnable
       byte []buf = new byte[1024];
       while (true)
       {
+         Vm.debug("*** waiting for file ***");
          try
          {
             String[] files = new File(inFolder).listFiles();
@@ -53,7 +54,8 @@ public class MailService extends MainWindow implements Runnable
                      if (stop)
                      {
                         new MessageBox("message","stopping service...").popupNonBlocking();
-                        Vm.exec("unregister service",null,0,true);
+                        if (Settings.isWindowsDevice())
+                           Vm.exec("unregister service",null,0,true);
                         Vm.sleep(500);
                         exit(0);
                         return;
@@ -66,7 +68,7 @@ public class MailService extends MainWindow implements Runnable
          {
             e.printStackTrace();
          }
-         Vm.sleep(15*1000); // wait 30 seconds
+         Vm.sleep(5*1000); // wait a few seconds
       }
    }
    
@@ -75,7 +77,9 @@ public class MailService extends MainWindow implements Runnable
    public MailService()
    {
       setUIStyle(Settings.Android);
-      prepareService();
+      Vm.debug(Vm.ALTERNATIVE_DEBUG);
+      if (Settings.isWindowsDevice())
+         prepareService();
    }
    
    public void initUI()
@@ -91,6 +95,7 @@ public class MailService extends MainWindow implements Runnable
    
    public void log(String s)
    {
+      Vm.debug(s);
       lb.addWrapping(s);
       lb.selectLast();
    }

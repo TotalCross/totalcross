@@ -290,8 +290,11 @@ public class Deployer4Android
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
 
       replaceBytes(bytes, sourcePackage.getBytes(), targetPackage.getBytes());
-      if (DeploySettings.autoStart)
-         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, new byte[]{0,0,0,0});
+      if (DeploySettings.autoStart || DeploySettings.isService)
+      {
+         System.out.println("Is service.");
+         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, DeploySettings.isService ? new byte[]{1,0,0,0} : new byte[]{0,0,0,0});
+      }
       calcSignature(bytes);
       calcChecksum(bytes);
       dstZip.write(bytes,0,bytes.length);
@@ -615,7 +618,7 @@ public class Deployer4Android
          {
             case JavaConstant.CONSTANT_INTEGER:
                String cla = jclass.getClassName();
-               if (DeploySettings.autoStart && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
+               if ((DeploySettings.autoStart || DeploySettings.isService) && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
                {
                   Integer it = new Integer();
                   it.value = DeploySettings.isService ? 1 : 0;
