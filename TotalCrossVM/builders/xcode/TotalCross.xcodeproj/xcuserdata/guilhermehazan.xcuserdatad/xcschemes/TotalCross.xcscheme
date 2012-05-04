@@ -14,6 +14,34 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0F003EB2150FEBBF004F0653"
+               BuildableName = "libtcvm.a"
+               BlueprintName = "tcvm"
+               ReferencedContainer = "container:tcvm.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0F91CB7A154EDC7A000868DA"
+               BuildableName = "libLitebase.a"
+               BlueprintName = "Litebase"
+               ReferencedContainer = "container:../../../../Litebase/LitebaseSDK/builders/xcode/Litebase.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "0F5AF5021507FA3600D6142B"
                BuildableName = "TotalCross.app"
                BlueprintName = "TotalCross"
