@@ -3263,7 +3263,7 @@ bool setModified(Context context, Table* table)
 }
 
 
-inline int32 randBetween(int32 low, int32 high)
+inline_ int32 randBetween(int32 low, int32 high)
 {
    TRACE("randBetween")
 

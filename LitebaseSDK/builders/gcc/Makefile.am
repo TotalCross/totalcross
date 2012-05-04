@@ -7,7 +7,7 @@
 sourcedir	= ${srcdir}/../../src/native
 tcvmdir     = ${srcdir}/../../../TotalCrossVM/src
 
-AM_CFLAGS = -DPOSIX -D_REENTRANT -DLITEBASE -Wall -Wunused-function -Wno-import -DLB_EXPORTS -fno-strict-aliasing -I${sourcedir} -I${sourcedir}/parser -I${tcvmdir}/util -I${tcvmdir}/tcvm -I${tcvmdir}/nm/io -I${tcvmdir}/nm/lang
+AM_CFLAGS = -DTHEOS -DPOSIX -D_REENTRANT -DLITEBASE -Wall -Wunused-function -Wno-import -DLB_EXPORTS -fno-strict-aliasing -I${sourcedir} -I${sourcedir}/parser -I${tcvmdir}/util -I${tcvmdir}/tcvm -I${tcvmdir}/nm/io -I${tcvmdir}/nm/lang
 
 # uncomment for a debug build
 # AM_CFLAGS += -I/opt/include/valgrind -g -O0 -DENABLE_TRACE
