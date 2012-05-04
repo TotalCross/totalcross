@@ -47,6 +47,8 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_dropDatabase_ssi"), &lLC_dropDatabase_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_isTableProperlyClosed_s"), &lLC_isTableProperlyClosed_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_listAllTables"), &lLC_listAllTables);
+   htPutPtr(&htNativeProcAddresses, hashCode("lLC_encryptTables_ssi"), &lLC_encryptTables_ssi);
+   htPutPtr(&htNativeProcAddresses, hashCode("lLC_decryptTables_ssi"), &lLC_decryptTables_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_getResultSetMetaData"), &lRS_getResultSetMetaData);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_close"), &lRS_close);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_beforeFirst"), &lRS_beforeFirst);
@@ -95,6 +97,10 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_hasDefaultValue_s"), &lRSMD_hasDefaultValue_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_isNotNull_i"), &lRSMD_isNotNull_i);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_isNotNull_s"), &lRSMD_isNotNull_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getPKColumnIndices_s"), &lRSMD_getPKColumnIndices_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getPKColumnNames_s"), &lRSMD_getPKColumnNames_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getDefaultValue_i"), &lRSMD_getDefaultValue_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getDefaultValue_s"), &lRSMD_getDefaultValue_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_executeQuery"), &lPS_executeQuery);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_executeUpdate"), &lPS_executeUpdate);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_setShort_is"), &lPS_setShort_is);

@@ -285,7 +285,7 @@ TC_API void lLC_listAllTables(NMParams p) // litebase/LitebaseConnection public 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_encryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot);
+TC_API void lLC_encryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot); 
 {
 }
 //////////////////////////////////////////////////////////////////////////
