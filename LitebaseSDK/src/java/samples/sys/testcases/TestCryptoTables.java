@@ -11,8 +11,6 @@
 
 package samples.sys.testcases;
 
-
-import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.unit.TestCase;
 import litebase.*;
@@ -235,16 +233,52 @@ public class TestCryptoTables extends TestCase
       conn.closeAll();
       connAux.closeAll();
       
-      try // The .dbo of the ascii table must be smaller than the .dbo of the unicode table.
+      // Not all the tables have the same cryptography mode.
+      try
       {
-         File file1, 
-              file2;
-         assertLower((file1 = new File(tempPath + "Test-person2.dbo", File.READ_WRITE, -1)).getSize(), 
-                     (file2 = new File(tempPath + "Test-person1.dbo", File.READ_WRITE, -1)).getSize());
-         file1.close();
-         file2.close();
-      } 
-      catch (IOException exception) {}
+         LitebaseConnection.encryptTables("Test", tempPath, 1);
+         fail("10");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         LitebaseConnection.decryptTables("Test", tempPath, 1);
+         fail("11");
+      }
+      catch (DriverException exception) {}
+     
+      // Drops the table with cryptography.
+      (connAux = LitebaseConnection.getInstance("Test", "crypto; path = " + tempPath)).executeUpdate("drop table person2");
+      connAux.closeAll();
+      
+      // Encrypts the table and tests it.
+      LitebaseConnection.encryptTables("Test", tempPath, 1);      
+      conn = LitebaseConnection.getInstance("Test", tempPath);
+      connAux = LitebaseConnection.getInstance("Test", "crypto; path = " + tempPath);
+      try // The table can't be opened in a non-encrypted connection.
+      {
+         conn.executeQuery("select * from person1");
+         fail("12");
+      }
+      catch (DriverException exception) {}
+      conn.closeAll();
+      connAux.executeQuery("select * from person1").close();            
+      connAux.closeAll();
+      
+      // Decrypts the table and tests it.
+      LitebaseConnection.decryptTables("Test", tempPath, 1);
+      conn = LitebaseConnection.getInstance("Test", tempPath);
+      connAux = LitebaseConnection.getInstance("Test", "crypto; path = " + tempPath);
+      try // The table can't be opened in an encrypted connection.
+      {
+         connAux.executeQuery("select * from person1");
+         fail("12");
+      }
+      catch (DriverException exception) {}
+      connAux.closeAll();
+      connAux = LitebaseConnection.getInstance("Test", "crypto; path = " + tempPath);
+      conn.executeQuery("select * from person1").close();
+      conn.closeAll();       
    }
 
 }

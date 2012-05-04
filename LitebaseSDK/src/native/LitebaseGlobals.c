@@ -45,8 +45,8 @@ JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representin
 // juliana@253_9: improved Litebase parser.
                                                                                        
 // Classes used.                                                                       
-Class litebaseConnectionClass; // LitebaseConnection                                   
-Class loggerClass;             // Logger                                                                                          
+TCClass litebaseConnectionClass; // LitebaseConnection
+TCClass loggerClass;             // Logger
 
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.

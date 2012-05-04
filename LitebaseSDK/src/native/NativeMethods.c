@@ -2554,6 +2554,7 @@ LB_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public nativ
  * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If the database is not found or a file error occurs.
  * @throws NullPointerException If one of the string parameters is null.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_dropDatabase_ssi(NMParams p)
 {
@@ -2858,6 +2859,41 @@ error:
 finish: 
    TC_setObjectLock(p->retO, UNLOCKED); 
    
+   MEMORY_TEST_END
+}
+
+// juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot);
+/**
+ * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_encryptTables_ssi(NMParams p) 
+{
+   TRACE("lLC_encryptTables_ssi")
+   MEMORY_TEST_START
+   encDecTables(p, true);
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native void decryptTables(String crid, String sourcePath, int slot);
+/**
+ * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_decryptTables_ssi(NMParams p) 
+{
+   TRACE("lLC_decryptTables_ssi")
+   MEMORY_TEST_START
+   encDecTables(p, false);
    MEMORY_TEST_END
 }
 

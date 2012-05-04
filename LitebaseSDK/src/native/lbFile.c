@@ -23,51 +23,51 @@
    #include "posix/File_c.h"
 #endif
 
-inline Err lbfileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
+inline_ Err lbfileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
 {
    return fileCreate(fref, path, mode, slot);
 }
-inline Err lbfileClose(NATIVE_FILE* fref)
+inline_ Err lbfileClose(NATIVE_FILE* fref)
 {
    return fileClose(fref);
 }
-inline Err lbfileCreateDir(TCHARP path, int32 slot)
+inline_ Err lbfileCreateDir(TCHARP path, int32 slot)
 {
    return fileCreateDir(path, slot);
 }
-inline Err lbfileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
+inline_ Err lbfileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
 {
    return fileDelete(fref, path, slot, isOpen);
 }
-inline bool lbfileExists(TCHARP path, int32 slot)
+inline_ bool lbfileExists(TCHARP path, int32 slot)
 {                                              
    return fileExists(path, slot);
 }
-inline Err lbfileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
+inline_ Err lbfileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {                                
    return fileGetSize(fref, szPath, size);
 }
-inline Err lbfileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
+inline_ Err lbfileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {                                         
    return fileReadBytes(fref, bytes, offset, length, bytesRead);
 }
-inline Err lbfileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
+inline_ Err lbfileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
 {                                                              
    return fileRename(fref, slot, currPath, newPath, isOpen);
 }
-inline Err lbfileSetPos(NATIVE_FILE fref, int32 position)
+inline_ Err lbfileSetPos(NATIVE_FILE fref, int32 position)
 {                                                           
    return fileSetPos(fref, position);
 }
-inline Err lbfileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
+inline_ Err lbfileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {                                    
    return fileWriteBytes(fref, bytes, offset, length, bytesWritten);
 }
-inline Err lbfileSetSize(NATIVE_FILE* fref, int32 newSize)
+inline_ Err lbfileSetSize(NATIVE_FILE* fref, int32 newSize)
 {                                                                   
    return fileSetSize(fref, newSize);
 }
-inline Err lbfileFlush(NATIVE_FILE fref)
+inline_ Err lbfileFlush(NATIVE_FILE fref)
 {                                    
    return fileFlush(fref);
 }

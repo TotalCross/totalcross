@@ -67,7 +67,7 @@ LB_API void LibClose();
  *
  * @param params Some parameters and function pointers in order to load a .dll.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- * @throws OutOfMemoryError if a memory allocation fails.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
 bool initVars(OpenParams params);
 
@@ -265,6 +265,16 @@ CharP dataTypeFunctionsName(int32 sqlFunction);
  * @throws NullPointerException If the table name is null.
  */
 bool checkParamAndDriver(NMParams params, CharP parameter);
+
+/**
+ * Encrypts or decrypts all the tables of a connection given from the application id.
+ *
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ * @throws DriverException If a file error occurs or not all the tables use the desired cryptography format.
+ */
+void encDecTables(NMParams params, bool toEncrypt);
 
 #ifdef ENABLE_TEST_SUITE
 

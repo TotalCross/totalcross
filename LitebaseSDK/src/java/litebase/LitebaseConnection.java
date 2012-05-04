@@ -2279,11 +2279,13 @@ public class LitebaseConnection
          String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
          int i = files.length;
          
+         crid += '-';
+         
          // Deletes only the files of the chosen database.
          boolean deleted = false;
          while (--i >= 0)
          {
-            if (files[i].startsWith(crid + '-'))
+            if (files[i].startsWith(crid))
             {
                new File(sourcePath + files[i], File.DONT_OPEN, -1).delete();
                deleted = true;
@@ -2366,13 +2368,13 @@ public class LitebaseConnection
       {
          String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
          String fileName,
-                crid = appCrid;
+                crid = appCrid + '-';
          int i = files.length,
              count = 0;
                   
          while (--i >= 0) // Selects the .db files that are from the tables of the current connection.
          {
-            if ((fileName = files[i]).startsWith(crid + '-') && fileName.endsWith(".db"))
+            if ((fileName = files[i]).startsWith(crid) && fileName.endsWith(".db"))
             {
                files[i] = fileName.substring(5, fileName.length() - 3);
                count++;
@@ -2389,6 +2391,104 @@ public class LitebaseConnection
                names[--count] = files[i];
          
          return names;
+         
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+   }
+   
+   /**
+    * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public static void encryptTables(String crid, String sourcePath, int slot) 
+   {
+      encDecTables(crid, sourcePath, slot, true);
+   }
+   
+   // juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+   /**
+    * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public static void decryptTables(String crid, String sourcePath, int slot)
+   {
+      encDecTables(crid, sourcePath, slot, false);
+   }
+   
+   /**
+    * Encrypts or decrypts all the tables of a connection given from the application id.
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param toEncrypt Indicates if the tables are to be encrypted or decrypted.
+    * @throws DriverException If an <code>IOException</code> is thrown or not all the tables use the desired cryptography format.
+    */
+   private static void encDecTables(String crid, String sourcePath, int slot, boolean toEncrypt) throws DriverException
+   {
+      try
+      {
+         // Lists all the files of the folder.
+         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         int i = files.length,
+             j,
+             k;
+         int encByte = toEncrypt? 0 : 1;
+         File file;
+         byte[] bytes = new byte[NormalFile.CACHE_INITIAL_SIZE];
+         
+         crid += '-';
+         
+         // Before doing anything, checks if all the .db files are marked as decrypted or encrypted.
+         while (--i >= 0)
+         {
+            if (files[i].startsWith(crid) && files[i].endsWith(".db"))
+            {
+               (file = new File(sourcePath + files[i], File.READ_ONLY, -1)).readBytes(bytes, 0, 4);
+               file.close();
+               if (bytes[0] != encByte || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
+            }
+         }
+         
+         i = files.length;
+         encByte = toEncrypt? 1 : 0;
+         while (--i >= 0)
+         {
+            if (files[i].startsWith(crid))
+            {          
+               file = new File(sourcePath + files[i], File.READ_WRITE, -1);
+               
+               if (files[i].endsWith(".db")) // Changes the .db file crypto information.
+               {
+                  file.readBytes(bytes, 0, 4);
+                  bytes[0] = (byte)encByte;
+                  file.setPos(0);
+                  file.writeBytes(bytes, 0, 4);
+               }
+               
+               // Encrypts or decrypts all the table files data.
+               while ((k = j = file.readBytes(bytes, 0, NormalFile.CACHE_INITIAL_SIZE)) != -1)
+               {
+                  while (--k >= 0)
+                     bytes[k] ^= 0xAA;
+                  file.setPos(-j, File.SEEK_CUR);
+                  file.writeBytes(bytes, 0, j);
+               }
+               
+               file.close();
+            }
+            
+         }
          
       }
       catch (IOException exception)
