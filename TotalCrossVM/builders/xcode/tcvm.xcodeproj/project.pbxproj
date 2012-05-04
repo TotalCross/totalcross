@@ -8,11 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0F003EB7150FEBBF004F0653 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F003EB6150FEBBF004F0653 /* Foundation.framework */; };
-		0F003EC5150FEBBF004F0653 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */; };
-		0F003EC8150FEBBF004F0653 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F003EB6150FEBBF004F0653 /* Foundation.framework */; };
-		0F003ED1150FEBBF004F0653 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F003ECF150FEBBF004F0653 /* InfoPlist.strings */; };
-		0F003ED4150FEBBF004F0653 /* tcvmTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F003ED3150FEBBF004F0653 /* tcvmTests.m */; };
-		0F75461C1511414C005B3DEC /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F003EB3150FEBBF004F0653 /* libtcvm.a */; };
 		0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F7CBA091552CCB100E9BD43 /* nativeProcAddressesTC.c */; };
 		0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F7CBA0A1552CCB100E9BD43 /* nativeProcAddressesTC.h */; };
 		0F8C8C5A1549CFC700E0967F /* aes.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C89FC1549CFC700E0967F /* aes.c */; };
@@ -416,25 +411,10 @@
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		0F003EC9150FEBBF004F0653 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0F003EAA150FEBBF004F0653 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0F003EB2150FEBBF004F0653;
-			remoteInfo = tcvm;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		0F003EB3150FEBBF004F0653 /* libtcvm.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtcvm.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F003EB6150FEBBF004F0653 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		0F003EC3150FEBBF004F0653 /* tcvmTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tcvmTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
-		0F003ECE150FEBBF004F0653 /* tcvmTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "tcvmTests-Info.plist"; sourceTree = "<group>"; };
-		0F003ED0150FEBBF004F0653 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		0F003ED2150FEBBF004F0653 /* tcvmTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tcvmTests.h; sourceTree = "<group>"; };
-		0F003ED3150FEBBF004F0653 /* tcvmTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = tcvmTests.m; sourceTree = "<group>"; };
 		0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		0F7CBA091552CCB100E9BD43 /* nativeProcAddressesTC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nativeProcAddressesTC.c; sourceTree = "<group>"; };
 		0F7CBA0A1552CCB100E9BD43 /* nativeProcAddressesTC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nativeProcAddressesTC.h; sourceTree = "<group>"; };
@@ -860,26 +840,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0F003EBF150FEBBF004F0653 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F003EC5150FEBBF004F0653 /* SenTestingKit.framework in Frameworks */,
-				0F003EC8150FEBBF004F0653 /* Foundation.framework in Frameworks */,
-				0F75461C1511414C005B3DEC /* libtcvm.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F003EA8150FEBBF004F0653 = {
 			isa = PBXGroup;
 			children = (
+				0F8C8AA61549CFC700E0967F /* libtcvm.h */,
+				0F8C8AA71549CFC700E0967F /* libtcvm.m */,
 				0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */,
 				0F8C89FA1549CFC700E0967F /* src */,
-				0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */,
-				0F003ECC150FEBBF004F0653 /* tcvmTests */,
 				0F003EB5150FEBBF004F0653 /* Frameworks */,
 				0F003EB4150FEBBF004F0653 /* Products */,
 			);
@@ -889,7 +859,6 @@
 			isa = PBXGroup;
 			children = (
 				0F003EB3150FEBBF004F0653 /* libtcvm.a */,
-				0F003EC3150FEBBF004F0653 /* tcvmTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -897,30 +866,12 @@
 		0F003EB5150FEBBF004F0653 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0F7318BC1513DCFB001EE647 /* AudioToolbox.framework */,
 				0FAA49A61549D7B30039F4BF /* UIKit.framework */,
 				0F003EB6150FEBBF004F0653 /* Foundation.framework */,
 				0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		0F003ECC150FEBBF004F0653 /* tcvmTests */ = {
-			isa = PBXGroup;
-			children = (
-				0F003ED2150FEBBF004F0653 /* tcvmTests.h */,
-				0F003ED3150FEBBF004F0653 /* tcvmTests.m */,
-				0F003ECD150FEBBF004F0653 /* Supporting Files */,
-			);
-			path = tcvmTests;
-			sourceTree = "<group>";
-		};
-		0F003ECD150FEBBF004F0653 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				0F003ECE150FEBBF004F0653 /* tcvmTests-Info.plist */,
-				0F003ECF150FEBBF004F0653 /* InfoPlist.strings */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		0F8C89FA1549CFC700E0967F /* src */ = {
@@ -931,8 +882,6 @@
 				0F8C8A2E1549CFC700E0967F /* init */,
 				0F8C8A501549CFC700E0967F /* jpeg */,
 				0F8C8A881549CFC700E0967F /* launchers */,
-				0F8C8AA61549CFC700E0967F /* libtcvm.h */,
-				0F8C8AA71549CFC700E0967F /* libtcvm.m */,
 				0F8C8AA81549CFC700E0967F /* minizip */,
 				0F8C8AB01549CFC700E0967F /* nm */,
 				0F8C8B991549CFC700E0967F /* palmdb */,
@@ -2144,25 +2093,6 @@
 			productReference = 0F003EB3150FEBBF004F0653 /* libtcvm.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		0F003EC2150FEBBF004F0653 /* tcvmTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0F003EDA150FEBBF004F0653 /* Build configuration list for PBXNativeTarget "tcvmTests" */;
-			buildPhases = (
-				0F003EBE150FEBBF004F0653 /* Sources */,
-				0F003EBF150FEBBF004F0653 /* Frameworks */,
-				0F003EC0150FEBBF004F0653 /* Resources */,
-				0F003EC1150FEBBF004F0653 /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0F003ECA150FEBBF004F0653 /* PBXTargetDependency */,
-			);
-			name = tcvmTests;
-			productName = tcvmTests;
-			productReference = 0F003EC3150FEBBF004F0653 /* tcvmTests.octest */;
-			productType = "com.apple.product-type.bundle";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2185,37 +2115,9 @@
 			projectRoot = "";
 			targets = (
 				0F003EB2150FEBBF004F0653 /* tcvm */,
-				0F003EC2150FEBBF004F0653 /* tcvmTests */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		0F003EC0150FEBBF004F0653 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F003ED1150FEBBF004F0653 /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		0F003EC1150FEBBF004F0653 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0F003EAF150FEBBF004F0653 /* Sources */ = {
@@ -2420,34 +2322,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0F003EBE150FEBBF004F0653 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F003ED4150FEBBF004F0653 /* tcvmTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		0F003ECA150FEBBF004F0653 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0F003EB2150FEBBF004F0653 /* tcvm */;
-			targetProxy = 0F003EC9150FEBBF004F0653 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		0F003ECF150FEBBF004F0653 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				0F003ED0150FEBBF004F0653 /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		0F003ED5150FEBBF004F0653 /* Debug */ = {
@@ -2552,36 +2427,6 @@
 			};
 			name = Release;
 		};
-		0F003EDB150FEBBF004F0653 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "tcvm/tcvm-Prefix.pch";
-				INFOPLIST_FILE = "tcvmTests/tcvmTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Debug;
-		};
-		0F003EDC150FEBBF004F0653 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "tcvm/tcvm-Prefix.pch";
-				INFOPLIST_FILE = "tcvmTests/tcvmTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2599,15 +2444,6 @@
 			buildConfigurations = (
 				0F003ED8150FEBBF004F0653 /* Debug */,
 				0F003ED9150FEBBF004F0653 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0F003EDA150FEBBF004F0653 /* Build configuration list for PBXNativeTarget "tcvmTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0F003EDB150FEBBF004F0653 /* Debug */,
-				0F003EDC150FEBBF004F0653 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
