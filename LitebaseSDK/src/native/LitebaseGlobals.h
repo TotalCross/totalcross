@@ -34,8 +34,8 @@ extern JChar questionMark[2];           // A jchar string representing "?".
 // juliana@parser_1: improved Litebase parser.                
                                                                                               
 // Classes used.                                                                              
-extern Class litebaseConnectionClass; // LitebaseConnection                                   
-extern Class loggerClass;             // Logger                                                                                               
+extern TCClass litebaseConnectionClass; // LitebaseConnection
+extern TCClass loggerClass;             // Logger
 
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.

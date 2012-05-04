@@ -666,4 +666,23 @@ public class LitebaseConnection4D
     * @throws OutOfMemoryError If a memory allocation fails.
     */
    public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+
+   // juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+   /**
+    * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public native static void encryptTables(String crid, String sourcePath, int slot);
+   
+   /**
+    * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public native static void decryptTables(String crid, String sourcePath, int slot);
 }

@@ -501,6 +501,24 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p);
 LB_API void lLC_listAllTables(NMParams p);
 
 /**
+ * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_encryptTables_ssi(NMParams p);
+
+/**
+ * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_decryptTables_ssi(NMParams p);
+
+/**
  * Returns the metadata for this result set.
  *
  * @param p->obj[0] The result set.
