@@ -59,7 +59,7 @@ public class NinePatch
    {
    }
    
-   class Parts
+   public class Parts
    {
       Image imgLT,imgT,imgRT,imgL,imgC,imgR,imgLB,imgB,imgRB; // left top right bottom
       int corner, side;
@@ -114,7 +114,7 @@ public class NinePatch
       return img;
    }
    
-   private Parts load(Image original, int corner, int side)
+   public Parts load(Image original, int corner, int side)
    {
       try
       {
@@ -140,6 +140,52 @@ public class NinePatch
          throw new RuntimeException(e+" "+e.getMessage());
       }
    }
+
+   public Image getNormalInstance(Parts p, int width, int height, int color, boolean rotate) throws ImageException
+   {
+      int []buf = new int[width > height ? width : height];
+      Image ret = new Image(width,height);
+      ret.useAlpha = p.imgC.useAlpha;
+      ret.transparentColor = p.imgC.transparentColor;
+      Image c;
+      int side = p.side, s;
+      int corner = p.corner;
+      // sides
+      s = width-corner*2;
+      if (s > 0)
+      {
+         c = p.imgT.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,0, 0,0,s,corner);
+         c = p.imgB.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,height-corner, 0,0,s,corner);
+      }
+      s = height-corner*2;
+      if (s > 0)
+      {
+         c = p.imgL.getScaledInstance(side,s);  copyPixels(buf, ret, c, 0,corner, 0,0,side,s);
+         c = p.imgR.getScaledInstance(side,s);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,s);
+      }
+      // corners
+      try
+      {
+         copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
+         copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
+         copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
+         copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
+      }
+      catch (ArrayIndexOutOfBoundsException aioobe) {} // ignore error that comes sometimes in JavaSE
+      // center
+      if (width-side*2 > 0 && height-corner*2 > 0)
+      {
+         c = p.imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
+         copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
+      }
+      if (Settings.screenBPP == 16)
+         ret.dither();
+      if (color != -1)
+         ret.applyColor2(color);
+      if (rotate)
+         ret = ret.getRotatedScaledInstance(100,180,-1);
+      return ret;
+   }
    
    public Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
    {
@@ -155,48 +201,7 @@ public class NinePatch
          }
          if (ret == null)
          {
-            Parts p = parts[type];
-
-            int []buf = new int[width > height ? width : height];
-            ret = new Image(width,height);
-            ret.useAlpha = p.imgC.useAlpha;
-            ret.transparentColor = p.imgC.transparentColor;
-            Image c;
-            int side = p.side, s;
-            int corner = p.corner;
-            // sides
-            s = width-corner*2;
-            if (s > 0)
-            {
-               c = p.imgT.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,0, 0,0,s,corner);
-               c = p.imgB.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,height-corner, 0,0,s,corner);
-            }
-            s = height-corner*2;
-            if (s > 0)
-            {
-               c = p.imgL.getScaledInstance(side,s);  copyPixels(buf, ret, c, 0,corner, 0,0,side,s);
-               c = p.imgR.getScaledInstance(side,s);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,s);
-            }
-            // corners
-            try
-            {
-               copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
-               copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
-               copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
-               copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
-            }
-            catch (ArrayIndexOutOfBoundsException aioobe) {} // ignore error that comes sometimes in JavaSE
-            // center
-            if (width-side*2 > 0 && height-corner*2 > 0)
-            {
-               c = p.imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
-               copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
-            }
-            if (Settings.screenBPP == 16)
-               ret.dither();
-            ret.applyColor2(color);
-            if (rotate)
-               ret = ret.getRotatedScaledInstance(100,180,-1);
+            ret = getNormalInstance(parts[type],width,height,color,rotate);
             if (fromCache)
                htBtn.put(hash, ret);
          }
