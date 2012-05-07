@@ -587,8 +587,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          AndroidUtils.debug("soft unexit");
          Intent myStarterIntent = new Intent(loader, Loader.class);
+         myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
          loader.startActivity(myStarterIntent);         
-         loader.finish();
          return;
       }
       else

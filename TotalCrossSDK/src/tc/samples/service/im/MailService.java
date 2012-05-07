@@ -84,10 +84,13 @@ public class MailService extends MainWindow implements Runnable
    
    public void initUI()
    {
-      MessageBox mb = new MessageBox("Attention","Service being started. Write a txt file at \\msg to open the service's window",null);
-      mb.popupNonBlocking();
-      Vm.sleep(2000);
-      mb.unpop();
+      if (!Settings.platform.equals(Settings.ANDROID))
+      {
+         MessageBox mb = new MessageBox("Attention","Service being started. Write a txt file at \\msg to open the service's window",null);
+         mb.popupNonBlocking();
+         Vm.sleep(2000);
+         mb.unpop();
+      }
       minimize();
       add(lb = new ListBox(), LEFT,TOP,FILL,FILL);
       new Thread(this).start();
