@@ -4,7 +4,7 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>tcvm.xcscheme_^#shared#^_</key>
+		<key>TotalCross.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
@@ -12,12 +12,12 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>0F003EB2150FEBBF004F0653</key>
+		<key>0F5AF5021507FA3600D6142B</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>0F003EC2150FEBBF004F0653</key>
+		<key>0F5AF5261507FA3600D6142B</key>
 		<dict>
 			<key>primary</key>
 			<true/>
