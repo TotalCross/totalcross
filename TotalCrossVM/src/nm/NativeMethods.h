@@ -353,6 +353,7 @@ TC_API void tiPDBF_setRecordAttributes_ib(NMParams p);
 TC_API void tiPDBF_getAttributes(NMParams p);
 TC_API void tiPDBF_setAttributes_i(NMParams p);
 TC_API void tiPDBF_searchBytes_Bii(NMParams p);
+TC_API void tiF_getDeviceAlias(NMParams p);
 TC_API void tiF_create_sii(NMParams p);
 TC_API void tiF_nativeClose(NMParams p);
 TC_API void tiF_isCardInserted_i(NMParams p);
