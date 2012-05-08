@@ -472,7 +472,7 @@ end:
 
 static Object privateCreateObject(Context currentContext, CharP className, bool callDefaultConstructor)
 {
-   Class c;
+   TCClass c;
    uint32 objectSize;
    Object o=null;
 
@@ -514,7 +514,7 @@ TC_API Object createObject(Context currentContext, CharP className)
 
 Object createArrayObject(Context currentContext, CharP type, int32 len)
 {
-   Class c;
+   TCClass c;
    uint32 arraySize, objectSize;
    Object o=null;
 
@@ -652,7 +652,7 @@ TC_API void setObjectLock(Object o, LockState lock)
 
 static void markSingleObject(Object o)
 {
-   Class c;
+   TCClass c;
    TObjectsToVisit objs;
 
    if (OBJ_MARK(o) == markedAsUsed) // don't remove! this test is important
@@ -714,7 +714,7 @@ static void markObjects(Object o)
 
 static void markClass(int32 i32, VoidP ptr)
 {
-   Class c = (Class)ptr;
+   TCClass c = (TCClass)ptr;
    int32 i;
    Object* f = c->objStaticValues;
    UNUSED(i32)
@@ -855,7 +855,7 @@ static void markContexts()
    } while (current != head);
 }
 
-inline void finalizeObject(Object o, Class c) 
+inline_ void finalizeObject(Object o, TCClass c)
 {
    while (c != null) 
    {
@@ -879,7 +879,7 @@ void runFinalizers() // calls finalize of all objects in use
    ObjectArray usedL;
    Object o;
    int32 i;
-   Class c;
+   TCClass c;
    gcContext->litebasePtr = mainContext->litebasePtr;  // let litebase destroy the ptr if he wants so
    for (i = 0, usedL = usedList; i <= OBJARRAY_MAX_INDEX; i++, usedL++)
       if (*usedL)
@@ -915,7 +915,7 @@ void preallocateArray(Context currentContext, Object sample, int32 length)
 void gc(Context currentContext)
 {
    int32 i;
-   Class c;
+   TCClass c;
    ObjectArray freeL, usedL;
    Object o;
    int32 iniT,endT, elapsed;

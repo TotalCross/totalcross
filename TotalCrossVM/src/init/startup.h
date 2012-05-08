@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+#include "tcvm.h"
 
 #ifndef STARTUP_H
 #define STARTUP_H
@@ -22,6 +22,9 @@
  */
 TC_API int32 executeProgram(CharP args);
 typedef int32 (*executeProgramFunc)(CharP args);
+
+TC_API int32 startVM(CharP argsOriginal, Context* cOut);
+TC_API int32 startProgram(Context currentContext);
 
 /** True if the class loader can load a Litebase class. */
 bool canLoadLitebase();

@@ -12,11 +12,14 @@
 
 
 #import <Foundation/Foundation.h>
-#import <IOKit/IOKitLib.h>
 #import <UIKit/UIDevice.h>
+#if defined (THEOS)
+#import <IOKit/IOKitLib.h>
+#endif
 
 void getSerialNum(char *id, int maxlen)
 {
+#if defined (THEOS)
    CFTypeRef serialNumberAsCFString;
 
    io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
@@ -30,6 +33,7 @@ void getSerialNum(char *id, int maxlen)
    }
    else
       strcpy(id, "unknown");
+#endif
 }
 
 int getRomVersion()

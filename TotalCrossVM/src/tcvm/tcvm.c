@@ -158,7 +158,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    VoidPArray callStack0 = null;
    // get method's variables
    register Code code = method->code;
-   Class class_ = method->class_, c=null,thisClass;
+   TCClass class_ = method->class_, c=null,thisClass;
    ConstantPool cp = class_->cp;
    uint32 nparam=0;
    NMParams nmp = &context->nmp;
@@ -845,7 +845,7 @@ handleException:
       {
          ExceptionArray ex = method->exceptionHandlers;
          int32 exlen = ARRAYLENV(ex);
-         Class exc = OBJ_CLASS(context->thrownException);
+         TCClass exc = OBJ_CLASS(context->thrownException);
          for (; exlen-- > 0; ex++)
             if (ex->startPC <= code && code <= ex->endPC)
             {

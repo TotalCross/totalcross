@@ -388,7 +388,7 @@ static CharP createMethodSignature(Method m, Heap h)
 
 #define ALL_1 255
 
-static void readMethod(ConstantPool cp, TCZFile tcz, Method m, Class c)
+static void readMethod(ConstantPool cp, TCZFile tcz, Method m, TCClass c)
 {
    TMethodInfoHeader ti;
    int32 i;
@@ -531,12 +531,12 @@ static FieldArray readFields(ConstantPool cp, int32 len, TCZFile tcz, FieldArray
    return f0;
 }
 
-static Class readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
+static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
 {
    int32 i, j, superI32, superObj, superV64, totalI32, totalObj, totalV64;
    uint16 u16;
    TClassInfoHeader ci;
-   Class c;
+   TCClass c;
    volatile Heap heap;
 
    heap = tcz->tempHeap = heapCreate();
@@ -555,7 +555,7 @@ static Class readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
 
    tczRead(tcz, &ci, 22);
 
-   c = newXH(Class, heap);
+   c = newXH(TCClass, heap);
    c->cp = cp;
    c->heap = heap;
    c->name = cp->cls[ci.cpIdxClassName];
@@ -564,7 +564,7 @@ static Class readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
    // read the Interface indexes
    if (ci.interfacesCount > 0)
    {
-      c->interfaces = newPtrArrayOf(Class, ci.interfacesCount, heap);
+      c->interfaces = newPtrArrayOf(TCClass, ci.interfacesCount, heap);
       for (i = 0; i < ci.interfacesCount; i++)
       {
          u16 = (uint16)tczRead16(tcz);
@@ -665,7 +665,7 @@ bool initClassInfo()
 
 static void freeClass(int32 i32, VoidP ptr)
 {
-   Class c = (Class)ptr;
+   TCClass c = (TCClass)ptr;
    UNUSED(i32);
 #ifdef TRACE_OBJCREATION
    debug("Destroying class %s, alloc count: %d, alloc total: %d, avail: %d, block count: %d",c->name, c->heap->numAlloc, c->heap->totalAlloc, c->heap->totalAvail, c->heap->blocksAlloc);
@@ -698,9 +698,9 @@ static int32 getArrayElementSize(CharP type)
    return 2;
 }
 
-Class loadClass(Context currentContext, CharP className, bool throwClassNotFound) // do NOT throw error messages from here
+TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFound) // do NOT throw error messages from here
 {
-   volatile Class ret;
+   volatile TCClass ret;
    int32 hc;
    Method staticInitializer = null;
 //   if (strEq("java.lang.StringBuilder",className))  - this would work - but what about the other pitfalls?
@@ -713,7 +713,7 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
    // check if we already have loaded it
    LOCKVAR(classLoaderLock);
    hc = hashCodeSlash2Dot(className);
-   ret = (Class)htGetPtr(&htLoadedClasses, hc);
+   ret = (TCClass)htGetPtr(&htLoadedClasses, hc);
    if (ret == null)
    {
       bool isArray;
@@ -738,7 +738,7 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
          // call static initializer
          if (ret != null && ret != CLASS_OUT_OF_MEMORY)
          {
-            Class ret2 = (Class)htGetPtr(&htLoadedClasses, hc); // guich@tc110_92: the class may have a reference to itself, which was loaded in the readClass above. So we double-check for it and use the previous version
+            TCClass ret2 = (TCClass)htGetPtr(&htLoadedClasses, hc); // guich@tc110_92: the class may have a reference to itself, which was loaded in the readClass above. So we double-check for it and use the previous version
             if (ret2 != null || !htPutPtr(&htLoadedClasses, hc, ret)) // class must be placed in the loaded classes before any method runs because the GC can be triggered and this class' objects may be collected
             {
                freeClass(0, ret);
@@ -790,7 +790,7 @@ static Type type2javaType(CharP type)
    }
 }
 
-static bool isSuperClass(Class s, Class t) // s instanceof t
+static bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;
    for (; s != null; s = s->superClass)
@@ -804,9 +804,9 @@ static bool isSuperClass(Class s, Class t) // s instanceof t
    return false;
 }
 
-CompatibilityResult areClassesCompatible(Context currentContext, Class s, CharP ident)  // S instanceof idenT ?
+CompatibilityResult areClassesCompatible(Context currentContext, TCClass s, CharP ident)  // S instanceof idenT ?
 {
-   Class t=null;
+   TCClass t=null;
    CompatibilityResult result = NOT_COMPATIBLE;
    bool sIsArray,tIsArray;
    CharP className;

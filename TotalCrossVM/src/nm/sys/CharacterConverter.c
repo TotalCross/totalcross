@@ -165,14 +165,14 @@ Object utf8chars2bytes(Context currentContext, JCharP chars, int32 length)
 ///////////////
 
 static Object *charConverterPtr, lastCharConverter;
-static Class ISO88591CharacterConverter, UTF8CharacterConverter;
+static TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 static Method chars2bytesMtd;
 
 Object chars2bytes(Context currentContext, JCharP chars, int32 length)
 {
    if (charConverterPtr == null)
    {
-      Class c = loadClass(currentContext, "totalcross.sys.Convert", true);
+      TCClass c = loadClass(currentContext, "totalcross.sys.Convert", true);
       if (c == null)
          return null;
       charConverterPtr = getStaticFieldObject(c, "charConverter");

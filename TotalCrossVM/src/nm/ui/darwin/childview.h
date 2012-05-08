@@ -9,7 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-#import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <UIKit/UIKit.h>
@@ -26,7 +25,6 @@
    int shiftY;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
-- (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
 - (void)invalidateScreen:(void*)vscreen;

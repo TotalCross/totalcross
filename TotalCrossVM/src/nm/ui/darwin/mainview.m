@@ -26,10 +26,7 @@ void lockDeviceCtx(const char *info)
 {
    DEBUG1("lock DeviceCtx: '%s'\n", info);
    if (!deviceCtxLock)
-   {
       deviceCtxLock = [[NSRecursiveLock alloc] init];
-      [deviceCtxLock retain];
-   }
    [ deviceCtxLock lock ];
    DEBUG0("DeviceCtx locked\n");
 }
@@ -96,7 +93,6 @@ void _debug(const char *format, ...)
 
    _events = nil;
    _lock = [[NSLock alloc] init];
-   [_lock retain];
 
    DEBUG4("initWithFrame: %dx%d,%dx%d\n",
          (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
@@ -168,24 +164,16 @@ void _debug(const char *format, ...)
      [ child_view setTransform:transEnd];
    }
 
-   if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
-      [ DEVICE_CTX->_childview release ];
-
    DEVICE_CTX->_childview = child_view;
-   [ DEVICE_CTX->_childview retain ];
 
    [ self addSubview: child_view ];
 
    if (old_view != nil)
-      [ self transition: 6 fromView: old_view toView: child_view ];
-   else
-      [ self bringSubviewToFront: child_view ];
+      [ self sendSubviewToBack: old_view ];
+   [ self bringSubviewToFront: child_view ];
 
    if (old_view != nil)
-   {
       [ old_view removeFromSuperview ];
-      [ old_view release ];
-   }
 
    [ self unlock ];
 }
@@ -210,7 +198,6 @@ void _debug(const char *format, ...)
    {
       DEBUG0("really release kbd_view\n");
       [ kbd_view removeFromSuperview ];
-      [ kbd_view release ];
       kbd_view = nil;
    }
    [ self unlock ];   
@@ -231,27 +218,18 @@ void _debug(const char *format, ...)
       {
          kbd_view.hidden = YES;
          [ kbd_view removeFromSuperview ];
-         [ kbd_view release ];
       }
 
       CGRect rect = [ self frame ];
       kbd_view = [ [ KeyboardView alloc ] initWithFrame: CGRectMake(0, 0, rect.size.width, rect.size.height) params: args ];
       if (kbd_view != null)
       {
-        [ kbd_view retain ];
         [ self addSubview: kbd_view ];
         [ self bringSubviewToFront: kbd_view ];
-     }
+      }
       [ self unlock ];
    }
    DEBUG0("showSIP DONE\n");
-}
-
-- (void)dealloc
-{
-   [_events release];
-   [_lock release];
-   [ super dealloc ];
 }
 
 static bool verbose_lock;
@@ -287,8 +265,6 @@ static bool verbose_lock;
    NSArray* events = _events;
    _events = nil;
    [self unlock];
-
-   [events autorelease];
 
    return events;
 }
@@ -335,19 +311,13 @@ static bool verbose_lock;
    CGRect rect = [ self frame ];
    if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight)
    {
-      height = rect.size.width - statusbar_height;
-      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
-         width = rect.size.height;
-      else
-         width = rect.size.height + statusbar_height;
+      height = rect.size.width;
+      width = rect.size.height;
    }
    else
    {
       width = rect.size.width;
       height = rect.size.height;
-      
-      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
-         height -= statusbar_height;
    }
    realAppH = height;
    current_orientation = orientation;
@@ -366,7 +336,7 @@ static bool verbose_lock;
    if (allowMainThread())
    {
       // must be an object, cannot be a struct
-      SSize *s = [[[ SSize alloc ] set: size ] autorelease ];
+      SSize *s = [[ SSize alloc ] set: size ];
       [ self performSelectorOnMainThread:@selector(doScreenChange:) withObject:s waitUntilDone: YES ];
    }
 }
@@ -477,10 +447,7 @@ void privateScreenChange(int32 w, int32 h)
 
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
-   {
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-      [ DEVICE_CTX->_window retain ];
-   }
    else
       [ window setFrame: rect ];
 
@@ -491,7 +458,6 @@ void privateScreenChange(int32 w, int32 h)
    if (main_view == nil)
    {
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
-      [ DEVICE_CTX->_mainview retain ];
       DEBUG0("new MainView\n");
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
@@ -563,10 +529,7 @@ bool graphicsStartup(ScreenSurface screen)
    
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
-   {
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-      [ DEVICE_CTX->_window retain ];
-   }
    else
       [ window setFrame: rect ];
    
@@ -577,7 +540,6 @@ bool graphicsStartup(ScreenSurface screen)
    if (main_view == nil)
    {
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
-      [ DEVICE_CTX->_mainview retain ];
       DEBUG0(">> new MainView\n");
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];

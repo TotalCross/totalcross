@@ -80,9 +80,4 @@
 	peakLevels[0]	= self.audioLevels[0].mPeakPower;
 }
 
-- (void) dealloc {
-
-	[super dealloc];
-}
-
 @end

@@ -9,7 +9,6 @@ SipArgs SipArgsMake(int options, id control, bool secret, NSString *text)
     args.control = control;
     args.secret = secret;
     args.text = text;
-    [ args.text retain ];
     return args;
 }
 

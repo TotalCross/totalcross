@@ -103,7 +103,7 @@ void onClose()
 
 SCAN_API int32 LibOpen(OpenParams params)
 {
-   Class scannerClass;
+   TCClass scannerClass;
    alertf = params->alert;
 
    scannerClass = loadClass(params->currentContext, "totalcross.io.device.scanner.Scanner", false);

@@ -48,6 +48,20 @@ extern "C" {
 
 #define PTRSIZE sizeof(void*)
 
+#ifdef darwin
+ #define inline_
+#else
+ #define inline_ inline
+#endif
+
+#if defined THEOS || !defined darwin
+#define __unsafe_unretained
+#endif
+
+#if defined THEOS
+#define __bridge
+#endif
+
  /////////////////////////////////////////////////////////////////////////
 // Basic types
 // explicit signed types (some compilers consider "char" as unsigned by default for instance).
@@ -101,9 +115,14 @@ typedef JChar* JCharP;
 #endif
 typedef TCHAR* TCHARP;
 
-#if !defined(__cplusplus) && !defined(__OBJC__)
+#if !defined(__cplusplus) && !defined(__OBJC__) && !defined(_STDBOOL_H)
 #define _STDBOOL_H // prevent stdbool.h include on darwin9
+#if defined (darwin) && !defined (THEOS)
+#undef bool
+#define bool int
+#else
 typedef int bool;
+#endif
 #ifndef true
 #define true 1   // please do NOT change these to uppercase
 #define false 0

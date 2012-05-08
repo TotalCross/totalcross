@@ -6,7 +6,7 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
+AM_CFLAGS = $(CFLAGS) -DTHEOS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
 if LINUX
 AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
 endif
