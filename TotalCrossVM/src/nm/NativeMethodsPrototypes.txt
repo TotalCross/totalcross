@@ -334,6 +334,7 @@ TC_API void tiPDBF_setRecordAttributes_ib(NMParams p);
 TC_API void tiPDBF_getAttributes(NMParams p);
 TC_API void tiPDBF_setAttributes_i(NMParams p);
 TC_API void tiPDBF_searchBytes_Bii(NMParams p);
+TC_API void tiF_getDeviceAlias(NMParams p);
 TC_API void tiF_create_sii(NMParams p);
 TC_API void tiF_nativeClose(NMParams p);
 TC_API void tiF_isCardInserted_i(NMParams p);
@@ -1759,6 +1760,10 @@ TC_API void tiPDBF_setAttributes_i(NMParams p) // totalcross/io/PDBFile native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiPDBF_searchBytes_Bii(NMParams p) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -3777,6 +3782,11 @@ TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void set
    finish: ;
 }
 TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tiF_getDeviceAlias) // totalcross/io/File native private static String getDeviceAlias();
 {
    TEST_SKIP;
    finish: ;
