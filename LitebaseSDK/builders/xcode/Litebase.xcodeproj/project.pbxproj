@@ -9,9 +9,6 @@
 /* Begin PBXBuildFile section */
 		0F7CBA061552CC8600E9BD43 /* nativeProcAddressesLB.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F7CBA041552CC8600E9BD43 /* nativeProcAddressesLB.c */; };
 		0F7CBA071552CC8600E9BD43 /* nativeProcAddressesLB.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F7CBA051552CC8600E9BD43 /* nativeProcAddressesLB.h */; };
-		0F91CB93154EDC7B000868DA /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F91CB7B154EDC7A000868DA /* libLitebase.a */; };
-		0F91CB99154EDC7B000868DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F91CB97154EDC7B000868DA /* InfoPlist.strings */; };
-		0F91CB9C154EDC7B000868DA /* LitebaseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CB9B154EDC7B000868DA /* LitebaseTests.m */; };
 		0F91CCF0154EDFA8000868DA /* Constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB0154EDFA8000868DA /* Constants.h */; };
 		0F91CCF1154EDFA8000868DA /* Index.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB1154EDFA8000868DA /* Index.c */; };
 		0F91CCF2154EDFA8000868DA /* Index.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB2154EDFA8000868DA /* Index.h */; };
@@ -76,26 +73,11 @@
 		0F91CD2F154EE3D6000868DA /* liblitebase.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CD2D154EE3D6000868DA /* liblitebase.m */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		0F91CB91154EDC7B000868DA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0F91CB72154EDC7A000868DA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0F91CB7A154EDC7A000868DA;
-			remoteInfo = Litebase;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		0F7CBA041552CC8600E9BD43 /* nativeProcAddressesLB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nativeProcAddressesLB.c; sourceTree = "<group>"; };
 		0F7CBA051552CC8600E9BD43 /* nativeProcAddressesLB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nativeProcAddressesLB.h; sourceTree = "<group>"; };
 		0F91CB7B154EDC7A000868DA /* libLitebase.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLitebase.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F91CB82154EDC7A000868DA /* Litebase-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Litebase-Prefix.pch"; sourceTree = "<group>"; };
-		0F91CB8B154EDC7B000868DA /* LitebaseTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LitebaseTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F91CB96154EDC7B000868DA /* LitebaseTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LitebaseTests-Info.plist"; sourceTree = "<group>"; };
-		0F91CB98154EDC7B000868DA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		0F91CB9A154EDC7B000868DA /* LitebaseTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LitebaseTests.h; sourceTree = "<group>"; };
-		0F91CB9B154EDC7B000868DA /* LitebaseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LitebaseTests.m; sourceTree = "<group>"; };
 		0F91CCB0154EDFA8000868DA /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		0F91CCB1154EDFA8000868DA /* Index.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Index.c; sourceTree = "<group>"; };
 		0F91CCB2154EDFA8000868DA /* Index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Index.h; sourceTree = "<group>"; };
@@ -170,14 +152,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0F91CB87154EDC7B000868DA /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F91CB93154EDC7B000868DA /* libLitebase.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -188,7 +162,6 @@
 				0F91CD2D154EE3D6000868DA /* liblitebase.m */,
 				0F91CCAD154EDFA8000868DA /* native */,
 				0F91CB80154EDC7A000868DA /* Litebase */,
-				0F91CB94154EDC7B000868DA /* LitebaseTests */,
 				0F91CB7D154EDC7A000868DA /* Frameworks */,
 				0F91CB7C154EDC7A000868DA /* Products */,
 			);
@@ -198,7 +171,6 @@
 			isa = PBXGroup;
 			children = (
 				0F91CB7B154EDC7A000868DA /* libLitebase.a */,
-				0F91CB8B154EDC7B000868DA /* LitebaseTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -222,25 +194,6 @@
 			isa = PBXGroup;
 			children = (
 				0F91CB82154EDC7A000868DA /* Litebase-Prefix.pch */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		0F91CB94154EDC7B000868DA /* LitebaseTests */ = {
-			isa = PBXGroup;
-			children = (
-				0F91CB9A154EDC7B000868DA /* LitebaseTests.h */,
-				0F91CB9B154EDC7B000868DA /* LitebaseTests.m */,
-				0F91CB95154EDC7B000868DA /* Supporting Files */,
-			);
-			path = LitebaseTests;
-			sourceTree = "<group>";
-		};
-		0F91CB95154EDC7B000868DA /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				0F91CB96154EDC7B000868DA /* LitebaseTests-Info.plist */,
-				0F91CB97154EDC7B000868DA /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -388,25 +341,6 @@
 			productReference = 0F91CB7B154EDC7A000868DA /* libLitebase.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		0F91CB8A154EDC7B000868DA /* LitebaseTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0F91CBA2154EDC7B000868DA /* Build configuration list for PBXNativeTarget "LitebaseTests" */;
-			buildPhases = (
-				0F91CB86154EDC7B000868DA /* Sources */,
-				0F91CB87154EDC7B000868DA /* Frameworks */,
-				0F91CB88154EDC7B000868DA /* Resources */,
-				0F91CB89154EDC7B000868DA /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0F91CB92154EDC7B000868DA /* PBXTargetDependency */,
-			);
-			name = LitebaseTests;
-			productName = LitebaseTests;
-			productReference = 0F91CB8B154EDC7B000868DA /* LitebaseTests.octest */;
-			productType = "com.apple.product-type.bundle";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -429,37 +363,9 @@
 			projectRoot = "";
 			targets = (
 				0F91CB7A154EDC7A000868DA /* Litebase */,
-				0F91CB8A154EDC7B000868DA /* LitebaseTests */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		0F91CB88154EDC7B000868DA /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F91CB99154EDC7B000868DA /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		0F91CB89154EDC7B000868DA /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0F91CB77154EDC7A000868DA /* Sources */ = {
@@ -500,34 +406,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0F91CB86154EDC7B000868DA /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0F91CB9C154EDC7B000868DA /* LitebaseTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		0F91CB92154EDC7B000868DA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0F91CB7A154EDC7A000868DA /* Litebase */;
-			targetProxy = 0F91CB91154EDC7B000868DA /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		0F91CB97154EDC7B000868DA /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				0F91CB98154EDC7B000868DA /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		0F91CB9D154EDC7B000868DA /* Debug */ = {
@@ -634,36 +513,6 @@
 			};
 			name = Release;
 		};
-		0F91CBA3154EDC7B000868DA /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Litebase/Litebase-Prefix.pch";
-				INFOPLIST_FILE = "LitebaseTests/LitebaseTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Debug;
-		};
-		0F91CBA4154EDC7B000868DA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Litebase/Litebase-Prefix.pch";
-				INFOPLIST_FILE = "LitebaseTests/LitebaseTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -681,15 +530,6 @@
 			buildConfigurations = (
 				0F91CBA0154EDC7B000868DA /* Debug */,
 				0F91CBA1154EDC7B000868DA /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0F91CBA2154EDC7B000868DA /* Build configuration list for PBXNativeTarget "LitebaseTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0F91CBA3154EDC7B000868DA /* Debug */,
-				0F91CBA4154EDC7B000868DA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
