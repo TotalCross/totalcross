@@ -22,7 +22,7 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
       throwException(p->currentContext, NullPointerException,null);
    else
    {
-      Class c;
+      TCClass c;
       CharP className = String2CharP(classNameObj);
       if (className == null)
          throwException(p->currentContext, OutOfMemoryError, null);
@@ -49,7 +49,7 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
 TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
 {
    Object me;
-   Class target;
+   TCClass target;
 
    me = p->obj[0];
    xmoveptr(&target, ARRAYOBJ_START(Class_targetClass(me)));

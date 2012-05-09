@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "GLOBAL">
+         <PersistentStrings>
+            <PersistentString
+               value = "keepRunning">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "alert:debug.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "s">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "getMethod:tcmethod.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(char*) c-&gt;name">
+            </PersistentString>
+            <PersistentString
+               value = "(char*) methodName">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "privateAlert:debug_c.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "message">
+            </PersistentString>
+            <PersistentString
+               value = "(char[]) cstr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "tczLoad:tcz.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "(char*) tczName">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "privateDebug:debug_c.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "errno">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "privateLoadLibrary:nativelib_c.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "(char*) libName">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "privateGetProcAddress:nativelib_c.h">
+         <PersistentStrings>
+            <PersistentString
+               value = "VM_PATH">
+            </PersistentString>
+            <PersistentString
+               value = "(char*) funcName">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "create:Litebase.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "litebaseConnectionClass">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

@@ -1,7 +1,6 @@
 #define Object NSObject*
 #import "childview.h"
 #import "mainview.h"
-#import <UIKit/UIHardware.h>
 
 @implementation ChildView
 
@@ -47,12 +46,6 @@ char* createPixelsBuffer(int width, int height);
       [self setClearsContextBeforeDrawing:NO];
    }  
    return self; 
-}
-
-- (void)dealloc
-{
-   CGContextRelease(bitmapContext); //flsobral@tc126: release last reference to bitmapContext
-   [ super dealloc ];
 }
 
 - (void)invalidateScreen:(void*)vscreen

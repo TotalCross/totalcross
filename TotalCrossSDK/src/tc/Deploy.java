@@ -13,6 +13,8 @@
 
 package tc;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -88,8 +90,21 @@ public class Deploy
             if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/bcprov-jdk15on-147.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/bcpkix-jdk15on-147.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/commons-io-2.2.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/commons-compress-1.4.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-driver-file-7.5.1.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-driver-zip-7.5.1.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-file-7.5.1.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-kernel-7.5.1.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-swing-7.5.1.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
+
+               if (DeploySettings.mobileProvision != null && DeploySettings.appleCertStore != null)
+                  new Deployer4IPhoneIPA();
                Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
@@ -267,6 +282,21 @@ public class Deploy
                                i--;
                          }
                          break;
+               case 'm':
+                        File folder = new File(args[++i]);
+                        folder.list(new FilenameFilter()
+                        {
+                           public boolean accept(File dir, String fileName)
+                           {
+                              String fileNameLower = fileName.toLowerCase();
+                              if (fileNameLower.endsWith(".mobileprovision"))
+                                 DeploySettings.mobileProvision = new File(dir, fileName);
+                              else if (fileNameLower.endsWith(".p12"))
+                                 DeploySettings.appleCertStore = new File(dir, fileName);
+                              return false;
+                           }
+                        });
+                        break;
                case 'n': 
                          DeploySettings.filePrefix = args[++i];
                          if (DeploySettings.filePrefix.toLowerCase().endsWith(".tcz"))

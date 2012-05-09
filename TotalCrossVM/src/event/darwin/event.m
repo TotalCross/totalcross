@@ -7,7 +7,6 @@
 
 #define Object NSObject*
 #import <UIKit/UIKit.h>
-#import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #define Class __Class
 #include "darwin/mainview.h"

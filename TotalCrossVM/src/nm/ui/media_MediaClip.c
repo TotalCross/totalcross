@@ -34,9 +34,9 @@ TC_API void tumMC_create(NMParams p) // totalcross/ui/media/MediaClip native pri
    if ((mediaClipRef = createByteArray(p->currentContext, sizeof(TMediaData))) != null)
    {
       media = (MediaData) ARRAYOBJ_START(mediaClipRef);
-         media->readMethod    = getMethod((Class) OBJ_CLASS(mediaStream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-         media->writeMethod   = getMethod((Class) OBJ_CLASS(mediaStream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-         media->setPosMethod  = getMethod((Class) OBJ_CLASS(mediaStream), true, "setPos", 1, J_INT);
+         media->readMethod    = getMethod((TCClass) OBJ_CLASS(mediaStream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+         media->writeMethod   = getMethod((TCClass) OBJ_CLASS(mediaStream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+         media->setPosMethod  = getMethod((TCClass) OBJ_CLASS(mediaStream), true, "setPos", 1, J_INT);
 
          media->waveHeader = (WaveHeader) ARRAYOBJ_START(MediaClip_mediaHeader(mediaClip));
          media->mediaStream = mediaStream;

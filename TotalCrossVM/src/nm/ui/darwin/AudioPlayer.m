@@ -1,7 +1,6 @@
 #include <AudioToolbox/AudioToolbox.h>
 #import "AudioQueueObject.h"
 #import "AudioPlayer.h"
-#import "AudioViewController.h"
 
 
 // See "AudioQueueOutputCallback"
@@ -11,7 +10,7 @@ static void playbackCallback (
 	AudioQueueBufferRef		bufferReference
 ) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
-	AudioPlayer *player = (AudioPlayer *) inUserData;
+	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 	if ([player donePlayingFile]) return;
 
 	UInt32 numBytes;
@@ -63,14 +62,18 @@ static void propertyListenerCallback (
 	AudioQueuePropertyID	propertyID
 ) {
 	// This callback, being outside the implementation block, needs a reference to the AudioPlayer object
-	AudioPlayer *player = (AudioPlayer *) inUserData;
+	AudioPlayer *player = (__bridge AudioPlayer *) inUserData;
 
-	if (player.audioPlayerShouldStopImmediately == YES) {
+	if (player.audioPlayerShouldStopImmediately == YES)
+    {
 		// If the user tapped Stop, update the UI now. After the AudioPlayer object
 		//	and the underlying audio queue object have competely stopped, the
 		//	AudioViewController will release them.
+#if defined (THEOS)
 		[player.notificationDelegate updateUserInterfaceOnAudioQueueStateChange: player];
-	} else {
+#endif
+	}
+    else {
 		// if the file reached the end, update the UI after the run loop has finished.
 		//	This delay is required to ensure that the AudioPlayer class, and the
 		//	underlying audio queue object, are not destroyed while they are still
@@ -171,7 +174,7 @@ static void propertyListenerCallback (
 	AudioQueueNewOutput (
 		&audioFormat,
 		playbackCallback,
-		self,
+		(__bridge void*) self,
 		CFRunLoopGetCurrent (),
 		kCFRunLoopCommonModes,
 		0,								// run loop flags
@@ -194,7 +197,7 @@ static void propertyListenerCallback (
 		[self queueObject],
 		kAudioQueueProperty_IsRunning,
 		propertyListenerCallback,
-		self
+		(__bridge void*) self
 	);
 
 	// copy the audio file's magic cookie to the audio queue object to give it
@@ -229,7 +232,7 @@ static void propertyListenerCallback (
 		);
 
 		playbackCallback (
-			self,
+			(__bridge void*) self,
 			[self queueObject],
 			buffers[bufferIndex]
 		);
@@ -321,8 +324,6 @@ static void propertyListenerCallback (
 		queueObject,
 		YES
 	);
-
-	[super dealloc];
 }
 
 @end

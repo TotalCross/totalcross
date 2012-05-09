@@ -1,0 +1,345 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5071507FA3600D6142B /* UIKit.framework */; };
+		0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF5091507FA3600D6142B /* Foundation.framework */; };
+		0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F5AF50B1507FA3600D6142B /* CoreGraphics.framework */; };
+		0F5AF5121507FA3600D6142B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F5AF5101507FA3600D6142B /* InfoPlist.strings */; };
+		0F5AF5141507FA3600D6142B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF5131507FA3600D6142B /* main.m */; };
+		0F5AF5181507FA3600D6142B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF5171507FA3600D6142B /* AppDelegate.m */; };
+		0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF51A1507FA3600D6142B /* ViewController.m */; };
+		0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */; };
+		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
+		0F7CBA4115545C3600E9BD43 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7CBA3F15545C3600E9BD43 /* libLitebase.a */; };
+		0F7CBA4215545C3600E9BD43 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7CBA4015545C3600E9BD43 /* libtcvm.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0F5AF5031507FA3600D6142B /* TotalCross.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TotalCross.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F5AF5071507FA3600D6142B /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		0F5AF5091507FA3600D6142B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0F5AF50B1507FA3600D6142B /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		0F5AF50F1507FA3600D6142B /* TotalCross-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TotalCross-Info.plist"; sourceTree = "<group>"; };
+		0F5AF5111507FA3600D6142B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0F5AF5131507FA3600D6142B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		0F5AF5151507FA3600D6142B /* TotalCross-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TotalCross-Prefix.pch"; sourceTree = "<group>"; };
+		0F5AF5161507FA3600D6142B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		0F5AF5171507FA3600D6142B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		0F5AF5191507FA3600D6142B /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		0F5AF51A1507FA3600D6142B /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		0F5AF5281507FA3600D6142B /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		0F7CBA3F15545C3600E9BD43 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
+		0F7CBA4015545C3600E9BD43 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
+		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
+		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0F5AF5001507FA3600D6142B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F7CBA4115545C3600E9BD43 /* libLitebase.a in Frameworks */,
+				0F7CBA4215545C3600E9BD43 /* libtcvm.a in Frameworks */,
+				0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */,
+				0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */,
+				0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */,
+				0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */,
+				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0F5AF4F81507FA3600D6142B = {
+			isa = PBXGroup;
+			children = (
+				0F5AF50D1507FA3600D6142B /* TotalCross */,
+				0F5AF5061507FA3600D6142B /* Frameworks */,
+				0F5AF5041507FA3600D6142B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0F5AF5041507FA3600D6142B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0F5AF5031507FA3600D6142B /* TotalCross.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0F5AF5061507FA3600D6142B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
+				0F7CBA4415545CE000E9BD43 /* liblitebase.h */,
+				0F7CBA3F15545C3600E9BD43 /* libLitebase.a */,
+				0F7CBA4015545C3600E9BD43 /* libtcvm.a */,
+				0F7318C21513DE2F001EE647 /* CFNetwork.framework */,
+				0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */,
+				0F5AF5071507FA3600D6142B /* UIKit.framework */,
+				0F5AF5091507FA3600D6142B /* Foundation.framework */,
+				0F5AF50B1507FA3600D6142B /* CoreGraphics.framework */,
+				0F5AF5281507FA3600D6142B /* SenTestingKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0F5AF50D1507FA3600D6142B /* TotalCross */ = {
+			isa = PBXGroup;
+			children = (
+				0F5AF5161507FA3600D6142B /* AppDelegate.h */,
+				0F5AF5171507FA3600D6142B /* AppDelegate.m */,
+				0F5AF5191507FA3600D6142B /* ViewController.h */,
+				0F5AF51A1507FA3600D6142B /* ViewController.m */,
+				0F5AF50E1507FA3600D6142B /* Supporting Files */,
+			);
+			path = TotalCross;
+			sourceTree = "<group>";
+		};
+		0F5AF50E1507FA3600D6142B /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0F5AF50F1507FA3600D6142B /* TotalCross-Info.plist */,
+				0F5AF5101507FA3600D6142B /* InfoPlist.strings */,
+				0F5AF5131507FA3600D6142B /* main.m */,
+				0F5AF5151507FA3600D6142B /* TotalCross-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0F5AF5021507FA3600D6142B /* TotalCross */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F5AF5391507FA3600D6142B /* Build configuration list for PBXNativeTarget "TotalCross" */;
+			buildPhases = (
+				0F5AF4FF1507FA3600D6142B /* Sources */,
+				0F5AF5001507FA3600D6142B /* Frameworks */,
+				0F5AF5011507FA3600D6142B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TotalCross;
+			productName = TotalCross;
+			productReference = 0F5AF5031507FA3600D6142B /* TotalCross.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0F5AF4FA1507FA3600D6142B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+				ORGANIZATIONNAME = "SuperWaba Ltda";
+			};
+			buildConfigurationList = 0F5AF4FD1507FA3600D6142B /* Build configuration list for PBXProject "TotalCross" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0F5AF4F81507FA3600D6142B;
+			productRefGroup = 0F5AF5041507FA3600D6142B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0F5AF5021507FA3600D6142B /* TotalCross */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0F5AF5011507FA3600D6142B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F5AF5121507FA3600D6142B /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F5AF4FF1507FA3600D6142B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F5AF5141507FA3600D6142B /* main.m in Sources */,
+				0F5AF5181507FA3600D6142B /* AppDelegate.m in Sources */,
+				0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		0F5AF5101507FA3600D6142B /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0F5AF5111507FA3600D6142B /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0F5AF5371507FA3600D6142B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_OUTPUT_FORMAT = xml;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				LIBRARY_SEARCH_PATHS = "";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				SDKROOT = iphoneos4.3;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0F5AF5381507FA3600D6142B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
+				GCC_THUMB_SUPPORT = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_OUTPUT_FORMAT = xml;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				SDKROOT = iphoneos4.3;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0F5AF53A1507FA3600D6142B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				DEBUG = "1 $(inherited)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_THUMB_SUPPORT = NO;
+				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/tcvm-dngjuhyfdgnorbepianxpblabfgc/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos4.3;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		0F5AF53B1507FA3600D6142B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG = "1 $(inherited)";
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_THUMB_SUPPORT = NO;
+				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/tcvm-dngjuhyfdgnorbepianxpblabfgc/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos4.3;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0F5AF4FD1507FA3600D6142B /* Build configuration list for PBXProject "TotalCross" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F5AF5371507FA3600D6142B /* Debug */,
+				0F5AF5381507FA3600D6142B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0F5AF5391507FA3600D6142B /* Build configuration list for PBXNativeTarget "TotalCross" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F5AF53A1507FA3600D6142B /* Debug */,
+				0F5AF53B1507FA3600D6142B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0F5AF4FA1507FA3600D6142B /* Project object */;
+}

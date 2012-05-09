@@ -26,17 +26,17 @@
 #define SF_ERROR_ANY    SF_CLASS_ERROR
 
 /// Returns a reference to a static field of the given Java type.
-TC_API int32* getStaticFieldInt(Class c, CharP fieldName);
-typedef int32* (*getStaticFieldIntFunc)(Class c, CharP fieldName);
+TC_API int32* getStaticFieldInt(TCClass c, CharP fieldName);
+typedef int32* (*getStaticFieldIntFunc)(TCClass c, CharP fieldName);
 /// Returns a reference to a static field of the given Java type.
-TC_API double* getStaticFieldDouble(Class c, CharP fieldName);
-typedef double* (*getStaticFieldDoubleFunc)(Class c, CharP fieldName);
+TC_API double* getStaticFieldDouble(TCClass c, CharP fieldName);
+typedef double* (*getStaticFieldDoubleFunc)(TCClass c, CharP fieldName);
 /// Returns a reference to a static field of the given Java type.
-TC_API int64* getStaticFieldLong(Class c, CharP fieldName);
-typedef int64* (*getStaticFieldLongFunc)(Class c, CharP fieldName);
+TC_API int64* getStaticFieldLong(TCClass c, CharP fieldName);
+typedef int64* (*getStaticFieldLongFunc)(TCClass c, CharP fieldName);
 /// Returns a reference to a static field of the given Java type.
-TC_API Object* getStaticFieldObject(Class c, CharP fieldName);
-typedef Object* (*getStaticFieldObjectFunc)(Class c, CharP fieldName);
+TC_API Object* getStaticFieldObject(TCClass c, CharP fieldName);
+typedef Object* (*getStaticFieldObjectFunc)(TCClass c, CharP fieldName);
 /** Returns a reference to an instance field of the given Java type.  Class name is the class where
     the field is declared, or null if from current class. It may be necessary to pass it if there's
     more than one field with the same name in the class hierarchy. */
@@ -66,7 +66,7 @@ void getSField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 /// Returns the instance field index of a field in a class.
 extern inline uint16 getIField_Index(ConstantPool cp, Object o, int32 classAndField, RegType t);
 /// Returns a reference to a static field.
-extern VoidP getSField_Ref(Context currentContext, Class c, int32 classAndField, RegType t);
+extern VoidP getSField_Ref(Context currentContext, TCClass c, int32 classAndField, RegType t);
 
 /// Returns the index to the given instance field.
 extern inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, Object o, RegType t);

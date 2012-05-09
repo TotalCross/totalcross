@@ -25,7 +25,6 @@
 
 - (id)initWithFrame:(CGRect)rect params:(SipArguments*)args;
 - (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button;
-- (void)dealloc;
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
                  replacementText:(NSString *)text;

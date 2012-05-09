@@ -19,7 +19,7 @@ bool fontInit(Context currentContext)
 {
    int32 *maxfs=null, *minfs=null, *normal = null;
    Object *defaultFontNameObj;
-   Class c;
+   TCClass c;
    c = loadClass(currentContext, "totalcross.ui.font.Font",false);
    if (c)
    {

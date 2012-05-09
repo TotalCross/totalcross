@@ -91,7 +91,7 @@ typedef void (*setObjectLockFunc)(Object o, LockState lock);
  */
 struct TObjectProperties
 {
-   Class class_;
+   TCClass class_;
    Object next,prev;
    struct
    {

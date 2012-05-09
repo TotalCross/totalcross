@@ -192,6 +192,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
+      //PixelFormat pf = new PixelFormat(); - android returns 5
+      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
@@ -713,9 +715,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       public void onReceiveResult(int resultCode, Bundle resultData)
       {
          sendCloseSIPEvent();
+         loader.achandler.postDelayed(sipthread,300);
+      }
+   }
+   class SipClosedThread implements Runnable
+   {
+      public void run()
+      {
+         sendCloseSIPEvent();
       }
    }
    public SipClosedReceiver siprecv = new SipClosedReceiver();
+   private SipClosedThread sipthread = new SipClosedThread();
    
    public static void setSIP(int sipOption, boolean sendEvent)
    {

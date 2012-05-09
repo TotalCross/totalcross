@@ -76,14 +76,18 @@ void privateUnloadLibrary(VoidP libPtr)
 }
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
-{                           
-#ifdef ANDROID	                         
+{
+#if defined (darwin) && !defined (THEOS)
+    return (NativeMethod)htGetPtr(&htNativeProcAddresses, hashCode(funcName));
+#else
+#if defined ANDROID
    void *tcvm = module ? module : dlopen(getTotalCrossAndroidClass(VM_PATH), RTLD_LAZY);
 #else
    void *tcvm = module ? module : dlopen(TEXT(VM_PATH), RTLD_LAZY);
-#endif   	
+#endif
    if (tcvm)
       return dlsym(tcvm, funcName);
+#endif
    return NULL;
 }
 #endif
