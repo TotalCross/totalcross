@@ -1127,6 +1127,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	numberRows = tempTable1->db.rowCount;
    answerCount = tempTable1->answerCount;
 	
+	// juliana@253_17: correted a possible crash or wrong result when using aggregation functions without using indices on a table with many columns.
+	numOfBytes = NUMBEROFBYTES(tempTable2->columnCount);
+	
    for (i = -1, groupCount = 0; ++i < totalRecords; groupCount++)
    {
       if (answerCount >= 0)
