@@ -368,7 +368,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if (!plainDB->headerSize) // The header size can't be zero.
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+		// juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
       return false;
@@ -431,7 +431,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if ((table->columnCount = columnCount) <= 0)
    {
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-		// juliana@253_12: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+		// juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
 		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
 		goto error;
