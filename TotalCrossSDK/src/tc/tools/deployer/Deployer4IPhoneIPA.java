@@ -12,8 +12,7 @@
 package tc.tools.deployer;
 
 import java.io.*;
-import java.security.KeyStore;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.*;
@@ -134,8 +133,32 @@ public class Deployer4IPhoneIPA
       KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
       ks.load(new FileInputStream(DeploySettings.appleCertStore), "".toCharArray());
       
-      Certificate storecert = ks.getCertificate((String) ks.aliases().nextElement());
+      String keyAlias = (String) ks.aliases().nextElement();
+      Certificate storecert = ks.getCertificate(keyAlias);
+      if (storecert == null)
+      {
+         File[] certsInPath = DeploySettings.appleCertStore.getParentFile().listFiles(new FilenameFilter()
+         {
+            public boolean accept(File arg0, String arg1)
+            {
+               return arg1.endsWith(".cer");
+            }
+         });
+         if (certsInPath.length == 0)
+            throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
+
+         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
+         certs[2] = new X509CertificateHolder(storecert.getEncoded());
+         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
+         ks.deleteEntry(keyAlias);
+         ks.setEntry(
+               keyAlias,
+               new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+               new KeyStore.PasswordProtection("".toCharArray())
+               );
+      }
       certs[2] = new X509CertificateHolder(storecert.getEncoded());
+
       X509Store certStore = X509Store.getInstance(
             "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
       
