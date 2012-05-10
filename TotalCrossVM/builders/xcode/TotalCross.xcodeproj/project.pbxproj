@@ -16,8 +16,8 @@
 		0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF51A1507FA3600D6142B /* ViewController.m */; };
 		0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */; };
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
-		0F7CBA4115545C3600E9BD43 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7CBA3F15545C3600E9BD43 /* libLitebase.a */; };
-		0F7CBA4215545C3600E9BD43 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7CBA4015545C3600E9BD43 /* libtcvm.a */; };
+		3A7FE723155C176000403952 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE722155C176000403952 /* libtcvm.a */; };
+		3A7FE726155C177C00403952 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE725155C177C00403952 /* libLitebase.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,10 +36,10 @@
 		0F5AF5281507FA3600D6142B /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		0F7CBA3F15545C3600E9BD43 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
-		0F7CBA4015545C3600E9BD43 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
+		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
+		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,13 +47,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F7CBA4115545C3600E9BD43 /* libLitebase.a in Frameworks */,
-				0F7CBA4215545C3600E9BD43 /* libtcvm.a in Frameworks */,
 				0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */,
 				0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */,
 				0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */,
 				0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */,
 				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
+				3A7FE723155C176000403952 /* libtcvm.a in Frameworks */,
+				3A7FE726155C177C00403952 /* libLitebase.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +63,8 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
+				3A7FE725155C177C00403952 /* libLitebase.a */,
+				3A7FE722155C176000403952 /* libtcvm.a */,
 				0F5AF50D1507FA3600D6142B /* TotalCross */,
 				0F5AF5061507FA3600D6142B /* Frameworks */,
 				0F5AF5041507FA3600D6142B /* Products */,
@@ -82,8 +84,6 @@
 			children = (
 				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
 				0F7CBA4415545CE000E9BD43 /* liblitebase.h */,
-				0F7CBA3F15545C3600E9BD43 /* libLitebase.a */,
-				0F7CBA4015545C3600E9BD43 /* libtcvm.a */,
 				0F7318C21513DE2F001EE647 /* CFNetwork.framework */,
 				0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */,
 				0F5AF5071507FA3600D6142B /* UIKit.framework */,
@@ -277,6 +277,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
@@ -288,9 +290,14 @@
 					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
 					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
 					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-gudzqvsjhnlxczakxcotxsffkxym/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos4.3;
 				WRAPPER_EXTENSION = app;
 			};
@@ -299,6 +306,8 @@
 		0F5AF53B1507FA3600D6142B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
@@ -310,9 +319,14 @@
 					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
 					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
 					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-gudzqvsjhnlxczakxcotxsffkxym/Build/Products/Debug-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos\"",
+					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos\"",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos4.3;
 				WRAPPER_EXTENSION = app;
 			};
