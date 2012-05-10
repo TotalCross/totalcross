@@ -582,6 +582,7 @@ int GetMacAddressWMI(char* serialBuf)
                      )) == WBEM_S_NO_ERROR && ulFound == 1)
    {
       VariantInit(&varPropVal);
+      varPropVal.bstrVal = null;
 
       hres = IWbemClassObject_Get(
                pclsObj,
@@ -591,11 +592,12 @@ int GetMacAddressWMI(char* serialBuf)
                NULL,                // CIM type not needed.
                NULL);               // Flavor not needed.
 
-      if (hres == WBEM_S_NO_ERROR && &varPropVal != null)
+      if (hres == WBEM_S_NO_ERROR && varPropVal.bstrVal != null)
       {
          int32 currentIndex = varPropVal.intVal;
          VariantClear(&varPropVal);
          VariantInit(&varPropVal);
+         varPropVal.bstrVal = null;
 
          hres = IWbemClassObject_Get(
                   pclsObj,
@@ -605,9 +607,9 @@ int GetMacAddressWMI(char* serialBuf)
                   NULL,                // CIM type not needed.
                   NULL);               // Flavor not needed.
 
-         if (hres == WBEM_S_NO_ERROR && &varPropVal != null && currentIndex < propIndex)
+         if (hres == WBEM_S_NO_ERROR && varPropVal.bstrVal != null && currentIndex < propIndex)
          {
-            JCharP2CharPBuf(V_BSTR(&varPropVal), -1, propValue);
+            JCharP2CharPBuf(varPropVal.bstrVal, -1, propValue);
             if (xstrlen(propValue) == 17)
             {
                serialBuf[0] = propValue[0];
