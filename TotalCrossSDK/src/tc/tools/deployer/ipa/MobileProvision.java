@@ -46,7 +46,7 @@ public class MobileProvision
       }
    }
 
-   public String GetEntitlementsString(String CFBundleIdentifier)
+   public String GetEntitlementsString()
    {
       NSDictionary XCentPList = new NSDictionary();
       NSDictionary entitlements = (NSDictionary) this.Data.objectForKey("Entitlements");

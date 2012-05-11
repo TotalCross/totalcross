@@ -205,7 +205,7 @@ public class Deployer4IPhoneIPA
 
       int blobFileOffset = (int) signature.BlobFileOffset;
       CodeDirectoryBlob blob = CodeDirectoryBlob.Create(bundleIdentifier, blobFileOffset);
-      AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString(bundleIdentifier));
+      AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString());
       SuperBlob blob3 = SuperBlob.CreateRequirementsBlob();
       CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob();
       SuperBlob blob6 = SuperBlob.CreateCodeSigningTableBlob();
