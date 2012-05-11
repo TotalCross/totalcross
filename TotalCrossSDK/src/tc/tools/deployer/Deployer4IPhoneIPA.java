@@ -161,7 +161,11 @@ public class Deployer4IPhoneIPA
 
       X509Store certStore = X509Store.getInstance(
             "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
-      
+
+      // provision
+      TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
+      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(DeploySettings.mobileProvision)));
+
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
       String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
@@ -249,9 +253,6 @@ public class Deployer4IPhoneIPA
       
       // executable
       executable.input(new ByteArrayInputStream(array));
-      // provision
-      TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
-      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(DeploySettings.mobileProvision)));
       
       TVFS.umount(targetZip);      
 
