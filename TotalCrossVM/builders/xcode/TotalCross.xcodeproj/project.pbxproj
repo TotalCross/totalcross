@@ -229,7 +229,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos",
+					"build/Release-iphoneos",
+				);
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos4.3;
@@ -257,7 +260,10 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = (
+					"../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos",
+					"build/Release-iphoneos",
+				);
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
