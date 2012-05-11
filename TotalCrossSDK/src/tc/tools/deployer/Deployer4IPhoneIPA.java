@@ -97,7 +97,11 @@ public class Deployer4IPhoneIPA
             return false;
          }
       });
-      
+
+      /** PROCESS MOBILE PROVISION **/
+      // update the mobile provision
+      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));
+
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
       TFile infoPlist = (TFile) ipaContents.get("Info.plist");
@@ -105,22 +109,22 @@ public class Deployer4IPhoneIPA
       infoPlist.output(baos);
       NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
       String executableName = rootDict.objectForKey("CFBundleExecutable").toString();
-      String bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();      
       
       // update the application name
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
-      
+
+      String bundleIdentifier = this.Provision.getBundleIdentifier();
+      if (bundleIdentifier.equals("*"))
+         bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();
+      rootDict.put("CFBundleIdentifier", bundleIdentifier);
+
       // overwrite updated info.plist inside the zip file
       byte[] updatedInfoPlist = rootDict.toXMLPropertyList().getBytes("UTF-8");
       infoPlist.input(new ByteArrayInputStream(updatedInfoPlist));
-      
-      /** PROCESS MOBILE PROVISION **/
-      // update the mobile provision
-      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));      
-      
+
       /** PROCESS CERTIFICATE **/
       // install certificates
       CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
