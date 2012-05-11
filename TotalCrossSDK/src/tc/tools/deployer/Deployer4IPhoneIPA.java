@@ -35,7 +35,6 @@ import de.schlichtherle.truezip.file.TVFS;
  */
 public class Deployer4IPhoneIPA
 {
-   public static final String templateFileName = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/TotalCross.ipa");
    public static final String appleRootCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleRootCA.pem");
    public static final String appleWWDRCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleWWDRCA.pem");
    
@@ -52,7 +51,9 @@ public class Deployer4IPhoneIPA
       Security.addProvider(new BouncyCastleProvider());
       
       // locate template and target
-      File templateFile = new File(templateFileName);
+      File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
+            DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
+            "iphone2+/TotalCross.ipa"));
       File targetFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       targetFile.deleteOnExit();
       // create a copy of the original file
