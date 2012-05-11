@@ -311,6 +311,7 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
