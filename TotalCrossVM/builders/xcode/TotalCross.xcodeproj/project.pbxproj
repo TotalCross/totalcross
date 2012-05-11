@@ -38,8 +38,8 @@
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
-		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
-		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
+		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "build/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
+		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -278,16 +278,7 @@
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/tcvm-dngjuhyfdgnorbepianxpblabfgc/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-gudzqvsjhnlxczakxcotxsffkxym/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -308,16 +299,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/tcvm-dngjuhyfdgnorbepianxpblabfgc/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/Litebase-czzymlynwglrmaaypydjsndalhpk/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-fowllzuyabwhnlbuvodlatwibvrm/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/TotalCross-gudzqvsjhnlxczakxcotxsffkxym/Build/Products/Debug-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/tcvm-fvrxgpeeymcgzrgbimfqehqcwfpy/Build/Products/Release-iphoneos\"",
-					"\"$(SRCROOT)/../../../../../../../Library/Developer/Xcode/DerivedData/Litebase-bpvqckcybrkgpwgdwiztvfuvcxjo/Build/Products/Release-iphoneos\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
