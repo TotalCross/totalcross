@@ -3263,4 +3263,104 @@ public final class Graphics
       fillRect(rectX1,ty,rectW,footerH); ty += footerH; // non-corners
       fillRect(x1l,ty,x2r-x1l,7-t0);                    // corners
    }
+
+   /** Draws a cylindric shaded rectangle.
+    * Use it like:
+    * <pre>
+   public void onPaint(Graphics g)
+   {
+      g.drawCylindricShade(0xB6D3E8, 0xF2F4F6, 0,0,width,height);
+   }
+    * </pre>
+    * @since TotalCross 1.53
+    */ 
+   public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY)
+   {
+      int numSteps = Math.max(1,Math.min((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
+      int startRed = (startColor >> 16) & 0xFF;
+      int startGreen = (startColor >> 8) & 0xFF;
+      int startBlue = startColor & 0xFF;
+      int endRed = (endColor >> 16) & 0xFF;
+      int endGreen = (endColor >> 8) & 0xFF;
+      int endBlue = endColor & 0xFF;
+      int redInc = (((endRed - startRed)*2) << 16) / numSteps;
+      int greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
+      int blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
+      int red = startRed << 16;
+      int green = startGreen << 16;
+      int blue = startBlue << 16;
+      for (int i = 0; i < numSteps; i++)
+      {
+         int rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+         int gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+         int bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         int sx = startX+i, sy = startY+i;
+         drawRect(sx,sy,endX-i-sx,endY-i-sy);
+         int ii = i-8;
+         rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+         gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+         bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         int i2 = i/8;
+         drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
+         sx = endX-i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
+         sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
+         sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
+      }
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
+   }
+
+   /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
+    * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * @since TotalCross 1.3
+    */
+   public void dither(int x, int y, int w, int h)
+   {
+      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+      int[] pixels = (int[])getSurfacePixels(surface);
+      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+      for (int yy=y; yy < h; yy++) 
+         for (int xx=x; xx < w; xx++)
+         {
+            p = pixels[yy*w+xx];
+            //if (p == transparentColor) continue;
+            // get current pixel values
+            oldR = (p>>16) & 0xFF;
+            oldG = (p>>8) & 0xFF;
+            oldB = p & 0xFF;
+            // convert to 565 component values
+            newR = oldR >> 3 << 3; 
+            newG = oldG >> 2 << 2;
+            newB = oldB >> 3 << 3;
+            // compute error
+            errR = oldR-newR;
+            errG = oldG-newG;
+            errB = oldB-newB;
+            // set new pixel
+            pixels[yy*w+xx] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
+
+            addError(pixels, xx+1, yy ,w,h, errR,errG,errB,7,16);
+            addError(pixels, xx-1,yy+1,w,h, errR,errG,errB,3,16);
+            addError(pixels, xx,yy+1  ,w,h, errR,errG,errB,5,16);
+            addError(pixels, xx+1,yy+1,w,h, errR,errG,errB,1,16);
+         }
+   }
+
+   private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
+   {
+      if (x >= w || y >= h || x < 0) return;
+      int i = y*w+x;
+      int p = pixel[i];
+      int r = (p>>16) & 0xFF;
+      int g = (p>>8) & 0xFF;
+      int b = p & 0xFF;
+      r += j*errR/k;
+      g += j*errG/k;
+      b += j*errB/k;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
+   }
 }
