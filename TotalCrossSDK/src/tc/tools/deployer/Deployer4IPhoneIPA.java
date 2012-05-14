@@ -46,10 +46,10 @@ public class Deployer4IPhoneIPA
    {
       if (DeploySettings.mobileProvision == null || DeploySettings.appleCertStore == null)
          throw new NullPointerException();
-      
+
       // initialize bouncy castle
       Security.addProvider(new BouncyCastleProvider());
-      
+
       // locate template and target
       File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
             DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
@@ -58,14 +58,32 @@ public class Deployer4IPhoneIPA
       targetFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, targetFile);
-      
+
       // open new file with truezip
       TFile targetZip = new TFile(targetFile);
-      
+
       // get the payload folder from the zip
-      TFile payload = targetZip.listFiles()[0];
+      targetZip.listFiles(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            ipaContents.put(name, new TFile(dir, name));
+            return false;
+         }
+      });
+      TFile payload = (TFile) ipaContents.get("Payload");
+
       // get the template appFolder - TotalCross.app
-      TFile appFolder = payload.listFiles()[0];
+      payload.listFiles(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            ipaContents.put(name, new TFile(dir, name));
+            return false;
+         }
+      });
+      TFile appFolder = (TFile) ipaContents.get("TotalCross.app");
+
       // create new appFolder using the deployed tcz name
       TFile newAppFolder = new TFile(payload, DeploySettings.filePrefix + ".app");
       // rename the appFolder
