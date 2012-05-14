@@ -128,6 +128,11 @@ public class Deployer4IPhoneIPA
       infoPlist.output(baos);
       NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
       String executableName = rootDict.objectForKey("CFBundleExecutable").toString();
+
+      // add all the iphone icons
+      addIcons(appFolder, rootDict);
+      // itunes metadata
+      addMetadata(targetZip, (TFile) ipaContents.get("iTunesMetadata.plist"));
       
       // update the application name
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
@@ -284,6 +289,40 @@ public class Deployer4IPhoneIPA
       System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone/"));
    }
    
+   private void addMetadata(TFile targetZip, TFile iTunesMetadata) throws Exception
+   {
+      for (int i = Bitmaps.ITUNES_ICONS.length - 1; i >= 0; i--)
+      {
+         TFile icon = new TFile(targetZip, Bitmaps.ITUNES_ICONS[i].name);
+         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.ITUNES_ICONS[i].size)));
+      }
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      iTunesMetadata.output(baos);
+
+      NSDictionary metadata = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
+      metadata.put("product-type", "ios-app");
+      metadata.put("itemName", DeploySettings.appTitle);
+      metadata.put("artistName", DeploySettings.companyInfo);
+
+      iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));
+   }
+
+   private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException
+   {
+      NSString[] icons = new NSString[Bitmaps.IOS_ICONS.length];
+
+      for (int i = icons.length - 1; i >= 0; i--)
+      {
+         TFile icon = new TFile(appFolder, Bitmaps.IOS_ICONS[i].name);
+         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.IOS_ICONS[i].size)));
+         icons[i] = new NSString(Bitmaps.IOS_ICONS[i].name);
+      }
+
+      NSArray iconBundle = new NSArray(icons);
+      rootDict.put("CFBundleIconFiles", iconBundle);
+   }
+
    protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
    {
        NSDictionary root = new NSDictionary();
