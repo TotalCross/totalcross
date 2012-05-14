@@ -679,7 +679,50 @@ public class Bitmaps
       }
    }
 
+   private int[] loadPalette(byte[] bytes, int offset, int numberColors)
+   {
+      int[] palette = new int[numberColors];
+      for (int i =0; i < numberColors; i++, offset+=4)
+      {
+         palette[i] = (((bytes[offset+3]&0xFF) << 24) | ((bytes[offset+2]&0xFF) << 16) | ((bytes[offset+1]&0xFF) << 8) | (bytes[offset+0]&0xFF));
+         //Utils.println(i+" - "+totalcross.sys.Convert.unsigned2hex(palette[i],6));
+      }
+      return palette;
+   }
+
    static final int IPHONE_DEB = 60;
+
+   static final Image4iOS[] IOS_ICONS =
+   {
+         new Image4iOS("Icon.png", 57),
+         new Image4iOS("Icon@2x.png", 114),
+         new Image4iOS("Icon-iPad.png", 72),
+         new Image4iOS("Icon-iPad@2x.png", 144),
+         new Image4iOS("Icon-Small.png", 29),
+         new Image4iOS("Icon-Small@2x.png", 58),
+         new Image4iOS("Icon-Small-iPad.png", 50),
+         new Image4iOS("Icon-Small-iPad@2x.png", 100),
+         new Image4iOS("Icon-Small-iPad.png", 50),
+         new Image4iOS("Icon-Small-iPad@2x.png", 100)
+   };
+
+   static final Image4iOS[] ITUNES_ICONS =
+   {
+         new Image4iOS("iTunesArtwork", 512),
+         new Image4iOS("iTunesArtwork@2x", 1024)
+   };
+
+   static class Image4iOS
+   {
+      final String name;
+      final int size;
+
+      private Image4iOS(String name, int size)
+      {
+         this.name = name;
+         this.size = size;
+      }
+   }
 
    /**
     * Gets an image of size 60x60. Searches from the available sizes, and does a resize if needed. Creates a png and
@@ -726,16 +769,5 @@ public class Bitmaps
          e.printStackTrace();
       }
       return imgbytes;
-   }
-
-   private int[] loadPalette(byte[] bytes, int offset, int numberColors)
-   {
-      int[] palette = new int[numberColors];
-      for (int i =0; i < numberColors; i++, offset+=4)
-      {
-         palette[i] = (((bytes[offset+3]&0xFF) << 24) | ((bytes[offset+2]&0xFF) << 16) | ((bytes[offset+1]&0xFF) << 8) | (bytes[offset+0]&0xFF));
-         //Utils.println(i+" - "+totalcross.sys.Convert.unsigned2hex(palette[i],6));
-      }
-      return palette;
    }
 }
