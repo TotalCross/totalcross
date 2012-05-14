@@ -33,7 +33,8 @@ TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
-TC_API void tuiI_dither(NMParams p);
+TC_API void tugG_dither_iiiii(NMParams p);
+TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_drawDottedCursor_iiii(NMParams p);
@@ -115,6 +116,7 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
+TC_API void tuC_transitionEffectChanged_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -153,6 +155,8 @@ TC_API void tsC_zeroPad_si(NMParams p);
 TC_API void tsC_zeroPad_ii(NMParams p);
 TC_API void tsC_dup_ci(NMParams p);
 TC_API void tsC_spacePad_sib(NMParams p);
+TC_API void tsC_numberPad_si(NMParams p);
+TC_API void tsC_numberPad_ii(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
@@ -559,7 +563,11 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_dither(NMParams p) // totalcross/ui/image/Image native public void dither();
+TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -887,6 +895,10 @@ TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native publ
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsCC_bytes2chars_Bii(NMParams p) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
 }
@@ -1036,6 +1048,14 @@ TC_API void tsC_dup_ci(NMParams p) // totalcross/sys/Convert native public stati
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_spacePad_sib(NMParams p) // totalcross/sys/Convert native public static String spacePad(String what, int count, boolean before);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_si(NMParams p) // totalcross/sys/Convert native public static String numberPad(String s, int size);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_ii(NMParams p) // totalcross/sys/Convert native public static String numberPad(int s, int size);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2281,7 +2301,12 @@ TESTCASE(tuiI_applyColor2_i) // totalcross/ui/image/Image native public void app
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tuiI_dither) // totalcross/ui/image/Image native public void dither();
+TESTCASE(tugG_dither_iiiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tugG_drawCylindricShade_iiiiii) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 {
    TEST_SKIP;
    finish: ;
@@ -2691,6 +2716,11 @@ TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void
    TEST_SKIP;
    finish: ;
 }
+TESTCASE(tuC_transitionEffectChanged_i) // totalcross/ui/Container native static void transitionEffectChanged(int t);
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tsCC_bytes2chars_Bii) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
    TEST_SKIP;
@@ -2877,6 +2907,16 @@ TESTCASE(tsC_dup_ci) // totalcross/sys/Convert native public static String dup(c
    finish: ;
 }
 TESTCASE(tsC_spacePad_sib) // totalcross/sys/Convert native public static String spacePad(String what, int count, boolean before);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsC_numberPad_si) // totalcross/sys/Convert native public static String numberPad(String s, int size);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsC_numberPad_ii) // totalcross/sys/Convert native public static String numberPad(int s, int size);
 {
    TEST_SKIP;
    finish: ;

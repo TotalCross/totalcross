@@ -179,7 +179,7 @@ public class NinePatch
          copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
       }
       if (Settings.screenBPP == 16)
-         ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight());
+         ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight(),ret.transparentColor);
       if (color != -1)
          ret.applyColor2(color);
       if (rotate)

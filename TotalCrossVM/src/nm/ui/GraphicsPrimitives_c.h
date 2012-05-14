@@ -2701,6 +2701,103 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
    fillRect(g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
 }
 
+static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
+{
+   int32 r,g,b;
+   if (x >= w || y >= h || x < 0) return;
+   r = pixel->r + j*errR/k;
+   g = pixel->g + j*errG/k;
+   b = pixel->b + j*errB/k;
+   if (r > 255) r = 255; else if (r < 0) r = 0;
+   if (g > 255) g = 255; else if (g < 0) g = 0;
+   if (b > 255) b = 255; else if (b < 0) b = 0;
+   pixel->r = r;
+   pixel->g = g;
+   pixel->b = b;
+}
+
+static void dither(Object g, int32 x0, int32 y0, int32 w, int32 h, int32 ignoreColor)
+{
+   if (translateAndClip(g, &x0, &y0, &w, &h))
+   {
+      PixelConv *pixels;
+      int32 oldR,oldG,oldB, newR,newG,newB, errR, errG, errB, pitch, x,y,yf=y0+h,xf=x0+w;
+      Pixel transp = makePixelRGB(ignoreColor);       
+      pitch = Graphics_pitch(g);
+
+      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+      for (y=y0; y < yf; y++) 
+      {
+         pixels = (PixelConv*)(getGraphicsPixels(g) + y * pitch + x0);
+         for (x=x0; x < xf; x++,pixels++)
+         {
+            if (pixels->pixel == transp) continue;
+            // get current pixel values
+            oldR = pixels->r;
+            oldG = pixels->g;
+            oldB = pixels->b;
+            // convert to 565 component values
+            newR = oldR >> 3 << 3; 
+            newG = oldG >> 2 << 2;
+            newB = oldB >> 3 << 3;
+            // compute error
+            errR = oldR-newR;
+            errG = oldG-newG;
+            errB = oldB-newB;
+            // set new pixel
+            pixels->r = newR;
+            pixels->g = newG;
+            pixels->b = newB;
+   
+            addError(pixels+1      , x+1, y ,w,h, errR,errG,errB,7,16);
+            addError(pixels-1+pitch, x-1,y+1,w,h, errR,errG,errB,3,16);
+            addError(pixels  +pitch, x,y+1  ,w,h, errR,errG,errB,5,16);
+            addError(pixels+1+pitch, x+1,y+1,w,h, errR,errG,errB,1,16);
+         }
+      }
+      if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x0, y0, w, h);
+   }
+}
+
+static void drawCylindricShade(Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+{
+   int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
+   int32 startRed = (startColor >> 16) & 0xFF;
+   int32 startGreen = (startColor >> 8) & 0xFF;
+   int32 startBlue = startColor & 0xFF;
+   int32 endRed = (endColor >> 16) & 0xFF;
+   int32 endGreen = (endColor >> 8) & 0xFF;
+   int32 endBlue = endColor & 0xFF;
+   int32 redInc = (((endRed - startRed)*2) << 16) / numSteps;
+   int32 greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
+   int32 blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
+   int32 red = startRed << 16;
+   int32 green = startGreen << 16;
+   int32 blue = startBlue << 16;                    
+   int32 foreColor,rr,gg,bb,sx,sy,ii,i2,i;
+   for (i = 0; i < numSteps; i++)
+   {
+      rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+      gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+      bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+      foreColor = (rr << 16) | (gg << 8) | bb;
+      sx = startX+i;
+      sy = startY+i;
+      drawRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
+      ii = i-8;
+      rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+      gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+      bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+      foreColor = (rr << 16) | (gg << 8) | bb;
+      i2 = i/8;
+      drawLine(g,sx-i2,sy+i2,sx+i2,sy-i2,foreColor);
+      sx = endX-i; drawLine(g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
+      sy = endY-i; drawLine(g,sx-i2,sy+i2,sx+i2,sy-i2,foreColor);
+      sx = startX+i; drawLine(g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
+   }
+   if (screen.bpp < 24) dither(g, startX, startY, endX-startX, endY-startY, -1);
+}
+
 /////////////// Start of Device-dependant functions ///////////////
 static bool startupGraphics() // there are no threads running at this point
 {
