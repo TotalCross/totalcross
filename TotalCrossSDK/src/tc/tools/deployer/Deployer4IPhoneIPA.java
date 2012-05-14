@@ -132,7 +132,7 @@ public class Deployer4IPhoneIPA
       // add all the iphone icons
       addIcons(appFolder, rootDict);
       // itunes metadata
-      addMetadata(targetZip, (TFile) ipaContents.get("iTunesMetadata.plist"));
+      addMetadata(targetZip);
       
       // update the application name
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
@@ -289,7 +289,7 @@ public class Deployer4IPhoneIPA
       System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone/"));
    }
    
-   private void addMetadata(TFile targetZip, TFile iTunesMetadata) throws Exception
+   private void addMetadata(TFile targetZip) throws Exception
    {
       for (int i = Bitmaps.ITUNES_ICONS.length - 1; i >= 0; i--)
       {
@@ -297,14 +297,12 @@ public class Deployer4IPhoneIPA
          icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.ITUNES_ICONS[i].size)));
       }
 
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      iTunesMetadata.output(baos);
-
-      NSDictionary metadata = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
+      NSDictionary metadata = new NSDictionary();
       metadata.put("product-type", "ios-app");
       metadata.put("itemName", DeploySettings.appTitle);
       metadata.put("artistName", DeploySettings.companyInfo);
 
+      TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
       iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));
    }
 
