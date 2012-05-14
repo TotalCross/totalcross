@@ -2176,7 +2176,7 @@ public final class Graphics4B
       }
    }
 
-   private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
+   private static void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
    {
       if (x >= w || y >= h || x < 0) return;
       int i = y*w+x;
