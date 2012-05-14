@@ -676,19 +676,24 @@ public class Bitmaps
       }
    }
 
-   /** Gets an image of size 60x60. Searches from the available sizes, and does a resize if needed. Creates a png and returns it. */
-   public byte[] getIPhoneIcon()
+   static final int IPHONE_DEB = 60;
+
+   /**
+    * Gets an image of size 60x60. Searches from the available sizes, and does a resize if needed. Creates a png and
+    * returns it.
+    */
+   public byte[] getIPhoneIcon(int size)
    {
       byte[] imgbytes = null;
       try
       {
          // search for the dedicated iphone icon.
-         imgbytes = findIconFile("icon60x60.png");
+         imgbytes = findIconFile("icon" + size + "x" + size + ".png");
          if (imgbytes != null)
          {
             Image img = new Image(imgbytes);
-            if (img.getWidth() != 60 || img.getHeight() != 60)
-               throw new IllegalArgumentException("The iPhone icon must be 60x60 in size!");
+            if (img.getWidth() != size || img.getHeight() != size)
+               throw new IllegalArgumentException("The iPhone icon must be " + size + "x" + size + " in size!");
             return imgbytes; // use this icon as-is
          }
 
@@ -706,7 +711,7 @@ public class Bitmaps
             floodFill(img,0);
             // resize to 60x60
             ByteArrayStream bas = new ByteArrayStream(8192);
-            img = img.getSmoothScaledInstance(60,60,0);
+            img = img.getSmoothScaledInstance(size, size, 0);
             img.transparentColor = 0; // not really necessary
             img.createPng(bas);
             imgbytes = bas.toByteArray();
