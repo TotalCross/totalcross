@@ -604,13 +604,13 @@ static BOOL ScanSetup()
       reader_params.ReaderSpecific.laser_specific.dwAimMode = AIM_MODE_NONE;
       reader_params.ReaderSpecific.laser_specific.bNarrowBeam = TRUE;
       reader_params.ReaderSpecific.laser_specific.dwRasterMode = RASTER_MODE_NONE;
-      reader_params.ReaderSpecific.laser_specific.dwBeamTimer = 1000;
+      reader_params.ReaderSpecific.laser_specific.dwBeamTimer = 10000;
       reader_params.ReaderSpecific.laser_specific.bControlScanLed = TRUE;
       reader_params.ReaderSpecific.laser_specific.bScanLedLogicLevel = TRUE;
       reader_params.ReaderSpecific.laser_specific.bKlasseEinsEnable = FALSE;
       reader_params.ReaderSpecific.laser_specific.bBidirRedundancy = TRUE;
       reader_params.ReaderSpecific.laser_specific.dwLinearSecurityLevel = SECURITY_ALL_THRICE;
-      reader_params.ReaderSpecific.laser_specific.dwPointerTimer = 1000;
+      reader_params.ReaderSpecific.laser_specific.dwPointerTimer = 10000;
       dwResult = SCAN_SetReaderParams(hScanner,&reader_params);
       if ( dwResult != E_SCN_SUCCESS )
       {
@@ -733,51 +733,7 @@ SCAN_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Sca
          scannerWaitingTime = INFINITE;
       p->retI = true;
    }
-   p->retI = false;
-   /*
-   int32 type;
-   BarType barcode;
-   uint16 value;
-   type = stack[1].intValue;
-   barcode = (BarType)stack[2].intValue;
-   value = (uint16)stack[3].intValue;
-   switch (type)
-   {
-      case TRIGGERING_PARAM            :
-         v.intValue = ScanSetTriggeringModes(value) == 0;
-         break;
-      case LINEAR_SECURITY_LEVEL_PARAM :
-         v.intValue = ScanSetLinearCodeTypeSecurityLevel(value) == 0;
-         break;
-      case SUPPLEMENTALS_PARAM         :
-         v.intValue = ScanSetDecodeUpcEanSupplementals(value) == 0;
-         break;
-      case TRANSMIT_CHECKDIGIT_PARAM   :
-         v.intValue = ScanSetTransmitCheckDigit(barcode, value) == 0;
-         break;
-      case PREAMBLE_PARAM              :
-         v.intValue = ScanSetUpcPreamble(barcode, value) == 0;
-         break;
-      case MSI_PLESSEY_CHECKDIGIT_PARAM:
-         v.intValue = ScanSetMsiPlesseyCheckDigits(value) == 0;
-         break;
-      case MSI_PLESSEY_OPTIONS_PARAM   :
-         v.intValue = ScanSetMsiPlesseyCheckDigits(value) == 0;
-         break;
-      case MSI_PLESSEY_ALGORITHMS_PARAM:
-         v.intValue = ScanSetMsiPlesseyCheckDigitAlgorithm(value) == 0;
-         break;
-      case TRANSMIT_CODEID_PARAM       :
-         v.intValue = ScanSetTransmitCodeIdCharacter(value) == 0;
-         break;
-      case SCAN_DATA_TRANSMISSION_PARAM:
-         v.intValue = ScanSetScanDataTransmissionFormat(value) == 0;
-         break;
-      case SCAN_ANGLE_PARAM            :
-         v.intValue = ScanSetAngle(value) == 0;
-         break;
-   }
-   */
+   else p->retI = false;
 }
 //////////////////////////////////////////////////////////////////////////
 SCAN_API void tidsS_setBarcodeLength_iiii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max);
