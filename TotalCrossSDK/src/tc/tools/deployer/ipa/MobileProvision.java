@@ -46,7 +46,14 @@ public class MobileProvision
       }
    }
 
-   public String GetEntitlementsString(String CFBundleIdentifier)
+   public String getBundleIdentifier()
+   {
+      NSDictionary entitlements = (NSDictionary) this.Data.objectForKey("Entitlements");
+      String bundleIdentifier = entitlements.objectForKey("application-identifier").toString();
+      return bundleIdentifier.substring(bundleIdentifier.indexOf('.') + 1);
+   }
+
+   public String GetEntitlementsString()
    {
       NSDictionary XCentPList = new NSDictionary();
       NSDictionary entitlements = (NSDictionary) this.Data.objectForKey("Entitlements");
