@@ -43,7 +43,7 @@ class ReservedHashtable
    {
       int index = (hash & 0x7FFFFFFF) % table.length;
       for (Entry e = table[index] ; e != null ; e = e.next)
-         if (e.hash == hash && equalsSB((String)e.key, string))
+         if (e.hash == hash && equalsSB(e.key, string))
             return e.value;
       return -1;
    }
@@ -54,7 +54,7 @@ class ReservedHashtable
    * @param key The hash table key.
    * @param value The value.
    */
-   void put(Object key, int value)
+   void put(String key, int value)
    {
       Entry[] tab = table;
       int hash = key.hashCode(), // flsobral@tc100b4_23: this operation throws NPE if key is null, no need to explicitly test that.

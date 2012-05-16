@@ -478,8 +478,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    indexName[nameLength = xstrlen(indexName)] = '$';
 
    primaryKeyCol = table->primaryKeyCol;
-   i = -1;
-   while (++i < columnCount) // Loads the indices.
+   i = columnCount;
+   while (--i >= 0) // Loads the indices.
    { 
       if ((columnAttrs[i] & ATTR_COLUMN_HAS_INDEX))
       {

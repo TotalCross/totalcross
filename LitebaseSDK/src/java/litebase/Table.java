@@ -660,9 +660,9 @@ class Table
       primaryKeyValues = new SQLValue[n]; 
       primaryKeyOldValues = SQLValue.newSQLValues(n);
       
-      i = -1;
+      i = n;
       nameAux = tableName + '$';
-      while (++i < n) // Loads the indices.
+      while (--i >= 0) // Loads the indices.
          if ((attrs[i] & Utils.ATTR_COLUMN_HAS_INDEX) != 0)
          {
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
