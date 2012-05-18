@@ -527,8 +527,7 @@ class PlainDB
                   
                   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
                   dboFile.setPos(dboFile.finalPos);
-                  value.asInt = dboFile.pos; // The string position for an index.
-                  ds.writeInt(dboFile.pos); // Writes its position in the .db
+                  ds.writeInt(value.asInt = dboFile.pos); // The string position for an index and writes it in the .db
    
                   // Writes the string to the buffer.
                   if  (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
