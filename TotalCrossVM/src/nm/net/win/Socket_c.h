@@ -42,7 +42,7 @@ static Err socketClose(SOCKET* socketHandle);
  * Link Library: Ws2.lib. (Ws2_32.lib on WIN32)
  *
  *************************************/
-static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost)
+static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
    SOCKET hostSocket = INVALID_SOCKET; // Socket bound to the server
    SOCKADDR_IN destination_sin;        // Server socket address
@@ -99,6 +99,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       if (!FD_ISSET(hostSocket, &fdWriteSet))
       {
          err = WSAETIMEDOUT; // flsobral@tc100b5_7: select sets the last error to S_OK, even when the connection times out.
+         *timedOut = true;
          goto Finish;
       }
    }
