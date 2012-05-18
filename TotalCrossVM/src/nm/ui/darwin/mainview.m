@@ -21,6 +21,8 @@ static NSLock *deviceCtxLock;
 int statusbar_height;
 int keyboardH,realAppH;
 
+char* createPixelsBuffer(int width, int height);
+void orientationChanged(); // called by the UI
 
 void lockDeviceCtx(const char *info)
 {
@@ -35,30 +37,6 @@ void unlockDeviceCtx()
 {
    [ deviceCtxLock unlock ];
    DEBUG0("DeviceCtx unlocked\n");
-}
-
-void _debug(const char *format, ...)
-{
-   char buffer[1024];
-   va_list va;
-   va_start(va, format);
-   vsprintf(buffer, format, va);
-   va_end(va);
-
-   bool dont_close = false;
-   FILE *lout = fopen( [NSThread isMainThread] ? "/tmp/MAIN.out" : "/tmp/TC.out", "a+");
-   if (!lout)
-   {
-      lout = stdout;
-      dont_close = true;
-   }
-   fprintf(lout, [NSThread isMainThread] ? "MAIN [%08x]: " : "tc   [%08x]: ", (unsigned int)[NSThread currentThread]);
-   fprintf(lout, buffer);
-   if (buffer[strlen(buffer)-1] != '\n')
-     fprintf(lout, "\n");
-
-   if (!dont_close)
-      fclose(lout);
 }
 
 @implementation SSize
@@ -87,18 +65,14 @@ void _debug(const char *format, ...)
 
 - (id)initWithFrame:(CGRect)rect
 {
-   child_view = nil;
-   child_added = true;
    current_orientation = UIDeviceOrientationPortrait; // initial orientation
 
    _events = nil;
    _lock = [[NSLock alloc] init];
 
-   DEBUG4("initWithFrame: %dx%d,%dx%d\n",
-         (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
+   DEBUG4("initWithFrame: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
    
    self = [ super initWithFrame: rect ];
-   [ self geometryChanged ];
    realAppH = rect.size.height;
    
    //flsobral@tc126: register didRotate to receive orientation change notifications.
@@ -116,66 +90,29 @@ void _debug(const char *format, ...)
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
 
-   [ self screenChange: true ]; //needed to make the keyboard appear without first rotating the screen on iOS 5, don't know why.
+   // child
+   width = rect.size.width;
+   height = rect.size.height;
+   pitch = width * 4;
+
+   unsigned short* screenBuffer = (unsigned short*)createPixelsBuffer(width+statusbar_height,height+statusbar_height);
+   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+   bitmapContext = CGBitmapContextCreate(
+         screenBuffer,
+         width,
+         height,
+         8,     // bitsPerComponent
+         pitch, // bytesPerRow
+         colorSpace,
+         kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
+   CFRelease(colorSpace);
+
+   [self setOpaque:YES];
+   [self setClearsContextBeforeDrawing:NO];
+
+   //[ self screenChange: true ]; //needed to make the keyboard appear without first rotating the screen on iOS 5, don't know why.
 
    return self;
-}
-
-- (void)geometryChanged
-{
-   [ self lock: "mainview:geometryChanged" ];
-   DEBUG0("MainView geometryChanged\n");
-
-   /* start orientation */
-   DEBUG1("init rotate: %d\n", current_orientation);
-
-   old_view = child_view;
-
-   CGRect rect = [ self frame ];
-   DEBUG4("NEWCHILD: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
-
-   float max_dim = rect.size.width > rect.size.height ? rect.size.width  : rect.size.height;
-   float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
-   DEBUG2("max_dim=%f min_dim=%f\n", max_dim, min_dim);
-   
-   struct CGAffineTransform transEnd;
-
-   if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
-   {
-      float diff = max_dim - min_dim;
-      rect = CGRectMake(-diff/2, diff/2, max_dim, min_dim);
-      child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
-
-      transEnd = (current_orientation == UIDeviceOrientationLandscapeLeft)
-               ? CGAffineTransformMake(0,  1, -1, 0, 0, 0)
-               : CGAffineTransformMake(0, -1,  1, 0, 0, 0);
-
-     [ child_view setTransform:transEnd];
-   }
-   else
-   {
-      rect = CGRectMake(0, 0, min_dim, max_dim);
-      child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
-
-      transEnd = (current_orientation == UIDeviceOrientationPortraitUpsideDown)
-               ? CGAffineTransformMake(-1,  0,  0, -1, 0, 0)
-               : CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
-
-     [ child_view setTransform:transEnd];
-   }
-
-   DEVICE_CTX->_childview = child_view;
-
-   [ self addSubview: child_view ];
-
-   if (old_view != nil)
-      [ self sendSubviewToBack: old_view ];
-   [ self bringSubviewToFront: child_view ];
-
-   if (old_view != nil)
-      [ old_view removeFromSuperview ];
-
-   [ self unlock ];
 }
 
 - (bool)isKbdShown
@@ -192,7 +129,6 @@ void _debug(const char *format, ...)
 {
    DEBUG1("********************************************************** destroySIP: kbd_view=%x\n", kbd_view);
    [ self lock: "mainview:destroySIP" ];
-   [ self bringSubviewToFront: child_view ];
 
    if (kbd_view != null)
    {
@@ -298,7 +234,7 @@ static bool verbose_lock;
    DEBUG1("main screenChange: force=%d\n", force);
    int orientation = [[UIDevice currentDevice] orientation];
 
-   if (child_view != nil && !force)
+   if (!force)
    {
       if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown)
          return; // keep previous
@@ -307,7 +243,7 @@ static bool verbose_lock;
          return; // don't change
    }
 
-   int width, height;
+//   int width, height;
    CGRect rect = [ self frame ];
    if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight)
    {
@@ -321,14 +257,13 @@ static bool verbose_lock;
    }
    realAppH = height;
    current_orientation = orientation;
-
-   lockDeviceCtx("screenChange");
-   if (DEVICE_CTX && DEVICE_CTX->_childview)
+   
+/*   lockDeviceCtx("screenChange");
+   if (DEVICE_CTX)
    {
-      [ DEVICE_CTX->_childview screenChange: width height:height ];
+      [ self screenChange: width height:height ];
    }
-   unlockDeviceCtx();
-
+   unlockDeviceCtx();*/
 }
 
 - (void)scheduleScreenChange: (CGSize)size
@@ -378,6 +313,166 @@ static bool verbose_lock;
 }
 
 //--------------------------------------------------------------------------------------------------------
+
+- (void)invalidateScreen:(void*)vscreen
+{
+   ScreenSurface screen = (ScreenSurface)vscreen;
+   shiftY = screen->shiftY;
+   
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
+   
+   [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
+   [redrawInv setTarget:self];
+   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
+   [redrawInv setArgument:&r atIndex:2];
+   [redrawInv retainArguments];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+}    
+
+- (void)screenChange:(int)w height:(int)h 
+{
+   debug("screen rotated event: %d x %d\n", w, h);
+   [ self addEvent:
+      [[NSDictionary alloc] initWithObjectsAndKeys:
+       @"screenChange", @"type",
+       [NSNumber numberWithInt:w], @"width",
+       [NSNumber numberWithInt:h], @"height",
+       nil
+      ]
+   ];
+}
+
+- (void)drawRect:(CGRect)frame // ok
+{                                                       
+   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+      [self setFrame: CGRectMake(0, -shiftY, width, height)];
+   else
+   if (shiftY == 0 && self.frame.origin.y < 0)
+      [self setFrame: CGRectMake(0, 0, width, height)];
+            
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   CGContextSaveGState(context);
+   CGContextClipToRect(context, frame);
+   switch (current_orientation)
+   {
+      case UIDeviceOrientationPortrait:
+      case UIDeviceOrientationLandscapeLeft:
+      case UIDeviceOrientationLandscapeRight:
+         CGContextTranslateCTM(context, 0, height);
+         CGContextScaleCTM(context, 1, -1);
+         break;
+      case UIDeviceOrientationPortraitUpsideDown:
+         CGContextTranslateCTM(context, 0,height);
+         CGContextRotateCTM(context, -M_PI);
+         CGContextScaleCTM(context, -1, 1);
+         break;
+   }
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
+   CGImageRelease(cgImage);
+   CGContextRestoreGState(context);
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   DEBUG0("touch BEGIN");
+   
+   if ([ touches count ] == 1)
+   {
+      UITouch *touch = [ touches anyObject ];
+      if (touch != nil && touch.phase == UITouchPhaseBegan)
+      {
+         lastEventTS = getTimeStamp();
+         CGPoint point = [touch locationInView: self];
+         DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
+         [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseDown", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+        ];
+      }
+   }
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   DEBUG0("touch MOVE");
+   if ([ touches count ] == 1)
+   {
+      UITouch *touch = [ touches anyObject ];
+     if (touch != nil && touch.phase == UITouchPhaseMoved)
+     {  
+        // ignore events if sent too fast
+        int ts = getTimeStamp();
+        if ((ts-lastEventTS) < 50)
+           return;
+        lastEventTS = ts;
+        
+        CGPoint point = [touch locationInView: self];
+        DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
+    
+        [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseMoved", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+        ];
+     }
+   }
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   DEBUG0("touch END");
+   if ([ touches count ] == 1)
+   {
+      UITouch *touch = [ touches anyObject ];
+      if (touch != nil && touch.phase == UITouchPhaseEnded)
+      {
+         CGPoint point = [touch locationInView: self];
+         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
+    
+         //todo@ temp manual rotation
+         if ((current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight) && (point.y-shiftY) > 280)
+            orientationChanged();
+         else if ((point.y-shiftY) > 430)
+            orientationChanged();
+    
+         [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseUp", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+         ];
+      }
+   }
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   DEBUG0("touch CANCEL");
+}
+
+void iphone_postEditUpdate(id control, NSString *str)
+{
+   DEBUG2("iphone_postEditUpdate: %x,%x\n", (int)control, str);
+   [ DEVICE_CTX->_mainview addEvent:
+      [[NSDictionary alloc] initWithObjectsAndKeys:
+       @"updateEdit", @"type",
+       [NSNumber numberWithInt: (int)control], @"control",
+       str, @"value",
+       nil
+      ]
+   ];
+}
 
 @end
 
@@ -464,7 +559,7 @@ void privateScreenChange(int32 w, int32 h)
    }
    else
    {
-      [ main_view geometryChanged ];
+      [ self geometryChanged ];
    }
 
    unlockDeviceCtx();
@@ -546,16 +641,17 @@ bool graphicsStartup(ScreenSurface screen)
    }
    else
    {
-      [ main_view geometryChanged ];
+      [ self geometryChanged ];
    }
 
-   unlockDeviceCtx();
    /************************ END privateScreenChange *********************/
    
    DEBUG0("graphicsStartup done\n");
 
-   [ DEVICE_CTX->_childview updateScreen: screen ];
-
+   screen->screenW = main_view->width;
+   screen->screenH = main_view->height;
+   screen->pitch = main_view->pitch;
+   screen->bpp = 32;
    screen->pixels = (void*)1;
 
    unlockDeviceCtx();
@@ -574,7 +670,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
-   ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
+   MainView* vw = (MainView*)SCREEN_EX(screen)->_mainview;
    if (allowMainThread())
       [vw invalidateScreen: screen];
    allowOrientationChanges = true;
@@ -606,3 +702,4 @@ bool graphicsLock(ScreenSurface screen, bool on)
       unlockDeviceCtx();
    return true;
 }
+

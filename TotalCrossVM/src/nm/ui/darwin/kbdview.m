@@ -9,7 +9,7 @@
 
 #define NAVIGATION_BAR_HEIGHT       48
 
-#define HIDE_SIP 1
+#define HIDE_SIP 0
 
 @implementation KeyboardView
 
