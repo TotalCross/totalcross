@@ -769,7 +769,16 @@ target: IPhone builds
       <param name="copy.to"         value="${basedir}/theos/demo" />
    </antcall>
 </target>
-	
+
+<target name="ios_xcode" >
+   <antcall target="ios_build">
+      <param name="build.name"      value="xcode" />
+      <param name="build.includes"  value="TotalCross/TotalCrossVM/src/**, TotalCross/TotalCrossVM/builders/xcode/**, Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/xcode/**" />
+      <param name="copy.from"       value="build/Release-iphoneos/TotalCross.ipa" />
+      <param name="copy.to"         value="${source.sdk.path}/dist/vm/iphone2+" />
+   </antcall>
+</target>
+
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
