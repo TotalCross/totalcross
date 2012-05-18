@@ -68,7 +68,7 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
          if (isUnknownHost)
             throwException(p->currentContext, UnknownHostException, szHost);
          else if (timedOut)
-            throwException(p->currentContext, IOException, "Socket creation timed out.")
+            throwException(p->currentContext, IOException, "Socket creation timed out.");
          else
             throwExceptionWithCode(p->currentContext, IOException, err);
          invalidate(socket);
