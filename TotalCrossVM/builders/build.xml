@@ -729,20 +729,45 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="iphone_theos" >
-	<property name="remote.path" value="~/iphone_workspace/${env.COMPUTERNAME}" />
+<target name="ios_build">
+   <fail unless="build.name" />
+   <fail unless="build.includes" />
+   <fail unless="copy.from" />
+   <fail unless="copy.to" />
 
-	<tar destfile="${base.temp.path}/TotalCross.tgz" basedir="${basedir}/../../TotalCrossVM" compression="gzip" includes="builders/theos/**, src/**" />
-	<sshexec command="mkdir -p ${remote.path}/TotalCrossVM" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
-	<scp file="${base.temp.path}/TotalCross.tgz" todir="tcbuilder@192.168.2.102:${remote.path}" trust="yes" password="totalcrosss" port="22" />
+   <property name="remote.path" value="~/ios_workspace/${build.name}/${env.COMPUTERNAME}" />
 
-	<sshexec command="
-		tar -zxpf ${remote.path}/TotalCross.tgz -C ${remote.path}/TotalCrossVM;
-		bash -l ${remote.path}/TotalCrossVM/builders/theos/libtcvm/build.sh -clean -r demo
-		" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
+   <tar
+      basedir="${basedir}/../../.."
+      includes="${build.includes}"
+      destfile="${base.temp.path}/TotalCross_${build.name}.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/TotalCross_${build.name}.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
 
-	<mkdir dir="${basedir}/theos/libtcvm/demo" />
-	<scp file="tcbuilder@192.168.2.102:${remote.path}/TotalCrossVM/builders/theos/libtcvm/demo/libtcvm.dylib" todir="${basedir}/theos/libtcvm/demo" trust="yes" password="totalcrosss" port="22" />
+   <sshexec command="
+      tar -zxpf ${remote.path}/TotalCross_${build.name}.tgz -C ${remote.path};
+      bash -l ${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/build.sh -clean -r demo -p ${buildserver.pass}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+
+   <mkdir dir="${copy.to}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/${copy.from}" todir="${copy.to}" trust="yes" password="${buildserver.pass}" port="22" />
+</target>
+
+<target name="ios_theos" >
+   <antcall target="ios_build">
+      <param name="build.name"      value="theos" />
+      <param name="build.includes"  value="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**" />
+      <param name="copy.from"       value="demo/libtcvm.dylib" />
+      <param name="copy.to"         value="${basedir}/theos/demo" />
+   </antcall>
 </target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
@@ -778,7 +803,7 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/libtcvm/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
@@ -792,12 +817,12 @@ target: IPhone builds
     <arg line="-c 'TotalCross VM'"/>
     <arg line="-d 'The TotalCross Virtual Machine'"/>
     <arg line="-v ${tc.version}"/>
-    <arg line="-b ${basedir}/theos/libtcvm/${type}/libtcvm.dylib"/>
+    <arg line="-b ${basedir}/theos/${type}/libtcvm.dylib"/>
     <arg line="-t ${target.path}/dist/vm/iphone2+"/>
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-    <arg value="${basedir}/theos/libtcvm/${type}/tcpriv"/>
+    <arg value="${basedir}/theos/${type}/tcpriv"/>
   </java>
 
   <!-- package the files -->
