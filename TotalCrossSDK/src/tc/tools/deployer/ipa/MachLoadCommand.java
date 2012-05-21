@@ -1,22 +1,17 @@
 package tc.tools.deployer.ipa;
 import java.io.IOException;
 
+/**
+ * More information in "Mac OS X Internals: A Systems Approach, by Amit Singh"
+ */
 public abstract class MachLoadCommand
 {
-   public final int LC_CODE_SIGNATURE = 0x1d;
-   public final int LC_DYLD_INFO = 0x22;
-   public final int LC_DYSYMTAB = 11;
-   public final int LC_ENCRYPTION_INFO = 0x21;
-   public final int LC_ID_DYLIB = 13;
-   public final int LC_ID_DYLINKER = 15;
-   public final int LC_LOAD_DYLIB = 12;
-   public final int LC_LOAD_DYLINKER = 14;
-   public final int LC_LOAD_WEAK_DYLIB = 0x18;
-   public final int LC_SEGMENT = 1;
-   public final int LC_SYMTAB = 2;
-   public final int LC_THREAD = 4;
-   public final int LC_UNIXTHREAD = 5;
-   public final int LC_UUID = 0x1b;
+   public static final int LC_SEGMENT = 1;
+   public static final int LC_SYMTAB = 2;
+   public static final int LC_DYSYMTAB = 11;
+   public static final int LC_CODE_SIGNATURE = 0x1d;
+   public static final int LC_ENCRYPTION_INFO = 0x21;
+   public static final int LC_DYLD_INFO = 0x22;
    public boolean RequiredForDynamicLoad;
 
    protected MachLoadCommand()
@@ -30,31 +25,28 @@ public abstract class MachLoadCommand
       long num4 = num2 & 0x7fffffff;
       switch ((int) num4)
       {
-         case 1:
+         case LC_SEGMENT:
             command = new MachLoadCommandSegment();
          break;
 
-         case 2:
+         case LC_SYMTAB:
             num3 = 24;
          break;
 
-         case 11:
+         case LC_DYSYMTAB:
             num3 = 80;
          break;
 
-         case 0x1d:
+         case LC_CODE_SIGNATURE:
             command = new MachLoadCommandCodeSignature();
          break;
 
-         case 0x21:
+         case LC_ENCRYPTION_INFO:
             num3 = 20;
          break;
 
-         case 0x22:
+         case LC_DYLD_INFO:
             num3 = 48;
-         break;
-
-         default:
          break;
       }
       if (command == null)
