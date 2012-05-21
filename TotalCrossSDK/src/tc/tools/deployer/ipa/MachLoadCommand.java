@@ -49,8 +49,9 @@ public abstract class MachLoadCommand
             num3 = 48;
          break;
       }
-      if (command == null)
-         reader.moveTo(reader.getPos() + (num3 - 8));
+
+      if (command == null) // skip commands we don't really care about
+         reader.skip(num3 - 8);
       else
          command.unpackageData(reader);
       return command;
