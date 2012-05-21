@@ -23,7 +23,7 @@ public class MachLoadCommand
    protected MachLoadCommand()
    {}
 
-   public static MachLoadCommand CreateFromStream(ElephantMemoryReader reader) throws IOException
+   public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException
    {
       MachLoadCommand command = null;
       long position = reader.getPos();

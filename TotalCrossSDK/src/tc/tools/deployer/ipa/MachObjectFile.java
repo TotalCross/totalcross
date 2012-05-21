@@ -1,33 +1,39 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MachObjectFile
 {
-   public List Commands = new ArrayList();
-   public long CpuSubType;
-   public long CpuType;
-   public long FileType;
-   public long Flags;
-   public long Magic;
+   // the only value we use is commandCount, all others are kept only for future reference.
+   protected long magic;
+   protected long cpuType;
+   protected long cpuSubType;
+   protected long fileType;
+   protected long commandCount;
+   protected long unknownValue;
+   protected long flags;
+
+   public List commands = new ArrayList();
 
    public MachObjectFile(byte[] data) throws IOException
    {
       ElephantMemoryReader reader = new ElephantMemoryReader(data);
 
-      this.Magic = reader.readUnsignedInt();
-      this.CpuType = reader.readUnsignedInt();
-      this.CpuSubType = reader.readUnsignedInt();
-      this.FileType = reader.readUnsignedInt();
-      long num2 = reader.readUnsignedInt();
-      long num3 = reader.readUnsignedInt();
-      this.Flags = reader.readUnsignedInt();
-      this.Commands.clear();
-      for (int i = 0; i < num2; i++)
+      this.magic = reader.readUnsignedInt();
+      this.cpuType = reader.readUnsignedInt();
+      this.cpuSubType = reader.readUnsignedInt();
+      this.fileType = reader.readUnsignedInt();
+      this.commandCount = reader.readUnsignedInt();
+      this.unknownValue = reader.readUnsignedInt();
+      this.flags = reader.readUnsignedInt();
+      this.commands.clear();
+      for (int i = 0; i < commandCount; i++)
       {
-         MachLoadCommand item = MachLoadCommand.CreateFromStream(reader);
-         this.Commands.add(item);
+         MachLoadCommand command = MachLoadCommand.readFromStream(reader);
+         if (command != null)
+            this.commands.add(command);
       }
       reader.close();
    }

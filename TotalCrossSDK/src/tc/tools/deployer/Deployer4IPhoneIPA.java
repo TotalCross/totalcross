@@ -203,14 +203,12 @@ public class Deployer4IPhoneIPA
       MachObjectFile file = new MachObjectFile(appStream.toByteArray());
       MachLoadCommandCodeSignature signature = null;
       MachLoadCommandSegment segment = null;
-      ListIterator iterator = file.Commands.listIterator();
+      ListIterator iterator = file.commands.listIterator();
       while (iterator.hasNext())
       {
          MachLoadCommand command = (MachLoadCommand) iterator.next();
          if (signature == null && command instanceof MachLoadCommandCodeSignature)
-         {
             signature = (MachLoadCommandCodeSignature) command;
-         }
          if (segment == null && command instanceof MachLoadCommandSegment)
          {
             segment = (MachLoadCommandSegment) command;
