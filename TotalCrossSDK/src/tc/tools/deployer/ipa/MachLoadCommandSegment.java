@@ -12,14 +12,13 @@ public class MachLoadCommandSegment extends MachLoadCommand
    public long virtualAddress;
    public long virtualSize;
 
+   private int offset2FileSize;
+
    public void PatchFileLength(ElephantMemoryWriter writer, long newLength) throws IOException
    {
       this.fileSize = newLength;
-      long newOffset = super.StartingLoadOffset + 8L;
-      newOffset += 0x10L;
-      newOffset += 12L;
       writer.memorize();
-      writer.moveTo((int) newOffset);
+      writer.moveTo(offset2FileSize);
       writer.writeUnsignedInt(this.fileSize);
       writer.moveBack();
    }
@@ -30,6 +29,7 @@ public class MachLoadCommandSegment extends MachLoadCommand
       this.virtualAddress = reader.readUnsignedInt();
       this.virtualSize = reader.readUnsignedInt();
       this.fileOffset = reader.readUnsignedInt();
+      this.offset2FileSize = reader.getPos();
       this.fileSize = reader.readUnsignedInt();
       this.maxProt = reader.readUnsignedInt();
       this.initProt = reader.readUnsignedInt();

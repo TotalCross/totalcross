@@ -18,7 +18,6 @@ public class MachLoadCommand
    public final int LC_UNIXTHREAD = 5;
    public final int LC_UUID = 0x1b;
    public boolean RequiredForDynamicLoad;
-   public long StartingLoadOffset = -1L;
 
    protected MachLoadCommand()
    {}
@@ -26,7 +25,6 @@ public class MachLoadCommand
    public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException
    {
       MachLoadCommand command = null;
-      long position = reader.getPos();
       long num2 = reader.readUnsignedInt();
       long num3 = reader.readUnsignedInt();
       long num4 = num2 & 0x7fffffff;
@@ -62,10 +60,7 @@ public class MachLoadCommand
       if (command == null)
          reader.moveTo(reader.getPos() + (num3 - 8));
       else
-      {
-         command.StartingLoadOffset = position;
          command.UnpackageData(reader, (int) num3);
-      }
       return command;
    }
 
