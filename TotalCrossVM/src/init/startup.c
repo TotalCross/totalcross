@@ -69,6 +69,21 @@ static Context initAll(CharP* args)
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
    initNativeProcAddresses();
+#if defined (darwin)
+   {
+      TCClass fileClass = loadClass(c, "totalcross.io.File", false);
+      if (fileClass != null)
+      {
+         Object* deviceAlias = getStaticFieldObject(c, "deviceAlias");
+#if defined (THEOS)
+         *deviceAlias = createStringObjectFromCharP(c, "/private/var/mobile", -1);
+#else
+         *deviceAlias = createStringObjectFromCharP(c, appPath, -1);
+#endif
+         setObjectLock(*deviceAlias, UNLOCKED);
+      }
+   }
+#endif
    if (ok) registerWake(true);
    return ok ? c : null;
 }

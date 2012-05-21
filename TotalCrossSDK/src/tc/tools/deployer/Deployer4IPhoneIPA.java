@@ -12,8 +12,7 @@
 package tc.tools.deployer;
 
 import java.io.*;
-import java.security.KeyStore;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.util.*;
@@ -36,7 +35,6 @@ import de.schlichtherle.truezip.file.TVFS;
  */
 public class Deployer4IPhoneIPA
 {
-   public static final String templateFileName = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/TotalCross.ipa");
    public static final String appleRootCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleRootCA.pem");
    public static final String appleWWDRCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleWWDRCA.pem");
    
@@ -48,24 +46,44 @@ public class Deployer4IPhoneIPA
    {
       if (DeploySettings.mobileProvision == null || DeploySettings.appleCertStore == null)
          throw new NullPointerException();
-      
+
       // initialize bouncy castle
       Security.addProvider(new BouncyCastleProvider());
-      
+
       // locate template and target
-      File templateFile = new File(templateFileName);
+      File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
+            DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
+            "iphone2+/TotalCross.ipa"));
       File targetFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       targetFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, targetFile);
-      
+
       // open new file with truezip
       TFile targetZip = new TFile(targetFile);
-      
+
       // get the payload folder from the zip
-      TFile payload = targetZip.listFiles()[0];
+      targetZip.listFiles(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            ipaContents.put(name, new TFile(dir, name));
+            return false;
+         }
+      });
+      TFile payload = (TFile) ipaContents.get("Payload");
+
       // get the template appFolder - TotalCross.app
-      TFile appFolder = payload.listFiles()[0];
+      payload.listFiles(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            ipaContents.put(name, new TFile(dir, name));
+            return false;
+         }
+      });
+      TFile appFolder = (TFile) ipaContents.get("TotalCross.app");
+
       // create new appFolder using the deployed tcz name
       TFile newAppFolder = new TFile(payload, DeploySettings.filePrefix + ".app");
       // rename the appFolder
@@ -98,7 +116,11 @@ public class Deployer4IPhoneIPA
             return false;
          }
       });
-      
+
+      /** PROCESS MOBILE PROVISION **/
+      // update the mobile provision
+      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));
+
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
       TFile infoPlist = (TFile) ipaContents.get("Info.plist");
@@ -106,22 +128,27 @@ public class Deployer4IPhoneIPA
       infoPlist.output(baos);
       NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
       String executableName = rootDict.objectForKey("CFBundleExecutable").toString();
-      String bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();      
+
+      // add all the iphone icons
+      addIcons(appFolder, rootDict);
+      // itunes metadata
+      addMetadata(targetZip);
       
       // update the application name
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
-      
+
+      String bundleIdentifier = this.Provision.getBundleIdentifier();
+      if (bundleIdentifier.equals("*"))
+         bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();
+      rootDict.put("CFBundleIdentifier", bundleIdentifier);
+
       // overwrite updated info.plist inside the zip file
       byte[] updatedInfoPlist = rootDict.toXMLPropertyList().getBytes("UTF-8");
       infoPlist.input(new ByteArrayInputStream(updatedInfoPlist));
-      
-      /** PROCESS MOBILE PROVISION **/
-      // update the mobile provision
-      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));      
-      
+
       /** PROCESS CERTIFICATE **/
       // install certificates
       CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
@@ -134,11 +161,39 @@ public class Deployer4IPhoneIPA
       KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
       ks.load(new FileInputStream(DeploySettings.appleCertStore), "".toCharArray());
       
-      Certificate storecert = ks.getCertificate((String) ks.aliases().nextElement());
+      String keyAlias = (String) ks.aliases().nextElement();
+      Certificate storecert = ks.getCertificate(keyAlias);
+      if (storecert == null)
+      {
+         File[] certsInPath = DeploySettings.appleCertStore.getParentFile().listFiles(new FilenameFilter()
+         {
+            public boolean accept(File arg0, String arg1)
+            {
+               return arg1.endsWith(".cer");
+            }
+         });
+         if (certsInPath.length == 0)
+            throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
+
+         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
+         certs[2] = new X509CertificateHolder(storecert.getEncoded());
+         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
+         ks.deleteEntry(keyAlias);
+         ks.setEntry(
+               keyAlias,
+               new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+               new KeyStore.PasswordProtection("".toCharArray())
+               );
+      }
       certs[2] = new X509CertificateHolder(storecert.getEncoded());
+
       X509Store certStore = X509Store.getInstance(
             "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
-      
+
+      // provision
+      TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
+      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(DeploySettings.mobileProvision)));
+
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
       String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
@@ -182,7 +237,7 @@ public class Deployer4IPhoneIPA
 
       int blobFileOffset = (int) signature.BlobFileOffset;
       CodeDirectoryBlob blob = CodeDirectoryBlob.Create(bundleIdentifier, blobFileOffset);
-      AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString(bundleIdentifier));
+      AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString());
       SuperBlob blob3 = SuperBlob.CreateRequirementsBlob();
       CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob();
       SuperBlob blob6 = SuperBlob.CreateCodeSigningTableBlob();
@@ -226,9 +281,6 @@ public class Deployer4IPhoneIPA
       
       // executable
       executable.input(new ByteArrayInputStream(array));
-      // provision
-      TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
-      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(DeploySettings.mobileProvision)));
       
       TVFS.umount(targetZip);      
 
@@ -237,6 +289,38 @@ public class Deployer4IPhoneIPA
       System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone/"));
    }
    
+   private void addMetadata(TFile targetZip) throws Exception
+   {
+      for (int i = Bitmaps.ITUNES_ICONS.length - 1; i >= 0; i--)
+      {
+         TFile icon = new TFile(targetZip, Bitmaps.ITUNES_ICONS[i].name);
+         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.ITUNES_ICONS[i].size)));
+      }
+
+      NSDictionary metadata = new NSDictionary();
+      metadata.put("product-type", "ios-app");
+      metadata.put("itemName", DeploySettings.appTitle);
+      metadata.put("artistName", DeploySettings.companyInfo);
+
+      TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
+      iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));
+   }
+
+   private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException
+   {
+      NSString[] icons = new NSString[Bitmaps.IOS_ICONS.length];
+
+      for (int i = icons.length - 1; i >= 0; i--)
+      {
+         TFile icon = new TFile(appFolder, Bitmaps.IOS_ICONS[i].name);
+         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.IOS_ICONS[i].size)));
+         icons[i] = new NSString(Bitmaps.IOS_ICONS[i].name);
+      }
+
+      NSArray iconBundle = new NSArray(icons);
+      rootDict.put("CFBundleIconFiles", iconBundle);
+   }
+
    protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
    {
        NSDictionary root = new NSDictionary();

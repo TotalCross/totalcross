@@ -130,7 +130,7 @@ public class PopupMenu extends Window
          layout.controlGap = 50; // 50% of font's height
          layout.centerVertically = true;
          layout.setup();
-         int cw = getClientRect().width - ball.getWidth();
+         int cw = getClientRect().width - ball.getWidth() - fmH;
          
          containers = new ListContainer.Item[itemCount];
          
