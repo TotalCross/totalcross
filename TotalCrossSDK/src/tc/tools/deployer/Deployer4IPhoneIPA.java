@@ -214,10 +214,8 @@ public class Deployer4IPhoneIPA
          if (segment == null && command instanceof MachLoadCommandSegment)
          {
             segment = (MachLoadCommandSegment) command;
-            if (!segment.SegmentName.startsWith("__LINKEDIT"))
-            {
+            if (!segment.segmentName.startsWith("__LINKEDIT"))
                segment = null;
-            }
          }
       }
       if (segment == null)
@@ -229,13 +227,13 @@ public class Deployer4IPhoneIPA
          throw new RuntimeException(
                "Did not find a Code Signing LC.  Injecting one into a fresh executable is not currently supported.");
       }
-      if ((signature.BlobFileOffset + signature.BlobFileSize) != (segment.FileOffset + segment.FileSize))
+      if ((signature.blobFileOffset + signature.blobFileSize) != (segment.fileOffset + segment.fileSize))
       {
          throw new RuntimeException(
                "Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
       }
 
-      int blobFileOffset = (int) signature.BlobFileOffset;
+      int blobFileOffset = (int) signature.blobFileOffset;
       CodeDirectoryBlob blob = CodeDirectoryBlob.Create(bundleIdentifier, blobFileOffset);
       AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString());
       SuperBlob blob3 = SuperBlob.CreateRequirementsBlob();
@@ -249,8 +247,8 @@ public class Deployer4IPhoneIPA
       byte[] blobBytes = blob6.GetBlobBytes();
       ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
       long length = blobBytes.length;
-      long num3 = segment.FileSize - signature.BlobFileSize;
-      long newOffset = num3 + segment.FileOffset;
+      long num3 = segment.fileSize - signature.blobFileSize;
+      long newOffset = num3 + segment.fileOffset;
       segment.PatchFileLength(writer, (long) (num3 + length));
       signature.PatchPositionAndSize(writer, (long) newOffset, (long) length);
       blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
@@ -268,7 +266,7 @@ public class Deployer4IPhoneIPA
       writer.write(buffer);
       writer.moveBack();
       writer.CompleteWritingAndClose();
-      long num5 = segment.FileSize + segment.FileOffset;
+      long num5 = segment.fileSize + segment.fileOffset;
       byte[] array = writer.toByteArray();
       if (array.length < num5)
           throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
