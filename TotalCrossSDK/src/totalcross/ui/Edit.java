@@ -765,7 +765,7 @@ public class Edit extends Control
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (!uiAndroid || alwaysDrawAll) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (hasBorder && uiAndroid)
             {
                try
