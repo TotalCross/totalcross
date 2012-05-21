@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
@@ -8,6 +9,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
    public long blobFileSize;
 
    private int offset2Start;
+
    public void PatchPositionAndSize(ElephantMemoryWriter writer, long NewOffset, long NewLength) throws IOException
    {
       this.blobFileOffset = NewOffset;
@@ -19,7 +21,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       writer.moveBack();
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
+   protected void unpackageData(ElephantMemoryReader reader) throws IOException
    {
       this.offset2Start = reader.getPos();
       this.blobFileOffset = (int) reader.readUnsignedInt();

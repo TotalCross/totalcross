@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 
 public class MachLoadCommandSegment extends MachLoadCommand
@@ -23,7 +24,7 @@ public class MachLoadCommandSegment extends MachLoadCommand
       writer.moveBack();
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
+   protected void unpackageData(ElephantMemoryReader reader) throws IOException
    {
       this.segmentName = reader.readString(16);
       this.virtualAddress = reader.readUnsignedInt();

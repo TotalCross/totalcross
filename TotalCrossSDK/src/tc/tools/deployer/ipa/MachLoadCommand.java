@@ -1,7 +1,7 @@
 package tc.tools.deployer.ipa;
 import java.io.IOException;
 
-public class MachLoadCommand
+public abstract class MachLoadCommand
 {
    public final int LC_CODE_SIGNATURE = 0x1d;
    public final int LC_DYLD_INFO = 0x22;
@@ -60,12 +60,9 @@ public class MachLoadCommand
       if (command == null)
          reader.moveTo(reader.getPos() + (num3 - 8));
       else
-         command.UnpackageData(reader, (int) num3);
+         command.unpackageData(reader);
       return command;
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
-   {
-      reader.skip(CommandSize - 8);
-   }
+   abstract protected void unpackageData(ElephantMemoryReader reader) throws IOException;
 }
