@@ -248,21 +248,17 @@ public class Deployer4IPhoneIPA
       blob5.SignCodeDirectory(ks, certStore, blob);
       byte[] blobBytes = blob6.GetBlobBytes();
       ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
-      long num1 = signature.BlobFileOffset;
-      long fileOffset = segment.FileOffset;
       long length = blobBytes.length;
       long num3 = segment.FileSize - signature.BlobFileSize;
       long newOffset = num3 + segment.FileOffset;
       segment.PatchFileLength(writer, (long) (num3 + length));
       signature.PatchPositionAndSize(writer, (long) newOffset, (long) length);
-//      Program.Log("... Computing hashes");
       blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
       blob.GenerateSpecialSlotHash(2, blob3.GetBlobBytes());
       blob.GenerateSpecialSlotHash(3, sourceData);
       blob.GenerateSpecialSlotHash(4);
       blob.GenerateSpecialSlotHash(5, blob2.GetBlobBytes());
       blob.ComputeImageHashes(writer.toByteArray());
-//      Program.Log("... Final signature step");
       blob5.SignCodeDirectory(ks, certStore, blob);
       byte[] buffer = blob6.GetBlobBytes();
       if (blobBytes.length != buffer.length)
@@ -277,7 +273,6 @@ public class Deployer4IPhoneIPA
       if (array.length < num5)
           throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
       array = Arrays.copyOf(array, (int) num5);
-//      Program.Log("Saving signed executable...");
       
       // executable
       executable.input(new ByteArrayInputStream(array));

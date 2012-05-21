@@ -3,7 +3,6 @@ import java.io.IOException;
 
 public class MachLoadCommand
 {
-   public long Command;
    public final int LC_CODE_SIGNATURE = 0x1d;
    public final int LC_DYLD_INFO = 0x22;
    public final int LC_DYSYMTAB = 11;
@@ -67,7 +66,6 @@ public class MachLoadCommand
          command.StartingLoadOffset = position;
          command.UnpackageData(reader, (int) num3);
       }
-      //       reader.VerifyStreamPosition(position, (long) num3);
       return command;
    }
 
