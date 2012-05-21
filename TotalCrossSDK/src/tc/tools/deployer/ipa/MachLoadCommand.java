@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 
 /**
@@ -20,21 +21,21 @@ public abstract class MachLoadCommand
    public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException
    {
       MachLoadCommand command = null;
-      long num2 = reader.readUnsignedInt();
-      long num3 = reader.readUnsignedInt();
-      long num4 = num2 & 0x7fffffff;
-      switch ((int) num4)
+      int commandType = (int) (reader.readUnsignedInt() & 0x7fffffff);
+      long commandDataSize = reader.readUnsignedInt();
+
+      switch (commandType)
       {
          case LC_SEGMENT:
             command = new MachLoadCommandSegment();
          break;
 
          case LC_SYMTAB:
-            num3 = 24;
+            commandDataSize = 24;
          break;
 
          case LC_DYSYMTAB:
-            num3 = 80;
+            commandDataSize = 80;
          break;
 
          case LC_CODE_SIGNATURE:
@@ -42,16 +43,16 @@ public abstract class MachLoadCommand
          break;
 
          case LC_ENCRYPTION_INFO:
-            num3 = 20;
+            commandDataSize = 20;
          break;
 
          case LC_DYLD_INFO:
-            num3 = 48;
+            commandDataSize = 48;
          break;
       }
 
       if (command == null) // skip commands we don't really care about
-         reader.skip(num3 - 8);
+         reader.skip(commandDataSize - 8);
       else
          command.unpackageData(reader);
       return command;
