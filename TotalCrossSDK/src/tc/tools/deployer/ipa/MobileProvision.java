@@ -1,6 +1,8 @@
 package tc.tools.deployer.ipa;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.security.cert.CertificateFactory;
+import org.apache.commons.io.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.jce.provider.X509CertificateObject;
@@ -67,24 +69,19 @@ public class MobileProvision
       return XCentPList.toXMLPropertyList();
    }
 
-   public static MobileProvision ParseFile(byte[] RawData) throws Exception
+   public static MobileProvision readFromFile(File input) throws Exception
    {
-      byte[] bytes = "<?xml".getBytes("UTF-8");
-      for (int i = 2; i < (RawData.length - bytes.length); i++)
-      {
-         boolean flag = true;
-         for (int j = 0; flag && (j < bytes.length); j++)
-         {
-            flag = flag && (RawData[i + j] == bytes[j]);
-         }
-         if (flag)
-         {
-            int count = (RawData[i - 2] << 8) | RawData[i - 1];
-            String str = new String(RawData, i, count, "UTF-8");
-            int num4 = str.lastIndexOf('>');
-            return new MobileProvision(str.substring(0, num4 + 1));
-         }
-      }
-      return null;
+      byte[] inputData = FileUtils.readFileToByteArray(input);
+      String inputString = new String(inputData, "UTF-8");
+
+      int startIdx = inputString.indexOf("<?xml");
+      if (startIdx == -1)
+         return null;
+
+      int length = (inputData[startIdx - 2] << 8) | inputData[startIdx - 1];
+      int endIdx = inputString.lastIndexOf('>', length + startIdx) + 1;
+      inputString = inputString.substring(startIdx, endIdx);
+
+      return new MobileProvision(inputString);
    }
 }

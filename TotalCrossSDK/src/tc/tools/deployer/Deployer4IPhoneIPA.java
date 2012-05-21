@@ -119,7 +119,7 @@ public class Deployer4IPhoneIPA
 
       /** PROCESS MOBILE PROVISION **/
       // update the mobile provision
-      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));
+      this.Provision = MobileProvision.readFromFile(DeploySettings.mobileProvision);
 
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
