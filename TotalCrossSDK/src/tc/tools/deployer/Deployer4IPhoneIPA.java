@@ -299,9 +299,13 @@ public class Deployer4IPhoneIPA
 
       NSDictionary metadata = new NSDictionary();
       metadata.put("product-type", "ios-app");
+      metadata.put("genre", "Business");
+      metadata.put("genreId", "6000");
       metadata.put("itemName", DeploySettings.appTitle);
       if (DeploySettings.companyInfo != null)
          metadata.put("artistName", DeploySettings.companyInfo);
+      if (DeploySettings.appVersion != null)
+         metadata.put("bundleVersion", DeploySettings.appVersion);
 
       TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
       iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));
