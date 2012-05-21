@@ -140,7 +140,7 @@ public class Deployer4IPhoneIPA
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
 
-      String bundleIdentifier = this.Provision.getBundleIdentifier();
+      String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
          bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
