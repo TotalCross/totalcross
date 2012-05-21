@@ -417,7 +417,7 @@ public class ListContainer extends ScrollContainer
          return layout.itemH + (layout.insets.top+layout.insets.bottom)*fmH/100;
       }
 
-      private int getLeftControlX()
+      public int getLeftControlX()
       {
          int x1 = layout.insets.left*fmH/100;
          if (leftControl != null)
@@ -425,7 +425,7 @@ public class ListContainer extends ScrollContainer
          return x1;
       }
       
-      private int getRightControlX()
+      public int getRightControlX()
       {
          int x2 = width - layout.insets.right*fmH/100;
          if (rightControl != null)
