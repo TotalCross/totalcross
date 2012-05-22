@@ -20,7 +20,7 @@ public class SuperBlob extends BlobCore
    public static SuperBlob CreateRequirementsBlob()
    {
       SuperBlob blob = new SuperBlob();
-      blob.magic = CSMAGIC_REQUIREMENTS_TABLE;
+      blob.magic = CSMAGIC_REQUIREMENTS;
       return blob;
    }
 

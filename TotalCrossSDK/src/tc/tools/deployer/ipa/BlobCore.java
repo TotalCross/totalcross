@@ -6,7 +6,7 @@ public class BlobCore
 {
    /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
    public static final int CSMAGIC_REQUIREMENT = 0xfade0c00;
-   public static final int CSMAGIC_REQUIREMENTS_TABLE = 0xfade0c01;
+   public static final int CSMAGIC_REQUIREMENTS = 0xfade0c01;
    public static final int CSMAGIC_CODEDIRECTORY = 0xfade0c02;
    public static final int CSMAGIC_EMBEDDED_SIGNATURE = 0xfade0cc0;
 
@@ -39,7 +39,7 @@ public class BlobCore
             blob = BlobCore.CreateEntitlementsBlob();
          break;
 
-         case CSMAGIC_REQUIREMENTS_TABLE:
+         case CSMAGIC_REQUIREMENTS:
             blob = SuperBlob.CreateRequirementsBlob();
          break;
 
