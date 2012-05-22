@@ -3,7 +3,7 @@ import java.io.IOException;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 
-public class CodeDirectoryBlob extends AbstractBlob
+public class CodeDirectoryBlob extends BlobCore
 {
    private byte BytesPerHash;
    public final int cdApplicationSlot = 4;

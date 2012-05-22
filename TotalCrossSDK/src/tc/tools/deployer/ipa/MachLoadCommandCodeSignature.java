@@ -29,7 +29,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       reader.memorize();
       reader.moveTo(this.blobFileOffset);
       reader.bStreamLittleEndian = false;
-      this.payload = (SuperBlob) AbstractBlob.CreateFromStream(reader);
+      this.payload = (SuperBlob) BlobCore.CreateFromStream(reader);
       reader.moveBack();
       reader.bStreamLittleEndian = true;
    }

@@ -13,7 +13,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.x509.NoSuchStoreException;
 import org.bouncycastle.x509.X509Store;
 
-public class CodeDirectorySignatureBlob extends AbstractBlob
+public class CodeDirectorySignatureBlob extends BlobCore
 {
    public CodeDirectorySignatureBlob()
    {

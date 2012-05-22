@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class SuperBlob extends AbstractBlob
+public class SuperBlob extends BlobCore
 {
    private Map Slots = new LinkedHashMap();
 
@@ -24,7 +24,7 @@ public class SuperBlob extends AbstractBlob
       return blob;
    }
 
-   public void Add(long Key, AbstractBlob Value)
+   public void Add(long Key, BlobCore Value)
    {
       this.Slots.put(Long.valueOf(Key), Value);
    }
@@ -41,7 +41,7 @@ public class SuperBlob extends AbstractBlob
       {
          Entry entry = (Entry) entries[i];
          writer.writeUnsignedInt(((Long) entry.getKey()).longValue());
-         ((AbstractBlob) entry.getValue()).ReserveSpaceToWriteOffset1(writer, basePosition);
+         ((BlobCore) entry.getValue()).ReserveSpaceToWriteOffset1(writer, basePosition);
          writer.CurrentPhase.pending.add(entry);
       }
       writer.ProcessEntirePhase();
@@ -58,7 +58,7 @@ public class SuperBlob extends AbstractBlob
 
          reader.memorize();
          reader.moveTo(num + num5);
-         AbstractBlob blob = AbstractBlob.CreateFromStream(reader);
+         BlobCore blob = BlobCore.CreateFromStream(reader);
          reader.moveBack();
 
          this.Slots.put(Long.valueOf(key), blob);

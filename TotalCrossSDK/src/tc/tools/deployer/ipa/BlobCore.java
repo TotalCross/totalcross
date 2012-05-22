@@ -2,7 +2,7 @@ package tc.tools.deployer.ipa;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-public class AbstractBlob
+public class BlobCore
 {
    /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
    public static final int CSMAGIC_REQUIREMENT = 0xfade0c00;
@@ -21,12 +21,12 @@ public class AbstractBlob
 
    public long magic;
 
-   protected AbstractBlob()
+   protected BlobCore()
    {}
 
-   public static AbstractBlob CreateFromStream(ElephantMemoryReader reader) throws IOException
+   public static BlobCore CreateFromStream(ElephantMemoryReader reader) throws IOException
    {
-      AbstractBlob blob;
+      BlobCore blob;
       long num = reader.readUnsignedInt();
       long length = reader.readUnsignedInt();
       switch ((int) num)
@@ -36,7 +36,7 @@ public class AbstractBlob
          break;
 
          case CS_MAGIC_EMBEDDED_ENTITLEMENTS:
-            blob = AbstractBlob.CreateEntitlementsBlob();
+            blob = BlobCore.CreateEntitlementsBlob();
          break;
 
          case CSMAGIC_REQUIREMENTS_TABLE:
@@ -52,7 +52,7 @@ public class AbstractBlob
          break;
 
          default:
-            blob = new AbstractBlob();
+            blob = new BlobCore();
          break;
       }
       blob.magic = num;
@@ -60,16 +60,16 @@ public class AbstractBlob
       return blob;
    }
 
-   public static AbstractBlob CreateEntitlementsBlob()
+   public static BlobCore CreateEntitlementsBlob()
    {
-      AbstractBlob blob = new AbstractBlob();
+      BlobCore blob = new BlobCore();
       blob.magic = CS_MAGIC_EMBEDDED_ENTITLEMENTS;
       return blob;
    }
 
-   public static AbstractBlob CreateEntitlementsBlob(String EntitlementsText) throws UnsupportedEncodingException
+   public static BlobCore CreateEntitlementsBlob(String EntitlementsText) throws UnsupportedEncodingException
    {
-      AbstractBlob blob = CreateEntitlementsBlob();
+      BlobCore blob = CreateEntitlementsBlob();
       blob.MyData = EntitlementsText.getBytes("UTF-8");
       return blob;
    }

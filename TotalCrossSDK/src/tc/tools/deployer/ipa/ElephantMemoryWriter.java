@@ -145,7 +145,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       while (!CurrentPhase.pending.isEmpty())
       {
          Entry entry = (Entry) CurrentPhase.pending.remove();
-         AbstractBlob blob = (AbstractBlob) entry.getValue();
+         BlobCore blob = (BlobCore) entry.getValue();
          blob.WriteOffsetNow1(this);
          blob.Write(this);
       }
