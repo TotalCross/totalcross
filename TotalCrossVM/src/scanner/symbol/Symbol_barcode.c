@@ -601,14 +601,16 @@ static BOOL ScanSetup()
       reader_params.dwReaderType = READER_TYPE_LASER ;
       reader_params.ReaderSpecific.laser_specific.dwAimType = AIM_TYPE_TRIGGER ;
       reader_params.ReaderSpecific.laser_specific.dwAimDuration = 0;
-      reader_params.ReaderSpecific.laser_specific.dwAimMode = AIM_MODE_NONE;
-      reader_params.ReaderSpecific.laser_specific.bNarrowBeam = TRUE;
-      reader_params.ReaderSpecific.laser_specific.dwRasterMode = RASTER_MODE_NONE;
+      reader_params.ReaderSpecific.laser_specific.dwAimMode = AIM_MODE_SLAB;
+      reader_params.ReaderSpecific.laser_specific.bNarrowBeam = FALSE;
+      reader_params.ReaderSpecific.laser_specific.dwRasterMode = RASTER_MODE_SMART;
       reader_params.ReaderSpecific.laser_specific.dwBeamTimer = 10000;
       reader_params.ReaderSpecific.laser_specific.bControlScanLed = TRUE;
-      reader_params.ReaderSpecific.laser_specific.bScanLedLogicLevel = TRUE;
-      reader_params.ReaderSpecific.laser_specific.bKlasseEinsEnable = FALSE;
-      reader_params.ReaderSpecific.laser_specific.bBidirRedundancy = TRUE;
+
+      reader_params.ReaderSpecific.laser_specific.bScanLedLogicLevel = FALSE;
+      reader_params.ReaderSpecific.laser_specific.bKlasseEinsEnable = TRUE;
+      reader_params.ReaderSpecific.laser_specific.bBidirRedundancy = FALSE;
+
       reader_params.ReaderSpecific.laser_specific.dwLinearSecurityLevel = SECURITY_ALL_THRICE;
       reader_params.ReaderSpecific.laser_specific.dwPointerTimer = 10000;
       dwResult = SCAN_SetReaderParams(hScanner,&reader_params);
