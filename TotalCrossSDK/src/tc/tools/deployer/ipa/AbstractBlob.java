@@ -4,12 +4,21 @@ import java.io.UnsupportedEncodingException;
 
 public class AbstractBlob
 {
-   public static final int CSMAGIC_CODEDIR_SIGNATURE = 0xfade0b01;
-   public static final int CSMAGIC_CODEDIRECTORY = 0xfade0c02;
-   public static final int CSMAGIC_EMBEDDED_SIGNATURE = 0xfade0cc0;
-   public static final int CSMAGIC_ENTITLEMENTS = 0xfade7171;
+   /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
    public static final int CSMAGIC_REQUIREMENT = 0xfade0c00;
    public static final int CSMAGIC_REQUIREMENTS_TABLE = 0xfade0c01;
+   public static final int CSMAGIC_CODEDIRECTORY = 0xfade0c02;
+   public static final int CSMAGIC_EMBEDDED_SIGNATURE = 0xfade0cc0;
+
+   /**
+    * https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h
+    * http://www.opensource.apple.com/source/libsecurity_utilities/libsecurity_utilities-55010/lib/blob.h
+    */
+   public static final int CS_MAGIC_BLOB_WRAPPER = 0xfade0b01;
+
+   /** https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h */
+   public static final int CS_MAGIC_EMBEDDED_ENTITLEMENTS = 0xfade7171;
+
    public long MyMagic;
 
    protected AbstractBlob()
@@ -26,7 +35,7 @@ public class AbstractBlob
             blob = SuperBlob.CreateCodeSigningTableBlob();
          break;
 
-         case CSMAGIC_ENTITLEMENTS:
+         case CS_MAGIC_EMBEDDED_ENTITLEMENTS:
             blob = AbstractBlob.CreateEntitlementsBlob();
          break;
 
@@ -38,7 +47,7 @@ public class AbstractBlob
             blob = new CodeDirectoryBlob();
          break;
 
-         case CSMAGIC_CODEDIR_SIGNATURE:
+         case CS_MAGIC_BLOB_WRAPPER:
             blob = new CodeDirectorySignatureBlob();
          break;
 
@@ -54,7 +63,7 @@ public class AbstractBlob
    public static AbstractBlob CreateEntitlementsBlob()
    {
       AbstractBlob blob = new AbstractBlob();
-      blob.MyMagic = CSMAGIC_ENTITLEMENTS;
+      blob.MyMagic = CS_MAGIC_EMBEDDED_ENTITLEMENTS;
       return blob;
    }
 
