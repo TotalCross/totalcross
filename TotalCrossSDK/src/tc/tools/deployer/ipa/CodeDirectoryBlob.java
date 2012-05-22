@@ -28,7 +28,7 @@ public class CodeDirectoryBlob extends AbstractBlob
 
    public CodeDirectoryBlob()
    {
-      super.MyMagic = CSMAGIC_CODEDIRECTORY;
+      super.magic = CSMAGIC_CODEDIRECTORY;
    }
 
    public void Allocate(String ApplicationID, int SignedFileLength)

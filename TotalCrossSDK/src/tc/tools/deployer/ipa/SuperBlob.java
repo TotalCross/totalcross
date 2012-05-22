@@ -13,14 +13,14 @@ public class SuperBlob extends AbstractBlob
    public static SuperBlob CreateCodeSigningTableBlob()
    {
       SuperBlob blob = new SuperBlob();
-      blob.MyMagic = CSMAGIC_EMBEDDED_SIGNATURE;
+      blob.magic = CSMAGIC_EMBEDDED_SIGNATURE;
       return blob;
    }
 
    public static SuperBlob CreateRequirementsBlob()
    {
       SuperBlob blob = new SuperBlob();
-      blob.MyMagic = CSMAGIC_REQUIREMENTS_TABLE;
+      blob.magic = CSMAGIC_REQUIREMENTS_TABLE;
       return blob;
    }
 

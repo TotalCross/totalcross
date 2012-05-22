@@ -19,7 +19,7 @@ public class AbstractBlob
    /** https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h */
    public static final int CS_MAGIC_EMBEDDED_ENTITLEMENTS = 0xfade7171;
 
-   public long MyMagic;
+   public long magic;
 
    protected AbstractBlob()
    {}
@@ -55,7 +55,7 @@ public class AbstractBlob
             blob = new AbstractBlob();
          break;
       }
-      blob.MyMagic = num;
+      blob.magic = num;
       blob.UnpackageData(reader, length);
       return blob;
    }
@@ -63,7 +63,7 @@ public class AbstractBlob
    public static AbstractBlob CreateEntitlementsBlob()
    {
       AbstractBlob blob = new AbstractBlob();
-      blob.MyMagic = CS_MAGIC_EMBEDDED_ENTITLEMENTS;
+      blob.magic = CS_MAGIC_EMBEDDED_ENTITLEMENTS;
       return blob;
    }
 
@@ -97,7 +97,7 @@ public class AbstractBlob
 
    public void Write(ElephantMemoryWriter writer) throws IOException
    {
-      writer.writeUnsignedInt(this.MyMagic);
+      writer.writeUnsignedInt(this.magic);
       ReserveSpaceToWriteLength(writer);
       this.PackageData(writer);
       WriteLengthNow(writer);

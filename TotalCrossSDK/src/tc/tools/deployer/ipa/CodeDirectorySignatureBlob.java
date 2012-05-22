@@ -17,7 +17,7 @@ public class CodeDirectorySignatureBlob extends AbstractBlob
 {
    public CodeDirectorySignatureBlob()
    {
-      super.MyMagic = CS_MAGIC_BLOB_WRAPPER;
+      super.magic = CS_MAGIC_BLOB_WRAPPER;
    }
 
    List certs;
