@@ -1,8 +1,8 @@
 package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
+import java.util.Vector;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
-import totalcross.util.Vector;
 
 public class SuperBlob extends BlobCore
 {
@@ -39,7 +39,7 @@ public class SuperBlob extends BlobCore
 
       for (int i = 0 ; i < count ; i++)
       {
-         BlobIndex item = (BlobIndex) index.items[i];
+         BlobIndex item = (BlobIndex) index.elementAt(i);
          writer.writeUnsignedInt(item.blobType);
          item.blob.ReserveSpaceToWriteOffset1(writer, basePosition);
          writer.CurrentPhase.pending.add(item);
