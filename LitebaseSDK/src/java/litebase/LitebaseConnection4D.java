@@ -112,7 +112,7 @@ public class LitebaseConnection4D
     */
    public static int language = LANGUAGE_EN;
    
-   // juliana@log_1: now it is possible to log only changes during Litebase operation.
+   // juliana@253_18: now it is possible to log only changes during Litebase operation.
    /**
     * Indicates if only changes during Litebase operation must be logged or not.
     */

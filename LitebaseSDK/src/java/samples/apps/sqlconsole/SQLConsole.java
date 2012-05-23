@@ -192,16 +192,7 @@ public class SQLConsole extends MainWindow
             }
          }
          else databaseId = Settings.applicationId;
-         //LitebaseConnection.decryptTables("LMSi", Settings.appPath, -1);
          connChanged();
-         
-         
-         RowIterator it = conn.getRowIterator("laudo");
-         while (it.next())
-         {
-            Vm.debug(it.rowid + " " + it.attr + " " + it.getString(1));
-            
-         }
          
          Container bottomBar = new Container();
          add(bottomBar, LEFT, BOTTOM, FILL, (int) (fmH * 1.25));
