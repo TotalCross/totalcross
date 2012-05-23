@@ -112,6 +112,12 @@ public class LitebaseConnection4D
     */
    public static int language = LANGUAGE_EN;
    
+   // juliana@log_1: now it is possible to log only changes during Litebase operation.
+   /**
+    * Indicates if only changes during Litebase operation must be logged or not.
+    */
+   public static boolean logOnlyChanges;
+   
    // juliana@222_10: corrected a bug that would possibly not load Litebase native library on Android inside a thread. 
    static
    {
