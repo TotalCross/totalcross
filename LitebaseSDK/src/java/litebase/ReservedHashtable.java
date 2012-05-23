@@ -42,7 +42,7 @@ class ReservedHashtable
    int get(int hash, StringBuffer string)
    {
       int index = (hash & 0x7FFFFFFF) % table.length;
-      for (Entry entry = table[index] ; entry != null ; entry = entry.next)
+      for (Entry entry = table[index]; entry != null; entry = entry.next)
          if (entry.hash == hash && equalsSB(entry.key, string))
             return entry.value;
       return -1;
