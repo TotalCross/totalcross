@@ -1,8 +1,9 @@
 package tc.tools.deployer.ipa;
 import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Arrays;
+import java.util.Stack;
 import tc.tools.deployer.ipa.blob.BlobCore;
+import tc.tools.deployer.ipa.blob.BlobIndex;
 
 public class ElephantMemoryWriter implements ElephantMemoryStream
 {
@@ -145,8 +146,8 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
    {
       while (!CurrentPhase.pending.isEmpty())
       {
-         Entry entry = (Entry) CurrentPhase.pending.remove();
-         BlobCore blob = (BlobCore) entry.getValue();
+         BlobIndex item = (BlobIndex) CurrentPhase.pending.remove();
+         BlobCore blob = (BlobCore) item.blob;
          blob.WriteOffsetNow1(this);
          blob.Write(this);
       }

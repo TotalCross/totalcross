@@ -1,13 +1,12 @@
 package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
+import totalcross.util.Vector;
 
 public class SuperBlob extends BlobCore
 {
-   private Map Slots = new LinkedHashMap();
+   Vector index = new Vector();
 
    protected SuperBlob()
    {}
@@ -28,42 +27,31 @@ public class SuperBlob extends BlobCore
 
    public void Add(long Key, BlobCore Value)
    {
-      this.Slots.put(Long.valueOf(Key), Value);
+      index.addElement(new BlobIndex(Key, Value));
    }
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
    {
       long basePosition = writer.getPos() - 8L;
       writer.CreateNewPhase();
-      writer.writeUnsignedInt(this.Slots.size());
+      int count = index.size();
+      writer.writeUnsignedInt(count);
 
-      Set entrySet = this.Slots.entrySet();
-      Object[] entries = entrySet.toArray();
-      for (int i = 0 ; i < entries.length ; i++)
+      for (int i = 0 ; i < count ; i++)
       {
-         Entry entry = (Entry) entries[i];
-         writer.writeUnsignedInt(((Long) entry.getKey()).longValue());
-         ((BlobCore) entry.getValue()).ReserveSpaceToWriteOffset1(writer, basePosition);
-         writer.CurrentPhase.pending.add(entry);
+         BlobIndex item = (BlobIndex) index.items[i];
+         writer.writeUnsignedInt(item.blobType);
+         item.blob.ReserveSpaceToWriteOffset1(writer, basePosition);
+         writer.CurrentPhase.pending.add(item);
       }
       writer.ProcessEntirePhase();
    }
 
    protected void UnpackageData(ElephantMemoryReader reader, long Length) throws IOException
    {
-      long num = reader.getPos() - 8L;
-      long num2 = reader.readUnsignedInt();
-      for (long i = 0; i < num2; i++)
-      {
-         long key = reader.readUnsignedInt();
-         long num5 = reader.readUnsignedInt();
-
-         reader.memorize();
-         reader.moveTo(num + num5);
-         BlobCore blob = BlobCore.CreateFromStream(reader);
-         reader.moveBack();
-
-         this.Slots.put(Long.valueOf(key), blob);
-      }
+      long baseOffset = reader.getPos() - 8L;
+      long count = reader.readUnsignedInt();
+      for (long i = 0; i < count; i++)
+         index.addElement(new BlobIndex(reader, baseOffset));
    }
 }
