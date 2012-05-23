@@ -2,11 +2,12 @@ package tc.tools.deployer.ipa;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import tc.tools.deployer.ipa.blob.BlobCore;
 
 public class ElephantMemoryWriter implements ElephantMemoryStream
 {
    byte[] buffer;
-   int pos;
+   public int pos;
    Stack positions = new Stack();
 
    public WritingPhase CurrentPhase = new WritingPhase();

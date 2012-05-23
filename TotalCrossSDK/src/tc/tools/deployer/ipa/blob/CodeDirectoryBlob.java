@@ -1,7 +1,9 @@
-package tc.tools.deployer.ipa;
+package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
+import tc.tools.deployer.ipa.ElephantMemoryReader;
+import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class CodeDirectoryBlob extends BlobCore
 {

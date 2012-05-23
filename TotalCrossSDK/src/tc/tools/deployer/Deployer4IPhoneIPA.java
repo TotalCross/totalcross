@@ -24,6 +24,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
 import tc.tools.deployer.ipa.*;
+import tc.tools.deployer.ipa.blob.*;
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
 import com.dd.plist.*;

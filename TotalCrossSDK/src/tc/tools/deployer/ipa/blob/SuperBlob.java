@@ -1,7 +1,9 @@
-package tc.tools.deployer.ipa;
+package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import tc.tools.deployer.ipa.ElephantMemoryReader;
+import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class SuperBlob extends BlobCore
 {

@@ -4,5 +4,5 @@ import java.util.Map.Entry;
 
 public class WritingPhase
 {
-   Queue pending = new LinkedList();
+   public Queue pending = new LinkedList();
 }

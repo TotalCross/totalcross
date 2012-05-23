@@ -1,4 +1,4 @@
-package tc.tools.deployer.ipa;
+package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.*;

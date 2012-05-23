@@ -1,6 +1,8 @@
 package tc.tools.deployer.ipa;
 
 import java.io.IOException;
+import tc.tools.deployer.ipa.blob.BlobCore;
+import tc.tools.deployer.ipa.blob.SuperBlob;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
 {

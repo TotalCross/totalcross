@@ -1,6 +1,7 @@
-package tc.tools.deployer.ipa;
+package tc.tools.deployer.ipa.blob;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import tc.tools.deployer.ipa.*;
 
 public class BlobCore
 {
