@@ -230,7 +230,8 @@ public class PreparedStatement
          
          selectStmt.allParamValuesDefined(); // All the parameters of the select statement must be defined.
           
-         if (LitebaseConnection.logger != null) // If log is on, adds information to it.
+         // juliana@253_18: now it is possible to log only changes during Litebase operation.
+         if (LitebaseConnection.logger != null && !LitebaseConnection.logOnlyChanges) // If log is on, adds information to it.
             synchronized (LitebaseConnection.logger)
             {
                LitebaseConnection.logger.logInfo(toStringBuffer());

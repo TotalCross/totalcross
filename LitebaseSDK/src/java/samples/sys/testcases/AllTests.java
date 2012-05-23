@@ -101,18 +101,20 @@ public class AllTests extends TestSuite
    public void initUI() // rnovais@570_77
    {
       String appSecretKey = Settings.appSecretKey;
-      if (appSecretKey != null && appSecretKey.length() < 3)
+      if (appSecretKey != null && appSecretKey.length() < 4)
          appSecretKey = Settings.appSecretKey = null;   
       useLogger = appSecretKey != null && appSecretKey.charAt(0) == 'y';
       isAscii = appSecretKey != null && appSecretKey.charAt(1) == 'y';
       useCrypto = appSecretKey != null && appSecretKey.charAt(2) == 'y';
+      LitebaseConnection.logOnlyChanges = appSecretKey != null && appSecretKey.charAt(3) == 'y';
       if (useLogger)
          LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();
       super.initUI();
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{mbar.getMenuItems()[0], 
                                    {new MenuItem("Config"), new MenuItem("isAscii", isAscii), new MenuItem("useCrypto", useCrypto), 
                                     new MenuItem("Drop all tables")}, 
-                                   {new MenuItem("Logs"), new MenuItem("Use Logger", useLogger), new MenuItem("Erase All Loggers")}}));
+                                   {new MenuItem("Logs"), new MenuItem("Use Logger", useLogger), 
+                                    new MenuItem("Log only changes", LitebaseConnection.logOnlyChanges), new MenuItem("Erase All Loggers")}}));
    }
 
    /** 
@@ -128,11 +130,9 @@ public class AllTests extends TestSuite
          {
             case 101:
                isAscii = !isAscii;
-               Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? "y" : "n") + (useCrypto? "y" : "n");
                break;
             case 102:
-               useCrypto = !useCrypto;
-               Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? "y" : "n") + (useCrypto? "y" : "n");
+               useCrypto = !useCrypto;                                                                 
                break;
             case 103: // Drops All Tables. 
                dropAllTables();
@@ -149,11 +149,14 @@ public class AllTests extends TestSuite
                      LitebaseConnection.logger = null;
                   }
                }
-               Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? "y" : "n") + (useCrypto? "y" : "n");
                break;
-            case 202: // Deletes all the logger files.
+            case 202:
+               LitebaseConnection.logOnlyChanges = !LitebaseConnection.logOnlyChanges;
+               break;
+            case 203: // Deletes all the logger files.
                LitebaseConnection.deleteLogFiles();
          }
+         Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? 'y' : 'n') + (useCrypto? 'y' : 'n') + (LitebaseConnection.logOnlyChanges? 'y' : 'n');
       } 
          
       super.onEvent(event);

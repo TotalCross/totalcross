@@ -338,6 +338,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    int32* columnSizes;
    CharP* columnNames;
    int32* columnSizesIdx;
+   int32* columnHashes;
    int8* columnTypesIdx;
    SQLValue** defaultValues;
 	Heap heap = table->heap,
@@ -437,7 +438,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 		goto error;
    }
 
-   table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
+   columnHashes = table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    columnTypes = table->columnTypes = (int8*)TC_heapAlloc(heap, columnCount);
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
@@ -460,7 +461,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 
    i = -1;
    while (++i < columnCount) // Computes the hashes.
-      table->columnHashes[i] = TC_hashCode(columnNames[i]);
+      columnHashes[i] = TC_hashCode(columnNames[i]);
 
    if (!computeColumnOffsets(context, table)) // Computes the column offsets.
       goto error;

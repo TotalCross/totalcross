@@ -67,6 +67,12 @@ public class LitebaseConnection
     * The language of the Litebase messages.
     */
    public static int language = LANGUAGE_EN;
+   
+   // juliana@253_18: now it is possible to log only changes during Litebase operation.
+   /**
+    * Indicates if only changes during Litebase operation must be logged or not.
+    */
+   public static boolean logOnlyChanges;
 
    /**
     * Given the table name, returns the Table object.
@@ -902,7 +908,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             logger.log(Logger.INFO, sql, false);
@@ -953,7 +960,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1004,7 +1012,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1041,7 +1050,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1441,7 +1451,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1479,7 +1490,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
