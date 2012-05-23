@@ -10,23 +10,21 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
    public long blobFileOffset;
    public long blobFileSize;
 
-   private int offset2Start;
+   private int offset2FileSize;
 
-   public void PatchPositionAndSize(ElephantMemoryWriter writer, long NewOffset, long NewLength) throws IOException
+   public void PatchPositionAndSize(ElephantMemoryWriter writer, long NewLength) throws IOException
    {
-      this.blobFileOffset = NewOffset;
       this.blobFileSize = NewLength;
       writer.memorize();
-      writer.moveTo(offset2Start);
-      writer.writeUnsignedInt(this.blobFileOffset);
+      writer.moveTo(offset2FileSize);
       writer.writeUnsignedInt(this.blobFileSize);
       writer.moveBack();
    }
 
    protected void unpackageData(ElephantMemoryReader reader) throws IOException
    {
-      this.offset2Start = reader.getPos();
       this.blobFileOffset = (int) reader.readUnsignedInt();
+      this.offset2FileSize = reader.getPos();
       this.blobFileSize = (int) reader.readUnsignedInt();
       reader.memorize();
       reader.moveTo(this.blobFileOffset);

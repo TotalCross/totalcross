@@ -247,9 +247,8 @@ public class Deployer4IPhoneIPA
       ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
       long length = blobBytes.length;
       long num3 = segment.fileSize - signature.blobFileSize;
-      long newOffset = num3 + segment.fileOffset;
       segment.PatchFileLength(writer, (long) (num3 + length));
-      signature.PatchPositionAndSize(writer, (long) newOffset, (long) length);
+      signature.PatchPositionAndSize(writer, (long) length);
       blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
       blob.GenerateSpecialSlotHash(2, blob3.GetBlobBytes());
       blob.GenerateSpecialSlotHash(3, sourceData);
@@ -261,7 +260,7 @@ public class Deployer4IPhoneIPA
       if (blobBytes.length != buffer.length)
           throw new IllegalStateException("CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
       writer.memorize();
-      writer.moveTo(newOffset);
+      writer.moveTo(signature.blobFileOffset);
       writer.write(buffer);
       writer.moveBack();
       writer.CompleteWritingAndClose();
