@@ -5,7 +5,7 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
-public class CodeDirectoryBlob extends BlobCore
+public class CodeDirectory extends BlobCore
 {
    private byte BytesPerHash;
    public final int cdApplicationSlot = 4;
@@ -28,7 +28,7 @@ public class CodeDirectoryBlob extends BlobCore
    private long SpecialSlotCount;
    private long Version;
 
-   public CodeDirectoryBlob()
+   public CodeDirectory()
    {
       super.magic = CSMAGIC_CODEDIRECTORY;
    }
@@ -63,9 +63,9 @@ public class CodeDirectoryBlob extends BlobCore
       }
    }
 
-   public static CodeDirectoryBlob Create(String ApplicationID, int SignedFileLength)
+   public static CodeDirectory Create(String ApplicationID, int SignedFileLength)
    {
-      CodeDirectoryBlob blob = new CodeDirectoryBlob();
+      CodeDirectory blob = new CodeDirectory();
       blob.Allocate(ApplicationID, SignedFileLength);
       return blob;
    }

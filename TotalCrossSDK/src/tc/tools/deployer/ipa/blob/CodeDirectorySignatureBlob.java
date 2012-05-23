@@ -23,7 +23,7 @@ public class CodeDirectorySignatureBlob extends BlobCore
    List certs;
    Certificate[] certChain = null;
 
-   public void SignCodeDirectory(KeyStore ks, X509Store certStore, CodeDirectoryBlob CodeDirectory) throws IOException,
+   public void SignCodeDirectory(KeyStore ks, X509Store certStore, CodeDirectory CodeDirectory) throws IOException,
          NoSuchStoreException, CMSException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException,
          OperatorCreationException, CertificateEncodingException
    {

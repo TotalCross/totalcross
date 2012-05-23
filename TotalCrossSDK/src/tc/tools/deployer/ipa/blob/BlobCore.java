@@ -44,7 +44,7 @@ public class BlobCore
          break;
 
          case CSMAGIC_CODEDIRECTORY:
-            blob = new CodeDirectoryBlob();
+            blob = new CodeDirectory();
          break;
 
          case CS_MAGIC_BLOB_WRAPPER:
