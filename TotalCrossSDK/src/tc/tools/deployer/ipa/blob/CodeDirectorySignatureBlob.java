@@ -17,7 +17,7 @@ public class CodeDirectorySignatureBlob extends BlobCore
 {
    public CodeDirectorySignatureBlob()
    {
-      super.magic = CS_MAGIC_BLOB_WRAPPER;
+      super.magic = CSMAGIC_BLOB_WRAPPER;
    }
 
    List certs;

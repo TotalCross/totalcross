@@ -14,10 +14,10 @@ public class BlobCore
     * https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h
     * http://www.opensource.apple.com/source/libsecurity_utilities/libsecurity_utilities-55010/lib/blob.h
     */
-   public static final int CS_MAGIC_BLOB_WRAPPER = 0xfade0b01;
+   public static final int CSMAGIC_BLOB_WRAPPER = 0xfade0b01;
 
    /** https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h */
-   public static final int CS_MAGIC_EMBEDDED_ENTITLEMENTS = 0xfade7171;
+   public static final int CSMAGIC_EMBEDDED_ENTITLEMENTS = 0xfade7171;
 
    public long magic;
 
@@ -35,7 +35,7 @@ public class BlobCore
             blob = SuperBlob.CreateCodeSigningTableBlob();
          break;
 
-         case CS_MAGIC_EMBEDDED_ENTITLEMENTS:
+         case CSMAGIC_EMBEDDED_ENTITLEMENTS:
             blob = BlobCore.CreateEntitlementsBlob();
          break;
 
@@ -47,7 +47,7 @@ public class BlobCore
             blob = new CodeDirectory();
          break;
 
-         case CS_MAGIC_BLOB_WRAPPER:
+         case CSMAGIC_BLOB_WRAPPER:
             blob = new CodeDirectorySignatureBlob();
          break;
 
@@ -63,7 +63,7 @@ public class BlobCore
    public static BlobCore CreateEntitlementsBlob()
    {
       BlobCore blob = new BlobCore();
-      blob.magic = CS_MAGIC_EMBEDDED_ENTITLEMENTS;
+      blob.magic = CSMAGIC_EMBEDDED_ENTITLEMENTS;
       return blob;
    }
 
