@@ -2,6 +2,7 @@ package tc.tools.deployer.ipa.blob;
 
 import java.io.IOException;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
+import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class BlobIndex
 {
@@ -20,14 +21,22 @@ public class BlobIndex
       this.blob = blob;
    }
 
-   BlobIndex(ElephantMemoryReader reader, long baseOffset) throws IOException
+   static BlobIndex readObject(ElephantMemoryReader reader, long baseOffset) throws IOException,
+         InstantiationException, IllegalAccessException
    {
-      blobType = reader.readUnsignedInt();
-      offset = reader.readUnsignedInt();
+      long blobType = reader.readUnsignedInt();
+      long offset = reader.readUnsignedInt();
 
       reader.memorize();
       reader.moveTo(baseOffset + offset);
-      blob = BlobCore.CreateFromStream(reader);
+      BlobCore blob = BlobHandler.readFromStream(reader);
       reader.moveBack();
+
+      return new BlobIndex(blobType, blob);
+   }
+
+   static void writeObject(ElephantMemoryWriter writer)
+   {
+
    }
 }

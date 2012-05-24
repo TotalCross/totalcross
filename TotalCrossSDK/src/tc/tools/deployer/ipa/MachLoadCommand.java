@@ -18,7 +18,8 @@ public abstract class MachLoadCommand
    protected MachLoadCommand()
    {}
 
-   public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException
+   public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException,
+         InstantiationException, IllegalAccessException
    {
       MachLoadCommand command = null;
       int commandType = (int) (reader.readUnsignedInt() & 0x7fffffff);
@@ -58,5 +59,6 @@ public abstract class MachLoadCommand
       return command;
    }
 
-   abstract protected void unpackageData(ElephantMemoryReader reader) throws IOException;
+   abstract protected void unpackageData(ElephantMemoryReader reader) throws IOException, InstantiationException,
+         IllegalAccessException;
 }

@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa.blob;
+
 import java.io.IOException;
 import java.util.Vector;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
@@ -8,21 +9,9 @@ public class SuperBlob extends BlobCore
 {
    Vector index = new Vector();
 
-   protected SuperBlob()
-   {}
-
-   public static SuperBlob CreateCodeSigningTableBlob()
+   protected SuperBlob(long magic)
    {
-      SuperBlob blob = new SuperBlob();
-      blob.magic = CSMAGIC_EMBEDDED_SIGNATURE;
-      return blob;
-   }
-
-   public static SuperBlob CreateRequirementsBlob()
-   {
-      SuperBlob blob = new SuperBlob();
-      blob.magic = CSMAGIC_REQUIREMENTS;
-      return blob;
+      super(magic);
    }
 
    public void Add(long Key, BlobCore Value)
@@ -32,26 +21,30 @@ public class SuperBlob extends BlobCore
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
    {
-      long basePosition = writer.getPos() - 8L;
-      writer.CreateNewPhase();
       int count = index.size();
       writer.writeUnsignedInt(count);
 
-      for (int i = 0 ; i < count ; i++)
+      long idxPos = writer.pos;
+      writer.pos += count * 8L;
+      for (int i = 0; i < count; i++)
       {
          BlobIndex item = (BlobIndex) index.elementAt(i);
+         item.offset = writer.pos - offset;
+         writer.memorize();
+         writer.moveTo(idxPos);
          writer.writeUnsignedInt(item.blobType);
-         item.blob.ReserveSpaceToWriteOffset1(writer, basePosition);
-         writer.CurrentPhase.pending.add(item);
+         writer.writeUnsignedInt(item.offset);
+         idxPos = writer.pos;
+         writer.moveBack();
+         BlobHandler.writeToStream(item.blob, writer);
       }
-      writer.ProcessEntirePhase();
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, long Length) throws IOException
+   protected void readFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
+         IllegalAccessException
    {
-      long baseOffset = reader.getPos() - 8L;
       long count = reader.readUnsignedInt();
       for (long i = 0; i < count; i++)
-         index.addElement(new BlobIndex(reader, baseOffset));
+         index.addElement(BlobIndex.readObject(reader, offset));
    }
 }

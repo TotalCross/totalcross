@@ -1,8 +1,9 @@
 package tc.tools.deployer.ipa.blob;
+
 import java.io.IOException;
 import java.security.*;
-import java.security.cert.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.*;
@@ -15,9 +16,15 @@ import org.bouncycastle.x509.X509Store;
 
 public class CodeDirectorySignatureBlob extends BlobCore
 {
+   /**
+    * https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h
+    * http://www.opensource.apple.com/source/libsecurity_utilities/libsecurity_utilities-55010/lib/blob.h
+    */
+   public static final long CSMAGIC_BLOB_WRAPPER = 0xfade0b01;
+
    public CodeDirectorySignatureBlob()
    {
-      super.magic = CSMAGIC_BLOB_WRAPPER;
+      super(CSMAGIC_BLOB_WRAPPER);
    }
 
    List certs;
@@ -46,6 +53,6 @@ public class CodeDirectorySignatureBlob extends BlobCore
 
       CMSSignedData sign = cmsGen.generate(content, false);
 
-      super.MyData = sign.toASN1Structure().getEncoded("DER");
+      super.data = sign.toASN1Structure().getEncoded("DER");
    }
 }

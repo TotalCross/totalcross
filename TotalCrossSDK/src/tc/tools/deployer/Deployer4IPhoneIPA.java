@@ -234,10 +234,10 @@ public class Deployer4IPhoneIPA
 
       int blobFileOffset = (int) signature.blobFileOffset;
       CodeDirectory blob = CodeDirectory.Create(bundleIdentifier, blobFileOffset);
-      BlobCore blob2 = BlobCore.CreateEntitlementsBlob(this.Provision.GetEntitlementsString());
-      SuperBlob blob3 = SuperBlob.CreateRequirementsBlob();
+      Entitlements blob2 = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
+      Requirements blob3 = new Requirements();
       CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob();
-      SuperBlob blob6 = SuperBlob.CreateCodeSigningTableBlob();
+      EmbeddedSignature blob6 = new EmbeddedSignature();
       blob6.Add(0, blob);
       blob6.Add(2, blob3);
       blob6.Add(5, blob2);
@@ -263,7 +263,6 @@ public class Deployer4IPhoneIPA
       writer.moveTo(signature.blobFileOffset);
       writer.write(buffer);
       writer.moveBack();
-      writer.CompleteWritingAndClose();
       long num5 = segment.fileSize + segment.fileOffset;
       byte[] array = writer.toByteArray();
       if (array.length < num5)

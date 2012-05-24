@@ -1,18 +1,14 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Stack;
-import tc.tools.deployer.ipa.blob.BlobCore;
-import tc.tools.deployer.ipa.blob.BlobIndex;
 
 public class ElephantMemoryWriter implements ElephantMemoryStream
 {
    byte[] buffer;
    public int pos;
    Stack positions = new Stack();
-
-   public WritingPhase CurrentPhase = new WritingPhase();
-   private Stack PendingPhases = new Stack();
 
    public boolean bStreamLittleEndian = true;
 
@@ -128,34 +124,5 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
          System.arraycopy(buffer, 0, b, 0, pos);
          return b;
       }
-   }
-
-   public void CompleteWritingAndClose() throws IOException
-   {
-      while (ProcessEntirePhase())
-         ;
-   }
-
-   public void CreateNewPhase()
-   {
-      this.PendingPhases.push(this.CurrentPhase);
-      this.CurrentPhase = new WritingPhase();
-   }
-
-   public boolean ProcessEntirePhase() throws IOException
-   {
-      while (!CurrentPhase.pending.isEmpty())
-      {
-         BlobIndex item = (BlobIndex) CurrentPhase.pending.remove();
-         BlobCore blob = (BlobCore) item.blob;
-         blob.WriteOffsetNow1(this);
-         blob.Write(this);
-      }
-      if (!PendingPhases.isEmpty())
-      {
-         this.CurrentPhase = (WritingPhase) PendingPhases.pop();
-         return true;
-      }
-      return false;
    }
 }

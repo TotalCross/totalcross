@@ -17,7 +17,7 @@ public class MachObjectFile
 
    public List commands = new ArrayList();
 
-   public MachObjectFile(byte[] data) throws IOException
+   public MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException
    {
       ElephantMemoryReader reader = new ElephantMemoryReader(data);
 

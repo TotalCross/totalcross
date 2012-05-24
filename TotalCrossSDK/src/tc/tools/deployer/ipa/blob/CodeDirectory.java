@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa.blob;
+
 import java.io.IOException;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
@@ -7,6 +8,9 @@ import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class CodeDirectory extends BlobCore
 {
+   /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
+   public static final long CSMAGIC_CODEDIRECTORY = 0xfade0c02;
+
    private byte BytesPerHash;
    public final int cdApplicationSlot = 4;
    public final int cdEntitlementSlot = 5;
@@ -30,7 +34,7 @@ public class CodeDirectory extends BlobCore
 
    public CodeDirectory()
    {
-      super.magic = CSMAGIC_CODEDIRECTORY;
+      super(CSMAGIC_CODEDIRECTORY);
    }
 
    public void Allocate(String ApplicationID, int SignedFileLength)
@@ -85,11 +89,10 @@ public class CodeDirectory extends BlobCore
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
    {
-      long basePosition = writer.getPos() - 8L;
       writer.writeUnsignedInt(this.Version);
       writer.writeUnsignedInt(this.Flags);
-      ReserveSpaceToWriteOffset1(writer, basePosition - (this.BytesPerHash * this.SpecialSlotCount));
-      ReserveSpaceToWriteOffset2(writer, basePosition);
+      ReserveSpaceToWriteOffset1(writer, offset - (this.BytesPerHash * this.SpecialSlotCount));
+      ReserveSpaceToWriteOffset2(writer, offset);
       writer.writeUnsignedInt(this.SpecialSlotCount);
       writer.writeUnsignedInt(this.CodeSlotCount);
       writer.writeUnsignedInt(this.MainImageSignatureLimit);
@@ -109,9 +112,8 @@ public class CodeDirectory extends BlobCore
       writer.write(this.Hashes);
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, long Length) throws IOException
+   protected void readFromStream(ElephantMemoryReader reader) throws IOException
    {
-      long num = reader.getPos() - 8L;
       this.Version = reader.readUnsignedInt();
       this.Flags = reader.readUnsignedInt();
       long num2 = reader.readUnsignedInt();
@@ -126,13 +128,13 @@ public class CodeDirectory extends BlobCore
       this.Spare2 = reader.readUnsignedInt();
       this.ScatterCount = reader.readUnsignedInt();
       reader.memorize();
-      reader.moveTo(num + num3);
+      reader.moveTo(offset + num3);
       this.Identifier = reader.readString();
       reader.moveBack();
       long num4 = this.SpecialSlotCount + this.CodeSlotCount;
       this.Hashes = new byte[(int) (num4 * this.BytesPerHash)];
       reader.memorize();
-      reader.moveTo((num + num2) - (this.BytesPerHash * this.SpecialSlotCount));
+      reader.moveTo((offset + num2) - (this.BytesPerHash * this.SpecialSlotCount));
       for (long i = 0L; i < num4; i += 1L)
       {
          byte[] b = new byte[(int) this.BytesPerHash];

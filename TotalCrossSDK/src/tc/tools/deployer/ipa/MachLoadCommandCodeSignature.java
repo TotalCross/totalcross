@@ -1,12 +1,12 @@
 package tc.tools.deployer.ipa;
 
 import java.io.IOException;
-import tc.tools.deployer.ipa.blob.BlobCore;
-import tc.tools.deployer.ipa.blob.SuperBlob;
+import tc.tools.deployer.ipa.blob.BlobHandler;
+import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
 {
-   public SuperBlob payload;
+   public EmbeddedSignature payload;
    public long blobFileOffset;
    public long blobFileSize;
 
@@ -21,7 +21,8 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       writer.moveBack();
    }
 
-   protected void unpackageData(ElephantMemoryReader reader) throws IOException
+   protected void unpackageData(ElephantMemoryReader reader) throws IOException, InstantiationException,
+         IllegalAccessException
    {
       this.blobFileOffset = (int) reader.readUnsignedInt();
       this.offset2FileSize = reader.getPos();
@@ -29,7 +30,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       reader.memorize();
       reader.moveTo(this.blobFileOffset);
       reader.bStreamLittleEndian = false;
-      this.payload = (SuperBlob) BlobCore.CreateFromStream(reader);
+      this.payload = (EmbeddedSignature) BlobHandler.readFromStream(reader);
       reader.moveBack();
       reader.bStreamLittleEndian = true;
    }
