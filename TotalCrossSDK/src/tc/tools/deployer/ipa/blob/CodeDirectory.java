@@ -11,97 +11,96 @@ public class CodeDirectory extends BlobCore
    /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
    public static final long CSMAGIC_CODEDIRECTORY = 0xfade0c02;
 
-   private byte BytesPerHash;
+   private long version;
+   private long flags;
+   private long hashOffset;
+   private long identOffset;
+   private long nSpecialSlots;
+   private long nCodeSlots;
+   private long codeLimit;
+   private byte hashSize;
+   private byte hashType;
+   private byte spare1;
+   private byte pageSize;
+   private long spare2;
+   private long scatterOffset;
+
    public final int cdApplicationSlot = 4;
    public final int cdEntitlementSlot = 5;
    public final int cdInfoSlot = 1;
    public final int cdRequirementsSlot = 2;
    public final int cdResourceDirSlot = 3;
    public final int cdSlotMax = 5;
-   private long CodeSlotCount;
-   private long Flags;
+
    private byte[] Hashes;
    protected GeneralDigest HashProvider = new SHA1Digest();
-   private byte HashType;
+
    private String Identifier;
-   private byte LogPageSize;
-   private long MainImageSignatureLimit;
-   private long ScatterCount;
-   private byte Spare1;
-   private long Spare2;
-   private long SpecialSlotCount;
-   private long Version;
 
    public CodeDirectory()
    {
       super(CSMAGIC_CODEDIRECTORY);
    }
 
-   public void Allocate(String ApplicationID, int SignedFileLength)
+   public CodeDirectory(String ApplicationID, int SignedFileLength)
    {
+      super(CSMAGIC_CODEDIRECTORY);
       this.Identifier = ApplicationID;
-      this.Version = 0x20100;
-      this.Flags = 0;
-      this.Spare1 = 0;
-      this.Spare2 = 0;
-      this.ScatterCount = 0;
-      this.LogPageSize = 12;
-      int num = ((int) 1) << this.LogPageSize;
-      this.HashType = 1;
-      this.BytesPerHash = (byte) this.HashProvider.getDigestSize();
-      this.MainImageSignatureLimit = (long) SignedFileLength;
-      this.SpecialSlotCount = 5;
-      this.CodeSlotCount = (long) (((this.MainImageSignatureLimit + num) - ((long) 1L)) / ((long) num));
-      this.Hashes = new byte[(int) ((this.SpecialSlotCount + this.CodeSlotCount) * this.BytesPerHash)];
+      this.version = 0x20100;
+      this.flags = 0;
+      this.spare1 = 0;
+      this.spare2 = 0;
+      this.scatterOffset = 0;
+      this.pageSize = 12;
+      int num = ((int) 1) << this.pageSize;
+      this.hashType = 1;
+      this.hashSize = (byte) this.HashProvider.getDigestSize();
+      this.codeLimit = (long) SignedFileLength;
+      this.nSpecialSlots = 5;
+      this.nCodeSlots = (long) (((this.codeLimit + num) - ((long) 1L)) / ((long) num));
+      this.Hashes = new byte[(int) ((this.nSpecialSlots + this.nCodeSlots) * this.hashSize)];
    }
 
    public void ComputeImageHashes(byte[] SignedFileData)
    {
-      for (int i = 0; i < this.CodeSlotCount; i++)
+      for (int i = 0; i < this.nCodeSlots; i++)
       {
          int offset = i * this.PageSize();
-         int num3 = ((int) this.MainImageSignatureLimit) - offset;
+         int num3 = ((int) this.codeLimit) - offset;
          HashProvider.reset();
          HashProvider.update(SignedFileData, offset, Math.min(num3, this.PageSize()));
-         HashProvider.doFinal(this.Hashes, (int) ((this.SpecialSlotCount + i) * this.BytesPerHash));
+         HashProvider.doFinal(this.Hashes, (int) ((this.nSpecialSlots + i) * this.hashSize));
       }
-   }
-
-   public static CodeDirectory Create(String ApplicationID, int SignedFileLength)
-   {
-      CodeDirectory blob = new CodeDirectory();
-      blob.Allocate(ApplicationID, SignedFileLength);
-      return blob;
    }
 
    public void GenerateSpecialSlotHash(int SpecialSlotIndex)
    {
-      for (int i = 0; i < this.BytesPerHash; i++)
-         this.Hashes[((5 - SpecialSlotIndex) * this.BytesPerHash) + i] = 0;
+      for (int i = 0; i < this.hashSize; i++)
+         this.Hashes[((5 - SpecialSlotIndex) * this.hashSize) + i] = 0;
    }
 
    public void GenerateSpecialSlotHash(int SpecialSlotIndex, byte[] SourceData)
    {
       HashProvider.reset();
       HashProvider.update(SourceData, 0, SourceData.length);
-      HashProvider.doFinal(this.Hashes, (int) ((this.SpecialSlotCount - SpecialSlotIndex) * this.BytesPerHash));
+      HashProvider.doFinal(this.Hashes, (int) ((this.nSpecialSlots - SpecialSlotIndex) * this.hashSize));
    }
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
    {
-      writer.writeUnsignedInt(this.Version);
-      writer.writeUnsignedInt(this.Flags);
-      ReserveSpaceToWriteOffset1(writer, offset - (this.BytesPerHash * this.SpecialSlotCount));
+      writer.writeUnsignedInt(this.version);
+      writer.writeUnsignedInt(this.flags);
+      ReserveSpaceToWriteOffset1(writer, offset - (this.hashSize * this.nSpecialSlots));
       ReserveSpaceToWriteOffset2(writer, offset);
-      writer.writeUnsignedInt(this.SpecialSlotCount);
-      writer.writeUnsignedInt(this.CodeSlotCount);
-      writer.writeUnsignedInt(this.MainImageSignatureLimit);
-      writer.write(this.BytesPerHash);
-      writer.write(this.HashType);
-      writer.write(this.Spare1);
-      writer.write(this.LogPageSize);
-      writer.writeUnsignedInt(this.Spare2);
-      writer.writeUnsignedInt(this.ScatterCount);
+      writer.writeUnsignedInt(this.nSpecialSlots);
+      writer.writeUnsignedInt(this.nCodeSlots);
+      writer.writeUnsignedInt(this.codeLimit);
+      writer.write(this.hashSize);
+      writer.write(this.hashType);
+      writer.write(this.spare1);
+      writer.write(this.pageSize);
+      writer.writeUnsignedInt(this.spare2);
+      writer.writeUnsignedInt(this.scatterOffset);
       WriteOffsetNow2(writer);
       byte[] b1 = this.Identifier.getBytes("US-ASCII");
       byte[] b2 = new byte[b1.length + 1];
@@ -114,38 +113,38 @@ public class CodeDirectory extends BlobCore
 
    protected void readFromStream(ElephantMemoryReader reader) throws IOException
    {
-      this.Version = reader.readUnsignedInt();
-      this.Flags = reader.readUnsignedInt();
-      long num2 = reader.readUnsignedInt();
-      long num3 = reader.readUnsignedInt();
-      this.SpecialSlotCount = reader.readUnsignedInt();
-      this.CodeSlotCount = reader.readUnsignedInt();
-      this.MainImageSignatureLimit = reader.readUnsignedInt();
-      this.BytesPerHash = (byte) reader.read();
-      this.HashType = (byte) reader.read();
-      this.Spare1 = (byte) reader.read();
-      this.LogPageSize = (byte) reader.read();
-      this.Spare2 = reader.readUnsignedInt();
-      this.ScatterCount = reader.readUnsignedInt();
+      this.version = reader.readUnsignedInt();
+      this.flags = reader.readUnsignedInt();
+      this.hashOffset = reader.readUnsignedInt();
+      this.identOffset = reader.readUnsignedInt();
+      this.nSpecialSlots = reader.readUnsignedInt();
+      this.nCodeSlots = reader.readUnsignedInt();
+      this.codeLimit = reader.readUnsignedInt();
+      this.hashSize = (byte) reader.read();
+      this.hashType = (byte) reader.read();
+      this.spare1 = (byte) reader.read();
+      this.pageSize = (byte) reader.read();
+      this.spare2 = reader.readUnsignedInt();
+      this.scatterOffset = reader.readUnsignedInt();
       reader.memorize();
-      reader.moveTo(offset + num3);
+      reader.moveTo(offset + identOffset);
       this.Identifier = reader.readString();
       reader.moveBack();
-      long num4 = this.SpecialSlotCount + this.CodeSlotCount;
-      this.Hashes = new byte[(int) (num4 * this.BytesPerHash)];
+      long num4 = this.nSpecialSlots + this.nCodeSlots;
+      this.Hashes = new byte[(int) (num4 * this.hashSize)];
       reader.memorize();
-      reader.moveTo((offset + num2) - (this.BytesPerHash * this.SpecialSlotCount));
+      reader.moveTo((offset + hashOffset) - (this.hashSize * this.nSpecialSlots));
       for (long i = 0L; i < num4; i += 1L)
       {
-         byte[] b = new byte[(int) this.BytesPerHash];
+         byte[] b = new byte[(int) this.hashSize];
          reader.read(b);
-         System.arraycopy(b, 0, this.Hashes, (int) (i * this.BytesPerHash), (int) this.BytesPerHash);
+         System.arraycopy(b, 0, this.Hashes, (int) (i * this.hashSize), (int) this.hashSize);
       }
       reader.moveBack();
    }
 
    public int PageSize()
    {
-      return (((int) 1) << this.LogPageSize);
+      return (((int) 1) << this.pageSize);
    }
 }
