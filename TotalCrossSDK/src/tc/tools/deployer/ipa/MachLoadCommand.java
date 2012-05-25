@@ -55,10 +55,10 @@ public abstract class MachLoadCommand
       if (command == null) // skip commands we don't really care about
          reader.skip(commandDataSize - 8);
       else
-         command.unpackageData(reader);
+         command.parseFromStream(reader);
       return command;
    }
 
-   abstract protected void unpackageData(ElephantMemoryReader reader) throws IOException, InstantiationException,
+   abstract protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
          IllegalAccessException;
 }

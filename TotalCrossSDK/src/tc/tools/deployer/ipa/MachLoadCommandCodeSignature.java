@@ -21,7 +21,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       writer.moveBack();
    }
 
-   protected void unpackageData(ElephantMemoryReader reader) throws IOException, InstantiationException,
+   protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
          IllegalAccessException
    {
       this.blobFileOffset = (int) reader.readUnsignedInt();

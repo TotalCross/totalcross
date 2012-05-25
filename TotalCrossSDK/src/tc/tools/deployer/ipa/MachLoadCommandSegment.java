@@ -25,7 +25,7 @@ public class MachLoadCommandSegment extends MachLoadCommand
       writer.moveBack();
    }
 
-   protected void unpackageData(ElephantMemoryReader reader) throws IOException
+   protected void parseFromStream(ElephantMemoryReader reader) throws IOException
    {
       this.segname = reader.readString(16);
       this.vmaddr = reader.readUnsignedInt();
