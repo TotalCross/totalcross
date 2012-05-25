@@ -4,38 +4,39 @@ import java.io.IOException;
 
 public class MachLoadCommandSegment extends MachLoadCommand
 {
-   public long fileOffset;
-   public long fileSize;
+   public String segname;
+   public long vmaddr;
+   public long vmsize;
+   public long fileoff;
+   public long filesize;
+   public long maxprot;
+   public long initprot;
+   public long nsects;
    public long flags;
-   public long initProt;
-   public long maxProt;
-   public String segmentName;
-   public long virtualAddress;
-   public long virtualSize;
 
    private int offset2FileSize;
 
    public void PatchFileLength(ElephantMemoryWriter writer, long newLength) throws IOException
    {
-      this.fileSize = newLength;
+      this.filesize = filesize;
       writer.memorize();
       writer.moveTo(offset2FileSize);
-      writer.writeUnsignedInt(this.fileSize);
+      writer.writeUnsignedInt(this.filesize);
       writer.moveBack();
    }
 
    protected void unpackageData(ElephantMemoryReader reader) throws IOException
    {
-      this.segmentName = reader.readString(16);
-      this.virtualAddress = reader.readUnsignedInt();
-      this.virtualSize = reader.readUnsignedInt();
-      this.fileOffset = reader.readUnsignedInt();
+      this.segname = reader.readString(16);
+      this.vmaddr = reader.readUnsignedInt();
+      this.vmsize = reader.readUnsignedInt();
+      this.fileoff = reader.readUnsignedInt();
       this.offset2FileSize = reader.getPos();
-      this.fileSize = reader.readUnsignedInt();
-      this.maxProt = reader.readUnsignedInt();
-      this.initProt = reader.readUnsignedInt();
-      long num = reader.readUnsignedInt();
+      this.filesize = reader.readUnsignedInt();
+      this.maxprot = reader.readUnsignedInt();
+      this.initprot = reader.readUnsignedInt();
+      this.nsects = reader.readUnsignedInt();
       this.flags = reader.readUnsignedInt();
-      reader.moveTo(reader.getPos() + (num * 68));
+      reader.moveTo(reader.getPos() + (nsects * 68));
    }
 }
