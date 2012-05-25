@@ -73,8 +73,6 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
    public void moveBack()
    {
       this.pos = ((Integer) positions.pop()).intValue();
-      reset();
-      skip(pos);
    }
 
    public int getPos()
