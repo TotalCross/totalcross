@@ -42,7 +42,7 @@ public class CodeDirectory extends BlobCore
       super(CSMAGIC_CODEDIRECTORY);
    }
 
-   public CodeDirectory(String ApplicationID, int SignedFileLength)
+   public CodeDirectory(String ApplicationID, long SignedFileLength)
    {
       super(CSMAGIC_CODEDIRECTORY);
       this.Identifier = ApplicationID;
@@ -55,7 +55,7 @@ public class CodeDirectory extends BlobCore
       int num = ((int) 1) << this.pageSize;
       this.hashType = 1;
       this.hashSize = (byte) this.HashProvider.getDigestSize();
-      this.codeLimit = (long) SignedFileLength;
+      this.codeLimit = SignedFileLength;
       this.nSpecialSlots = 5;
       this.nCodeSlots = (long) (((this.codeLimit + num) - ((long) 1L)) / ((long) num));
       this.Hashes = new byte[(int) ((this.nSpecialSlots + this.nCodeSlots) * this.hashSize)];
