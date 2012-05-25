@@ -236,13 +236,12 @@ public class Deployer4IPhoneIPA
       CodeDirectory blob = new CodeDirectory(bundleIdentifier, blobFileOffset);
       Entitlements blob2 = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
       Requirements blob3 = new Requirements();
-      CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob();
+      CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob(ks, certStore, blob);
       EmbeddedSignature blob6 = new EmbeddedSignature();
       blob6.Add(0, blob);
       blob6.Add(2, blob3);
       blob6.Add(5, blob2);
       blob6.Add(0x10000, blob5);
-      blob5.SignCodeDirectory(ks, certStore, blob);
       byte[] blobBytes = blob6.GetBlobBytes();
       ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
       long length = blobBytes.length;
@@ -255,7 +254,7 @@ public class Deployer4IPhoneIPA
       blob.GenerateSpecialSlotHash(4);
       blob.GenerateSpecialSlotHash(5, blob2.GetBlobBytes());
       blob.ComputeImageHashes(writer.toByteArray());
-      blob5.SignCodeDirectory(ks, certStore, blob);
+      blob5.sign();
       byte[] buffer = blob6.GetBlobBytes();
       if (blobBytes.length != buffer.length)
           throw new IllegalStateException("CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
