@@ -13,10 +13,6 @@ public abstract class MachLoadCommand
    public static final int LC_CODE_SIGNATURE = 0x1d;
    public static final int LC_ENCRYPTION_INFO = 0x21;
    public static final int LC_DYLD_INFO = 0x22;
-   public boolean RequiredForDynamicLoad;
-
-   protected MachLoadCommand()
-   {}
 
    public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException,
          InstantiationException, IllegalAccessException
