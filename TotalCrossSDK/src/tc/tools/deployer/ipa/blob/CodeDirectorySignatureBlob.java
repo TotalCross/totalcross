@@ -28,9 +28,6 @@ public class CodeDirectorySignatureBlob extends BlobCore
       super(CSMAGIC_BLOB_WRAPPER);
    }
 
-   List certs;
-   Certificate[] certChain = null;
-
    public CodeDirectorySignatureBlob(KeyStore keyStore, X509Store certStore, CodeDirectory codeDirectory)
          throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException,
          OperatorCreationException, IOException, CMSException
