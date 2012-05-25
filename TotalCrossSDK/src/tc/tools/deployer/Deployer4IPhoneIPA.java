@@ -202,38 +202,8 @@ public class Deployer4IPhoneIPA
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
       MachObjectFile file = new MachObjectFile(appStream.toByteArray());
-      MachLoadCommandCodeSignature signature = null;
-      MachLoadCommandSegment segment = null;
-      ListIterator iterator = file.commands.listIterator();
-      while (iterator.hasNext())
-      {
-         MachLoadCommand command = (MachLoadCommand) iterator.next();
-         if (signature == null && command instanceof MachLoadCommandCodeSignature)
-            signature = (MachLoadCommandCodeSignature) command;
-         if (segment == null && command instanceof MachLoadCommandSegment)
-         {
-            segment = (MachLoadCommandSegment) command;
-            if (!segment.segmentName.startsWith("__LINKEDIT"))
-               segment = null;
-         }
-      }
-      if (segment == null)
-      {
-         throw new RuntimeException("Did not find a Mach segment load command for the __LINKEDIT segment");
-      }
-      if (signature == null)
-      {
-         throw new RuntimeException(
-               "Did not find a Code Signing LC.  Injecting one into a fresh executable is not currently supported.");
-      }
-      if ((signature.blobFileOffset + signature.blobFileSize) != (segment.fileOffset + segment.fileSize))
-      {
-         throw new RuntimeException(
-               "Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
-      }
 
-      int blobFileOffset = (int) signature.blobFileOffset;
-      CodeDirectory blob = new CodeDirectory(bundleIdentifier, blobFileOffset);
+      CodeDirectory blob = new CodeDirectory(bundleIdentifier, file.lc_signature.blobFileOffset);
       Entitlements blob2 = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
       Requirements blob3 = new Requirements();
       CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob(ks, certStore, blob);
@@ -243,11 +213,8 @@ public class Deployer4IPhoneIPA
       blob6.Add(5, blob2);
       blob6.Add(0x10000, blob5);
       byte[] blobBytes = blob6.GetBlobBytes();
-      ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
-      long length = blobBytes.length;
-      long num3 = segment.fileSize - signature.blobFileSize;
-      segment.PatchFileLength(writer, (long) (num3 + length));
-      signature.PatchPositionAndSize(writer, (long) length);
+      file.resign(blob6);
+      ElephantMemoryWriter writer = file.writer;
       blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
       blob.GenerateSpecialSlotHash(2, blob3.GetBlobBytes());
       blob.GenerateSpecialSlotHash(3, sourceData);
@@ -259,10 +226,10 @@ public class Deployer4IPhoneIPA
       if (blobBytes.length != buffer.length)
           throw new IllegalStateException("CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
       writer.memorize();
-      writer.moveTo(signature.blobFileOffset);
+      writer.moveTo(file.lc_signature.blobFileOffset);
       writer.write(buffer);
       writer.moveBack();
-      long num5 = segment.fileSize + segment.fileOffset;
+      long num5 = file.lc_segment.filesize + file.lc_segment.fileoff;
       byte[] array = writer.toByteArray();
       if (array.length < num5)
           throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");

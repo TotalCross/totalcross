@@ -16,7 +16,7 @@ public class MachLoadCommandSegment extends MachLoadCommand
 
    private int offset2FileSize;
 
-   public void PatchFileLength(ElephantMemoryWriter writer, long newLength) throws IOException
+   void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
    {
       this.filesize = filesize;
       writer.memorize();

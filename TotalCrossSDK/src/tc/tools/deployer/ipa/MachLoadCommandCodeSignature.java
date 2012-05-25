@@ -12,9 +12,9 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
 
    private int offset2FileSize;
 
-   public void PatchPositionAndSize(ElephantMemoryWriter writer, long NewLength) throws IOException
+   void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
    {
-      this.blobFileSize = NewLength;
+      this.blobFileSize = filesize;
       writer.memorize();
       writer.moveTo(offset2FileSize);
       writer.writeUnsignedInt(this.blobFileSize);
