@@ -88,10 +88,14 @@ public class CodeDirectory extends BlobCore
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
    {
+      // identOffset starts after the next 40 bytes;
+      this.identOffset = (writer.pos - offset) + 40;
+      // hashOffset starts after the identifier and the hashes of the special slots
+      this.hashOffset = this.identOffset + (Identifier.length() + 1) + (this.hashSize * this.nSpecialSlots);
       writer.writeUnsignedInt(this.version);
       writer.writeUnsignedInt(this.flags);
-      ReserveSpaceToWriteOffset1(writer, offset - (this.hashSize * this.nSpecialSlots));
-      ReserveSpaceToWriteOffset2(writer, offset);
+      writer.writeUnsignedInt(this.hashOffset);
+      writer.writeUnsignedInt(this.identOffset);
       writer.writeUnsignedInt(this.nSpecialSlots);
       writer.writeUnsignedInt(this.nCodeSlots);
       writer.writeUnsignedInt(this.codeLimit);
@@ -101,13 +105,8 @@ public class CodeDirectory extends BlobCore
       writer.write(this.pageSize);
       writer.writeUnsignedInt(this.spare2);
       writer.writeUnsignedInt(this.scatterOffset);
-      WriteOffsetNow2(writer);
-      byte[] b1 = this.Identifier.getBytes("US-ASCII");
-      byte[] b2 = new byte[b1.length + 1];
-      System.arraycopy(b1, 0, b2, 0, b1.length);
-      b2[b2.length - 1] = 0;
-      writer.write(b2);
-      WriteOffsetNow1(writer);
+      writer.write(this.Identifier.getBytes("US-ASCII"));
+      writer.write((byte) 0); // write string delimiter
       writer.write(this.Hashes);
    }
 
