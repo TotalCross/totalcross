@@ -6,7 +6,7 @@ import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
 {
-   public EmbeddedSignature payload;
+   public EmbeddedSignature signature;
    public long blobFileOffset;
    public long blobFileSize;
 
@@ -30,7 +30,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       reader.memorize();
       reader.moveTo(this.blobFileOffset);
       reader.bStreamLittleEndian = false;
-      this.payload = (EmbeddedSignature) BlobHandler.readFromStream(reader);
+      this.signature = (EmbeddedSignature) BlobHandler.readFromStream(reader);
       reader.moveBack();
       reader.bStreamLittleEndian = true;
    }

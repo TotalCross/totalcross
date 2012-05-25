@@ -14,9 +14,9 @@ public class SuperBlob extends BlobCore
       super(magic);
    }
 
-   public void Add(long Key, BlobCore Value)
+   public void add(BlobIndex blobIndex)
    {
-      index.addElement(new BlobIndex(Key, Value));
+      index.addElement(blobIndex);
    }
 
    protected void PackageData(ElephantMemoryWriter writer) throws IOException
@@ -45,6 +45,6 @@ public class SuperBlob extends BlobCore
    {
       long count = reader.readUnsignedInt();
       for (long i = 0; i < count; i++)
-         index.addElement(BlobIndex.readObject(reader, offset));
+         add(BlobIndex.readObject(reader, offset));
    }
 }

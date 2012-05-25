@@ -15,7 +15,7 @@ public abstract class BlobHandler
       knownBlobs.put(Long.valueOf(EmbeddedSignature.CSMAGIC_EMBEDDED_SIGNATURE), EmbeddedSignature.class);
       knownBlobs.put(Long.valueOf(Requirements.CSMAGIC_REQUIREMENTS), Requirements.class);
       knownBlobs.put(Long.valueOf(Entitlements.CSMAGIC_EMBEDDED_ENTITLEMENTS), Entitlements.class);
-      knownBlobs.put(Long.valueOf(CodeDirectorySignatureBlob.CSMAGIC_BLOB_WRAPPER), CodeDirectorySignatureBlob.class);
+      knownBlobs.put(Long.valueOf(BlobWrapper.CSMAGIC_BLOB_WRAPPER), BlobWrapper.class);
       knownBlobs.put(Long.valueOf(CodeDirectory.CSMAGIC_CODEDIRECTORY), CodeDirectory.class);
    }
 

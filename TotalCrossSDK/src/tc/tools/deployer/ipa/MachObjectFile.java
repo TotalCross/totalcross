@@ -1,12 +1,14 @@
 package tc.tools.deployer.ipa;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.bouncycastle.cms.CMSException;
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
 public class MachObjectFile
 {
-   private byte[] data;
+   public byte[] data;
 
    // the only value we use is commandCount, all others are kept only for future reference.
    protected long magic;
@@ -17,10 +19,12 @@ public class MachObjectFile
    protected long unknownValue;
    protected long flags;
 
-   public List commands = new ArrayList();
+   private List commands = new ArrayList();
 
-   public MachLoadCommandCodeSignature lc_signature = null;
-   public MachLoadCommandSegment lc_segment = null;
+   private MachLoadCommandCodeSignature lc_signature = null;
+   private MachLoadCommandSegment lc_segment = null;
+
+   private byte[] signatureTemplate;
 
    public MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException
    {
@@ -56,22 +60,55 @@ public class MachObjectFile
       if (lc_segment == null)
          throw new RuntimeException("Did not find a Mach segment load command for the __LINKEDIT segment");
       if (lc_signature == null)
-         throw new RuntimeException("Did not find a Code Signing LC. Injecting one into a fresh executable is not currently supported.");
+         throw new RuntimeException(
+               "Did not find a Code Signing LC. Injecting one into a fresh executable is not currently supported.");
       if ((lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize))
-         throw new RuntimeException("Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
+         throw new RuntimeException(
+               "Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
    }
 
-   public ElephantMemoryWriter writer;
+   public EmbeddedSignature getEmbeddedSignature()
+   {
+      return lc_signature.signature;
+   }
 
-   public void resign(EmbeddedSignature signature) throws IOException
+   public void setEmbeddedSignature(EmbeddedSignature signature) throws IOException
    {
       ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
-      this.writer = writer;
+      signatureTemplate = signature.GetBlobBytes();
 
-      byte[] blobBytes = signature.GetBlobBytes();
-
+      lc_signature.signature = signature;
       // original size - size of the original signature + size of the new signature
-      lc_segment.updateFileSize(writer, lc_segment.filesize - lc_signature.blobFileSize + blobBytes.length);
-      lc_signature.updateFileSize(writer, blobBytes.length);
+      lc_segment.updateFileSize(writer, lc_segment.filesize - lc_signature.blobFileSize + signatureTemplate.length);
+      lc_signature.updateFileSize(writer, signatureTemplate.length);
+
+      this.data = writer.buffer;
+   }
+
+   public void resign() throws IOException, CMSException
+   {
+      lc_signature.signature.sign();
+      byte[] resignedData = lc_signature.signature.GetBlobBytes();
+      if (signatureTemplate.length != resignedData.length)
+         throw new IllegalStateException(
+               "CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
+
+      ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
+      writer.memorize();
+      writer.moveTo(lc_signature.blobFileOffset);
+      writer.write(resignedData);
+      writer.moveBack();
+
+      int actualSize = writer.size();
+      int expectedSize = (int) (lc_segment.filesize + lc_segment.fileoff);
+      if (actualSize < expectedSize)
+         throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
+      else if (actualSize == expectedSize)
+         this.data = writer.buffer;
+      else
+      {
+         this.data = new byte[expectedSize];
+         System.arraycopy(writer.buffer, 0, this.data, 0, expectedSize);
+      }
    }
 }

@@ -11,7 +11,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.x509.X509Store;
 
-public class CodeDirectorySignatureBlob extends BlobCore
+public class BlobWrapper extends BlobCore
 {
    /**
     * https://bitbucket.org/khooyp/gdb/src/c3a263c415ad/include/mach-o/codesign.h
@@ -23,12 +23,12 @@ public class CodeDirectorySignatureBlob extends BlobCore
 
    private CMSSignedDataGenerator signedDataGenerator;
 
-   public CodeDirectorySignatureBlob()
+   public BlobWrapper()
    {
       super(CSMAGIC_BLOB_WRAPPER);
    }
 
-   public CodeDirectorySignatureBlob(KeyStore keyStore, X509Store certStore, CodeDirectory codeDirectory)
+   public BlobWrapper(KeyStore keyStore, X509Store certStore, CodeDirectory codeDirectory)
          throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateEncodingException,
          OperatorCreationException, IOException, CMSException
    {

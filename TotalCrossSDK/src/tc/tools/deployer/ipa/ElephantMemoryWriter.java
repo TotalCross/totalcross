@@ -114,6 +114,11 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       positions.push(Integer.valueOf(this.pos));
    }
 
+   public int size()
+   {
+      return pos == 0 ? buffer.length : pos;
+   }
+
    public byte[] toByteArray()
    {
       if (pos == 0 || buffer.length == pos)

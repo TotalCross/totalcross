@@ -201,42 +201,37 @@ public class Deployer4IPhoneIPA
       byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, bundleResourceSpecification, executableName);
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
-      MachObjectFile file = new MachObjectFile(appStream.toByteArray());
 
-      CodeDirectory blob = new CodeDirectory(bundleIdentifier, file.lc_signature.blobFileOffset);
-      Entitlements blob2 = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
-      Requirements blob3 = new Requirements();
-      CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob(ks, certStore, blob);
-      EmbeddedSignature blob6 = new EmbeddedSignature();
-      blob6.Add(0, blob);
-      blob6.Add(2, blob3);
-      blob6.Add(5, blob2);
-      blob6.Add(0x10000, blob5);
-      byte[] blobBytes = blob6.GetBlobBytes();
-      file.resign(blob6);
-      ElephantMemoryWriter writer = file.writer;
-      blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
-      blob.GenerateSpecialSlotHash(2, blob3.GetBlobBytes());
-      blob.GenerateSpecialSlotHash(3, sourceData);
-      blob.GenerateSpecialSlotHash(4);
-      blob.GenerateSpecialSlotHash(5, blob2.GetBlobBytes());
-      blob.ComputeImageHashes(writer.toByteArray());
-      blob5.sign();
-      byte[] buffer = blob6.GetBlobBytes();
-      if (blobBytes.length != buffer.length)
-          throw new IllegalStateException("CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
-      writer.memorize();
-      writer.moveTo(file.lc_signature.blobFileOffset);
-      writer.write(buffer);
-      writer.moveBack();
-      long num5 = file.lc_segment.filesize + file.lc_segment.fileoff;
-      byte[] array = writer.toByteArray();
-      if (array.length < num5)
-          throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
-      array = Arrays.copyOf(array, (int) num5);
+      MachObjectFile file = new MachObjectFile(appStream.toByteArray());
+      EmbeddedSignature originalSignature = file.getEmbeddedSignature();
+
+      // create a new codeDirectory with the new identifier, but keeping the same codeLimit
+      CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, originalSignature.codeDirectory.codeLimit);
+      // now create brand new entitlements and requirements
+      Entitlements entitlements = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
+      Requirements requirements = new Requirements();
+
+      // now create the blob wrapper
+      BlobWrapper blobWrapper = new BlobWrapper(ks, certStore, codeDirectory);
+
+      // finally create the template of our new signature
+      EmbeddedSignature newSignature = new EmbeddedSignature(codeDirectory, entitlements, requirements, blobWrapper);
+
+      // add the new signature to the file
+      file.setEmbeddedSignature(newSignature);
+
+      // recalculate hashes
+      codeDirectory.GenerateSpecialSlotHash(1, updatedInfoPlist);
+      codeDirectory.GenerateSpecialSlotHash(2, requirements.GetBlobBytes());
+      codeDirectory.GenerateSpecialSlotHash(3, sourceData);
+      codeDirectory.GenerateSpecialSlotHash(4);
+      codeDirectory.GenerateSpecialSlotHash(5, entitlements.GetBlobBytes());
+      codeDirectory.ComputeImageHashes(file.data);
+
+      file.resign();
       
       // executable
-      executable.input(new ByteArrayInputStream(array));
+      executable.input(new ByteArrayInputStream(file.data));
       
       TVFS.umount(targetZip);      
 
