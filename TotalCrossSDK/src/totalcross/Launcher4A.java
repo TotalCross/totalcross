@@ -785,10 +785,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int setElapsed(int n)
    {
-      SharedPreferences pref = loader.getPreferences(Context.MODE_PRIVATE);
       if (n == 0)
-         return pref.getInt("demotime",0);
-      pref.edit().putInt("demotime",n).commit();
+         return AndroidUtils.configs.demotime;
+      AndroidUtils.configs.demotime = n;
+      AndroidUtils.configs.save();
       return n;
    }
    
