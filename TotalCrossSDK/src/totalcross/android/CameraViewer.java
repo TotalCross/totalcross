@@ -70,9 +70,9 @@ public class CameraViewer extends Activity // guich@tc126_34
          {
             Camera.Parameters parameters=camera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             int ww = Math.max(width,height);
             int hh = Math.min(width,height);
-            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
             if (width != 0 && height != 0)
                parameters.setPictureSize(ww,hh);
