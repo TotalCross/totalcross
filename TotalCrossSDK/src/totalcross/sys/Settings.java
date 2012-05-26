@@ -751,10 +751,6 @@ public final class Settings
     */
    public static boolean sendPressEventOnChange;
    
-   /** Set to true to let the deployer know that this application is a service.
-    */
-   public static boolean isService;
-   
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()
    {

@@ -37,6 +37,7 @@ public final class J2TC implements JConstants, TCConstants
    public static Hashtable htAddedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    public static Hashtable htExcludedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    private static Hashtable htValidExtensions = new Hashtable(0xF);
+   private static String totalcrossService = "totalcross/Service";
    private static String totalcrossMain = "totalcross/MainClass";
    private static String totalcrossUiMainWindow = "totalcross/ui/MainWindow";
    public static boolean dump, dumpBytecodes;
@@ -123,6 +124,11 @@ public final class J2TC implements JConstants, TCConstants
             if (totalcrossMain.equals(jc.interfaces[i]))
                return true;
       return false;
+   }
+
+   private static boolean extendsService(JavaClass jc)
+   {
+      return totalcrossService.equals(jc.superClass);
    }
 
    private TCClass convertJClass2TClass(JavaClass jc) throws Exception
@@ -222,9 +228,6 @@ public final class J2TC implements JConstants, TCConstants
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
                   else
-                  if (field.equals("isService"))
-                     DeploySettings.isService = bcs[j-1] instanceof BC004_iconst_1;
-                  else
                   if (18 <= bcs[j-1].bc && bcs[j-1].bc <= 20) // guich@tc113_14: supports ldc_w and lcd2_w too
                   {
                      String value;
@@ -288,6 +291,7 @@ public final class J2TC implements JConstants, TCConstants
    {
       TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
       DeploySettings.isMainWindow = !implementsMainClass(jc);
+      DeploySettings.isService = extendsService(jc);
 
       for (int i =0; i < jc.methods.length; i++)
          if (jc.methods[i].signature.equals("<init>()")) // first check in the constructor
