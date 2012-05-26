@@ -24,7 +24,7 @@
 /// CHAR_ARRAY, BYTE_ARRAY, SHORT_ARRAY, INT_ARRAY, LONG_ARRAY, DOUBLE_ARRAY, BOOLEAN_ARRAY, FLOAT_ARRAY
 /// For other objects, pass the full class name, like "java.lang.String" or "totalcross.ui.MainWindow".
 
-TC_API Method getMethod(Class c, bool searchSuperclasses, CharP methodName, int32 nparams, ...);
-typedef Method (*getMethodFunc)(Class c, bool searchSuperclasses, CharP methodName, int32 nparams, ...);
+TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams, ...);
+typedef Method (*getMethodFunc)(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams, ...);
 
 #endif

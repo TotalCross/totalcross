@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 // Copyright (C) 2004 Nimkathana (www.nimkathana.com), USA
@@ -37,9 +35,9 @@ package totalcross.xml.rpc;
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 // USA
 
+import totalcross.io.BufferedStream;
 import totalcross.io.IOException;
-import totalcross.net.Base64;
-import totalcross.net.Socket;
+import totalcross.net.*;
 import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
@@ -62,6 +60,7 @@ public class StandardHttpClient
    protected String host;
    protected String auth;
    protected Socket socket;
+   protected BufferedStream reader;
    protected String hostname;
    /** The header contents, with both key and value lowercased. */
    public Hashtable htHeader;
@@ -79,10 +78,13 @@ public class StandardHttpClient
     *           The port on the server we want to connect to
     * @param uri
     *           The connecting URI. Defaults to "/RPC2"
+    * @param openTimeout
+    * @param readTimeout
+    * @param writeTimeout
     * @throws XmlRpcException
     *            If the connection to the server could not be made
     */
-   public StandardHttpClient(String hostname, int port, String uri) throws totalcross.net.UnknownHostException, XmlRpcException
+   public StandardHttpClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout) throws UnknownHostException, XmlRpcException
    {
       this.hostname = hostname;
       this.port = port;
@@ -94,7 +96,10 @@ public class StandardHttpClient
       host = (port == 80) ? hostname : (hostname + ":" + port);
       try
       {
-         socket = new Socket(hostname, port);
+         socket = new Socket(hostname, port, openTimeout);
+         socket.readTimeout = readTimeout;
+         socket.writeTimeout = writeTimeout;
+         reader = new BufferedStream(socket, BufferedStream.READ);
       }
       catch (totalcross.net.UnknownHostException e)
       {
@@ -104,6 +109,21 @@ public class StandardHttpClient
       {
          throw new XmlRpcException(e.getMessage());
       }
+   }
+
+   /**
+    * @param hostname
+    *           The server address to connect to
+    * @param port
+    *           The port on the server we want to connect to
+    * @param uri
+    *           The connecting URI. Defaults to "/RPC2"
+    * @throws XmlRpcException
+    *            If the connection to the server could not be made
+    */
+   public StandardHttpClient(String hostname, int port, String uri) throws UnknownHostException, XmlRpcException
+   {
+      this(hostname, port, uri, Socket.DEFAULT_OPEN_TIMEOUT, Socket.DEFAULT_READ_TIMEOUT, Socket.DEFAULT_WRITE_TIMEOUT);
    }
 
    /**
@@ -164,7 +184,7 @@ public class StandardHttpClient
    {
       String line = null;
       for (int retry = 0; retry < 4; retry++)
-         if ((line = socket.readLine()) != null)
+         if ((line = reader.readLine()) != null)
             break;
          else
             Vm.sleep(250);
@@ -203,7 +223,7 @@ public class StandardHttpClient
       Hashtable ht = new Hashtable(13);
       while (true)
       {
-         String line = socket.readLine();
+         String line = reader.readLine();
          if (line == null)
             break;
          int dp = line.indexOf(':'); //  xxxx: yyyy
@@ -227,7 +247,7 @@ public class StandardHttpClient
 
       while (true)
       {
-         String line = socket.readLine();
+         String line = reader.readLine();
          if (line == null)
             break;
          xmlBuffer.append(line);

@@ -16,7 +16,7 @@
 
 // tcclass.c
 extern Hashtable htLoadedClasses;
-extern ClassArray vLoadedClasses;
+extern TCClassArray vLoadedClasses;
 
 // tcexception.c
 extern CharP throwableAsCharP[(int32)ThrowableCount];
@@ -64,6 +64,11 @@ extern jfieldID jsipVisible,jappTitleH;
 extern jmethodID jgetHeight;
 #endif
 
+// window.c
+#ifdef ANDROID
+extern jmethodID jtransitionEffectChanged;
+#endif
+
 // graphicsprimitives.c
 extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
@@ -72,7 +77,7 @@ extern TScreenSurface screen;
 #ifdef ANDROID
 extern jmethodID jupdateScreen;
 #endif
-extern Class uiColorsClass;
+extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 
 // mem.c
@@ -98,7 +103,7 @@ extern bool bSipUp; //flsobral@tc114_50: fixed the SIP keyboard button not being
 #endif
 
 // Settings.c
-extern Class settingsClass;
+extern TCClass settingsClass;
 extern TTCSettings tcSettings;
 #if defined (WINCE)
 extern TVirtualKeyboardSettings vkSettings;
@@ -140,7 +145,7 @@ extern Context mainContext,gcContext;
 extern int32 vmTweaks;
 extern bool showKeyCodes;
 extern int32 profilerMaxMem;
-extern Class lockClass;
+extern TCClass lockClass;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(PALMOS) && !defined(WIN32)
@@ -170,6 +175,9 @@ extern jmethodID jalert;
 // nativelib.c
 extern VoidPs* openNativeLibs;
 
+// native proc addresses for iOS
+extern Hashtable htNativeProcAddresses;
+
 // tcz.c
 extern VoidPs* openTCZs;
 
@@ -195,7 +203,7 @@ extern jmethodID jtone,jsoundEnable;
 #endif
 
 // ConnectionManager.c
-extern Class connMgrClass;
+extern TCClass connMgrClass;
 
 // win/Socket_c.h
 #ifdef WIN32

@@ -471,5 +471,4 @@ public class Image4D extends GfxSurface
    
    native private boolean nativeEquals(Image other);
    native public void applyColor2(int color);
-   native public void dither();
 }

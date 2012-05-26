@@ -64,7 +64,7 @@ public final class Font
    /** The minimum font size: 6. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 44;
 
 
    /** Returns the default font size, based on the screen's size.

@@ -52,6 +52,8 @@ public class File4D extends RandomAccessStream
    public static String[] winceVols = {"\\Storage Card2\\", "\\Storage Card1\\", "\\SD Card\\", "\\Storage Card\\",
          "\\SD-MMCard\\", "\\CF Card\\"}; // guich@572_3
 
+   private static final String deviceAlias = "";
+
    public File4D(String path, int mode, int slot) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
    {
       if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
@@ -70,10 +72,9 @@ public class File4D extends RandomAccessStream
          path = path.substring(6);
          //flsobral@tc129.2: path for both iphone and ipad.
          if (Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD)) // guich@tc115_14: as per greg's suggestion
-            path = "/private/var/mobile"+path; //flsobral@tc123_57: fixed alias "device". The owner of this folder is "mobile" which is the user of the phone.
-         else
-         if (isAndroid)
-            path = Settings.appPath+"/"+path;
+            path = Convert.appendPath(deviceAlias, path);
+         else if (isAndroid)
+            path = Settings.appPath + "/" + path;
          slot = 1;
       }
       else 
@@ -329,5 +330,13 @@ public class File4D extends RandomAccessStream
       {
          try {if (fout != null) fout.close();} catch (Exception e) {}
       }
+   }
+   public byte[] readAndClose() throws IOException
+   {
+      int len = getSize();
+      byte[] ret = new byte[len];
+      readBytes(ret,0,len);
+      close();
+      return ret;
    }
 }

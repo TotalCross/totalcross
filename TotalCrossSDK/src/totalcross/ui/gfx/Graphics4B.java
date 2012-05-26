@@ -2074,6 +2074,125 @@ public final class Graphics4B
       }
    }
 
+   public void drawCylindricShade(int startColor, int endColor, int x, int y, int w, int h)
+   {
+      int startX = x;
+      int startY = y;
+      int endX = startX+w;
+      int endY = startY+h;
+      int numSteps = Math.max(1,Math.min((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
+      int startRed = (startColor >> 16) & 0xFF;
+      int startGreen = (startColor >> 8) & 0xFF;
+      int startBlue = startColor & 0xFF;
+      int endRed = (endColor >> 16) & 0xFF;
+      int endGreen = (endColor >> 8) & 0xFF;
+      int endBlue = endColor & 0xFF;
+      int redInc = (((endRed - startRed)*2) << 16) / numSteps;
+      int greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
+      int blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
+      int red = startRed << 16;
+      int green = startGreen << 16;
+      int blue = startBlue << 16;
+      for (int i = 0; i < numSteps; i++)
+      {
+         int rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+         int gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+         int bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         int sx = startX+i, sy = startY+i;
+         drawRect(sx,sy,endX-i-sx,endY-i-sy);
+         int ii = i-8;
+         rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+         gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+         bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         int i2 = i/8;
+         drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
+         sx = endX-i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
+         sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
+         sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
+      }
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY, -1);
+   }
+
+   /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
+    * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * @param ignoreColor Pass a color that should not be changed, like the transparent color of an Image, or -1 to dither all colors
+    * @since TotalCross 1.53
+    */
+   public void dither(int x0, int y0, int w, int h, int ignoreColor)
+   {
+      x0 += TRANSX;
+      y0 += TRANSY;
+      
+      XYRect rect = grect;
+      rect.set(x0, y0, w, h);
+      rect.intersect(g.getClippingRect());
+      
+      x0 = rect.x;
+      y0 = rect.y;
+      w = rect.width;
+      h = rect.height;
+      if (w <= 0 || h <= 0)
+         return;
+      int xf = x0+w;
+      int yf = y0+h;
+      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+      int[] buff1 = tempRowBuf1;
+      int[] buff2 = tempRowBuf2;
+      int oldR,oldG,oldB,newR,newG,newB,errR,errG,errB;
+      for (int y = y0; y < yf; y++)
+      {
+         bitmap.getARGB(buff1, 0, w, 0, y, w, 1);
+         if (y+1 < h)
+            bitmap.getARGB(buff2, 0, w, 0, y+1, w, 1);
+         for (int x = x0; x < xf; x++)
+         {
+            int p = buff1[x];
+            if (p == ignoreColor) continue;
+            // get current pixel values
+            oldR = (p>>16) & 0xFF;
+            oldG = (p>>8) & 0xFF;
+            oldB = p & 0xFF;
+            // convert to 565 component values
+            newR = oldR >> 3 << 3; 
+            newG = oldG >> 2 << 2;
+            newB = oldB >> 3 << 3;
+            // compute error
+            errR = oldR-newR;
+            errG = oldG-newG;
+            errB = oldB-newB;
+            // set new pixel
+            buff1[x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
+
+            addError(buff1, x+1, y ,w,h, errR,errG,errB,7,16);
+            addError(buff2, x-1,y+1,w,h, errR,errG,errB,3,16);
+            addError(buff2, x,  y+1,w,h, errR,errG,errB,5,16);
+            addError(buff2, x+1,y+1,w,h, errR,errG,errB,1,16);
+         }
+         bitmap.setARGB(buff1, 0, w, 0, y, w, 1);
+         if (y+1 < h)
+            bitmap.setARGB(buff2, 0, w, 0, y+1, w, 1);
+      }
+   }
+
+   private static void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
+   {
+      if (x >= w || y >= h || x < 0) return;
+      int i = y*w+x;
+      int p = pixel[i];
+      int r = (p>>16) & 0xFF;
+      int g = (p>>8) & 0xFF;
+      int b = p & 0xFF;
+      r += j*errR/k;
+      g += j*errG/k;
+      b += j*errB/k;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
+   }
+
    /////////////////////////////////////////////////////////////////////////////////
    //                      I N T E R N A L      R O U T I N E S                  //
    /////////////////////////////////////////////////////////////////////////////////

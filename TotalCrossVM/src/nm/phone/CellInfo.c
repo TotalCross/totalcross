@@ -22,7 +22,7 @@
 #endif
 
 // static fields
-static Class cellInfoClass;
+static TCClass cellInfoClass;
 #define ConnectionManager_connRef(c)      getStaticFieldObject(c, "connRef")
 
 #define CellInfo_cellId(c)                *getStaticFieldObject(c, "cellId")

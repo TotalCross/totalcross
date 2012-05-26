@@ -195,10 +195,10 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       if (Settings.fingerTouch)
          switch (direction)
          {
-            case DragEvent.UP   : return vbar.isVisible() && vbar.getValue() > vbar.getMinimum();
-            case DragEvent.DOWN : return vbar.isVisible() && (vbar.getValue() + vbar.getVisibleItems()) < vbar.getMaximum();
-            case DragEvent.LEFT : return hbar.isVisible() && hbar.getValue() > hbar.getMinimum();
-            case DragEvent.RIGHT: return hbar.isVisible() && (hbar.getValue() + hbar.getVisibleItems()) < hbar.getMaximum();
+            case DragEvent.UP   : return vbar.getValue() > vbar.getMinimum();
+            case DragEvent.DOWN : return (vbar.getValue() + vbar.getVisibleItems()) < vbar.getMaximum();
+            case DragEvent.LEFT : return hbar.getValue() > hbar.getMinimum();
+            case DragEvent.RIGHT: return (hbar.getValue() + hbar.getVisibleItems()) < hbar.getMaximum();
          }
       flickDirection = NONE;
       return false;

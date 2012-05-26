@@ -580,7 +580,7 @@ public final class Settings
     * @see totalcross.ui.Container#transitionEffect
     * @since TotalCross 1.2 
     */
-   public static boolean enableWindowTransitionEffects;
+   public static boolean enableWindowTransitionEffects=true;
    
    /** Set to true to debug all events that are received at Window._postEvent. */
    public static boolean debugEvents; // guich@tc125_14

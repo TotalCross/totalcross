@@ -61,6 +61,7 @@ public class MultiEdit extends Container implements Scrollable
 {
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';
+   private int lastZ1y = -9999;
    private Graphics drawg; // only valid while the edit has focus --   original
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
    private boolean hasFocus;
@@ -1239,8 +1240,6 @@ public class MultiEdit extends Container implements Scrollable
          cursorShowing = false;
    }
    
-   private int lastZ1y = -9999;
-
    protected void onWindowPaintFinished()
    {
        if (editable && !hasFocus) _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // this event is called on the focused control of the parent window. so, if we are not in FOCUS state, set it now. --original - guich@350_7: added the editable check

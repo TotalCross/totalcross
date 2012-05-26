@@ -292,6 +292,14 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int rowsPerPage = (height-vgap)/imageH;
       if (rowsPerPage == 0)
          rowsPerPage = 1;
+      if (disposition == MULTIPLE_VERTICAL && height/imageH > rowsPerPage) // guich: prevent problem when the gap is too high and just a few buttons are shown
+      {
+         vgap = height % imageH;
+         rowsPerPage++;
+         pageH = height-vgap;
+         imageH  = imageH0 + vgap;
+      }
+         
       if (disposition == MULTIPLE_HORIZONTAL)
       {
          int rows = pageH / imageH;
@@ -342,10 +350,13 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       boolean isVertical = disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL;
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
-      int last = !isVertical ? n-1 : Math.min(n, colsPerPage * rowsPerPage) - 1; // in horizontal scroll, the last button is at the bottom of the screen (as all buttons at its same row). in vertical scroll, we use the last page's button
-      int bot = btns[last].getY2(),bot2=btns[n-1].getY2();
-      if (last != n-1 && bot2-top < height) // if last is not the last button, check if the last button also fits on screen, and use it if so
-         bot = bot2;
+      int bot = 0;
+      for (int i = Math.max(0,n - 2 * colsPerPage * rowsPerPage); i < n; i++) // guich@tc153: correctly find the max y2
+      {
+         int yy = btns[i].getY2();
+         if (yy > bot)
+            bot = yy;
+      }
 
       if (isVertical)
       {
@@ -368,14 +379,13 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (top != 0)
             for (int i = 0; i < n; i++)
                btns[i].y += top;
-         if (disposition == SINGLE_COLUMN)
+         if (isVertical) // guich@tc153: include MULTIPLE_VERTICAL
             return; // don't put a new spacer
       }
-      else top = 0;
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (isVertical)
       {
-         int v = vgap+top;
+         int v = top; // guich@tc153: put at bottom the same of the top
          if (v > 0)
             add(spacer = new Spacer(1,v),LEFT,AFTER);
       }

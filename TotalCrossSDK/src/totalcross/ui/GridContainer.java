@@ -36,8 +36,6 @@ import totalcross.ui.gfx.*;
    for (int i = 0; i < cels.length; i++)
       cels[i] = new Celula(i);
    gc.setCells(cels);
-   System.out.println("adicionou");
-
  * </pre>
  * @since TotalCross 1.53
  */ 

@@ -15,9 +15,7 @@
 #define MAINVIEW_H
 
 #import <UIKit/UIKit.h>
-#import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
-#import <UIKit/UITransitionView.h>
 
 #include "GraphicsPrimitives.h"
 #import "kbdview.h"
@@ -56,10 +54,9 @@
 
 @end
 
-@interface MainView : UITransitionView
+@interface MainView : UIView
 {
    NSMutableArray* _events;
-   //NSRecursiveLock* _lock;
    NSLock* _lock;
    KeyboardView *kbd_view;
    bool child_added;
@@ -77,7 +74,6 @@
 - (void)geometryChanged;
 - (bool)isKbdShown;
 - (int)orientation;
-- (void)dealloc;
 
 - (void)lock:(const char *)info;
 - (void)unlock;
@@ -101,9 +97,9 @@
 
 typedef struct
 {
-   UIWindow  *_window;
-   MainView  *_mainview;
-   ChildView *_childview;
+   __unsafe_unretained UIWindow  *_window;
+   __unsafe_unretained MainView  *_mainview;
+   __unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 
 #endif

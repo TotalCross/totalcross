@@ -133,6 +133,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    {
       case WM_ACTIVATE:
       {
+         applyPalette();
 #if defined (WIN32)
          if (HIWORD(wParam)) // HIWORD(wParam) == 0 means the app is not minimized
          {

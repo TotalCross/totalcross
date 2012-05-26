@@ -22,7 +22,7 @@ import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 
 /** This class holds the colors used in some user interface dialogs, such as MessageBox,
- * InputDialog, Calculator, Keyboard, Calendar, ToolTip, KeyPad and others.
+ * InputBox, CalculatorBox, KeyboardBox, CalendarBox, ToolTip, KeyPad and others.
  * You can customize it as needed.
  * <p>
  * To correctly change the colors to your own, you must do it in the constructor of your
@@ -161,7 +161,7 @@ public final class UIColors // guich@564_6
    public static int shiftScreenColor = 0x808080;
 
    /** Background color of the clipboard menu that is opened at Edit and MultiEdit. */
-   public static int clipboardBack = keyboardBack;
+   public static int clipboardBack = Color.YELLOW;
    /** Foreground color of the clipboard menu that is opened at Edit and MultiEdit. */
    public static int clipboardFore = Color.BLACK;
 }

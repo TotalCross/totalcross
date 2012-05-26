@@ -415,12 +415,13 @@ public class Socket extends Stream
     * is considered a new line separator. This method correctly handles newlines
     * with \\n or \\r\\n.
     * <br><br>Note: this method is VERY slow since it reads a single character per time. Consider using 
-    * new LineReader(socket) instead.
+    * new LineReader(socket) or new BufferedStream(socket) instead.
     *
     * @return the read line or <code>null</code> if nothing was read.
     * @throws totalcross.io.IOException
     * @since SuperWaba 5.61
     * @see totalcross.io.LineReader
+    * @see totalcross.io.BufferedStream
     */
    public String readLine() throws totalcross.io.IOException
    {
@@ -446,7 +447,7 @@ public class Socket extends Stream
          {
             byte[] temp = new byte[buf.length+256];
             Vm.arrayCopy(buf, 0, temp, 0, pos);
-            buf = temp;
+            rlbuf = buf = temp;
          }
       }
       return (pos > 0 || r == 1) ? new String(Convert.charConverter.bytes2chars(buf, 0, pos)) : null; // brunosoares@582_11

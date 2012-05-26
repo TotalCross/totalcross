@@ -20,11 +20,13 @@
 #import <Foundation/NSThread.h>
 #include <stdio.h>
 #include <dlfcn.h>
+#if defined (THEOS)
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/xmlsave.h>
+#endif
 
 #include "xtypes.h"
 
@@ -57,6 +59,7 @@ enum
 
 int setGPRS(TCHARP apn, TCHARP username, TCHARP password)
 {
+#if defined (THEOS)
    static bool libxml2_initialized;
    
    VERBOSE(("setGPRS(%s,%s,%s)", apn, username, password));
@@ -165,7 +168,7 @@ int setGPRS(TCHARP apn, TCHARP username, TCHARP password)
    xmlXPathFreeObject(xpathObj);
    xmlXPathFreeContext(xpathCtx); 
    xmlFreeDoc(doc); 
-
+#endif
    return STATUS_OK;
 }
 

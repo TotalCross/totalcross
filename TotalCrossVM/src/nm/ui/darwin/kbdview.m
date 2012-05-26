@@ -43,7 +43,7 @@
       navBar = [ [UINavigationBar alloc] initWithFrame: navFrame ];
       UINavigationItem *navItem = [ [ UINavigationItem alloc ] initWithTitle:@"text entry" ];
       [ navBar pushNavigationItem: navItem animated:true ];
-      [ navItem release ];
+
       UIBarButtonItem *okButton = [ [ [ UIBarButtonItem alloc ]
             initWithTitle: @"OK"
             style: UIBarButtonItemStylePlain
@@ -125,7 +125,6 @@
    params = args;
    if (params != nil)
    {
-      [ params retain ];
       [ entry setText: [params values].text ];
       bool secret = [params values].secret ? YES:NO;
       [ entry setSecureTextEntry: secret ];
@@ -154,12 +153,6 @@
          [ self onCancel ];
          break;
    }
-}
-
-- (void)dealloc
-{
-   [ params release ];
-   [ super dealloc ];
 }
 
 - (void)onOk

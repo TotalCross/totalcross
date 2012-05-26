@@ -73,8 +73,8 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
 
    if (compress != UNCOMPRESS) levelOrSizeIn = -1; // if compressing, level was already used, so we reset it to avoid confusing with sizeIn
 
-   readMethod  = getMethod((Class) OBJ_CLASS(in), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-   writeMethod = getMethod((Class) OBJ_CLASS(out), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+   readMethod  = getMethod((TCClass) OBJ_CLASS(in), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+   writeMethod = getMethod((TCClass) OBJ_CLASS(out), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
 
    c_stream.avail_out = buffersize;
    c_stream.next_out = outArray;

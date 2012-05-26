@@ -42,7 +42,7 @@ static void statusChange(CharP msg)
    Object msgObj;
    if (listener == null || *listener != lastListener)
    {
-      Class dial = loadClass(currentContext, "totalcross.phone.Dial", true); //flsobral@tc114_75: fixed Dial's full qualified name.
+      TCClass dial = loadClass(currentContext, "totalcross.phone.Dial", true); //flsobral@tc114_75: fixed Dial's full qualified name.
       if (dial == null) // exception already thrown
          return;
       listener = getStaticFieldObject(dial, "listener");

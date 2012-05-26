@@ -903,7 +903,7 @@ public class Scanner
 
    /**  Set the length of a barcode. The lengthType must be one of the following values:
     * @param barcodeType One of the BARxxxx constants
-    * @param lengthType 0 (Variable length, min and max are ignored), 1 (length = min), 2 (length = min || length = max), 3 (min <= length <= max)
+    * @param lengthType 0 (Variable length, min and max are ignored), 1 (length = min), 2 (length = min || length = max), 3 (min <= length <= max). Careful: in Motorola Scanners, the min and max must be used in inverted order due to a bug in the MOTOROLA API.
     * @param min The minimum value
     * @param max The maximum value
     */

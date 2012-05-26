@@ -2208,7 +2208,7 @@ public final class Convert
       int idx = name.lastIndexOf('.');
       return idx == -1 ? name : name.substring(0,idx);
    }
-
+   
    /////// double routines - same of vm //////////////////////////////////
 
    /* Tester - currently 204 diffs

@@ -1236,8 +1236,7 @@ public class Control extends GfxSurface
    {
       if (enableUpdateScreen)
       {
-         totalcross.Launcher.instance.updateScreen(Container.nextTransitionEffect);
-         Container.nextTransitionEffect = Container.TRANSITION_NONE;
+         totalcross.Launcher.instance.updateScreen(Container.getNextTransitionEffect());
          Graphics.needsUpdate = false;
       }
    }
@@ -1658,5 +1657,16 @@ public class Control extends GfxSurface
    { 
       return (Settings.fingerTouch && event.type == PenEvent.PEN_UP && !hadParentScrolled()) || 
          (!Settings.fingerTouch && event.type == PenEvent.PEN_DOWN);
+   }
+
+   /** Returns true if this control is added to the given container at some higher level. 
+    * @since TotalCross 1.53
+    */
+   public boolean isChildOf(Container p)
+   {
+      for (Control c = this; c != null; c = c.parent)
+         if (c == p)
+            return true;
+      return false;
    }
 }

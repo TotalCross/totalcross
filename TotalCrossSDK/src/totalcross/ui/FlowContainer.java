@@ -47,7 +47,7 @@ import totalcross.sys.*;
  */
 public class FlowContainer extends Container
 {
-   private int lines = 1;
+   protected int lines = 1;
    private int hgap,vgap;
    private int lastASW;
    

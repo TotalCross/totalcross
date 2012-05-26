@@ -33,10 +33,20 @@ public class NativeMethodsPrototypeGenerator
          else
          {
             Vector v = new Vector(100);
-            readFile(v, new FileInputStream(argv[0]));
+            if (argv[0].equals("makeNativeHT"))
+            {
+               nativeHTSuffix = argv[1];
+               nativeHTPath = argv[2];
+               readFile(v, new FileInputStream(argv[3]));
+               makeNativeHT = true;
+            }
+            else
+            {
+               readFile(v, new FileInputStream(argv[0]));
+               makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
+            }
             int n = v.size();
             if (n == 0) throw new Exception(argv[0]+" is an empty file");
-            makeTestCases = argv.length == 2;
 
             for (int i =0; i < n; i++)
             {
@@ -62,12 +72,16 @@ public class NativeMethodsPrototypeGenerator
    }
 
    private static String CRLF = "\r\n";
-   private static Vector prototypes = new Vector(250);
-   private static Vector prototypesH = new Vector(250);
-   private static Vector testcases = new Vector(250);
+   private static Vector prototypes = new Vector(500);
+   private static Vector prototypesH = new Vector(500);
+   private static Vector testcases = new Vector(500);
+   private static Vector iosarray = new Vector(500);
    private static Hashtable htNames = new Hashtable(1023);
    private static int errorCount;
    private static boolean makeTestCases;
+   private static boolean makeNativeHT;
+   private static String nativeHTSuffix;
+   private static String nativeHTPath;
 
    //////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +125,7 @@ public class NativeMethodsPrototypeGenerator
       s += CRLF+"{";
       s += CRLF+"}"+CRLF;
 
+      iosarray.addElement("htPutPtr(&htNativeProcAddresses, hashCode(\""+funcName+"\"), &"+funcName+");\n");
       prototypes.addElement(s);
       prototypesH.addElement(CRLF+sn+";");
 
@@ -331,21 +346,40 @@ public class NativeMethodsPrototypeGenerator
          System.out.println("\nClasses that are not part of the method description must be preceded with the full name (package + classname)");
       else
       {
-         // prototype headers
-         for (int i =0; i < prototypesH.size(); i++)
-            println(prototypesH.elementAt(i).toString());
-         println(CRLF+CRLF);
+         // ios prototypes
+         if (makeNativeHT)
+         {
+            FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeProcAddresses" + nativeHTSuffix + ".c"));
+            fw.write("#include \"tcvm.h\"\n");
+            fw.write("#include \"NativeMethods.h\"\n");
+            fw.write("#include \"utils.h\"\n\n");
 
-         // prototype bodies
-         for (int i =0; i < prototypes.size(); i++)
-            println(prototypes.elementAt(i).toString());
+            fw.write("void fillNativeProcAddresses" + nativeHTSuffix + "()\n{\n");
+            for (int i = 0; i < iosarray.size(); i++)
+               fw.write("   " + iosarray.elementAt(i).toString());
+            fw.write("}\n");
 
-         if (makeTestCases)
-            for (int i =0; i < testcases.size(); i++)
-               println(testcases.elementAt(i).toString());
+            fw.close();
+         }
+         else
+         {
+            // prototype headers
+            for (int i = 0; i < prototypesH.size(); i++)
+               println(prototypesH.elementAt(i).toString());
+            println(CRLF + CRLF);
 
-         if (fos != null) fos.close();
-         System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+            // prototype bodies
+            for (int i = 0; i < prototypes.size(); i++)
+               println(prototypes.elementAt(i).toString());
+
+            if (makeTestCases)
+               for (int i = 0; i < testcases.size(); i++)
+                  println(testcases.elementAt(i).toString());
+
+            if (fos != null)
+               fos.close();
+            System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+         }
       }
       System.exit(0);
    }
