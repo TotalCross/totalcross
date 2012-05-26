@@ -48,27 +48,32 @@ public abstract class Service implements MainClass
          onStop();
       }
    }
+
+   public void launchService()
+   {
+      Vm.exec("\\"+serviceName+"\\"+serviceName+".exe",null,0,false);
+   }
    
-   public static void start() throws Exception
+   public void start() throws Exception
    {
       if (Settings.isWindowsDevice())
          Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 1);
    }
    
-   public static void stop() throws Exception
+   public void stop() throws Exception
    {
       if (Settings.isWindowsDevice())
          Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 0);
    }
    
-   public static boolean isRunning() throws Exception
+   public boolean isRunning() throws Exception
    {
       if (Settings.isWindowsDevice())
          return Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey, "running") == 1;
       return false;
    }
    
-   protected boolean registerService()
+   public boolean registerService()
    {
       if (Settings.isWindowsDevice())
          try
@@ -103,7 +108,7 @@ public abstract class Service implements MainClass
       return ret == 1;
    }
    
-   protected void unregisterService()
+   public void unregisterService()
    {
       Vm.exec("unregister service",null,0,true);
       Vm.sleep(500);
