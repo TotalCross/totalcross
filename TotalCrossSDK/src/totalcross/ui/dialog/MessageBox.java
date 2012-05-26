@@ -198,7 +198,7 @@ public class MessageBox extends Window
             btns.setFont(font);
             wb = btns.getPreferredWidth();
          }
-         hb = btns.getPreferredHeight();
+         hb = btns.getPreferredHeight() + (multiRow ? insideGap*buttonCaptions.length : insideGap);
          hb += androidGap;
       }
       int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),maxW);
