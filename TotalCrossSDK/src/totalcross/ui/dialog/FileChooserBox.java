@@ -195,8 +195,22 @@ public class FileChooserBox extends Window
       pbg.setBackColor(c);
       tree.setBackColor(c);
       tree.setCursorColor(c);
-      if (initialPath != null)
-         select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(initialPath),'/'), 0);
+      String p = initialPath;
+      if (p != null)
+      {
+         int dp = p.indexOf(':');
+         if (dp == 1)
+            try
+            {
+               mountTree(initialPath,0);
+               p = p.substring(2);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(p),'/'), 0);
+      }
       tree.requestFocus();
 	}
    
