@@ -21,7 +21,7 @@ public class BlobIndex
       this.blob = blob;
    }
 
-   static BlobIndex readObject(ElephantMemoryReader reader, long baseOffset) throws IOException,
+   static BlobIndex readIndex(ElephantMemoryReader reader, long baseOffset) throws IOException,
          InstantiationException, IllegalAccessException
    {
       long blobType = reader.readUnsignedInt();
