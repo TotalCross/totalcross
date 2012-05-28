@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+#ifndef WIN32
 TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
 TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}
 TC_API DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
@@ -46,7 +47,8 @@ TC_API DWORD TSV_Init(DWORD dwData)
 {
 	HANDLE hThread = CreateThread( 0, 0, StartVMFromService, 0, 0, 0);
 	return 1;
-}
+}            
+#endif
 ///////////////////////////////
 
 static void getWorkingDir()
