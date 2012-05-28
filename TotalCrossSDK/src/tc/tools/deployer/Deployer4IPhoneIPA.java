@@ -221,12 +221,8 @@ public class Deployer4IPhoneIPA
       file.setEmbeddedSignature(newSignature);
 
       // recalculate hashes
-      codeDirectory.GenerateSpecialSlotHash(1, updatedInfoPlist);
-      codeDirectory.GenerateSpecialSlotHash(2, requirements.getBytes());
-      codeDirectory.GenerateSpecialSlotHash(3, sourceData);
-      codeDirectory.GenerateSpecialSlotHash(4);
-      codeDirectory.GenerateSpecialSlotHash(5, entitlements.getBytes());
-      codeDirectory.ComputeImageHashes(file.data);
+      codeDirectory.setSpecialSlotsHashes(updatedInfoPlist, requirements.getBytes(), sourceData, null, entitlements.getBytes());
+      codeDirectory.setCodeSlotsHashes(file.data);
 
       file.resign();
       

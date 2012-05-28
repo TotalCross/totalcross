@@ -1,15 +1,36 @@
 package tc.tools.deployer.ipa.blob;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import tc.tools.deployer.ipa.ElephantMemoryReader;
 import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
+/**
+ * http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-32568/lib/codedirectory.h
+ */
 public class CodeDirectory extends BlobCore
 {
    /** http://opensource.apple.com/source/libsecurity_codesigning/libsecurity_codesigning-55032/lib/cscdefs.h */
    public static final long CSMAGIC_CODEDIRECTORY = 0xfade0c02;
+
+   /**
+    * Types of hashes supported. Actually, right now, only SHA1 is really supported.
+    */
+   public static final int cdHashTypeSHA1 = 1;
+   public static final int cdHashTypeSHA256 = 1;
+
+   /**
+    * Special hash slot values. In a CodeDirectory, these show up at negative slot indices. This enumeration is also
+    * used widely in various internal APIs, and as type values in embedded SuperBlobs.
+    */
+   public static final int cdInfoSlot = 1; // Info.plist
+   public static final int cdRequirementsSlot = 2; // internal requirements
+   public static final int cdResourceDirSlot = 3; // resource directory
+   public static final int cdApplicationSlot = 4; // Application specific slot
+   public static final int cdEntitlementsSlot = 5; // entitlements
+   public static final int cdSlotMax = 5;
 
    public long version;
    public long flags;
@@ -44,11 +65,11 @@ public class CodeDirectory extends BlobCore
       this.pageSize = 12;
       this.actualPageSize = 1 << this.pageSize;
       this.spare1 = 0;
-      this.hashType = 1;
+      this.hashType = cdHashTypeSHA1;
       this.hashSize = (byte) this.hashDigest.getDigestSize();
       this.codeLimit = codeLimit;
-      this.nCodeSlots = (long) ((this.codeLimit + actualPageSize - 1L) / actualPageSize);
-      this.nSpecialSlots = 5;
+      this.nCodeSlots = (long) ((this.codeLimit + actualPageSize - 1) / actualPageSize);
+      this.nSpecialSlots = cdSlotMax;
       this.flags = 0;
       this.version = 0x20100;
 
@@ -56,29 +77,38 @@ public class CodeDirectory extends BlobCore
       this.hashes = new byte[(int) ((this.nSpecialSlots + this.nCodeSlots) * this.hashSize)];
    }
 
-   public void ComputeImageHashes(byte[] SignedFileData)
+   public void setSpecialSlotsHashes(byte[] info, byte[] requirements, byte[] resourceDir, byte[] application, byte[] entitlements)
+   {
+      setSpecialSlotHash(cdInfoSlot, info);
+      setSpecialSlotHash(cdRequirementsSlot, requirements);
+      setSpecialSlotHash(cdResourceDirSlot, resourceDir);
+      setSpecialSlotHash(cdApplicationSlot, application);
+      setSpecialSlotHash(cdEntitlementsSlot, entitlements);
+   }
+
+   public void setSpecialSlotHash(int slotIndex, byte[] data)
+   {
+      int startIndex = (int) ((this.nSpecialSlots - slotIndex) * this.hashSize);
+      if (data == null)
+         Arrays.fill(this.hashes, startIndex, startIndex + this.hashSize, (byte) 0);
+      else
+      {
+         hashDigest.reset();
+         hashDigest.update(data, 0, data.length);
+         hashDigest.doFinal(this.hashes, startIndex);
+      }
+   }
+
+   public void setCodeSlotsHashes(byte[] data)
    {
       for (int i = 0; i < this.nCodeSlots; i++)
       {
          int offset = i * actualPageSize;
-         int num3 = ((int) this.codeLimit) - offset;
+         int pageSize = Math.min((int) (this.codeLimit - offset), actualPageSize);
          hashDigest.reset();
-         hashDigest.update(SignedFileData, offset, Math.min(num3, actualPageSize));
+         hashDigest.update(data, offset, pageSize);
          hashDigest.doFinal(this.hashes, (int) ((this.nSpecialSlots + i) * this.hashSize));
       }
-   }
-
-   public void GenerateSpecialSlotHash(int SpecialSlotIndex)
-   {
-      for (int i = 0; i < this.hashSize; i++)
-         this.hashes[((5 - SpecialSlotIndex) * this.hashSize) + i] = 0;
-   }
-
-   public void GenerateSpecialSlotHash(int SpecialSlotIndex, byte[] SourceData)
-   {
-      hashDigest.reset();
-      hashDigest.update(SourceData, 0, SourceData.length);
-      hashDigest.doFinal(this.hashes, (int) ((this.nSpecialSlots - SpecialSlotIndex) * this.hashSize));
    }
 
    protected void writeToStream(ElephantMemoryWriter writer) throws IOException
