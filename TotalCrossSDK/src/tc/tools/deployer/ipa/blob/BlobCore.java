@@ -21,7 +21,7 @@ public class BlobCore
    {
       ElephantMemoryWriter writer = new ElephantMemoryWriter();
       writer.bStreamLittleEndian = false;
-      BlobHandler.writeToStream(this, writer);
+      BlobHandler.writeBlob(this, writer);
       return writer.toByteArray();
    }
 

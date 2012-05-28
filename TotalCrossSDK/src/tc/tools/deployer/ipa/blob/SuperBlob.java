@@ -36,7 +36,7 @@ public class SuperBlob extends BlobCore
          writer.writeUnsignedInt(item.offset);
          idxPos = writer.pos;
          writer.moveBack();
-         BlobHandler.writeToStream(item.blob, writer);
+         BlobHandler.writeBlob(item.blob, writer);
       }
    }
 

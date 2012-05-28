@@ -29,7 +29,7 @@ public class BlobIndex
 
       reader.memorize();
       reader.moveTo(baseOffset + offset);
-      BlobCore blob = BlobHandler.readFromStream(reader);
+      BlobCore blob = BlobHandler.readBlob(reader);
       reader.moveBack();
 
       return new BlobIndex(blobType, blob);

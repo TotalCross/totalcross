@@ -19,7 +19,7 @@ public abstract class BlobHandler
       knownBlobs.put(Long.valueOf(CodeDirectory.CSMAGIC_CODEDIRECTORY), CodeDirectory.class);
    }
 
-   public static BlobCore readFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
+   public static BlobCore readBlob(ElephantMemoryReader reader) throws IOException, InstantiationException,
          IllegalAccessException
    {
       BlobCore blob;
@@ -38,7 +38,7 @@ public abstract class BlobHandler
       return blob;
    }
 
-   public static void writeToStream(BlobCore blob, ElephantMemoryWriter writer) throws IOException
+   public static void writeBlob(BlobCore blob, ElephantMemoryWriter writer) throws IOException
    {
       blob.offset = writer.pos;
       writer.writeUnsignedInt(blob.magic);

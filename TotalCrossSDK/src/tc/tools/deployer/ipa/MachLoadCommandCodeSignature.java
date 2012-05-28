@@ -30,7 +30,7 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       reader.memorize();
       reader.moveTo(this.blobFileOffset);
       reader.bStreamLittleEndian = false;
-      this.signature = (EmbeddedSignature) BlobHandler.readFromStream(reader);
+      this.signature = (EmbeddedSignature) BlobHandler.readBlob(reader);
       reader.moveBack();
       reader.bStreamLittleEndian = true;
    }
