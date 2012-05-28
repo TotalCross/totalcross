@@ -222,10 +222,10 @@ public class Deployer4IPhoneIPA
 
       // recalculate hashes
       codeDirectory.GenerateSpecialSlotHash(1, updatedInfoPlist);
-      codeDirectory.GenerateSpecialSlotHash(2, requirements.GetBlobBytes());
+      codeDirectory.GenerateSpecialSlotHash(2, requirements.getBytes());
       codeDirectory.GenerateSpecialSlotHash(3, sourceData);
       codeDirectory.GenerateSpecialSlotHash(4);
-      codeDirectory.GenerateSpecialSlotHash(5, entitlements.GetBlobBytes());
+      codeDirectory.GenerateSpecialSlotHash(5, entitlements.getBytes());
       codeDirectory.ComputeImageHashes(file.data);
 
       file.resign();

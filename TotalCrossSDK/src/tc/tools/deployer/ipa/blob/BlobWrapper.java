@@ -52,7 +52,7 @@ public class BlobWrapper extends BlobCore
 
    public void sign() throws IOException, CMSException
    {
-      byte[] rawData = codeDirectory.GetBlobBytes();
+      byte[] rawData = codeDirectory.getBytes();
       CMSProcessableByteArray content = (rawData != null) ? new CMSProcessableByteArray(rawData) : null;
       CMSSignedData sign = signedDataGenerator.generate(content, false);
       super.data = sign.toASN1Structure().getEncoded("DER");

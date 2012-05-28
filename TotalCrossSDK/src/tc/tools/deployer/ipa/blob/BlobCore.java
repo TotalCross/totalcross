@@ -17,7 +17,7 @@ public class BlobCore
       this.magic = magic;
    }
 
-   public byte[] GetBlobBytes() throws IOException
+   public byte[] getBytes() throws IOException
    {
       ElephantMemoryWriter writer = new ElephantMemoryWriter();
       writer.bStreamLittleEndian = false;

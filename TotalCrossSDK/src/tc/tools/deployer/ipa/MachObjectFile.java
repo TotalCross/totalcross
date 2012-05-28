@@ -78,7 +78,7 @@ public class MachObjectFile
    public void setEmbeddedSignature(EmbeddedSignature signature) throws IOException
    {
       ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
-      signatureTemplate = signature.GetBlobBytes();
+      signatureTemplate = signature.getBytes();
 
       lc_signature.signature = signature;
       // original size - size of the original signature + size of the new signature
@@ -91,7 +91,7 @@ public class MachObjectFile
    public void resign() throws IOException, CMSException
    {
       lc_signature.signature.sign();
-      byte[] resignedData = lc_signature.signature.GetBlobBytes();
+      byte[] resignedData = lc_signature.signature.getBytes();
       if (signatureTemplate.length != resignedData.length)
          throw new IllegalStateException(
                "CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
