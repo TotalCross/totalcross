@@ -81,7 +81,7 @@ public class CodeDirectory extends BlobCore
       hashDigest.doFinal(this.hashes, (int) ((this.nSpecialSlots - SpecialSlotIndex) * this.hashSize));
    }
 
-   protected void PackageData(ElephantMemoryWriter writer) throws IOException
+   protected void writeToStream(ElephantMemoryWriter writer) throws IOException
    {
       // identOffset starts after the next 40 bytes;
       this.identOffset = (writer.pos - offset) + 40;

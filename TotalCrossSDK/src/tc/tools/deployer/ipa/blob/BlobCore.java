@@ -25,7 +25,7 @@ public class BlobCore
       return writer.toByteArray();
    }
 
-   protected void PackageData(ElephantMemoryWriter writer) throws IOException
+   protected void writeToStream(ElephantMemoryWriter writer) throws IOException
    {
       writer.write(this.data);
    }

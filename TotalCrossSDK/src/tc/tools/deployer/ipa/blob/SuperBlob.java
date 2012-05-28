@@ -19,7 +19,7 @@ public class SuperBlob extends BlobCore
       index.addElement(blobIndex);
    }
 
-   protected void PackageData(ElephantMemoryWriter writer) throws IOException
+   protected void writeToStream(ElephantMemoryWriter writer) throws IOException
    {
       int count = index.size();
       writer.writeUnsignedInt(count);

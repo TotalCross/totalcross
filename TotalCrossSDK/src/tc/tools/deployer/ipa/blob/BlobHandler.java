@@ -43,7 +43,7 @@ public abstract class BlobHandler
       blob.offset = writer.pos;
       writer.writeUnsignedInt(blob.magic);
       writer.pos += 4L;
-      blob.PackageData(writer);
+      blob.writeToStream(writer);
       blob.length = writer.pos - blob.offset;
       writer.memorize();
       writer.moveTo(blob.offset + 4L);
