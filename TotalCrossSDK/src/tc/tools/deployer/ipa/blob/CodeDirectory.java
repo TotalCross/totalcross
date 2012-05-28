@@ -26,6 +26,7 @@ public class CodeDirectory extends BlobCore
    public long scatterOffset;
 
    public String identifier;
+   public int actualPageSize;
    public byte[] hashes;
 
    protected GeneralDigest hashDigest = new SHA1Digest();
@@ -41,11 +42,12 @@ public class CodeDirectory extends BlobCore
       this.scatterOffset = 0;
       this.spare2 = 0;
       this.pageSize = 12;
+      this.actualPageSize = 1 << this.pageSize;
       this.spare1 = 0;
       this.hashType = 1;
       this.hashSize = (byte) this.hashDigest.getDigestSize();
       this.codeLimit = codeLimit;
-      this.nCodeSlots = (long) ((this.codeLimit + actualPageSize() - 1L) / actualPageSize());
+      this.nCodeSlots = (long) ((this.codeLimit + actualPageSize - 1L) / actualPageSize);
       this.nSpecialSlots = 5;
       this.flags = 0;
       this.version = 0x20100;
@@ -58,10 +60,10 @@ public class CodeDirectory extends BlobCore
    {
       for (int i = 0; i < this.nCodeSlots; i++)
       {
-         int offset = i * this.actualPageSize();
+         int offset = i * actualPageSize;
          int num3 = ((int) this.codeLimit) - offset;
          hashDigest.reset();
-         hashDigest.update(SignedFileData, offset, Math.min(num3, this.actualPageSize()));
+         hashDigest.update(SignedFileData, offset, Math.min(num3, actualPageSize));
          hashDigest.doFinal(this.hashes, (int) ((this.nSpecialSlots + i) * this.hashSize));
       }
    }
@@ -116,8 +118,10 @@ public class CodeDirectory extends BlobCore
       this.hashType = (byte) reader.read();
       this.spare1 = (byte) reader.read();
       this.pageSize = (byte) reader.read();
+      this.actualPageSize = 1 << this.pageSize;
       this.spare2 = reader.readUnsignedInt();
       this.scatterOffset = reader.readUnsignedInt();
+
       reader.memorize();
       reader.moveTo(offset + identOffset);
       this.identifier = reader.readString();
@@ -133,10 +137,5 @@ public class CodeDirectory extends BlobCore
          System.arraycopy(b, 0, this.hashes, (int) (i * this.hashSize), (int) this.hashSize);
       }
       reader.moveBack();
-   }
-
-   public int actualPageSize()
-   {
-      return (1 << this.pageSize);
    }
 }
