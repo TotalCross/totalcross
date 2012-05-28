@@ -6,18 +6,21 @@ import java.util.List;
 import org.bouncycastle.cms.CMSException;
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
+/**
+ * http://llvm.org/docs/doxygen/html/MachOFormat_8h_source.html
+ * http://comments.gmane.org/gmane.comp.programming.garbage-collection.boehmgc/4987
+ */
 public class MachObjectFile
 {
-   public byte[] data;
-
-   // the only value we use is commandCount, all others are kept only for future reference.
    protected long magic;
-   protected long cpuType;
-   protected long cpuSubType;
-   protected long fileType;
-   protected long commandCount;
-   protected long unknownValue;
+   protected long cputype;
+   protected long cpusubtype;
+   protected long filetype;
+   protected long ncmds;
+   protected long sizeofcmds;
    protected long flags;
+
+   public byte[] data;
 
    private List commands = new ArrayList();
 
@@ -32,14 +35,14 @@ public class MachObjectFile
       ElephantMemoryReader reader = new ElephantMemoryReader(data);
 
       this.magic = reader.readUnsignedInt();
-      this.cpuType = reader.readUnsignedInt();
-      this.cpuSubType = reader.readUnsignedInt();
-      this.fileType = reader.readUnsignedInt();
-      this.commandCount = reader.readUnsignedInt();
-      this.unknownValue = reader.readUnsignedInt();
+      this.cputype = reader.readUnsignedInt();
+      this.cpusubtype = reader.readUnsignedInt();
+      this.filetype = reader.readUnsignedInt();
+      this.ncmds = reader.readUnsignedInt();
+      this.sizeofcmds = reader.readUnsignedInt();
       this.flags = reader.readUnsignedInt();
       this.commands.clear();
-      for (int i = 0; i < commandCount; i++)
+      for (int i = 0; i < ncmds; i++)
       {
          MachLoadCommand command = MachLoadCommand.readFromStream(reader);
          if (command != null)
