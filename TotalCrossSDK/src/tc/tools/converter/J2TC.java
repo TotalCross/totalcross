@@ -1329,7 +1329,7 @@ public final class J2TC implements JConstants, TCConstants
    {
       if ("totalcross/ui/MainWindow".equals(jc.superClass)   || "totalcross/game/GameEngineMainWindow".equals(jc.superClass) ||
           "totalcross/game/GameEngine".equals(jc.superClass) || "totalcross/unit/TestSuite".equals(jc.superClass) ||
-          "totalcross/io/sync/Conduit".equals(jc.superClass))
+          "totalcross/io/sync/Conduit".equals(jc.superClass) || "totalcross/Service".equals(jc.superClass))
          return true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)
