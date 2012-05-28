@@ -6,9 +6,9 @@ import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class BlobCore
 {
-   public long magic;
-   public long length;
-   public long offset;
+   protected long magic;
+   protected long length;
+   protected long offset;
 
    protected byte[] data;
 
