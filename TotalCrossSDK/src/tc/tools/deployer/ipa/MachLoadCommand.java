@@ -18,8 +18,8 @@ public abstract class MachLoadCommand
          InstantiationException, IllegalAccessException
    {
       MachLoadCommand command = null;
-      int commandType = (int) (reader.readUnsignedInt() & 0x7fffffff);
-      long commandDataSize = reader.readUnsignedInt();
+      int commandType = (int) (reader.readUnsignedIntLE() & 0x7fffffff);
+      long commandDataSize = reader.readUnsignedIntLE();
 
       switch (commandType)
       {

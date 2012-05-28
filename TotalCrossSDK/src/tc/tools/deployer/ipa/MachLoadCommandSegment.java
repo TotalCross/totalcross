@@ -21,22 +21,22 @@ public class MachLoadCommandSegment extends MachLoadCommand
       this.filesize = filesize;
       writer.memorize();
       writer.moveTo(offset2FileSize);
-      writer.writeUnsignedInt(this.filesize);
+      writer.writeUnsignedIntLE(this.filesize);
       writer.moveBack();
    }
 
    protected void parseFromStream(ElephantMemoryReader reader) throws IOException
    {
       this.segname = reader.readString(16);
-      this.vmaddr = reader.readUnsignedInt();
-      this.vmsize = reader.readUnsignedInt();
-      this.fileoff = reader.readUnsignedInt();
+      this.vmaddr = reader.readUnsignedIntLE();
+      this.vmsize = reader.readUnsignedIntLE();
+      this.fileoff = reader.readUnsignedIntLE();
       this.offset2FileSize = reader.getPos();
-      this.filesize = reader.readUnsignedInt();
-      this.maxprot = reader.readUnsignedInt();
-      this.initprot = reader.readUnsignedInt();
-      this.nsects = reader.readUnsignedInt();
-      this.flags = reader.readUnsignedInt();
+      this.filesize = reader.readUnsignedIntLE();
+      this.maxprot = reader.readUnsignedIntLE();
+      this.initprot = reader.readUnsignedIntLE();
+      this.nsects = reader.readUnsignedIntLE();
+      this.flags = reader.readUnsignedIntLE();
       reader.moveTo(reader.getPos() + (nsects * 68));
    }
 }

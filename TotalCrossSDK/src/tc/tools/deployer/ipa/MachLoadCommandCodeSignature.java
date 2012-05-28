@@ -17,21 +17,19 @@ public class MachLoadCommandCodeSignature extends MachLoadCommand
       this.blobFileSize = filesize;
       writer.memorize();
       writer.moveTo(offset2FileSize);
-      writer.writeUnsignedInt(this.blobFileSize);
+      writer.writeUnsignedIntLE(this.blobFileSize);
       writer.moveBack();
    }
 
    protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
          IllegalAccessException
    {
-      this.blobFileOffset = (int) reader.readUnsignedInt();
+      this.blobFileOffset = (int) reader.readUnsignedIntLE();
       this.offset2FileSize = reader.getPos();
-      this.blobFileSize = (int) reader.readUnsignedInt();
+      this.blobFileSize = (int) reader.readUnsignedIntLE();
       reader.memorize();
       reader.moveTo(this.blobFileOffset);
-      reader.bStreamLittleEndian = false;
       this.signature = (EmbeddedSignature) BlobHandler.readBlob(reader);
       reader.moveBack();
-      reader.bStreamLittleEndian = true;
    }
 }

@@ -20,7 +20,6 @@ public class BlobCore
    public byte[] getBytes() throws IOException
    {
       ElephantMemoryWriter writer = new ElephantMemoryWriter();
-      writer.bStreamLittleEndian = false;
       BlobHandler.writeBlob(this, writer);
       return writer.toByteArray();
    }

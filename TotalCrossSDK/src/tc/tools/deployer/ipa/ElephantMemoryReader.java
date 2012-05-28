@@ -8,8 +8,6 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
 {
    Stack positions = new Stack();
 
-   boolean bStreamLittleEndian = true;
-
    public ElephantMemoryReader(byte[] data)
    {
       super(data);
@@ -19,10 +17,14 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
    {
       byte[] b = new byte[4];
       read(b);
-
-      if (bStreamLittleEndian)
-         return ((((long) (b[3] & 0xFF)) << 24) | (((long) (b[2] & 0xFF)) << 16) | ((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
       return ((((long) (b[0] & 0xFF)) << 24) | (((long) (b[1] & 0xFF)) << 16) | ((b[2] & 0xFF) << 8) | (b[3] & 0xFF));
+   }
+
+   public long readUnsignedIntLE() throws IOException
+   {
+      byte[] b = new byte[4];
+      read(b);
+      return ((((long) (b[3] & 0xFF)) << 24) | (((long) (b[2] & 0xFF)) << 16) | ((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
    }
 
    public String readString(int maxLength) throws IOException

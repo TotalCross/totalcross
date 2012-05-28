@@ -34,13 +34,13 @@ public class MachObjectFile
       this.data = data;
       ElephantMemoryReader reader = new ElephantMemoryReader(data);
 
-      this.magic = reader.readUnsignedInt();
-      this.cputype = reader.readUnsignedInt();
-      this.cpusubtype = reader.readUnsignedInt();
-      this.filetype = reader.readUnsignedInt();
-      this.ncmds = reader.readUnsignedInt();
-      this.sizeofcmds = reader.readUnsignedInt();
-      this.flags = reader.readUnsignedInt();
+      this.magic = reader.readUnsignedIntLE();
+      this.cputype = reader.readUnsignedIntLE();
+      this.cpusubtype = reader.readUnsignedIntLE();
+      this.filetype = reader.readUnsignedIntLE();
+      this.ncmds = reader.readUnsignedIntLE();
+      this.sizeofcmds = reader.readUnsignedIntLE();
+      this.flags = reader.readUnsignedIntLE();
       this.commands.clear();
       for (int i = 0; i < ncmds; i++)
       {

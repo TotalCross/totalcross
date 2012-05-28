@@ -10,8 +10,6 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
    public int pos;
    Stack positions = new Stack();
 
-   public boolean bStreamLittleEndian = true;
-
    public ElephantMemoryWriter()
    {
       buffer = new byte[512];
@@ -26,26 +24,27 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
    {
       byte[] b = new byte[4];
       int i = (int) value;
-      if (bStreamLittleEndian)
-      {
-         b[0] = (byte) i;
-         i >>= 8;
-         b[1] = (byte) i;
-         i >>= 8;
-         b[2] = (byte) i;
-         i >>= 8;
-         b[3] = (byte) i;
-      }
-      else
-      {
-         b[3] = (byte) i;
-         i >>= 8;
-         b[2] = (byte) i;
-         i >>= 8;
-         b[1] = (byte) i;
-         i >>= 8;
-         b[0] = (byte) i;
-      }
+      b[3] = (byte) i;
+      i >>= 8;
+      b[2] = (byte) i;
+      i >>= 8;
+      b[1] = (byte) i;
+      i >>= 8;
+      b[0] = (byte) i;
+      this.write(b);
+   }
+
+   public void writeUnsignedIntLE(long value) throws IOException
+   {
+      byte[] b = new byte[4];
+      int i = (int) value;
+      b[0] = (byte) i;
+      i >>= 8;
+      b[1] = (byte) i;
+      i >>= 8;
+      b[2] = (byte) i;
+      i >>= 8;
+      b[3] = (byte) i;
       this.write(b);
    }
 
