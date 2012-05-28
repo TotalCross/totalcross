@@ -21,10 +21,10 @@ public class MailController extends MainWindow
    public void initUI()
    {
       Button b;
-      add(b = new Button("Register & start service"),CENTER,TOP,PARENTSIZE+50,PREFERRED+50);  b.appId = 1;
-      add(b = new Button("Stop service"), CENTER,AFTER+100,PARENTSIZE+50,PREFERRED+50);       b.appId = 2;
-      add(b = new Button("Unregister service"), CENTER,AFTER+100,PARENTSIZE+50,PREFERRED+50); b.appId = 3;
-      add(b = new Button("Exit"), CENTER,BOTTOM,PARENTSIZE+50,PREFERRED+50);                  b.appId = 4;
+      add(b = new Button("Register & start service"),CENTER,TOP,PARENTSIZE+75,PREFERRED+50);  b.appId = 1;
+      add(b = new Button("Stop service"), CENTER,AFTER+100,SAME,SAME);       b.appId = 2;
+      add(b = new Button("Unregister service"), CENTER,AFTER+100,SAME,SAME); b.appId = 3;
+      add(b = new Button("Exit"), CENTER,BOTTOM,SAME,SAME);                  b.appId = 4;
    }
    
    class MailService extends totalcross.Service // must have the same name of the real service
