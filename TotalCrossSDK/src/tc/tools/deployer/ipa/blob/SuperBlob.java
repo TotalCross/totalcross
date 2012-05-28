@@ -45,6 +45,16 @@ public class SuperBlob extends BlobCore
    {
       long count = reader.readUnsignedInt();
       for (long i = 0; i < count; i++)
-         add(BlobIndex.readIndex(reader, offset));
+      {
+         long blobType = reader.readUnsignedInt();
+         long blobOffset = reader.readUnsignedInt();
+
+         reader.memorize();
+         reader.moveTo(offset + blobOffset);
+         BlobCore blob = BlobHandler.readBlob(reader);
+         reader.moveBack();
+
+         add(new BlobIndex(blobType, blob));
+      }
    }
 }

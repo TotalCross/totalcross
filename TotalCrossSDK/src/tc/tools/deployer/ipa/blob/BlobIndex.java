@@ -1,9 +1,5 @@
 package tc.tools.deployer.ipa.blob;
 
-import java.io.IOException;
-import tc.tools.deployer.ipa.ElephantMemoryReader;
-import tc.tools.deployer.ipa.ElephantMemoryWriter;
-
 public class BlobIndex
 {
    public static final int CSSLOT_CODEDIRECTORY = 0;
@@ -19,24 +15,5 @@ public class BlobIndex
    {
       this.blobType = blobType;
       this.blob = blob;
-   }
-
-   static BlobIndex readIndex(ElephantMemoryReader reader, long baseOffset) throws IOException,
-         InstantiationException, IllegalAccessException
-   {
-      long blobType = reader.readUnsignedInt();
-      long offset = reader.readUnsignedInt();
-
-      reader.memorize();
-      reader.moveTo(baseOffset + offset);
-      BlobCore blob = BlobHandler.readBlob(reader);
-      reader.moveBack();
-
-      return new BlobIndex(blobType, blob);
-   }
-
-   static void writeObject(ElephantMemoryWriter writer)
-   {
-
    }
 }
