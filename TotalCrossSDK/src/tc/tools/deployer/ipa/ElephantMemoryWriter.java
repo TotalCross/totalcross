@@ -22,32 +22,6 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       buffer = data;
    }
 
-   public void writeInt(int value) throws IOException
-   {
-      byte[] b = new byte[4];
-      if (bStreamLittleEndian)
-      {
-         b[3] = (byte) value;
-         value >>= 8;
-         b[2] = (byte) value;
-         value >>= 8;
-         b[1] = (byte) value;
-         value >>= 8;
-         b[0] = (byte) value;
-      }
-      else
-      {
-         b[0] = (byte) value;
-         value >>= 8;
-         b[1] = (byte) value;
-         value >>= 8;
-         b[2] = (byte) value;
-         value >>= 8;
-         b[3] = (byte) value;
-      }
-      this.write(b);
-   }
-
    public void writeUnsignedInt(long value) throws IOException
    {
       byte[] b = new byte[4];
