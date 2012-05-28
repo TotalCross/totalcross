@@ -231,9 +231,9 @@ public class Deployer4IPhoneIPA
       
       TVFS.umount(targetZip);      
 
-      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone/" + DeploySettings.appTitle + ".ipa")));
+      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone2+/" + DeploySettings.appTitle + ".ipa")));
       
-      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone/"));
+      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone2+/"));
    }
    
    private void addMetadata(TFile targetZip) throws Exception
