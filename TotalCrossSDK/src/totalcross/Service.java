@@ -14,6 +14,7 @@ public abstract class Service implements MainClass
    {
       serviceName = getClass().getName().replace('.','/');
       serviceName = serviceName.substring(serviceName.lastIndexOf('/')+1);
+      serviceName = serviceName.substring(serviceName.lastIndexOf('$')+1);
    }
 
    protected abstract void onStart();
@@ -51,7 +52,9 @@ public abstract class Service implements MainClass
 
    public void launchService()
    {
-      Vm.exec("\\"+serviceName+"\\"+serviceName+".exe",null,0,false);
+      String path = "\\"+serviceName+"\\"+serviceName+".exe";
+      Vm.alert(path);
+      Vm.exec(path,null,0,false);
    }
    
    public void start() throws Exception
