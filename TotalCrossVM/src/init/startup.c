@@ -412,7 +412,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    if (!tczLoad(currentContext, tcbase))
    {
-      alert("TCBase not found or corrupted");
+      alert("TCBase not found or corrupted. Please reinstall TotalCross");
       return 101;
    }
    initException(); // load exceptions
