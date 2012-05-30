@@ -354,10 +354,10 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void reposition()
    {
-      int curPage = flick.pagepos != null ? flick.pagepos.getPosition() : 0;
+      int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
-      if (flick.scrollDistance != 0)
+      if (flick != null && flick.scrollDistance != 0)
          flick.setScrollDistance(getScrollDistance());
       if (curPage != 0)
          scrollToPage(curPage);
@@ -466,8 +466,8 @@ public class ScrollContainer extends Container implements Scrollable
     */
    public void scrollToPage(int p)
    {
-      int pageH = flick.scrollDistance != 0 ? flick.scrollDistance : this.height;
-         int val = (p-1) * pageH;
+      int pageH = flick != null && flick.scrollDistance != 0 ? flick.scrollDistance : this.height;
+      int val = (p-1) * pageH;
       if (sbH != null)
       {
          lastH = sbH.value;
@@ -492,7 +492,7 @@ public class ScrollContainer extends Container implements Scrollable
             bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
          }
       }
-      if (flick.pagepos != null)
+      if (flick != null && flick.pagepos != null)
          flick.pagepos.setPosition(p);
    }
 
