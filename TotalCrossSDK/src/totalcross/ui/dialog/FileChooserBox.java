@@ -196,7 +196,15 @@ public class FileChooserBox extends Window
       tree.setBackColor(c);
       tree.setCursorColor(c);
       if (initialPath != null)
-         select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(initialPath),'/'), 0);
+         try
+         {
+            mountTree(initialPath,1);
+         }
+         catch (IOException e)
+         {
+            e.printStackTrace();
+         }
+         //select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(initialPath),'/'), 0);
       tree.requestFocus();
 	}
    
@@ -353,11 +361,11 @@ public class FileChooserBox extends Window
                   if (e.target == btRefresh)
                   {
                      String selectedItem = (String) cbRoot.getSelectedItem();
-                     if (selectedItem != null)
+                     if (selectedItem != null || initialPath != null)
                      {
-                        mountTree(selectedItem, 0);
-                        tree.setModel(tmodel);
-                        tree.reload();
+                        mountTree(initialPath != null ? initialPath : selectedItem, 1);
+                        //tree.setModel(tmodel);
+                        //tree.reload();
                      }
                   }
                }

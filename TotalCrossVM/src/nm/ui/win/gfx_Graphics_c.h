@@ -139,6 +139,27 @@ bool graphicsStartup(ScreenSurface screen)
    return true;
 }
 
+struct
+{
+   BITMAPINFO bi;
+	RGBQUAD	 bmiColors[256];
+} dibInfo;
+struct
+{
+   LOGPALETTE lp;
+   PALETTEENTRY pe[256];
+} curPal;
+HPALETTE hPalette;
+
+void applyPalette()
+{
+   if (SCREEN_EX(&screen) != null)
+   {
+      SelectPalette(SCREEN_EX(&screen)->dc, hPalette, 0);
+      RealizePalette(SCREEN_EX(&screen)->dc);
+   }
+}
+
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
 	struct
