@@ -153,8 +153,11 @@ HPALETTE hPalette;
 
 void applyPalette()
 {
-   SelectPalette(SCREEN_EX(&screen)->dc, hPalette, 0);
-   RealizePalette(SCREEN_EX(&screen)->dc);
+   if (SCREEN_EX(&screen) != null)
+   {
+      SelectPalette(SCREEN_EX(&screen)->dc, hPalette, 0);
+      RealizePalette(SCREEN_EX(&screen)->dc);
+   }
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
