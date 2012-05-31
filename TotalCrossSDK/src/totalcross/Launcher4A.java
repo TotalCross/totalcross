@@ -307,13 +307,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
+      outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
+
       return new BaseInputConnection(this, false)
       {
          public boolean deleteSurroundingText(int leftLength, int rightLength)
          {
             if (rightLength > 0 && leftLength == 0) // do not handle right deletions
                return true;
-            
+            for (int i = 0; i < leftLength; i++)
+               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, 67));
+
             while (leftLength-- >= 0)
             {
                if (!sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)))
@@ -321,7 +326,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                if (!sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL)))
                   return false;
             }
-            
+
             return true;
          }
       };
