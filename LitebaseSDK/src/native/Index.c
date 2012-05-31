@@ -1274,52 +1274,6 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
    return true;
 }
 
-/**
- * Reads from the selected record from the table and writes the necessary fields in the temporary table.
- * 
- * @param context The thread context where the function is being executed.
- * @param origTable The table where data is read from.
- * @param pos The position of the selected record.
- * @param tempTable The temporary table for the result set.
- * @param record A record for writing in the temporary table.
- * @param columnIndexes Has the indices of the tables for each resulting column.
- * @param clause The select clause of the query.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes) 
-                                                                                   
-{
-   TRACE("writeSortRecord")
-   PlainDB* plainDB = &origTable->db;
-   int16* offsets = origTable->columnOffsets;
-   int8* types = origTable->columnTypes;
-   uint8* origNulls = origTable->columnNulls;
-   uint8* tempNulls = tempTable->columnNulls;
-   uint8* basbuf = plainDB->basbuf;
-   uint8* buffer = basbuf + offsets[origTable->columnCount];
-   
-   int32 i = tempTable->columnCount,
-             colIndex,
-         bytes = NUMBEROFBYTES(origTable->columnCount);
-   bool isNull;
-   
-   if (!plainRead(context, &origTable->db, pos)) // Reads the record.
-      return false;
-   xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
-   
-   while (--i >= 0) // Reads the fields for the temporary table.
-   {
-      colIndex = columnIndexes[i];
-      if (!(isNull = isBitSet(origNulls, colIndex)) 
-       && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
-         return false; 
-      setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
-   } 
-   if (!writeRSRecord(context, tempTable, record)) // Writes the temporary table record.
-      return false;
-   return true;
-}
-
 #ifdef ENABLE_TEST_SUITE
 
 /**
