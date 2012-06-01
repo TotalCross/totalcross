@@ -8,7 +8,7 @@ import android.os.*;
 
 // http://marakana.com/forums/android/examples/108.html
 
-public class TCService extends Service
+public class TCService extends android.app.Service
 {
 /*   static final int DELAY = 30000; // 1/2 a min
    VmRunnable vmRunnable;

@@ -1,10 +1,9 @@
 package tc.samples.service.model;
 
-import totalcross.*;
 import totalcross.io.*;
 import totalcross.sys.*;
 
-public class MailService extends Service
+public class MailService extends totalcross.Service
 {
    private String inFolder;
 

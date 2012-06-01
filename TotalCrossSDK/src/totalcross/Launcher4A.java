@@ -140,6 +140,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       lastOrientation = getOrientation();
       
+      try
+      {
+         java.io.FileInputStream fis = new java.io.FileInputStream("/mnt/extSdCard/GettingStarted-BombTechs.pdf");
+         fis.close();
+         AndroidUtils.debug("abriu!!!!");
+/*      java.io.File f = context.getExternalFilesDir(null);
+      f.mkdirs();
+      java.io.FileOutputStream fos = new java.io.FileOutputStream(new java.io.File(f,"teste.txt"));
+      fos.close();
+      AndroidUtils.debug("getExternalFilesDir(): "+f);
+*/      } catch (Exception e) {AndroidUtils.handleException(e,false);}
+      
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
