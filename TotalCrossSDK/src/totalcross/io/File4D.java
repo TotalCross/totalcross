@@ -77,7 +77,7 @@ public class File4D extends RandomAccessStream
          slot = 1;
       }
       else 
-      if (isAndroid && !path.startsWith("/sdcard") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
+      if (isAndroid && !path.startsWith("/sdcard") && !path.startsWith("/mnt") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
          path = Settings.appPath+"/"+path;
       
       this.path = path;
