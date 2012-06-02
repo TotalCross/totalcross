@@ -23,7 +23,7 @@ extern "C" {
 
 void privateFullscreen             (bool on);
 void privateScreenChange           (int32 w, int32 h);
-bool graphicsStartup               (ScreenSurface screen);
+bool graphicsStartup               (ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface   (ScreenSurface screen);
 void graphicsUpdateScreen          (ScreenSurface screen, int32 transitionEffect);
 void graphicsDestroy               (ScreenSurface screen, bool isScreenChange);

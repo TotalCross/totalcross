@@ -54,7 +54,7 @@ import totalcross.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
-public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseMotionListener
+public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseMotionListener, ComponentListener
 {
    public static Launcher instance;
    public static boolean isApplication;
@@ -242,25 +242,27 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       public LauncherFrame()
       {
          setBackground(new java.awt.Color(getScreenColor(mainWindow.getBackColor())));
-         setResizable(false); // guich@570_54
+         setResizable(Settings.resizableWindow); // guich@570_54
          setLayout(null);
          add(instance);
          addNotify(); // without this, the insets will not be correctly set.
          insets = getInsets();
          if (insets == null)
             insets = new Insets(0,0,0,0);
-         setFrameSize(toWidth, toHeight);
+         setFrameSize(toWidth, toHeight, true);
          setLocation(toX,toY);
          super.setTitle(frameTitle != null ? frameTitle : mainWindow.getClass().getName());
          setVisible(true);
          addWindowListener(instance);
+         addComponentListener(instance);
       }
 
       public void update(java.awt.Graphics g) {}
 
-      public void setFrameSize(int toWidth, int toHeight)
+      public void setFrameSize(int toWidth, int toHeight, boolean set)
       {
-         setSize((int)(toWidth*toScale) + insets.left + insets.right, (int)(toHeight*toScale )+ insets.top + insets.bottom);
+         if (set)
+            setSize((int)(toWidth*toScale) + insets.left + insets.right, (int)(toHeight*toScale )+ insets.top + insets.bottom);
          instance.setBounds(insets.left,insets.top,(int)(toWidth*toScale), (int)(toHeight*toScale));
       }
    };
@@ -780,13 +782,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
-                  int w = Settings.screenWidth;
-                  int h = Settings.screenHeight;
-                  Settings.screenWidth = h;
-                  Settings.screenHeight = w;
-                  frame.setFrameSize(h,w);
-                  screenMis = null; // force the creation of a new screen image
-                  key = SpecialKeys.SCREEN_CHANGE;
+                  screenResized(Settings.screenHeight,Settings.screenWidth,true);
+                  key = 0;
                }
                break;
             default: key = 0; break;
@@ -801,6 +798,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             new Thread() {public void run() {Vm.alert(msg);}}.start(); // must place this in a separate thread, or the vm dies
          }
       }
+   }
+   
+   private void screenResized(int w, int h, boolean setframe)
+   {
+      if (screenMis == null) return;
+      Settings.screenWidth = w;
+      Settings.screenHeight = h;
+      frame.setFrameSize(w,h,setframe);
+      screenMis = null; // force the creation of a new screen image
+      eventThread.pushEvent(KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.SCREEN_CHANGE, 0, 0, modifiers, Vm.getTimeStamp());
    }
 
    public void transferFocus() // guich@512_1: handle the tab key.
@@ -2216,8 +2223,25 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    public void setSIP(int option, Control edit, boolean secret)
    {
    }
-
    public static void checkLitebaseAllowed()
    {
+   }
+   public void componentHidden(ComponentEvent arg0)
+   {
+   }
+   public void componentMoved(ComponentEvent arg0)
+   {
+   }
+
+   public void componentShown(ComponentEvent arg0)
+   {
+   }   public void componentResized(ComponentEvent ev)
+   {
+      int w = frame.getWidth()-frame.insets.left-frame.insets.right;
+      int h = frame.getHeight()-frame.insets.top-frame.insets.bottom;
+      if (w < toWidth || h < toHeight)
+         screenResized(toWidth,toHeight,true);
+      else
+         screenResized(w,h,false);
    }
 }

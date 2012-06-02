@@ -20,7 +20,7 @@
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
 
-bool graphicsStartup(ScreenSurface screen);
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect);
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
@@ -2799,9 +2799,9 @@ static void drawCylindricShade(Object g, int32 startColor, int32 endColor, int32
 }
 
 /////////////// Start of Device-dependant functions ///////////////
-static bool startupGraphics() // there are no threads running at this point
+static bool startupGraphics(int16 appTczAttr) // there are no threads running at this point
 {
-   return graphicsStartup(&screen);
+   return graphicsStartup(&screen, appTczAttr);
 }
 
 #ifdef darwin

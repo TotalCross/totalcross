@@ -24,6 +24,7 @@
 #define ATTR_HAS_MAINWINDOW 2
 #define ATTR_LIBRARY 4
 #define ATTR_NEW_FONT_SET 8
+#define ATTR_RESIZABLE_WINDOW 16
 
 typedef struct TTCZFile TTCZFile;
 typedef TTCZFile* TCZFile;

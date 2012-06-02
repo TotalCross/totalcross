@@ -19,7 +19,7 @@ void privateScreenChange(int32 w, int32 h)
    UNUSED(h)
 }
 
-bool graphicsStartup(ScreenSurface screen)
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    DFBResult err;
    IDirectFB *_dfb;

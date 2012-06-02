@@ -751,6 +751,11 @@ public final class Settings
     */
    public static boolean sendPressEventOnChange;
    
+   /** Set to true to make the program's window resizable in Windows and desktop.
+    * @since TotalCross 1.53
+    */
+   public static boolean resizableWindow;
+   
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()
    {
