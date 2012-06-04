@@ -130,7 +130,7 @@ public class PopupMenu extends Window
          layout.controlGap = 50; // 50% of font's height
          layout.centerVertically = true;
          layout.setup();
-         int cw = getClientRect().width - ball.getWidth()-fmH;
+         int cw=-1;
          
          containers = new ListContainer.Item[itemCount];
          
@@ -154,6 +154,8 @@ public class PopupMenu extends Window
                   htSearchKeys.put(Convert.toUpperCase(cc), i);
                }
             }
+            if (cw == -1)
+               cw = getClientRect().width - Math.abs(c.getLeftControlX()) - Math.abs(c.getRightControlX());
             if (fm.stringWidth(s) <= cw)
                c.items = new String[]{"",s,""};
             else
