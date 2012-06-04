@@ -1,40 +1,42 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 
 public class MachLoadCommandSegment extends MachLoadCommand
 {
-   public long FileOffset;
-   public long FileSize;
-   public long Flags;
-   public long InitProt;
-   public long MaxProt;
-   public String SegmentName;
-   public long VirtualAddress;
-   public long VirtualSize;
+   public String segname;
+   public long vmaddr;
+   public long vmsize;
+   public long fileoff;
+   public long filesize;
+   public long maxprot;
+   public long initprot;
+   public long nsects;
+   public long flags;
 
-   public void PatchFileLength(ElephantMemoryWriter writer, long NewLength) throws IOException
+   private int offset2FileSize;
+
+   void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
    {
-      this.FileSize = NewLength;
-      long newOffset = super.StartingLoadOffset + 8L;
-      newOffset += 0x10L;
-      newOffset += 12L;
+      this.filesize = filesize;
       writer.memorize();
-      writer.moveTo((int) newOffset);
-      writer.writeUnsignedInt(this.FileSize);
+      writer.moveTo(offset2FileSize);
+      writer.writeUnsignedIntLE(this.filesize);
       writer.moveBack();
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
+   protected void parseFromStream(ElephantMemoryReader reader) throws IOException
    {
-      this.SegmentName = reader.readString(16);
-      this.VirtualAddress = reader.readUnsignedInt();
-      this.VirtualSize = reader.readUnsignedInt();
-      this.FileOffset = reader.readUnsignedInt();
-      this.FileSize = reader.readUnsignedInt();
-      this.MaxProt = reader.readUnsignedInt();
-      this.InitProt = reader.readUnsignedInt();
-      long num = reader.readUnsignedInt();
-      this.Flags = reader.readUnsignedInt();
-      reader.moveTo(reader.getPos() + (num * 68));
+      this.segname = reader.readString(16);
+      this.vmaddr = reader.readUnsignedIntLE();
+      this.vmsize = reader.readUnsignedIntLE();
+      this.fileoff = reader.readUnsignedIntLE();
+      this.offset2FileSize = reader.getPos();
+      this.filesize = reader.readUnsignedIntLE();
+      this.maxprot = reader.readUnsignedIntLE();
+      this.initprot = reader.readUnsignedIntLE();
+      this.nsects = reader.readUnsignedIntLE();
+      this.flags = reader.readUnsignedIntLE();
+      reader.moveTo(reader.getPos() + (nsects * 68));
    }
 }

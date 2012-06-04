@@ -40,7 +40,7 @@ Err loadNetLib()
    return err;
 }
 
-static Err socketCreate(SOCKET* socketHandle, CharP host, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost)
+static Err socketCreate(SOCKET* socketHandle, CharP host, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
    Err err = errNone;
    NetSocketRef sRef = 0;
@@ -91,6 +91,8 @@ static Err socketCreate(SOCKET* socketHandle, CharP host, int32 port, int32 time
    if (sRef != 0 && err == errNone) // socket opened and connected
       *socketHandle = sRef;
 
+   if (err == netErrTimeout)
+      *timedOut = true;
    return err;
 }
 
