@@ -33,10 +33,24 @@ public class NativeMethodsPrototypeGenerator
          else
          {
             Vector v = new Vector(100);
-            readFile(v, new FileInputStream(argv[0]));
+            if (argv[0].equals("makeNativeHT"))
+            {
+               Vector v2 = new Vector(100);
+               for (int i = 2 ; i < argv.length ; i++)
+               {
+                  readFile(v2, new FileInputStream(argv[i]));
+                  v.addAll(v2);
+               }
+               makeNativeHT = true;
+               nativeHTPath = argv[1];
+            }
+            else
+            {
+               readFile(v, new FileInputStream(argv[0]));
+               makeTestCases = argv.length >= 2 && (Boolean.valueOf(argv[1]).booleanValue() || argv[1].equalsIgnoreCase("yes"));
+            }
             int n = v.size();
             if (n == 0) throw new Exception(argv[0]+" is an empty file");
-            makeTestCases = argv.length == 2;
 
             for (int i =0; i < n; i++)
             {
@@ -68,6 +82,7 @@ public class NativeMethodsPrototypeGenerator
    private static Hashtable htNames = new Hashtable(1023);
    private static int errorCount;
    private static boolean makeTestCases;
+   private static String nativeHTPath;
 
    //////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////
@@ -331,21 +346,42 @@ public class NativeMethodsPrototypeGenerator
          System.out.println("\nClasses that are not part of the method description must be preceded with the full name (package + classname)");
       else
       {
-         // prototype headers
-         for (int i =0; i < prototypesH.size(); i++)
-            println(prototypesH.elementAt(i).toString());
-         println(CRLF+CRLF);
+            FileWriter fw = new FileWriter(new File(nativeHTPath, "nativeHT.c"));
+            fw.write("#include \"tcvm.h\"\n");
+            fw.write("#include \"NativeMethods.h\"\n");
+            fw.write("#include \"utils.h\"\n\n");
+            fw.write("Hashtable htNativeFuncs;\n\n");
 
-         // prototype bodies
-         for (int i =0; i < prototypes.size(); i++)
-            println(prototypes.elementAt(i).toString());
+            fw.write("void destroyNativeHT()\n{\n");
+            fw.write("   htFree(&htNativeFuncs,null);\n}\n\n");
 
-         if (makeTestCases)
-            for (int i =0; i < testcases.size(); i++)
-               println(testcases.elementAt(i).toString());
+            fw.write("void initNativeHT()\n{\n");
+            fw.write("   htNativeFuncs = htNew(" + iosarray.size() + ", null);\n");
+            for (int i = 0; i < iosarray.size(); i++)
+               fw.write("   " + iosarray.elementAt(i).toString());
+            fw.write("}\n");
 
-         if (fos != null) fos.close();
-         System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+            fw.close();
+         }
+         else
+         {
+            // prototype headers
+            for (int i = 0; i < prototypesH.size(); i++)
+               println(prototypesH.elementAt(i).toString());
+            println(CRLF + CRLF);
+
+            // prototype bodies
+            for (int i = 0; i < prototypes.size(); i++)
+               println(prototypes.elementAt(i).toString());
+
+            if (makeTestCases)
+               for (int i = 0; i < testcases.size(); i++)
+                  println(testcases.elementAt(i).toString());
+
+            if (fos != null)
+               fos.close();
+            System.out.println("\n\noutput sent to "+System.getProperty("user.dir")+System.getProperty("file.separator")+"NativeMethodsPrototypes.txt");
+         }
       }
       System.exit(0);
    }
