@@ -23,11 +23,11 @@ static void registerWake(bool set)
 
 #if defined (darwin)
 void setFullScreen();
-void privateGetWorkingDir(CharP vmPath);
+void privateGetWorkingDir(CharP vmPath, CharP appPath);
 
 static void getWorkingDir()
 {
-   privateGetWorkingDir(vmPath);
+   privateGetWorkingDir(vmPath, appPath);
 }
 
 #else
