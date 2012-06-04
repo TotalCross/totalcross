@@ -13,14 +13,13 @@
 
 #include "tcvm.h"
 #include "tcz.h"
+#include "nativeProcAddressesTC.h"
 
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
  #include "win/startup_c.h"
 #elif defined(PALMOS)
  #include "palm/startup_c.h"
-#elif defined(darwin)
- #include "darwin/startup_c.h"
 #elif defined(ANDROID)
  #include "android/startup_c.h"
 #else
@@ -69,6 +68,7 @@ static Context initAll(CharP* args)
    ok = ok && initDebug();
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
+   initNativeProcAddresses();
    if (ok) registerWake(true);
    return ok ? c : null;
 }
@@ -90,6 +90,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    if (tcSettings.showMemoryMessagesAtExit != NULL)
       showMemoryMessagesAtExit = *tcSettings.showMemoryMessagesAtExit; // guich@tc114: save in a global var, since tcSettings will no longer be available
    destroyObjectMemoryManager(); // must be before ClassInfo destroy
+   destroyNativeProcAddresses();
    destroyClassInfo();
    xmemzero(&tcSettings, sizeof(tcSettings));
    destroyTCZ();
@@ -206,7 +207,7 @@ bool canLoadLitebase()
 
 TC_API int32 startProgram(Context currentContext)
 {
-   Class c;
+   TCClass c;
 #if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
    Object rasClientInstance;
    Method m;

@@ -37,6 +37,7 @@
 <property name="fonts"                  value="${etc}/fonts"/>
 <property name="tools"                  value="${etc}/tools"/>
 <property name="output"                 value="${sdk.root}/../../temp"/>
+<property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 
 <!-- defined alxjoin task -->	
@@ -564,7 +565,6 @@ target: blackberry_sdk
     </classpath>
     <arg value="${output}/TotalCross.jar" />
     <arg line="/n TotalCross" />
-    <arg line="/s superwaba" />
     <arg line="${tcdeploy_line}" />
     <arg line="/a TCvm"/>
     <arg value="-bb" />
@@ -746,6 +746,22 @@ target: blackberry_sdk
   
 </target>
 
+<target name="bb-codesign" description="Signs all the cods in the output path">
+   <retry retrycount="3">
+      <sequential>
+         <var name="signaturetool.output" unset="true"/>
+         <java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
+            <arg line="-a -c -C -p superwaba -r ${target}" />
+         </java>
+         <fail>
+            <condition>
+               <not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
+            </condition>
+         </fail>
+      </sequential>
+   </retry>
+</target>
+
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: conduit
 
@@ -823,20 +839,6 @@ target: samples
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant>
 
-	<retry retrycount="3">
-		<sequential>
-			<var name="signaturetool.output" unset="true"/>
-			<java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
-				<arg line="-a -c -C -p superwaba -r ${dist}/samples" />
-			</java>
-			<fail>
-				<condition>
-					<not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
-				</condition>
-			</fail>
-		</sequential>
-	</retry>
-	
    <exec executable="regedit.exe" failonerror="no" osfamily="windows">
       <arg line="/s savedmounts.reg" />
    </exec>
