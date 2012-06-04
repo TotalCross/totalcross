@@ -13,7 +13,7 @@
 
 #include "tcvm.h"
 
-TC_API Method getMethod(Class c, bool searchSuperclasses, CharP methodName, int32 nparams, ...) // not used internally
+TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, int32 nparams, ...) // not used internally
 {
    int32 i,j;
    va_list params;

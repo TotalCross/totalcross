@@ -69,7 +69,7 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
       throwException(p->currentContext, ArrayStoreException, "srcArray and dstArray are not compatible");
    else
    {
-      Class c = OBJ_CLASS(srcArray);
+      TCClass c = OBJ_CLASS(srcArray);
       length <<= c->flags.bits2shift; // convert array units into byte units
       dstStart <<= c->flags.bits2shift;
       srcStart <<= c->flags.bits2shift;

@@ -25,7 +25,7 @@ void executeThreadRun(Context context, Object thread);
 
 void executeThreadRun(Context context, Object thread)
 {
-   Class c = OBJ_CLASS(thread);
+   TCClass c = OBJ_CLASS(thread);
    Method run = getMethod(c, true, "run", 0);
    if (run != null)
    {

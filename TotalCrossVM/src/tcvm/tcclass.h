@@ -120,10 +120,10 @@ typedef TMethod* Method;
 typedef TMethod* MethodArray;
 typedef Method* MethodPtrArray;
 
-typedef struct TClass TClass;
-typedef TClass* Class;
-typedef Class* ClassArray;
-typedef Class* ClassPtrArray;
+typedef struct TTCClass TTCClass;
+typedef TTCClass* TCClass;
+typedef TCClass* TCClassArray;
+typedef TCClass* TCClassPtrArray;
 
 typedef struct TException TException;
 typedef TException* Exception;
@@ -372,7 +372,7 @@ typedef void (*NativeMethod) (NMParams p);
 /** Used to find the method reference on a virtual method call. */
 typedef struct METHOD_AND_CLASS // guich@tc110_67: create a linked list of bound methods
 {
-   Class c; // in
+   TCClass c; // in
    Method m; // out
    struct METHOD_AND_CLASS* next;
 } TMethodAndClass, *MethodAndClass;
@@ -453,7 +453,7 @@ struct TException
 #define FIELD_DBL(o,c,idx) (((double*)(FIELD_V64_OFFSET(o,c)))[idx])
 
 /** This structure represents a Java class. */
-struct TClass
+struct TTCClass
 {
    // The offsets to the object where each instance field type starts in an Object
    uint16 objOfs, v64Ofs; // there's no i32Ofs because int32's offset is always 0
@@ -482,9 +482,9 @@ struct TClass
    // The methods declared in this class
    MethodArray methods;
    // The interfaces that this class implements
-   ClassArray interfaces;
+   TCClassArray interfaces;
    // The superclass of this class. The only class that has a null superClass is java.lang.Object
-   Class superClass;
+   TCClass superClass;
    // The original source code for each line of this class
    CharPArray lines;
    Heap heap;
@@ -506,7 +506,7 @@ struct TMethod
    // an array of instructions.
    Code code;
    // The class to whom this method belongs to
-   Class class_;
+   TCClass class_;
    // Signature of this method, containing indexes to the CP: name, number of parameters, and the parameters
    CharP name;
    uint16 paramCount;
@@ -586,8 +586,8 @@ struct TField
 /// Returns the index of a given identifier in the constant pool
 int32 getIndexInCP(ConstantPool cp, CharP s);
 /// Loads the given class name, throwing a ClassNotFoundException if desired.
-TC_API Class loadClass(Context currentContext, CharP className, bool throwClassNotFound);
-typedef Class (*loadClassFunc)(Context currentContext, CharP className, bool throwClassNotFound);
+TC_API TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFound);
+typedef TCClass (*loadClassFunc)(Context currentContext, CharP className, bool throwClassNotFound);
 
 bool initClassInfo();
 void destroyClassInfo();
@@ -595,11 +595,11 @@ void destroyClassInfo();
 /// Determines the possible results for the areClassesCompatible function.
 typedef enum { NOT_COMPATIBLE, COMPATIBLE, TARGET_CLASS_NOT_FOUND} CompatibilityResult;
 /// Check if the class c is a compatible instance of the given class name.
-TC_API CompatibilityResult areClassesCompatible(Context currentContext, Class c, CharP className);
-typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, Class c, CharP className);
+TC_API CompatibilityResult areClassesCompatible(Context currentContext, TCClass c, CharP className);
+typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, TCClass c, CharP className);
 
 /// Checks if the methods have the same parameters
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
 
-#define CLASS_OUT_OF_MEMORY ((Class)-1)
+#define CLASS_OUT_OF_MEMORY ((TCClass)-1)
 #endif

@@ -63,7 +63,7 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
       {
-         zstreamRef->rwMethod  = getMethod((Class) OBJ_CLASS(stream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+         zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
          p->retO = zstreamRefObj;
       }
    }   
@@ -89,7 +89,7 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
       {
-         zstreamRef->rwMethod  = getMethod((Class) OBJ_CLASS(stream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+         zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
          p->retO = zstreamRefObj;
       }
    }

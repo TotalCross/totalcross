@@ -319,7 +319,7 @@ TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native 
       initialize();
    if ((XmlTokenizer_bag(xml) = createByteArray(p->currentContext, sizeof(TBoundMethods))) != null)
    {
-      Class c = OBJ_CLASS(xml);
+      TCClass c = OBJ_CLASS(xml);
       BoundMethods b = getBoundMethods(xml);
       b->foundStartTagName = getMethod(c, true, "foundStartTagName", 3, BYTE_ARRAY, J_INT, J_INT);
       b->foundEndTagName = getMethod(c, true, "foundEndTagName", 3, BYTE_ARRAY, J_INT, J_INT);

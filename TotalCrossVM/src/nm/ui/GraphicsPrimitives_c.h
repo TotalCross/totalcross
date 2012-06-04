@@ -1940,7 +1940,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 {
    int32 y, screenW, screenH, shiftY=0, shiftH=0;
    uint32 count;
-   Class window;
+   TCClass window;
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
 
