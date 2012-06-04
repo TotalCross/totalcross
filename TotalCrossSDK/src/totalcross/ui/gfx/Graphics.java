@@ -3274,8 +3274,15 @@ public final class Graphics
     * </pre>
     * @since TotalCross 1.53
     */ 
-   public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY)
+   public void drawCylindricShade(int startColor, int endColor, int x, int y, int w, int h)
    {
+      if (!translateAndClip(x, y, w, h))
+         return;
+      int[] results = translateAndClipResults;
+      int startX = results[0];
+      int startY = results[1];
+      int endX = startX+results[2];
+      int endY = startY+results[3];
       int numSteps = Math.max(1,Math.min((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
       int startRed = (startColor >> 16) & 0xFF;
       int startGreen = (startColor >> 8) & 0xFF;
@@ -3308,15 +3315,23 @@ public final class Graphics
          sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
       }
-      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY, -1);
    }
 
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
-    * @since TotalCross 1.3
+    * @param ignoreColor Pass a color that should not be changed, like the transparent color of an Image, or -1 to dither all colors
+    * @since TotalCross 1.53
     */
-   public void dither(int x, int y, int w, int h)
+   public void dither(int x, int y, int w, int h, int ignoreColor)
    {
+      if (!translateAndClip(x, y, w, h))
+         return;
+      int[] results = translateAndClipResults;
+      x = results[0];
+      y = results[1];
+      w = results[2];
+      h = results[3];
       // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
       int[] pixels = (int[])getSurfacePixels(surface);
       int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
@@ -3324,7 +3339,7 @@ public final class Graphics
          for (int xx=x; xx < w; xx++)
          {
             p = pixels[yy*w+xx];
-            //if (p == transparentColor) continue;
+            if (p == ignoreColor) continue;
             // get current pixel values
             oldR = (p>>16) & 0xFF;
             oldG = (p>>8) & 0xFF;
@@ -3345,6 +3360,7 @@ public final class Graphics
             addError(pixels, xx,yy+1  ,w,h, errR,errG,errB,5,16);
             addError(pixels, xx+1,yy+1,w,h, errR,errG,errB,1,16);
          }
+      if (isControlSurface) needsUpdate = true;
    }
 
    private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
