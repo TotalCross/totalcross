@@ -7,7 +7,7 @@ ARCHS = armv7 armv6
 
 libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork
 
-libtcvm_CFLAGS = -std=gnu99 -fms-extensions -O3 -fomit-frame-pointer -Dlinux -pthread -DPOSIX -Ddarwin -Ddarwin9 -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/axtls -I${sourcedir}/event
+libtcvm_CFLAGS = -std=gnu99 -fms-extensions -O3 -fomit-frame-pointer -DTHEOS -Dlinux -pthread -DPOSIX -Ddarwin -Ddarwin9 -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/axtls -I${sourcedir}/event
 
 ifeq ($(type), demo)
 	libtcvm_CFLAGS += -DENABLE_DEMO
