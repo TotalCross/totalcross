@@ -167,11 +167,6 @@ void applyPalette()
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-	struct
-   {
-      BITMAPINFO bi;
-	   RGBQUAD	 bmiColors[256];
-   } dibInfo;
    uint32 *ptr;
 
    screen->pitch = screen->screenW * screen->bpp / 8;
@@ -199,12 +194,6 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    else
    if (screen->bpp == 8) // apply our 485 palette to the screen
    {
-      struct
-      {
-         LOGPALETTE lp;
-         PALETTEENTRY pe[256];
-      } curPal;
-      HPALETTE hPalette;
       // create the custom 685 palette
       dibInfo.bi.bmiHeader.biClrUsed = dibInfo.bi.bmiHeader.biClrImportant = 256;
       fillWith8bppPalette(ptr);
