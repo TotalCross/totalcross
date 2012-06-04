@@ -82,6 +82,10 @@ public class DeploySettings
 
    public static String installPlatforms = "";
 
+   // iOS IPA required files
+   public static java.io.File mobileProvision;
+   public static java.io.File appleCertStore;
+
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
    {
