@@ -504,7 +504,7 @@ void privateScreenChange(int32 w, int32 h)
    unlockDeviceCtx();
 }
 
-bool graphicsStartup(ScreenSurface screen)
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    lockDeviceCtx("graphicsStartup");
 

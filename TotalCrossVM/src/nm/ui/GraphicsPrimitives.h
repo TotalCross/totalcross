@@ -62,7 +62,7 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    bool fullDirty;
    int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
    uint32 bpp;
-   int32 screenX, screenY, screenW, screenH;
+   int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
    int32 hRes, vRes;
    void *extension; // platform specific data
    int32 shiftY;

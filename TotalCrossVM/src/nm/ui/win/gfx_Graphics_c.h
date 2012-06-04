@@ -9,13 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 void privateScreenChange(int32 w, int32 h)
 {
 #ifndef WINCE // windows ce already does this for us
-   w += GetSystemMetrics(SM_CXFIXEDFRAME)*2;
-   h += GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)*2;
+   int32 border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
+   w += border*2;
+   h += GetSystemMetrics(SM_CYCAPTION) + border*2;
    MoveWindow(mainHWnd, 0, 0, w, h, TRUE);
 #endif
 }
@@ -64,7 +63,7 @@ void getScreenSize(int32 *w, int32* h)
 extern int32 defScrX,defScrY,defScrW,defScrH;
 #endif
 
-bool graphicsStartup(ScreenSurface screen)
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    DWORD style;
    int32 width, height;
@@ -73,6 +72,10 @@ bool graphicsStartup(ScreenSurface screen)
    HANDLE instance = GetModuleHandle(0);
    char* dot;
    HDC deviceContext;
+   bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
+#ifndef WINCE
+   int32 border;
+#endif
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -95,10 +98,12 @@ bool graphicsStartup(ScreenSurface screen)
 
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
-   rect.bottom = height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)*2;
-   rect.right = width  + GetSystemMetrics(SM_CXFIXEDFRAME)*2;
+   border = GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
+   rect.bottom = height + GetSystemMetrics(SM_CYCAPTION) + border*2;
+   rect.right = width  + border*2;
 
    style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+   if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
 #else
    SystemParametersInfo(SPI_GETWORKAREA, 0, &defaultWorkingArea, 0);
    deviceContext = GetDC(mainHWnd);
@@ -125,8 +130,8 @@ bool graphicsStartup(ScreenSurface screen)
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
    screen->screenX = rect.left;
-   screen->screenW = width;
-   screen->screenH = height;
+   screen->minScreenW = screen->screenW = width;
+   screen->minScreenH = screen->screenH = height;
    screen->hRes = GetDeviceCaps(deviceContext, LOGPIXELSX);
    screen->vRes = GetDeviceCaps(deviceContext, LOGPIXELSY);
 

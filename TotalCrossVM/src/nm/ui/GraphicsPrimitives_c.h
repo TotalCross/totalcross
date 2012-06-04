@@ -20,7 +20,7 @@
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
 
-bool graphicsStartup(ScreenSurface screen);
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect);
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
@@ -2702,9 +2702,9 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
 }
 
 /////////////// Start of Device-dependant functions ///////////////
-static bool startupGraphics() // there are no threads running at this point
+static bool startupGraphics(int16 appTczAttr) // there are no threads running at this point
 {
-   return graphicsStartup(&screen);
+   return graphicsStartup(&screen, appTczAttr);
 }
 
 #ifdef darwin

@@ -219,6 +219,9 @@ public final class J2TC implements JConstants, TCConstants
                   if (field.equals("useNewFont") && bcs[j-1] instanceof BC004_iconst_1)
                      DeploySettings.fontTCZ =  Font.NEW_FONT_SET+".tcz";
                   else
+                  if (field.equals("resizableWindow"))
+                     DeploySettings.resizableWindow = bcs[j-1] instanceof BC004_iconst_1;
+                  else
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
                   else
@@ -1253,6 +1256,8 @@ public final class J2TC implements JConstants, TCConstants
             cn = fName;
          if (!DeploySettings.fontTCZ.startsWith(Font.OLD_FONT_SET)) // new: TCFont.tcz; old: TCFontOld.tcz
             attr |= TCZ.ATTR_NEW_FONT_SET;
+         if (DeploySettings.resizableWindow)
+            attr |= TCZ.ATTR_RESIZABLE_WINDOW;
          if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
          if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
             cn = cn.substring(0,cn.length()-4);

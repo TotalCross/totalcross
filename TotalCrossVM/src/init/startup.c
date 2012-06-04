@@ -32,7 +32,7 @@
 #endif
 
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
-bool initGraphicsBeforeSettings(Context currentContext);
+bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr);
 bool initGraphicsAfterSettings(Context currentContext);
 void destroyGraphics();
 
@@ -424,7 +424,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #ifdef ENABLE_TEST_SUITE
           initSettings(currentContext, "", null);
           retrieveSettings(currentContext, "TestSuite");
-          if (!initGraphicsBeforeSettings(currentContext) || !initGraphicsAfterSettings(currentContext))
+          if (!initGraphicsBeforeSettings(currentContext,0) || !initGraphicsAfterSettings(currentContext))
           {
              alert("Could not start graphics. Out of memory or problem with the fonts?");
              return exitProgram(103);
@@ -527,7 +527,7 @@ jumpArgument:
 #endif
          // 1. Initialize the graphics
          isMainWindow = (loadedTCZ->header->attr & ATTR_HAS_MAINWINDOW) != 0;
-         if (isMainWindow && (!initGraphicsBeforeSettings(currentContext) || !keepRunning))
+         if (isMainWindow && (!initGraphicsBeforeSettings(currentContext,loadedTCZ->header->attr) || !keepRunning))
             return exitProgram(107);
          else
          {

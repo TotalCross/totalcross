@@ -49,9 +49,9 @@
 #define Vista        3
 #define Android      4
 
-bool initGraphicsBeforeSettings(Context currentContext) // no thread are running at this point
+bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
 {
-   return startupGraphics() && createScreenSurface(currentContext, false) && (screen.bpp != 8 || createColorPaletteLookupTables());
+   return startupGraphics(appTczAttr) && createScreenSurface(currentContext, false) && (screen.bpp != 8 || createColorPaletteLookupTables());
 }
 
 void destroyGraphics()

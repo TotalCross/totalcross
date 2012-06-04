@@ -33,6 +33,7 @@ public class UIGadgets extends MainWindow
    {
       Settings.applicationId = "UiGd";
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.resizableWindow = true;
       Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
