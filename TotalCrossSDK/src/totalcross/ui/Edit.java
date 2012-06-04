@@ -103,8 +103,6 @@ public class Edit extends Control
     */
    public int alignment=LEFT;
    
-   boolean alwaysDrawAll;
-
    private ControlEvent cursorChangedEvent;
    boolean alwaysDrawAll;
 

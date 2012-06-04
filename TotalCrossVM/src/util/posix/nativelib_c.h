@@ -87,6 +87,7 @@ VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 #endif   	
    if (tcvm)
       return dlsym(tcvm, funcName);
+#endif
    return NULL;
 }
 #endif

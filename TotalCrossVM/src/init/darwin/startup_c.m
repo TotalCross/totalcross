@@ -11,8 +11,6 @@
 
 void privateGetWorkingDir(char* vmPath, char* appPath)
 {
-   const char* path = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
-   strcpy(appPath, path);
 #if defined THEOS
    const char* _appPath = [[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSASCIIStringEncoding];
    const char* _vmPath = "/Applications/TotalCross.app/";
