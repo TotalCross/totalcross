@@ -177,7 +177,6 @@ public class Deployer4IPhoneIPA
             throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
 
          storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
-         certs[2] = new X509CertificateHolder(storecert.getEncoded());
          PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
          ks.deleteEntry(keyAlias);
          ks.setEntry(
