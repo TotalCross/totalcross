@@ -13,7 +13,15 @@ public class MailController extends MainWindow
       Settings.uiAdjustmentsBasedOnFontHeight = true;
    }
    
+   class MailService extends totalcross.Service // must have the same name of the real service
+   {
+      protected void onStart() {}
+      protected void onService() {}
+      protected void onStop() {}
+   }
+   
    private ListBox lb;
+   private MailService stub = new MailService();
    
    public MailController()
    {
@@ -28,6 +36,14 @@ public class MailController extends MainWindow
       add(b = new Button("Unregister service"), CENTER,AFTER+100,SAME,PREFERRED+50); b.appId = 3;
       add(b = new Button("Exit"), CENTER,AFTER+100,SAME,PREFERRED+50);                  b.appId = 4;
       add(lb = new ListBox(),LEFT,AFTER+50,FILL,FILL);
+      try 
+      {
+         log(stub.isRunning() ? "service already running" : "service stopped or not installed");
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
    }
    
    private void log(String s)
@@ -35,15 +51,6 @@ public class MailController extends MainWindow
       lb.addWrapping(s);
       lb.selectLast();
    }
-   
-   class MailService extends totalcross.Service // must have the same name of the real service
-   {
-      protected void onStart() {}
-      protected void onService() {}
-      protected void onStop() {}
-   }
-   
-   MailService stub;
    
    public void onEvent(Event e)
    {
@@ -56,33 +63,32 @@ public class MailController extends MainWindow
                exit(3);
             else
             {
-               MailService ms = new MailService();
                switch (id)
                {
                   case 1:
-                     if (ms.isRunning())
+                     if (stub.isRunning())
                         log("service is already running!");
                      else
                      {
                         log("lauching service");
-                        ms.launchService();
-                        if (waitService(ms, true))
+                        stub.launchService();
+                        if (waitService(true))
                            log("service started!");
                      }
                      break;
                   case 2:
-                     if (!ms.isRunning())
+                     if (!stub.isRunning())
                         log("service is not running");
                      else
                      {
                         log("stopping service");
-                        ms.stop();
-                        if (waitService(ms, false))
+                        stub.stop();
+                        if (waitService(false))
                            log("service stopped!");
                      }
                      break;
                   case 3:
-                     ms.unregisterService();
+                     stub.unregisterService();
                      log("service unregistered!");
                      break;
                }
@@ -95,10 +101,10 @@ public class MailController extends MainWindow
       }
    }
    
-   private boolean waitService(MailService ms, boolean status) throws Exception
+   private boolean waitService(boolean status) throws Exception
    {
       boolean ok = false;
-      for (int i = 30; i-- > 0 && !(ok=(ms.isRunning() == status));)
+      for (int i = 30; i-- > 0 && !(ok=(stub.isRunning() == status));)
       {
          log("waiting service... "+i);
          Vm.sleep(1000);
