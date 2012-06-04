@@ -247,13 +247,6 @@ void _debug(const char *format, ...)
    DEBUG0("showSIP DONE\n");
 }
 
-- (void)dealloc
-{
-   [_events release];
-   [_lock release];
-   [ super dealloc ];
-}
-
 static bool verbose_lock;
 
 - (void)lock:(const char *)info;
