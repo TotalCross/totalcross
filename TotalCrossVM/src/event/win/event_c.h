@@ -131,6 +131,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
+#ifndef WINCE
       case WM_GETMINMAXINFO:
          if (screen.pixels)
          {
@@ -152,6 +153,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          }
          break;
       }
+#endif
       case WM_ACTIVATE:
       {
 #if defined (WIN32)

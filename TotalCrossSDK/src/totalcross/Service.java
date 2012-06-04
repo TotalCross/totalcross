@@ -15,7 +15,6 @@ public abstract class Service implements MainClass
       serviceName = getClass().getName().replace('.','/');
       serviceName = serviceName.substring(serviceName.lastIndexOf('/')+1);
       serviceName = serviceName.substring(serviceName.lastIndexOf('$')+1);
-      Vm.alert("service name: "+serviceName);
    }
 
    protected abstract void onStart();
@@ -25,6 +24,7 @@ public abstract class Service implements MainClass
    
    final public void appStarting(int timeAvail)
    {
+      totalcross.ui.MainWindow.minimize(); // run on background
       if (!registerService()) // run the service loop only if it was previously registered
          serviceLoop();
    }
@@ -54,7 +54,6 @@ public abstract class Service implements MainClass
    public void launchService()
    {
       String path = "\\"+serviceName+"\\"+serviceName+".exe";
-      Vm.alert(path);
       Vm.exec(path,null,0,false);
    }
    

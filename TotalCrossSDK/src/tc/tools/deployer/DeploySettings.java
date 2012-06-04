@@ -42,7 +42,7 @@ public class DeploySettings
    public static boolean isMainWindow;
    public static boolean isJarOrZip;
    public static boolean testClass; // guich@tc114_54
-   public static boolean isFullScreen,isService;
+   public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
    public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
    public static boolean resizableWindow;

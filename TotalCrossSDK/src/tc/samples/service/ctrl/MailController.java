@@ -13,6 +13,8 @@ public class MailController extends MainWindow
       Settings.uiAdjustmentsBasedOnFontHeight = true;
    }
    
+   private ListBox lb;
+   
    public MailController()
    {
       super("MailService Controller",RECT_BORDER);
@@ -21,10 +23,17 @@ public class MailController extends MainWindow
    public void initUI()
    {
       Button b;
-      add(b = new Button("Register & start service"),CENTER,TOP,PARENTSIZE+50,PREFERRED+50);  b.appId = 1;
-      add(b = new Button("Stop service"), CENTER,AFTER+100,PARENTSIZE+50,PREFERRED+50);       b.appId = 2;
-      add(b = new Button("Unregister service"), CENTER,AFTER+100,PARENTSIZE+50,PREFERRED+50); b.appId = 3;
-      add(b = new Button("Exit"), CENTER,BOTTOM,PARENTSIZE+50,PREFERRED+50);                  b.appId = 4;
+      add(b = new Button("Register & start service"),CENTER,TOP,PREFERRED+100,PREFERRED+50);  b.appId = 1;
+      add(b = new Button("Stop service"), CENTER,AFTER+100,SAME,PREFERRED+50);       b.appId = 2;
+      add(b = new Button("Unregister service"), CENTER,AFTER+100,SAME,PREFERRED+50); b.appId = 3;
+      add(b = new Button("Exit"), CENTER,AFTER+100,SAME,PREFERRED+50);                  b.appId = 4;
+      add(lb = new ListBox(),LEFT,AFTER+50,FILL,FILL);
+   }
+   
+   private void log(String s)
+   {
+      lb.addWrapping(s);
+      lb.selectLast();
    }
    
    class MailService extends totalcross.Service // must have the same name of the real service
@@ -41,28 +50,62 @@ public class MailController extends MainWindow
       try
       {
          if (e.type == ControlEvent.PRESSED)
-            switch (((Control)e.target).appId)
+         {
+            int id = ((Control)e.target).appId;
+            if (id == 4)
+               exit(3);
+            else
             {
-               case 0:
-                  new MailService().launchService();
-                  exit(0);
-                  break;
-               case 1:
-                  new MailService().stop();
-                  exit(1);
-                  break;
-               case 2:
-                  new MailService().unregisterService();
-                  exit(2);
-                  break;
-               case 3:
-                  exit(3);
-                  break;
+               MailService ms = new MailService();
+               switch (id)
+               {
+                  case 1:
+                     if (ms.isRunning())
+                        log("service is already running!");
+                     else
+                     {
+                        log("lauching service");
+                        ms.launchService();
+                        if (waitService(ms, true))
+                           log("service started!");
+                     }
+                     break;
+                  case 2:
+                     if (!ms.isRunning())
+                        log("service is not running");
+                     else
+                     {
+                        log("stopping service");
+                        ms.stop();
+                        if (waitService(ms, false))
+                           log("service stopped!");
+                     }
+                     break;
+                  case 3:
+                     ms.unregisterService();
+                     log("service unregistered!");
+                     break;
+               }
             }
+         }
       }
       catch (Exception ee)
       {
          MessageBox.showException(ee,true);
       }
+   }
+   
+   private boolean waitService(MailService ms, boolean status) throws Exception
+   {
+      boolean ok = false;
+      for (int i = 30; i-- > 0 && !(ok=(ms.isRunning() == status));)
+      {
+         log("waiting service... "+i);
+         Vm.sleep(1000);
+      }
+      if (!ok)
+         log("failed due to timeout!");
+      return ok;
+         
    }
 }
