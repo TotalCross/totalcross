@@ -339,6 +339,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_getAttributes"), &tiPDBF_getAttributes);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_setAttributes_i"), &tiPDBF_setAttributes_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tiPDBF_searchBytes_Bii"), &tiPDBF_searchBytes_Bii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tiF_getDeviceAlias"), &tiF_getDeviceAlias);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_create_sii"), &tiF_create_sii);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_nativeClose"), &tiF_nativeClose);
    htPutPtr(&htNativeProcAddresses, hashCode("tiF_isCardInserted_i"), &tiF_isCardInserted_i);

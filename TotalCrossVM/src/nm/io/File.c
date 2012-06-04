@@ -82,6 +82,20 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
 #endif
 
 //////////////////////////////////////////////////////////////////////////
+TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
+{
+#if defined (darwin)
+   #if defined (THEOS)
+      p->retO = createStringObjectFromCharP(p->currentContext, "/private/var/mobile", -1);
+   #else
+      p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
+   #endif
+   setObjectLock(p->retO, UNLOCKED);
+#else
+   p->retO = null;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tiF_isCardInserted_i(NMParams p) // totalcross/io/File native public static boolean isCardInserted(int slot);
 {
    int32 slot = p->i32[0];
