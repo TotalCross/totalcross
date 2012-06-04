@@ -27,6 +27,13 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>bin</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_OUTPUT</locationURI>
+		</link>
+	</linkedResources>
 	<variableList>
 		<variable>
 			<name>ECLIPSE_OUTPUT</name>
