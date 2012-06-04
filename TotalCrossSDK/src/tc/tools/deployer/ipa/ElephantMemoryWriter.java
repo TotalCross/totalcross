@@ -1,18 +1,14 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.Arrays;
+import java.util.Stack;
 
 public class ElephantMemoryWriter implements ElephantMemoryStream
 {
    byte[] buffer;
-   int pos;
+   public int pos;
    Stack positions = new Stack();
-
-   public WritingPhase CurrentPhase = new WritingPhase();
-   private Stack PendingPhases = new Stack();
-
-   public boolean bStreamLittleEndian = true;
 
    public ElephantMemoryWriter()
    {
@@ -24,56 +20,31 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       buffer = data;
    }
 
-   public void writeInt(int value) throws IOException
-   {
-      byte[] b = new byte[4];
-      if (bStreamLittleEndian)
-      {
-         b[3] = (byte) value;
-         value >>= 8;
-         b[2] = (byte) value;
-         value >>= 8;
-         b[1] = (byte) value;
-         value >>= 8;
-         b[0] = (byte) value;
-      }
-      else
-      {
-         b[0] = (byte) value;
-         value >>= 8;
-         b[1] = (byte) value;
-         value >>= 8;
-         b[2] = (byte) value;
-         value >>= 8;
-         b[3] = (byte) value;
-      }
-      this.write(b);
-   }
-
    public void writeUnsignedInt(long value) throws IOException
    {
       byte[] b = new byte[4];
       int i = (int) value;
-      if (bStreamLittleEndian)
-      {
-         b[0] = (byte) i;
-         i >>= 8;
-         b[1] = (byte) i;
-         i >>= 8;
-         b[2] = (byte) i;
-         i >>= 8;
-         b[3] = (byte) i;
-      }
-      else
-      {
-         b[3] = (byte) i;
-         i >>= 8;
-         b[2] = (byte) i;
-         i >>= 8;
-         b[1] = (byte) i;
-         i >>= 8;
-         b[0] = (byte) i;
-      }
+      b[3] = (byte) i;
+      i >>= 8;
+      b[2] = (byte) i;
+      i >>= 8;
+      b[1] = (byte) i;
+      i >>= 8;
+      b[0] = (byte) i;
+      this.write(b);
+   }
+
+   public void writeUnsignedIntLE(long value) throws IOException
+   {
+      byte[] b = new byte[4];
+      int i = (int) value;
+      b[0] = (byte) i;
+      i >>= 8;
+      b[1] = (byte) i;
+      i >>= 8;
+      b[2] = (byte) i;
+      i >>= 8;
+      b[3] = (byte) i;
       this.write(b);
    }
 
@@ -116,6 +87,11 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       positions.push(Integer.valueOf(this.pos));
    }
 
+   public int size()
+   {
+      return pos == 0 ? buffer.length : pos;
+   }
+
    public byte[] toByteArray()
    {
       if (pos == 0 || buffer.length == pos)
@@ -126,34 +102,5 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
          System.arraycopy(buffer, 0, b, 0, pos);
          return b;
       }
-   }
-
-   public void CompleteWritingAndClose() throws IOException
-   {
-      while (ProcessEntirePhase())
-         ;
-   }
-
-   public void CreateNewPhase()
-   {
-      this.PendingPhases.push(this.CurrentPhase);
-      this.CurrentPhase = new WritingPhase();
-   }
-
-   public boolean ProcessEntirePhase() throws IOException
-   {
-      while (!CurrentPhase.pending.isEmpty())
-      {
-         Entry entry = (Entry) CurrentPhase.pending.remove();
-         AbstractBlob blob = (AbstractBlob) entry.getValue();
-         blob.WriteOffsetNow1(this);
-         blob.Write(this);
-      }
-      if (!PendingPhases.isEmpty())
-      {
-         this.CurrentPhase = (WritingPhase) PendingPhases.pop();
-         return true;
-      }
-      return false;
    }
 }
