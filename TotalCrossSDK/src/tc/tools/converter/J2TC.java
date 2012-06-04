@@ -120,7 +120,7 @@ public final class J2TC implements JConstants, TCConstants
    private static boolean isMainClassOrService(JavaClass jc)
    {
       if (jc.superClass.equals(totalcrossService))
-         return true;
+         return DeploySettings.isService = true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)
             if (totalcrossMain.equals(jc.interfaces[i]))

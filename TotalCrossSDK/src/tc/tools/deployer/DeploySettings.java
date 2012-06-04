@@ -46,6 +46,7 @@ public class DeploySettings
    public static String  fullScreenPlatforms;
    public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
    public static boolean resizableWindow;
+   public static boolean isService;
    
    public static boolean autoStart;
 
