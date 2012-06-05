@@ -46,6 +46,7 @@ public class DeploySettings
    public static String  fullScreenPlatforms;
    public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
    public static boolean resizableWindow;
+   public static double dJavaVersion;
    
    public static boolean autoStart;
 
@@ -95,13 +96,13 @@ public class DeploySettings
       int secondDot = javaVersion.indexOf('.',firstDot+1);
       if (secondDot != firstDot && secondDot != -1)
          javaVersion = javaVersion.substring(0,secondDot);
-      float ver = Float.parseFloat(javaVersion);
-      if (ver < 1.6)
+      dJavaVersion = Double.parseDouble(javaVersion);
+      if (dJavaVersion < 1.6)
          throw new DeployerException("Error: the Deployer requires JDK 1.6 or above!");
       // guich@tc120_0: check the minor version and make sure no one uses 1.6.0_06
       int subver = 100;
       try {subver = Integer.parseInt(completeVersion.substring(completeVersion.indexOf('_')+1));} catch (Exception e) {}
-      isBuggyJDKVersionForSynchronizedKeyword = ver < 1.7 && ver > 1.5 && subver <= 6; // 1.6 and <= 6 ?
+      isBuggyJDKVersionForSynchronizedKeyword = dJavaVersion < 1.7 && dJavaVersion > 1.5 && subver <= 6; // 1.6 and <= 6 ?
       
       exclusionList.addElement("totalcross/");
       exclusionList.addElement("java/");
