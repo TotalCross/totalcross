@@ -372,7 +372,6 @@ target: blackberry-cod
     <arg value="${output}/Litebase.jar"/>
     <arg line="/n Litebase"/>
     <arg line="/a LBTC"/>
-    <arg line="/s superwaba"/>
     <arg line="${tcdeploy_line}"/>
     <arg value="-bb"/>
   </java>
@@ -422,20 +421,6 @@ target: samples
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant> 
    
-   <retry retrycount="3">
-      <sequential>
-         <var name="signaturetool.output" unset="true"/>
-         <java jar="${tcsdk.root}/etc/tools/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
-            <arg line="-a -c -C -p superwaba -r ${dist}/samples" />
-         </java>
-         <fail>
-            <condition>
-               <not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
-            </condition>
-         </fail>
-      </sequential>
-   </retry>
-
   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
   <arg line="/s savedmounts.reg" />
   </exec>
