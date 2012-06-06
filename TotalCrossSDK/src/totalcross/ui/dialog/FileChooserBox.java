@@ -82,6 +82,11 @@ public class FileChooserBox extends Window
 	protected Button btRefresh;
    private int previouslySelectedRootIndex = -1;
 
+   /* return the number of files found in the current directory
+    * @since TotalCross 1.53 
+    */
+   public int fileCount;
+   
    /** Set to true to allow multiple selections using a Check drawn before the nodes.
     * @since TotalCross 1.15 
     */
@@ -276,6 +281,7 @@ public class FileChooserBox extends Window
       String thisDir = f.getPath();
       Node nod;
       files = f.listFiles();
+      fileCount = 0;
       if (files != null)
       {
          qsort(files, 0, files.length-1); // guich@tc126_9
@@ -289,7 +295,9 @@ public class FileChooserBox extends Window
                boolean isDir = f.isDir();
                root.add(nod = new Node(new PathEntry(files[i], isDir)));
                nod.allowsChildren = isDir;
-               if (isDir) 
+               if (!isDir)
+                  fileCount++;
+               else
                {
                   try
                   {
