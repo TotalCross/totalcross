@@ -148,7 +148,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          if (screen.pixels && *tcSettings.resizableWindow)
          {
             int32 w = lParam & 0xFFFF,h = lParam >> 16;
-            if (lastW != w || lastH != h)
+            if (w != 0 && h != 0 && (lastW != w || lastH != h))
                screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
          }
          break;
