@@ -361,6 +361,8 @@ public class Loader extends Activity
    
    protected void onPause()
    {
+      if (runningVM)
+         Launcher4A.sendCloseSIPEvent();
       Launcher4A.appPaused = true;
       if (onMainLoop)
          Launcher4A.appPaused();
