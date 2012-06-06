@@ -52,7 +52,9 @@ public class File4D extends RandomAccessStream
    public static String[] winceVols = {"\\Storage Card2\\", "\\Storage Card1\\", "\\SD Card\\", "\\Storage Card\\",
          "\\SD-MMCard\\", "\\CF Card\\"}; // guich@572_3
 
-   private static final String deviceAlias = "";
+   private static final String deviceAlias = getDeviceAlias();
+
+   native private static String getDeviceAlias();
 
    public File4D(String path, int mode, int slot) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
    {
@@ -78,7 +80,7 @@ public class File4D extends RandomAccessStream
          slot = 1;
       }
       else 
-      if (isAndroid && !path.startsWith("/sdcard") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
+      if (isAndroid && !path.startsWith("/sdcard") && !path.startsWith("/mnt") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
          path = Settings.appPath+"/"+path;
       
       this.path = path;

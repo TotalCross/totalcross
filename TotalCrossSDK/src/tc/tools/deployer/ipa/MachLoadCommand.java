@@ -1,78 +1,60 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
 
-public class MachLoadCommand
+/**
+ * More information in "Mac OS X Internals: A Systems Approach, by Amit Singh"
+ */
+public abstract class MachLoadCommand
 {
-   public long Command;
-   public final int LC_CODE_SIGNATURE = 0x1d;
-   public final int LC_DYLD_INFO = 0x22;
-   public final int LC_DYSYMTAB = 11;
-   public final int LC_ENCRYPTION_INFO = 0x21;
-   public final int LC_ID_DYLIB = 13;
-   public final int LC_ID_DYLINKER = 15;
-   public final int LC_LOAD_DYLIB = 12;
-   public final int LC_LOAD_DYLINKER = 14;
-   public final int LC_LOAD_WEAK_DYLIB = 0x18;
-   public final int LC_SEGMENT = 1;
-   public final int LC_SYMTAB = 2;
-   public final int LC_THREAD = 4;
-   public final int LC_UNIXTHREAD = 5;
-   public final int LC_UUID = 0x1b;
-   public boolean RequiredForDynamicLoad;
-   public long StartingLoadOffset = -1L;
+   public static final int LC_SEGMENT = 1;
+   public static final int LC_SYMTAB = 2;
+   public static final int LC_DYSYMTAB = 11;
+   public static final int LC_CODE_SIGNATURE = 0x1d;
+   public static final int LC_ENCRYPTION_INFO = 0x21;
+   public static final int LC_DYLD_INFO = 0x22;
 
-   protected MachLoadCommand()
-   {}
-
-   public static MachLoadCommand CreateFromStream(ElephantMemoryReader reader) throws IOException
+   public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException,
+         InstantiationException, IllegalAccessException
    {
       MachLoadCommand command = null;
-      long position = reader.getPos();
-      long num2 = reader.readUnsignedInt();
-      long num3 = reader.readUnsignedInt();
-      long num4 = num2 & 0x7fffffff;
-      switch ((int) num4)
+      int commandType = (int) (reader.readUnsignedIntLE() & 0x7fffffff);
+      long commandDataSize = reader.readUnsignedIntLE();
+
+      switch (commandType)
       {
-         case 1:
+         case LC_SEGMENT:
             command = new MachLoadCommandSegment();
          break;
 
-         case 2:
-            num3 = 24;
+         case LC_SYMTAB:
+            commandDataSize = 24;
          break;
 
-         case 11:
-            num3 = 80;
+         case LC_DYSYMTAB:
+            commandDataSize = 80;
          break;
 
-         case 0x1d:
+         case LC_CODE_SIGNATURE:
             command = new MachLoadCommandCodeSignature();
          break;
 
-         case 0x21:
-            num3 = 20;
+         case LC_ENCRYPTION_INFO:
+            commandDataSize = 20;
          break;
 
-         case 0x22:
-            num3 = 48;
-         break;
-
-         default:
+         case LC_DYLD_INFO:
+            commandDataSize = 48;
          break;
       }
-      if (command == null)
-         reader.moveTo(reader.getPos() + (num3 - 8));
+
+      if (command == null) // skip commands we don't really care about
+         reader.skip(commandDataSize - 8);
       else
-      {
-         command.StartingLoadOffset = position;
-         command.UnpackageData(reader, (int) num3);
-      }
-      //       reader.VerifyStreamPosition(position, (long) num3);
+         command.parseFromStream(reader);
       return command;
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
-   {
-      reader.skip(CommandSize - 8);
-   }
+   abstract protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
+         IllegalAccessException;
 }

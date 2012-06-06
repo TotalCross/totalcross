@@ -24,6 +24,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
 import tc.tools.deployer.ipa.*;
+import tc.tools.deployer.ipa.blob.*;
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
 import com.dd.plist.*;
@@ -119,7 +120,7 @@ public class Deployer4IPhoneIPA
 
       /** PROCESS MOBILE PROVISION **/
       // update the mobile provision
-      this.Provision = MobileProvision.ParseFile(FileUtils.readFileToByteArray(DeploySettings.mobileProvision));
+      this.Provision = MobileProvision.readFromFile(DeploySettings.mobileProvision);
 
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
@@ -140,7 +141,7 @@ public class Deployer4IPhoneIPA
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
 
-      String bundleIdentifier = this.Provision.getBundleIdentifier();
+      String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
          bundleIdentifier = rootDict.objectForKey("CFBundleIdentifier").toString();
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
@@ -176,7 +177,6 @@ public class Deployer4IPhoneIPA
             throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
 
          storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
-         certs[2] = new X509CertificateHolder(storecert.getEncoded());
          PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
          ks.deleteEntry(keyAlias);
          ks.setEntry(
@@ -200,93 +200,39 @@ public class Deployer4IPhoneIPA
       byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, bundleResourceSpecification, executableName);
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
-      MachObjectFile file = new MachObjectFile(appStream.toByteArray());
-      MachLoadCommandCodeSignature signature = null;
-      MachLoadCommandSegment segment = null;
-      ListIterator iterator = file.Commands.listIterator();
-      while (iterator.hasNext())
-      {
-         MachLoadCommand command = (MachLoadCommand) iterator.next();
-         if (signature == null && command instanceof MachLoadCommandCodeSignature)
-         {
-            signature = (MachLoadCommandCodeSignature) command;
-         }
-         if (segment == null && command instanceof MachLoadCommandSegment)
-         {
-            segment = (MachLoadCommandSegment) command;
-            if (!segment.SegmentName.startsWith("__LINKEDIT"))
-            {
-               segment = null;
-            }
-         }
-      }
-      if (segment == null)
-      {
-         throw new RuntimeException("Did not find a Mach segment load command for the __LINKEDIT segment");
-      }
-      if (signature == null)
-      {
-         throw new RuntimeException(
-               "Did not find a Code Signing LC.  Injecting one into a fresh executable is not currently supported.");
-      }
-      if ((signature.BlobFileOffset + signature.BlobFileSize) != (segment.FileOffset + segment.FileSize))
-      {
-         throw new RuntimeException(
-               "Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
-      }
 
-      int blobFileOffset = (int) signature.BlobFileOffset;
-      CodeDirectoryBlob blob = CodeDirectoryBlob.Create(bundleIdentifier, blobFileOffset);
-      AbstractBlob blob2 = AbstractBlob.CreateEntitlementsBlob(this.Provision.GetEntitlementsString());
-      SuperBlob blob3 = SuperBlob.CreateRequirementsBlob();
-      CodeDirectorySignatureBlob blob5 = new CodeDirectorySignatureBlob();
-      SuperBlob blob6 = SuperBlob.CreateCodeSigningTableBlob();
-      blob6.Add(0, blob);
-      blob6.Add(2, blob3);
-      blob6.Add(5, blob2);
-      blob6.Add(0x10000, blob5);
-      blob5.SignCodeDirectory(ks, certStore, blob);
-      byte[] blobBytes = blob6.GetBlobBytes();
-      ElephantMemoryWriter writer = new ElephantMemoryWriter(appStream.toByteArray());
-      long num1 = signature.BlobFileOffset;
-      long fileOffset = segment.FileOffset;
-      long length = blobBytes.length;
-      long num3 = segment.FileSize - signature.BlobFileSize;
-      long newOffset = num3 + segment.FileOffset;
-      segment.PatchFileLength(writer, (long) (num3 + length));
-      signature.PatchPositionAndSize(writer, (long) newOffset, (long) length);
-//      Program.Log("... Computing hashes");
-      blob.GenerateSpecialSlotHash(1, updatedInfoPlist);
-      blob.GenerateSpecialSlotHash(2, blob3.GetBlobBytes());
-      blob.GenerateSpecialSlotHash(3, sourceData);
-      blob.GenerateSpecialSlotHash(4);
-      blob.GenerateSpecialSlotHash(5, blob2.GetBlobBytes());
-      blob.ComputeImageHashes(writer.toByteArray());
-//      Program.Log("... Final signature step");
-      blob5.SignCodeDirectory(ks, certStore, blob);
-      byte[] buffer = blob6.GetBlobBytes();
-      if (blobBytes.length != buffer.length)
-          throw new IllegalStateException("CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
-      writer.memorize();
-      writer.moveTo(newOffset);
-      writer.write(buffer);
-      writer.moveBack();
-      writer.CompleteWritingAndClose();
-      long num5 = segment.FileSize + segment.FileOffset;
-      byte[] array = writer.toByteArray();
-      if (array.length < num5)
-          throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
-      array = Arrays.copyOf(array, (int) num5);
-//      Program.Log("Saving signed executable...");
+      MachObjectFile file = new MachObjectFile(appStream.toByteArray());
+      EmbeddedSignature originalSignature = file.getEmbeddedSignature();
+
+      // create a new codeDirectory with the new identifier, but keeping the same codeLimit
+      CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, originalSignature.codeDirectory.codeLimit);
+      // now create brand new entitlements and requirements
+      Entitlements entitlements = new Entitlements(this.Provision.GetEntitlementsString().getBytes("UTF-8"));
+      Requirements requirements = new Requirements();
+
+      // now create the blob wrapper
+      BlobWrapper blobWrapper = new BlobWrapper(ks, certStore, codeDirectory);
+
+      // finally create the template of our new signature
+      EmbeddedSignature newSignature = new EmbeddedSignature(codeDirectory, entitlements, requirements, blobWrapper);
+
+      // add the new signature to the file
+      file.setEmbeddedSignature(newSignature);
+
+      // recalculate hashes
+      codeDirectory.setSpecialSlotsHashes(updatedInfoPlist, requirements.getBytes(), sourceData, null, entitlements.getBytes());
+      codeDirectory.setCodeSlotsHashes(file.data);
+
+      file.resign();
       
       // executable
-      executable.input(new ByteArrayInputStream(array));
+      executable.input(new ByteArrayInputStream(file.data));
       
       TVFS.umount(targetZip);      
 
-      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone/" + DeploySettings.appTitle + ".ipa")));
+      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone2+/" + DeploySettings.appTitle + ".ipa")));
       
-      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone/"));
+      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone2+/"));
    }
    
    private void addMetadata(TFile targetZip) throws Exception
@@ -299,8 +245,13 @@ public class Deployer4IPhoneIPA
 
       NSDictionary metadata = new NSDictionary();
       metadata.put("product-type", "ios-app");
+      metadata.put("genre", "Business");
+      metadata.put("genreId", "6000");
       metadata.put("itemName", DeploySettings.appTitle);
-      metadata.put("artistName", DeploySettings.companyInfo);
+      if (DeploySettings.companyInfo != null)
+         metadata.put("artistName", DeploySettings.companyInfo);
+      if (DeploySettings.appVersion != null)
+         metadata.put("bundleVersion", DeploySettings.appVersion);
 
       TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
       iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));

@@ -69,7 +69,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr);
 #endif
 #endif
 
-static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost)
+static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost, bool *timedOut)
 {
    Err err;
    int hostSocket;
@@ -147,8 +147,14 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       timeout_val.tv_usec = (timeout<1000 ? timeout : timeout%1000)*1000;
       FD_ZERO(&fdWriteSet);
       FD_SET(hostSocket, &fdWriteSet);
-      if (select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val) <= 0)
+      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0)
          goto Error;
+      if (res == 0)
+      {
+         err = ETIMEDOUT;
+         *timedOut = true;
+         goto Finish;
+      }
       if (!FD_ISSET(hostSocket, &fdWriteSet))
          goto Error;
       lon = sizeof(int);
@@ -173,6 +179,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 
 Error: // Close the socket.
    err = errno;
+Finish:
    socketClose(&hostSocket);
    return err;
 }

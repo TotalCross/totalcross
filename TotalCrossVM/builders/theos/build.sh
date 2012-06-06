@@ -52,7 +52,7 @@ fi
 
 cd $(dirname $0)
 #resolve symlinks to get clean absolute path
-export sourcedir=$(cd -- "../../../src" && pwd -P 2>/dev/null | pwd -P)
+export sourcedir=$(cd -- "../../src" && pwd -P 2>/dev/null | pwd -P)
 export type
 ln -sf /opt/theos
 

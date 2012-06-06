@@ -675,16 +675,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void readPDF(String fileName)
-   {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putString("pdf.file", fileName);
-      b.putInt("type",Loader.READ_PDF);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
-   }
-   
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
    native void nativeSetOffcreenBitmap(Bitmap bmp);

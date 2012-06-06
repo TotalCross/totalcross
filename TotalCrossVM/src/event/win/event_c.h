@@ -131,6 +131,29 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
+#ifndef WINCE
+      case WM_GETMINMAXINFO:
+         if (screen.pixels)
+         {
+            MINMAXINFO* mmi = (MINMAXINFO*)lParam;
+            int border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
+            mmi->ptMinTrackSize.x = screen.minScreenW+border*2;
+            mmi->ptMinTrackSize.y = screen.minScreenH+border*2+GetSystemMetrics(SM_CYCAPTION);
+            mmi->ptMaxTrackSize.x = GetSystemMetrics(SM_CXFULLSCREEN);
+            mmi->ptMaxTrackSize.y = GetSystemMetrics(SM_CYFULLSCREEN);
+         }
+         break;
+      case WM_SIZE:
+      {
+         if (screen.pixels && *tcSettings.resizableWindow)
+         {
+            int32 w = lParam & 0xFFFF,h = lParam >> 16;
+            if (w != 0 && h != 0 && (lastW != w || lastH != h))
+               screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
+         }
+         break;
+      }
+#endif      
       case WM_ACTIVATE:
       {
          applyPalette();

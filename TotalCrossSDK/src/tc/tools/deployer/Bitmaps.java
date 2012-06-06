@@ -73,6 +73,7 @@ public class Bitmaps
    byte []bytes16x16x8;
    byte []bytes48x48x8;
    byte []bytes20x16x8;
+   byte []bytes1024x1024;
 
    Image bmpTemplate;
    byte []bytesTemplate;
@@ -91,6 +92,8 @@ public class Bitmaps
       if (bytes32x32x8 == null) bytes32x32x8 = Utils.findAndLoadFile(prefix+"icon32x32x8.bmp",showMsg); if (bytes32x32x8 != null) lost--;
       if (bytes48x48x8 == null) bytes48x48x8 = Utils.findAndLoadFile(prefix+"icon48x48x8.bmp",showMsg); if (bytes48x48x8 != null) lost--;
       if (bytes20x16x8 == null) bytes20x16x8 = Utils.findAndLoadFile(prefix+"icon20x16x8.bmp",showMsg); if (bytes20x16x8 != null) lost--;
+      if (bytes1024x1024 == null) bytes1024x1024 = Utils.findAndLoadFile(prefix+"icon1024x1024.png",showMsg); if (bytes1024x1024 != null) lost--;
+
       return lost;
    }
 
@@ -742,6 +745,7 @@ public class Bitmaps
 
          // otherwise, use the other ones provided
          imgbytes = bytesTemplate;
+         if (imgbytes == null) imgbytes = bytes1024x1024;
          if (imgbytes == null) imgbytes = bytes48x48x8;
          if (imgbytes == null) imgbytes = bytes44x44x8;
          if (imgbytes == null) imgbytes = bytes32x32x8;

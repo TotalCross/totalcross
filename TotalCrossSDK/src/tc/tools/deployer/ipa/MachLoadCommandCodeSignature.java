@@ -1,33 +1,35 @@
 package tc.tools.deployer.ipa;
+
 import java.io.IOException;
+import tc.tools.deployer.ipa.blob.BlobHandler;
+import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
 {
-   public SuperBlob Payload;
-   public long BlobFileOffset;
-   public long BlobFileSize;
+   public EmbeddedSignature signature;
+   public long blobFileOffset;
+   public long blobFileSize;
 
-   public void PatchPositionAndSize(ElephantMemoryWriter writer, long NewOffset, long NewLength) throws IOException
+   private int offset2FileSize;
+
+   void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
    {
-      this.BlobFileOffset = NewOffset;
-      this.BlobFileSize = NewLength;
-      long newOffset = this.StartingLoadOffset + 8L;
+      this.blobFileSize = filesize;
       writer.memorize();
-      writer.moveTo((int) newOffset);
-      writer.writeUnsignedInt(this.BlobFileOffset);
-      writer.writeUnsignedInt(this.BlobFileSize);
+      writer.moveTo(offset2FileSize);
+      writer.writeUnsignedIntLE(this.blobFileSize);
       writer.moveBack();
    }
 
-   protected void UnpackageData(ElephantMemoryReader reader, int CommandSize) throws IOException
+   protected void parseFromStream(ElephantMemoryReader reader) throws IOException, InstantiationException,
+         IllegalAccessException
    {
-      this.BlobFileOffset = (int) reader.readUnsignedInt();
-      this.BlobFileSize = (int) reader.readUnsignedInt();
+      this.blobFileOffset = (int) reader.readUnsignedIntLE();
+      this.offset2FileSize = reader.getPos();
+      this.blobFileSize = (int) reader.readUnsignedIntLE();
       reader.memorize();
-      reader.moveTo(this.BlobFileOffset);
-      reader.bStreamLittleEndian = false;
-      this.Payload = (SuperBlob) AbstractBlob.CreateFromStream(reader);
+      reader.moveTo(this.blobFileOffset);
+      this.signature = (EmbeddedSignature) BlobHandler.readBlob(reader);
       reader.moveBack();
-      reader.bStreamLittleEndian = true;
    }
 }
