@@ -172,7 +172,7 @@ public class PreparedStatement
                // Saves the order by clause if there's no backup yet.
                vi = groupByClause.fieldTableColIndexesBak = new byte[n];
                while (--n >= 0)
-                  vi[n] = (byte) fieldList[n].tableColIndex;
+                  vi[n] = (byte)fieldList[n].tableColIndex;
             }
             if ((whereClause = selectStmt.whereClause) != null)
                whereClause.expressionTreeBak = whereClause.expressionTree.cloneTree(null);
