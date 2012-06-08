@@ -198,12 +198,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
-         int screenSize = Math.max(screenHeight, display.getWidth());
+         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
             // if first try, check if the value was already cached
             int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) != -1)
+            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
             {
                screenSize = temp;
                //AndroidUtils.debug("restoring size from cache: "+screenSize);
@@ -214,17 +214,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                // not yet cached. first try? store the size and cache it
                if (firstOrientationSize == 0)
                {
-                  //AndroidUtils.debug("first: "+screenSize);
+                  //AndroidUtils.debug("@@@@ first: "+screenSize);
                   firstOrientationSize = screenSize;
                   sendOrientationChange(true);
                   return;
                }
-               //AndroidUtils.debug("second: "+screenSize);
+               //AndroidUtils.debug("@@@@ second: "+screenSize);
                if (firstOrientationSize > screenSize)
                   screenSize = firstOrientationSize;
                AndroidUtils.setSavedScreenSize(screenSize);
                sendOrientationChange(false); // restore orientation to what user wants
             }
+         }
+         if (screenSize == 0)
+         {
+            screenSize = screenSize0;
+            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
          }
          sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
          sScreenBitmap.eraseColor(0xFFFFFFFF);
