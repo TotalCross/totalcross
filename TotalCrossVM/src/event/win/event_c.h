@@ -377,7 +377,12 @@ cont:
                   postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, pkey, 0,0,-1);
                else
                if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+               {
+                  int t = screen.minScreenW;
+                  screen.minScreenW = screen.minScreenH;
+                  screen.minScreenH = t;
                   screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+               }
             }
          }
          break;
