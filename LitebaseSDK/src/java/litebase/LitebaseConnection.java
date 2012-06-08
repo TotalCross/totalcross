@@ -2273,7 +2273,7 @@ public class LitebaseConnection
       while (--i >= 0)
       {
          // Column not found.
-         if ((idx = columns[i] = (numberColumns == null)? (byte) table.htName2index.get(columnNames[i].hashCode(), -1) : numberColumns[i]) == -1) 
+         if ((idx = columns[i] = (numberColumns == null)? (byte)table.htName2index.get(columnNames[i].hashCode(), -1) : numberColumns[i]) == -1) 
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + columnNames[i]);
          
          if (table.columnTypes[idx] == SQLElement.BLOB) // An index can't have a blob column.

@@ -1484,7 +1484,7 @@ class SQLSelectStatement extends SQLStatement
                   op = realOp;
                }
             }
-            markBits.leftOp[j] = (byte) op;
+            markBits.leftOp[j] = (byte)op;
          }
          markBits.leftKey.set(leftVal);
          

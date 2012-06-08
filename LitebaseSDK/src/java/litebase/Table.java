@@ -974,7 +974,7 @@ class Table
             outRecord[idx = hashTable.get(fields[i].hashCode())] = record[i]; // Finds the index of the field on the table and reorders the record.
             Utils.setBit(tableNulls, idx, (nulls[i >> 3] & (1 << (i & 7))) != 0);
             if (record[i] != null && record[i].asString != null && record[i].asString.equals("?"))
-               paramIndexes[numParams++] = (byte)idx;
+               paramIndexes[numParams++] = (short)idx;
          }
          catch (ElementNotFoundException enfe)
          {
