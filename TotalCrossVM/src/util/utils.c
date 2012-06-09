@@ -739,10 +739,11 @@ int16 fread16(FILE* f)
 
 static FILE* updateFile(FILE* fin, CharP name)
 {                                      
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || (defined(WIN32) && !defined(WINCE))
    char update[MAX_PATHNAME];
+   FILE* fu;
    xstrprintf(update, "%s.upd", name);
-   FILE* fu = fopen(update, "rb");
+   fu = fopen(update, "rb");
    if (fu != null)
    {
       fclose(fin); // close original file
