@@ -155,16 +155,7 @@ TC_API void tsV_sleep_i(NMParams p) // totalcross/sys/Vm native public static vo
       if (millis == 1)
       {
          MSG msg;
-         BOOL result;
-         if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE ) )
-         {
-            result = GetMessage(&msg, NULL, 0, 0);
-            if (result > 0)
-            {
-               TranslateMessage(&msg);
-               DispatchMessage(&msg);
-            }
-         }
+         PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE );
       }
 #endif
    }
