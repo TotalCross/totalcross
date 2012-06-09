@@ -748,7 +748,11 @@ static FILE* updateFile(FILE* fin, CharP name)
    {
       fclose(fin); // close original file
       fclose(fu);  // close update file
+#ifdef WIN32
+      remove(name);
+#else
       unlink(name); // delete original file
+#endif
       rename(update,name); // rename update into original
       fin = fopen(name, "rb");
    }
