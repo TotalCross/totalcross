@@ -747,7 +747,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
    {
       HDC hdc = GetDC(mainHWnd);
-      *tcSettings.deviceFontHeightPtr = -MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+      *tcSettings.deviceFontHeightPtr = - 12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72;
       DeleteDC(hdc);
    }
    *tcSettings.decimalSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
