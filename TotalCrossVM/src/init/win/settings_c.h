@@ -745,7 +745,11 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
 #endif
-
+   {
+      HDC hdc = GetDC(mainHWnd);
+      *tcSettings.deviceFontHeightPtr = -MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+      DeleteDC(hdc);
+   }
    *tcSettings.decimalSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
    *tcSettings.thousandsSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
    if (*tcSettings.decimalSeparatorPtr == *tcSettings.thousandsSeparatorPtr) // guich@421_12: make sure they differ

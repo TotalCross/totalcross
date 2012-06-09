@@ -761,6 +761,40 @@ public final class Settings
     */
    public static boolean resizableWindow;
    
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_320X480 = 1;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_480X640 = 2;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_600X800 = 3;
+
+   /** Defines the window size when running in a desktop computer (the default is 240x320).
+    * Must be set in the static initializer.
+    * If used, the window will be centered on screen with the given resolution.
+    * @since TotalCross 1.53
+    * @see #WINDOWSIZE_320X480
+    * @see #WINDOWSIZE_480X640
+    * @see #WINDOWSIZE_600X800
+    * @see #resizableWindow
+    * @see #windowFont
+    */
+   public static int windowSize;
+   
+   /** Used in the windowFont field; sets the size to 12. */
+   public static final int WINDOWFONT_12 = 0;
+   /** Used in the windowFont field; sets the size to the one defined by user. */
+   public static final int WINDOWFONT_DEFAULT = 1;
+   
+   /** Defines the window font size when running in a desktop computer.
+    * Must be set in the static initializer.
+    * @since TotalCross 1.53
+    * @see #WINDOWFONT_12
+    * @see #WINDOWFONT_DEFAULT
+    * @see #windowSize
+    * @see #resizableWindow
+    */
+   public static int windowFont;
+   
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()
    {
