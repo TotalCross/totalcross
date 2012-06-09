@@ -149,7 +149,25 @@ TC_API void tsV_sleep_i(NMParams p) // totalcross/sys/Vm native public static vo
    if (millis < 0)
       throwIllegalArgumentExceptionI(p->currentContext, "millis",millis);
    else
+   {
       Sleep(max32(millis,1)); // don't sleep 0, or threads may starve to death
+#ifdef WIN32
+      if (millis == 1)
+      {
+         MSG msg;
+         BOOL result;
+         if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE ) )
+         {
+            result = GetMessage(&msg, NULL, 0, 0);
+            if (result > 0)
+            {
+               TranslateMessage(&msg);
+               DispatchMessage(&msg);
+            }
+         }
+      }
+#endif
+   }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_getFreeMemory(NMParams p) // totalcross/sys/Vm native public static int getFreeMemory();
