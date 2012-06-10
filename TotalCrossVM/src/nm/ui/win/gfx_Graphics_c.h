@@ -15,7 +15,7 @@ void privateScreenChange(int32 w, int32 h)
    int32 border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
    w += border*2;
    h += GetSystemMetrics(SM_CYCAPTION) + border*2;
-   MoveWindow(mainHWnd, 0, 0, w, h, TRUE);
+   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
 #endif
 }
 
