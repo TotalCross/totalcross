@@ -285,7 +285,6 @@ public class Loader extends Activity
                if(pdfFile.exists()) 
                {
                    Uri path = Uri.fromFile(pdfFile); 
-                   AndroidUtils.debug("uri: "+path);
                    Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
                    pdfIntent.setDataAndType(path, "application/pdf");
                    pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
