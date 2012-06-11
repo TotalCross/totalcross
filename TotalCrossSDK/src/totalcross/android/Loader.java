@@ -281,7 +281,6 @@ public class Loader extends Activity
             if (args.toLowerCase().endsWith(".pdf"))
             {
                File pdfFile = new File(args);
-               AndroidUtils.debug(args+" "+pdfFile.exists());
                if(pdfFile.exists()) 
                {
                    Uri path = Uri.fromFile(pdfFile); 
