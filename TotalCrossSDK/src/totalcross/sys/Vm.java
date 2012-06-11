@@ -229,7 +229,7 @@ public final class Vm
     * <li> Vm.exec("com.android.calculator2","Calculator",0,true); -- runs the Calculator program 
     * <li> Vm.exec("/sdcard/myapp.apk",null,0,false); -- calls the apk installation tool. To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
     * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L) and JPG files.
-    * <li> Vm.exec("/sdcard/Download/handbook.pdf",null,0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store
+    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store
     * </ul>
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
