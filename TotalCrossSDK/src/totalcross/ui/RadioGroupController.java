@@ -120,6 +120,7 @@ public class RadioGroupController
       if (i < 0) // guich@tc100
          last = null;
       else
+      if (i < members.size())
       {
          last = (Radio)members.items[i];
          last.setChecked(true);
