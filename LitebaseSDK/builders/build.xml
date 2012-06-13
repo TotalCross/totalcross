@@ -608,58 +608,6 @@ target: IPhone builds
   </java>
 </target>	
 
-<target name="ftp_iphone_sdk">
-
-  <property file="${rootpath}/swcombr.properties"/>
-  <property name="temp" value="${source.tc.sdk.path}/output/tempfiles"/>
-  <property name="iphone.remote.dir" value="lb${lb.version}" />
-  <echo message="Litebase iPhone remote directory: ${iphone.remote.dir}"/>
-
-  <!-- copies the files that will be sent via ftp to a single dir -->
-  <mkdir dir="${temp}" />
-  <copy todir="${temp}/samples">
-   <fileset dir="${target.sdk.path}/dist/samples" includes="**/*.zip,**/*.plist" excludes="**/iphone2+/**" />
-  </copy>
-  <copy todir="${temp}">
-   <fileset dir="${target.sdk.path}/dist/lib/iphone1" includes="Litebase.zip,Litebase.plist" />
-  </copy>
-
-  <!-- create the rep.xml file for all these files -->
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${temp}">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
-
-  <!-- copy the files again removing the folders -->
-  <delete dir="${temp}/samples" />
-  <delete file="${temp}/Litebase.plist" />
-  <copy todir="${temp}" flatten="yes">
-   <fileset dir="${target.sdk.path}/dist/samples" includes="**/*.zip" excludes="**/iphone2+/**" />
-  </copy>
-
-  <!-- replace the target folder that will appear in the device -->
-  <replace file="${temp}/rep.xml" token="http://www.totalcross.com/iphone" value="http://www.totalcross.com/${iphone.remote.dir}" />
-  <replace file="${temp}/rep.xml" token="TotalCross SDK" value="Litebase SDK" />
-
-  <!-- delete current folder, recreate the folder and ftp to the site -->
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" action="del" >
-   <fileset includes="totalcross.com/${iphone.remote.dir}/**" />
-  </ftp>
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/${iphone.remote.dir}" action="mkdir" />
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/${iphone.remote.dir}" verbose="yes">
-     <fileset dir="${temp}" />
-  </ftp>
-
-  <delete dir="${temp}" />
-
-</target>
-
 <target name="buildIPhone_vms">
   <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -895,7 +843,7 @@ target: build targets
 
 <target name="iphone_test" depends="buildIPhone_sdk,buildIPhoneTest_sdk,copyIPhone_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK, rebuild and upload iPhone to the test device" />
 
-<target name="update_iphone" depends="buildIPhone_sdk,buildSkeletonIPhone_sdk,copyIPhone_sdk,ftp_iphone_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
+<target name="update_iphone" depends="buildIPhone_sdk,buildSkeletonIPhone_sdk,copyIPhone_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
 <target name="update_linux" depends="buildLinux_sdk,buildSkeletonLinux_sdk,copyLinux_sdk" description="Update the SDK device and samples, rebuild" />
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
 <target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
@@ -903,6 +851,6 @@ target: build targets
 <target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
 <target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
-<target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
+<target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />
 </project>
