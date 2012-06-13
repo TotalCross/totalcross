@@ -80,9 +80,56 @@ target: init
 
   <!-- builder and iphone information -->
   <property file="${rootpath}/buildserver.properties"/>
+   
+  <property name="src"                    value="${source.lb.path}/src/java"/>
 
   <!-- load platform environment variables -->
   <property environment="env"/>
+   
+   <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    get-version
+   
+   -description:
+           retrieves the Litebase version from the file "litebase/LitebaseConnection.java"
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+   
+   <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
+     <filterchain>
+       <linecontains>
+         <contains value="versionStr"/>
+       </linecontains>
+       <striplinebreaks/>
+       <tokenfilter>
+        <replacestring from="public" to=""/>
+        <replacestring from="static" to=""/>
+        <replacestring from="final" to=""/>
+        <replacestring from="String" to=""/>
+        <replacestring from="versionStr" to=""/>
+        <replacestring from="=" to=""/>
+        <deletecharacters chars='";'/>
+        <trim/>
+       </tokenfilter>
+     </filterchain>
+   </loadfile>
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
+     <filterchain>
+       <linecontains>
+         <contains value="int version"/>
+       </linecontains>
+       <striplinebreaks/>
+       <tokenfilter>
+        <replacestring from="public" to=""/>
+        <replacestring from="static" to=""/>
+        <replacestring from="final" to=""/>
+        <replacestring from="int" to=""/>
+        <replacestring from="version" to=""/>
+        <replacestring from="=" to=""/>
+        <deletecharacters chars=';'/>
+        <trim/>
+       </tokenfilter>
+     </filterchain>
+   </loadfile>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildPalmOS5
@@ -373,7 +420,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls_sdk" depends="getVersion">
+<target name="buildInstalls_sdk">
 
   <property name="sdk.file"  value="${target.sdk.path}/../LitebaseSDK"/>
 
@@ -397,7 +444,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 </target>
 
-<target name="buildInstalls_vms" depends="getVersion">
+<target name="buildInstalls_vms">
 
   <property name="vms.file"  value="${target.vms.path}/../LitebaseVMS"/>
 
@@ -442,7 +489,7 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -litebase -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
+<target name="copyIPhoneTestToDevice_sdk">
 
   <!-- iphone 2 -->
   <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
@@ -480,7 +527,7 @@ target: IPhone builds
   <sshexec command="killall SpringBoard" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
 </target>
 
-<target name="copyIPhone_sdk" depends="getVersion">
+<target name="copyIPhone_sdk">
 
   <!-- iphone 2 -->
   <echo message="Retrieve remote 2.x demo builds" />
@@ -520,7 +567,7 @@ target: IPhone builds
   </java>
 </target>
 	
-<target name="copyIPhone_vms" depends="getVersion">
+<target name="copyIPhone_vms">
 
    <!-- iphone 2 -->
    <echo message="Retrieve remote 2.x release builds" />
@@ -561,7 +608,7 @@ target: IPhone builds
   </java>
 </target>	
 
-<target name="ftp_iphone_sdk" depends="getVersion">
+<target name="ftp_iphone_sdk">
 
   <property file="${rootpath}/swcombr.properties"/>
   <property name="temp" value="${source.tc.sdk.path}/output/tempfiles"/>
@@ -613,7 +660,7 @@ target: IPhone builds
 
 </target>
 
-<target name="buildIPhone_vms" depends="getVersion">
+<target name="buildIPhone_vms">
   <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
@@ -637,7 +684,7 @@ target: Linux builds
   <sshexec command="bash -l ~/build.sh -litebase -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyLinux_sdk" depends="getVersion">
+<target name="copyLinux_sdk">
 
   <echo message="Retrieve remote Linux demo builds" />
 
@@ -664,7 +711,7 @@ target: Linux builds
 
 </target>
 	
-<target name="copyLinux_vms" depends="getVersion">
+<target name="copyLinux_vms">
 
   <echo message="Retrieve Linux release builds" />
 
@@ -691,7 +738,7 @@ target: Linux builds
 
 </target>
 
-<target name="buildLinux_vms" depends="getVersion">
+<target name="buildLinux_vms">
 
   <sshexec command="bash -l ~/build.sh -litebase -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
@@ -707,7 +754,7 @@ target: Android builds
   <delete dir="${android.project.path}/out/apps/litebase" failonerror="false" />
 </target>
 
-<target name="build_android_native" depends="getVersion" description="Compiles liblitebase.so for Android">
+<target name="build_android_native" description="Compiles liblitebase.so for Android">
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
       <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
       <env key="NDK_HOME" value="${android.ndk.path}"/>
@@ -718,7 +765,7 @@ target: Android builds
   <sleep seconds="3"/>
 </target>
 
-<target name="build_android_java" depends="getVersion" description="Builds the Litebase.apk for Android">
+<target name="build_android_java" description="Builds the Litebase.apk for Android">
 
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
@@ -764,42 +811,6 @@ target: Android builds
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: getVersion
-
--description:
-        retrieves the Superwaba version from the file "waba/sys/Settings.java"
-        in the form 4_21
-
-      public static final String versionStr = "4.21"
-
-      IMPORTANT: THIS ONE DOES NOT REPLACE _ BY . !
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="getVersion" >
-
-  <loadfile srcfile="../src/java/litebase/LitebaseConnection.java" property="lb.version">
-    <filterchain>
-      <linecontains>
-        <contains value="versionStr"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="final" to=""/>
-       <replacestring from="String" to=""/>
-       <replacestring from="versionStr" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars='";'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-
-  <echo message="Litebase version : '${lb.version}'"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -864,7 +875,7 @@ target: ftp things to the site
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="checkVersionOnProjects" depends="getVersion">
+<target name="checkVersionOnProjects">
 
   <loadfile srcfile="${source.tc.vm.path}/builders/vc6/litebase.dsp" property="version.updated">
     <filterchain>
