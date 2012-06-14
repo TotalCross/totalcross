@@ -808,6 +808,7 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
+   <mkdir dir="${basedir}/theos/${type}"/>
   <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
