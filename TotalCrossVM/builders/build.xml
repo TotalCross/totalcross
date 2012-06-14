@@ -688,7 +688,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: IPhone builds
 
-  1. build the tcvm, launcher & tcpriv
+  1. build the tcvm, launcher
   2. copy the launcher
   3. copy the tcvm & tcpriv
   4. create a rep for the tcvm and the samples
@@ -808,9 +808,6 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-   <mkdir dir="${basedir}/theos/${type}"/>
-  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
@@ -828,7 +825,6 @@ target: IPhone builds
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-    <arg value="${basedir}/theos/${type}/tcpriv"/>
   </java>
 
   <!-- package the files -->
