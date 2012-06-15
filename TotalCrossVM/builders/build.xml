@@ -694,6 +694,33 @@ target: IPhone builds
   4. create a rep for the tcvm and the samples
   5. ftp to the sw.com.br
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="build-theos-launcher">
+   <property name="remote.path" value="~/ios_workspace/theos-launcher/${env.COMPUTERNAME}" />
+   <property name="launcher.path" value="${target.sdk.path}/etc/launchers/iphone2" />
+
+   <tar
+      basedir="${basedir}/../../.."
+      includes="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**"
+      destfile="${base.temp.path}/Launcher_theos.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/Launcher_theos.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
+
+   <sshexec command="
+      tar -zxpf ${remote.path}/Launcher_theos.tgz -C ${remote.path};
+      bash -l ${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/build.sh;"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+
+   <mkdir dir="${launcher.path}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/obj/Launcher" todir="${launcher.path}" trust="yes" password="${buildserver.pass}" port="22" />
+</target>
 
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
