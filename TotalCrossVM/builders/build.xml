@@ -661,6 +661,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 </target>
 
 <target name="buildInstalls_sdk" >
+   <copy file="${source.vms.path}/src/launchers/darwin/obj/Launcher" todir="${target.sdk.path}/etc/launchers/iphone2" overwrite="true" />
   <antcall target="buildInstalls">
       <param name="type" value="SDK" />
       <param name="file_suffix" value="" />
