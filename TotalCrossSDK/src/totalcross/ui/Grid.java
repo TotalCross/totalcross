@@ -858,6 +858,26 @@ public class Grid extends Container implements Scrollable
       if (vItems != null && 0 <= row && row < itemsCount)
          Vm.arrayCopy(item, 0, vItems.items[row], 0, item.length); // guich@557_6: just copy the new item over the current one
    }
+   
+   /** Move the items at given indexes.
+    * @since TotalCross 1.53
+    */
+   public void move(int row, boolean up)
+   {
+      if (up && row > 0)
+      {
+         Object o = vItems.items[row-1];
+         vItems.items[row-1] = vItems.items[row];
+         vItems.items[row] = o;
+      }
+      else
+      if (!up && row < itemsCount-1)
+      {
+         Object o = vItems.items[row+1];
+         vItems.items[row+1] = vItems.items[row];
+         vItems.items[row] = o;
+      }
+   }
 
    /**
     * Remove the given line index from the grid.
