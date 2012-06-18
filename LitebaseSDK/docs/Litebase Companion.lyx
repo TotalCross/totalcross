@@ -13033,6 +13033,30 @@ ALTER TABLE person RENAME age TO years
 \begin_layout Itemize
 
 \family typewriter
+ALTER TABLE table_name ADD column_name column_data_type [(type_size [multiplier]
+)][DEFAULT value_default] [NOT NULL]
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Description
+\end_layout
+
+\begin_layout Itemize
+Adds a column to a table.
+ The syntax is similar to a column declaration when a table is being created.
+ However, it is not possible to add a column declaring it a primary key,
+ because all rows will have the same value, being null or equal to the declared
+ default value, which violates the primary key constraints.
+ Moreover, if the column is declared as not null, there must be a default
+ value different from null, because otherwise all the rows would have a
+ null value in the new column.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 DROP TABLE table_name
 \end_layout
 
@@ -23407,6 +23431,21 @@ DriverException
 .dbo
 \family default
  file.
+\end_layout
+
+\begin_layout Itemize
+Added 
+\family typewriter
+ALTER TABLE ADD
+\family default
+ column, which adds a column to a table.
+ The syntax is similar to a column declaration when a table is being created.
+ However, it is not possible to add a column declaring it a primary key,
+ because all rows will have the same value, being null or equal to the declared
+ default value, which violates the primary key constraints.
+ Moreover, if the column is declared as not null, there must be a default
+ value different from null, because otherwise all the rows would have a
+ null value in the new column.
 \end_layout
 
 \end_body
