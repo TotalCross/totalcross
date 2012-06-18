@@ -20255,6 +20255,28 @@ public void setPreparedStatement()
 
 \end_layout
 
+\begin_layout Subsection
+
+\family typewriter
+close()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+close
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Closes a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
+\end_layout
+
 \begin_layout Section
 
 \family typewriter
@@ -23407,6 +23429,16 @@ DriverException
 .dbo
 \family default
  file.
+\end_layout
+
+\begin_layout Itemize
+Added 
+\family typewriter
+PreparedStatement.close()
+\family default
+ to close a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
 \end_layout
 
 \end_body
