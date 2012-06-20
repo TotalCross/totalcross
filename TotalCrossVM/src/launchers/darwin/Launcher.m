@@ -17,8 +17,6 @@
 #include <dlfcn.h>
 #import <UIKit/UIAlert.h>
 
-char *args = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
-
 /* undef rpl_realloc */
 #undef realloc
 
@@ -184,6 +182,8 @@ static char *cmdLine;
 
 int main(int argc, char *argv[])
 {
+   NSString* cmdLineKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"TCCommandLine"];
+   const char* args = [[cmdLineKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
    cmdLine = strdup(argv && argv[0] ? argv[0] : "");
    if (argc > 1 || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
    {
