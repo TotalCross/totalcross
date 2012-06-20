@@ -42,7 +42,7 @@ struct TTCZFileHeader // common members to all instances
    Int32Array uncompressedSizes;
    int16 version;
    int16 attr; // see ATTR_xxx above
-   char path[128];
+   char path[MAX_PATHNAME];
    int32 instanceCount;
    ConstantPool cp; // this is the Global constant pool that came in this tcz file
    Heap hheap;
@@ -54,7 +54,7 @@ struct TTCZFileHeader // common members to all instances
 struct TTCZFile
 {
    TCZFileHeader header; // common properties
-   uint8 buf[128];
+   uint8 buf[MAX_PATHNAME];
    z_stream zs;
    int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
    Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
