@@ -9,28 +9,28 @@
  *                                                                               *
  *********************************************************************************/
 
+#import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <UIKit/UIKit.h>
+#import <UIKit/UITextView.h>
+#import <QuartzCore/CALayer.h>
 
-
-#ifndef PDBFILE_H
-#define PDBFILE_H
-
-#include "../../palmdb/palmdb.h"
-
-#ifndef PALMOS
- #define errNone 0
-#endif
-
- #define PALM_ERROR !errNone
- #define DB_NAME_LENGTH 32
- #define DB_FULLNAME_LENGTH DB_NAME_LENGTH + 10
-
-enum
+@interface ChildView : UIView
 {
-   INVALID        = -1,
-   READ_WRITE     =  3,
-   CREATE         =  4,
-   CREATE_EMPTY   =  5
-};
+   int lastEventTS;
+   int shiftY;
+   int clientW;
+   UIViewController* controller;
+}
+- (id)initIt:(UIViewController*) ctrl;
+- (void)updateScreen:(void*)screen;
+- (void)drawRect:(CGRect)frame;
+- (void)invalidateScreen:(void*)vscreen;
 
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)screenChange:(int)w height:(int)h;
 
-#endif
+@end

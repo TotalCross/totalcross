@@ -9,33 +9,37 @@
 
 #define NAVIGATION_BAR_HEIGHT       48
 
-#define HIDE_SIP 0
+#define HIDE_SIP 1
+
+//extern UIInterfaceOrientation cachedOrientation;
 
 @implementation KeyboardView
 
 - (id)initWithFrame:(CGRect)rect params:(SipArguments*)args 
 {
    self = [ super initWithFrame: rect ];
-
-   int orientation = [[UIDevice currentDevice] orientation];
-   bool landscape = (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight);
-
+   // finding orientation
+   UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+//   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown) 
+//      orientation = (UIDeviceOrientation)cachedOrientation;
+        
+   bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
    CGRect viewFrame,navFrame;
    if (landscape)
    {
       viewFrame = CGRectMake(80, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
-      navFrame = CGRectMake(80, rect.size.width - 352 - 48, rect.size.height, 48);      
+      navFrame = CGRectMake(80, rect.size.width - IPAD_KEYBOARD_LANDSCAPE - NAVIGATION_BAR_HEIGHT, rect.size.height, NAVIGATION_BAR_HEIGHT);      
    }
    else      
    {
-      viewFrame = CGRectMake(0, rect.size.height - 264 - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
+      viewFrame = CGRectMake(0, rect.size.height - IPAD_KEYBOARD_PORTRAIT - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
       navFrame = CGRectMake(0, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
    }
 #if HIDE_SIP
    viewFrame.origin.x = navFrame.origin.x = 6000;
 #endif
 
-   [ self setFrame: viewFrame ];
+   //[ self setFrame: viewFrame ];
 
    rect = navFrame;
    if (navBar == nil)
@@ -64,30 +68,9 @@
    else
       [ navBar setFrame: navFrame ];
 
-#if 0
-   // @TODO with entry label ?!   
-   CGRect textFrame = rect;
-   textFrame.origin.y = navFrame.origin.y + navFrame.size.height;
-   textFrame.size.height = 24;
-   UITextView *prompt = [ [ UITextView alloc ] initWithFrame: textFrame ];
-   [ prompt setTextSize: 14 ];
-   [ prompt setText: @"Your name" ];
-   [ prompt setEditable: FALSE ];
-   [ self addSubview: prompt ];
-   [ prompt release ];
-
-   CGRect entryFrame = rect;
-   entryFrame.origin.y = textFrame.origin.y+textFrame.size.height;
-#else
    CGRect entryFrame = rect;
    entryFrame.origin.y = navFrame.origin.y + navFrame.size.height;
-#endif
-
-#if 0 //def darwin9
-   entryFrame.size.height = 0;
-#else
    entryFrame.size.height = landscape ? 80 : 80;
-#endif
       
    if (entry == nil)
    {
@@ -130,7 +113,7 @@
       [ entry setSecureTextEntry: secret ];
       entry.secureTextEntry = TRUE;
    }
-   
+/*   
    struct CGAffineTransform transEnd = CGAffineTransformIdentity;
    if (orientation == UIDeviceOrientationLandscapeLeft)
 	  transEnd = CGAffineTransformMake(0,  1, -1, 0, 0, 0);
@@ -138,7 +121,7 @@
 	  transEnd = CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
    [ self setTransform:transEnd];
-
+*/
    return self; 
 }
 
@@ -157,7 +140,7 @@
 
 - (void)onOk
 {
-   [ (MainView*)[ self superview ] destroySIP ];
+    [self removeFromSuperview]; //[ (MainView*)[ self superview ] destroySIP ];
 }
 
 - (void)onCancel
@@ -179,7 +162,7 @@ replacementText:(NSString *)text
   }
   if ([text length] == 0 && params != nil)
   {
-     [(MainView*)[self superview] addEvent: 
+     [(MainView*)ctrl addEvent: 
         [[NSDictionary alloc] initWithObjectsAndKeys:
            @"keyPress", @"type",
            [NSNumber numberWithInt:(int) '\b'], @"key",                 
@@ -194,11 +177,11 @@ replacementText:(NSString *)text
      lastRange.location = range.location;
      lastRange.length = range.length;
      
-     unsigned char* chars = [text cStringUsingEncoding: NSUnicodeStringEncoding];
+     unsigned char* chars = (unsigned char*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
      if (chars != null)
      {
-        int charCode = chars[0] | (chars[1]<< 8); //flsobral@tc126: characters are unicode
-        [(MainView*)[self superview] addEvent: 
+        int charCode = chars[0] | (chars[1] << 8); //flsobral@tc126: characters are unicode
+        [(MainView*)ctrl addEvent: 
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"keyPress", @"type",
               [NSNumber numberWithInt: charCode], @"key",                 

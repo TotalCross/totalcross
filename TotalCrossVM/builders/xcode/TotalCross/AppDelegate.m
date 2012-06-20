@@ -17,9 +17,6 @@
 
 @implementation AppDelegate
 
-@synthesize window = _window;
-@synthesize viewController = _viewController;
-
 -(id) init
 {
 	[super init];
@@ -28,33 +25,30 @@
 	return self;
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+-(void) initApp
 {
     // setup for device orientation change events
     [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
-    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-    const char* name = [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
+    //    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+    //    const char* name = [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
+    const char* name = "UIGadgets";
     [tcvm startVM:&context appName:(char*)name];
     [Litebase libOpen:context];
-
+    
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
-/*
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+    [self initApp];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        self.viewController = [[ViewController alloc] initWithNibName:@"ViewController_iPhone" bundle:nil];
-    } else {
-        self.viewController = [[ViewController alloc] initWithNibName:@"ViewController_iPad" bundle:nil];
-    }
-    self.window.rootViewController = self.viewController;
-    [self.window makeKeyAndVisible];
+    [self initApp];
     return YES;
 }
-*/
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -100,7 +94,7 @@
     [[NSAutoreleasePool alloc] init];
     
     [tcvm startProgram:context];
-    free(cmdLine);
+    //free(cmdLine);
     exit(0);
 }
 

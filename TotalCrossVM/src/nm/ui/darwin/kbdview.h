@@ -21,9 +21,11 @@
    UITextView *entry;
    SipArguments *params;
    NSRange lastRange;
+@public
+   UIViewController* ctrl;
 }
 
-- (id)initWithFrame:(CGRect)rect params:(SipArguments*)args;
+- (id)initWithFrame:(CGRect)rect params:(SipArguments*)args ;
 - (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button;
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 

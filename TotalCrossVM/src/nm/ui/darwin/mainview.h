@@ -16,27 +16,11 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import <CoreFoundation/CoreFoundation.h>
-#import <UIKit/UITextView.h>
-#import <QuartzCore/CALayer.h>
 
 #include "GraphicsPrimitives.h"
 #import "kbdview.h"
+#import "childview.h"
 #import "sipargs.h"
-
-#if 0
- #define DEBUG0(fmt)         debug(fmt)
- #define DEBUG1(fmt,a)       debug(fmt,a)
- #define DEBUG2(fmt,a,b)     debug(fmt,a,b)
- #define DEBUG3(fmt,a,b,c)   debug(fmt,a,b,c)
- #define DEBUG4(fmt,a,b,c,d) debug(fmt,a,b,c,d)
-#else
- #define DEBUG0(fmt)
- #define DEBUG1(fmt,a)
- #define DEBUG2(fmt,a,b)
- #define DEBUG3(fmt,a,b,c)
- #define DEBUG4(fmt,a,b,c,d)
-#endif
 
 /*
  * fdie@ add iPhone full screen support.
@@ -56,32 +40,17 @@
 
 @end
 
-@interface MainView : UIView
+@interface MainView : UIViewController
 {
    NSMutableArray* _events;
    NSLock* _lock;
    KeyboardView *kbd_view;
-   int current_orientation;
+   ChildView *child_view;
    bool full_screen;
-   // child
-   CGContextRef bitmapContext;
-   CGImageRef cgImage;
-   int width, height, pitch;
-   int lastEventTS;
-   int shiftY;
 }
 
-- (double)durationForTransition:(int)type;
-
-- (id)initWithFrame:(CGRect)rect;
+- (void)initEvents;
 - (void)setFullscreen:(bool)mode;
-- (bool)isFullscreen;
-- (void)geometryChanged;
-- (bool)isKbdShown;
-- (int)orientation;
-
-- (void)lock:(const char *)info;
-- (void)unlock;
 
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
@@ -90,24 +59,8 @@
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
 
-- (void)screenChange: (bool)force;
-- (void)scheduleScreenChange: (CGSize)size;
-- (void)doScreenChange: (SSize*)size;
-
-- (void)didRotate:(NSNotification *)notification;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
-
-// child
-
-- (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen;
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)screenChange:(int)w height:(int)h;
 
 @end
 
@@ -115,7 +68,7 @@ typedef struct
 {
    __unsafe_unretained UIWindow  *_window;
    __unsafe_unretained MainView  *_mainview;
-//   __unsafe_unretained ChildView *_childview;
+   __unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 
 #endif
