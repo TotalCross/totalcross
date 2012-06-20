@@ -26,15 +26,20 @@ package totalcross.sys;
 public final class Settings
 {
    /**
-    * Field that represents the version of the TotalCross Virtual Machine. The major version is
-    * base 100. For example, version 1.0 has value 100. version 4 has a
-    * version value of 400. A beta 0.8 VM will have version 80.
-    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-    */
-    public static int version = 153;
+   * Field that represents the version of the TotalCross Virtual Machine. The major version is
+   * base 100. For example, version 1.0 has value 100. version 4 has a
+   * version value of 400. A beta 0.8 VM will have version 80.
+   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
+   */
+   public static int version = 153;
     
-    /** Field that represents the version in a string form, like "1.36beta" */
-    public static String versionStr = "1.53";
+   /** Field that represents the version in a string form, like "1.36beta" */
+   public static String versionStr = "1.53";
+    
+   /** Current build number.
+    * @since TotalCross 1.53 
+    */
+   public static int buildNumber = 1;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -755,6 +760,40 @@ public final class Settings
     * @since TotalCross 1.53
     */
    public static boolean resizableWindow;
+   
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_320X480 = 1;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_480X640 = 2;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_600X800 = 3;
+
+   /** Defines the window size when running in a desktop computer (the default is 240x320).
+    * Must be set in the static initializer.
+    * If used, the window will be centered on screen with the given resolution.
+    * @since TotalCross 1.53
+    * @see #WINDOWSIZE_320X480
+    * @see #WINDOWSIZE_480X640
+    * @see #WINDOWSIZE_600X800
+    * @see #resizableWindow
+    * @see #windowFont
+    */
+   public static int windowSize;
+   
+   /** Used in the windowFont field; sets the size to 12. */
+   public static final int WINDOWFONT_12 = 0;
+   /** Used in the windowFont field; sets the size to the one defined by user. */
+   public static final int WINDOWFONT_DEFAULT = 1;
+   
+   /** Defines the window font size when running in a desktop computer.
+    * Must be set in the static initializer.
+    * @since TotalCross 1.53
+    * @see #WINDOWFONT_12
+    * @see #WINDOWFONT_DEFAULT
+    * @see #windowSize
+    * @see #resizableWindow
+    */
+   public static int windowFont;
    
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()

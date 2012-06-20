@@ -15,7 +15,7 @@ void privateScreenChange(int32 w, int32 h)
    int32 border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
    w += border*2;
    h += GetSystemMetrics(SM_CYCAPTION) + border*2;
-   MoveWindow(mainHWnd, 0, 0, w, h, TRUE);
+   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
 #endif
 }
 
@@ -86,9 +86,13 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   width = defScrW == -1 ? 240 : defScrW;
-   height = defScrH == -1 ? 320 : defScrH;
-
+   if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   {
+      width = defScrW == -1 ? 240 : defScrW;
+      height = defScrH == -1 ? 320 : defScrH;
+   }
 #ifdef DESIRED_SCREEN_WIDTH          // tweak to work in IBGE's NETBOOK
    width = DESIRED_SCREEN_WIDTH;
 #endif
