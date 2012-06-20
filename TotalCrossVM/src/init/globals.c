@@ -62,6 +62,11 @@ jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;
 #endif
 
+// window.c
+#ifdef ANDROID
+jmethodID jtransitionEffectChanged;
+#endif
+
 // graphicsprimitives.c
 uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;

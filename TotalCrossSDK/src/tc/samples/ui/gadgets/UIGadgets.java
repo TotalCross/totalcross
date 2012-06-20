@@ -33,6 +33,7 @@ public class UIGadgets extends MainWindow
    {
       Settings.applicationId = "UiGd";
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.resizableWindow = true;
       Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
@@ -228,10 +229,12 @@ public class UIGadgets extends MainWindow
    {
       try
       {
-         nextTransitionEffect = (idx & 1) == 1 ? TRANSITION_OPEN : TRANSITION_CLOSE;
          setTitle(mbar.getMenuItem(testMenuItems[idx]).caption);
          if (testInstances[idx] == null)
+         {
             testInstances[idx] = (Container)testClasses[idx].newInstance();
+            ((Container)testInstances[idx]).transitionEffect = (idx & 1) == 1 ? TRANSITION_OPEN : TRANSITION_CLOSE;
+         }
          swap(testInstances[idx]);
          // disable the used menuitem
          for (int i = 0; i < testMenuItems.length; i++)

@@ -188,6 +188,7 @@ public class Image extends GfxSurface
      *    Vm.sleep(2000);
      * }
      * </pre>
+     * Caution: if reading a JPEG file, the original array contents will be changed!
      * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
      */
    public Image(byte []fullDescription) throws ImageException
@@ -209,7 +210,7 @@ public class Image extends GfxSurface
    }
 
    /**
-    * Sets the frame count for this image. The width must be a multiple of the frame count. After the frame count is
+    * Sets the frame count for this image. The width may be a multiple of the frame count. After the frame count is
     * set, it cannot be changed.
     * 
     * @throws IllegalArgumentException
@@ -223,9 +224,6 @@ public class Image extends GfxSurface
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
-      if ((width % n) != 0)
-         throw new IllegalArgumentException(
-               "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);
 
       if (n > 1 && frameCount <= 1)
          try
@@ -2103,63 +2101,5 @@ public class Image extends GfxSurface
          }
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
-   }
-   
-   /** Apply a 16-bit Floyd-Steinberg dithering on the current image.
-    * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
-    * @since TotalCross 1.3
-    */
-   public void dither()
-   {
-      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
-      int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-      int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
-      int h = height;
-      int[] pixel = (int[])pixels;
-      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
-      for (int y=0; y < h; y++) 
-         for (int x=0; x < w; x++)
-         {
-            p = pixel[y*w+x];
-            if (p == transparentColor) continue;
-            // get current pixel values
-            oldR = (p>>16) & 0xFF;
-            oldG = (p>>8) & 0xFF;
-            oldB = p & 0xFF;
-            // convert to 565 component values
-            newR = oldR >> 3 << 3; 
-            newG = oldG >> 2 << 2;
-            newB = oldB >> 3 << 3;
-            // compute error
-            errR = oldR-newR;
-            errG = oldG-newG;
-            errB = oldB-newB;
-            // set new pixel
-            pixel[y*w+x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
-            
-
-            addError(pixel, x+1, y ,w, errR,errG,errB,7,16);
-            addError(pixel, x-1,y+1,w, errR,errG,errB,3,16);
-            addError(pixel, x,y+1  ,w, errR,errG,errB,5,16);
-            addError(pixel, x+1,y+1,w, errR,errG,errB,1,16);
-         }
-      if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
-   }
-
-   private void addError(int[] pixel, int x, int y, int w, int errR, int errG, int errB, int j, int k)
-   {
-      if (x >= w || y >= height || x < 0) return;
-      int i = y*w+x;
-      int p = pixel[i];
-      int r = (p>>16) & 0xFF;
-      int g = (p>>8) & 0xFF;
-      int b = p & 0xFF;
-      r += j*errR/k;
-      g += j*errG/k;
-      b += j*errB/k;
-      if (r > 255) r = 255; else if (r < 0) r = 0;
-      if (g > 255) g = 255; else if (g < 0) g = 0;
-      if (b > 255) b = 255; else if (b < 0) b = 0;
-      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
 }

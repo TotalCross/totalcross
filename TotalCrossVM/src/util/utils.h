@@ -52,8 +52,8 @@ typedef void (*CharPToLowerFunc)(CharP c);
 int32 fread32(FILE* f);
 /// Read a LE int16 at the current file pointer
 int16 fread16(FILE* f);
-/// Search and find a file in the most common paths. Name should be the filename only, should not contain absolute paths
-FILE* findFile(CharP name, CharP openMode);
+/// Search and find a file in the most common paths. Name should be the filename only, should not contain absolute paths. If pathOut is not null, it should point to a buffer where the full path will be stored
+FILE* findFile(CharP name, CharP pathOut);
 
 #define LF_NONE      0
 #define LF_RECURSIVE 1

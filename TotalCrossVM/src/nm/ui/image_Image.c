@@ -132,12 +132,6 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor2(thisObj, color);
 }
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_dither(NMParams p) // totalcross/ui/image/Image native public void dither();
-{
-   Object thisObj = p->obj[0];
-   dither(thisObj);
-}
 
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"

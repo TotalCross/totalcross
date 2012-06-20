@@ -75,14 +75,14 @@ public class Loader extends Activity
       }
       catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
       {
-         AndroidUtils.debug("Litebase not installed.");
+         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
       catch (Throwable t)
       {
          AndroidUtils.debug("Exception ignored:");
          AndroidUtils.handleException(t,false);
-         AndroidUtils.debug("Litebase not installed.");
+         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
    }
@@ -191,74 +191,73 @@ public class Loader extends Activity
          setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
       }
       
-      achandler = new Handler()
-      {
-         public void handleMessage(Message msg) 
-         {
-            Bundle b = msg.getData();
-            switch (b.getInt("type"))
-            {
-               case LEVEL5:
-                  Level5.getInstance().processMessage(b);
-                  break;
-               case DIAL:
-                  dialNumber(b.getString("dial.number"));
-                  break;
-               case CAMERA:
-                  captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
-                  break;
-               case TITLE:
-                  setTitle(b.getString("setDeviceTitle.title"));
-                  break;
-               case EXEC:
-                  intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
-                  break;
-               case MAP:
-                  callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
-                  break;
-               case INVERT_ORIENTATION:
-                  if (!b.getBoolean("invert"))
-                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                  else
-                  {
-                     boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-                     setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                  }
-                  break;
-               case FULLSCREEN:
-               {
-                  boolean setAndHide = b.getBoolean("fullScreen");
-                  boolean sendEvent = b.getBoolean("sendEvent");
-                  InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                  Window w = getWindow();
-                  if (setAndHide)
-                  {
-                     w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                     w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                     imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
-                     if (sendEvent)
-                        Launcher4A.sendCloseSIPEvent();
-                     Launcher4A.instance.requestLayout();
-                  }
-                  else
-                  {
-                     w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                     w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                     imm.showSoftInput(Launcher4A.instance, 0);
-                  }
-                  break;
-               }
-            }
-         }
-      };
+      achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
       setContentView(new Launcher4A(this, tczname, appPath, cmdline));
       onMainLoop = true;
+   }
+   
+   class EventHandler extends Handler 
+   {
+      public void handleMessage(Message msg) 
+      {
+         Bundle b = msg.getData();
+         switch (b.getInt("type"))
+         {
+            case LEVEL5:
+               Level5.getInstance().processMessage(b);
+               break;
+            case DIAL:
+               dialNumber(b.getString("dial.number"));
+               break;
+            case CAMERA:
+               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
+               break;
+            case TITLE:
+               setTitle(b.getString("setDeviceTitle.title"));
+               break;
+            case EXEC:
+               intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
+               break;
+            case MAP:
+               callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
+               break;
+            case INVERT_ORIENTATION:
+               if (!b.getBoolean("invert"))
+                  setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+               else
+               {
+                  boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+                  setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+               }
+               break;
+            case FULLSCREEN:
+            {
+               boolean setAndHide = b.getBoolean("fullScreen");
+               InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+               Window w = getWindow();
+               if (setAndHide)
+               {
+                  imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0, Launcher4A.instance.siprecv);
+                  w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+               }
+               else
+               {
+                  imm.showSoftInput(Launcher4A.instance, 0);
+                  w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                  w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+               }
+               break;
+            }
+         }
+      }
    }
       
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
+   // Vm.exec("/sdcard/
    private void intentExec(String command, String args, int launchCode, boolean wait)
    {
       try
@@ -275,18 +274,39 @@ public class Loader extends Activity
             {
                AndroidUtils.handleException(e,false);
             }
-
          }
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
-            intent.putExtra("url",args);
-            if (!wait)
-               startActivityForResult(intent, JUST_QUIT);
+            if (args.toLowerCase().endsWith(".pdf"))
+            {
+               File pdfFile = new File(args);
+               if(pdfFile.exists()) 
+               {
+                   Uri path = Uri.fromFile(pdfFile); 
+                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                   pdfIntent.setDataAndType(path, "application/pdf");
+                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   try
+                   {
+                       startActivity(pdfIntent);
+                   }
+                   catch (ActivityNotFoundException e)
+                   {
+                       e.printStackTrace(); 
+                   }
+               }
+            }
             else
-               startActivity(intent);
-            return;
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
+               intent.putExtra("url",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
          }
          else
          if (command.equalsIgnoreCase("url"))
@@ -341,6 +361,8 @@ public class Loader extends Activity
    
    protected void onPause()
    {
+      if (runningVM)
+         Launcher4A.sendCloseSIPEvent();
       Launcher4A.appPaused = true;
       if (onMainLoop)
          Launcher4A.appPaused();

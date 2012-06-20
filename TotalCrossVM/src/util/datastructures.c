@@ -136,7 +136,8 @@ static bool htPut(Hashtable *iht, int32 key, int32 i32, VoidP ptr, bool isI32, b
    if (iht->size >= iht->threshold)
    {
       // Rehash the table if the threshold is exceeded
-      htRehash(iht);
+      if (!htRehash(iht))
+         return false;
       index = key & iht->hash;
    }
 

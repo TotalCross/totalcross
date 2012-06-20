@@ -27,14 +27,74 @@ import android.util.*;
 
 public class AndroidUtils
 {
+   static class Config
+   {
+      private int version = 1;
+      public String install_md5hash;
+      public int saved_screen_size;
+      public int demotime;
+      
+      public Config()
+      {
+         // legacy, first time only
+         SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
+         Map<String,?> oldconf = pref.getAll();
+         if (oldconf != null && !oldconf.isEmpty())
+         {
+            install_md5hash = pref.getString("install_md5hash",null);
+            saved_screen_size = pref.getInt("saved_screen_size",-1);
+            demotime = pref.getInt("demotime",0);
+            pref.edit().clear().commit();
+         }
+         else
+            try
+            {
+               FileInputStream f = new FileInputStream(pinfo.applicationInfo.dataDir+"/config.bin");
+               DataInputStream ds = new DataInputStream(f);
+               int version = ds.readInt();
+               if (version >= 1)
+               {
+                  install_md5hash = ds.readUTF();
+                  saved_screen_size = ds.readInt();
+                  demotime = ds.readInt();
+               }
+               f.close();
+            }
+            catch (Exception e)
+            {
+               handleException(e,false);
+            }                  
+      }
+
+      public void save()
+      {
+         try
+         {
+            FileOutputStream f = new FileOutputStream(pinfo.applicationInfo.dataDir+"/config.bin");
+            DataOutputStream ds = new DataOutputStream(f);
+            ds.writeInt(version);
+            ds.writeUTF(install_md5hash);
+            ds.writeInt(saved_screen_size);
+            ds.writeInt(demotime);
+            f.close();
+         }
+         catch (Exception e)
+         {
+            handleException(e,false);
+         }                  
+      }
+   }
+
    private static Activity main;
    public static PackageInfo pinfo;
    private static byte[] buf = new byte[8192];
+   public static Config configs;
 
    public static void initialize(Activity main) throws Exception
    {
       AndroidUtils.main = main;
       pinfo = main.getPackageManager().getPackageInfo(main.getPackageName(), 0); 
+      configs = new Config();
    }
    
    public static class StartupTask extends AsyncTask<Object, Integer, Integer> 
@@ -109,7 +169,6 @@ public class AndroidUtils
       loadTCVM();
       String appName = main.getClass().getName();  
       String pack = appName.substring(0,appName.lastIndexOf('.'));
-      SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");
       InputStream is = file.createInputStream();
       
@@ -121,26 +180,26 @@ public class AndroidUtils
       
       is.close();
       
-      String oldHash = pref.getString("install_md5hash", null);
+      String oldHash = configs.install_md5hash;
       String newHash = md5ToString(digest.digest());
       
       if (!newHash.equals(oldHash)) // application was updated
       {
          updateInstall(task, pack);
-         pref.edit().putString("install_md5hash", newHash).commit();
+         configs.install_md5hash = newHash;
+         configs.save();
       }
    }
    
    public static int getSavedScreenSize()
    {
-      SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
-      return pref.getInt("saved_screen_size",-1);
+      return configs.saved_screen_size;
    }
 
    public static void setSavedScreenSize(int newValue)
    {
-      SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
-      pref.edit().putInt("saved_screen_size", newValue).commit();
+      configs.saved_screen_size = newValue;
+      configs.save();
    }
    
    public static void updateInstall(StartupTask task, String pack) throws Exception

@@ -538,6 +538,9 @@ public class Edit extends Control
             {
                int i=0,pos=0;
                for (; i < n; pos++)
+                  if (pos >= mask.length)
+                     break;
+                  else
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
@@ -762,7 +765,7 @@ public class Edit extends Control
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (!uiAndroid || alwaysDrawAll) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (hasBorder && uiAndroid)
             {
                try
@@ -854,6 +857,9 @@ public class Edit extends Control
       {
          int n = Math.min(len,mask.length),i=0,pos=0;
          while (i < n)
+            if (pos >= mask.length)
+               break;
+            else
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i++));
@@ -1502,36 +1508,56 @@ public class Edit extends Control
       return false;
    }
    
+   private static class ClipboardMenuListener implements PressListener
+   {
+      public void controlPressed(ControlEvent e)
+      {
+         clipSel = clipboardMenu.selectedIndex;
+      }
+   }
+   static int clipSel = -2;
    static int showClipboardMenu(Control host)
    {
       try
       {
          if (clipboardMenu == null)
          {
-            String[] names = {cutStr,copyStr,replaceStr,pasteStr,"x"};
-            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,1,true,PushButtonGroup.BUTTON);
+            String[] names = {cutStr,copyStr,replaceStr,pasteStr};
+            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON)
+            {
+               protected boolean willOpenKeyboard()
+               {
+                  return true;
+               }
+            };
             clipboardMenu.setFocusLess(true);
          }
-         Container w = host.parent;
-         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
+         Container w = host.getParentWindow();
          clipboardMenu.setSelectedIndex(-1);
-         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? BOTTOM_OF : (host.y > w.height/2 ? BEFORE-2 : AFTER+2), PREFERRED+4,PREFERRED+4,host);
+         Rect cli = host.getAbsoluteRect();
+         int ph = clipboardMenu.getPreferredHeight();
+         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? cli.y+cli.height-ph : (cli.y > w.height/2 ? cli.y-ph : cli.y+cli.height), PREFERRED+4,PREFERRED+4,host);
+         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
          clipboardMenu.bringToFront();
          w.repaintNow();
-         
-         for (int i = 0; i < 300; i++)
+         clipSel = -2;
+         PressListener pl;
+         clipboardMenu.addPressListener(pl = new ClipboardMenuListener());
+         int end = Vm.getTimeStamp() + 3000; // make sure we will elapse only 3 seconds
+         while (Vm.getTimeStamp() < end)
          {
             Vm.sleep(10);
             if (Event.isAvailable())
             {
                Window.pumpEvents();
-               if (clipboardMenu.selectedIndex != -1)
+               if (clipSel != -2)
                   break;
             }
          }
+         clipboardMenu.removePressListener(pl);
          w.remove(clipboardMenu);
          
-         return clipboardMenu.selectedIndex;
+         return clipSel;
       }
       catch (Exception e)
       {

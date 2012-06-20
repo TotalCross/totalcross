@@ -130,7 +130,7 @@ public class PopupMenu extends Window
          layout.controlGap = 50; // 50% of font's height
          layout.centerVertically = true;
          layout.setup();
-         int cw = getClientRect().width - ball.getWidth();
+         int cw=-1;
          
          containers = new ListContainer.Item[itemCount];
          
@@ -154,6 +154,8 @@ public class PopupMenu extends Window
                   htSearchKeys.put(Convert.toUpperCase(cc), i);
                }
             }
+            if (cw == -1)
+               cw = getClientRect().width - Math.abs(c.getLeftControlX()) - Math.abs(c.getRightControlX());
             if (fm.stringWidth(s) <= cw)
                c.items = new String[]{"",s,""};
             else
@@ -183,6 +185,7 @@ public class PopupMenu extends Window
          add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? sc2 : null);
          list.setBackColor(Color.WHITE);
          list.addContainers(containers);
+         repositionOnHeight();
       }
       catch (Exception e)
       {
@@ -192,6 +195,25 @@ public class PopupMenu extends Window
       }
    }
    
+   private void repositionOnHeight()
+   {
+      if (containers == null) return;
+      int hh = containers[containers.length-1].getY2();
+      int hm = list.y+hh+cancel.height+fmH;
+      if (this.height > hm)
+      {
+         list.height = hh+fmH/3;
+         setRect(CENTER,CENTER,KEEP,hm);
+         cancel.setRect(KEEP,BOTTOM-fmH/3,KEEP,KEEP);
+      }
+   }
+   
+   public void reposition()
+   {
+      super.reposition();
+      repositionOnHeight();
+   }
+
    /** Selects the given index. */
    public int setSelectedIndex(int index)
    {

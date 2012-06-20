@@ -38,10 +38,11 @@ void destroyTCZ() // no threads are running at this point
 static bool tczReadMore(TCZFile f)
 {
    int32 n;
-   if (f->expectedFilePos != f->header->realFilePos) // if the file position has changed by some other instance, reposition it
-      fseek(f->header->fin, f->expectedFilePos, SEEK_SET);
-   n = fread(f->buf, 1, sizeof(f->buf), f->header->fin);
-   f->header->realFilePos = (f->expectedFilePos += n);
+   FILE* fin = fopen(f->header->path, "rb");
+   fseek(fin, f->expectedFilePos, SEEK_SET);
+   n = fread(f->buf, 1, sizeof(f->buf), fin);
+   f->expectedFilePos += n;
+   fclose(fin);
    if (n <= 0)
       return false; // no more data
    f->zs.next_in = f->buf;
@@ -120,14 +121,6 @@ int8 tczRead8(TCZFile f)
    return i;
 }
 
-static void tczFinalizer(Heap heap, void* bag)
-{
-   TCZFileHeader header = (TCZFileHeader)bag;
-   UNUSED(heap);
-   fclose(header->fin);
-   header->fin = null;
-}
-
 static TCZFile tczNewInstance(TCZFile parent)
 {
    volatile Heap hheap = null;
@@ -149,7 +142,7 @@ static TCZFile tczNewInstance(TCZFile parent)
          goto error;
       ntcz->header = newXH(TCZFileHeader, hheap);
       ntcz->header->hheap = hheap;
-      heapSetFinalizer(hheap, tczFinalizer, ntcz->header);
+      //heapSetFinalizer(hheap, tczFinalizer, ntcz->header);
    }
    //debug("tczNewInstance tcz %d from header %d - %d",(int32)ntcz, (int32)ntcz->header, ntcz->header->instanceCount);
    ntcz->zs.opaque = ntcz->header->hheap;
@@ -215,13 +208,14 @@ TCZFile tczFindName(TCZFile tcz, CharP name) // locates the name and also positi
    ntcz = tczNewInstance(tcz);
    if (!ntcz)
       return null;
-   fseek(ntcz->header->fin, ntcz->header->realFilePos = ntcz->expectedFilePos = ntcz->header->offsets[pos], SEEK_SET);
+
+   ntcz->expectedFilePos = ntcz->header->offsets[pos];
    ntcz->uncompressedSize = tcz->header->uncompressedSizes[pos];
    return ntcz;
 }
 
 /** Reads a TCZ file and place the informations in the public members available in this "class". */
-TCZFile tczOpen(FILE* fin, CharP fileName)
+TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName)
 {
    int32 baseOffset,n,i;
    CharPArray names;
@@ -233,6 +227,7 @@ TCZFile tczOpen(FILE* fin, CharP fileName)
    version    = fread16(fin);
    attr       = fread16(fin);
    baseOffset = fread32(fin);
+   fclose(fin);
    if (version == 0)
    {
       alert("Invalid TCZ version.\nFile probably corrupted");
@@ -248,8 +243,8 @@ TCZFile tczOpen(FILE* fin, CharP fileName)
    if (!tcz)
       return null;
 
-   tcz->header->realFilePos = tcz->expectedFilePos = 8;
-   tcz->header->fin = fin;
+   tcz->expectedFilePos = 8;
+   xstrcpy(tcz->header->path, fullpath);
    tcz->header->version = version;
    tcz->header->attr = attr;
    heap = tcz->tempHeap = tcz->header->hheap;
@@ -290,6 +285,7 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
 {
    FILE* f;
    volatile TCZFile t=null,t2=null;
+   char fullpath[128];
 
 #ifdef PALMOS
    CharP dot;
@@ -297,8 +293,8 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
       *dot = 0;
 #endif
 
-   f = findFile(tczName,"rb");
-   if (f != null && (t = tczOpen(f, tczName)) != null)
+   f = findFile(tczName,fullpath);
+   if (f != null && (t = tczOpen(f, fullpath, tczName)) != null)
    {
       VoidPs* temp;
       // enqueue the file in the TCZ list

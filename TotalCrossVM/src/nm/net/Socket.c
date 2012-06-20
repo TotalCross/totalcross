@@ -43,6 +43,7 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
    bool noLinger = p->i32[2];
    CharP szHost;
    bool isUnknownHost = false;
+   bool timedOut = false;
    Err err;
 
    if (host == null)
@@ -62,10 +63,12 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
    {
       Socket_socketRef(socket) = socketRef;
       socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
-      if ((err = socketCreate(socketHandle, szHost, port, timeout, noLinger, &isUnknownHost)) != NO_ERROR)
+      if ((err = socketCreate(socketHandle, szHost, port, timeout, noLinger, &isUnknownHost, &timedOut)) != NO_ERROR)
       {
          if (isUnknownHost)
             throwException(p->currentContext, UnknownHostException, szHost);
+         else if (timedOut)
+            throwException(p->currentContext, IOException, "Socket creation timed out.");
          else
             throwExceptionWithCode(p->currentContext, IOException, err);
          invalidate(socket);

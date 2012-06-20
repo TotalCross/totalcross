@@ -24,6 +24,10 @@
 #define ATTR_HAS_MAINWINDOW 2
 #define ATTR_LIBRARY 4
 #define ATTR_NEW_FONT_SET 8
+#define ATTR_RESIZABLE_WINDOW 16
+#define ATTR_WINDOWSIZE_320X480 64
+#define ATTR_WINDOWSIZE_480X640 128
+#define ATTR_WINDOWSIZE_600X800 256
 
 typedef struct TTCZFile TTCZFile;
 typedef TTCZFile* TCZFile;
@@ -38,9 +42,8 @@ struct TTCZFileHeader // common members to all instances
    Int32Array uncompressedSizes;
    int16 version;
    int16 attr; // see ATTR_xxx above
-   FILE* fin;
+   char path[128];
    int32 instanceCount;
-   int32 realFilePos; // the current seek position
    ConstantPool cp; // this is the Global constant pool that came in this tcz file
    Heap hheap;
 };
@@ -77,7 +80,7 @@ void tczClose(TCZFile tcz);
 TCZFile tczFindName(TCZFile tcz, CharP name);
 /// Opens a tcz file from the given FILE. Use only if there's no constant pools in the file, otherwise, use tczLoad.
 /// fileName may be null for font files.
-TCZFile tczOpen(FILE* fin, CharP fileName);
+TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName);
 /// Loads a TotalCross library with the given tcz name. If there's a constant pool in the file,
 /// it is loaded too. Also binds the tcz to the list of open tczs. There's no need to close the returned tcz instance.
 /// VERY IMPORTANT: the tczName parameter MUST BE a temporary buffer, NEVER a constant string, because it may be changed

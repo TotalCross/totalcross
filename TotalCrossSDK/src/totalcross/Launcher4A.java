@@ -23,6 +23,8 @@ import totalcross.android.compat.*;
 
 import java.util.*;
 
+import android.view.animation.*;
+import android.view.animation.Animation.AnimationListener;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -131,6 +133,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       surfHolder = getHolder();
       surfHolder.addCallback(this);
       setWillNotDraw(true);
+      setWillNotCacheDrawing(true);
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
@@ -189,16 +192,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
+      //PixelFormat pf = new PixelFormat(); - android returns 5
+      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
-         int screenSize = Math.max(screenHeight, display.getWidth());
+         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
             // if first try, check if the value was already cached
             int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) != -1)
+            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
             {
                screenSize = temp;
                //AndroidUtils.debug("restoring size from cache: "+screenSize);
@@ -209,19 +214,25 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                // not yet cached. first try? store the size and cache it
                if (firstOrientationSize == 0)
                {
-                  //AndroidUtils.debug("first: "+screenSize);
+                  //AndroidUtils.debug("@@@@ first: "+screenSize);
                   firstOrientationSize = screenSize;
                   sendOrientationChange(true);
                   return;
                }
-               //AndroidUtils.debug("second: "+screenSize);
+               //AndroidUtils.debug("@@@@ second: "+screenSize);
                if (firstOrientationSize > screenSize)
                   screenSize = firstOrientationSize;
                AndroidUtils.setSavedScreenSize(screenSize);
                sendOrientationChange(false); // restore orientation to what user wants
             }
          }
+         if (screenSize == 0)
+         {
+            screenSize = screenSize0;
+            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
+         }
          sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
+         sScreenBitmap.eraseColor(0xFFFFFFFF);
          nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
@@ -243,7 +254,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (sipVisible) // sip changed?
       {
          if (rotated) // close the sip if a rotation occurs
-            setSIP(SIP_HIDE,true);
+            setSIP(SIP_HIDE);
          return;
       }
       
@@ -301,21 +312,19 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
+      outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
+
       return new BaseInputConnection(this, false)
       {
          public boolean deleteSurroundingText(int leftLength, int rightLength)
          {
-            if (rightLength > 0 && leftLength == 0) // do not handle right deletions
-               return true;
-            
-            while (leftLength-- >= 0)
+            for (int i =0; i < leftLength; i++)
             {
-               if (!sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)))
-                  return false;
-               if (!sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL)))
-                  return false;
+               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
             }
-            
+
             return true;
          }
       };
@@ -349,7 +358,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (!hardwareKeyboardIsVisible && sipVisible)
          {
             if (event.getAction() == KeyEvent.ACTION_UP)
-               setSIP(SIP_HIDE,true);
+               setSIP(SIP_HIDE);
             return false;
          }
       }
@@ -438,6 +447,111 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int TRANSITION_OPEN = 1;
    private static final int TRANSITION_CLOSE = 2;
    
+   static class ScreenView extends SurfaceView
+   {
+      public ScreenView(Context context)
+      {
+         super(context);
+         setWillNotDraw(false);
+         setWillNotCacheDrawing(true);
+      }
+      
+      public void draw(Canvas c)
+      {
+         c.drawBitmap(sScreenBitmap,0,0,null);
+      }
+   }
+   
+   static class AnimationThread implements Runnable,AnimationListener
+   {
+      Bitmap bm;
+      java.util.concurrent.CountDownLatch latch;
+      int trans;
+      ImageView newView;
+      ScreenView scrView;
+      
+      void startTransition(int trans)
+      {
+         this.trans = trans;
+         latch = new java.util.concurrent.CountDownLatch(1);
+         loader.runOnUiThread(this);
+         try {animt.latch.await();} catch (InterruptedException ie) {}
+      }
+      
+      public void run()
+      {
+         if (scrView == null)
+         {
+            ViewGroup vg = (ViewGroup)instance.getParent();
+            scrView = new ScreenView(instance.getContext());
+            newView = new ImageView(instance.getContext());
+            newView.setWillNotCacheDrawing(true);
+            newView.setVisibility(ViewGroup.INVISIBLE);
+            scrView.setVisibility(ViewGroup.INVISIBLE);
+            vg.addView(scrView);
+            vg.addView(newView);
+         }
+         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
+         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
+         {
+            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
+            bm.eraseColor(0xFFFFFFFF);
+            newView.setImageBitmap(bm);
+         }
+         Animation anim;
+         if (trans == TRANSITION_OPEN)
+         {
+            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
+            newView.setImageBitmap(bm);
+            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
+            anim.setDuration(500);
+            anim.setAnimationListener(this);
+            newView.setVisibility(ViewGroup.VISIBLE);
+            newView.startAnimation(anim);
+         }
+         else // TRANSITION_CLOSE
+         {
+            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
+            anim.setDuration(500);
+            anim.setAnimationListener(this);
+
+            newView.setImageBitmap(bm);
+            newView.setVisibility(ViewGroup.VISIBLE);
+            scrView.setVisibility(ViewGroup.VISIBLE);
+            newView.startAnimation(anim);
+         }
+      }
+      
+      public void onAnimationEnd(Animation animation)
+      {
+         drawScreen();
+         newView.setVisibility(ViewGroup.INVISIBLE);
+         scrView.setVisibility(ViewGroup.INVISIBLE);
+         latch.countDown();
+      }
+
+      public void onAnimationRepeat(Animation animation) {}
+      public void onAnimationStart(Animation animation) {}
+   }
+   
+   static AnimationThread animt = new AnimationThread();
+   
+   static void drawScreen()
+   {
+      Canvas canvas = surfHolder.lockCanvas(rDirty);
+      if (canvas != null)
+      {
+         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
+         surfHolder.unlockCanvasAndPost(canvas);
+      }
+   }
+
+   static void transitionEffectChanged(int type)
+   {
+      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
+         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
+   }
+   
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
       if (!appPaused)
@@ -449,48 +563,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          
          switch (transitionEffect)
          {
-            case TRANSITION_NONE:
-            {
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               if (canvas != null)
-               {
-                  canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-                  surfHolder.unlockCanvasAndPost(canvas);
-               }
-               break;
-            }
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
-            {
-               int w = instance.getWidth();
-               int h = instance.getHeight();
-               int step = Math.max(w,h) >= 800 ? 32 : 16;
-               int n = Math.min(w,h) / 2;
-               int mx = w/2;
-               int my = h/2;
-               int incX=step,incY=step;
-               if (w > h)
-                  incX = step*w/h + 1;
-                else
-                  incY = step*h/w + 1;
-               int i0 = transitionEffect == TRANSITION_CLOSE ? n : 0;
-               int iinc = transitionEffect == TRANSITION_CLOSE ? -1 : 1;
-               n = n / step + 1; // guich@tc126_17: +1
-               i0 /= step;
-               for (int i =i0; --n >= 0; i+=iinc)
-               {
-                  int minx = (int)(mx - i*incX);
-                  int miny = (int)(my - i*incY);
-                  int maxx = (int)(mx + i*incX);
-                  int maxy = (int)(my + i*incY);
-                  drawImageLine(minx-step,miny-step,maxx+step,miny+step);
-                  drawImageLine(minx-step,miny-step,minx+step,maxy+step);
-                  drawImageLine(maxx-step,miny-step,maxx+step,maxy+step);
-                  drawImageLine(minx-step,maxy-step,maxx+step,maxy+step);
-               }
+               animt.startTransition(transitionEffect);
+               // no break!
+            case TRANSITION_NONE:
+               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
+               drawScreen();
                break;
-            }
          }
          //int ela = (int)(System.currentTimeMillis() - ini);
          //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
@@ -498,17 +578,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       catch (Throwable t)
       {
          AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-   }
-   
-   private static void drawImageLine(int minx, int miny, int maxx, int maxy)
-   {
-      rDirty.left = minx; rDirty.top = miny; rDirty.right = maxx; rDirty.bottom = maxy;
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
       }
    }
 
@@ -635,45 +704,57 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    static boolean sipVisible;
    
+   class SipClosedReceiver extends ResultReceiver
+   {
+      public SipClosedReceiver()
+      {
+         super(null);
+      }
+      public void onReceiveResult(int resultCode, Bundle resultData)
+      {
+         sendCloseSIPEvent();
+         loader.achandler.postDelayed(sipthread,300);
+      }
+   }
+   class SipClosedThread implements Runnable
+   {
+      public void run()
+      {
+         sendCloseSIPEvent();
+      }
+   }
+   public SipClosedReceiver siprecv = new SipClosedReceiver();
+   private SipClosedThread sipthread = new SipClosedThread();
+   
    public static void setSIP(int sipOption)
    {
-      setSIP(sipOption,false);
-   }
-   
-   public static void setSIP(int sipOption, boolean sendEvent)
-   {
-      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
+      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
       {
          case SIP_HIDE:
             sipVisible = false;
             if (Loader.isFullScreen)
-               setLoaderFullScreen(true,sendEvent);
+               setLoaderFullScreen(true);
             else
-            {
-               imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
-               if (sendEvent)
-                  sendCloseSIPEvent();
-            }
+               imm.hideSoftInputFromWindow(instance.getWindowToken(), 0, instance.siprecv);
             break;
          case SIP_SHOW:
          case SIP_TOP:
          case SIP_BOTTOM:
             sipVisible = true;
             if (Loader.isFullScreen)
-               setLoaderFullScreen(false,sendEvent);
+               setLoaderFullScreen(false);
             else
                imm.showSoftInput(instance, 0); 
             break;
       }
    }
 
-   private static void setLoaderFullScreen(boolean full, boolean sendEvent)
+   private static void setLoaderFullScreen(boolean full)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putBoolean("fullScreen", full);
-      b.putBoolean("sendEvent", sendEvent);
       b.putInt("type",Loader.FULLSCREEN);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -681,7 +762,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void sendCloseSIPEvent()
    {
-      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+      if (eventThread != null)
+         eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
    }
 
    public static int getAppHeight()
@@ -691,10 +773,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int setElapsed(int n)
    {
-      SharedPreferences pref = loader.getPreferences(Context.MODE_PRIVATE);
       if (n == 0)
-         return pref.getInt("demotime",0);
-      pref.edit().putInt("demotime",n).commit();
+         return AndroidUtils.configs.demotime;
+      AndroidUtils.configs.demotime = n;
+      AndroidUtils.configs.save();
       return n;
    }
    
@@ -1073,7 +1155,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       appPaused = true;
       if (eventThread != null)
       {
-         setSIP(SIP_HIDE,true);
+         setSIP(SIP_HIDE);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
    }

@@ -118,7 +118,6 @@
 		0F8C8CD41549CFC700E0967F /* jversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A861549CFC700E0967F /* jversion.h */; };
 		0F8C8CD51549CFC700E0967F /* rdbmp.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A871549CFC700E0967F /* rdbmp.c */; };
 		0F8C8CD91549CFC700E0967F /* Launcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A9E1549CFC700E0967F /* Launcher.m */; };
-		0F8C8CDA1549CFC700E0967F /* tcpriv.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A9F1549CFC700E0967F /* tcpriv.m */; };
 		0F8C8CDB1549CFC700E0967F /* Launcher.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8AA11549CFC700E0967F /* Launcher.c */; };
 		0F8C8CDE1549CFC700E0967F /* libtcvm.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8AA61549CFC700E0967F /* libtcvm.h */; };
 		0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8AA71549CFC700E0967F /* libtcvm.m */; };
@@ -528,7 +527,6 @@
 		0F8C8A861549CFC700E0967F /* jversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jversion.h; sourceTree = "<group>"; };
 		0F8C8A871549CFC700E0967F /* rdbmp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rdbmp.c; sourceTree = "<group>"; };
 		0F8C8A9E1549CFC700E0967F /* Launcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Launcher.m; sourceTree = "<group>"; };
-		0F8C8A9F1549CFC700E0967F /* tcpriv.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = tcpriv.m; sourceTree = "<group>"; };
 		0F8C8AA11549CFC700E0967F /* Launcher.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Launcher.c; sourceTree = "<group>"; };
 		0F8C8AA61549CFC700E0967F /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F8C8AA71549CFC700E0967F /* libtcvm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = libtcvm.m; sourceTree = "<group>"; };
@@ -1080,7 +1078,6 @@
 			isa = PBXGroup;
 			children = (
 				0F8C8A9E1549CFC700E0967F /* Launcher.m */,
-				0F8C8A9F1549CFC700E0967F /* tcpriv.m */,
 			);
 			path = darwin;
 			sourceTree = "<group>";
@@ -2199,7 +2196,6 @@
 				0F8C8CD31549CFC700E0967F /* jutils.c in Sources */,
 				0F8C8CD51549CFC700E0967F /* rdbmp.c in Sources */,
 				0F8C8CD91549CFC700E0967F /* Launcher.m in Sources */,
-				0F8C8CDA1549CFC700E0967F /* tcpriv.m in Sources */,
 				0F8C8CDB1549CFC700E0967F /* Launcher.c in Sources */,
 				0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */,
 				0F8C8CE11549CFC700E0967F /* ioapi.c in Sources */,

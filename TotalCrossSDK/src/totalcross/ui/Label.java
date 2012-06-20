@@ -61,7 +61,8 @@ public class Label extends Control
    private boolean highlighted;
    private int fColor;     // sholtzer@450_21: added support for setEnabled(false)
    private int dColor=-1; // guich@450: darker color if in 3d mode
-   private boolean useFillAsPreferred;
+   /** Set automatically to true when an empty string is passed in the constructor. */
+   public boolean useFillAsPreferred;
    private int marqueeCount, marqueeStep, marqueeX;
    private TimerEvent marqueeTimer;
    private int highlightColor=-1,userHighlightColor=-1;
@@ -140,8 +141,7 @@ public class Label extends Control
    public int secondGradientColor;
    
    /** Set to true to let the label split its text based on the width every time its width
-    * changes. Note that the height will be changed to PREFERRED; you may then re-change the
-    * height to another one if you want.
+    * changes. If the height is PREFERRED, the Label will change its size accordingly.
     * You may change the height again calling setRect.
     * @since TotalCross 1.14
     */
@@ -387,11 +387,12 @@ public class Label extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      if (autoSplit && this.width > 0 && this.width != lastASW && ((PREFERRED-RANGE) <= setH && setH <= (PREFERRED+RANGE))) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
+      if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
          split(this.width);
-         setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
+         if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
+            setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
       }
       linesPerPage = height / fmH;
       if (linesPerPage < 1) linesPerPage = 1;

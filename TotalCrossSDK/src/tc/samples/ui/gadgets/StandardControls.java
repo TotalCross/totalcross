@@ -159,6 +159,12 @@ public class StandardControls extends Container
       }
    }
 
+   public void onPaint(Graphics g)
+   {
+      lStatus.setText(Settings.screenWidth+"x"+Settings.screenHeight);
+      super.onPaint(g);
+   }
+   
    public void onEvent(Event event)
    {
       if (event instanceof UIRobotEvent)
@@ -214,6 +220,7 @@ public class StandardControls extends Container
          if (event.target == btnInput)
          {
             InputBox id = new InputBox("Attention","Please type your name","");
+            id.yPosition = BOTTOM;
             id.popup();
             if (id.getPressedButtonIndex() == 0)
                lStatus.setText(id.getValue());

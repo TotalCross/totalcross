@@ -195,10 +195,10 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       if (Settings.fingerTouch)
          switch (direction)
          {
-            case DragEvent.UP   : return vbar.isVisible() && vbar.getValue() > vbar.getMinimum();
-            case DragEvent.DOWN : return vbar.isVisible() && (vbar.getValue() + vbar.getVisibleItems()) < vbar.getMaximum();
-            case DragEvent.LEFT : return hbar.isVisible() && hbar.getValue() > hbar.getMinimum();
-            case DragEvent.RIGHT: return hbar.isVisible() && (hbar.getValue() + hbar.getVisibleItems()) < hbar.getMaximum();
+            case DragEvent.UP   : return vbar.getValue() > vbar.getMinimum();
+            case DragEvent.DOWN : return (vbar.getValue() + vbar.getVisibleItems()) < vbar.getMaximum();
+            case DragEvent.LEFT : return hbar.getValue() > hbar.getMinimum();
+            case DragEvent.RIGHT: return (hbar.getValue() + hbar.getVisibleItems()) < hbar.getMaximum();
          }
       flickDirection = NONE;
       return false;
@@ -914,8 +914,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       vbar.setEnabled(visibleItems < itemCount);
       btnX = width - btnW;
 
-      vbar.setRect(RIGHT, 0, PREFERRED, FILL, null, screenChanged);
-      hbar.setRect(0, BOTTOM, btnW == 0 ? FILL : FIT, PREFERRED, null, screenChanged);
+      vbar.setRect(Settings.fingerTouch ? RIGHT-2 : RIGHT, 0, PREFERRED, FILL, null, screenChanged);
+      hbar.setRect(0, Settings.fingerTouch ? BOTTOM-2 : BOTTOM, btnW == 0 ? FILL : FIT, PREFERRED, null, screenChanged);
 
       resetScrollBars();
       Window.needsPaint = true;
@@ -1006,7 +1006,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          else
          {
             int direction = DragEvent.getInverseDirection(de.direction);
-            de.consumed = true;
+            //de.consumed = true; - with this, the ScrollPositions don't appear
             if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
                scScrolled = isScrolling = true;
          }

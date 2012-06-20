@@ -85,6 +85,7 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
    tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
+   tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    if (loadedTCZ != null)
       *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
 }

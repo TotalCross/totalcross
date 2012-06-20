@@ -44,7 +44,7 @@ void privateScreenChange(int32 w, int32 h)
    UNUSED(h)
 }
 
-bool graphicsStartup(ScreenSurface screen)
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    screen->bpp = ANDROID_BPP;
    screen->screenX = screen->screenY = 0;

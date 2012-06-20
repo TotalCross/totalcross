@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
 /*
@@ -44,11 +42,13 @@ package totalcross.xml.rpc;
  */
 
 import totalcross.io.IOException;
-import totalcross.net.*;
-import totalcross.sys.*;
-import totalcross.ui.html.*;
+import totalcross.net.Base64;
+import totalcross.net.UnknownHostException;
+import totalcross.sys.Time;
+import totalcross.ui.html.TagDereferencer;
 import totalcross.util.*;
-import totalcross.xml.*;
+import totalcross.xml.SyntaxException;
+import totalcross.xml.XmlReader;
 
 /**
  * Handles XML-RPCs to a server. This object cannot be reused.
@@ -74,17 +74,31 @@ public class XmlRpcClient extends XmlReader
     * @throws XmlRpcException
     *            If the connection to the server was unsuccessful
     */
-   public XmlRpcClient(String hostname, int port, String uri) throws XmlRpcException, totalcross.net.UnknownHostException
+   public XmlRpcClient(String hostname, int port, String uri) throws XmlRpcException, UnknownHostException
    {
-      this(hostname, port, uri, false);
+      this(new StandardHttpClient(hostname, port, uri));
    }
 
    /**
     * Creates a xmlrpc client with compression if the given flag is true.
     */
-   public XmlRpcClient(String hostname, int port, String uri, boolean doCompression) throws XmlRpcException, totalcross.net.UnknownHostException
+   public XmlRpcClient(String hostname, int port, String uri, boolean doCompression) throws XmlRpcException, UnknownHostException
    {
-      this.httpClient = doCompression ? new CompressedHttpClient(hostname, port, uri) : new StandardHttpClient(hostname, port, uri);
+      this(doCompression ?
+            new CompressedHttpClient(hostname, port, uri) :
+               new StandardHttpClient(hostname, port, uri));
+   }
+
+   public XmlRpcClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout, boolean doCompression) throws XmlRpcException, UnknownHostException
+   {
+      this(doCompression ?
+            new CompressedHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout) :
+               new StandardHttpClient(hostname, port, uri, openTimeout, readTimeout, writeTimeout));
+   }
+
+   public XmlRpcClient(StandardHttpClient httpClient) throws XmlRpcException, UnknownHostException
+   {
+      this.httpClient = httpClient;
       xmlHandler = new XmlRpcContentHandler();
       setContentHandler(xmlHandler);
       writer = new XmlWriter();

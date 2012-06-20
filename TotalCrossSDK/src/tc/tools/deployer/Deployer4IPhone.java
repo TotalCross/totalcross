@@ -13,26 +13,23 @@
 
 package tc.tools.deployer;
 
-import tc.tools.deployer.bzip2.*;
-
-import totalcross.crypto.*;
-import totalcross.crypto.digest.*;
-import totalcross.io.*;
-import totalcross.io.File;
-import totalcross.sys.*;
-import totalcross.util.*;
-
 import java.io.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.zip.*;
-
-import org.apache.tools.tar.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.apache.tools.tar.TarEntry;
 import org.vafer.jdeb.*;
 import org.vafer.jdeb.Console;
-import org.vafer.jdeb.descriptors.*;
-import org.vafer.jdeb.mapping.*;
-import org.vafer.jdeb.producers.*;
+import org.vafer.jdeb.descriptors.PackageDescriptor;
+import org.vafer.jdeb.mapping.Mapper;
+import org.vafer.jdeb.producers.DataProducerDirectory;
+import tc.tools.deployer.bzip2.CBZip2OutputStream;
+import totalcross.crypto.NoSuchAlgorithmException;
+import totalcross.crypto.digest.MD5Digest;
+import totalcross.io.File;
+import totalcross.io.IllegalArgumentIOException;
+import totalcross.sys.*;
+import totalcross.util.Hashtable;
+import totalcross.util.Vector;
 
 /**
  * Generates IPhone application packages.
@@ -40,7 +37,6 @@ import org.vafer.jdeb.producers.*;
 public class Deployer4IPhone
 {
    private String targetDir;
-   private static byte[] versionBytes = {52,0,36,0};
    
    public static void run() throws Exception
    {
@@ -99,46 +95,13 @@ public class Deployer4IPhone
          String version = DeploySettings.appVersion != null ? DeploySettings.appVersion : DeploySettings.filePrefix.equals("TotalCross") ? totalcross.sys.Settings.versionStr : "1.0";
 
          // copy the launcher for win32 to there
-         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir+"launchers/" + ipath + "/Launcher",false);
+         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/" + ipath + "/Launcher", false);
          if (buf == null)
             throw new DeployerException("File " + ipath + "/Launcher not found!");
 
-         // now find the offset of the argument
-         int ofs = Utils.indexOf(buf, DeploySettings.defaultArgument, false);
-         if (ofs < 0)
-            throw new DeployerException("Can't find offset for command line on iphone!");
-         Vm.arrayCopy(args, 0, buf, ofs, args.length); // no "write taking care" needed
-         buf[ofs+args.length] = 0;
-
-         // find the offset of the version
-         ofs = Utils.indexOf(buf, versionBytes, false);
-         if (ofs > 0) // found version offset?
-         {
-            buf[ofs]   = (byte)DeploySettings.getAppVersionHi();
-            buf[ofs+2] = (byte)DeploySettings.getAppVersionLo();
-         }
-
-         String out = DeploySettings.filePrefix;
-         File fout = new File(out, File.CREATE_EMPTY);
+         File fout = new File(DeploySettings.filePrefix, File.CREATE_EMPTY);
          fout.writeBytes(buf, 0, buf.length);
          fout.close();
-
-         String binExt = DeploySettings.isUnix() ? ".bin" : DeploySettings.isMac() ? "" : ".exe";
-         String ldid_path = DeploySettings.etcDir+"tools/ldid/ldid"+binExt;
-         String codesign_path = DeploySettings.etcDir+"tools/ldid/arm-apple-darwin9-codesign_allocate"+binExt;
-         if (!new File(ldid_path).exists() || !new File(codesign_path).exists())
-            throw new DeployerException("iphone2 build failed, missing some tools!");
-         Process p = Runtime.getRuntime().exec(ldid_path+" -S "+DeploySettings.filePrefix, new String[] {"CODESIGN_ALLOCATE="+codesign_path});
-         int ret = p.waitFor();
-         if (ret != 0)
-         {
-            try {new File(out, File.READ_WRITE).delete();} catch (Exception e) {}
-            try {new File(targetDir).delete();} catch (Exception e) {}
-            System.err.println("Failed to codesign the launcher executable for iPhone 2.x! Error: "+ret+" ("+Convert.unsigned2hex(ret,8)+")");
-            dump("[LDID]", p.getErrorStream());
-            dump("[LDID]", p.getInputStream());
-            return;
-         }
 
          String[][] infos = new String[][]{
                { null, "A TotalCross application.", "Other TotalCross samples" },
@@ -261,6 +224,8 @@ public class Deployer4IPhone
             "  <string>" + version + "</string>\n"+
             "  <key>UIStatusBarHidden</key>\n" +   //flsobral@tc125: added key for full screen property on plist file.
             "  <" + isFullScreen + "/>\n" +
+            "  <key>TCCommandLine</key>\n"+
+            "  <string>" + DeploySettings.defaultArgument + "</string>\n"+
             "  <key>UIDeviceFamily</key>\n" + //flsobral@tc126_39: added support for full screen on iPad.
             "  <array>\n" +
             "   <integer>1</integer>\n" +

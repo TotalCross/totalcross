@@ -131,8 +131,32 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
+#ifndef WINCE
+      case WM_GETMINMAXINFO:
+         if (screen.pixels)
+         {
+            MINMAXINFO* mmi = (MINMAXINFO*)lParam;
+            int border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
+            mmi->ptMinTrackSize.x = max32(240,screen.minScreenW/2)+border*2;
+            mmi->ptMinTrackSize.y = max32(320,screen.minScreenH/2)+border*2+GetSystemMetrics(SM_CYCAPTION);
+            mmi->ptMaxTrackSize.x = GetSystemMetrics(SM_CXFULLSCREEN);
+            mmi->ptMaxTrackSize.y = GetSystemMetrics(SM_CYFULLSCREEN);
+         }
+         break;
+      case WM_SIZE:
+      {
+         if (screen.pixels && *tcSettings.resizableWindow)
+         {
+            int32 w = lParam & 0xFFFF,h = lParam >> 16;
+            if (w != 0 && h != 0 && (lastW != w || lastH != h))
+               screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
+         }
+         break;
+      }
+#endif      
       case WM_ACTIVATE:
       {
+         applyPalette();
 #if defined (WIN32)
          if (HIWORD(wParam)) // HIWORD(wParam) == 0 means the app is not minimized
          {
@@ -353,7 +377,12 @@ cont:
                   postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, pkey, 0,0,-1);
                else
                if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+               {
+                  int t = screen.minScreenW;
+                  screen.minScreenW = screen.minScreenH;
+                  screen.minScreenH = t;
                   screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+               }
             }
          }
          break;

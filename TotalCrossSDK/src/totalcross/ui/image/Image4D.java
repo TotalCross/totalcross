@@ -100,9 +100,6 @@ public class Image4D extends GfxSurface
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
-      if ((width % n) != 0)
-         throw new IllegalArgumentException(
-               "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);      
       
       if (n > 1 && frameCount <= 1)
          try
@@ -474,5 +471,4 @@ public class Image4D extends GfxSurface
    
    native private boolean nativeEquals(Image other);
    native public void applyColor2(int color);
-   native public void dither();
 }

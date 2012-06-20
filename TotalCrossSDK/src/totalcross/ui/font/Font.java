@@ -64,7 +64,7 @@ public final class Font
    /** The minimum font size: 6. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 44;
 
 
    /** Returns the default font size, based on the screen's size.
@@ -88,9 +88,12 @@ public final class Font
          w = Math.min(Settings.screenWidth,Settings.screenHeight);
          h = Math.max(Settings.screenWidth,Settings.screenHeight);
       }
-      
+
+      if (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)
+         fontSize = Settings.deviceFontHeight;
+      else
       if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-         fontSize = 12; // added this exception to get the right font when running in the WM phone in landscape mode
+         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 12; // added this exception to get the right font when running in the WM phone in landscape mode
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
@@ -221,6 +224,14 @@ public final class Font
    public Font adjustedBy(int delta, boolean bold)
    {
       return getFont(name,bold, size + delta);
+   }
+   
+   /** Returns if this font is bold.
+    * @since TotalCross 1.53
+    */
+   public boolean isBold()
+   {
+      return style == 1;
    }
 
    ///// Native methods
