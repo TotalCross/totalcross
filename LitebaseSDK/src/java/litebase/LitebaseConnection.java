@@ -82,7 +82,7 @@ public class LitebaseConnection
    /** 
     * A hash table of prepared statements.
     */
-   Hashtable htPS = new Hashtable(30); // guich@201_3 // juliana@prep: added PreparedStatement.close().
+   Hashtable htPS = new Hashtable(30); // guich@201_3 // juliana@prep_1: added PreparedStatement.close().
    
    /**
     * The creator id for the tables managed by Litebase.

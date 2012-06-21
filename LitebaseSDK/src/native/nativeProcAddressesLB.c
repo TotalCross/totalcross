@@ -117,4 +117,5 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_clearParameters"), &lPS_clearParameters);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_toString"), &lPS_toString);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_close"), &lPS_close);
+   htPutPtr(&htNativeProcAddresses, hashCode("lPS_isValid"), &lPS_isValid);
 }

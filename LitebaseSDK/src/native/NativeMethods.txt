@@ -111,3 +111,4 @@ litebase/PreparedStatement|public native void setNull(int index) throws SQLParse
 litebase/PreparedStatement|public native void clearParameters();
 litebase/PreparedStatement|public native String toString();
 litebase/PreparedStatement|public native void close();
+litebase/PreparedStatement|public native boolean isValid();

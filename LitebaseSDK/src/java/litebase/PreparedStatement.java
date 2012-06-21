@@ -204,7 +204,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -302,7 +302,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -417,7 +417,7 @@ public class PreparedStatement
       table.storeNulls = storeNulls;
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -438,7 +438,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -459,7 +459,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -480,7 +480,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -501,7 +501,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -522,7 +522,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -566,7 +566,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -646,7 +646,7 @@ public class PreparedStatement
                               .append(':').append(time.minute).append(':').append(time.second).append(':').append(time.millis).toString());
    }
    
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    // juliana@223_3: PreparedStatement.setNull() now works for blobs.
@@ -670,7 +670,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -688,7 +688,7 @@ public class PreparedStatement
       }
    }
 
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -772,7 +772,7 @@ public class PreparedStatement
          strBuffer.append(string.charAt(initialPos++));
    }
    
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    /**
     * Tests if the driver is closed or the prepared statement is closed.
     *
@@ -786,7 +786,7 @@ public class PreparedStatement
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PREPARED_CLOSED));
    }
    
-   // juliana@prep: added PreparedStatement.close().
+   // juliana@prep_1: added PreparedStatement.close().
    /**
     * Closes a prepared statement.
     * 
@@ -798,5 +798,16 @@ public class PreparedStatement
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       if (driver.htPS.remove(sqlExpression.hashCode()) == null) // The prepared statement can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PREPARED_CLOSED));
+   }
+   
+   // juliana@prep_2: added PreparedStatement.isValid().
+   /**
+    * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+    *
+    * @return <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+    */
+   public boolean isValid()
+   {
+      return (driver.htTables != null && driver.htPS.exists(sqlExpression));
    }
 }

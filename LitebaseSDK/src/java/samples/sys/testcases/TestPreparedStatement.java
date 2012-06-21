@@ -69,7 +69,9 @@ public class TestPreparedStatement extends TestCase
       } 
       catch (SQLParseException exception) {}
       
+      assertTrue(psListar.isValid());
       psListar.close();
+      assertFalse(psListar.isValid());
       
       try
       {
@@ -175,7 +177,9 @@ public class TestPreparedStatement extends TestCase
       preparedStmt.setInt(5, 5);
       assertEquals(1, preparedStmt.executeUpdate());
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Run SQL queries to test the insert statements.
       assertEquals(10, executeQuery(driver, "select * from PERSON")); // No where clause
@@ -204,7 +208,9 @@ public class TestPreparedStatement extends TestCase
       preparedStmt.setString(2, "r");
       assertEquals(8, executePreparedQuery(preparedStmt));
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Tests SELECT with WHERE and HAVING.
       (preparedStmt = driver.prepareStatement("select years_exp_java, count(*) as total from person where years_exp_c > ? and last_name < ? group by " 
@@ -213,7 +219,9 @@ public class TestPreparedStatement extends TestCase
       preparedStmt.setInt(2, 1);
       assertEquals(4, executePreparedQuery(preparedStmt));
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Tests UPDATE prepared statements.
       (preparedStmt = driver.prepareStatement("update PERSON set FIRST_NAME = ?, last_name = ? where salary_prev < ? or " 
@@ -224,7 +232,9 @@ public class TestPreparedStatement extends TestCase
       preparedStmt.setString(4, "g%");
       assertEquals(9, preparedStmt.executeUpdate());
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Checks if the UPDATE worked.
       assertEquals(9, executeQuery(driver, "select * from PERSON where first_name = 'roberto' and last_name = 'carlos'"));
@@ -234,7 +244,9 @@ public class TestPreparedStatement extends TestCase
       preparedStmt.setInt(1, 10);
       assertEquals(6, preparedStmt.executeUpdate());
       
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       assertEquals(4, executeQuery(driver, "select * from PERSON")); // Checks if DELETE worked.
 
@@ -255,7 +267,9 @@ public class TestPreparedStatement extends TestCase
          assertGreaterOrEqual(exception.getMessage().indexOf("had their values defined"), 0);
       }
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Incompatible types.
       preparedStmt = driver.prepareStatement("select years_exp_java, count(*) as total from person where years_exp_c > ? and last_name < ? group by " 
@@ -298,7 +312,9 @@ public class TestPreparedStatement extends TestCase
       }
       catch (SQLParseException exception) {}
 
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Tests when there are no where clauses in the prepared statement.
       if (driver.exists("PEDIDO"))
@@ -374,8 +390,12 @@ public class TestPreparedStatement extends TestCase
       psUpdate.setInt(4, 2);
       assertEquals(1, psUpdate.executeUpdate());
 
+      assertTrue(psInsert.isValid());
+      assertTrue(psUpdate.isValid());
       psInsert.close();
       psUpdate.close();
+      assertFalse(psInsert.isValid());
+      assertFalse(psUpdate.isValid());
       
       // Tests shorts and floats using prepared statement.
       if (driver.exists("teste"))
@@ -391,7 +411,9 @@ public class TestPreparedStatement extends TestCase
       assertEquals(5, rs.getShort(2)); 
       assertEquals(7, rs.getFloat(3), 0.001);
       rs.close();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       (preparedStmt = driver.prepareStatement("update teste set sh1 = ?, x = ?")).setShort(0, (short)6);
       preparedStmt.setFloat(1, 8);
@@ -401,7 +423,9 @@ public class TestPreparedStatement extends TestCase
       assertEquals(6, rs.getShort(2)); 
       assertEquals(8, rs.getFloat(3), 0.001);
       rs.close();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       (preparedStmt = driver.prepareStatement("select * from teste where sh1 = ? and x = ?")).setShort(0, (short)6);
       preparedStmt.setFloat(1, 8);
@@ -409,7 +433,9 @@ public class TestPreparedStatement extends TestCase
       assertEquals(3, rs.getInt(1));
       assertEquals(6, rs.getShort(2)); // o valor lido é sempre 0!!
       assertEquals(8, rs.getFloat(3), 0.001);
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       rs.close();
       
       (preparedStmt = driver.prepareStatement("delete from teste where sh1 = ? and x = ?")).setShort(0, (short)6);
@@ -419,7 +445,9 @@ public class TestPreparedStatement extends TestCase
       rs.first();
       assertEquals(0, rs.getRowCount());
       rs.close();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       if (driver.exists("teste2"))
          driver.executeUpdate("drop table teste2");
@@ -448,7 +476,9 @@ public class TestPreparedStatement extends TestCase
       assertTrue(rs.next());
       assertEquals("Thiago", rs.getString(1));
       assertFalse(rs.next());
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       rs.close();
       
       // Tests a select prepared statement with where clause and indices.
@@ -471,7 +501,9 @@ public class TestPreparedStatement extends TestCase
       
       assertFalse((rs = preparedStmt.executeQuery()).first());
       rs.close();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Tests a select prepared statement without parameters and like.
       if (driver.exists("property"))
@@ -501,7 +533,9 @@ public class TestPreparedStatement extends TestCase
       }
       catch (DriverException exception) {}
       
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       preparedStmt = driver.prepareStatement("select * from teste, teste2");
       
@@ -523,7 +557,9 @@ public class TestPreparedStatement extends TestCase
       catch (IllegalStateException exception) {}
       
       preparedStmt = driver.prepareStatement("select * from teste, teste2 where id = id2 and sh1 = ? and x = ?");
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       // Tests update prepared statements with some data to be changed already given.
       if (driver.exists("rota")) 
@@ -545,7 +581,9 @@ public class TestPreparedStatement extends TestCase
       assertEquals(1, rs.getRowCount());
       assertEquals(dateStr, rs.getDate(1).toString());
       rs.close();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       (preparedStmt = driver.prepareStatement("UPDATE rota SET id_rota_dia = 'A', dt_abertura = ? WHERE cd_rota = ?")).clearParameters();
       preparedStmt.setDate(0, date);
@@ -554,7 +592,9 @@ public class TestPreparedStatement extends TestCase
       (rs = driver.executeQuery("select dt_abertura from rota where cd_rota = 1")).first();
       assertEquals(1, rs.getRowCount());
       assertEquals(dateStr, rs.getDate(1).toString());
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       rs.close();
       
       preparedStmt = null;
@@ -566,9 +606,13 @@ public class TestPreparedStatement extends TestCase
       driver.execute("CREATE TABLE exemplo(campo1 INT, campo2 CHAR(50), PRIMARY KEY(campo1))");
          
       (preparedStmt = driver.prepareStatement("INSERT INTO exemplo(campo1, campo2) VALUES (?, ?)")).toString();
+      assertTrue(preparedStmt.isValid());
       preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       (preparedStmt = driver.prepareStatement("INSERT INTO exemplo(campo1, campo2) VALUES (?, ?)")).toString();
-      preparedStmt.close();      
+      assertTrue(preparedStmt.isValid());
+      preparedStmt.close();
+      assertFalse(preparedStmt.isValid());
       
       try // executeUpdate() with a select.
       {

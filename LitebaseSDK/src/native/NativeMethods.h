@@ -1184,4 +1184,12 @@ LB_API void lPS_close(NMParams p);
 
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 
+/**
+ * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+ *
+ * @param p->obj[0] The prepared statement.
+ * @param p->retI receives <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+ */
+LB_API void lPS_isValid(NMParams p);
+
 #endif

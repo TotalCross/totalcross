@@ -5351,7 +5351,7 @@ finish: ;
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 
 //////////////////////////////////////////////////////////////////////////
-// juliana@prep: added PreparedStatement.close().
+// juliana@prep_1: added PreparedStatement.close().
 /**
  * Closes a prepared statement.
  * 
@@ -5370,5 +5370,29 @@ LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native vo
       TC_htRemove(htPS, hashCode);
       freePreparedStatement(statement);
    }
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// juliana@prep_2: added PreparedStatement.isValid().
+/**
+ * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+ *
+ * @param p->obj[0] The prepared statement.
+ * @param p->retI receives <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+ */
+LB_API void lPS_isValid(NMParams p) // litebase/PreparedStatement public native boolean isValid();
+{
+   TRACE("lPS_isValid")
+   Object statement = p->obj[0];
+   
+   MEMORY_TEST_START
+   
+   // Tests if the prepared statement isclosed or The connection with Litebase is closed.
+   if (OBJ_PreparedStatementDontFinalize(statement) || OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
+      p->retI = false;
+   else
+      p->retI = true;
+   
    MEMORY_TEST_END
 }
