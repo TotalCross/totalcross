@@ -82,6 +82,11 @@ public class FileChooserBox extends Window
 	protected Button btRefresh;
    private int previouslySelectedRootIndex = -1;
 
+   /* return the number of files found in the current directory
+    * @since TotalCross 1.53 
+    */
+   public int fileCount;
+   
    /** Set to true to allow multiple selections using a Check drawn before the nodes.
     * @since TotalCross 1.15 
     */
@@ -204,7 +209,6 @@ public class FileChooserBox extends Window
          {
             e.printStackTrace();
          }
-         //select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(initialPath),'/'), 0);
       tree.requestFocus();
 	}
    
@@ -276,6 +280,7 @@ public class FileChooserBox extends Window
       String thisDir = f.getPath();
       Node nod;
       files = f.listFiles();
+      fileCount = 0;
       if (files != null)
       {
          qsort(files, 0, files.length-1); // guich@tc126_9
@@ -289,7 +294,9 @@ public class FileChooserBox extends Window
                boolean isDir = f.isDir();
                root.add(nod = new Node(new PathEntry(files[i], isDir)));
                nod.allowsChildren = isDir;
-               if (isDir) 
+               if (!isDir)
+                  fileCount++;
+               else
                {
                   try
                   {
@@ -422,28 +429,5 @@ public class FileChooserBox extends Window
    public Tree getTree()
    {
       return tree;
-   }
-   
-   private void select(Node root, String[] parts, int partIndex)
-   {
-      if (partIndex == parts.length)
-      {
-         tree.setSelectedItem(root);
-         return;
-      }
-      if (parts[partIndex].equals("") || (parts[partIndex].length() > 1 && parts[partIndex].charAt(1) == ':')) // ignore empty paths and drive letters
-         select(root, parts, partIndex+1);
-      else
-         for (int i = 0, nn = root.size(); i < nn; i++)
-         {
-            Node n = (Node)root.items[i];
-            Object o = n.userObject;
-            if (o instanceof PathEntry && ((PathEntry)o).value.equals(parts[partIndex]))
-            {
-               if (!tree.expand(n))
-                  return;
-               select(n, parts, partIndex+1);
-            }
-         }
    }
 }

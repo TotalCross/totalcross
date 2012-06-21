@@ -782,6 +782,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
+                  int t = toWidth;
+                  toWidth = toHeight;
+                  toHeight = t;
                   screenResized(Settings.screenHeight,Settings.screenWidth,true);
                   key = 0;
                }

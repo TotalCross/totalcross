@@ -38,7 +38,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor_i"), &tuiI_applyColor_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeEquals_i"), &tuiI_nativeEquals_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor2_i"), &tuiI_applyColor2_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_dither"), &tuiI_dither);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiiii"), &tugG_dither_iiiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCylindricShade_iiiiii"), &tugG_drawCylindricShade_iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawWindowBorder_iiiiiiiiii"), &tugG_drawWindowBorder_iiiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawDottedCursor_iiii"), &tugG_drawDottedCursor_iiii);
@@ -120,6 +121,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_pumpEvents"), &tuW_pumpEvents);
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_setSIP_icb"), &tuW_setSIP_icb);
    htPutPtr(&htNativeProcAddresses, hashCode("tuW_setDeviceTitle_s"), &tuW_setDeviceTitle_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuC_transitionEffectChanged_i"), &tuC_transitionEffectChanged_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tsCC_bytes2chars_Bii"), &tsCC_bytes2chars_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsCC_chars2bytes_Cii"), &tsCC_chars2bytes_Cii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsUTF8CC_bytes2chars_Bii"), &tsUTF8CC_bytes2chars_Bii);
@@ -158,6 +160,8 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_zeroPad_ii"), &tsC_zeroPad_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_dup_ci"), &tsC_dup_ci);
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_spacePad_sib"), &tsC_spacePad_sib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsC_numberPad_si"), &tsC_numberPad_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsC_numberPad_ii"), &tsC_numberPad_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsT_update"), &tsT_update);
    htPutPtr(&htNativeProcAddresses, hashCode("tsS_refresh"), &tsS_refresh);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_arrayCopy_oioii"), &tsV_arrayCopy_oioii);
