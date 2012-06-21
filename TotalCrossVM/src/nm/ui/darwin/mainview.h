@@ -46,19 +46,14 @@
    NSLock* _lock;
    KeyboardView *kbd_view;
    ChildView *child_view;
-   bool full_screen;
 }
 
 - (void)initEvents;
-- (void)setFullscreen:(bool)mode;
-
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
 - (NSArray*)getEvents;
-
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
-
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 

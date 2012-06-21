@@ -1859,7 +1859,7 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
-#ifdef darwin9
+#ifdef darwin
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
 
@@ -1965,7 +1965,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#if defined ANDROID || defined darwin9
+#if defined ANDROID || defined darwin
    checkKeyboardAndSIP(&shiftY,&shiftH);
 #ifdef ANDROID   
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)

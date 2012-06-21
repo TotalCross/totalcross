@@ -2,172 +2,39 @@
 #import "mainview.h"
 #import "kbdview.h"
 
-#define IPAD_KEYBOARD_PORTRAIT      264
-#define IPAD_KEYBOARD_LANDSCAPE     352
-#define IPHONE_KEYBOARD_PORTRAIT    216
-#define IPHONE_KEYBOARD_LANDSCAPE   162
-
-#define NAVIGATION_BAR_HEIGHT       48
-
-#define HIDE_SIP 1
-
-//extern UIInterfaceOrientation cachedOrientation;
-
 @implementation KeyboardView
 
-- (id)initWithFrame:(CGRect)rect params:(SipArguments*)args 
+- (id)init:(UIViewController *)controller
 {
-   self = [ super initWithFrame: rect ];
-   // finding orientation
-   UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
-//   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown) 
-//      orientation = (UIDeviceOrientation)cachedOrientation;
-        
-   bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
-   CGRect viewFrame,navFrame;
-   if (landscape)
-   {
-      viewFrame = CGRectMake(80, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
-      navFrame = CGRectMake(80, rect.size.width - IPAD_KEYBOARD_LANDSCAPE - NAVIGATION_BAR_HEIGHT, rect.size.height, NAVIGATION_BAR_HEIGHT);      
-   }
-   else      
-   {
-      viewFrame = CGRectMake(0, rect.size.height - IPAD_KEYBOARD_PORTRAIT - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
-      navFrame = CGRectMake(0, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
-   }
-#if HIDE_SIP
-   viewFrame.origin.x = navFrame.origin.x = 6000;
-#endif
-
-   //[ self setFrame: viewFrame ];
-
-   rect = navFrame;
-   if (navBar == nil)
-   {
-      navBar = [ [UINavigationBar alloc] initWithFrame: navFrame ];
-      UINavigationItem *navItem = [ [ UINavigationItem alloc ] initWithTitle:@"text entry" ];
-      [ navBar pushNavigationItem: navItem animated:true ];
-
-      UIBarButtonItem *okButton = [ [ [ UIBarButtonItem alloc ]
-            initWithTitle: @"OK"
-            style: UIBarButtonItemStylePlain
-            target: self
-            action: @selector(onOk)
-         ] autorelease ];
-      navItem.leftBarButtonItem = okButton;
-      UIBarButtonItem *cancelButton = [ [ [ UIBarButtonItem alloc ]
-            initWithTitle: @"Cancel"
-            style: UIBarButtonItemStylePlain
-            target: self
-            action: @selector(onCancel)
-         ] autorelease ];
-      navItem.rightBarButtonItem = cancelButton;
-      [ navBar setDelegate: self ];      
-      [ self addSubview: navBar ];
-   }
-   else
-      [ navBar setFrame: navFrame ];
-
-   CGRect entryFrame = rect;
-   entryFrame.origin.y = navFrame.origin.y + navFrame.size.height;
-   entryFrame.size.height = landscape ? 80 : 80;
-      
-   if (entry == nil)
-   {
-      entry = [ [ UITextView alloc ] initWithFrame: entryFrame ];
-      entry.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
-      entry.autocapitalizationType = UITextAutocapitalizationTypeWords;
-      entry.autocorrectionType = UITextAutocorrectionTypeDefault;
-      entry.returnKeyType = UIReturnKeyDone;
-      entry.keyboardAppearance = UIKeyboardAppearanceAlert;
-      entry.keyboardType = UIKeyboardTypeDefault;
-      
-	  /*
-	    NOTE: the SDK below UIKeyboardType enum values end at 7, it appears that 8 enables an alphabet keyboard with a switch button
-	    (world icon next to the spacebar) to switch among all enabled keyboards. Keyboards are enabled in "Settings/General/Keyboard".
-	    
-	  	typedef enum {
-    		UIKeyboardTypeDefault,
-    		UIKeyboardTypeASCIICapable,
-    		UIKeyboardTypeNumbersAndPunctuation,
-    		UIKeyboardTypeURL,
-	    	UIKeyboardTypeNumberPad,
-    		UIKeyboardTypePhonePad,
-    		UIKeyboardTypeNamePhonePad,
-    		UIKeyboardTypeEmailAddress,
-	    	UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable,
-		} UIKeyboardType
-	  */
-      [ entry setDelegate: self ];
-      [ entry becomeFirstResponder ];
-      [ self addSubview: entry ];
-   }
-   else
-      [ entry setFrame: entryFrame ];
-   
-   params = args;
-   if (params != nil)
-   {
-      [ entry setText: [params values].text ];
-      bool secret = [params values].secret ? YES:NO;
-      [ entry setSecureTextEntry: secret ];
-      entry.secureTextEntry = TRUE;
-   }
-/*   
-   struct CGAffineTransform transEnd = CGAffineTransformIdentity;
-   if (orientation == UIDeviceOrientationLandscapeLeft)
-	  transEnd = CGAffineTransformMake(0,  1, -1, 0, 0, 0);
-   else if (orientation == UIDeviceOrientationLandscapeRight)
-	  transEnd = CGAffineTransformMake(0, -1,  1, 0, 0, 0);
-
-   [ self setTransform:transEnd];
-*/
+   self = [ super init ];
+   ctrl = controller;
+   entry = [ [ UITextView alloc ] init ];
+   entry.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
+   entry.autocapitalizationType = UITextAutocapitalizationTypeWords;
+   entry.autocorrectionType = UITextAutocorrectionTypeDefault;
+   entry.returnKeyType = UIReturnKeyDone;
+   entry.keyboardAppearance = UIKeyboardAppearanceAlert;
+   entry.keyboardType = UIKeyboardTypeDefault;
+   [ entry setDelegate: self ];
+   [ entry becomeFirstResponder ];
+   [ self addSubview: entry ];
    return self; 
-}
-
-- (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button
-{  
-   switch(button) 
-   {
-      case 1:
-         [ self onOk ];
-         break;
-      case 0:
-         [ self onCancel ];
-         break;
-   }
-}
-
-- (void)onOk
-{
-    [self removeFromSuperview]; //[ (MainView*)[ self superview ] destroySIP ];
-}
-
-- (void)onCancel
-{
-	 [ self onOk ];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
 replacementText:(NSString *)text
 {
   // Any new character added is passed in as the "text" parameter
-  if ([text isEqualToString:@"\n"]) {
-      // Be sure to test for equality using the "isEqualToString" message
+  if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
+  {
       [textView resignFirstResponder];
-      [self onOk];
-
-      // Return FALSE so that the final '\n' character doesn't get added
-      return FALSE;
+      [ (MainView*)ctrl destroySIP ];
+      return FALSE; // Return FALSE so that the final '\n' character doesn't get added
   }
-  if ([text length] == 0 && params != nil)
+  if ([text length] == 0)
   {
      [(MainView*)ctrl addEvent: 
-        [[NSDictionary alloc] initWithObjectsAndKeys:
-           @"keyPress", @"type",
-           [NSNumber numberWithInt:(int) '\b'], @"key",                 
-         nil
-        ]
+        [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int) '\b'], @"key", nil]
      ];     
   }
   else if (lastRange.location > 0 && NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character twice when a single key press generates the same event twice.
@@ -182,11 +49,7 @@ replacementText:(NSString *)text
      {
         int charCode = chars[0] | (chars[1] << 8); //flsobral@tc126: characters are unicode
         [(MainView*)ctrl addEvent: 
-           [[NSDictionary alloc] initWithObjectsAndKeys:
-              @"keyPress", @"type",
-              [NSNumber numberWithInt: charCode], @"key",                 
-            nil
-           ]
+           [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: charCode], @"key", nil]
         ];
      }
   }

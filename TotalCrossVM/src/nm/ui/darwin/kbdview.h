@@ -17,20 +17,12 @@
 
 @interface KeyboardView : UIView
 {
-   UINavigationBar *navBar;
    UITextView *entry;
-   SipArguments *params;
    NSRange lastRange;
-@public
    UIViewController* ctrl;
 }
 
-- (id)initWithFrame:(CGRect)rect params:(SipArguments*)args ;
-- (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button;
-
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
-                 replacementText:(NSString *)text;
-- (void)onOk;
-- (void)onCancel;   
+- (id)init:(UIViewController*)controller;
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 
 @end

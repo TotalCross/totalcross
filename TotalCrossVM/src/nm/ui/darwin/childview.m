@@ -26,7 +26,7 @@ ScreenSurface gscreen;
    ScreenSurface screen = gscreen = scr;
    screen->screenW = self.frame.size.width;
    screen->screenH = self.frame.size.height;
-   screen->pitch = clientW*4;
+   screen->pitch = screen->screenW*4;
    screen->bpp = 32;
 }
 
@@ -53,7 +53,7 @@ extern int statusbarHeight;
       {
          [self updateScreen: gscreen];
          [self screenChange: w height:h ];
-         sleep(1);
+         return;       
       }
    }
 
@@ -170,30 +170,6 @@ int getTimeStamp();
        @"screenChange", @"type",
        [NSNumber numberWithInt:w], @"width",
        [NSNumber numberWithInt:h], @"height",
-       nil
-      ]
-   ];
-}
-
-void iphone_postEvent(int type)
-{
-   [ DEVICE_CTX->_mainview addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"screenChanged", @"type",
-       [NSNumber numberWithInt:0], @"x",
-       [NSNumber numberWithInt:0], @"y",
-       nil
-      ]
-   ];
-}
-
-void iphone_postEditUpdate(id control, NSString *str)
-{
-   [ DEVICE_CTX->_mainview addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"updateEdit", @"type",
-       [NSNumber numberWithInt: (int)control], @"control",
-       str, @"value",
        nil
       ]
    ];

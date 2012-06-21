@@ -16,12 +16,12 @@
 		0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF51A1507FA3600D6142B /* ViewController.m */; };
 		0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */; };
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
-		3A1171431566BA2D00AED2D3 /* TCBase.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A1171401566BA2D00AED2D3 /* TCBase.tcz */; };
 		3A1171441566BA2D00AED2D3 /* TCFont.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A1171411566BA2D00AED2D3 /* TCFont.tcz */; };
 		3A1171451566BA2D00AED2D3 /* TCFontOld.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A1171421566BA2D00AED2D3 /* TCFontOld.tcz */; };
-		3A1171481566BA3D00AED2D3 /* UIGadgets.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A1171471566BA3D00AED2D3 /* UIGadgets.tcz */; };
+		3A6D64A4159230CB0049099A /* TCBase.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A6D64A3159230CB0049099A /* TCBase.tcz */; };
 		3A7FE723155C176000403952 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE722155C176000403952 /* libtcvm.a */; };
 		3A7FE726155C177C00403952 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE725155C177C00403952 /* libLitebase.a */; };
+		3A86D1C01593BC8900578F16 /* UIGadgets.tcz in Resources */ = {isa = PBXBuildFile; fileRef = 3A86D1BF1593BC8900578F16 /* UIGadgets.tcz */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,12 +42,12 @@
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
-		3A1171401566BA2D00AED2D3 /* TCBase.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCBase.tcz; path = ../../../../../../../Volumes/Z/TCBase.tcz; sourceTree = "<group>"; };
 		3A1171411566BA2D00AED2D3 /* TCFont.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCFont.tcz; path = ../../../../../../../Volumes/Z/TCFont.tcz; sourceTree = "<group>"; };
 		3A1171421566BA2D00AED2D3 /* TCFontOld.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCFontOld.tcz; path = ../../../../../../../Volumes/Z/TCFontOld.tcz; sourceTree = "<group>"; };
-		3A1171471566BA3D00AED2D3 /* UIGadgets.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = UIGadgets.tcz; path = ../../../../../../../Volumes/Z/UIGadgets.tcz; sourceTree = "<group>"; };
+		3A6D64A3159230CB0049099A /* TCBase.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCBase.tcz; path = ../../../../../../../Volumes/Z/TCBase.tcz; sourceTree = "<group>"; };
 		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "build/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
 		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
+		3A86D1BF1593BC8900578F16 /* UIGadgets.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = UIGadgets.tcz; path = ../../../../../../../Volumes/Z/UIGadgets.tcz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,8 +71,8 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
-				3A1171471566BA3D00AED2D3 /* UIGadgets.tcz */,
-				3A1171401566BA2D00AED2D3 /* TCBase.tcz */,
+				3A86D1BF1593BC8900578F16 /* UIGadgets.tcz */,
+				3A6D64A3159230CB0049099A /* TCBase.tcz */,
 				3A1171411566BA2D00AED2D3 /* TCFont.tcz */,
 				3A1171421566BA2D00AED2D3 /* TCFontOld.tcz */,
 				3A7FE725155C177C00403952 /* libLitebase.a */,
@@ -180,11 +180,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A1171481566BA3D00AED2D3 /* UIGadgets.tcz in Resources */,
-				3A1171431566BA2D00AED2D3 /* TCBase.tcz in Resources */,
 				3A1171441566BA2D00AED2D3 /* TCFont.tcz in Resources */,
 				3A1171451566BA2D00AED2D3 /* TCFontOld.tcz in Resources */,
 				0F5AF5121507FA3600D6142B /* InfoPlist.strings in Resources */,
+				3A6D64A4159230CB0049099A /* TCBase.tcz in Resources */,
+				3A86D1C01593BC8900578F16 /* UIGadgets.tcz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +298,14 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";

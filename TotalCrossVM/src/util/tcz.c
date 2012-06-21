@@ -285,7 +285,7 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
 {
    FILE* f;
    volatile TCZFile t=null,t2=null;
-   char fullpath[128];
+   char fullpath[256];
 
 #ifdef PALMOS
    CharP dot;

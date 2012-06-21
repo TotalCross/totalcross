@@ -42,7 +42,7 @@ struct TTCZFileHeader // common members to all instances
    Int32Array uncompressedSizes;
    int16 version;
    int16 attr; // see ATTR_xxx above
-   char path[128];
+   char path[256];
    int32 instanceCount;
    ConstantPool cp; // this is the Global constant pool that came in this tcz file
    Heap hheap;
