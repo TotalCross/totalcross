@@ -98,7 +98,7 @@ FontFile loadFontFile(char *fontName)
    FontFile ff;
    TCZFile tcz;
    FILE* f;
-   char fullpath[256];
+   char fullpath[MAX_PATHNAME];
 
    IF_HEAP_ERROR(fontsHeap)
    {
