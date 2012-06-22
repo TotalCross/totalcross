@@ -41,8 +41,7 @@ UIWindow* window;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    [UIView setAnimationsEnabled:NO];
-   [UIView setAnimationDelay:0.1];
-   [UIView setAnimationDuration:0.1];
+   //[self destroySIP];
    return YES;
 }
 
@@ -53,19 +52,13 @@ UIWindow* window;
    DEVICE_CTX->_childview = child_view = [[ChildView alloc] initIt: self];
    [self initEvents];
    self.view = child_view;
-}
 
-bool duringRotation;
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
-   duringRotation = true;
-   [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:0];
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-   duringRotation = false;
-   [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
+   kbd = [[UITextView alloc] init];
+   kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
+   kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
+   kbd.returnKeyType = UIReturnKeyDone;
+   kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
+   [kbd setDelegate: self];
 }
 
 - (void)initEvents
@@ -83,36 +76,46 @@ bool duringRotation;
 
 - (void)destroySIP
 {
-   [ _lock lock ];
-
-   if (kbd_view != null)
-   {
-      [ kbd_view removeFromSuperview ];
-      kbd_view = nil;
-   }
-   [ _lock unlock ];   
+   [ kbd removeFromSuperview ];
 }
 
 - (void)showSIP:(SipArguments*)args
 {
    int options = [ args values].options;
-
    if (options == SIP_HIDE)
       [ self destroySIP ];
    else
    {
-      [ _lock lock ];
-      if (kbd_view != nil)
-      {
-         kbd_view.hidden = YES;
-         [ kbd_view removeFromSuperview ];
-      }
-
-      kbd_view = [ [ KeyboardView alloc ] init:self ];
-      [ _lock unlock ];
-      if (kbd_view != null)
-         [ child_view addSubview: kbd_view ];
+      [ child_view addSubview: kbd ];
+      [ kbd becomeFirstResponder ];
    }
+}
+
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+   // Any new character added is passed in as the "text" parameter
+   if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
+   {
+      [textView resignFirstResponder];
+      [kbd removeFromSuperview];
+      return FALSE; // Return FALSE so that the final '\n' character doesn't get added
+   }
+   if ([text length] == 0)
+      [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\b'], @"key", nil]];
+   else 
+      if (lastRange.location <= 0 || !NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character when a single key press generates the same event twice.
+      {
+         lastRange.location = range.location;
+         lastRange.length = range.length;     
+         unsigned char* chars = (unsigned char*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
+         if (chars != null)
+         {
+            int charCode = chars[0] | (chars[1] << 8); //flsobral@tc126: characters are unicode
+            [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: charCode], @"key", nil]];
+         }
+      }
+   // For any other character return TRUE so that the text gets added to the view
+   return TRUE;
 }
 
 - (bool)isEventAvailable;
@@ -227,9 +230,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
    [deviceCtxLock lock];
    if (isScreenChange)
-   {
      screen->extension = NULL;
-   }
    else
    {
       if (screen->extension)

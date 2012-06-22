@@ -240,8 +240,6 @@
 		0F8C8D5B1549CFC700E0967F /* AudioQueueObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8B4C1549CFC700E0967F /* AudioQueueObject.m */; };
 		0F8C8D5E1549CFC700E0967F /* gfx_ex.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B4F1549CFC700E0967F /* gfx_ex.h */; };
 		0F8C8D5F1549CFC700E0967F /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */; };
-		0F8C8D601549CFC700E0967F /* kbdview.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B511549CFC700E0967F /* kbdview.h */; };
-		0F8C8D611549CFC700E0967F /* kbdview.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8B521549CFC700E0967F /* kbdview.m */; };
 		0F8C8D621549CFC700E0967F /* mainview.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B531549CFC700E0967F /* mainview.h */; };
 		0F8C8D631549CFC700E0967F /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8B541549CFC700E0967F /* mainview.m */; };
 		0F8C8D641549CFC700E0967F /* media_MediaClip_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */; };
@@ -651,8 +649,6 @@
 		0F8C8B4C1549CFC700E0967F /* AudioQueueObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioQueueObject.m; sourceTree = "<group>"; };
 		0F8C8B4F1549CFC700E0967F /* gfx_ex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_ex.h; sourceTree = "<group>"; };
 		0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_Graphics_c.h; sourceTree = "<group>"; };
-		0F8C8B511549CFC700E0967F /* kbdview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kbdview.h; sourceTree = "<group>"; };
-		0F8C8B521549CFC700E0967F /* kbdview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = kbdview.m; sourceTree = "<group>"; };
 		0F8C8B531549CFC700E0967F /* mainview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = mainview.h; sourceTree = "<group>"; tabWidth = 3; };
 		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; name = mainview.m; path = "/Users/tcbuilder/iphone-debug/TotalCross/TotalCrossVM/src/nm/ui/darwin/mainview.m"; sourceTree = "<absolute>"; tabWidth = 3; usesTabs = 0; };
 		0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_MediaClip_c.h; sourceTree = "<group>"; };
@@ -1541,7 +1537,6 @@
 				0F8C8B4B1549CFC700E0967F /* AudioQueueObject.h */,
 				0F8C8B4F1549CFC700E0967F /* gfx_ex.h */,
 				0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */,
-				0F8C8B511549CFC700E0967F /* kbdview.h */,
 				0F8C8B531549CFC700E0967F /* mainview.h */,
 				0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */,
 				0F8C8B561549CFC700E0967F /* media_Sound_c.h */,
@@ -1549,7 +1544,6 @@
 				0F8C8B5A1549CFC700E0967F /* Window_c.h */,
 				0F8C8B4A1549CFC700E0967F /* AudioPlayer.m */,
 				0F8C8B4C1549CFC700E0967F /* AudioQueueObject.m */,
-				0F8C8B521549CFC700E0967F /* kbdview.m */,
 				0F8C8B541549CFC700E0967F /* mainview.m */,
 				0F8C8B571549CFC700E0967F /* media_Sound_c.m */,
 				0F8C8B591549CFC700E0967F /* sipargs.m */,
@@ -1972,7 +1966,6 @@
 				0F8C8D5A1549CFC700E0967F /* AudioQueueObject.h in Headers */,
 				0F8C8D5E1549CFC700E0967F /* gfx_ex.h in Headers */,
 				0F8C8D5F1549CFC700E0967F /* gfx_Graphics_c.h in Headers */,
-				0F8C8D601549CFC700E0967F /* kbdview.h in Headers */,
 				0F8C8D621549CFC700E0967F /* mainview.h in Headers */,
 				0F8C8D641549CFC700E0967F /* media_MediaClip_c.h in Headers */,
 				0F8C8D651549CFC700E0967F /* media_Sound_c.h in Headers */,
@@ -2241,7 +2234,6 @@
 				0F8C8D561549CFC700E0967F /* Control.c in Sources */,
 				0F8C8D591549CFC700E0967F /* AudioPlayer.m in Sources */,
 				0F8C8D5B1549CFC700E0967F /* AudioQueueObject.m in Sources */,
-				0F8C8D611549CFC700E0967F /* kbdview.m in Sources */,
 				0F8C8D631549CFC700E0967F /* mainview.m in Sources */,
 				0F8C8D661549CFC700E0967F /* media_Sound_c.m in Sources */,
 				0F8C8D681549CFC700E0967F /* sipargs.m in Sources */,

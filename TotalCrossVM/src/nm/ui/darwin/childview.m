@@ -5,6 +5,9 @@
 @implementation ChildView
 
 ScreenSurface gscreen;
+int getTimeStamp();
+extern CGContextRef bitmapContextW,bitmapContextH;
+extern int statusbarHeight;
 
 - (id)initIt:(UIViewController*) ctrl
 {                                    
@@ -30,18 +33,18 @@ ScreenSurface gscreen;
    screen->bpp = 32;
 }
 
-extern CGContextRef bitmapContextW,bitmapContextH;
-extern bool duringRotation;
-extern int statusbarHeight;
-
+static int lastOrientation;
 - (void)drawRect:(CGRect)frame
 {
    int w = self.frame.size.width;
    int h = self.frame.size.height;
    // when rotated, the UIViewController still thinks that we want to draw it horizontally, so we invert the size.
    int orientation = [[UIDevice currentDevice] orientation];
+   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationFaceUp)
+      orientation = lastOrientation;
+   lastOrientation = orientation;
    bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
-   if (landscape)
+   if (landscape && w < h)
    {
       int temp = w; w = h; h = temp;
    }
@@ -56,13 +59,13 @@ extern int statusbarHeight;
          return;       
       }
    }
-
+/*
    if (shiftY != 0 && self.layer.frame.origin.y != (-shiftY+statusbarHeight))
       [self setFrame: CGRectMake(0, -shiftY+statusbarHeight, w,h)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
       [self setFrame: CGRectMake(0, statusbarHeight, w,h)];
-
+*/
    CGImageRef cgImage = CGBitmapContextCreateImage(h > w ? bitmapContextW : bitmapContextH);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
@@ -89,11 +92,8 @@ extern int statusbarHeight;
    [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
 }    
 
-int getTimeStamp();
-
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   //NSLog(@"childview.rect: %d,%d",(int)self.frame.size.width,(int)self.frame.size.height); 
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];

@@ -16,9 +16,9 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <UIKit/UITextView.h>
 
 #include "GraphicsPrimitives.h"
-#import "kbdview.h"
 #import "childview.h"
 #import "sipargs.h"
 
@@ -44,8 +44,9 @@
 {
    NSMutableArray* _events;
    NSLock* _lock;
-   KeyboardView *kbd_view;
    ChildView *child_view;
+   UITextView* kbd;
+   NSRange lastRange;
 }
 
 - (void)initEvents;
@@ -54,6 +55,7 @@
 - (NSArray*)getEvents;
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 
