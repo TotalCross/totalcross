@@ -862,13 +862,20 @@ public class Grid extends Container implements Scrollable
    /** Move the items at given indexes.
     * @since TotalCross 1.53
     */
-   public void move(int row, boolean up)
+   public boolean move(int row, boolean up)
    {
       if (up && row > 0)
       {
          Object o = vItems.items[row-1];
          vItems.items[row-1] = vItems.items[row];
          vItems.items[row] = o;
+         if (checkEnabled)
+         {
+            int i = ivChecks.items[row-1];
+            ivChecks.items[row-1] = ivChecks.items[row];
+            ivChecks.items[row] = i;
+         }
+         return true;
       }
       else
       if (!up && row < itemsCount-1)
@@ -876,7 +883,15 @@ public class Grid extends Container implements Scrollable
          Object o = vItems.items[row+1];
          vItems.items[row+1] = vItems.items[row];
          vItems.items[row] = o;
+         if (checkEnabled)
+         {
+            int i = ivChecks.items[row+1];
+            ivChecks.items[row+1] = ivChecks.items[row];
+            ivChecks.items[row] = i;
+         }
+         return true;
       }
+      return false;
    }
 
    /**
