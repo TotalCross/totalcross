@@ -577,7 +577,7 @@ public class MultiEdit extends Container implements Scrollable
                if (parent != null && (editMode || Settings.fingerTouch)) 
                   draw(drawg, true);
                // guich@tc130: show the copy/paste menu
-               if (lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
+               if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
                   {
                      event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
