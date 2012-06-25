@@ -52,7 +52,7 @@ public class Label extends Control
    public int align; // guich@400_71: made public instead of protected
    /** Set to false if you want to scroll the text a line at a time instead of a page at a time. */
    public boolean pageScroll = true;
-   private static final String[] emptyStringArray = {""};
+   static final String[] emptyStringArray = {""};
    private String []lines = emptyStringArray;
    private int []linesW;
    private int linesPerPage,currentLine;
@@ -321,7 +321,7 @@ public class Label extends Control
       if (marqueeTimer != null)
          stopMarquee();
       this.text = text;
-      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text.indexOf('|') >= 0 ? text.replace('|','\n') : text,'\n'); // guich@tc100: now we use \n
+      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
       currentLine = 0;
       onFontChanged();
       Window.needsPaint = true;

@@ -1101,7 +1101,7 @@ public class Edit extends Control
                {
                   draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
-                  if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
                      {
                         event.consumed = true;
