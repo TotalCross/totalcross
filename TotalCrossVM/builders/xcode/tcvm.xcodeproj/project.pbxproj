@@ -2347,6 +2347,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				SDKROOT = iphoneos4.3;
 			};
 			name = Debug;
@@ -2373,6 +2374,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				SDKROOT = iphoneos4.3;
 				VALIDATE_PRODUCT = YES;
 			};

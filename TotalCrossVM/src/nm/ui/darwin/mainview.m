@@ -14,9 +14,7 @@
 
 bool allowMainThread();
 static NSLock *deviceCtxLock;
-int keyboardH,realAppH,statusbarHeight;
-char* createPixelsBuffer(int width, int height);
-CGContextRef bitmapContextW,bitmapContextH;
+int keyboardH,realAppH;
 UIWindow* window;
 
 @implementation SSize
@@ -41,7 +39,7 @@ UIWindow* window;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    [UIView setAnimationsEnabled:NO];
-   //[self destroySIP];
+   [self destroySIP];
    return YES;
 }
 
@@ -49,7 +47,7 @@ UIWindow* window;
 {
    [super viewDidLoad];
    realAppH = self.view.bounds.size.height;
-   DEVICE_CTX->_childview = child_view = [[ChildView alloc] initIt: self];
+   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [self initEvents];
    self.view = child_view;
 
@@ -103,17 +101,14 @@ UIWindow* window;
    if ([text length] == 0)
       [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\b'], @"key", nil]];
    else 
-      if (lastRange.location <= 0 || !NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character when a single key press generates the same event twice.
-      {
-         lastRange.location = range.location;
-         lastRange.length = range.length;     
-         unsigned char* chars = (unsigned char*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
-         if (chars != null)
-         {
-            int charCode = chars[0] | (chars[1] << 8); //flsobral@tc126: characters are unicode
-            [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: charCode], @"key", nil]];
-         }
-      }
+   if (lastRange.location <= 0 || !NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character twice.
+   {
+      lastRange.location = range.location;
+      lastRange.length = range.length;     
+      unsigned short* chars = (unsigned short*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
+      if (chars != null)
+         [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: chars[0]], @"key", nil]];
+   }
    // For any other character return TRUE so that the text gets added to the view
    return TRUE;
 }
@@ -185,21 +180,6 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    // initialize the screen bitmap with the full width and height
    CGRect rect = [[UIScreen mainScreen] bounds];
-   int w = rect.size.width, h = rect.size.height;
-   statusbarHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
-   
-   //[[UIScreen mainScreen] respondsToSelector:@selector(scale)];
-   float scale = 1;//[UIScreen mainScreen].scale;
-   w = (int)(w * scale);
-   h = (int)(h * scale);
-   int s = w > h ? w : h;
-   char* screenBuffer = (char*)createPixelsBuffer(s, s);
-   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-   bitmapContextW = CGBitmapContextCreate(screenBuffer,w,h-statusbarHeight,8,w*4,colorSpace,kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
-   bitmapContextH = CGBitmapContextCreate(screenBuffer,h,w-statusbarHeight,8,h*4,colorSpace,kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
-   CFRelease(colorSpace);
-
-   ////////////////////
    DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
    [window makeKeyAndVisible];

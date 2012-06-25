@@ -19,17 +19,22 @@
    int lastEventTS;
    int shiftY;
    int clientW;
+   int lastOrientation;
    UIViewController* controller;
+   CGDataProviderRef provider;
+   CGImageRef cgImage;
+   char* screenBuffer;
+   int statusbarHeight;
+   CGColorSpaceRef colorSpace;
 }
-- (id)initIt:(UIViewController*) ctrl;
+- (id)init:(UIViewController*) ctrl;
 - (void)updateScreen:(void*)screen;
+- (void)screenChange:(int)w height:(int)h;
 - (void)drawRect:(CGRect)frame;
 - (void)invalidateScreen:(void*)vscreen;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)screenChange:(int)w height:(int)h;
 
 @end
