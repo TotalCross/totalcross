@@ -7,6 +7,7 @@
 static ScreenSurface gscreen;
 int getTimeStamp();
 char* createPixelsBuffer(int width, int height);
+int realAppH;
 
 - (id)init:(UIViewController*) ctrl
 {                                    
@@ -55,6 +56,7 @@ char* createPixelsBuffer(int width, int height);
    }
    if (w != clientW)
    {
+      realAppH = h;
       if (cgImage != null) CGImageRelease(cgImage);
       cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
       if (clientW != 0)
@@ -65,20 +67,13 @@ char* createPixelsBuffer(int width, int height);
       }
    }
    clientW = w;
-/*
-   if (shiftY != 0 && self.layer.frame.origin.y != (-shiftY+statusbarHeight))
-      [self setFrame: CGRectMake(0, -shiftY+statusbarHeight, w,h)];
-   else
-   if (shiftY == 0 && self.frame.origin.y < 0)
-      [self setFrame: CGRectMake(0, statusbarHeight, w,h)];
-*/
    // CGContext: 6.5s; CGLayer: 3.5s
    CGSize s = CGSizeMake(w,h);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGLayerRef layer = CGLayerCreateWithContext(context, s, NULL);
    
    CGContextRef layerContext = CGLayerGetContext(layer);
-   CGContextTranslateCTM(layerContext, 0, h);
+   CGContextTranslateCTM(layerContext, 0, h-shiftY);
    CGContextScaleCTM(layerContext, 1, -1);
    CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
    CGContextDrawLayerAtPoint(context, CGPointZero, layer);
@@ -90,7 +85,7 @@ char* createPixelsBuffer(int width, int height);
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
    
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
                               [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
@@ -116,7 +111,7 @@ char* createPixelsBuffer(int width, int height);
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
            [NSNumber numberWithInt:(int)point.x], @"x",
-           [NSNumber numberWithInt:(int)point.y-shiftY], @"y", nil]
+           [NSNumber numberWithInt:(int)point.y], @"y", nil]
           ];
       }
    }

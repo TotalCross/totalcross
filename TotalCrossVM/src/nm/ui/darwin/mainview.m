@@ -14,7 +14,7 @@
 
 bool allowMainThread();
 static NSLock *deviceCtxLock;
-int keyboardH,realAppH;
+int keyboardH;
 UIWindow* window;
 
 @implementation SSize
@@ -46,7 +46,6 @@ UIWindow* window;
 - (void)viewDidLoad
 {
    [super viewDidLoad];
-   realAppH = self.view.bounds.size.height;
    DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [self initEvents];
    self.view = child_view;
