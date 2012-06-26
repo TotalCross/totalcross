@@ -24,12 +24,10 @@
    CGDataProviderRef provider;
    CGImageRef cgImage;
    char* screenBuffer;
-   int statusbarHeight;
    CGColorSpaceRef colorSpace;
 }
 - (id)init:(UIViewController*) ctrl;
 - (void)updateScreen:(void*)screen;
-- (void)screenChange:(int)w height:(int)h;
 - (void)drawRect:(CGRect)frame;
 - (void)invalidateScreen:(void*)vscreen;
 

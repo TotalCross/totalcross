@@ -18,7 +18,6 @@ int realAppH;
       // initialize the screen bitmap with the full width and height
       CGRect rect = [[UIScreen mainScreen] bounds];
       int w = rect.size.width, h = rect.size.height;
-      statusbarHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
       int s = w > h ? w : h;
       screenBuffer = (char*)createPixelsBuffer(s, s);
       colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -62,7 +61,8 @@ int realAppH;
       if (clientW != 0)
       {
          [self updateScreen: gscreen];
-         [self screenChange: w height:h ];
+         [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
+           @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
          Sleep(250); // let these 2 events be processed - use Sleep, not sleep. 250, not 1.
       }
    }
@@ -130,13 +130,6 @@ int realAppH;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
    [self processEvent: touches withEvent:event];
-}
-
-- (void)screenChange:(int)w height:(int)h 
-{
-   [ (MainView*)controller addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil]
-   ];
 }
 
 @end

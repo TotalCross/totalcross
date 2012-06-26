@@ -21,11 +21,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "362412705.664538"
+         timestampString = "362423113.227149"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "48"
-         endingLineNumber = "48"
+         startingLineNumber = "47"
+         endingLineNumber = "47"
          landmarkName = "-drawRect:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -34,11 +34,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "362412705.664538"
+         timestampString = "362423113.227149"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "50"
-         endingLineNumber = "50"
+         startingLineNumber = "49"
+         endingLineNumber = "49"
          landmarkName = "-drawRect:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -85,19 +85,6 @@
          shouldBeEnabled = "No"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "362420490.459169"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "138"
-         endingLineNumber = "138"
-         landmarkName = "-screenChange:height:"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "No"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
          filePath = "../../src/init/startup.c"
          timestampString = "362327893.837585"
          startingColumnNumber = "9223372036854775807"
@@ -112,11 +99,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "362412705.664538"
+         timestampString = "362423113.227149"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "36"
-         endingLineNumber = "36"
+         startingLineNumber = "35"
+         endingLineNumber = "35"
          landmarkName = "-updateScreen:"
          landmarkType = "5">
       </FileBreakpoint>
