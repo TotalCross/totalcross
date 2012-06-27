@@ -312,7 +312,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
-      outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+      //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
 
       return new BaseInputConnection(this, false)
