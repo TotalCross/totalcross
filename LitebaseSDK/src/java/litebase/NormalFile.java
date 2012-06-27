@@ -93,7 +93,8 @@ class NormalFile extends XFile
    {
       f = new File(name, isCreation? File.CREATE_EMPTY : File.READ_WRITE) // Opens or creates the file.
       {
-         protected synchronized void finalize() // flsobral@lb201_1: Overriding finalize method prevents files from being finalized before the LitebaseConnection.
+         // flsobral@lb201_1: Overriding finalize method prevents files from being finalized before the LitebaseConnection.
+         protected synchronized void finalize() 
          {
             if (LitebaseConnection.htDrivers.size() == 0)
                super.finalize();
@@ -264,5 +265,26 @@ class NormalFile extends XFile
          if (cacheInitialSize < cacheSize && totalcross.sys.Vm.getFreeMemory() > cacheSize << 2)
             setCacheSize(cacheSize);
       }
+   }
+   
+   // juliana@253_19: corrected a possible table corruption after a purge or a rename table only on Java SE.
+   /**
+    * Renames a Litebase normal file.
+    * 
+    * @param newName The new file name.
+    * @throws IOException If an internal method throws it.
+    */
+   void rename(String newName) throws IOException
+   {
+      f.rename(newName);
+      f = new File(newName, File.READ_WRITE) // Opens or creates the file.
+      {
+         protected synchronized void finalize() 
+         {
+            // flsobral@lb201_1: Overriding finalize method prevents files from being finalized before the LitebaseConnection.
+            if (LitebaseConnection.htDrivers.size() == 0)
+               super.finalize();
+         }
+      };
    }
 }
