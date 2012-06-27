@@ -32,7 +32,7 @@
     
     //    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
     //    const char* name = [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
-    const char* name = "UIGadgets";
+    const char* name = "CameraTest";
     [tcvm startVM:&context appName:(char*)name];
     [Litebase libOpen:context];
     

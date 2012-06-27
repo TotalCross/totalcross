@@ -16,6 +16,7 @@ bool allowMainThread();
 static NSLock *deviceCtxLock;
 int keyboardH;
 UIWindow* window;
+void Sleep(int ms);
 
 @implementation SSize
 
@@ -164,6 +165,64 @@ UIWindow* window;
    ];
 }
 
+static bool callingCamera;
+
+-(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
+{
+   callingCamera = true;
+   imageFileName = fileName;
+   imageW = w;
+   imageH = h;
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+      if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+         [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+      else
+         [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+      [imagePicker setDelegate:self];
+      [self presentModalViewController:imagePicker animated:YES];
+   });
+   while (callingCamera)
+      Sleep(100);
+   return imageFileName != null;
+}   
+
+-(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+   [[picker parentViewController] dismissModalViewControllerAnimated:YES];
+   imageFileName = null;
+   callingCamera = false;
+}
+-(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+   UIImage* finalImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+   if (finalImage == NULL)
+      imageFileName = NULL;
+   else 
+   {
+      int w = finalImage.size.width;
+      int h = finalImage.size.height;
+      if (w >= imageW || h >= imageH)
+      {
+         int ww=imageW,hh;
+         if (w < h)
+            hh = (int)(imageW * w / h);
+         else
+            hh = (int)(imageW * h / w);
+         CGRect imageRect = CGRectMake(0, 0, ww,hh);
+         UIGraphicsBeginImageContext(imageRect.size);
+         [finalImage drawInRect:imageRect];
+         UIImage *thumbnail = UIGraphicsGetImageFromCurrentImageContext();
+         UIGraphicsEndImageContext();
+         finalImage = thumbnail;
+      }
+      NSData* data = UIImageJPEGRepresentation(finalImage, 0.8);
+      [data writeToFile:imageFileName atomically:NO];
+   }
+   [self dismissModalViewControllerAnimated:YES];
+   callingCamera = false;
+}
 //--------------------------------------------------------------------------------------------------------
 
 @end

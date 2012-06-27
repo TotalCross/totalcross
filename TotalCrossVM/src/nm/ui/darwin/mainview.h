@@ -40,13 +40,15 @@
 
 @end
 
-@interface MainView : UIViewController
+@interface MainView : UIViewController<UIImagePickerControllerDelegate>
 {
    NSMutableArray* _events;
    NSLock* _lock;
    ChildView *child_view;
    UITextView* kbd;
    NSRange lastRange;
+   NSString* imageFileName;
+   int imageW,imageH;
 }
 
 - (void)initEvents;
@@ -58,6 +60,7 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
+- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
 
 @end
 

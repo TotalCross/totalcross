@@ -406,6 +406,8 @@
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
+		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		3A5AE224159B6453000A0B5B /* media_Camera_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A5AE223159B6453000A0B5B /* media_Camera_c.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -822,6 +824,8 @@
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
+		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
+		3A5AE223159B6453000A0B5B /* media_Camera_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = media_Camera_c.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1548,6 +1552,8 @@
 				0F8C8B571549CFC700E0967F /* media_Sound_c.m */,
 				0F8C8B591549CFC700E0967F /* sipargs.m */,
 				0F8C8B5B1549CFC700E0967F /* Window_c.m */,
+				3A5AE221159B63E7000A0B5B /* media_Camera_c.h */,
+				3A5AE223159B6453000A0B5B /* media_Camera_c.m */,
 			);
 			path = darwin;
 			sourceTree = "<group>";
@@ -2060,6 +2066,7 @@
 				0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */,
 				0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */,
 				3A11E08A15791A9D00F883EC /* childview.h in Headers */,
+				3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2307,6 +2314,7 @@
 				0F8C8E361549CFC700E0967F /* zutil.c in Sources */,
 				0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */,
 				3A2B6B261577F4BD00E3993A /* childview.m in Sources */,
+				3A5AE224159B6453000A0B5B /* media_Camera_c.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
