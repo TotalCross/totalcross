@@ -212,6 +212,7 @@ class PlainDB
       db.writeBytes(basbuf, 0, rowSize);
    }
 
+   // juliana@253_19: corrected a possible table corruption after a purge or a rename table only on Java SE.
    /**
     * Renames the files to the new given name.
     * 
@@ -221,29 +222,22 @@ class PlainDB
     */
    void rename(String newName, String sourcePath) throws IOException
    {
-      String newFullName = Utils.getFullFileName(newName, sourcePath),
-             auxName = newFullName + NormalFile.DB_EXT; 
+      String newFullName = Utils.getFullFileName(newName, sourcePath) + NormalFile.DB_EXT;
       
-      ((NormalFile)db).f.rename(auxName); // rnovais@570_75  // Renames the .db file.
-
-      auxName = newFullName + NormalFile.DBO_EXT; // Renames the .dbo file. // rnovais@570_75
+      ((NormalFile)db).rename(newFullName);  // rnovais@570_75  // Renames the .db file.
       try
       {
-         ((NormalFile)dbo).f.rename(auxName);
+         ((NormalFile)dbo).rename(newFullName + 'o'); // Renames the .dbo file. // rnovais@570_75
       }
       catch (IOException exception) // Unlikely to occur
       {
          // If the file could not be renamed, the .db file should be renamed back.
-         newFullName = Utils.getFullFileName(name, sourcePath);
-         auxName = newFullName + NormalFile.DB_EXT;
-         ((NormalFile)db).f.rename(auxName);
+         newFullName = Utils.getFullFileName(name, sourcePath) + NormalFile.DB_EXT;
+         ((NormalFile)db).rename(newFullName);
          throw exception;
       }
 
-      // Renames already closes the files, which should be re-opened.
-      name = newName;
-      ((NormalFile)db).f = new File(newFullName + ".db", File.READ_WRITE);
-      ((NormalFile)dbo).f = new File(newFullName + ".dbo", File.READ_WRITE);
+      name = newName;      
    }
 
    /**
