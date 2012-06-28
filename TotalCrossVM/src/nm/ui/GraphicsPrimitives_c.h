@@ -1946,6 +1946,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
+      
+   if (screen.allocW != screen.screenW || screen.allocH != screen.screenH) // in android, during rotation can come erratic screen heights, like 42 or 82! so we prevent buffer overrun
+      return false;
 
    if (!graphicsLock(&screen, true))
    {
@@ -2818,6 +2821,9 @@ char* createPixelsBuffer(int width, int height) // called from childview.m
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
+   if (screen.screenW <= 0 || screen.screenH <= 0)
+      return false;
+      
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
@@ -2830,7 +2836,8 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       }
       *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
-#else
+#else                    
+      
       if (isScreenChange)
       {
          screen.mainWindowPixels = *screenObj = null;
@@ -2841,7 +2848,9 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
-
+                                                                                          
+      screen.allocW = screen.screenW;
+      screen.allocH = screen.screenH;
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
