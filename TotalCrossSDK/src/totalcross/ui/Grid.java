@@ -428,6 +428,23 @@ public class Grid extends Container implements Scrollable
             if (e.type == ControlEvent.PRESSED && e.target == tip) // guich@tc100b4_20: handle tip event.
                onTip();
          }
+
+         protected boolean willOpenKeyboard()
+         {
+            int px = lastPE.x;
+            int py = lastPE.y;
+            int line = py / lineH - 1;
+            // finds the clicked column
+            int col = getColFromX(px,false);
+            if (controls[col] != null && selectedLine >= 0 && controls[col] instanceof Edit) // show the edit
+            {
+               int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
+               if (cc != null && !cc.isEnabled(line+row0, col))
+                  return false;
+               return controls[col].willOpenKeyboard();
+            }
+            return false;
+         }
       };
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
 
@@ -862,13 +879,20 @@ public class Grid extends Container implements Scrollable
    /** Move the items at given indexes.
     * @since TotalCross 1.53
     */
-   public void move(int row, boolean up)
+   public boolean move(int row, boolean up)
    {
       if (up && row > 0)
       {
          Object o = vItems.items[row-1];
          vItems.items[row-1] = vItems.items[row];
          vItems.items[row] = o;
+         if (checkEnabled)
+         {
+            int i = ivChecks.items[row-1];
+            ivChecks.items[row-1] = ivChecks.items[row];
+            ivChecks.items[row] = i;
+         }
+         return true;
       }
       else
       if (!up && row < itemsCount-1)
@@ -876,7 +900,15 @@ public class Grid extends Container implements Scrollable
          Object o = vItems.items[row+1];
          vItems.items[row+1] = vItems.items[row];
          vItems.items[row] = o;
+         if (checkEnabled)
+         {
+            int i = ivChecks.items[row+1];
+            ivChecks.items[row+1] = ivChecks.items[row];
+            ivChecks.items[row] = i;
+         }
+         return true;
       }
+      return false;
    }
 
    /**

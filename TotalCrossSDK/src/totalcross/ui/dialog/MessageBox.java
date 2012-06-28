@@ -152,7 +152,7 @@ public class MessageBox extends Window
       wa = ha*2+1; // guich@570_52: now wa is computed from ha
       if (text == null)
          text = "";
-      this.originalText = text.replace('|','\n'); // guich@tc100: now we use \n instead of |
+      this.originalText = text; // guich@tc100: now we use \n instead of |
       if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsDevice()) // guich@tc110_53
          setFont(font.asBold());
    }

@@ -111,6 +111,8 @@ static bool minimized;
 // IME Input Modes
 #define IM_SPELL                           0
 
+void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
+
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -133,12 +135,14 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    {
 #ifndef WINCE
       case WM_GETMINMAXINFO:
-         if (screen.pixels)
+         if (screen.pixels && *tcSettings.resizableWindow)
          {
             MINMAXINFO* mmi = (MINMAXINFO*)lParam;
-            int border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
-            mmi->ptMinTrackSize.x = max32(240,screen.minScreenW/2)+border*2;
-            mmi->ptMinTrackSize.y = max32(320,screen.minScreenH/2)+border*2+GetSystemMetrics(SM_CYCAPTION);
+            int32 w=0,h=0;
+            bool landscape = screen.screenW > screen.screenH;
+            adjustWindowSizeWithBorders(*tcSettings.resizableWindow, &w, &h);
+            mmi->ptMinTrackSize.x = max32(landscape ? 320 : 240,screen.minScreenW/2)+w;
+            mmi->ptMinTrackSize.y = max32(landscape ? 240 : 320,screen.minScreenH/2)+h;
             mmi->ptMaxTrackSize.x = GetSystemMetrics(SM_CXFULLSCREEN);
             mmi->ptMaxTrackSize.y = GetSystemMetrics(SM_CYFULLSCREEN);
          }

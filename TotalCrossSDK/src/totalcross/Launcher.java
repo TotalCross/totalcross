@@ -805,7 +805,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    
    private void screenResized(int w, int h, boolean setframe)
    {
-      if (screenMis == null) return;
+      if (screenMis == null || (Settings.screenWidth == w && Settings.screenHeight == h)) return;
       Settings.screenWidth = w;
       Settings.screenHeight = h;
       frame.setFrameSize(w,h,setframe);
