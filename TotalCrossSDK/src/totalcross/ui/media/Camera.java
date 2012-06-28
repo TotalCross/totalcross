@@ -48,7 +48,7 @@ import totalcross.ui.dialog.*;
  * You can call the getSupportedResolutions method to see the resolutions that are available at the device. 
  * 
  * In iOS there's no way to return the supported resolutions; it will take a photo using the default camera's resolution, and 
- * then will resize to the resolution defined in resolutionWidth/resolutionHeight. In iOS you can specify the defaultFileName with a path or just the name, or use a system-generated name. 
+ * then will resize to the resolution defined in resolutionWidth/resolutionHeight, keeping the camera's aspect ratio. In iOS you can specify the defaultFileName with a path or just the name, or use a system-generated name. 
  * 
  * @see #getSupportedResolutions()
  */

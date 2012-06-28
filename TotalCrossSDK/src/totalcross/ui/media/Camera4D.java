@@ -127,7 +127,7 @@ public class Camera4D
             ret = (String[])v.toObjectArray();
       }
       if (ret == null)
-         ret = new String[]{"default values:","320x240","640x480","1024x768","2048x1536"};
+         ret = new String[]{"default resolution","320x240","640x480","1024x768","2048x1536"};
       return ret;
    }
 
