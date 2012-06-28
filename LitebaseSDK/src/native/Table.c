@@ -2486,7 +2486,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {	
         	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
-               length = MAX((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+               // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+               // juliana@253_12: corrected a possible table corruption when adding a small blob.
+               length = MIN((uint32)columnSizes[j], values[j]->length); 
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
