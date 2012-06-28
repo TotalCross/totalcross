@@ -359,7 +359,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    // juliana@226_8: a table without metadata (with an empty .db, for instance) can't be recovered: it is corrupted.
    if (!plainDB->headerSize) // The header size can't be zero.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      // juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
       return false;
    }
 
@@ -416,7 +417,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	ptr += 16;
    if ((table->columnCount = columnCount) <= 0)
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      // juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
 		goto error;
    }
 
