@@ -30,9 +30,8 @@
     // setup for device orientation change events
     [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
-    //    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-    //    const char* name = [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
-    const char* name = "CameraTest";
+    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+    const char* name = [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
     [tcvm startVM:&context appName:(char*)name];
     [Litebase libOpen:context];
     
