@@ -928,7 +928,7 @@ class Table
       boolean[] tableNulls = storeNulls;
       String[] fields;
       SQLValue[] record;
-      byte[] paramIndexes;
+      short[] paramIndexes; // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
       SQLInsertStatement insertStmt = null;
       SQLUpdateStatement updateStmt = null;
       int idx,
