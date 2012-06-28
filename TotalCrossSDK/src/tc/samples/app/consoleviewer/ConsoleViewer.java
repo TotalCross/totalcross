@@ -53,7 +53,7 @@ public class ConsoleViewer extends MainWindow
    public void initUI()
    {
       isPalm = Settings.platform.equals(Settings.PALMOS);
-      isIPhone = Settings.platform.equals(Settings.IPHONE);
+      isIPhone = Settings.isIOS();
       if (!isPalm && !isIPhone)
          error("This program only works\non Palm OS and iPhone.");
       else

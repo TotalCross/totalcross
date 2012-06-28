@@ -203,7 +203,7 @@ static bool callingCamera;
    {
       int w = finalImage.size.width;
       int h = finalImage.size.height;
-      if (w >= imageW || h >= imageH)
+      if (imageW != 0 && imageH != 0 && (w >= imageW || h >= imageH))
       {
          int ww=imageW,hh;
          if (w < h)

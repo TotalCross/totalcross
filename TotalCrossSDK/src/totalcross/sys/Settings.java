@@ -116,6 +116,7 @@ public final class Settings
     * @see #BLACKBERRY   
     * @see #ANDROID      
     * @see #isWindowsDevice()
+    * @see #isIOS()
     */
    public static String platform;
    
@@ -603,6 +604,14 @@ public final class Settings
    public static boolean isWindowsDevice()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
+   }
+   
+   /** Returns true if this is an iPad or an iPhone.
+    * @since TotalCross 1.53
+    */
+   public static boolean isIOS()
+   {
+      return IPAD.equals(platform) || IPHONE.equals(platform);
    }
 
    /** Refresh some fields thay may have been updated since the program 
