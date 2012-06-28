@@ -82,7 +82,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
-      boolean isIphone = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD);
+      boolean isIphone = Settings.isIOS();
       if (isAndroid || isIphone)
          Settings.unmovableSIP = true;
       if (Settings.fingerTouch) // guich@tc120_48

@@ -63,7 +63,7 @@ public class CameraTest extends MainWindow
       add(ic = new ImageControl(), LEFT, TOP, FILL, FIT, btnFilm);
       ic.setEventsEnabled(true);
       camera = new Camera();
-      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0) // D7600 supports only photo
+      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0 || Settings.isIOS()) // D7600 supports only photo
          btnFilm.setVisible(false);
       Button.commonGap = 0;
    }

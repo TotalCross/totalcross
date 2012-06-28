@@ -77,7 +77,7 @@ public class Camera4D
          });
          cameraScreen.popup();
       }
-      else if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.IPAD) || Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.ANDROID))
+      else if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
          return this.nativeClick();
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
