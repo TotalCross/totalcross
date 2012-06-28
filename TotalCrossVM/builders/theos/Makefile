@@ -123,33 +123,32 @@ EXTRA_NM_SYS_FILES = \
 	$(sourcedir)/nm/sys/darwin/Registry_c.m \
 	$(sourcedir)/nm/sys/darwin/Vm_c.m
 
-NM_SYS_FILES =                             \
-    ${EXTRA_NM_SYS_FILES}                      \
-	$(sourcedir)/nm/sys/Vm.c                   \
-	$(sourcedir)/nm/sys/Time.c                 \
-    $(sourcedir)/nm/sys/Registry.c             \
-    $(sourcedir)/nm/sys/CharacterConverter.c   \
+NM_SYS_FILES =                                  \
+    ${EXTRA_NM_SYS_FILES}                       \
+	$(sourcedir)/nm/sys/Vm.c                     \
+	$(sourcedir)/nm/sys/Time.c                   \
+    $(sourcedir)/nm/sys/Registry.c              \
+    $(sourcedir)/nm/sys/CharacterConverter.c    \
 	$(sourcedir)/nm/sys/Convert.c
 
-EXTRA_NM_UI_FILES = \
-	$(sourcedir)/nm/ui/darwin/mainview.m \
-	$(sourcedir)/nm/ui/darwin/childview.m \
-	$(sourcedir)/nm/ui/darwin/kbdview.m \
-	$(sourcedir)/nm/ui/darwin/sipargs.m \
-	$(sourcedir)/nm/ui/darwin/media_Sound_c.m \
+EXTRA_NM_UI_FILES =                             \
+	$(sourcedir)/nm/ui/darwin/mainview.m         \
+	$(sourcedir)/nm/ui/darwin/childview.m        \
+	$(sourcedir)/nm/ui/darwin/sipargs.m          \
+	$(sourcedir)/nm/ui/darwin/media_Sound_c.m    \
 	$(sourcedir)/nm/ui/darwin/Window_c.m
 
-NM_UI_FILES =                              \
-   ${EXTRA_NM_UI_FILES}                       \
-	$(sourcedir)/nm/ui/gfx_Graphics.c          \
-	$(sourcedir)/nm/ui/event_Event.c           \
-	$(sourcedir)/nm/ui/Control.c               \
-	$(sourcedir)/nm/ui/font_Font.c             \
-	$(sourcedir)/nm/ui/font_FontMetrics.c      \
-	$(sourcedir)/nm/ui/image_Image.c           \
-	$(sourcedir)/nm/ui/MainWindow.c            \
-	$(sourcedir)/nm/ui/media_Sound.c           \
-	$(sourcedir)/nm/ui/media_MediaClip.c       \
+NM_UI_FILES =                                   \
+   ${EXTRA_NM_UI_FILES}                         \
+	$(sourcedir)/nm/ui/gfx_Graphics.c            \
+	$(sourcedir)/nm/ui/event_Event.c             \
+	$(sourcedir)/nm/ui/Control.c                 \
+	$(sourcedir)/nm/ui/font_Font.c               \
+	$(sourcedir)/nm/ui/font_FontMetrics.c        \
+	$(sourcedir)/nm/ui/image_Image.c             \
+	$(sourcedir)/nm/ui/MainWindow.c              \
+	$(sourcedir)/nm/ui/media_Sound.c             \
+	$(sourcedir)/nm/ui/media_MediaClip.c         \
 	$(sourcedir)/nm/ui/Window.c
 
 NM_UTIL_FILES =                            \
