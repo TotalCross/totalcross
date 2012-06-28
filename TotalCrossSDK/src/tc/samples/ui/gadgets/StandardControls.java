@@ -159,12 +159,6 @@ public class StandardControls extends Container
       }
    }
 
-   public void onPaint(Graphics g)
-   {
-      lStatus.setText(Settings.screenWidth+"x"+Settings.screenHeight);
-      super.onPaint(g);
-   }
-   
    public void onEvent(Event event)
    {
       if (event instanceof UIRobotEvent)
