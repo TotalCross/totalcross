@@ -14,7 +14,7 @@
 #ifndef PDBFILE_H
 #define PDBFILE_H
 
-#include "../palmdb/palmdb.h"
+#include "../../palmdb/palmdb.h"
 
 #ifndef PALMOS
  #define errNone 0

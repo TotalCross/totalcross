@@ -4,48 +4,80 @@
 
 @implementation ChildView
 
+static ScreenSurface gscreen;
+int getTimeStamp();
+char* createPixelsBuffer(int width, int height);
+int realAppH;
+
+- (id)init:(UIViewController*) ctrl
+{                                    
+   controller = ctrl;
+   self = [ super init ];
+   if (self != nil )
+   {
+      // initialize the screen bitmap with the full width and height
+      CGRect rect = [[UIScreen mainScreen] bounds];
+      int w = rect.size.width, h = rect.size.height;
+      int s = w > h ? w : h;
+      screenBuffer = (char*)createPixelsBuffer(s, s);
+      colorSpace = CGColorSpaceCreateDeviceRGB();
+      provider = CGDataProviderCreateWithData(NULL, screenBuffer, 4*w*h, NULL);
+      [self setOpaque:YES];
+      [self setClearsContextBeforeDrawing:NO];
+      [self setClipsToBounds:NO];
+      //[self setContentMode:UIViewContentModeRedraw];
+   }  
+   return self; 
+}
+
 - (void)updateScreen: (void*)scr
 {
-   ScreenSurface screen = scr;
-   screen->screenW = width;
-   screen->screenH = height;
-   screen->pitch = pitch;
+   ScreenSurface screen = gscreen = scr;
+   screen->screenW = self.frame.size.width;
+   screen->screenH = self.frame.size.height;
+   screen->pitch = screen->screenW*4;
    screen->bpp = 32;
 }
 
-extern int statusbar_height;
-char* createPixelsBuffer(int width, int height);
-
-- (id)initWithFrame:(CGRect)rect orientation:(int)orient
-{                                                       
-   orientation = orient;
-   width = rect.size.width;
-   height = rect.size.height;
-   
-   DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
-
-   self = [ super initWithFrame: rect ];
-   if (self != nil )
+- (void)drawRect:(CGRect)frame
+{
+   // when rotated, the UIViewController still thinks that we want to draw it horizontally, so we invert the size.
+   int orientation = [[UIDevice currentDevice] orientation];
+   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationFaceUp)
+      orientation = lastOrientation;
+   lastOrientation = orientation;
+   bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
+   int w = self.frame.size.width;
+   int h = self.frame.size.height;
+   if (landscape && w < h)
    {
-      pitch = width * 4;
-      int size = pitch * height;
-
-      unsigned short* screenBuffer = createPixelsBuffer(width+statusbar_height,height+statusbar_height);
-      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-      bitmapContext = CGBitmapContextCreate(
-            screenBuffer,
-            width,
-            height,
-            8,     // bitsPerComponent
-            pitch, // bytesPerRow
-            colorSpace,
-            kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
-      CFRelease(colorSpace);
-
-      [self setOpaque:YES];
-      [self setClearsContextBeforeDrawing:NO];
-   }  
-   return self; 
+      int temp = w; w = h; h = temp;
+   }
+   if (w != clientW)
+   {
+      realAppH = h;
+      if (cgImage != null) CGImageRelease(cgImage);
+      cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
+      if (clientW != 0)
+      {
+         [self updateScreen: gscreen];
+         [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
+           @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
+         Sleep(250); // let these 2 events be processed - use Sleep, not sleep. 250, not 1.
+      }
+   }
+   clientW = w;
+   // CGContext: 6.5s; CGLayer: 3.5s
+   CGSize s = CGSizeMake(w,h);
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   CGLayerRef layer = CGLayerCreateWithContext(context, s, NULL);
+   
+   CGContextRef layerContext = CGLayerGetContext(layer);
+   CGContextTranslateCTM(layerContext, 0, h-shiftY);
+   CGContextScaleCTM(layerContext, 1, -1);
+   CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
+   CGContextDrawLayerAtPoint(context, CGPointZero, layer);
+   CGLayerRelease(layer);
 }
 
 - (void)invalidateScreen:(void*)vscreen
@@ -53,9 +85,9 @@ char* createPixelsBuffer(int width, int height);
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
    
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
-   [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
+                              [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
@@ -63,167 +95,41 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
 }    
 
-- (void)drawRect:(CGRect)frame
-{    
-   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
-      [self setFrame: CGRectMake(0, -shiftY, width, height)];
-   else
-   if (shiftY == 0 && self.frame.origin.y < 0)
-      [self setFrame: CGRectMake(0, 0, width, height)];
-            
-   //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   cgImage = CGBitmapContextCreateImage(bitmapContext);
-   CGContextRef context = UIGraphicsGetCurrentContext();
-   CGContextSaveGState(context);
-   CGContextClipToRect(context, frame);
-   switch (orientation)
+- (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
+{
+   if ([ touches count ] == 1)
    {
-      case UIDeviceOrientationPortrait:
-      case UIDeviceOrientationLandscapeLeft:
-      case UIDeviceOrientationLandscapeRight:
-         CGContextTranslateCTM(context, 0, height);
-         CGContextScaleCTM(context, 1, -1);
-         break;
-      case UIDeviceOrientationPortraitUpsideDown:
-         CGContextTranslateCTM(context, 0,height);
-         CGContextRotateCTM(context, -M_PI);
-         CGContextScaleCTM(context, -1, 1);
-         break;
+      UITouch *touch = [ touches anyObject ];
+      if (touch != nil && (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved || touch.phase == UITouchPhaseEnded))
+      {
+         int ts = getTimeStamp();
+         if (touch.phase == UITouchPhaseMoved && (ts-lastEventTS) < 20) // ignore events if sent too fast
+            return;
+         lastEventTS = ts;
+         CGPoint point = [touch locationInView: self];
+         [ (MainView*)controller addEvent:
+          [[NSDictionary alloc] initWithObjectsAndKeys:
+           touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
+           [NSNumber numberWithInt:(int)point.x], @"x",
+           [NSNumber numberWithInt:(int)point.y], @"y", nil]
+          ];
+      }
    }
-   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
-   CGImageRelease(cgImage);
-   CGContextRestoreGState(context);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   DEBUG0("touch BEGIN");
-   
-   if ([ touches count ] == 1)
-   {
-      UITouch *touch = [ touches anyObject ];
-      if (touch != nil && touch.phase == UITouchPhaseBegan)
-      {
-         lastEventTS = getTimeStamp();
-         CGPoint point = [touch locationInView: self];
-         DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
-         [ self addEvent:
-           [[NSDictionary alloc] initWithObjectsAndKeys:
-              @"mouseDown", @"type",
-              [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
-              nil
-           ]
-        ];
-      }
-   }
+   [self processEvent: touches withEvent:event];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   DEBUG0("touch MOVE");
-   if ([ touches count ] == 1)
-   {
-      UITouch *touch = [ touches anyObject ];
-     if (touch != nil && touch.phase == UITouchPhaseMoved)
-     {  
-        // ignore events if sent too fast
-        int ts = getTimeStamp();
-        if ((ts-lastEventTS) < 50)
-           return;
-        lastEventTS = ts;
-        
-        CGPoint point = [touch locationInView: self];
-        DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
-    
-        [ self addEvent:
-           [[NSDictionary alloc] initWithObjectsAndKeys:
-              @"mouseMoved", @"type",
-              [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
-              nil
-           ]
-        ];
-     }
-   }
+   [self processEvent: touches withEvent:event];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   DEBUG0("touch END");
-   if ([ touches count ] == 1)
-   {
-      UITouch *touch = [ touches anyObject ];
-      if (touch != nil && touch.phase == UITouchPhaseEnded)
-      {
-         CGPoint point = [touch locationInView: self];
-         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
-    
-         //todo@ temp manual rotation
-         if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight && (point.y-shiftY) > 280)
-            orientationChanged();
-         else if ((point.y-shiftY) > 430)
-            orientationChanged();
-    
-         [ self addEvent:
-           [[NSDictionary alloc] initWithObjectsAndKeys:
-              @"mouseUp", @"type",
-              [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
-              nil
-           ]
-         ];
-      }
-   }
-}
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-{
-   DEBUG0("touch CANCEL");
-}
-
-- (void)screenChange:(int)w height:(int)h 
-{
-   DEBUG2("screen rotated event: %d x %d\n", w, h);
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"screenChange", @"type",
-       [NSNumber numberWithInt:w], @"width",
-       [NSNumber numberWithInt:h], @"height",
-       nil
-      ]
-   ];
-}
-
-- (void)addEvent:(NSDictionary*)event;
-{
-   [(MainView*)[self superview] addEvent: event ];
-}
-
-void iphone_postEvent(int type)
-{
-   DEBUG1("iphone_postEvent: %d\n", type);
-   [ DEVICE_CTX->_mainview addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"screenChanged", @"type",
-       [NSNumber numberWithInt:0], @"x",
-       [NSNumber numberWithInt:0], @"y",
-       nil
-      ]
-   ];
-}
-
-void iphone_postEditUpdate(id control, NSString *str)
-{
-   DEBUG2("iphone_postEditUpdate: %x,%x\n", (int)control, str);
-   [ DEVICE_CTX->_mainview addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"updateEdit", @"type",
-       [NSNumber numberWithInt: (int)control], @"control",
-       str, @"value",
-       nil
-      ]
-   ];
+   [self processEvent: touches withEvent:event];
 }
 
 @end

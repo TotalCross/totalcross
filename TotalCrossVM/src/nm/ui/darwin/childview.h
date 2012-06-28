@@ -12,19 +12,21 @@
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <UIKit/UIKit.h>
-#import <UIKit/UITextView.h>
 #import <QuartzCore/CALayer.h>
 
 @interface ChildView : UIView
 {
-   int orientation;
-   CGContextRef bitmapContext;
-   CGImageRef cgImage;
-   int width, height, pitch;
    int lastEventTS;
    int shiftY;
+   int clientW;
+   int lastOrientation;
+   UIViewController* controller;
+   CGDataProviderRef provider;
+   CGImageRef cgImage;
+   char* screenBuffer;
+   CGColorSpaceRef colorSpace;
 }
-- (id)initWithFrame:(CGRect)rect orientation:(int)orient;
+- (id)init:(UIViewController*) ctrl;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
 - (void)invalidateScreen:(void*)vscreen;
@@ -32,8 +34,5 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)screenChange:(int)w height:(int)h;
-- (void)addEvent:(NSDictionary*)event;
 
 @end

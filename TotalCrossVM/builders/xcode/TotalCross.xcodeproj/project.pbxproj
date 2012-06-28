@@ -251,7 +251,12 @@
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -282,6 +287,13 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
@@ -302,7 +314,12 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
