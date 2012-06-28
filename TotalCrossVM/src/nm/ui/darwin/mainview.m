@@ -165,6 +165,17 @@ void Sleep(int ms);
    ];
 }
 
+-(void) dialNumber:(NSString*) number
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      NSString *s = @"telprompt://";
+      s = [s stringByAppendingString:number];
+      NSURL *url = [NSURL URLWithString:s];
+      [[UIApplication sharedApplication] openURL:url];
+   });
+}
+
 static bool callingCamera;
 
 -(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
