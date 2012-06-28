@@ -1946,10 +1946,10 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
-      
+#ifndef darwin      
    if (screen.allocW != screen.screenW || screen.allocH != screen.screenH) // in android, during rotation can come erratic screen heights, like 42 or 82! so we prevent buffer overrun
       return false;
-
+#endif
    if (!graphicsLock(&screen, true))
    {
       if (firstUpdate)
