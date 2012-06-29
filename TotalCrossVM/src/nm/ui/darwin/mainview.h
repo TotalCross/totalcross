@@ -17,6 +17,7 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UITextView.h>
+#import <CoreLocation/CLLocation.h>
 
 #include "GraphicsPrimitives.h"
 #import "childview.h"
@@ -62,6 +63,7 @@
 - (void) keyboardDidHide: (NSNotification *)notif;
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
 - (void) dialNumber:(NSString*) number;
+- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
 
 @end
 
