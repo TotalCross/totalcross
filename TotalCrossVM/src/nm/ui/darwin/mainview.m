@@ -297,3 +297,17 @@ bool graphicsLock(ScreenSurface screen, bool on)
       [deviceCtxLock unlock];
    return true;
 }
+
+//////////////// interface to mainview methods ///////////////////
+
+void iphone_dialNumber(char* number)
+{
+   NSString* string = [NSString stringWithFormat:@"%s", number];
+   [DEVICE_CTX->_mainview dialNumber:string];
+}
+
+int iphone_cameraClick(int w, int h, char* fileName)
+{
+   NSString* string = [NSString stringWithFormat:@"%s", fileName];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
+}

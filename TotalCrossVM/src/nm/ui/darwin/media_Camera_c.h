@@ -26,6 +26,7 @@ extern "C" {
 
 static void cameraClick(NMParams p)
 {
+#ifdef darwin    
     Object cameraObj = p->obj[0];
     Object defaultFileName = Camera_defaultFileName(cameraObj);
     char tempPictureName[MAX_PATHNAME];
@@ -56,5 +57,6 @@ static void cameraClick(NMParams p)
     }
     
     if (iphone_cameraClick(Camera_resolutionWidth(cameraObj),Camera_resolutionHeight(cameraObj), tempPictureName))
-        setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, tempPictureName, -1), UNLOCKED);;
+        setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, tempPictureName, -1), UNLOCKED);
+#endif
 }
