@@ -60,14 +60,8 @@ public class MachObjectFile
       }
       reader.close();
 
-      if (lc_segment == null)
-         throw new RuntimeException("Did not find a Mach segment load command for the __LINKEDIT segment");
-      if (lc_signature == null)
-         throw new RuntimeException(
-               "Did not find a Code Signing LC. Injecting one into a fresh executable is not currently supported.");
-      if ((lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize))
-         throw new RuntimeException(
-               "Code Signing LC was present but not at the end of the __LINKEDIT segment, unable to replace it");
+      if (lc_segment == null || lc_signature == null || (lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize))
+         throw new RuntimeException("Template IPA files appears to be corrupted, please reinstall the SDK and try again");
    }
 
    public EmbeddedSignature getEmbeddedSignature()
@@ -93,8 +87,7 @@ public class MachObjectFile
       lc_signature.signature.sign();
       byte[] resignedData = lc_signature.signature.getBytes();
       if (signatureTemplate.length != resignedData.length)
-         throw new IllegalStateException(
-               "CMS signature blob changed size between practice run and final run, unable to create useful code signing data");
+         throw new IllegalStateException("Failed to resign the file, please try again.");
 
       ElephantMemoryWriter writer = new ElephantMemoryWriter(data);
       writer.memorize();
@@ -105,7 +98,7 @@ public class MachObjectFile
       int actualSize = writer.size();
       int expectedSize = (int) (lc_segment.filesize + lc_segment.fileoff);
       if (actualSize < expectedSize)
-         throw new IllegalStateException("Data written is smaller than expected, unable to finish signing process");
+         throw new IllegalStateException("Generated file appears to be missing data, please try again.");
       else if (actualSize == expectedSize)
          this.data = writer.buffer;
       else
