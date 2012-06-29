@@ -22,7 +22,7 @@ import totalcross.io.*;
 
 /** Used to dial a number in a smartphone.
  * A single listener can receive messages from the system informing the current status.
- * Currently works on Windows CE, Blackberry and Android.
+ * Currently works on Windows CE, Blackberry, Android and iOS.
  *
  * @since TotalCross 1.0
  */

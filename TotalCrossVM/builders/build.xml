@@ -799,7 +799,7 @@ target: IPhone builds
       <param name="build.name"      value="xcode" />
       <param name="build.includes"  value="TotalCross/TotalCrossVM/src/**, TotalCross/TotalCrossVM/builders/xcode/**, Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/xcode/**" />
       <param name="copy.from"       value="build/Release-iphoneos/TotalCross.ipa" />
-      <param name="copy.to"         value="${source.sdk.path}/dist/vm/iphone2+" />
+      <param name="copy.to"         value="${source.sdk.path}/dist/vm/ios" />
    </antcall>
 </target>
 
