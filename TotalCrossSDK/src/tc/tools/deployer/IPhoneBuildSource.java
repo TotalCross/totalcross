@@ -156,7 +156,7 @@ public class IPhoneBuildSource
       try
       {
          if (targetDir == null)
-            targetDir = new File("install/iphone2+").isDirectory() ? "install/iphone2+/" : "./";
+            targetDir = new File("install/ios").isDirectory() ? "install/ios/" : "./";
          else
          if (!targetDir.endsWith("/") && !targetDir.endsWith("\\"))
             targetDir += "/";
