@@ -1946,10 +1946,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
-#ifndef darwin      
-   if (screen.allocW != screen.screenW || screen.allocH != screen.screenH) // in android, during rotation can come erratic screen heights, like 42 or 82! so we prevent buffer overrun
-      return false;
-#endif
+
    if (!graphicsLock(&screen, true))
    {
       if (firstUpdate)
@@ -1994,6 +1991,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if ((shiftY+shiftH) > screen.screenH)
       shiftH = screen.screenH - shiftY;
+   if (shiftY != 0 && shiftH <= 0)
+      return false;
+      
    if (!screen.fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
    {
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
@@ -2849,8 +2849,6 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
                                                                                           
-      screen.allocW = screen.screenW;
-      screen.allocH = screen.screenH;
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
