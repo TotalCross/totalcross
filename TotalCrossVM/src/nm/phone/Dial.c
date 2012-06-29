@@ -70,7 +70,7 @@ static void statusChange(CharP msg)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public static void number(String number);
 {
-#if defined(WINCE) || defined(ANDROID)
+#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Object numberObj = p->obj[0];
    currentContext = p->currentContext;
    if (numberObj == null)

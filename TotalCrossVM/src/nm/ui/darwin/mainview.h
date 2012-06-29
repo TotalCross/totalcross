@@ -61,6 +61,7 @@
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
+- (void) dialNumber:(NSString*) number;
 
 @end
 

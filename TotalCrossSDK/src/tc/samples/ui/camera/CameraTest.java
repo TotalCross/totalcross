@@ -63,7 +63,7 @@ public class CameraTest extends MainWindow
       add(ic = new ImageControl(), LEFT, TOP, FILL, FIT, btnFilm);
       ic.setEventsEnabled(true);
       camera = new Camera();
-      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0) // D7600 supports only photo
+      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0 || Settings.isIOS()) // D7600 supports only photo
          btnFilm.setVisible(false);
       Button.commonGap = 0;
    }
@@ -84,8 +84,15 @@ public class CameraTest extends MainWindow
                String res = (String)cbRes.getSelectedItem();
                if (res == null) res = "640x480";
                String[] p = Convert.tokenizeString(res,'x');
-               camera.resolutionWidth  = Convert.toInt(p[0]);
-               camera.resolutionHeight = Convert.toInt(p[1]);
+               try
+               {
+                  camera.resolutionWidth  = Convert.toInt(p[0]);
+                  camera.resolutionHeight = Convert.toInt(p[1]);
+               }
+               catch (InvalidNumberException ine)
+               {
+                  // keep original resolution
+               }
                //
                l.setText("Starting camera...");
                l.repaintNow();

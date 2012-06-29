@@ -190,6 +190,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
+      if (h == 0 || w == 0) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5

@@ -165,6 +165,17 @@ void Sleep(int ms);
    ];
 }
 
+-(void) dialNumber:(NSString*) number
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      NSString *s = @"telprompt://";
+      s = [s stringByAppendingString:number];
+      NSURL *url = [NSURL URLWithString:s];
+      [[UIApplication sharedApplication] openURL:url];
+   });
+}
+
 static bool callingCamera;
 
 -(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
@@ -203,7 +214,7 @@ static bool callingCamera;
    {
       int w = finalImage.size.width;
       int h = finalImage.size.height;
-      if (w >= imageW || h >= imageH)
+      if (imageW != 0 && imageH != 0 && (w >= imageW || h >= imageH))
       {
          int ww=imageW,hh;
          if (w < h)
@@ -285,4 +296,18 @@ bool graphicsLock(ScreenSurface screen, bool on)
    else
       [deviceCtxLock unlock];
    return true;
+}
+
+//////////////// interface to mainview methods ///////////////////
+
+void iphone_dialNumber(char* number)
+{
+   NSString* string = [NSString stringWithFormat:@"%s", number];
+   [DEVICE_CTX->_mainview dialNumber:string];
+}
+
+int iphone_cameraClick(int w, int h, char* fileName)
+{
+   NSString* string = [NSString stringWithFormat:@"%s", fileName];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
 }

@@ -37,7 +37,7 @@ public class Spinner extends Control implements Runnable
    /** Defines the type of spinner for all instances. Defaults for IPHONE when running in iPhone and
     * ANDROID for all other platforms. 
     */
-   public static int spinnerType = Settings.IPHONE.equals(Settings.platform) ? IPHONE : ANDROID;
+   public static int spinnerType = Settings.isIOS() ? IPHONE : ANDROID;
    
    private Coord []coords;
    private int []colors;

@@ -10,26 +10,19 @@
  *********************************************************************************/
 
 
-#if defined (darwin)
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
-    int iphone_dialNumber(char* number);
-    
-#ifdef __cplusplus
-};
-#endif
-#endif // darwin
+#define Object NSObject*
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <QuartzCore/QuartzCore.h>
+#define Class __Class
+#include "../../nm/ui/darwin/mainview.h"
+#include "GraphicsPrimitives.h"
+typedef id Context;
+#include "event.h"
+#undef Class
 
-
-static void dialNumber(CharP number)
+void iphone_dialNumber(char* number)
 {
-#ifdef darwin
-    iphone_dialNumber(number);
-#endif
-}
-
-static void hangup()
-{
+    NSString* string = [NSString stringWithFormat:@"%s", number];
+    [DEVICE_CTX->_mainview dialNumber:string];
 }

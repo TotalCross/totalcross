@@ -73,7 +73,7 @@ public class File4D extends RandomAccessStream
       {
          path = path.substring(6);
          //flsobral@tc129.2: path for both iphone and ipad.
-         if (Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD)) // guich@tc115_14: as per greg's suggestion
+         if (Settings.isIOS()) // guich@tc115_14: as per greg's suggestion
             path = Convert.appendPath(deviceAlias, path);
          else if (isAndroid)
             path = Settings.appPath + "/" + path;
