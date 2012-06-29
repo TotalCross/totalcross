@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362523303.728654"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "220"
-         endingLineNumber = "220"
+         startingLineNumber = "228"
+         endingLineNumber = "228"
          landmarkName = "-imagePickerController:didFinishPickingMediaWithInfo:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -21,11 +21,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362521669.246752"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "173"
-         endingLineNumber = "173"
+         startingLineNumber = "181"
+         endingLineNumber = "181"
          landmarkName = "-cameraClick:width:height:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -34,11 +34,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362521669.246752"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "188"
-         endingLineNumber = "188"
+         startingLineNumber = "196"
+         endingLineNumber = "196"
          landmarkName = "-cameraClick:width:height:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -46,25 +46,12 @@
          shouldBeEnabled = "No"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/media_Camera_c.m"
-         timestampString = "362518816.247191"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "20"
-         endingLineNumber = "20"
-         landmarkName = "iphone_cameraClick()"
-         landmarkType = "7">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "No"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/media_Camera_c.h"
-         timestampString = "362520384.105353"
+         timestampString = "362679673.531074"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "42"
-         endingLineNumber = "42"
+         startingLineNumber = "43"
+         endingLineNumber = "43"
          landmarkName = "cameraClick(NMParams p)"
          landmarkType = "7">
       </FileBreakpoint>
@@ -73,11 +60,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362521669.246752"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "199"
-         endingLineNumber = "199"
+         startingLineNumber = "207"
+         endingLineNumber = "207"
          landmarkName = "-imagePickerController:didFinishPickingMediaWithInfo:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -86,11 +73,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362521669.246752"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "194"
-         endingLineNumber = "194"
+         startingLineNumber = "202"
+         endingLineNumber = "202"
          landmarkName = "-imagePickerControllerDidCancel:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -99,12 +86,38 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "362521669.861869"
+         timestampString = "362688030.520092"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "204"
-         endingLineNumber = "204"
+         startingLineNumber = "212"
+         endingLineNumber = "212"
          landmarkName = "-imagePickerController:didFinishPickingMediaWithInfo:"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "No"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "../../src/nm/ui/darwin/mainview.m"
+         timestampString = "362692003.531741"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "238"
+         endingLineNumber = "238"
+         landmarkName = "-mapsShowAddress:showSatellitePhotos:"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "No"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "../../src/nm/ui/darwin/mainview.m"
+         timestampString = "362692003.531741"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "252"
+         endingLineNumber = "252"
+         landmarkName = "-mapsShowAddress:showSatellitePhotos:"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>

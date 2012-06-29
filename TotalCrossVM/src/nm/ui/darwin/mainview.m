@@ -8,7 +8,6 @@
 #define Object NSObject*
 #include "mainview.h"
 #include "gfx_ex.h"
-
 #import <QuartzCore/CALayer.h>
 #define LKLayer CALayer
 
@@ -169,9 +168,7 @@ void Sleep(int ms);
 {
    dispatch_sync(dispatch_get_main_queue(), ^
    {
-      NSString *s = @"telprompt://";
-      s = [s stringByAppendingString:number];
-      NSURL *url = [NSURL URLWithString:s];
+      NSURL *url = [NSURL URLWithString:number];
       [[UIApplication sharedApplication] openURL:url];
    });
 }
@@ -233,6 +230,29 @@ static bool callingCamera;
    }
    [self dismissModalViewControllerAnimated:YES];
    callingCamera = false;
+}
+
+- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+{
+   NSString *stringURL;
+   char c = [address characterAtIndex:0];
+   NSString* type = showSat ? @"&t=h" : @"&t=m";
+   if ([address length] == 0) // not working yet
+   {
+//      CLLocationCoordinates2D cl = [self getCurrentLocation];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%20Location&z=14%@%",type];
+   }
+   else
+   if (c == '@')
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address substringFromIndex:1],type];
+   else
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      NSURL *url = [NSURL URLWithString:stringURL];
+      [[UIApplication sharedApplication] openURL:url];
+   });
+   return TRUE;
 }
 //--------------------------------------------------------------------------------------------------------
 
@@ -300,9 +320,15 @@ bool graphicsLock(ScreenSurface screen, bool on)
 
 //////////////// interface to mainview methods ///////////////////
 
+bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos)
+{
+   NSString* string = [NSString stringWithFormat:@"%s", addr];
+   return [DEVICE_CTX->_mainview mapsShowAddress:string showSatellitePhotos:showSatellitePhotos];
+}
+
 void iphone_dialNumber(char* number)
 {
-   NSString* string = [NSString stringWithFormat:@"%s", number];
+   NSString* string = [NSString stringWithFormat:@"telprompt://%s", number];
    [DEVICE_CTX->_mainview dialNumber:string];
 }
 
