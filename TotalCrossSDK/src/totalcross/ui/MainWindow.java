@@ -495,6 +495,25 @@ public class MainWindow extends Window implements totalcross.MainClass
                return;
             }
          }
+         else
+         {
+            //not a demo release
+            if (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0)
+            {
+               new MessageBox(
+                     "Error retrieving device identification",
+                     "Failed to retrieve a unique device identification to activate the TotalCross VM."
+                     + (Settings.WIN32.equals(Settings.platform) ?
+                           " Please check your network settings and activate any disabled networks." : ""))
+               {
+                  public void initUI()
+                  {
+                     setFont(font.asBold());
+                  };
+               }.popup();
+               exit(0);
+            }
+         }
          Window.needsPaint = true;
          initUI();
          Window.needsPaint = Graphics.needsUpdate = true; // required by device
