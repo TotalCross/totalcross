@@ -16,7 +16,7 @@ package totalcross.map;
  * 
  * Internet connection is required.
  * 
- * Currently works in Android only.
+ * Currently works in Android and iOS only.
  * 
  * @since TotalCross 1.3
  */
