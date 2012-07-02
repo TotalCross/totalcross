@@ -23,7 +23,7 @@ import totalcross.util.*;
 
 /**
  * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
- * In Windows Mobile and Android, it uses the native API instead of reading from the COM port. 
+ * Windows Mobile, Android and iOS use the native API instead of reading from the COM port.
  * 
  * This class only retrieves data updating the internal fields. If you want to display that data,
  * you may use the GPSView class.
