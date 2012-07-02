@@ -61,6 +61,11 @@ public class CellInfo
       releaseResources();
    }   
    
+   public static boolean isSupported()
+   {
+      return Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
+   }
+   
    /** Converts the current cellId and lac into the latitude and longitude.
     * You need to manually update the values by calling the <code>update</code> method.
     * 

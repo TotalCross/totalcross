@@ -182,7 +182,7 @@ public class GoogleMaps extends MainWindow
                                  gps.stop();
                            }
                         }
-                        if (addr == null)
+                        if (addr == null && CellInfo.isSupported())
                         {
                            final int seconds = 5;
                            String msg1 = (chGPS.isChecked()?"GPS failed.\n":"")+"Getting location from GSM...\n(wait ";

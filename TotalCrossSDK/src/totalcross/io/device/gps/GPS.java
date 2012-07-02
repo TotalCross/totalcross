@@ -106,7 +106,7 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
+   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
