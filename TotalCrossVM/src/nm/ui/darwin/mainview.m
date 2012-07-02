@@ -12,7 +12,6 @@
 #define LKLayer CALayer
 
 bool allowMainThread();
-static NSLock *deviceCtxLock;
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
@@ -60,7 +59,7 @@ void Sleep(int ms);
 
 - (void)initEvents
 {
-   _lock = [[NSLock alloc] init];
+   //_lock = [[NSLock alloc] init];
 
    [[NSNotificationCenter defaultCenter] addObserver:self
       selector:@selector (keyboardDidShow:)
@@ -114,29 +113,22 @@ void Sleep(int ms);
 
 - (bool)isEventAvailable;
 {
-   [_lock lock];
    unsigned int num = [_events count];
-   [_lock unlock];
    return num > 0;
 }
 
 - (NSArray*)getEvents
 {
-   [_lock lock];
    NSArray* events = _events;
    _events = nil;
-   [_lock unlock];
-
    return events;
 }
 
 - (void)addEvent:(NSDictionary*)event
 {
-   [_lock lock];
    if(_events == nil)
       _events = [[NSMutableArray alloc] init];
    [_events addObject: event];
-   [_lock unlock];
 }
 
 -(void) keyboardDidShow: (NSNotification *)notif
@@ -254,6 +246,56 @@ static bool callingCamera;
    });
    return TRUE;
 }
+
+- (void)locationManager:(CLLocationManager *)manager
+    didUpdateToLocation:(CLLocation *)newLocation
+           fromLocation:(CLLocation *)oldLocation
+{
+   // test the age of the location measurement to determine if the measurement is cached
+   // in most cases you will not want to rely on cached measurements
+   NSTimeInterval locationAge = -[newLocation.timestamp timeIntervalSinceNow];
+   if (locationCount > 0 && locationAge > 5.0) return;
+   // test that the horizontal accuracy does not indicate an invalid measurement
+   if (newLocation.horizontalAccuracy < 0) return;
+      
+   locationCount++;
+   locationFlags = 1 | 2 | 4 | 8 | 32; // ios dont have satellite count 
+   locationLat = newLocation.coordinate.latitude;
+   locationLon = newLocation.coordinate.longitude;
+   locationDir = newLocation.course;
+   locationPDOP = newLocation.horizontalAccuracy;
+   locationVeloc = newLocation.speed;
+   NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:newLocation.timestamp];
+   locationDate = [components day] + [components month] * 100 + [components year] * 10000;
+   locationTime = [components second] + [components minute] * 100 + [components hour] * 10000;
+}
+
+- (int) gpsStart
+{
+   if (locationManager == NULL)
+      dispatch_sync(dispatch_get_main_queue(), ^
+      {
+         locationManager = [[CLLocationManager alloc] init];
+         locationManager.delegate = self;
+         locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+         [locationManager startUpdatingLocation];
+         locationCount = 0;
+      });
+   return 0;
+}
+- (void) gpsStop
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      if (locationManager != NULL)
+      {
+         [locationManager stopUpdatingLocation];
+         [locationManager release];
+         locationManager = NULL;
+      }
+   });
+}
+
 //--------------------------------------------------------------------------------------------------------
 
 @end
@@ -264,7 +306,6 @@ void privateScreenChange(int32 w, int32 h) {}
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
-   deviceCtxLock = (NSLock*)[[NSRecursiveLock alloc] init];
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    // initialize the screen bitmap with the full width and height
@@ -280,24 +321,19 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-   [deviceCtxLock lock];
    screen->extension = deviceCtx;
-   [deviceCtxLock unlock];
    return true;
 }
 
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
-   [deviceCtxLock lock];
    ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
    if (allowMainThread())
       [vw invalidateScreen: screen];
-   [deviceCtxLock unlock];       
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
-   [deviceCtxLock lock];
    if (isScreenChange)
      screen->extension = NULL;
    else
@@ -306,15 +342,10 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
         free(screen->extension);
      deviceCtx = screen->extension = NULL;
    }
-   [deviceCtxLock unlock];
 }
 
 bool graphicsLock(ScreenSurface screen, bool on)
 {
-   if (on)
-      [deviceCtxLock lock];
-   else
-      [deviceCtxLock unlock];
    return true;
 }
 
@@ -337,3 +368,33 @@ int iphone_cameraClick(int w, int h, char* fileName)
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
    return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
 }
+
+int iphone_gpsStart()
+{
+   return [DEVICE_CTX->_mainview gpsStart];
+}
+void iphone_gpsStop()
+{
+   [DEVICE_CTX->_mainview gpsStop];
+}
+int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double *veloc, double* pdop, double* dir, double* lat, double* lon)
+{   
+   MainView* mw = DEVICE_CTX->_mainview;
+   *flags = 0;
+   if (mw->locationManager == NULL)
+      return 1;
+   if (mw->locationFlags == 0)
+      return 0;
+   *flags = mw->locationFlags;
+   *lat = mw->locationLat;
+   *lon = mw->locationLon;
+   *date = mw->locationDate;
+   *time = mw->locationTime;
+   *sat = mw->locationSat;
+   *veloc = mw->locationVeloc;
+   *pdop = mw->locationPDOP;
+   *dir = mw->locationDir;
+   mw->locationFlags = 0;
+   return 0;
+}
+
