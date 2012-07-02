@@ -343,7 +343,7 @@ public final class Settings
     */
    public static String appPath; // guich@581_1
    
-   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices.
+   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. In Windows 32, the X button will still be visible, but clicking on it will not close the application
     * If the device does not support removing the button, it will change to a MINIMIZE_BUTTON, which is the default on CE devices. 
     */
    public static final int NO_BUTTON = 0;
