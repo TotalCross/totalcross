@@ -408,6 +408,9 @@ cont:
       case WM_CLOSE:
 #ifdef WINCE // with this postQuitMessage, any MessageBox issued after it will be ignored in win32
          PostQuitMessage(0);
+#else
+         if (*tcSettings.closeButtonTypePtr == NO_BUTTON)
+            break;
 #endif
          keepRunning = false;
          break;
