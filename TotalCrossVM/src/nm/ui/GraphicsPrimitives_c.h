@@ -1859,7 +1859,7 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
-#ifdef darwin9
+#ifdef darwin
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
 
@@ -1965,7 +1965,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#if defined ANDROID || defined darwin9
+#if defined ANDROID || defined darwin
    checkKeyboardAndSIP(&shiftY,&shiftH);
 #ifdef ANDROID   
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)
@@ -1991,6 +1991,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if ((shiftY+shiftH) > screen.screenH)
       shiftH = screen.screenH - shiftY;
+   if (shiftY != 0 && shiftH <= 0)
+      return false;
+      
    if (!screen.fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
    {
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
@@ -2818,6 +2821,9 @@ char* createPixelsBuffer(int width, int height) // called from childview.m
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
+   if (screen.screenW <= 0 || screen.screenH <= 0)
+      return false;
+      
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
@@ -2830,7 +2836,8 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       }
       *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
-#else
+#else                    
+      
       if (isScreenChange)
       {
          screen.mainWindowPixels = *screenObj = null;
@@ -2841,7 +2848,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
-
+                                                                                          
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;

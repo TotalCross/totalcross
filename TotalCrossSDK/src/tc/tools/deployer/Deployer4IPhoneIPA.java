@@ -54,7 +54,7 @@ public class Deployer4IPhoneIPA
       // locate template and target
       File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
             DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
-            "iphone2+/TotalCross.ipa"));
+            "ios/TotalCross.ipa"));
       File targetFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       targetFile.deleteOnExit();
       // create a copy of the original file
@@ -140,6 +140,7 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
+      rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
@@ -230,9 +231,9 @@ public class Deployer4IPhoneIPA
       
       TVFS.umount(targetZip);      
 
-      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone2+/" + DeploySettings.appTitle + ".ipa")));
+      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/ios/" + DeploySettings.appTitle + ".ipa")));
       
-      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone2+/"));
+      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/ios/"));
    }
    
    private void addMetadata(TFile targetZip) throws Exception

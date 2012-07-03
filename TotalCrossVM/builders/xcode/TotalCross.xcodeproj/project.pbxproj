@@ -18,6 +18,7 @@
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
 		3A7FE723155C176000403952 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE722155C176000403952 /* libtcvm.a */; };
 		3A7FE726155C177C00403952 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE725155C177C00403952 /* libLitebase.a */; };
+		3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
 		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "build/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
 		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
+		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */,
 				0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */,
 				0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */,
 				0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */,
@@ -63,6 +66,7 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
+				3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */,
 				3A7FE725155C177C00403952 /* libLitebase.a */,
 				3A7FE722155C176000403952 /* libtcvm.a */,
 				0F5AF50D1507FA3600D6142B /* TotalCross */,
@@ -251,7 +255,12 @@
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -282,6 +291,13 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
@@ -302,7 +318,12 @@
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					darwin,
+					TOTALCROSS,
+					POSIX,
+					ENABLE_DEMO,
+				);
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "TotalCross/TotalCross-Info.plist";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";

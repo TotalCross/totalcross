@@ -39,7 +39,7 @@ public final class Settings
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 1;
+   public static int buildNumber = 2;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -116,6 +116,7 @@ public final class Settings
     * @see #BLACKBERRY   
     * @see #ANDROID      
     * @see #isWindowsDevice()
+    * @see #isIOS()
     */
    public static String platform;
    
@@ -342,7 +343,7 @@ public final class Settings
     */
    public static String appPath; // guich@581_1
    
-   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices.
+   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. In Windows 32, the X button will still be visible, but clicking on it will not close the application
     * If the device does not support removing the button, it will change to a MINIMIZE_BUTTON, which is the default on CE devices. 
     */
    public static final int NO_BUTTON = 0;
@@ -603,6 +604,14 @@ public final class Settings
    public static boolean isWindowsDevice()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
+   }
+   
+   /** Returns true if this is an iPad or an iPhone.
+    * @since TotalCross 1.53
+    */
+   public static boolean isIOS()
+   {
+      return IPAD.equals(platform) || IPHONE.equals(platform);
    }
 
    /** Refresh some fields thay may have been updated since the program 

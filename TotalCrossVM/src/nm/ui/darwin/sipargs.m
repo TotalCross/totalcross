@@ -7,8 +7,6 @@ SipArgs SipArgsMake(int options, id control, bool secret, NSString *text)
     SipArgs args;
     args.options = options;
     args.control = control;
-    args.secret = secret;
-    args.text = text;
     return args;
 }
 
@@ -17,7 +15,6 @@ SipArgs SipArgsMake(int options, id control, bool secret, NSString *text)
 - (id)init:(SipArgs)args
 {
    v = args;
-   [ v.text retain ]; 
    return self;
 }
 
@@ -28,7 +25,6 @@ SipArgs SipArgsMake(int options, id control, bool secret, NSString *text)
 
 - (void)dealloc
 {
-   [ v.text release ]; 
 }
 
 @end

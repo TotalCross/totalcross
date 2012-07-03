@@ -81,7 +81,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Rasapi32.lib winmm.lib ws2_32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib imm32.lib"
+				AdditionalDependencies="winmm.lib ws2_32.lib Rasapi32.lib imm32.lib"
 				OutputFile="$(OutDir)\TCVM.dll"
 				Version="1.27"
 				LinkIncremental="1"
@@ -707,7 +707,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Rasapi32.lib winmm.lib ws2_32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib imm32.lib"
+				AdditionalDependencies="winmm.lib ws2_32.lib Rasapi32.lib imm32.lib"
 				OutputFile="$(OutDir)\TCVM.dll"
 				Version="1.27"
 				LinkIncremental="1"
@@ -1125,7 +1125,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Rasapi32.lib winmm.lib ws2_32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib imm32.lib"
+				AdditionalDependencies="winmm.lib ws2_32.lib Rasapi32.lib imm32.lib"
 				OutputFile="$(OutDir)\TCVM.dll"
 				Version="1.27"
 				LinkIncremental="1"

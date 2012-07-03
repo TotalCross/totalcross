@@ -59,9 +59,9 @@ public class GoogleMaps extends MainWindow
       try
       {
          addHeaderBar();
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID))
+         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
          {
-            add(new Label("This program runs on\nthe Android platform only",CENTER),CENTER,CENTER);
+            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
          add(sc = new ScrollContainer(false, true),LEFT,AFTER,FILL,FILL);
@@ -71,7 +71,7 @@ public class GoogleMaps extends MainWindow
          rg = new RadioGroupController();
          Radio r;
          sc.add(r = new Radio(" Current location",rg),LEFT+50,AFTER+50,FILL,PREFERRED); r.leftJustify = true;
-         sc.add(chGPS = new Check("Use GPS if activated."),LEFT+100,AFTER+50,FILL,PREFERRED); chGPS.leftJustify = true;
+         sc.add(chGPS = new Check("Use GPS if activated."),LEFT+100,AFTER+50,FILL,PREFERRED);
          sc.add(r = new Radio(" Address",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
          sc.add(edAddr = new Edit(),LEFT+100,AFTER+50,FILL-200,PREFERRED);
          sc.add(r = new Radio(" Coordinates",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
@@ -80,7 +80,7 @@ public class GoogleMaps extends MainWindow
          sc.add(new Label("Lon: "),LEFT+50,AFTER+50);
          sc.add(edLon = new Edit("+99.999999"), SAME,AFTER+50,edLat); // vertical align
          sc.add(new Ruler(),LEFT+50,AFTER+50,FILL-50,PREFERRED);
-         sc.add(chSat = new Check("Show satellite images"),LEFT+50,AFTER+100,FILL,PREFERRED); chSat.leftJustify = true;
+         sc.add(chSat = new Check("Show satellite images"),LEFT+50,AFTER+100,FILL,PREFERRED);
          sc.add(btnShow = new Button("Show map"),CENTER,AFTER+100,SCREENSIZE+80,PREFERRED+50);
          edLat.setValidChars("+-0123456789.");
          edLon.setValidChars("+-0123456789.");
@@ -182,7 +182,7 @@ public class GoogleMaps extends MainWindow
                                  gps.stop();
                            }
                         }
-                        if (addr == null)
+                        if (addr == null && CellInfo.isSupported())
                         {
                            final int seconds = 5;
                            String msg1 = (chGPS.isChecked()?"GPS failed.\n":"")+"Getting location from GSM...\n(wait ";

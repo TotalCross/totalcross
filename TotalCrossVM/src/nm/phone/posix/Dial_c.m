@@ -10,25 +10,19 @@
  *********************************************************************************/
 
 
-
+#define Object NSObject*
 #import <UIKit/UIKit.h>
-#import <UIKit/UITextView.h>
-#import "sipargs.h"
+#import <Foundation/Foundation.h>
+#import <QuartzCore/QuartzCore.h>
+#define Class __Class
+#include "../../nm/ui/darwin/mainview.h"
+#include "GraphicsPrimitives.h"
+typedef id Context;
+#include "event.h"
+#undef Class
 
-@interface KeyboardView : UIView
+void iphone_dialNumber(char* number)
 {
-   UINavigationBar *navBar;
-   UITextView *entry;
-   SipArguments *params;
-   NSRange lastRange;
+    NSString* string = [NSString stringWithFormat:@"%s", number];
+    [DEVICE_CTX->_mainview dialNumber:string];
 }
-
-- (id)initWithFrame:(CGRect)rect params:(SipArguments*)args;
-- (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button;
-
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
-                 replacementText:(NSString *)text;
-- (void)onOk;
-- (void)onCancel;   
-
-@end

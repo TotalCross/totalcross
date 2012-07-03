@@ -82,7 +82,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
-      boolean isIphone = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD);
+      boolean isIphone = Settings.isIOS();
       if (isAndroid || isIphone)
          Settings.unmovableSIP = true;
       if (Settings.fingerTouch) // guich@tc120_48
@@ -494,6 +494,13 @@ public class MainWindow extends Window implements totalcross.MainClass
                exit(0);
                return;
             }
+         }
+         else
+         if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
+         {
+            new MessageBox("Fatal Error", "Failed to retrieve a unique device identification to activate the TotalCross VM. Please check your network settings and activate any disabled networks.").popup();
+            exit(0);
+            return;
          }
          Window.needsPaint = true;
          initUI();

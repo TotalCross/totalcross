@@ -17,8 +17,6 @@ typedef void (*OrientationChangedProc)  ();
 
 typedef void *dlHandle;
 
-static char *cmdLine;
-
 @class ViewController;
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -29,12 +27,9 @@ static char *cmdLine;
     dlHandle tcvm;
     Context context;
 }
+- (void) initApp;
 - (void)   mainLoop: (id)param;
 - (float)  systemVolume;
 - (void) fatalError: (NSString*)msg;
-
-@property (strong, nonatomic) UIWindow *window;
-
-@property (strong, nonatomic) ViewController *viewController;
 
 @end
