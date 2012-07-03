@@ -489,6 +489,9 @@ jumpArgument:
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+#ifdef darwin
+    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+#endif
    loadExceptionClasses(currentContext); // guich@tc112_18
 
    // Create a Java thread for the main context and call it "TC Event Thread"

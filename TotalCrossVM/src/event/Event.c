@@ -139,6 +139,13 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
    }
 }
 
+#ifdef darwin
+void postOnMinimizeOrRestoreNC(bool isMinimized)
+{
+   postOnMinimizeOrRestore(lifeContext, isMinimized);
+}
+#endif
+
 void postOnMinimizeOrRestore(Context c, bool isMinimized)
 {
    if (mainClass != null)
