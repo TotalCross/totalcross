@@ -447,14 +447,6 @@ pixels
 , unless otherwise specified.
 \end_layout
 
-\begin_layout Itemize
-The  symbol means 
-\emph on
-attention
-\emph default
-.
-\end_layout
-
 \begin_layout Standard
 This tutorial follows the Object Oriented naming convention: a class containing
  methods (~functions) and properties or fields (~variables).
@@ -537,8 +529,7 @@ Android 1.6 and above.
 \end_layout
 
 \begin_layout Itemize
-iOS 3.2 and above (using jailbreak and cydia).
- 
+iOS 3.2
 \end_layout
 
 \begin_layout Itemize
@@ -630,13 +621,13 @@ Supports the method “finalize”, ran every time the garbage collector (gc)
 
 \begin_layout Standard
 \begin_inset Box Shadowbox
-position "c"
+position "t"
 hor_pos "c"
 has_inner_box 1
-inner_pos "c"
+inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -801,7 +792,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -907,7 +898,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1192,7 +1183,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1266,7 +1257,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1496,7 +1487,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1625,7 +1616,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1699,7 +1690,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1798,7 +1789,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -1837,8 +1828,8 @@ The optional arguments can be any combination of the following (not case
  sensitive):
 \end_layout
 
-\begin_layout Itemize
-Screen resolution and color depth 
+\begin_layout Subsection*
+Screen resolution and color depth
 \begin_inset ERT
 status open
 
@@ -1854,9 +1845,22 @@ TabPositions{3.5cm}
 
 \end_layout
 
-\begin_deeper
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1865,7 +1869,7 @@ TabPositions{3.5cm}
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1874,7 +1878,7 @@ TabPositions{3.5cm}
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1896,7 +1900,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1920,7 +1924,7 @@ default
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1942,7 +1946,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1964,7 +1968,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -1986,7 +1990,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2008,7 +2012,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2030,7 +2034,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2052,7 +2056,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2074,7 +2078,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2096,7 +2100,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>
+\labelwidthstring /scr.<W>x<H>x<BPP>00
 /scr
 \begin_inset space ~
 \end_inset
@@ -2117,8 +2121,12 @@ tab
  (same of /scr 320x480x16)
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Color depth
 \begin_inset ERT
 status open
@@ -2135,9 +2143,22 @@ TabPositions{6cm}
 
 \end_layout
 
-\begin_deeper
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
 \begin_layout Labeling
-\labelwidthstring bpp.320
+\labelwidthstring /bpp.320
 /bpp
 \begin_inset space ~
 \end_inset
@@ -2160,7 +2181,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring bpp.320
+\labelwidthstring /bpp.320
 /bpp
 \begin_inset space ~
 \end_inset
@@ -2183,7 +2204,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring bpp.320
+\labelwidthstring /bpp.320
 /bpp
 \begin_inset space ~
 \end_inset
@@ -2206,7 +2227,7 @@ tab
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring bpp.320
+\labelwidthstring /bpp.320
 /bpp
 \begin_inset space ~
 \end_inset
@@ -2228,14 +2249,31 @@ tab
  (16M colors without transparency)
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 User interface style
 \end_layout
 
-\begin_deeper
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
 \begin_layout Labeling
-\labelwidthstring uiStyle.Android0
+\labelwidthstring /uiStyle.PalmOS0
 /uiStyle
 \begin_inset space ~
 \end_inset
@@ -2244,7 +2282,7 @@ WinCE : Windows CE user interface style
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring uiStyle.Android0
+\labelwidthstring /uiStyle.PalmOS0
 /uiStyle
 \begin_inset space ~
 \end_inset
@@ -2253,7 +2291,7 @@ PalmOS : Palm OS user interface style
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring uiStyle.Android0
+\labelwidthstring /uiStyle.PalmOS0
 /uiStyle
 \begin_inset space ~
 \end_inset
@@ -2262,7 +2300,7 @@ Flat : Flat user interface style
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring uiStyle.Android0
+\labelwidthstring /uiStyle.PalmOS0
 /uiStyle
 \begin_inset space ~
 \end_inset
@@ -2271,7 +2309,7 @@ Vista : Vista user interface style
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring uiStyle.Android0
+\labelwidthstring /uiStyle.PalmOS0
 /uiStyle
 \begin_inset space ~
 \end_inset
@@ -2279,56 +2317,90 @@ Vista : Vista user interface style
 Android : Android user interface style
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Device characteristics
 \end_layout
 
-\begin_deeper
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /penlessDevice : acts as a device that has no touch screen.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /geofocus : uses geographical focus (also activates penlessDevice)
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /fingerTouch : simulates the use of fingers (since a finger is less precise
  than a pen, uses an algorithm to find the control near the finger and also
  activates drag and flick).
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /unmovableSip : specifies that the Soft Input Panel is unmovable, and simulates
  the screen shift that's made when an Edit or MultiEdit gains focus.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /keypadOnly : acts as a device that has only the 0-9{*}
 \backslash
 # keys
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring virtualKeyboard0
+\labelwidthstring /virtualKeyboard0
 /virtualKeyboard : specifies that the device does not have a physical keyboard
  (or it has but the keyboard is closed)
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Others
 \end_layout
 
-\begin_deeper
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
 \begin_layout Labeling
-\labelwidthstring showmousepos00
+\labelwidthstring /showmousepos00
 /pos
 \begin_inset space ~
 \end_inset
@@ -2337,7 +2409,7 @@ x,y : sets the opening position of the application.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring showmousepos00
+\labelwidthstring /showmousepos00
 /scale
 \begin_inset space ~
 \end_inset
@@ -2355,7 +2427,7 @@ to
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring showmousepos00
+\labelwidthstring /showmousepos00
 /dataPath
 \begin_inset space ~
 \end_inset
@@ -2364,7 +2436,7 @@ to
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring showmousepos00
+\labelwidthstring /showmousepos00
 /cmdLine
 \begin_inset space ~
 \end_inset
@@ -2374,11 +2446,15 @@ to
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring showmousepos00
+\labelwidthstring /showmousepos00
 /showmousepos : shows the mouse position (only when running under JavaSE).
 \end_layout
 
-\end_deeper
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
 The last argument passed to the Launcher is always the qualified name of
  the main class of the application to be launched (for example, tc.samples.ui.gadge
@@ -2413,7 +2489,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -2593,7 +2669,7 @@ However, if you use this option to deploy an application, the jar/zip file
 
 \begin_deeper
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -palm
 \begin_inset space ~
 \end_inset
@@ -2608,7 +2684,7 @@ or
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -ce
 \begin_inset space ~
 \end_inset
@@ -2622,17 +2698,17 @@ or
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -winmo Creates a cab file for Windows Mobile only.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -win32 Creates an executable file to run the application in Win32.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -bb
 \begin_inset space ~
 \end_inset
@@ -2645,7 +2721,7 @@ or
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -applet
 \begin_inset space ~
 \end_inset
@@ -2658,17 +2734,17 @@ or
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -android Creates the apk file for Android.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -linux Creates the binary and the tcz files for Linux
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring -palm.or.-palmos0
+\labelwidthstring -bb.or.-blackberry00
 -all Single command to create all of the above.
 \end_layout
 
@@ -2679,7 +2755,7 @@ or
 
 \begin_deeper
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /a
 \begin_inset space ~
 \end_inset
@@ -2690,13 +2766,13 @@ ApId : Assigns the application id; can only be used for libraries or passing
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /autostart : automatically starts the application after a boot is completed.
  Currently works for Android only.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /c
 \begin_inset space ~
 \end_inset
@@ -2705,7 +2781,7 @@ cmd : Specify a command line to be passed to the application.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /i
 \begin_inset space ~
 \end_inset
@@ -2717,18 +2793,18 @@ platforms : Pass a list of comma-separated platforms to let the generated
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /k : Keep the exe and other temporary files during WinCE generation (the
  files needed for manual installation).
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /kn : As /k, but does not create the cab files for wince
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /m
 \begin_inset space ~
 \end_inset
@@ -2738,7 +2814,7 @@ path : Specifies a path to the mobileprovision and certificate store to
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /n
 \begin_inset space ~
 \end_inset
@@ -2748,7 +2824,7 @@ name : Override the name of the tcz file with the given one.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /o
 \begin_inset space ~
 \end_inset
@@ -2758,7 +2834,7 @@ path : Override the output folder (defaults to the current folder) to the
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /p
 \begin_inset space ~
 \end_inset
@@ -2879,7 +2955,7 @@ tab
 
 \end_deeper
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /r
 \begin_inset space ~
 \end_inset
@@ -2889,7 +2965,7 @@ key : signs the tcz file with the given registration key (used when you
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /s
 \begin_inset space ~
 \end_inset
@@ -2901,24 +2977,24 @@ pass : Launch the BlackBerry SignatureTool and automatically sign the COD
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /t : only tests if the class is ok to be deployed; no tcz files not installation
  files are generated.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /v : Verbose output for information messages.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /w : if an error occurs, waits for the ENTER key to be pressed before the
  window closes.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring 00.00.0000
+\labelwidthstring /i.platforms00
 /x
 \begin_inset space ~
 \end_inset
@@ -3397,26 +3473,53 @@ If the appearance of the icons does not satisfy, you can create some bmp
  and png files for each platform: 
 \end_layout
 
-\begin_layout Itemize
-Palm OS: icon15x9x8.bmp, icon30x18x8.bmp, icon22x22x8.bmp, icon44x44x8.bmp
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Labeling
+\labelwidthstring Blackberry0
+Palm
+\begin_inset space ~
+\end_inset
+
+OS icon15x9x8.bmp, icon30x18x8.bmp, icon22x22x8.bmp, icon44x44x8.bmp
 \end_layout
 
-\begin_layout Itemize
-Windows: icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp
+\begin_layout Labeling
+\labelwidthstring Blackberry0
+Windows icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp
 \end_layout
 
-\begin_layout Itemize
-iPhone: icon60x60.png
+\begin_layout Labeling
+\labelwidthstring Blackberry0
+iPhone icon60x60.png
 \end_layout
 
-\begin_layout Itemize
-Blackberry: icon80x80.png
+\begin_layout Labeling
+\labelwidthstring Blackberry0
+Blackberry icon80x80.png
 \end_layout
 
-\begin_layout Itemize
-Android: icon72x72.png.
+\begin_layout Labeling
+\labelwidthstring Blackberry0
+Android icon72x72.png.
  Use alpha-channel on PNG for better appearance).
- 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3623,9 +3726,10 @@ only
 
 \begin_layout Standard
 First, download and install openssl for your OS.
- (For Win32 
+ (For 
 \begin_inset CommandInset href
 LatexCommand href
+name "Win32"
 target "http://slproweb.com/products/Win32OpenSSL.html"
 
 \end_inset
@@ -4070,20 +4174,24 @@ Identifying the right installation for your device
 Each cab file targets a different platform:
 \end_layout
 
-\begin_layout Itemize
-HPC211 – Handheld PC with Windows CE 2.11
+\begin_layout Labeling
+\labelwidthstring POCKETPC
+HPC211 Handheld PC with Windows CE 2.11
 \end_layout
 
-\begin_layout Itemize
-HPC2000 – Handheld PC 2000
+\begin_layout Labeling
+\labelwidthstring POCKETPC
+HPC2000 Handheld PC 2000
 \end_layout
 
-\begin_layout Itemize
-POCKETPC – PocketPC with Windows CE 3.0+
+\begin_layout Labeling
+\labelwidthstring POCKETPC
+POCKETPC PocketPC with Windows CE 3.0+
 \end_layout
 
-\begin_layout Itemize
-WMOBILE – Windows Mobile.
+\begin_layout Labeling
+\labelwidthstring POCKETPC
+WMOBILE Windows Mobile.
 \end_layout
 
 \begin_layout Standard
@@ -4508,7 +4616,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -4564,8 +4672,15 @@ Follow these steps:
 \end_layout
 
 \begin_layout Enumerate
-Download the webservice sample at: http://www.totalcross.com/activation/Activation
-_sample.rar 
+Download the webservice 
+\begin_inset CommandInset href
+LatexCommand href
+name "sample"
+target "http://www.totalcross.com/activation/Activation_sample.rar"
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Enumerate
@@ -4876,8 +4991,27 @@ end{lstlisting}
 \end_layout
 
 \begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
 Please notice we are not discussing the performance of each approach, just
  showing an example.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -5009,9 +5143,9 @@ Settings.onDevice is now called onJavaSE (Standard Edition), but notice it
  has the opposite meaning! Be sure to search for this field and make sure
  it is being used correctly.
  For instance:
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
 if (Settings.onDevice) replaced for if(!Settings.onJavaSE)
 \end_layout
 
@@ -5422,7 +5556,7 @@ tIOException, FileNotFoundException and IOException.
 
 \begin_layout Standard
 Finally, what's the correct way to handle the exception? The most common
- is call e.printStackTrace().
+ is call printStackTrace.
  This is a classic and BAD coding, because the stack trace is logged in
  the debug console (same output of Vm.debug), and thus the programmer will
  NOT know that the exception was thrown unless he exits the program and
@@ -6501,7 +6635,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -6610,7 +6744,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -6890,12 +7024,17 @@ setDefaultFont
 Useful mehtods
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-exit(int exitCode)
+exit(int
+\begin_inset space ~
+\end_inset
+
+exitCode)
 \family default
-: exits the program, calling 
+ exits the program, calling 
 \family typewriter
 onExit
 \family default
@@ -6911,12 +7050,25 @@ EXIT
  as the exit code.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-addTimer(Control target, int millis)
+addTimer(Control
+\begin_inset space ~
+\end_inset
+
+target,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+millis)
 \family default
-: adds a timer.
+ adds a timer.
  The Timer event will be issued to the 
 \family typewriter
 target
@@ -6928,33 +7080,39 @@ millis
  milliseconds.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-removeTimer(Timer timer)
+removeTimer(Timer
+\begin_inset space ~
+\end_inset
+
+timer)
 \family default
-: removes the given 
+ removes the given 
 \family typewriter
 timer
 \family default
  from the timers queue.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 getCommandLine()
 \family default
-: if this process was executed by another process (e.g.: using the 
+ if this process was executed by another process (e.g.: using the 
 \family typewriter
 totalcross.sys.Vm.exec
 \family default
  method), this method gets the command line passed.
- 
 \end_layout
 
 \begin_deeper
-\begin_layout Standard
+\begin_layout FieldList
+\labelwidthstring 0
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -6962,7 +7120,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -6978,33 +7136,33 @@ When you click on the application's icon, there’s no command line.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 getMainWindow()
 \family default
-: returns the instance of the current MainWindow.
+ returns the instance of the current MainWindow.
  You can use it to get access to methods of the MainWindow class from outside
  the class.
  Is it also possible to cast the returned class to the class that is extending
  MainWindow (this is a normal Java behavior).
  So, if UiGadgets is running, it is correct to do:
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 UIGadgets instance = (UIGadgets) MainWindow.getMainWindow();
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 getScreenShot()
 \family default
-: returns an image with the screenshot of the application.
+ returns an image with the screenshot of the application.
 \end_layout
 
 \begin_layout Section
@@ -7120,141 +7278,211 @@ The smart way, by using constants for relative coordinates.
  The constants are:
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Subsection*
 Coordinate X
 \end_layout
 
-\begin_deeper
-\begin_layout Description
-LEFT: place the control at the position 0 horizontal.
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+LEFT place the control at the position 0 horizontal.
  If the parent is a Window, align the control at the left of the window’s
  client rect.
 \end_layout
 
-\begin_layout Description
-RIGHT: align the control at the right.
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+RIGHT align the control at the right.
  If the parent is a Window, align the control at the right of the window’s
  client rect (relative to the screen).
 \end_layout
 
-\begin_layout Description
-RIGHT_OF: align the control at the right of the last control (relative to
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+RIGHT_OF align the control at the right of the last control (relative to
  a control)
 \end_layout
 
-\begin_layout Description
-CENTER: center horizontally the control in the container (relative to the
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+CENTER center horizontally the control in the container (relative to the
  screen).
 \end_layout
 
-\begin_layout Description
-CENTER_OF: center horizontally based on the last control's width (relative
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+CENTER_OF center horizontally based on the last control's width (relative
  to a control).
 \end_layout
 
-\begin_layout Description
-BEFORE: place the control before the last control added.
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+BEFORE place the control before the last control added.
 \end_layout
 
-\begin_layout Description
-AFTER: place the control after the last control added.
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+AFTER place the control after the last control added.
 \end_layout
 
-\begin_layout Description
-SAME: place the control at the same x coordinate of the last control added.
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+SAME place the control at the same x coordinate of the last control added.
 \end_layout
 
-\begin_layout Description
-KEEP: keep the last position used.
+\begin_layout Labeling
+\labelwidthstring CENTER.OF00
+KEEP keep the last position used.
  To be used with WILL_RESIZE
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Coordinate Y
 \end_layout
 
-\begin_deeper
-\begin_layout Description
-TOP: place the control at position 0 vertical.
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+TOP place the control at position 0 vertical.
  If the parent is a Window, align the control at the top of the window’s
  client rect.
 \end_layout
 
-\begin_layout Description
-BOTTOM: place the control at the bottom of the container.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+BOTTOM place the control at the bottom of the container.
  If the parent is a Window, align the control at the bottom of the window’s
  client rect.
 \end_layout
 
-\begin_layout Description
-CENTER: center vertically the control in the container.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+CENTER center vertically the control in the container.
 \end_layout
 
-\begin_layout Description
-CENTER_OF: center vertically based on the last control's height.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+CENTER_OF center vertically based on the last control's height.
 \end_layout
 
-\begin_layout Description
-BEFORE: place the control before the last control added.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+BEFORE place the control before the last control added.
 \end_layout
 
-\begin_layout Description
-AFTER: place the control after the last control added.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+AFTER place the control after the last control added.
 \end_layout
 
-\begin_layout Description
-SAME: place the control at the same y coordinate of the last control added.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+SAME place the control at the same y coordinate of the last control added.
 \end_layout
 
-\begin_layout Description
-BOTTOM_OF: align the control at the bottom of the last control
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+BOTTOM_OF align the control at the bottom of the last control
 \end_layout
 
-\begin_layout Description
-KEEP: keep the last position used.
+\begin_layout Labeling
+\labelwidthstring BOTTOM.OF00
+KEEP keep the last position used.
  To be used with WILL_RESIZE
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Width
 \end_layout
 
-\begin_deeper
-\begin_layout Description
-PREFERRED: lets the control determine its best width.
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+PREFERRED lets the control determine its best width.
  This is normally computed using the control’s text width in the selected
  font.
 \end_layout
 
-\begin_layout Description
-FILL: the control’s width will fill the space left until the end of the
- container.
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+FILL the control’s width will fill the space left until the end of the container.
  Cannot be used with RIGHT/CENTER.
 \end_layout
 
-\begin_layout Description
-SAME: set the control's width with the same width of the last control added.
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+SAME set the control's width with the same width of the last control added.
 \end_layout
 
-\begin_layout Description
-FIT: set the control's width to fit between the specified x position and
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+FIT set the control's width to fit between the specified x position and
  the last control added x position.
  For example, if you place a Label at LEFT, a Button at RIGHT and want to
  place an Edit between those two controls, use FIT as the control's width
  using the Label as relative control.
 \end_layout
 
-\begin_layout Description
-SCREEN_SIZE: compute the width as a percentage of the screen's size (width).
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+SCREEN_SIZE compute the width as a percentage of the screen's size (width).
  The percentage is passed as a number with + sign.
  E.G.: SCREEN_SIZE+20 will take the width as 20% of the screens size.
  Note that the size will change when the device is rotated.
 \end_layout
 
-\begin_layout Description
-WILL_RESIZE: set that the width will be resized later, when all controls
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+WILL_RESIZE set that the width will be resized later, when all controls
  were added.
  You cannot use RIGHT or CENTER for placing controls when using WILL_RESIZE.
  After all items were added, call the 
@@ -7264,48 +7492,71 @@ resizeWidth
  method.
 \end_layout
 
-\begin_layout Description
-KEEP: keep the last position used.
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+KEEP keep the last position used.
  To be used with WILL_RESIZE
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
 Height
 \end_layout
 
-\begin_deeper
-\begin_layout Description
-PREFERRED: lets the control determine its best height.
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+PREFERRED lets the control determine its best height.
  This is normally computed using the control’s text height in the selected
  font.
 \end_layout
 
-\begin_layout Description
-FILL: the control’s height will fill the space left until the end of the
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+FILL the control’s height will fill the space left until the end of the
  container.
  Cannot be used with BOTTOM/CENTER.
 \end_layout
 
-\begin_layout Description
-SAME: set the control's height with the same height of the last control
- added.
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+SAME set the control's height with the same height of the last control added.
 \end_layout
 
-\begin_layout Description
-FIT: set the control's height to fit between the specified y position and
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+FIT set the control's height to fit between the specified y position and
  the last control added y position.
  For example, if you place a Button at TOP, a Label at BOTTOM, and want
  to place a ListBox between both, use FIT as the control's height using
  the Button as relative control.
 \end_layout
 
-\begin_layout Description
-SCREEN_SIZE: compute the height as a percentage of the screen's size (height).
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+SCREEN_SIZE compute the height as a percentage of the screen's size (height).
 \end_layout
 
-\begin_layout Description
-WILL_RESIZE: set that the height will be resized later, when all controls
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+WILL_RESIZE set that the height will be resized later, when all controls
  were added.
  You cannot use BOTTOM or CENTER for placing controls when using WILL_RESIZE.
  After all items were added, call the 
@@ -7315,12 +7566,17 @@ resizeHeight
  method.
 \end_layout
 
-\begin_layout Description
-KEEP: keep the last position used.
+\begin_layout Labeling
+\labelwidthstring SCREEN.SIZE00
+KEEP keep the last position used.
  To be used with WILL_RESIZE
 \end_layout
 
-\end_deeper
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -7463,208 +7719,393 @@ this.tabOrder = new Vector(new Object[]{ed1,btn1,btn2,ed2});
 Useful members
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-FontMetrics fm
+FontMetrics
+\begin_inset space ~
+\end_inset
+
+fm
 \family default
-: the FontMetrics object created from the control’s assigned Font.
+ the FontMetrics object created from the control’s assigned Font.
  Always recreated when the font changes.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-int appId
+int
+\begin_inset space ~
+\end_inset
+
+appId
 \family default
-: a public variable that can be assigned by the application with any value.
+ a public variable that can be assigned by the application with any value.
  For example, the Keyboard class uses this to store the PushButtonGroup
  index and discover which one of the five had issued the event.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-Object appObj
+Object
+\begin_inset space ~
+\end_inset
+
+appObj
 \family default
-: same of appId, but its an Object instead of an int.
+ same of appId, but its an Object instead of an int.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-int clearValueInt
+int
+\begin_inset space ~
+\end_inset
+
+clearValueInt
 \family default
-: value used to clear a control that uses an index as the active value.
+ value used to clear a control that uses an index as the active value.
  The default is: 0.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-String clearValueStr
+String
+\begin_inset space ~
+\end_inset
+
+clearValueStr
 \family default
-: value used to clear a control that uses a String as the active value.
+ value used to clear a control that uses a String as the active value.
  The default is an empty string: “”.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 isHighlighting
 \family default
-: If true, the user is using the arrows to navigate across the controls.
+ If true, the user is using the arrows to navigate across the controls.
  If false, the currently focused control is using the keys for its own purposes.
  If the device is penless and the control is lost, try setting this to true.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setRect(int x, int y, int width, int height)
-\family default
-
-\begin_inset Newline newline
+setRect(int
+\begin_inset space ~
 \end_inset
 
-sets the control bounds with the given parameters.
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height)
+\family default
+ sets the control bounds with the given parameters.
  If relative coordinates are used, they will be relative to the last added
  control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setRect(Rect r)
-\family default
-
-\begin_inset Newline newline
+setRect(Rect
+\begin_inset space ~
 \end_inset
 
-same as 
+r)
+\family default
+ same as 
 \family typewriter
 setRect(r.x, r.y, r.width, r.height)
 \family default
 .
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setRect(int x, int y, int width, int height, Control relative)
-\family default
-
-\begin_inset Newline newline
+setRect(int
+\begin_inset space ~
 \end_inset
 
-same as first one, but coordinates will be relative to the given control
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height,
+\begin_inset space ~
+\end_inset
+
+Control
+\begin_inset space ~
+\end_inset
+
+relative)
+\family default
+ same as first one, but coordinates will be relative to the given control
  instead of the last one added.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-add(Control control, int x, int y)
+add(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y)
 \family default
+ same as:
+\family typewriter
 
 \begin_inset Newline newline
 \end_inset
 
-same as:
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
 add(control);
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
-
-\family typewriter
 control.setRect(x, y, PREFERRED, PREFERRED);
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-add(Control control, int x, int y, Control relative)
+add(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+Control
+\begin_inset space ~
+\end_inset
+
+relative)
 \family default
+ same as:
+\family typewriter
 
 \begin_inset Newline newline
 \end_inset
 
-same as:
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
 add(control);
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
-
-\family typewriter
 control.setRect(x, y, PREFERRED, PREFERRED, relative);
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-add(Control control, int x, int y, int width, int height)
+add(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height)
 \family default
+ same as:
+\family typewriter
 
 \begin_inset Newline newline
 \end_inset
 
-same as:
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
 add(control);
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
-
-\family typewriter
 control.setRect(x, y, width, height);
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-add(Control control, int x, int y, int width, int height, Control relative)
+add(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height,
+\begin_inset space ~
+\end_inset
+
+Control
+\begin_inset space ~
+\end_inset
+
+relative)
 \family default
+ same as:
+\family typewriter
 
 \begin_inset Newline newline
 \end_inset
 
-same as:
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
 add(control);
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Standard
-
-\family typewriter
 control.setRect(x, y, width, height, relative);
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -7673,7 +8114,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -7699,139 +8140,197 @@ after
 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-addTimer(int millis)
+addTimer(int
+\begin_inset space ~
+\end_inset
+
+millis)
 \family default
-: calls MainWindow addTimer method to add a timer whose target is this control.
+ calls MainWindow addTimer method to add a timer whose target is this control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-removeTimer(Timer timer)
+removeTimer(Timer
+\begin_inset space ~
+\end_inset
+
+timer)
 \family default
-: calls MainWindow removeTimer to remove a timer associated with this control.
+ calls MainWindow removeTimer to remove a timer associated with this control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-getX(), getY(), getWidth(), getHeight()
+getX(),
+\begin_inset space ~
+\end_inset
+
+getY(),
+\begin_inset space ~
+\end_inset
+
+getWidth(),
+\begin_inset space ~
+\end_inset
+
+getHeight()
 \family default
-: returns the control’s bounds.
+ returns the control’s bounds.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 getParentWindow()
 \family default
-: returns the parent window of this control.
+ returns the parent window of this control.
  This is needed because the control’s parent may be a Container, whose parent
  may be another container, and so on.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 repaint()
 \family default
-: Marks the control for repaint.
+ Marks the control for repaint.
  When you call repaint, the absolute area of the control regarding its parent
  Window is invalidated (marked for repaint); then, the next time an event
  (a keypress, a timer, a pen event) occurs, the screen is updated.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 repaintNow()
 \family default
-: Redraws the control immediately.
+ Redraws the control immediately.
  If this control is a Window, the whole window area is marked for repaint
  (useful if you're removing some controls from a container) .
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setEnabled(boolean enabled)
+setEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enabled)
 \family default
-: Enable/disable the control to receive events.
+ Enable/disable the control to receive events.
  The control’s appearance is also changed to reflect the state.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setFont(Font font)
+setFont(Font
+\begin_inset space ~
+\end_inset
+
+font)
 \family default
-: Sets the font for the control.
+ Sets the font for the control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 isDisplayed()
 \family default
-: return true if the parent of this Control is added somewhere.
+ return true if the parent of this Control is added somewhere.
  Some containers, like the TabPanel, have n child containers, but only one
  is added at a time.
  With this method, you can discover if your container is the one available.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 requestFocus()
 \family default
-: set the focus to this control.
+ set the focus to this control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setFocusLess(boolean on)
+setFocusLess(boolean
+\begin_inset space ~
+\end_inset
+
+on)
 \family default
-: this method makes the current control a control that will never steal
- focus from other controls.
+ this method makes the current control a control that will never steal focus
+ from other controls.
  It makes it very easy to create keypads with PushButtonGroup to enter character
 s into Edit controls, for example.
  See the PhoneDialog sample to learn how to use it.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setBackColor(int back)
+setBackColor(int
+\begin_inset space ~
+\end_inset
+
+back)/getBackColor()
 \family default
- and 
-\family typewriter
-getBackColor()
-\family default
-: get or set the background color for the control.
+ get or set the background color for the control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setForeColor(int fore)
+setForeColor(int
+\begin_inset space ~
+\end_inset
+
+fore)/getForeColor()
 \family default
- and 
-\family typewriter
-getForeColor()
-\family default
-: get or set the foreground color for the control.
+ get or set the foreground color for the control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setBackForeColors(int back, int fore)
+setBackForeColors(int
+\begin_inset space ~
+\end_inset
+
+back,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+fore)
 \family default
-: set background and foreground colors at once.
+ set background and foreground colors at once.
 \end_layout
 
 \begin_layout Standard
@@ -7842,7 +8341,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -7858,12 +8357,13 @@ getForeColor() and getBackColor() returns the color depending if the control’s
 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 clear()
 \family default
-: the clear method in this class is a placeholder for the other controls.
+ the clear method in this class is a placeholder for the other controls.
  It implements an easy way to clear all the controls in the screen.
  When you call the clear method of a Container or a Window, it recursively
  calls the clear method of all child controls.
@@ -7875,81 +8375,117 @@ clear()
  these two fields.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setTextShadowColo(int color)
+setTextShadowColor(int
+\begin_inset space ~
+\end_inset
+
+color)
 \family default
-: sets that the control's text will have a shadow.
+ sets that the control's text will have a shadow.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 reposition()
 \family default
-: repositions the control after something was changed.
+ repositions the control after something was changed.
  This method is called by the VM to reposition all controls on screen when
  a rotation occurs.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-setInsets(left,right,top,bottom)
+setInsets(int
+\begin_inset space ~
+\end_inset
+
+left,int
+\begin_inset space ~
+\end_inset
+
+right,int
+\begin_inset space ~
+\end_inset
+
+top,int
+\begin_inset space ~
+\end_inset
+
+bottom)
 \family default
-: sets a gap between the control's text and its bounds.
+ sets a gap between the control's text and its bounds.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-onPaint(Graphics g)
+onPaint(Graphics
+\begin_inset space ~
+\end_inset
+
+g)
 \family default
-: this is the method called when the control is going to be painted.
+ this is the method called when the control is going to be painted.
  You can use the given Graphics object to draw what you need on screen.
  The default's control font is already set, and the clipping is also set
  to the control's bounds.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 onBoundsChanged
 \family default
-(): called after the user invoked the setRect method.
+() called after the user invoked the setRect method.
  Good to compute positions that are dependant on the bounds.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
-onColorsChanged(boolean colorsChanged)
+onColorsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+colorsChanged)
 \family default
-: Called after a setEnabled, setForeColor and setBackColor methods were
- called and when a control has been added to a Container.
+ Called after a setEnabled, setForeColor and setBackColor methods were called
+ and when a control has been added to a Container.
  If colorsChanged is true, it was called from setForeColor/setBackColor/Containe
 r.add; otherwise, it was called from setEnabled
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 onWindowPaintFinished()
 \family default
-: every time the _doPaint finishes paintings all controls, this method is
+ every time the _doPaint finishes paintings all controls, this method is
  called.
  You can then do actions needed after the screen has finished the paint.
  Note that this method is only called on controls that extends Window and
  on the focused control.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 onFontChanged()
 \family default
-: called after the setFont method is invoked.
+ called after the setFont method is invoked.
 \end_layout
 
 \begin_layout Chapter
@@ -8022,40 +8558,55 @@ Below we can see how each event defined on ControlEvent is handled by each
  control:
 \end_layout
 
-\begin_layout Itemize
-PRESSED: this event is posted by controls when they receive a PEN_DOWN (like
+\begin_layout Description
+PRESSED this event is posted by controls when they receive a PEN_DOWN (like
  Check, Radio, TabPanel), and a PEN_UP (Button, ListBox, PushButtonGroup,
  ScrollBar) or even a WINDOW_CLOSED (ComboBox).
 \end_layout
 
-\begin_layout Itemize
-FOCUS_IN and FOCUS_OUT: posted by the window when a control different from
- the current one is clicked.
+\begin_layout Description
+FOCUS_IN
+\begin_inset space ~
+\end_inset
+
+and
+\begin_inset space ~
+\end_inset
+
+FOCUS_OUT posted by the window when a control different from the current
+ one is clicked.
  The FOCUS_OUT is first posted to the old control, and the event FOCUS_IN
  is then posted to the new control.
 \end_layout
 
-\begin_layout Itemize
-TIMER: this is a special event that is posted to the control that has a
- timer assigned to it; it is called when the timer countdown has reached
- zero.
+\begin_layout Description
+TIMER this is a special event that is posted to the control that has a timer
+ assigned to it; it is called when the timer countdown has reached zero.
  
 \end_layout
 
-\begin_layout Itemize
-WINDOW_CLOSED: posted by the unpop method to notify all controls that a
- window has been closed.
+\begin_layout Description
+WINDOW_CLOSED posted by the unpop method to notify all controls that a window
+ has been closed.
  Some controls, like the ComboBox, has a PopList assigned to it; when the
  PopList issues a WINDOW_CLOSED event, the ComboBox receives it and converts
  to a PRESSED event.
 \end_layout
 
-\begin_layout Itemize
-HIGHLIGHT_IN and HIGHLIGHT_OUT: these events are posted by the window when
- the user changes the focus to another control and the field Settings.keyboardFoc
-usTraversable is set to true.
+\begin_layout Description
+HIGHLIGHT_IN
+\begin_inset space ~
+\end_inset
+
+and
+\begin_inset space ~
+\end_inset
+
+HIGHLIGHT_OUT these events are posted by the window when the user changes
+ the focus to another control and the field Settings.keyboardFocusTraversable
+ is set to true.
  The HIGHLIGHT_OUT event is first posted to the old control, and the event
- HIGHLIGHT_IN is then posted to the new control.3
+ HIGHLIGHT_IN is then posted to the new control.
 \end_layout
 
 \begin_layout Standard
@@ -8066,7 +8617,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -8089,18 +8640,18 @@ Unlike the other controls, the Grid control has its own set of event types
  defined on the GridEvent class:
 \end_layout
 
-\begin_layout Itemize
-SELECTED_EVENT: generated when a new row is selected.
+\begin_layout Description
+SELECTED_EVENT generated when a new row is selected.
 \end_layout
 
-\begin_layout Itemize
-CHECK_CHANGED_EVENT: if the grid has a check column, this event is generated
+\begin_layout Description
+CHECK_CHANGED_EVENT if the grid has a check column, this event is generated
  when a grid row is checked or unchecked.
 \end_layout
 
-\begin_layout Itemize
-TEXT_CHANGED_EVENT: generated when a cell of an editable column had its
- text changed.
+\begin_layout Description
+TEXT_CHANGED_EVENT generated when a cell of an editable column had its text
+ changed.
 \end_layout
 
 \begin_layout Section
@@ -8566,6 +9117,8 @@ nPlease"), CENTER, TOP);
 \end_layout
 
 \begin_layout Standard
+
+\family typewriter
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -8573,7 +9126,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -8608,22 +9161,38 @@ Let's now look at the details of each Event class.
  some useful members:
 \end_layout
 
-\begin_layout Itemize
-type: this is the event number, used to detect which event was posted.
+\begin_layout FieldList
+\labelwidthstring 0
+int
+\begin_inset space ~
+\end_inset
+
+type this is the event number, used to detect which event was posted.
 \end_layout
 
-\begin_layout Itemize
-target: this one informs who is receiving the event (E.g.: the VM posts a
- PenEvent.PEN_DOWN to a control) or who is posting it (E.g.: the Control posts
- an ControlEvent.PRESSED).
+\begin_layout FieldList
+\labelwidthstring 0
+Object
+\begin_inset space ~
+\end_inset
+
+target this one informs who is receiving the event (E.g.: the VM posts a PenEvent.P
+EN_DOWN to a control) or who is posting it (E.g.: the Control posts an ControlEven
+t.PRESSED).
 \end_layout
 
-\begin_layout Itemize
-timeStamp: contains the time stamp at which the event was created.
+\begin_layout FieldList
+\labelwidthstring 0
+int
+\begin_inset space ~
+\end_inset
+
+timeStamp contains the time stamp at which the event was created.
 \end_layout
 
 \begin_deeper
-\begin_layout Standard
+\begin_layout FieldList
+\labelwidthstring 0
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -8652,8 +9221,13 @@ Be careful with the timeStamp.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-consumed: when set to true during the event propagation, breaks the propagation
+\begin_layout FieldList
+\labelwidthstring 0
+boolean
+\begin_inset space ~
+\end_inset
+
+consumed when set to true during the event propagation, breaks the propagation
  chain.
 \end_layout
 
@@ -8665,7 +9239,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -8723,7 +9297,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -8778,7 +9352,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -8831,7 +9405,7 @@ BORDER_3D_GRADIENT_VERTICAL_GRADIENT
 \end_layout
 
 \begin_layout Itemize
-BORDER_3D_GRADIENT_HORIZONTAL_GRADIENT.
+BORDER_3D_GRADIENT_HORIZONTAL_GRADIENT
 \end_layout
 
 \end_deeper
@@ -9120,7 +9694,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -9506,19 +10080,38 @@ Label has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Label() – Creates an empty label, using FILL as the preferred width.
+\begin_layout FieldList
+\labelwidthstring 0
+Label() Creates an empty label, using FILL as the preferred width.
 \end_layout
 
-\begin_layout Itemize
-Label(String text) – Creates a label displaying the given text (that may
- be changed at runtime) using left alignment.
+\begin_layout FieldList
+\labelwidthstring 0
+Label(String
+\begin_inset space ~
+\end_inset
+
+text) Creates a label displaying the given text (that may be changed at
+ runtime) using left alignment.
  
 \end_layout
 
-\begin_layout Itemize
-Label(String text, int align) – Like the above, but you can also set the
- horizontal alignment using one of the constants LEFT, CENTER, RIGHT.
+\begin_layout FieldList
+\labelwidthstring 0
+Label(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+align) Like the above, but you can also set the horizontal alignment using
+ one of the constants LEFT, CENTER, RIGHT.
  or FILL (justified)
 \end_layout
 
@@ -9526,7 +10119,7 @@ Label(String text, int align) – Like the above, but you can also set the
 \begin_layout Itemize
 The three align constants are inherited from the totalcross.ui.Control class,
  where they are used in the setRect method.
- Furthermore, you can use new Label(“my text”,Label.CENTER) or new Label(“my
+ Furthermore, you can use new Label(“my text”, Label.CENTER) or new Label(“my
  text”, CENTER); it will work in the same way.
 \end_layout
 
@@ -9776,8 +10369,13 @@ It has only one constructor:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Check(String text) – Creates a check control displaying the given text.
+\begin_layout FieldList
+\labelwidthstring 0
+Check(String
+\begin_inset space ~
+\end_inset
+
+text) Creates a check control displaying the given text.
 \end_layout
 
 \end_deeper
@@ -9995,13 +10593,31 @@ It has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Radio(String text) – Creates a radio control displaying the given text.
+\begin_layout FieldList
+\labelwidthstring 0
+Radio(String
+\begin_inset space ~
+\end_inset
+
+text) Creates a radio control displaying the given text.
 \end_layout
 
-\begin_layout Itemize
-Radio(String text, RadioGroupController radioGroup) – Creates a radio control
- displaying the given text and attached to the given radio group.
+\begin_layout FieldList
+\labelwidthstring 0
+Radio(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+RadioGroupController
+\begin_inset space ~
+\end_inset
+
+radioGroup) Creates a radio control displaying the given text and attached
+ to the given radio group.
 \end_layout
 
 \end_deeper
@@ -10012,20 +10628,32 @@ The RadioGroupController is not a control, therefore you cannot add it to
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getSelectedIndex – returns the index of the selected radio
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() returns the index of the selected radio
 \end_layout
 
-\begin_layout Itemize
-setSelectedIndex – to select a radio by its index.
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+index) to select a radio by its index.
 \end_layout
 
-\begin_layout Itemize
-getSelectedItem – returns the Radio selected
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() returns the Radio selected
 \end_layout
 
-\begin_layout Itemize
-setSelectedItem – selects a given RadioGroupController
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(int
+\begin_inset space ~
+\end_inset
+
+index) selects a given RadioGroupController
 \end_layout
 
 \end_deeper
@@ -10398,17 +11026,28 @@ It has four constructors, but we'll only detail the three more interesting
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-ComboBox() – Creates an empty ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBox() Creates an empty ComboBox.
 \end_layout
 
-\begin_layout Itemize
-ComboBox(ListBox userListBox)– Creates a ComboBox with a ComboBoxDropDown
- containing the given ListBox.
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBox(ListBox
+\begin_inset space ~
+\end_inset
+
+userListBox) Creates a ComboBox with a ComboBoxDropDown containing the given
+ ListBox.
 \end_layout
 
-\begin_layout Itemize
-ComboBox(Object[] items) – Creates a ComboBox with the given items.
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBox(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Creates a ComboBox with the given items.
 \end_layout
 
 \end_deeper
@@ -10451,18 +11090,48 @@ You may append new items to your ComboBox using the method add, which has
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-add(Object item) – Adds an Object to the ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object
+\begin_inset space ~
+\end_inset
+
+item) Adds an Object to the ComboBox.
  
 \end_layout
 
-\begin_layout Itemize
-add(Object[] items) – Adds an array of Objects to the ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Adds an array of Objects to the ComboBox.
 \end_layout
 
-\begin_layout Itemize
-add(Object[] items, int startAt, int size) – Adds an array of Objects to
- the ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object[]
+\begin_inset space ~
+\end_inset
+
+items,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+startAt,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+size) Adds an array of Objects to the ComboBox.
 \end_layout
 
 \begin_layout Standard
@@ -10473,7 +11142,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -10531,16 +11200,27 @@ To remove items from a ComboBox, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-remove(int itemIndex) – Removes an Object from the ComboBox by its index.
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+itemIndex) Removes an Object from the ComboBox by its index.
 \end_layout
 
-\begin_layout Itemize
-remove(Object item) – Removes the given Object from the ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Object
+\begin_inset space ~
+\end_inset
+
+item) Removes the given Object from the ComboBox.
 \end_layout
 
-\begin_layout Itemize
-removeAll() – Empties the ComboBox.
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() Empties the ComboBox.
 \end_layout
 
 \end_deeper
@@ -10753,7 +11433,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -10776,12 +11456,18 @@ ListBox has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-ListBox() – Creates an empty ListBox.
+\begin_layout FieldList
+\labelwidthstring 0
+ListBox() Creates an empty ListBox.
 \end_layout
 
-\begin_layout Itemize
-ListBox(Object[] items) – Creates a ListBox with the given items.
+\begin_layout FieldList
+\labelwidthstring 0
+ListBox(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Creates a ListBox with the given items.
  
 \end_layout
 
@@ -10791,17 +11477,47 @@ You can append new items to your ListBox using one of the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-add(Object item) – Adds an Object to the Listbox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object
+\begin_inset space ~
+\end_inset
+
+item) Adds an Object to the Listbox.
 \end_layout
 
-\begin_layout Itemize
-add(Object[] moreItems) – Adds an array of Objects to the Listbox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object[]
+\begin_inset space ~
+\end_inset
+
+moreItems) Adds an array of Objects to the Listbox.
 \end_layout
 
-\begin_layout Itemize
-add(Object[] moreItems, int startAt, int size) – Adds an array of Objects
- to the Listbox.
+\begin_layout FieldList
+\labelwidthstring 0
+add(Object[]
+\begin_inset space ~
+\end_inset
+
+moreItems,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+startAt,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+size) Adds an array of Objects to the Listbox.
 \end_layout
 
 \begin_layout Standard
@@ -10812,7 +11528,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -10869,16 +11585,27 @@ To remove items from a ListBox, you may use one of the following three methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-remove(int itemIndex) – Removes an Object from the Listbox by its index.
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+itemIndex) Removes an Object from the Listbox by its index.
 \end_layout
 
-\begin_layout Itemize
-remove(Object item) – Removes the given Object from the Listbox.
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Object
+\begin_inset space ~
+\end_inset
+
+item) Removes the given Object from the Listbox.
 \end_layout
 
-\begin_layout Itemize
-removeAll() – Empties the ListBox.
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() Empties the ListBox.
 \end_layout
 
 \end_deeper
@@ -10929,16 +11656,98 @@ You can extend ListBox to implement a customized type, like a color-chooser
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-protected void drawItem(Graphics g, int index, int dx, int dy)
+\begin_layout Standard
+
+\family typewriter
+protected
+\begin_inset space ~
+\end_inset
+
+void
+\begin_inset space ~
+\end_inset
+
+drawItem(Graphics
+\begin_inset space ~
+\end_inset
+
+g,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+dx,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+dy)
 \end_layout
 
-\begin_layout Itemize
-protected int getItemWidth(int index)
+\begin_layout Standard
+
+\family typewriter
+protected
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+getItemWidth(int
+\begin_inset space ~
+\end_inset
+
+index)
 \end_layout
 
-\begin_layout Itemize
-protected void drawCursor(Graphics g, int sel, boolean on)
+\begin_layout Standard
+
+\family typewriter
+protected
+\begin_inset space ~
+\end_inset
+
+void
+\begin_inset space ~
+\end_inset
+
+drawCursor(Graphics
+\begin_inset space ~
+\end_inset
+
+g,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+sel,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+on)
 \end_layout
 
 \end_deeper
@@ -11060,7 +11869,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -11166,15 +11975,48 @@ MultiEdit has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-MultiEdit(int rowCount, int spaceBetweenLines) – Creates a MultiEdit with
- a vertical scrollbar, the given number of rows and the default width FILL.
+\begin_layout FieldList
+\labelwidthstring 0
+MultiEdit(int
+\begin_inset space ~
+\end_inset
+
+rowCount,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+spaceBetweenLines) Creates a MultiEdit with a vertical scrollbar, the given
+ number of rows and the default width FILL.
 \end_layout
 
-\begin_layout Itemize
-MultiEdit(String mask, int rowCount, int spaceBetweenLines) – Creates a
- MultiEdit with a vertical scrollbar, the given number of rows and uses
- the given mask to compute the PREFERRED width.
+\begin_layout FieldList
+\labelwidthstring 0
+MultiEdit(String
+\begin_inset space ~
+\end_inset
+
+mask,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+rowCount,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+spaceBetweenLines) Creates a MultiEdit with a vertical scrollbar, the given
+ number of rows and uses the given mask to compute the PREFERRED width.
  If the mask is “”, the width is set to FILL.
 \end_layout
 
@@ -11203,16 +12045,23 @@ The following methods allow you to manipulate the MultiEdit scrollbar:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-scrollToBottom() – Moves the scroll to the bottom.
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToBottom() Moves the scroll to the bottom.
 \end_layout
 
-\begin_layout Itemize
-scrollToLine(int line) – Scrolls to the gives text line.
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToLine(int
+\begin_inset space ~
+\end_inset
+
+line) Scrolls to the gives text line.
 \end_layout
 
-\begin_layout Itemize
-scrollToTop() – Moves the scroll to the top.
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToTop() Moves the scroll to the top.
 \end_layout
 
 \end_deeper
@@ -11390,109 +12239,290 @@ Grid has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Grid(String[] captions, boolean checkEnabled) – Creates a grid with the
- given captions and, optionally, a multi-selection check column.
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions and, optionally, a
+ multi-selection check column.
 \end_layout
 
-\begin_layout Itemize
-Grid(String[] captions, int[] widths, int[] aligns, boolean checkEnabled)
- – Creates a grid with the given captions, column width, column text alignment
- and, optionally, a multi-selection check column.
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+widths,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+aligns,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions, column width, column
+ text alignment and, optionally, a multi-selection check column.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-add(String[] item): adds a new item to the grid.
+\begin_layout Subsection
+Useful methods
 \end_layout
 
-\begin_layout Itemize
-add(String[] item, int row): adds a new item to the grid at the given position.
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item) adds a new item to the grid.
 \end_layout
 
-\begin_layout Itemize
-clear(): remove all items from the grid.
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) adds a new item to the grid at the given position.
 \end_layout
 
-\begin_layout Itemize
-del(int row): removes the given index from the grid.
+\begin_layout FieldList
+\labelwidthstring 0
+clear() remove all items from the grid.
 \end_layout
 
-\begin_layout Itemize
-getCellText(int row, int col): returns the text of the given cell.
+\begin_layout FieldList
+\labelwidthstring 0
+del(int
+\begin_inset space ~
+\end_inset
+
+row) removes the given index from the grid.
 \end_layout
 
-\begin_layout Itemize
-setCellText(int row, int col, Strint text): sets the text of the given cell.
+\begin_layout FieldList
+\labelwidthstring 0
+getCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) returns the text of the given cell.
 \end_layout
 
-\begin_layout Itemize
-getItem(int index): returns the line from the given index.
+\begin_layout FieldList
+\labelwidthstring 0
+setCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+Strint
+\begin_inset space ~
+\end_inset
+
+text) sets the text of the given cell.
 \end_layout
 
-\begin_layout Itemize
-getItemsVector(): returns a vector containing all information inside the
+\begin_layout FieldList
+\labelwidthstring 0
+getItem(int
+\begin_inset space ~
+\end_inset
+
+index) returns the line from the given index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItemsVector() returns a vector containing all information inside the
  grid.
  As with getItem, the returned data does not contain information about the
  selected item's.
 \end_layout
 
-\begin_layout Itemize
-getCheckedRows(): returns an IntVector containing the indexes of the lines
+\begin_layout FieldList
+\labelwidthstring 0
+getCheckedRows() returns an IntVector containing the indexes of the lines
  that have been marked with a check 
 \end_layout
 
-\begin_layout Itemize
-int getSelectedIndex(): get the number of the currently selected line 
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() get the number of the currently selected line 
 \end_layout
 
-\begin_layout Itemize
-String[] getSelectedItem(): gets the String array for the currently selected
- line
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() gets the String array for the currently selected line
 \end_layout
 
-\begin_layout Itemize
-boolean horizontalScroll(boolean toLeft): scrolls the grid to left or right.
+\begin_layout FieldList
+\labelwidthstring 0
+horizontalScroll(boolean
+\begin_inset space ~
+\end_inset
+
+toLeft) scrolls the grid to left or right.
  Returns true if the grid was scrolled, false if its impossible to scroll
  in that direction.
 \end_layout
 
-\begin_layout Itemize
-isChecked:(int lineIndex): returns if the given line is checked.
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked(int
+\begin_inset space ~
+\end_inset
+
+lineIndex) returns if the given line is checked.
 \end_layout
 
-\begin_layout Itemize
-setChecked(int row, boolean check): checks or unchecks a given row.
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+check) checks or unchecks a given row.
 \end_layout
 
-\begin_layout Itemize
-replace(String[] item, int row): replaces the given row by the text.
+\begin_layout FieldList
+\labelwidthstring 0
+replace(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) replaces the given row by the text.
 \end_layout
 
-\begin_layout Itemize
-setSelectedRow(int line): selects the given row number.
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedRow(int
+\begin_inset space ~
+\end_inset
+
+line) selects the given row number.
  If -1, unselects the grid.
  
 \end_layout
 
-\begin_layout Itemize
-setItems(java.lang.String[][] items): sets the grid items to be displayed,
- notice that it needs to conform to the numbers of columns that the grid
- currently have.
+\begin_layout FieldList
+\labelwidthstring 0
+setItems(String[][]
+\begin_inset space ~
+\end_inset
+
+items) sets the grid items to be displayed, notice that it needs to conform
+ to the numbers of columns that the grid currently have.
 \end_layout
 
-\begin_layout Itemize
-size(): returns the number of lines in this grid
+\begin_layout FieldList
+\labelwidthstring 0
+size() returns the number of lines in this grid
 \end_layout
 
-\begin_layout Itemize
-setColumnEditable(int col, boolean editable): enabled/disable the edition
- for all cells of a grid's column.
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnEditable(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+editable) enabled/disable the edition for all cells of a grid's column.
 \end_layout
 
-\begin_layout Itemize
-setColumnChoices(int col, String[] choices): enable a ComboBox with choices
- for all cells of a grid's column.
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnChoices(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+choices) enable a ComboBox with choices for all cells of a grid's column.
 \end_layout
 
 \begin_layout Standard
@@ -11503,7 +12533,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -11520,10 +12550,22 @@ Note that the setColumnEditable and setColumnChoices are mutually exclusive:
 
 \end_layout
 
-\begin_layout Itemize
-setDataSource(Grid DataSource ds, int nrItems): passing the class that implement
-s the Grid.DataSource interface and the total number of items, allows the
- grid to request data on demand.
+\begin_layout FieldList
+\labelwidthstring 0
+setDataSource(DataSource
+\begin_inset space ~
+\end_inset
+
+ds,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+nrItems) passing the class that implements the Grid.DataSource interface
+ and the total number of items, allows the grid to request data on demand.
  This greatly reduces the memory usage, because only the number of visible
  items may be loaded at each time, but makes the grid navigation slower.
  Note that in this mode the grid scroll will not be realtime: the data will
@@ -11532,137 +12574,223 @@ s the Grid.DataSource interface and the total number of items, allows the
  int count), that must return the given number of items or less.
 \end_layout
 
-\begin_layout Itemize
-setCellController(Grid.CellController cc): passing the class that extends
- Grid.CellController will allow you to have a fine control of each cell of
- the grid.
+\begin_layout FieldList
+\labelwidthstring 0
+setCellController(Grid.CellController
+\begin_inset space ~
+\end_inset
+
+cc) passing the class that extends Grid.CellController will allow you to
+ have a fine control of each cell of the grid.
  Note that using a CellController will make the drawings slower.
  The class has the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-int getBackColor(int row, int col): must return the background color for
- the given cell, or null if you want to use the default one.
+\begin_layout FieldList
+\labelwidthstring 0
+getBackColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) must return the background color for the given cell, or null if you
+ want to use the default one.
 \end_layout
 
-\begin_layout Itemize
-int getForeColor(int row, int col): must return the foreground color for
- the given cell, or null if you want to use the default one.
+\begin_layout FieldList
+\labelwidthstring 0
+getForeColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) must return the foreground color for the given cell, or null if you
+ want to use the default one.
 \end_layout
 
-\begin_layout Itemize
-boolean isEnabled(int row, int col): must return if the given cell is enabled,
- ie, can have input and can be selected.
+\begin_layout FieldList
+\labelwidthstring 0
+isEnabled(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) must return if the given cell is enabled, ie, can have input and can
+ be selected.
  Regarding the input, it will only work if the setColumnChoices or setEditable
  was called to the given column.
  Regarding the selection, it may also disable column's check state change.
 \end_layout
 
-\begin_layout Itemize
-String[] getChoices(int row, int col): returns a customized set of choices
- for the given cell.
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+getChoices(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) returns a customized set of choices for the given cell.
  Must return null if you want to use the default set.
  Only works if setColumnChoices was called to the given column.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-Here are some useful attributes:
+\begin_layout Subsection
+Useful attributes
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-boldCheck: draws a bold check instead of the tiny one.
+\begin_layout FieldList
+\labelwidthstring 0
+boldCheck draws a bold check instead of the tiny one.
  Useful for high resolution devices.
 \end_layout
 
-\begin_layout Itemize
-canClickSelectAll: set to false to disable the click on the check column
+\begin_layout FieldList
+\labelwidthstring 0
+canClickSelectAll set to false to disable the click on the check column
  of the captions to select and unselect all checks.
 \end_layout
 
-\begin_layout Itemize
-disableSort: disables the sort when clicking in the column's caption.
+\begin_layout FieldList
+\labelwidthstring 0
+disableSort disables the sort when clicking in the column's caption.
 \end_layout
 
-\begin_layout Itemize
-drawCheckBox: boolean that defines if the box around the check will or not
+\begin_layout FieldList
+\labelwidthstring 0
+drawCheckBox boolean that defines if the box around the check will or not
  be drawn.
 \end_layout
 
-\begin_layout Itemize
-enableColumnResize: set to false to disable the column resize by dragging
+\begin_layout FieldList
+\labelwidthstring 0
+enableColumnResize set to false to disable the column resize by dragging
  the column separator line.
 \end_layout
 
-\begin_layout Itemize
-extraHorizScrollButtonHeight: a value that can increase the horizontal buttons
+\begin_layout FieldList
+\labelwidthstring 0
+extraHorizScrollButtonHeight a value that can increase the horizontal buttons
  height.
 \end_layout
 
-\begin_layout Itemize
-oldCellText: the text that was in the cell before the user had editted it..
+\begin_layout FieldList
+\labelwidthstring 0
+oldCellText the text that was in the cell before the user had editted it..
 \end_layout
 
-\begin_layout Itemize
-checkColor: the color used to draw the check.
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor the color used to draw the check.
 \end_layout
 
-\begin_layout Itemize
-captionsBackColor: the color used to fill the captions area.
+\begin_layout FieldList
+\labelwidthstring 0
+captionsBackColor the color used to fill the captions area.
 \end_layout
 
-\begin_layout Itemize
-firstStripeColor: color of the first stripe.
+\begin_layout FieldList
+\labelwidthstring 0
+firstStripeColor color of the first stripe.
  
 \end_layout
 
-\begin_layout Itemize
-secondStripeColor: color of the second stripe.
+\begin_layout FieldList
+\labelwidthstring 0
+secondStripeColor color of the second stripe.
  drawStripes must also be set to true.
 \end_layout
 
-\begin_layout Itemize
-verticalLineStyle: defines the vertical line style of the grid.
+\begin_layout FieldList
+\labelwidthstring 0
+verticalLineStyle defines the vertical line style of the grid.
  Possible values are VERT_DOT (default), VERT_LINE and VERT_NONE.
 \end_layout
 
-\begin_layout Itemize
-String[] captions: these are the column captions.
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+captions these are the column captions.
  Can be directly assigned, but always make sure it has the same number of
  columns of the Grid.
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout Standard
 A GridEvent is dispatched in the following situations:
 \end_layout
 
-\begin_deeper
 \begin_layout Itemize
-When the user selects a row: type = SELECTED_EVENT, row and col are set
- with the cell that was clicked.
+When the user selects a row:
+\begin_inset Newline newline
+\end_inset
+
+type = SELECTED_EVENT, row and col are set with the cell that was clicked.
 \end_layout
 
 \begin_layout Itemize
-When the user checks a row: type = CHECK_CHANGED_EVENT, row is set with
- the row that was checked, col is 0 and checked contains the current state.
+When the user checks a row:
+\begin_inset Newline newline
+\end_inset
+
+type = CHECK_CHANGED_EVENT, row is set with the row that was checked, col
+ is 0 and checked contains the current state.
 \end_layout
 
 \begin_layout Itemize
-When the user press the check/uncheck all box: type = CHECK_CHANGED_EVENT,
- col is 0 and row is set to Grid.ALL_CHECKED and Grid.ALL_UNCHECKED.
+When the user press the check/uncheck all box:
+\begin_inset Newline newline
+\end_inset
+
+type = CHECK_CHANGED_EVENT, col is 0 and row is set to Grid.ALL_CHECKED and
+ Grid.ALL_UNCHECKED.
 \end_layout
 
 \begin_layout Itemize
 When the user changes the text of a editable column or selected a new choice:
- type = TEXT_CHANGED_EVENT, row and col are set with the cell that changed.
+\begin_inset Newline newline
+\end_inset
+
+type = TEXT_CHANGED_EVENT, row and col are set with the cell that changed.
  The new text can be found with getCellText, and Grid.oldCellText contains
  the old text.
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 Sample code:
 \end_layout
@@ -11817,7 +12945,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12045,7 +13173,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12089,7 +13217,7 @@ You may check if this window is visible using the isVisible method.
 
 \begin_layout Itemize
 Using the setStatePosition method can show PalmOS Grafitti state characters.
- To hide it, call setStatePosition(HIDE_STATE,HIDE_STATE).
+ To hide it, call setStatePosition(HIDE_STATE, HIDE_STATE).
  This method is also used in Windows CE and Pocket PC to show/hide the virtual
  keyboard (when applicable).
  Just use as parameter VK_HIDE, VK_TOP and VK_BOTTOM to hide, display the
@@ -12120,53 +13248,66 @@ The methods getPreferredWidth and getPreferredHeight have a special meaning
  height of the border (if any).
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 There are some useful protected methods that may be implemented by controls
  that extend totalcross.ui.Window.
  Those methods are placeholders and there is no need to call the super method.
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-onClickedOutside(int x, int y): This method is used in popup windows.
+\begin_layout FieldList
+\labelwidthstring 0
+onClickedOutside(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y) This method is used in popup windows.
  If the user clicks outside the window’s bounds, this method is called giving
  the absolute coordinates of the clicked point.
  There are two options:
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_deeper
-\begin_layout Itemize
 If you had handled the action, return true in this method.
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Itemize
 Otherwise, false must be returned and if the beepIfOut member is true, a
  beep is played (in other words, beepIfOut can be set to false to disable
  this beep).
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-onPopup(): Called just after the behind contents are saved and before the
+\begin_layout FieldList
+\labelwidthstring 0
+onPopup() Called just after the behind contents are saved and before the
  popup process begin.
  When this method is called, the topmost window is still the parent of the
  Window being popped up.
 \end_layout
 
-\begin_layout Itemize
-postPopup(): Called after the popup process ended.
+\begin_layout FieldList
+\labelwidthstring 0
+postPopup() Called after the popup process ended.
  When this method is called, the popped up window is fully functional.
  It is a good place to put a control.requestFocus() to make the window popup
  with the focus in a default control.
 \end_layout
 
-\begin_layout Itemize
-onUnpop(): Called just before the unpop process begin.
+\begin_layout FieldList
+\labelwidthstring 0
+onUnpop() Called just before the unpop process begin.
 \end_layout
 
-\begin_layout Itemize
-postUnpop(): Called after the unpop process ended.
+\begin_layout FieldList
+\labelwidthstring 0
+postUnpop() Called after the unpop process ended.
  When this method is called, the unpopped window has gone away and the parent
  Window is currently the topmost.
 \end_layout
@@ -12179,7 +13320,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12199,29 +13340,53 @@ A very common mistake is to popup a Window without setting its bounds.
 Some other important members of the Window class are explained here:
 \end_layout
 
-\begin_layout Itemize
-boolean needsPaint: true if there are any controls marked for repaint.
+\begin_layout FieldList
+\labelwidthstring 0
+boolean
+\begin_inset space ~
+\end_inset
+
+needsPaint true if there are any controls marked for repaint.
 \end_layout
 
-\begin_layout Itemize
-boolean flickEnabled: if true, the background area is erased during the
- repaint process.
+\begin_layout FieldList
+\labelwidthstring 0
+boolean
+\begin_inset space ~
+\end_inset
+
+flickEnabled if true, the background area is erased during the repaint process.
  This causes flickering if the window is not double buffered.
 \end_layout
 
-\begin_layout Itemize
-Window topmost: stores the topmost Window.
+\begin_layout FieldList
+\labelwidthstring 0
+Window
+\begin_inset space ~
+\end_inset
+
+topmost stores the topmost Window.
 \end_layout
 
-\begin_layout Itemize
-boolean canDrag: if true and if this is a popup window, the user is allowed
- to drag the title and make the window move around.
+\begin_layout FieldList
+\labelwidthstring 0
+boolean
+\begin_inset space ~
+\end_inset
+
+canDrag if true and if this is a popup window, the user is allowed to drag
+ the title and make the window move around.
 \end_layout
 
-\begin_layout Itemize
-boolean highResPrepared: This extremely important member is used when your
- program runs in devices with a screen resolution greater than the default
- 160x160 of Palm OS.
+\begin_layout FieldList
+\labelwidthstring 0
+boolean
+\begin_inset space ~
+\end_inset
+
+highResPrepared This extremely important member is used when your program
+ runs in devices with a screen resolution greater than the default 160x160
+ of Palm OS.
  Some devices have 320x320, 240x320, etc.
  For each device, the font is usually proportional to the resolution.
  Since TotalCross programs are placed in a relative way, and since the relativen
@@ -12247,7 +13412,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12295,10 +13460,8 @@ The next time a VM event is posted, the _doPaint method of the topmost window
 
 \begin_layout Standard
 Many classes in the totalcross.ui package extend totalcross.ui.Window.
- Examples of such classes are totalcross.ui.CalculatorBox and totalcross.ui.Calendar
-Box.
- Other good examples are totalcross.ui.dialog.MessageBox and totalcross.ui.ComboBoxDr
-opDown.
+ Examples of such classes are CalculatorBox and CalendarBox.
+ Other good examples are ComboBoxDropDown and MessageBox.
  
 \end_layout
 
@@ -12355,14 +13518,25 @@ Simple dialog used to display a text with some user-defined buttons.
  “Yes/No”, “Ok/Cancel”, “Save/Discard/Cancel”).
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 MessageBox has three constructors:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-MessageBox(String title, String msg) – Creates a MessageBox with the given
- title and message.
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+msg) Creates a MessageBox with the given title and message.
  The message is displayed using a label, and can be displayed in multiple
  lines if previously parsed with the '
 \backslash
@@ -12370,22 +13544,62 @@ n' character.
  It also displays a single <Ok> button to dismiss the window.
 \end_layout
 
-\begin_layout Itemize
-MessageBox(String title, String text, String[] buttonCaptions) – Same as
- the above, but also receives a string array specifying the button captions.
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, but also receives a string array specifying
+ the button captions.
  A PushButtonGroup is used to display the buttons, and the method getPressedButt
 onIndex() returns the index of the pressed button (where the first one has
  index 0).
 \end_layout
 
-\begin_layout Itemize
-MessageBox(String title, String text, String[] buttonCaptions, int gap,
- int insideGap) – Same as the above, but also receives the gap (space between
- buttons) and insideGap (space between the button's text and it's bounds)
- to be used by the PushButtonGroup.
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) Same as the above, but also receives the gap (space between buttons)
+ and insideGap (space between the button's text and it's bounds) to be used
+ by the PushButtonGroup.
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 The MessageBox is displayed on the center of the device screen, and its
  bounds are calculated based on the given title, text and buttons.
@@ -12398,13 +13612,13 @@ MessageBox has only three instance methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getPressedButtonIndex() – Returns the index of the pressed button.
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the index of the pressed button.
  This index is zero based (the first element has index 0).
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_deeper
-\begin_layout Standard
 This method returns -1 if invoked before the window is closed (or if it
  is closed without any button being pressed).
  To make sure you're retrieving the correct value, consider using popup
@@ -12413,28 +13627,36 @@ This method returns -1 if invoked before the window is closed (or if it
 INDOW_CLOSED when closed).
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-setTextAlignment(int align) – Sets the alignment of the label that displays
- the text.
+\begin_layout FieldList
+\labelwidthstring 0
+setTextAlignment(int
+\begin_inset space ~
+\end_inset
+
+align) Sets the alignment of the label that displays the text.
  The argument must be one of the following constants LEFT, CENTER, RIGHT.
  The default alignment is CENTER.
 \end_layout
 
-\begin_layout Itemize
-setUnpopDelay(int unpopDelay) – Automatically unpops the MessageBox after
- the given time in milliseconds.
+\begin_layout FieldList
+\labelwidthstring 0
+setUnpopDelay(int
+\begin_inset space ~
+\end_inset
+
+unpopDelay) Automatically unpops the MessageBox after the given time in
+ milliseconds.
  You must use this method just before displaying the window (either by popup
  or popupNonBlocking).
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_deeper
-\begin_layout Standard
 This method actually adds a timer to the MessageBox, invoking the unpop
  method when the TimerEvent is triggered.
  Be sure to learn how the timer works to better understand this method.
 \end_layout
 
+\begin_deeper
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -12443,7 +13665,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12479,9 +13701,22 @@ An interesting feature of the MessageBox is that you may create it with
 The MessageBox class has a handy method to debug your application:
 \end_layout
 
-\begin_layout Itemize
-showException(Throwable t, boolean dumpToConsole) – Immediately displays
- a MessageBox showing the given throwable name, message and its stack trace.
+\begin_layout FieldList
+\labelwidthstring 0
+showException(Throwable
+\begin_inset space ~
+\end_inset
+
+t,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+dumpToConsole) Immediately displays a MessageBox showing the given throwable
+ name, message and its stack trace.
  This information is dumped to the debug console if the dumpToConsole is
  true.
 \end_layout
@@ -12494,7 +13729,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12522,20 +13757,68 @@ Simple dialog used to get a text input from the user.
  Basically it's like a MessageBox with an edit.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 It has two constructors:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-InputBox(String title, String text, String defaultValue) – Creates an InputBox
- with the given title, text, a default value for the edit and two buttons:
- <Ok> and <Cancel>.
+\begin_layout FieldList
+\labelwidthstring 0
+InputBox(String
+\begin_inset space ~
+\end_inset
+
+title,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+defaultValue) Creates an InputBox with the given title, text, a default
+ value for the edit and two buttons: <Ok> and <Cancel>.
 \end_layout
 
-\begin_layout Itemize
-InputBox(String title, String text, String defaultValue, String[] buttonCaptions
-) – Same as the above, plus a string array specifying the buttons captions.
+\begin_layout FieldList
+\labelwidthstring 0
+InputBox(String
+\begin_inset space ~
+\end_inset
+
+title,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+defaultValue,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, plus a string array specifying the buttons
+ captions.
  A PushButtonGroup is used to display the buttons, and the getPressedButtonIndex
 () method returns the pressed button index.
 \end_layout
@@ -12549,7 +13832,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12565,7 +13848,6 @@ Unlike the MessageBox, the argument buttonCaptions cannot have a null value.
 \end_layout
 
 \end_deeper
-\end_deeper
 \begin_layout Standard
 The InputBox is displayed on the center of the device screen, and its bounds
  are calculated based on the given title, text, edit and buttons.
@@ -12574,18 +13856,17 @@ The InputBox is displayed on the center of the device screen, and its bounds
  And its edit receives the focus when the InputBox is popped up.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 The InputBox provides the following instance methods:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-getPressedButtonIndex() – Returns the index of the pressed button.
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the index of the pressed button.
  This index is zero based (the first element has index 0).
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_deeper
-\begin_layout Standard
 This method returns -1 if invoked before the window is closed (or if it
  is closed without any button being pressed).
  To make sure you're retrieving the correct value, consider using popup
@@ -12594,21 +13875,26 @@ This method returns -1 if invoked before the window is closed (or if it
 DOW_CLOSED when closed).
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-getEdit() – Returns a reference to this InputBox's edit, so you can change
+\begin_layout FieldList
+\labelwidthstring 0
+getEdit() Returns a reference to this InputBox's edit, so you can change
  its properties.
 \end_layout
 
-\begin_layout Itemize
-getValue() – Returns a string with the edit's text.
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Returns a string with the edit's text.
 \end_layout
 
-\begin_layout Itemize
-setValue(String value) – Sets the edit with the given value.
+\begin_layout FieldList
+\labelwidthstring 0
+setValue(String
+\begin_inset space ~
+\end_inset
+
+value) Sets the edit with the given value.
 \end_layout
 
-\end_deeper
 \begin_layout Section
 KeyboardBox
 \end_layout
@@ -12653,12 +13939,18 @@ A dialog with a simpler calculator.
 The CalculatorBox has only the default constructor and the following methods:
 \end_layout
 
-\begin_layout Itemize
-clear(boolean requestFocusOnOper1) - Clears everything in this calculator.
+\begin_layout FieldList
+\labelwidthstring 0
+clear(boolean
+\begin_inset space ~
+\end_inset
+
+requestFocusOnOper1) Clears everything in this calculator.
 \end_layout
 
-\begin_layout Itemize
-getAnswer() - Returns a string with the answer the user selected to be pasted
+\begin_layout FieldList
+\labelwidthstring 0
+getAnswer() Returns a string with the answer the user selected to be pasted
  (the result or the first operand).
 \end_layout
 
@@ -12678,14 +13970,19 @@ Displays a calendar where a date can be chosen.
 The CalendarBox has only the default constructor and the following methods:
 \end_layout
 
-\begin_layout Itemize
-getSelectedDate() – Returns a Date object representing the selected date,
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedDate() Returns a Date object representing the selected date,
  or null if the calendar is canceled.
 \end_layout
 
-\begin_layout Itemize
-setSelectedDate(Date d) – Changes this CalendarBox current date by the given
- one.
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedDate(Date
+\begin_inset space ~
+\end_inset
+
+d) Changes this CalendarBox current date by the given one.
  If the given date is null, the current date is set to today.
 \end_layout
 
@@ -12822,31 +14119,57 @@ Image objects cannot be directly added to the user interface because they
  section of this document).
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 Image constructors:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-Image(int width, int height) – Creates an image object with the given width
- and height.
+\begin_layout FieldList
+\labelwidthstring 0
+Image(int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height) Creates an image object with the given width and height.
  The new image has the same color depth and color map of the default drawing
  surface.
 \end_layout
 
-\begin_layout Itemize
-Image(byte[] fullDescription) – Creates an image object from the given byte
- array, which must specify the whole image, including its headers.
+\begin_layout FieldList
+\labelwidthstring 0
+Image(byte[]
+\begin_inset space ~
+\end_inset
+
+fullDescription) Creates an image object from the given byte array, which
+ must specify the whole image, including its headers.
 \end_layout
 
-\begin_layout Itemize
-Image(String path) – Attempts to read the contents of the file specified
- by the given path, creating an image object from the bytes read.
+\begin_layout FieldList
+\labelwidthstring 0
+Image(String
+\begin_inset space ~
+\end_inset
+
+path) Attempts to read the contents of the file specified by the given path,
+ creating an image object from the bytes read.
 \end_layout
 
-\begin_layout Itemize
-Image(Stream s) – Attempts to read the contents of the given stream, and
- create an image object from the bytes read.
+\begin_layout FieldList
+\labelwidthstring 0
+Image(Stream
+\begin_inset space ~
+\end_inset
+
+s) Attempts to read the contents of the given stream, and create an image
+ object from the bytes read.
 \end_layout
 
 \begin_deeper
@@ -12858,7 +14181,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12874,7 +14197,6 @@ The usage of this last constructor with connection oriented streams (like
 
 \end_layout
 
-\end_deeper
 \end_deeper
 \begin_layout Itemize
 If you want to check if a specific file is supported by the platform at
@@ -12928,30 +14250,38 @@ The image's frame count cannot be changed if their value is already higher
  In this case, the setFrameCount method simply returns without doing anything.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 The following methods should be used only on multi-frame images.
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-getCurrentFrame() - Returns the index of the current visible frame.
+\begin_layout FieldList
+\labelwidthstring 0
+getCurrentFrame() Returns the index of the current visible frame.
 \end_layout
 
-\begin_layout Itemize
-setCurrentFrame(int nr) – Sets the given frame index as the current frame,
- moving its contents to the set of visible pixels.
+\begin_layout FieldList
+\labelwidthstring 0
+setCurrentFrame(int
+\begin_inset space ~
+\end_inset
+
+nr) Sets the given frame index as the current frame, moving its contents
+ to the set of visible pixels.
  If the given index is negative, the last frame is set as the current frame;
  If it's higher than the number of frames, the first one is set instead.
 \end_layout
 
-\begin_layout Itemize
-nextFrame() - Sets the next frame as the current one.
+\begin_layout FieldList
+\labelwidthstring 0
+nextFrame() Sets the next frame as the current one.
 \end_layout
 
-\begin_layout Itemize
-prevFrame() - Sets the previous frame as the current one.
+\begin_layout FieldList
+\labelwidthstring 0
+prevFrame() Sets the previous frame as the current one.
 \end_layout
 
+\begin_deeper
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -12960,7 +14290,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -12978,42 +14308,125 @@ Both nextFrame and prevFrame treat the multi-frame image as a circular list,
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
+\begin_layout Standard
 The Image class also provides the methods that creates a new Image object
  to be changed and returned, instead of changing the original instance:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-getScaledInstance(int newWidth, int newHeight) – Returns a scaled instance
- of this image.
+\begin_layout FieldList
+\labelwidthstring 0
+getScaledInstance(int
+\begin_inset space ~
+\end_inset
+
+newWidth,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newHeight) Returns a scaled instance of this image.
  The arguments are the new dimensions for this image in pixels.
 \end_layout
 
-\begin_layout Itemize
-scaledBy(double scaleX, double scaleY) – Returns a scaled instance of this
- image.
+\begin_layout FieldList
+\labelwidthstring 0
+scaledBy(double
+\begin_inset space ~
+\end_inset
+
+scaleX,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+scaleY) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
 \end_layout
 
-\begin_layout Itemize
-getSmoothScaledInstance(int newWidth, int newHeight, int backColor) – Returns
- a scaled instance of this image.
+\begin_layout FieldList
+\labelwidthstring 0
+getSmoothScaledInstance(int
+\begin_inset space ~
+\end_inset
+
+newWidth,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newHeight,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns a scaled instance of this image.
  Transparent pixels are replaced by backColor, which produces a smooth border.
 \end_layout
 
-\begin_layout Itemize
-smoothScaledBy(double scaleX, double scaleY, int backColor) – Returns a
- scaled instance of this image.
+\begin_layout FieldList
+\labelwidthstring 0
+smoothScaledBy(double
+\begin_inset space ~
+\end_inset
+
+scaleX,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+scaleY,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
  Transparent pixels are replaced by backColor, which produces a smooth border.
 \end_layout
 
-\begin_layout Itemize
-getRotatedScaledInstance(int scale, int angle, int fillColor) – Returns
- a rotated and/or scaled version of this image.
+\begin_layout FieldList
+\labelwidthstring 0
+getRotatedScaledInstance(int
+\begin_inset space ~
+\end_inset
+
+scale,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+angle,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+fillColor) Returns a rotated and/or scaled version of this image.
 \end_layout
 
 \begin_deeper
@@ -13025,7 +14438,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -13044,11 +14457,25 @@ Do not use this method for scaling only, because the scaling methods are
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-getTouchedUpInstance(byte brightness, byte contrast) – Returns a touched-up
- instance of this image with the specified brightness and contrast.
+\begin_layout FieldList
+\labelwidthstring 0
+getTouchedUpInstance(byte
+\begin_inset space ~
+\end_inset
+
+brightness,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+contrast) Returns a touched-up instance of this image with the specified
+ brightness and contrast.
 \end_layout
 
+\begin_deeper
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -13084,23 +14511,37 @@ Images with anti-aliased borders produce better results because of the extra
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
+\begin_layout Standard
 And finally, to save your image object, you may use one of the methods below:
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-createPng(Stream s) – Attempts to write this image as a 24bpp PNG file on
- the given stream.
+\begin_layout FieldList
+\labelwidthstring 0
+createPng(Stream
+\begin_inset space ~
+\end_inset
+
+s) Attempts to write this image as a 24bpp PNG file on the given stream.
 \end_layout
 
-\begin_layout Itemize
-saveTo(PDBFile cat, String name) – Writes this image as a 24bpp PNG file
- on the currently selected record of the given PDBFile, using the given
- name.
+\begin_layout FieldList
+\labelwidthstring 0
+saveTo(PDBFile
+\begin_inset space ~
+\end_inset
+
+cat,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+name) Writes this image as a 24bpp PNG file on the currently selected record
+ of the given PDBFile, using the given name.
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 Here's an example of how to create buttons for several resolutions based
  on a 320x320 images: (adapted from UIGadgets sample)
@@ -13915,7 +15356,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -13941,42 +15382,54 @@ The following methods can be used to retrieve information about the set
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getDay() - Returns the day.
+\begin_layout FieldList
+\labelwidthstring 0
+getDay() Returns the day.
 \end_layout
 
-\begin_layout Itemize
-getMonth() - Returns the month.
+\begin_layout FieldList
+\labelwidthstring 0
+getMonth() Returns the month.
 \end_layout
 
-\begin_layout Itemize
-getYear() - Returns the year.
+\begin_layout FieldList
+\labelwidthstring 0
+getYear() Returns the year.
 \end_layout
 
-\begin_layout Itemize
-getDayOfWeek() - Returns the day of week, where 0 is Sunday and 6 is Saturday.
+\begin_layout FieldList
+\labelwidthstring 0
+getDayOfWeek() Returns the day of week, where 0 is Sunday and 6 is Saturday.
 \end_layout
 
-\begin_layout Itemize
-getWeek() - Calculates and returns the ordinal value of the week (1-52).
+\begin_layout FieldList
+\labelwidthstring 0
+getWeek() Calculates and returns the ordinal value of the week (1-52).
 \end_layout
 
-\begin_layout Itemize
-getDateInt() - Returns an integer representing the date in the format YYYYMMDD.
+\begin_layout FieldList
+\labelwidthstring 0
+getDateInt() Returns an integer representing the date in the format YYYYMMDD.
 \end_layout
 
-\begin_layout Itemize
-getDaysInMonth() - Returns the number of days the set month has.
+\begin_layout FieldList
+\labelwidthstring 0
+getDaysInMonth() Returns the number of days the set month has.
 \end_layout
 
-\begin_layout Itemize
-getDaysInMonth(int month) – Returns the number of days in the given month
- of the set year.
+\begin_layout FieldList
+\labelwidthstring 0
+getDaysInMonth(int
+\begin_inset space ~
+\end_inset
+
+month) Returns the number of days in the given month of the set year.
 \end_layout
 
-\begin_layout Itemize
-getGregorianDay() - Returns the number of days since the January 1st of
- the epoch year 1000.
+\begin_layout FieldList
+\labelwidthstring 0
+getGregorianDay() Returns the number of days since the January 1st of the
+ epoch year 1000.
 \end_layout
 
 \end_deeper
@@ -13985,24 +15438,32 @@ You can also retrieve the date as a String:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-formatDayMonth() - Returns a zero padded String representation of the day
+\begin_layout FieldList
+\labelwidthstring 0
+formatDayMonth() Returns a zero padded String representation of the day
  and month, using the current device settings (see Settings.dateFormat).
 \end_layout
 
-\begin_layout Itemize
-getDate() - Returns a String representation of the date using the current
+\begin_layout FieldList
+\labelwidthstring 0
+getDate() Returns a String representation of the date using the current
  device settings (see Settings.dateFormat).
 \end_layout
 
-\begin_layout Itemize
-toString() - Returns a String representation of the date using the current
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a String representation of the date using the current
  device settings (see Settings.dateFormat).
 \end_layout
 
-\begin_layout Itemize
-toString(byte format) - Returns a String representation of the date using
- the given format, which must be one of the Settings.DATE_XXX constants.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(byte
+\begin_inset space ~
+\end_inset
+
+format) Returns a String representation of the date using the given format,
+ which must be one of the Settings.DATE_XXX constants.
 \end_layout
 
 \end_deeper
@@ -14011,25 +15472,91 @@ The Date class provides a few static utility methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getMonthName(int m) – Returns the String representation of the given month.
+\begin_layout FieldList
+\labelwidthstring 0
+getMonthName(int
+\begin_inset space ~
+\end_inset
+
+m) Returns the String representation of the given month.
 \end_layout
 
-\begin_layout Itemize
-getDaysInMonth(int month, int year) – Returns the number of days the given
- month and year.
+\begin_layout FieldList
+\labelwidthstring 0
+getDaysInMonth(int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Returns the number of days the given month and year.
 \end_layout
 
-\begin_layout Itemize
-formatDate(int day, int month, int year) – Returns the String representation
- of the given date (zero padded) using the current device settings (See
- Settings.dateFormat).
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Returns the String representation of the given date (zero padded)
+ using the current device settings (See Settings.dateFormat).
 \end_layout
 
-\begin_layout Itemize
-formatDate(int day, int month, int year, byte dateFormat) – Returns the
- String representation of the given date (zero padded) using the specified
- dateFormat, which must be one of the Settings.DATE_XXX constants.
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dateFormat) Returns the String representation of the given date (zero padded)
+ using the specified dateFormat, which must be one of the Settings.DATE_XXX
+ constants.
 \end_layout
 
 \end_deeper
@@ -14180,19 +15707,30 @@ Vector has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Vector() - Default constructor, creates a Vector with the default size 8.
+\begin_layout FieldList
+\labelwidthstring 0
+Vector() Default constructor, creates a Vector with the default size 8.
  This constructor should be avoided.
 \end_layout
 
-\begin_layout Itemize
-Vector(int size) – Creates a Vector with the given size, which cannot be
- negative (minimum size is 0).
+\begin_layout FieldList
+\labelwidthstring 0
+Vector(int
+\begin_inset space ~
+\end_inset
+
+size) Creates a Vector with the given size, which cannot be negative (minimum
+ size is 0).
 \end_layout
 
-\begin_layout Itemize
-Vector(Object[] startingWith) – Creates a Vector, assigning the given array
- as the internal buffer and its size as the Vector size.
+\begin_layout FieldList
+\labelwidthstring 0
+Vector(Object[]
+\begin_inset space ~
+\end_inset
+
+startingWith) Creates a Vector, assigning the given array as the internal
+ buffer and its size as the Vector size.
 \end_layout
 
 \begin_layout Standard
@@ -14203,7 +15741,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14228,16 +15766,32 @@ To add an element to a vector, you may use:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-addElement(Object obj) – Adds a reference to the given object to the end
- of this vector.
+\begin_layout FieldList
+\labelwidthstring 0
+addElement(Object
+\begin_inset space ~
+\end_inset
+
+obj) Adds a reference to the given object to the end of this vector.
 \end_layout
 
-\begin_layout Itemize
-insertElementAt(Object obj, int index) – Inserts a reference to the given
- object at the specified index of this vector, shifting elements with index
- greater or equal to the specified index to have an index one greater than
- it had previously.
+\begin_layout FieldList
+\labelwidthstring 0
+insertElementAt(Object
+\begin_inset space ~
+\end_inset
+
+obj,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index) Inserts a reference to the given object at the specified index of
+ this vector, shifting elements with index greater or equal to the specified
+ index to have an index one greater than it had previously.
 \end_layout
 
 \end_deeper
@@ -14246,20 +15800,31 @@ And to remove:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-removeElement(Object obj) – Removes the reference of the given object from
- this vector, shifting elements with index greater than the specified index
- to have an index one smaller than it had previously.
+\begin_layout FieldList
+\labelwidthstring 0
+removeElement(Object
+\begin_inset space ~
+\end_inset
+
+obj) Removes the reference of the given object from this vector, shifting
+ elements with index greater than the specified index to have an index one
+ smaller than it had previously.
 \end_layout
 
-\begin_layout Itemize
-removeElementAt(int index) – Removes the reference to the object at the
- given index of this vector, shifting elements with index greater than the
- specified index to have an index one smaller than it had previously.
+\begin_layout FieldList
+\labelwidthstring 0
+removeElementAt(int
+\begin_inset space ~
+\end_inset
+
+index) Removes the reference to the object at the given index of this vector,
+ shifting elements with index greater than the specified index to have an
+ index one smaller than it had previously.
 \end_layout
 
-\begin_layout Itemize
-removeAllElements() - Removes all elements from this vector, reseting its
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllElements() Removes all elements from this vector, reseting its
  length to 0.
 \end_layout
 
@@ -14269,16 +15834,34 @@ To find the index of a vector's element:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-indexOf(Object obj, int startIndex) – Returns the index of the given object,
- or -1 if the object is not found.
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(Object
+\begin_inset space ~
+\end_inset
+
+obj,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+startIndex) Returns the index of the given object, or -1 if the object is
+ not found.
  The array is searched using a O(n) linear search, starting at the given
  startIndex, until the object is found or the end of the array is reached.
 \end_layout
 
-\begin_layout Itemize
-indexOf(Object obj) – Like the above, but always start the search at the
- first position (index 0).
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(Object
+\begin_inset space ~
+\end_inset
+
+obj) Like the above, but always start the search at the first position (index
+ 0).
  In fact its implementation consists of a single method call: indexOf(obj,
  0).
 \end_layout
@@ -14289,24 +15872,32 @@ Vector also provides the following handy methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-isEmpty() - Returns true if this vector is empty.
+\begin_layout FieldList
+\labelwidthstring 0
+isEmpty() Returns true if this vector is empty.
 \end_layout
 
-\begin_layout Itemize
-size() - Returns the number of elements in this vector.
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of elements in this vector.
 \end_layout
 
-\begin_layout Itemize
-setSize(int newSize) – Sets the size of this vector.
+\begin_layout FieldList
+\labelwidthstring 0
+setSize(int
+\begin_inset space ~
+\end_inset
+
+newSize) Sets the size of this vector.
  If the new size is greater than the current size, new null items are added
  to the end of the vector.
  If the new size is less than the current size, all components at index
  newSize and greater are discarded.
 \end_layout
 
-\begin_layout Itemize
-qsort() - Sorts the elements of this vector.
+\begin_layout FieldList
+\labelwidthstring 0
+qsort() Sorts the elements of this vector.
 \end_layout
 
 \begin_deeper
@@ -14318,7 +15909,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14337,9 +15928,10 @@ If the elements are Strings, the sort will be faster because a cast to String
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-toObjectArray() - Returns an array of objects containing all elements of
- this vector, or null if the vector is empty.
+\begin_layout FieldList
+\labelwidthstring 0
+toObjectArray() Returns an array of objects containing all elements of this
+ vector, or null if the vector is empty.
 \end_layout
 
 \begin_deeper
@@ -14351,7 +15943,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14370,8 +15962,9 @@ If the first element of this vector is a String, it will assume all elements
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-dump() - Dumps the contents of this vector, returning a String representation
+\begin_layout FieldList
+\labelwidthstring 0
+dump() Dumps the contents of this vector, returning a String representation
  of it.
  
 \end_layout
@@ -14382,19 +15975,26 @@ To use a vector as a stack, you may use the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-push(Object obj) – Pushes an item onto the top of this stack.
+\begin_layout FieldList
+\labelwidthstring 0
+push(Object
+\begin_inset space ~
+\end_inset
+
+obj) Pushes an item onto the top of this stack.
  It actually just calls the method addElement passing the given object.
 \end_layout
 
-\begin_layout Itemize
-pop() - Removes the object at the top of this stack, returning that object.
+\begin_layout FieldList
+\labelwidthstring 0
+pop() Removes the object at the top of this stack, returning that object.
  
 \end_layout
 
-\begin_layout Itemize
-peek() - Returns the object the object at the top of this stack without
- removing it.
+\begin_layout FieldList
+\labelwidthstring 0
+peek() Returns the object the object at the top of this stack without removing
+ it.
 \end_layout
 
 \end_deeper
@@ -14500,7 +16100,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14566,19 +16166,30 @@ IntVector has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-IntVector() - Default constructor, creates an IntVector with the default
- size 20.
+\begin_layout FieldList
+\labelwidthstring 0
+IntVector() Default constructor, creates an IntVector with the default size
+ 20.
 \end_layout
 
-\begin_layout Itemize
-IntVector(int size) – Creates an IntVector with the given size, which cannot
- be negative (minimum size is 0).
+\begin_layout FieldList
+\labelwidthstring 0
+IntVector(int
+\begin_inset space ~
+\end_inset
+
+size) Creates an IntVector with the given size, which cannot be negative
+ (minimum size is 0).
 \end_layout
 
-\begin_layout Itemize
-IntVector(int[] items) – Creates an IntVector, assigning the given array
- as the internal buffer and its size as the an IntVector size.
+\begin_layout FieldList
+\labelwidthstring 0
+IntVector(int[]
+\begin_inset space ~
+\end_inset
+
+items) Creates an IntVector, assigning the given array as the internal buffer
+ and its size as the an IntVector size.
 \end_layout
 
 \begin_layout Standard
@@ -14589,7 +16200,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14615,15 +16226,32 @@ To add an element to an intVector, you may use:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-addElement(int item) – Adds the given integer to the end of this intVector.
+\begin_layout FieldList
+\labelwidthstring 0
+addElement(int
+\begin_inset space ~
+\end_inset
+
+item) Adds the given integer to the end of this intVector.
 \end_layout
 
-\begin_layout Itemize
-insertElementAt(int item, int index) – Inserts the given integer at the
- specified index of this intVector, shifting elements with index greater
- or equal to the specified index to have an index one greater than it had
- previously.
+\begin_layout FieldList
+\labelwidthstring 0
+insertElementAt(int
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index) Inserts the given integer at the specified index of this intVector,
+ shifting elements with index greater or equal to the specified index to
+ have an index one greater than it had previously.
 \end_layout
 
 \end_deeper
@@ -14632,21 +16260,32 @@ And to remove:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-removeElement(int item) – Removes the given integer from this intVector,
- shifting elements with index greater than the specified index to have an
- index one smaller than it had previously.
+\begin_layout FieldList
+\labelwidthstring 0
+removeElement(int
+\begin_inset space ~
+\end_inset
+
+item) Removes the given integer from this intVector, shifting elements with
+ index greater than the specified index to have an index one smaller than
+ it had previously.
 \end_layout
 
-\begin_layout Itemize
-removeElementAt(int index) – Removes the integer at the given index of this
- intVector, shifting elements with index greater than the specified index
- to have an index one smaller than it had previously.
+\begin_layout FieldList
+\labelwidthstring 0
+removeElementAt(int
+\begin_inset space ~
+\end_inset
+
+index) Removes the integer at the given index of this intVector, shifting
+ elements with index greater than the specified index to have an index one
+ smaller than it had previously.
 \end_layout
 
-\begin_layout Itemize
-removeAllElements() - Removes all elements from this intVector, reseting
- its length to 0.
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllElements() Removes all elements from this intVector, reseting its
+ length to 0.
 \end_layout
 
 \end_deeper
@@ -14655,16 +16294,34 @@ To find the index of an element of this intVector:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-indexOf(int item, int startIndex) – Returns the index of the given integer,
- or -1 if the integer is not found.
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(int
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+startIndex) Returns the index of the given integer, or -1 if the integer
+ is not found.
  The array is searched using a O(n) linear search, starting at the given
  startIndex, until the integer is found or the end of the array is reached.
 \end_layout
 
-\begin_layout Itemize
-indexOf(int item) – Like the above, but always start the search at the first
- position (index 0).
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(int
+\begin_inset space ~
+\end_inset
+
+item) Like the above, but always start the search at the first position
+ (index 0).
  In fact its implementation consists of a single method call: indexOf(item,
  0).
 \end_layout
@@ -14675,20 +16332,24 @@ IntVector also provides the following handy methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-isEmpty() - Returns true if this intVector is empty.
+\begin_layout FieldList
+\labelwidthstring 0
+isEmpty() Returns true if this intVector is empty.
 \end_layout
 
-\begin_layout Itemize
-size() - Returns the number of elements in this intVector.
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of elements in this intVector.
 \end_layout
 
-\begin_layout Itemize
-qsort() - Sorts the elements of this intVector.
+\begin_layout FieldList
+\labelwidthstring 0
+qsort() Sorts the elements of this intVector.
 \end_layout
 
-\begin_layout Itemize
-toIntArray() - Returns an array of integers containing all elements of this
+\begin_layout FieldList
+\labelwidthstring 0
+toIntArray() Returns an array of integers containing all elements of this
  intVector.
 \end_layout
 
@@ -14701,7 +16362,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14719,8 +16380,13 @@ Unlike Vector.toObjectArray, the method toIntArray does not returns null
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-setSize(int newSize) – Sets the size of this vector.
+\begin_layout FieldList
+\labelwidthstring 0
+setSize(int
+\begin_inset space ~
+\end_inset
+
+newSize) Sets the size of this vector.
  If the new size is greater than the current size, new items are added to
  the end of the vector.
  If the new size is less than the current size, all components at index
@@ -14733,24 +16399,35 @@ To use an IntVector as a stack, you may use the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-push(int item) – Pushes an item onto the top of this stack.
+\begin_layout FieldList
+\labelwidthstring 0
+push(int
+\begin_inset space ~
+\end_inset
+
+item) Pushes an item onto the top of this stack.
  It actually just calls the method addElement passing the given integer.
 \end_layout
 
-\begin_layout Itemize
-pop() - Removes the item at the top of this stack, returning that integer.
+\begin_layout FieldList
+\labelwidthstring 0
+pop() Removes the item at the top of this stack, returning that integer.
  
 \end_layout
 
-\begin_layout Itemize
-pop(int howMany) - Removes the desired number of items from the top of this
- stack.
+\begin_layout FieldList
+\labelwidthstring 0
+pop(int
+\begin_inset space ~
+\end_inset
+
+howMany) Removes the desired number of items from the top of this stack.
  Unlike the previous method, nothing is returned.
 \end_layout
 
-\begin_layout Itemize
-peek() - Returns the item at the top of this stack without removing it.
+\begin_layout FieldList
+\labelwidthstring 0
+peek() Returns the item at the top of this stack without removing it.
 \end_layout
 
 \end_deeper
@@ -14769,7 +16446,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14801,19 +16478,41 @@ The IntVector provides the following methods to be used as a bit array:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-ensureBit(int sizeInBits) – Makes sure the intVector is large enough to
- hold the given number of bits.
+\begin_layout FieldList
+\labelwidthstring 0
+ensureBit(int
+\begin_inset space ~
+\end_inset
+
+sizeInBits) Makes sure the intVector is large enough to hold the given number
+ of bits.
  You should always call this method before using it as a bit array.
 \end_layout
 
-\begin_layout Itemize
-setBit(int index, boolean on) – Sets the bit at the given index if on is
- true.
+\begin_layout FieldList
+\labelwidthstring 0
+setBit(int
+\begin_inset space ~
+\end_inset
+
+index,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+on) Sets the bit at the given index if on is true.
 \end_layout
 
-\begin_layout Itemize
-isBitSet(int index) – Returns true if the bit at the given index is set.
+\begin_layout FieldList
+\labelwidthstring 0
+isBitSet(int
+\begin_inset space ~
+\end_inset
+
+index) Returns true if the bit at the given index is set.
 \end_layout
 
 \end_deeper
@@ -14923,9 +16622,14 @@ Hashtable has two important constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Hashtable(int initialCapacity) – Creates an empty hash table with the specified
- initial capacity.
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity) Creates an empty hash table with the specified initial
+ capacity.
 \end_layout
 
 \begin_deeper
@@ -14937,7 +16641,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -14954,9 +16658,13 @@ The argument initialCapacity's value should be the final number of entries
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-Hashtable(String res) – Creates a new hash table parsing the elements from
- the given String.
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(String
+\begin_inset space ~
+\end_inset
+
+res) Creates a new hash table parsing the elements from the given String.
  The String must be in the form: key = value, split in lines (
 \backslash
 n).
@@ -14968,13 +16676,38 @@ The insert a new entry on the hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-put(Object key, Object value) – Maps the given value to the hash code of
- the given key.
+\begin_layout FieldList
+\labelwidthstring 0
+put(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+value) Maps the given value to the hash code of the given key.
 \end_layout
 
-\begin_layout Itemize
-put(int hash, Object value) – Maps the given value to the given hash.
+\begin_layout FieldList
+\labelwidthstring 0
+put(int
+\begin_inset space ~
+\end_inset
+
+hash,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+value) Maps the given value to the given hash.
 \end_layout
 
 \begin_layout Standard
@@ -14995,14 +16728,24 @@ To retrieve a value from a hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-get(Object key) - Returns the value to which the specified key is mapped
- in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+get(Object
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key is mapped in this hash
+ table.
 \end_layout
 
-\begin_layout Itemize
-get(int hash) - Returns the value to which the specified hash is mapped
- in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+get(int
+\begin_inset space ~
+\end_inset
+
+hash) Returns the value to which the specified hash is mapped in this hash
+ table.
 \end_layout
 
 \end_deeper
@@ -15011,17 +16754,24 @@ To retrieve all values and/or keys from a hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getKeys() - Returns a Vector with all the keys in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+getKeys() Returns a Vector with all the keys in this hash table.
 \end_layout
 
-\begin_layout Itemize
-getValues() - Returns a Vector with all the values in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+getValues() Returns a Vector with all the values in this hash table.
 \end_layout
 
-\begin_layout Itemize
-getKeyValuePairs(String separator) – Returns a Vector with all the key/value
- pairs in the form key + separator + value.
+\begin_layout FieldList
+\labelwidthstring 0
+getKeyValuePairs(String
+\begin_inset space ~
+\end_inset
+
+separator) Returns a Vector with all the key/value pairs in the form key
+ + separator + value.
 \end_layout
 
 \end_deeper
@@ -15116,10 +16866,15 @@ IntHashtable has a important constructor:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-IntHashtable(int initialCapacity) – Creates an empty hash table with the
- specified initial capacity, which should be the final number of entries
- in the hash table to avoid rehashing.
+\begin_layout FieldList
+\labelwidthstring 0
+IntHashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity) Creates an empty hash table with the specified initial
+ capacity, which should be the final number of entries in the hash table
+ to avoid rehashing.
 \end_layout
 
 \end_deeper
@@ -15128,8 +16883,21 @@ The insert a new entry on the hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-put(int key, int value) – Maps the given value to the given key.
+\begin_layout FieldList
+\labelwidthstring 0
+put(int
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value) Maps the given value to the given key.
 \end_layout
 
 \begin_layout Standard
@@ -15150,15 +16918,32 @@ To retrieve a value from a hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-get(int key) - Returns the value to which the specified key is mapped in
- this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+get(int
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key is mapped in this hash
+ table.
 \end_layout
 
-\begin_layout Itemize
-get(int key, int def) - Returns the value to which the specified key is
- mapped in this hash table, or the given default value (def) if the key
- is not found.
+\begin_layout FieldList
+\labelwidthstring 0
+get(int
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+def) Returns the value to which the specified key is mapped in this hash
+ table, or the given default value (def) if the key is not found.
 \end_layout
 
 \begin_layout Standard
@@ -15169,7 +16954,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15195,12 +16980,14 @@ To retrieve all keys and values from a hash table:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getKeys() - Returns a IntVector with all the keys in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+getKeys() Returns a IntVector with all the keys in this hash table.
 \end_layout
 
-\begin_layout Itemize
-getValues() - Returns a IntVector with all the values in this hash table.
+\begin_layout FieldList
+\labelwidthstring 0
+getValues() Returns a IntVector with all the values in this hash table.
 \end_layout
 
 \end_deeper
@@ -15337,13 +17124,26 @@ Properties has the following constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Properties() - Default constructor, creates an empty Properties object.
+\begin_layout FieldList
+\labelwidthstring 0
+Properties() Default constructor, creates an empty Properties object.
 \end_layout
 
-\begin_layout Itemize
-Properties(String[] keys, Properties.Value[] values) – Creates a Properties
- object, storing the given keys/values pairs.
+\begin_layout FieldList
+\labelwidthstring 0
+Properties(String[]
+\begin_inset space ~
+\end_inset
+
+keys,
+\begin_inset space ~
+\end_inset
+
+Properties.Value[]
+\begin_inset space ~
+\end_inset
+
+values) Creates a Properties object, storing the given keys/values pairs.
 \end_layout
 
 \end_deeper
@@ -15353,30 +17153,54 @@ The following methods are provided to handle a Properties objects and its
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-put(String key, Properties.Value v) – Maps the given value to the given key
- in this properties.
+\begin_layout FieldList
+\labelwidthstring 0
+put(String
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+Properties.Value
+\begin_inset space ~
+\end_inset
+
+v) Maps the given value to the given key in this properties.
 \end_layout
 
-\begin_layout Itemize
-get(String key) – Returns the value which the given key is mapped to in
- this properties.
+\begin_layout FieldList
+\labelwidthstring 0
+get(String
+\begin_inset space ~
+\end_inset
+
+key) Returns the value which the given key is mapped to in this properties.
 \end_layout
 
-\begin_layout Itemize
-remove(String key) - Remove the value mapped to the given key from the property.
+\begin_layout FieldList
+\labelwidthstring 0
+remove(String
+\begin_inset space ~
+\end_inset
+
+key) Remove the value mapped to the given key from the property.
 \end_layout
 
-\begin_layout Itemize
-size() - Returns the number of properties stored.
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of properties stored.
 \end_layout
 
-\begin_layout Itemize
-getKeys() - Returns a Vector with the current keys.
+\begin_layout FieldList
+\labelwidthstring 0
+getKeys() Returns a Vector with the current keys.
 \end_layout
 
-\begin_layout Itemize
-clear() - Clears this properties.
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears this properties.
 \end_layout
 
 \end_deeper
@@ -15384,16 +17208,28 @@ clear() - Clears this properties.
 To load or save data directly from/to a DataStream:
 \end_layout
 
-\begin_layout Itemize
-load(DataStream ds) - Load all properties from the given DataStream.
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+load(DataStream
+\begin_inset space ~
+\end_inset
+
+ds) Load all properties from the given DataStream.
  
 \end_layout
 
-\begin_layout Itemize
-save(DataStream ds) - Save all properties in the given DataStream.
+\begin_layout FieldList
+\labelwidthstring 0
+save(DataStream
+\begin_inset space ~
+\end_inset
+
+ds) Save all properties in the given DataStream.
  
 \end_layout
 
+\end_deeper
 \begin_layout Standard
 To store a value in Properties, you must extend the abstract class Properties.Val
 ue and implement the method toString().
@@ -15404,24 +17240,29 @@ The following classes are already implemented on the SDK:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Properties.Boolean - Implements a value of type boolean.
+\begin_layout Labeling
+\labelwidthstring Properties.Boolean0
+Properties.Boolean Implements a value of type boolean.
 \end_layout
 
-\begin_layout Itemize
-Properties.Double - Implements a value of type double.
+\begin_layout Labeling
+\labelwidthstring Properties.Boolean0
+Properties.Double Implements a value of type double.
 \end_layout
 
-\begin_layout Itemize
-Properties.Int - Implements a value of type int.
+\begin_layout Labeling
+\labelwidthstring Properties.Boolean0
+Properties.Int Implements a value of type int.
 \end_layout
 
-\begin_layout Itemize
-Properties.Long - Implements a value of type long.
+\begin_layout Labeling
+\labelwidthstring Properties.Boolean0
+Properties.Long Implements a value of type long.
 \end_layout
 
-\begin_layout Itemize
-Properties.Str - Implements a value of type String.
+\begin_layout Labeling
+\labelwidthstring Properties.Boolean0
+Properties.Str Implements a value of type String.
 \end_layout
 
 \end_deeper
@@ -15446,13 +17287,19 @@ Random has the following constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Random() - Default constructor, creates a Random instance using a seed based
+\begin_layout FieldList
+\labelwidthstring 0
+Random() Default constructor, creates a Random instance using a seed based
  on the timestamp.
 \end_layout
 
-\begin_layout Itemize
-Random(int seed) – Creates a Random object using the given seed.
+\begin_layout FieldList
+\labelwidthstring 0
+Random(int
+\begin_inset space ~
+\end_inset
+
+seed) Creates a Random object using the given seed.
  The only reasonable seeds are between 0 and 231 inclusive.
  If a negative value is received, its absolute value will be used.
 \end_layout
@@ -15463,21 +17310,53 @@ The class has only 4 simple methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-nextInt(int n) - Returns a random integer in the range [0,n).
+\begin_layout FieldList
+\labelwidthstring 0
+nextInt(int
+\begin_inset space ~
+\end_inset
+
+n) Returns a random integer in the range [0,n).
 \end_layout
 
-\begin_layout Itemize
-nextDouble() - Returns a random double in the half-open range [0,1).
+\begin_layout FieldList
+\labelwidthstring 0
+nextDouble() Returns a random double in the half-open range [0,1).
  
 \end_layout
 
-\begin_layout Itemize
-between(int s, int e) - Returns a random integer in the given region.
+\begin_layout FieldList
+\labelwidthstring 0
+between(int
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+e) Returns a random integer in the given region.
 \end_layout
 
-\begin_layout Itemize
-between(char s, char e) - Returns a random character in the given region.
+\begin_layout FieldList
+\labelwidthstring 0
+between(char
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+e) Returns a random character in the given region.
  
 \end_layout
 
@@ -15490,7 +17369,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15534,32 +17413,39 @@ First you must be familiar with the different message levels:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-CONFIG - Message level for static configuration messages.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+CONFIG Message level for static configuration messages.
 \end_layout
 
-\begin_layout Itemize
-INFO - Message level for informational messages.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+INFO Message level for informational messages.
 \end_layout
 
-\begin_layout Itemize
-FINE - Message level providing tracing information.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+FINE Message level providing tracing information.
 \end_layout
 
-\begin_layout Itemize
-FINER - Indicates a fairly detailed tracing message.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+FINER Indicates a fairly detailed tracing message.
 \end_layout
 
-\begin_layout Itemize
-FINEST - Indicates a highly detailed tracing message.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+FINEST Indicates a highly detailed tracing message.
 \end_layout
 
-\begin_layout Itemize
-WARNING - Message level indicating a potential problem.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+WARNING Message level indicating a potential problem.
 \end_layout
 
-\begin_layout Itemize
-SEVERE - Message level indicating a serious failure.
+\begin_layout Labeling
+\labelwidthstring WARNING0
+SEVERE Message level indicating a serious failure.
 \end_layout
 
 \end_deeper
@@ -15568,24 +17454,34 @@ You may get or set the Logger default settings with these static methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getDefaultSeparator() - Returns the string used as initial message separator,
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultSeparator() Returns the string used as initial message separator,
  which is used by new loggers.
 \end_layout
 
-\begin_layout Itemize
-setDefaultSeparator(String separator) - Sets the initial message separator
- to be used by new loggers.
+\begin_layout FieldList
+\labelwidthstring 0
+setDefaultSeparator(String
+\begin_inset space ~
+\end_inset
+
+separator) Sets the initial message separator to be used by new loggers.
 \end_layout
 
-\begin_layout Itemize
-getDefaultLevel() - Returns the initial logger level, which is used by new
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultLevel() Returns the initial logger level, which is used by new
  loggers.
 \end_layout
 
-\begin_layout Itemize
-setDefaultLevel(int level) - Sets the initial logger level to be used by
- new loggers.
+\begin_layout FieldList
+\labelwidthstring 0
+setDefaultLevel(int
+\begin_inset space ~
+\end_inset
+
+level) Sets the initial logger level to be used by new loggers.
 \end_layout
 
 \end_deeper
@@ -15596,12 +17492,14 @@ The Logger level may be one of the above message levels, or any composition
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-ALL - Indicates that all messages should be logged.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+ALL Indicates that all messages should be logged.
 \end_layout
 
-\begin_layout Itemize
-OFF - Special level that can be used to turn off logging.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+OFF Special level that can be used to turn off logging.
 \end_layout
 
 \end_deeper
@@ -15610,29 +17508,68 @@ To get a Logger, you may use one of the following static methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getLogger(String name) - Returns the logger with the given name.
+\begin_layout FieldList
+\labelwidthstring 0
+getLogger(String
+\begin_inset space ~
+\end_inset
+
+name) Returns the logger with the given name.
  If the logger does not exist, it will be created and stored for future
  use.
 \end_layout
 
-\begin_layout Itemize
-getLogger(String name, int level) - Returns the logger with the given name,
- setting the specified level.
+\begin_layout FieldList
+\labelwidthstring 0
+getLogger(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+level) Returns the logger with the given name, setting the specified level.
  If the logger does not exist, it will be created and stored for future
  use.
 \end_layout
 
-\begin_layout Itemize
-getLogger(String name, int level, Stream outputStream) - Returns the logger
- with the given name, setting the level specified and optionally adding
- the given stream to the list of output handlers.
+\begin_layout FieldList
+\labelwidthstring 0
+getLogger(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+level,
+\begin_inset space ~
+\end_inset
+
+Stream
+\begin_inset space ~
+\end_inset
+
+outputStream) Returns the logger with the given name, setting the level
+ specified and optionally adding the given stream to the list of output
+ handlers.
  If the logger does not exist, it will be created and stored for future
  use.
 \end_layout
 
-\begin_layout Itemize
-getGlobalLogger() - Returns the global anonymous logger.
+\begin_layout FieldList
+\labelwidthstring 0
+getGlobalLogger() Returns the global anonymous logger.
 \end_layout
 
 \end_deeper
@@ -15641,25 +17578,37 @@ After getting a Logger instance, you may get or set its settings:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-getName() - Returns the name of this logger.
+\begin_layout FieldList
+\labelwidthstring 0
+getName() Returns the name of this logger.
 \end_layout
 
-\begin_layout Itemize
-getSeparator() - Returns the string used by this logger to separate log
- messages.
+\begin_layout FieldList
+\labelwidthstring 0
+getSeparator() Returns the string used by this logger to separate log messages.
 \end_layout
 
-\begin_layout Itemize
-setSeparator(String separator) - Sets the separator to be used by this logger.
+\begin_layout FieldList
+\labelwidthstring 0
+setSeparator(String
+\begin_inset space ~
+\end_inset
+
+separator) Sets the separator to be used by this logger.
 \end_layout
 
-\begin_layout Itemize
-getLevel() - Returns the current level of this logger.
+\begin_layout FieldList
+\labelwidthstring 0
+getLevel() Returns the current level of this logger.
 \end_layout
 
-\begin_layout Itemize
-setLevel(int level) - Sets the current level of this logger.
+\begin_layout FieldList
+\labelwidthstring 0
+setLevel(int
+\begin_inset space ~
+\end_inset
+
+level) Sets the current level of this logger.
 \end_layout
 
 \end_deeper
@@ -15670,19 +17619,28 @@ You must add a output handler to a logger, which is a stream object that
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-addOutputHandler(Stream output)- Adds an output stream to this logger's
- output handler set.
+\begin_layout FieldList
+\labelwidthstring 0
+addOutputHandler(Stream
+\begin_inset space ~
+\end_inset
+
+output) Adds an output stream to this logger's output handler set.
  Does nothing if the given Stream was previously added to this logger.
 \end_layout
 
-\begin_layout Itemize
-getOutputHandlers() - Get the output handlers associated with this logger.
+\begin_layout FieldList
+\labelwidthstring 0
+getOutputHandlers() Get the output handlers associated with this logger.
 \end_layout
 
-\begin_layout Itemize
-removeOutputHandler(Stream output) - Removes an output handler from this
- logger's output handler set.
+\begin_layout FieldList
+\labelwidthstring 0
+removeOutputHandler(Stream
+\begin_inset space ~
+\end_inset
+
+output) Removes an output handler from this logger's output handler set.
 \end_layout
 
 \begin_layout Standard
@@ -15693,7 +17651,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15716,28 +17674,102 @@ The following methods can be used to help you trace the execution flow of
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-entering(String sourceClass, String sourceMethod, String params) - Logs
- a FINER message reporting a method entry.
+\begin_layout FieldList
+\labelwidthstring 0
+entering(String
+\begin_inset space ~
+\end_inset
+
+sourceClass,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+sourceMethod,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+params) Logs a FINER message reporting a method entry.
 \end_layout
 
-\begin_layout Itemize
-exiting(String sourceClass, String sourceMethod) - Logs a FINER message
- reporting a method return.
+\begin_layout FieldList
+\labelwidthstring 0
+exiting(String
+\begin_inset space ~
+\end_inset
+
+sourceClass,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+sourceMethod) Logs a FINER message reporting a method return.
 \end_layout
 
-\begin_layout Itemize
-throwing(String sourceClass, String sourceMethod, Throwable thrown) – Logs
- a SEVERE message reporting an exception being thrown.
+\begin_layout FieldList
+\labelwidthstring 0
+throwing(String
+\begin_inset space ~
+\end_inset
+
+sourceClass,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+sourceMethod,
+\begin_inset space ~
+\end_inset
+
+Throwable
+\begin_inset space ~
+\end_inset
+
+thrown) Logs a SEVERE message reporting an exception being thrown.
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
 To log your own message, you may use:
 \end_layout
 
-\begin_layout Itemize
-log(int level, String message, boolean prependInfo) – Logs the given message,
- using the given level.
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+log(int
+\begin_inset space ~
+\end_inset
+
+level,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+message,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+prependInfo) Logs the given message, using the given level.
  The last argument is a flag indicating whether this log message must be
  prepended with the current date and time, level string, logger name, etc.
 \end_layout
@@ -15750,32 +17782,95 @@ Or one of the convenience methods, which are actually just calls to the
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-config(String message) - Logs a CONFIG message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+config(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a CONFIG message.
 \end_layout
 
-\begin_layout Itemize
-info(String message) - Logs an INFO message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+info(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs an INFO message.
 \end_layout
 
-\begin_layout Itemize
-fine(String message) - Logs a FINE message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+fine(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a FINE message.
 \end_layout
 
-\begin_layout Itemize
-finer(String message) - Logs a FINER message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+finer(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a FINER message.
 \end_layout
 
-\begin_layout Itemize
-finest(String message) - Logs a FINEST message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+finest(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a FINEST message.
 \end_layout
 
-\begin_layout Itemize
-warning(String message) - Logs a WARNING message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+warning(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a WARNING message.
 \end_layout
 
-\begin_layout Itemize
-severe(String message) - Logs a SEVERE message.
+\begin_layout Labeling
+\labelwidthstring warning(String.message)0
+
+\family typewriter
+severe(String
+\begin_inset space ~
+\end_inset
+
+message)
+\family default
+ Logs a SEVERE message.
 \end_layout
 
 \end_deeper
@@ -15785,9 +17880,14 @@ Finally, you should dispose the logger and close all streams associated
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-dispose(boolean closeOutputHandlers) - Permanently discards this logger,
- removing it from the loggers registry.
+\begin_layout FieldList
+\labelwidthstring 0
+dispose(boolean
+\begin_inset space ~
+\end_inset
+
+closeOutputHandlers) Permanently discards this logger, removing it from
+ the loggers registry.
  If closeOutputHandlers is true, all streams associated to this logger are
  closed.
 \end_layout
@@ -15801,7 +17901,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15861,32 +17961,39 @@ The Time fields with their respective range:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-year – The year in 4 digits.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+year The year in 4 digits.
 \end_layout
 
-\begin_layout Itemize
-month – The month in the range of 1 to 12.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+month The month in the range of 1 to 12.
 \end_layout
 
-\begin_layout Itemize
-day – The day in the range of 1 to the last day of the specified month.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+day The day in the range of 1 to the last day of the specified month.
 \end_layout
 
-\begin_layout Itemize
-hour – The hour in the range of 0 to 23.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+hour The hour in the range of 0 to 23.
 \end_layout
 
-\begin_layout Itemize
-minute – The minute in the range of 0 to 59.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+minute The minute in the range of 0 to 59.
 \end_layout
 
-\begin_layout Itemize
-second – The second in the range of 0 to 59.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+second The second in the range of 0 to 59.
 \end_layout
 
-\begin_layout Itemize
-millis – Milliseconds in the range of 0 to 999.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+millis Milliseconds in the range of 0 to 999.
 \end_layout
 
 \end_deeper
@@ -15895,8 +18002,9 @@ Time has four constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
-Time() - Default constructor, creates a time object set with the device's
+\begin_layout FieldList
+\labelwidthstring 0
+Time() Default constructor, creates a time object set with the device's
  current date and time.
 \end_layout
 
@@ -15909,7 +18017,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15926,19 +18034,81 @@ WindowsCE does not keep track of milliseconds, therefore, the field millis
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-Time(int year, int month, int day, int hour, int minute, int second, int
- millis) – Creates a time object with the given values.
+\begin_layout FieldList
+\labelwidthstring 0
+Time(int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+hour,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+minute,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+second,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+millis) Creates a time object with the given values.
 \end_layout
 
-\begin_layout Itemize
-Time(long t) – Creates a time object from the given value, which must be
- in the format YYYYMMDDHHMMSS.
+\begin_layout FieldList
+\labelwidthstring 0
+Time(long
+\begin_inset space ~
+\end_inset
+
+t) Creates a time object from the given value, which must be in the format
+ YYYYMMDDHHMMSS.
 \end_layout
 
-\begin_layout Itemize
-Time(String iso8601) – Creates a time object using the given string, which
- must be in the ISO8601 format: YYYYMMDDTHH:MM:SS.
+\begin_layout FieldList
+\labelwidthstring 0
+Time(String
+\begin_inset space ~
+\end_inset
+
+iso8601) Creates a time object using the given string, which must be in
+ the ISO8601 format: YYYYMMDDTHH:MM:SS.
 \end_layout
 
 \begin_deeper
@@ -15950,7 +18120,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15975,7 +18145,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -15995,28 +18165,36 @@ Remember: no kind of validation is done on the Time fields values, not even
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-equals(Object o) – Compares two Time objects for equality.
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+o) Compares two Time objects for equality.
  The result is true if and only if the argument is not null and its a Time
  object that represents the same point in time, to the millisecond, as this
  object.
 \end_layout
 
-\begin_layout Itemize
-getTimeLong() - Converts this time object to a long value in the format
- YYYYMMDDHHMMSS.
+\begin_layout FieldList
+\labelwidthstring 0
+getTimeLong() Converts this time object to a long value in the format YYYYMMDDHH
+MMSS.
  Milliseconds is not included.
 \end_layout
 
-\begin_layout Itemize
-toIso8601() - Converts this time object to a string in the ISO8601 format:
+\begin_layout FieldList
+\labelwidthstring 0
+toIso8601() Converts this time object to a string in the ISO8601 format:
  YYYYMMDDTHH:MM:SS.
  Milliseconds is not included.
 \end_layout
 
-\begin_layout Itemize
-toString() - Converts this time object to a string using the date format
- specified in Settings.dateFormat.
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Converts this time object to a string using the date format specified
+ in Settings.dateFormat.
 \end_layout
 
 \begin_layout Section
@@ -16119,101 +18297,279 @@ You may also use the method setDefaultConverter(String name), which searches
 Conversion between String and basic types
 \end_layout
 
-\begin_layout Itemize
-toDouble(String s) – Converts the given String to double.
+\begin_layout FieldList
+\labelwidthstring 0
+toDouble(String
+\begin_inset space ~
+\end_inset
+
+s) Converts the given String to double.
 \end_layout
 
-\begin_layout Itemize
-toInt(String s) – Converts the given String to int.
+\begin_layout FieldList
+\labelwidthstring 0
+toInt(String
+\begin_inset space ~
+\end_inset
+
+s) Converts the given String to int.
 \end_layout
 
-\begin_layout Itemize
-toLong(String s) – Converts the given String to long.
+\begin_layout FieldList
+\labelwidthstring 0
+toLong(String
+\begin_inset space ~
+\end_inset
+
+s) Converts the given String to long.
 \end_layout
 
-\begin_layout Itemize
-toLong(String s, int radix) – Converts the given String to long in the given
- radix, which must be between 2 and 16.
+\begin_layout FieldList
+\labelwidthstring 0
+toLong(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+radix) Converts the given String to long in the given radix, which must
+ be between 2 and 16.
 \end_layout
 
-\begin_layout Itemize
-toString(boolean b) – Converts the given boolean to a String.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(boolean
+\begin_inset space ~
+\end_inset
+
+b) Converts the given boolean to a String.
 \end_layout
 
-\begin_layout Itemize
-toString(char c) – Converts the given char to a String.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(char
+\begin_inset space ~
+\end_inset
+
+c) Converts the given char to a String.
 \end_layout
 
-\begin_layout Itemize
-toString(double d) – Converts the given double to a String, formatted in
- scientific notation.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(double
+\begin_inset space ~
+\end_inset
+
+d) Converts the given double to a String, formatted in scientific notation.
 \end_layout
 
-\begin_layout Itemize
-toString(double val, int decimalCount) – Converts the given double to a
- String, formatted with the given number of decimal places.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(double
+\begin_inset space ~
+\end_inset
+
+val,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+decimalCount) Converts the given double to a String, formatted with the
+ given number of decimal places.
 \end_layout
 
-\begin_layout Itemize
-toString(int i) – Converts the given int to a String.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(int
+\begin_inset space ~
+\end_inset
+
+i) Converts the given int to a String.
 \end_layout
 
-\begin_layout Itemize
-toString(long l) – Converts the given long to a String using base 10.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(long
+\begin_inset space ~
+\end_inset
+
+l) Converts the given long to a String using base 10.
 \end_layout
 
-\begin_layout Itemize
-toString(long i, int radix) – Converts the given long to a String in the
- given radix, which must be between 2 and 16.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(long
+\begin_inset space ~
+\end_inset
+
+i,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+radix) Converts the given long to a String in the given radix, which must
+ be between 2 and 16.
 \end_layout
 
-\begin_layout Itemize
-toString(String doubleValue, int n) – Formats the given String as a double,
- rounding with n decimal places.
+\begin_layout FieldList
+\labelwidthstring 0
+toString(String
+\begin_inset space ~
+\end_inset
+
+doubleValue,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+n) Formats the given String as a double, rounding with n decimal places.
 \end_layout
 
-\begin_layout Itemize
-unsigned2hex(int b, int places) – Converts the given unsigned integer to
- hexadecimal using the given number of places (up to 8).
+\begin_layout FieldList
+\labelwidthstring 0
+unsigned2hex(int
+\begin_inset space ~
+\end_inset
+
+b,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+places) Converts the given unsigned integer to hexadecimal using the given
+ number of places (up to 8).
 \end_layout
 
 \begin_layout Subsection
 Character, String and StringBuffer utilities
 \end_layout
 
-\begin_layout Itemize
-appendPath(String path1, String path2) – Concatenates two strings, ensuring
- there's a single slash between them.
+\begin_layout FieldList
+\labelwidthstring 0
+appendPath(String
+\begin_inset space ~
+\end_inset
+
+path1,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+path2) Concatenates two strings, ensuring there's a single slash between
+ them.
  Removes extra slashes or backslashes if necessary.
 \end_layout
 
-\begin_layout Itemize
-digitOf(char ch, int radix) – Returns the value of digit stored as char
- in the specified radix, which must be between 2 and 16.
+\begin_layout FieldList
+\labelwidthstring 0
+digitOf(char
+\begin_inset space ~
+\end_inset
+
+ch,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+radix) Returns the value of digit stored as char in the specified radix,
+ which must be between 2 and 16.
  This method only handles the standard ASCII table.
 \end_layout
 
-\begin_layout Itemize
-dup(char c, int count) – Returns a String filled with the given char and
- size equals to count.
+\begin_layout FieldList
+\labelwidthstring 0
+dup(char
+\begin_inset space ~
+\end_inset
+
+c,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Returns a String filled with the given char and size equals to count.
 \end_layout
 
-\begin_layout Itemize
-forDigit(int digit, int radix) – Returns the given digit in the specified
- radix, which must be between 2 and 16.
+\begin_layout FieldList
+\labelwidthstring 0
+forDigit(int
+\begin_inset space ~
+\end_inset
+
+digit,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+radix) Returns the given digit in the specified radix, which must be between
+ 2 and 16.
 \end_layout
 
-\begin_layout Itemize
-getBreakPos(FontMetrics fm, StringBuffer sb, int start, int width, boolean
- doWordWrap) – Finds the best position to break the line with the given
- width, respecting word-wrap option and line ends ('
+\begin_layout FieldList
+\labelwidthstring 0
+getBreakPos(FontMetrics
+\begin_inset space ~
+\end_inset
+
+fm,StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,int
+\begin_inset space ~
+\end_inset
+
+start,int
+\begin_inset space ~
+\end_inset
+
+width,boolean
+\begin_inset space ~
+\end_inset
+
+doWordWrap) Finds the best position to break the line with the given width,
+ respecting word-wrap option and line ends ('
 \backslash
 n').
 \end_layout
 
-\begin_layout Itemize
-hashCode(StringBuffer sb) – Returns the hash code of the String stored by
- this StringBuffer.
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb) Returns the hash code of the String stored by this StringBuffer.
 \end_layout
 
 \begin_deeper
@@ -16225,7 +18581,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -16255,15 +18611,55 @@ On device, Convert.hashCode calculates the StringBuffer's hash code directly,
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-insertAt(StringBuffer sb, int pos, char c) – Inserts the given char at the
- specified position in the StringBuffer.
+\begin_layout FieldList
+\labelwidthstring 0
+insertAt(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+pos,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+c) Inserts the given char at the specified position in the StringBuffer.
 \end_layout
 
-\begin_layout Itemize
-insertLineBreak(int maxWidth, FontMetrics fm, String text) – Returns a new
- String which is a copy of the given text with line breaks, placed based
- on the maxWidth and fm arguments.
+\begin_layout FieldList
+\labelwidthstring 0
+insertLineBreak(int
+\begin_inset space ~
+\end_inset
+
+maxWidth,
+\begin_inset space ~
+\end_inset
+
+FontMetrics
+\begin_inset space ~
+\end_inset
+
+fm,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+text) Returns a new String which is a copy of the given text with line breaks,
+ placed based on the maxWidth and fm arguments.
 \end_layout
 
 \begin_deeper
@@ -16275,7 +18671,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -16293,29 +18689,89 @@ Very useful method to help you keep your application's interface cross-platform.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-numberOf(String s, char c) – Returns the number of occurrences of the specified
- char in the given String.
+\begin_layout FieldList
+\labelwidthstring 0
+numberOf(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+c) Returns the number of occurrences of the specified char in the given
+ String.
 \end_layout
 
-\begin_layout Itemize
-replace(String source, String from, String to) – Searches the String source
- for occurrences of the String from, replacing them by the String to.
+\begin_layout FieldList
+\labelwidthstring 0
+replace(String
+\begin_inset space ~
+\end_inset
+
+source,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+from,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+to) Searches the String source for occurrences of the String from, replacing
+ them by the String to.
 \end_layout
 
-\begin_layout Itemize
-tokenizeString(String input, char delim) – Tokenizes the given String using
- the given char as separator.
+\begin_layout FieldList
+\labelwidthstring 0
+tokenizeString(String
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+delim) Tokenizes the given String using the given char as separator.
  The return is a String array with size equal to the number of tokens.
 \end_layout
 
-\begin_layout Itemize
-tokenizeString(String input, String delim) – Same as the above, but uses
- a String instead of a char as separator.
+\begin_layout FieldList
+\labelwidthstring 0
+tokenizeString(String
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+delim) Same as the above, but uses a String instead of a char as separator.
 \end_layout
 
 \begin_deeper
 \begin_layout Standard
+
+\family typewriter
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -16323,7 +18779,7 @@ has_inner_box 1
 inner_pos "t"
 use_parbox 0
 use_makebox 0
-width "100col%"
+width "100line%"
 special "none"
 height "1in"
 height_special "totalheight"
@@ -16363,170 +18819,353 @@ String[] tokens = Convert.tokenizeString(input, '#');
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-toLowerCase(char c) – Converts the given char to lower case.
+\begin_layout FieldList
+\labelwidthstring 0
+toLowerCase(char
+\begin_inset space ~
+\end_inset
+
+c) Converts the given char to lower case.
 \end_layout
 
-\begin_layout Itemize
-toUpperCase(char c) – Converts the given char to upper case.
+\begin_layout FieldList
+\labelwidthstring 0
+toUpperCase(char
+\begin_inset space ~
+\end_inset
+
+c) Converts the given char to upper case.
 \end_layout
 
-\begin_layout Itemize
-zeroPad(String s, int size) – Pads the String, adding zeros at left.
+\begin_layout FieldList
+\labelwidthstring 0
+zeroPad(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+size) Pads the String, adding zeros at left.
 \end_layout
 
-\begin_layout Itemize
-zeroUnpad(String s) – Removes left zeros of the String.
+\begin_layout FieldList
+\labelwidthstring 0
+zeroUnpad(String
+\begin_inset space ~
+\end_inset
+
+s) Removes left zeros of the String.
 \end_layout
 
 \begin_layout Subsection
 Arrays
 \end_layout
 
-\begin_layout Itemize
-cloneStringArray(String[] strs) – Returns a copy of the given String array.
+\begin_layout FieldList
+\labelwidthstring 0
+cloneStringArray(String[]
+\begin_inset space ~
+\end_inset
+
+strs) Returns a copy of the given String array.
 \end_layout
 
-\begin_layout Itemize
-toStringArray(Object[] objs) – Converts the given Object array into a String
- array, by calling toString for each Object.
+\begin_layout FieldList
+\labelwidthstring 0
+toStringArray(Object[]
+\begin_inset space ~
+\end_inset
+
+objs) Converts the given Object array into a String array, by calling toString
+ for each Object.
 \end_layout
 
-\begin_layout Itemize
-detectSortType(Object item) – Returns the sort type for the given item sample
- (which is usually the first item of an array).
+\begin_layout FieldList
+\labelwidthstring 0
+detectSortType(Object
+\begin_inset space ~
+\end_inset
+
+item) Returns the sort type for the given item sample (which is usually
+ the first item of an array).
 \end_layout
 
 \begin_layout Standard
 Convert provides the Quick Sort algorithm for array sorting.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Subsubsection*
 Constants
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-SORT_AUTODETECT – Chooses between one of the sort types below based on the
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_AUTODETECT Chooses between one of the sort types below based on the
  first element of the array.
 \end_layout
 
-\begin_layout Itemize
-SORT_OBJECT – The objects are compared by their String representation.
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_OBJECT The objects are compared by their String representation.
 \end_layout
 
-\begin_layout Itemize
-SORT_STRING – The array contains String objects, and the sort is case sensitive.
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_STRING The array contains String objects, and the sort is case sensitive.
 \end_layout
 
-\begin_layout Itemize
-SORT_INT – The array contains String objects that represents integer values.
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_INT The array contains String objects that represents integer values.
 \end_layout
 
-\begin_layout Itemize
-SORT_DOUBLE – The array contains String objects that represents double values.
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_DOUBLE The array contains String objects that represents double values.
 \end_layout
 
-\begin_layout Itemize
-SORT_DATE – The array contains String objects that represents a Date object
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_DATE The array contains String objects that represents a Date object
  with day, month and year.
 \end_layout
 
-\begin_layout Itemize
-SORT_COMPARABLE – The array contain Comparable objects (objects that implements
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_COMPARABLE The array contain Comparable objects (objects that implements
  the Comparable interface).
 \end_layout
 
-\begin_layout Itemize
-SORT_STRING_NOCASE - The array contains String objects, and the sort is
- case insensitive, which is slower than case sensitive sorting.
+\begin_layout Labeling
+\labelwidthstring SORT.STRING.NOCASE00
+SORT_STRING_NOCASE The array contains String objects, and the sort is case
+ insensitive, which is slower than case sensitive sorting.
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout Subsubsection*
 Methods
 \end_layout
 
-\begin_deeper
-\begin_layout Itemize
-qsort(Object[] items, int first, int last) – Applies the Quick Sort algorithm
- to the elements of the given array, sorting in ascending order and sort
- type equals to SORT_AUTODETECT.
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(Object[]
+\begin_inset space ~
+\end_inset
+
+items,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+first,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+last) Applies the Quick Sort algorithm to the elements of the given array,
+ sorting in ascending order and sort type equals to SORT_AUTODETECT.
 \end_layout
 
-\begin_layout Itemize
-qsort(Object[] items, int first, int last, int sortType) - Same as the above
- method, but you can specify the sort type.
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(Object[]
+\begin_inset space ~
+\end_inset
+
+items,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+first,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+last,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+sortType) Same as the above method, but you can specify the sort type.
 \end_layout
 
-\begin_layout Itemize
-qsort(Object[] items, int first, int last, int sortType, boolean ascending)
- - Same as the above, but you can also choose between sorting in ascending
- or descending order.
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(Object[]
+\begin_inset space ~
+\end_inset
+
+items,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+first,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+last,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+sortType,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+ascending) Same as the above, but you can also choose between sorting in
+ ascending or descending order.
 \end_layout
 
-\end_deeper
 \begin_layout Subsection
 Other Conversions
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+chars2int(String
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-chars2int(String fourChars) – Converts a creator id or type to int.
+fourChars) Converts a creator id or type to int.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+int2chars(int
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-int2chars(int i) – Converts an int to a creator id or type.
+i) Converts an int to a creator id or type.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+doubleToIntBits(double
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-doubleToIntBits(double f) – Converts the given double to its bit representation
- in IEEE 754 format, using 4 bytes instead of 8 (a conversion to float is
- applied).
+f) Converts the given double to its bit representation in IEEE 754 format,
+ using 4 bytes instead of 8 (a conversion to float is applied).
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+intBitsToDouble(int
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-intBitsToDouble(int i) – Converts the given IEEE 754 bit representation
- of a float to a double.
+i) Converts the given IEEE 754 bit representation of a float to a double.
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+doubleToLongBits(double
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-doubleToLongBits(double value) – Returns a representation of the specified
- floating-point value according to the IEEE 754 floating-point "double format"
- bit layout.
+value) Returns a representation of the specified floating-point value according
+ to the IEEE 754 floating-point "double format" bit layout.
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+longBitsToDouble(long
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-longBitsToDouble(long bits) – Converts the given bit representation to a
- double.
+bits) Converts the given bit representation to a double.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+rol(long
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-rol(long i, int n, int bits) – Does a rol of n bits in the given long.
+i,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+n,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+bits) Does a rol of n bits in the given long.
  n must be < bits.
  Unlike the shift left operator (<<), bits that would have been lost are
  reinserted in order at the right.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+ror(long
+\begin_inset space ~
+\end_inset
 
-\family typewriter
-ror(long i, int n, int bits) – Does a ror of n bits in the given long.
+i,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+n,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+bits) Does a ror of n bits in the given long.
  n must be < bits.
  Unlike the shift right operator (>>), bits that would have been lost are
  reinserted in order at the left.
@@ -17492,6 +20131,24 @@ m with your own byte array or use methods like getBuffer and setBuffer to
 
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+getBuffer() Returns a reference to the internal buffer.
+ The actual length of the buffer may differ from the current buffer size.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBuffer(byte[] buffer) Assigns the given byte array as the internal buffer,
+ reseting its current position and updating its size.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toByteArray() Returns a byte array, which is a copy of the contents of the
+ internal buffer
+\end_layout
+
 \begin_layout Standard
 Methods inherited from Stream:
 \end_layout
@@ -17723,6 +20380,16 @@ int
 bufSize) Resets this ByteArrayStream and reads the maximum amount of data
  available from the given stream, marking the last position used as the
  end of the buffer.
+\begin_inset Newline newline
+\end_inset
+
+The argument retryCount, if greater than 0, specifies the number of times
+ the method should try to read data from the stream before returning.
+ It will always try to read data at least once, even if retryCount is not
+ a positive value.
+ This is specially useful for streams that handle external connections,
+ like Socket or PortConnector, you may specify 1 or any lower value for
+ other streams, like File or PDBFile.
 \end_layout
 
 \begin_layout Standard
@@ -17740,19 +20407,6 @@ height_special "totalheight"
 status open
 
 \begin_layout Itemize
-The argument retryCount, if greater than 0, specifies the number of times
- the method should try to read data from the stream before returning.
- It will always try to read data at least once, even if retryCount is not
- a positive value.
-\end_layout
-
-\begin_layout Plain Layout
-This is specially useful for streams that handle external connections, like
- Socket or PortConnector, you may specify 1 or any lower value for other
- streams, like File or PDBFile.
-\end_layout
-
-\begin_layout Itemize
 Be careful when using this method with streams like File.
  It may read the whole file at once, resulting in a great loss of performance
  and resources (the buffer may be resized several times).
@@ -17767,10 +20421,9 @@ The argument bufSize specifies a minimum size for the internal buffer –
  it is not resized (i.e.
  you cannot use it to shrink the buffer).
  Otherwise, the buffer will be resized to match the given value.
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_deeper
-\begin_layout Plain Layout
 Please notice, the buffer will still grow if necessary, regardless of the
  bufSize value.
  So you cannot use it to limit the amount of data read, and you may specify
@@ -17778,7 +20431,6 @@ Please notice, the buffer will still grow if necessary, regardless of the
  not prevent its automatic resize.
 \end_layout
 
-\end_deeper
 \begin_layout Itemize
 The ByteArrayStream is reseted at the beginning of readFully, so you can't
  use it in a loop as a buffer for a stream, you must use the argument retryCount
@@ -17800,24 +20452,6 @@ After the readFully finishes reading to the internal buffer, it marks the
 \end_inset
 
 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getBuffer() Returns a reference to the internal buffer.
- The actual length of the buffer may differ from the current buffer size.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setBuffer(byte[] buffer) Assigns the given byte array as the internal buffer,
- reseting its current position and updating its size.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-toByteArray() Returns a byte array, which is a copy of the contents of the
- internal buffer
 \end_layout
 
 \begin_layout Chapter
@@ -19561,8 +22195,14 @@ status open
 
 \family typewriter
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
- xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLS
-chema-instance">
+\begin_inset Newline newline
+\end_inset
+
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+\begin_inset Newline newline
+\end_inset
+
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 \end_layout
 
 \begin_layout Plain Layout
@@ -20012,7 +22652,15 @@ ki/Transport_Layer_Security.
 \begin_layout Standard
 The english version provides a basic protocol description for everyone.
  For those who want to go further, the reference is the TLS protocol version
- 1.0 RFC 2246 available at http://tools.ietf.org/html/rfc2246.
+ 1.0 
+\begin_inset CommandInset href
+LatexCommand href
+name "RFC 2246"
+target "http://tools.ietf.org/html/rfc2246"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -20037,8 +22685,14 @@ Generating security material
 
 \begin_layout Standard
 We will concentrate on the more general deployment of X509 client or server
- certificates (http://en.wikipedia.org/wiki/X.509) signed by a Certification
- Authority (CA).
+ certificates signed by a Certification Authority (CA) (see 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://en.wikipedia.org/wiki/X.509"
+
+\end_inset
+
+ for more details).
  First we will have to create our own CA, that could be replaced by any
  "well known" commercial CA such as Verisign, Thawte, etc.
  if you have the need for a public authority.
@@ -20356,10 +23010,17 @@ LiteSSL features
 
 \begin_layout Standard
 The LiteSSL package supports both PEM and DER encrypted materials.
- DER (http://en.wikipedia.org/wiki/Distinguished_Encoding_Rules) is an ASN.1
- encoding of information, PEM (http://en.wikipedia.org/wiki/Privacy_Enhanced_Mail)
- is a base64 encoding of a DER encoded data with a header "-----BEGIN "
- and a trailer "-----END " followed by a material type name.
+ 
+\begin_inset CommandInset href
+LatexCommand href
+name "DER"
+target "http://en.wikipedia.org/wiki/Distinguished_Encoding_Rules"
+
+\end_inset
+
+ is an ASN.1 encoding of information, PEM (http://en.wikipedia.org/wiki/Privacy_Enh
+anced_Mail) is a base64 encoding of a DER encoded data with a header "-----BEGIN
+ " and a trailer "-----END " followed by a material type name.
  A PEM file may be unencrypted or encrypted with AES128 or AES256 ciphers
  only.
 \end_layout
