@@ -20279,6 +20279,51 @@ public void setPreparedStatement()
 
 \end_layout
 
+\begin_layout Subsection
+
+\family typewriter
+close()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+close
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Closes a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+isValid()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public boolean 
+\series bold
+isValid
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Checks if a prepared statement is still valid.
+ This happens if the driver and the prepared statement have not been closed
+ and the table was not dropped.
+ 
+\end_layout
+
 \begin_layout Section
 
 \family typewriter
@@ -23407,6 +23452,55 @@ Throws:
 DriverException
 \family default
 : If the given table name is not part of the query of this result set.
+\end_layout
+
+\begin_layout Section
+PreparedStatement
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+close()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+close
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Closes a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+isValid()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public boolean 
+\series bold
+isValid
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Checks if a prepared statement is still valid.
+ This happens if the driver and the prepared statement have not been closed
+ and the table was not dropped.
+ 
 \end_layout
 
 \begin_layout Section
