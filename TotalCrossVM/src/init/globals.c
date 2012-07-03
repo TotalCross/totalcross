@@ -139,10 +139,7 @@ Stack objStack2;
 
 // context.c
 VoidPs* contexts;
-Context mainContext,gcContext;
-#ifdef darwin
-Context lifeContext;
-#endif
+Context mainContext,gcContext,lifeContext;
 
 // tcvm.c
 int32 vmTweaks;

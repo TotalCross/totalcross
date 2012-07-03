@@ -18,9 +18,7 @@ Context initContexts()
    gcContext = newContext(null, null, false);
    if (gcContext == null)
       return null;                           
-#ifdef darwin
-    lifeContext = newContext(null,null,false);
-#endif
+   lifeContext = newContext(null,null,false);
    return mainContext = newContext(null,null,true);
 }
 

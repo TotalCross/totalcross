@@ -53,6 +53,6 @@ typedef struct
 
 /// post an event to the running Java application. If mods is -1, the asynch mods will be retrieved; otherwise, pass the mods given in the key event
 void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 x, int32 y, int32 mods); // guich@tc126_70
-void postOnMinimizeOrRestore(Context c, bool isMinimized);
+void postOnMinimizeOrRestore(bool isMinimized);
 
 #endif
