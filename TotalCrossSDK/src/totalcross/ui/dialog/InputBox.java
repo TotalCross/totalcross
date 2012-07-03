@@ -51,7 +51,11 @@ public class InputBox extends Window
    private String[] buttonCaptions;
    private int labelAlign = CENTER;
    private int gap, insideGap;
-   
+
+   /** Set to true to automatically open the keyboard once the InputBox is open.
+    * @since TotalCross 1.53
+    */
+   public static boolean openKeyboardOnPopup;
    /**
     * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
     * one.<br>
@@ -185,7 +189,7 @@ public class InputBox extends Window
    protected void postPopup()
    {
       ed.requestFocus();
-      if (Settings.virtualKeyboard)
+      if (openKeyboardOnPopup)
          ed.popupKCC();
       if (Settings.keyboardFocusTraversable) // guich@570_39: use this instead of pen less
          isHighlighting = false; // allow a direct click to dismiss this dialog
