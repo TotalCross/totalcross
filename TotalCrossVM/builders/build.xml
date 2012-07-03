@@ -661,6 +661,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 </target>
 
 <target name="buildInstalls_sdk" >
+   <copy file="${source.vms.path}/src/launchers/darwin/obj/Launcher" todir="${target.sdk.path}/etc/launchers/iphone2" overwrite="true" />
   <antcall target="buildInstalls">
       <param name="type" value="SDK" />
       <param name="file_suffix" value="" />
@@ -688,12 +689,39 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: IPhone builds
 
-  1. build the tcvm, launcher & tcpriv
+  1. build the tcvm, launcher
   2. copy the launcher
   3. copy the tcvm & tcpriv
   4. create a rep for the tcvm and the samples
   5. ftp to the sw.com.br
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="build-theos-launcher">
+   <property name="remote.path" value="~/ios_workspace/theos-launcher/${env.COMPUTERNAME}" />
+   <property name="launcher.path" value="${target.sdk.path}/etc/launchers/iphone2" />
+
+   <tar
+      basedir="${basedir}/../../.."
+      includes="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**"
+      destfile="${base.temp.path}/Launcher_theos.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/Launcher_theos.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
+
+   <sshexec command="
+      tar -zxpf ${remote.path}/Launcher_theos.tgz -C ${remote.path};
+      bash -l ${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/build.sh;"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+
+   <mkdir dir="${launcher.path}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/obj/Launcher" todir="${launcher.path}" trust="yes" password="${buildserver.pass}" port="22" />
+</target>
 
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
@@ -808,9 +836,6 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-   <mkdir dir="${basedir}/theos/${type}"/>
-  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
@@ -828,7 +853,6 @@ target: IPhone builds
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-    <arg value="${basedir}/theos/${type}/tcpriv"/>
   </java>
 
   <!-- package the files -->

@@ -32,6 +32,9 @@
  GUID CLSID_WbemLocator2 =  { 0x4590f811, 0x1d3a, 0x11d0, { 0x89, 0x1f, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
  // Define the IID_IWbemLocator. It is defined in wbemcli.h only for C++ programs.
  GUID IID_IWbemLocator2 =   { 0xdc12a687, 0x737f, 0x11cf, { 0x88, 0x4d, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
+ // Define the IID_IWbemClassObject. It is defined in wbemcli.h only for C++ programs.
+ GUID IID_IWbemClassObject2 =   { 0xdc12a681, 0x737f, 0x11cf, { 0x88, 0x4d, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
+
 #endif
 #if defined WINCE && _WIN32_WCE >= 300
  #ifndef _ExTAPI_H_
@@ -489,22 +492,29 @@ int GetMacAddressWMI(char* serialBuf)
 {
    HRESULT hres;
    IWbemLocator *pLoc = NULL;
-   IWbemServices *pSvc = NULL;
-   IEnumWbemClassObject* pEnumerator = NULL;
-   IWbemClassObject *pclsObj = NULL; 
+   IWbemServices *pCIMV2 = NULL;
+   IWbemServices *pWMI = NULL;
+   IEnumWbemClassObject* pEnumAdapters = NULL;
+   IEnumWbemClassObject* pEnumAddresses = NULL;
+   IWbemClassObject *pAdapterClasses = NULL;
+   IWbemClassObject *pAddressClasses = NULL;
    ULONG ulFound = 0;
-   VARIANT varPropVal;
    // Namespaces are passed to COM in BSTRs.
-   BSTR bstrNamespace = L"ROOT\\CIMV2";
-   BSTR bstrQueryLanguage = L"WQL";
-   BSTR bstrQuery = L"select * from Win32_NetworkAdapter WHERE Manufacturer!='Microsoft' and (ConfigManagerErrorCode=0 or ConfigManagerErrorCode=22)";
-   BSTR bstrPropMACAddress = L"MACAddress";
-   BSTR bstrPropIndex = L"Index";
-   int32 propIndex = INT32_MAX;
-   char propValue[64];
-   
+   BSTR namespaceCIMV2 = SysAllocString(L"ROOT\\CIMV2");
+   BSTR namespaceWMI = SysAllocString(L"ROOT\\WMI");
+   BSTR bstrQueryLanguage = SysAllocString(L"WQL");
+   BSTR bstrQueryAdapters = SysAllocString(L"select * from Win32_NetworkAdapter WHERE Manufacturer!='Microsoft' and ServiceName!='VMnetAdapter' and ProductName != 'RAS Async Adapter' and NOT Productname LIKE '%Bluetooth%'");
+   BSTR bstrPropIndex = SysAllocString(L"Index");
+   BSTR bstrPropAdapterName = SysAllocString(L"Name");
+   BSTR bstrPropPermanentAddress = SysAllocString(L"NdisPermanentAddress");
+   BSTR bstrPropAddress = SysAllocString(L"Address");
+   VARIANT propertyIndex;
+   VARIANT propertyAdapterName;
+   VARIANT propertyPermanentAddress;
+   VARIANT propertyAddress;
+
    // Step 1: Initialize COM.
-   if (FAILED(hres =  CoInitializeEx(0, COINIT_MULTITHREADED)))
+   if (FAILED(hres = CoInitializeEx(0, COINIT_MULTITHREADED)))
       return hres; //Failed to initialize COM library.
 
    // Step 2: Set general COM security levels
@@ -534,114 +544,178 @@ int GetMacAddressWMI(char* serialBuf)
       goto cleanup; //Failed to create IWbemLocator object.
  
    // Step 4: Connect to WMI through the IWbemLocator::ConnectServer method
-   // Connect to the root\cimv2 namespace with the current user and obtain pointer pSvc to make IWbemServices calls. 
+   // Connect to the root\cimv2 namespace with the current user and obtain pointer pCIMV2 to make IWbemServices calls.
    if (FAILED(hres = IWbemLocator_ConnectServer(
                         pLoc,
-                        bstrNamespace,                                              // Object path of WMI namespace 
-                        NULL,   // NULL means current account, for simplicity.      // User name. NULL = current user 
-                        NULL,   // NULL means current password, for simplicity.     // User password. NULL = current 
-                        0L,     // locale                                           // Locale. NULL indicates current 
-                        0L,     // securityFlags                                    // Security flags. 
-                        NULL,   // authority (domain for NTLM)                      // Authority (e.g. Kerberos) 
-                        NULL,   // context                                          // Context object  
-                        &pSvc   // Returned IWbemServices.                          // pointer to IWbemServices proxy 
+                        namespaceCIMV2 ,                                             // Object path of WMI namespace
+                        NULL,    // NULL means current account, for simplicity.      // User name. NULL = current user
+                        NULL,    // NULL means current password, for simplicity.     // User password. NULL = current
+                        0L,      // locale                                           // Locale. NULL indicates current
+                        0L,      // securityFlags                                    // Security flags.
+                        NULL,    // authority (domain for NTLM)                      // Authority (e.g. Kerberos)
+                        NULL,    // context                                          // Context object
+                        &pCIMV2  // Returned IWbemServices.                          // pointer to IWbemServices proxy
+      )))
+      goto cleanup; //Could not connect.
+   // Connect to the root\wminamespace with the current user and obtain pointer pWMI to make IWbemServices calls.
+   if (FAILED(hres = IWbemLocator_ConnectServer(
+                        pLoc,
+                        namespaceWMI,                                                // Object path of WMI namespace
+                        NULL,    // NULL means current account, for simplicity.      // User name. NULL = current user
+                        NULL,    // NULL means current password, for simplicity.     // User password. NULL = current
+                        0L,      // locale                                           // Locale. NULL indicates current
+                        0L,      // securityFlags                                    // Security flags.
+                        NULL,    // authority (domain for NTLM)                      // Authority (e.g. Kerberos)
+                        NULL,    // context                                          // Context object
+                        &pWMI    // Returned IWbemServices.                          // pointer to IWbemServices proxy
       )))
       goto cleanup; //Could not connect.
 
    // Step 5: Set security levels on the proxy
    if (FAILED(hres = CoSetProxyBlanket( 
-                        (IUnknown *)pSvc,            // Indicates the proxy to set 
-                        RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx 
-                        RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx 
-                        NULL,                        // Server principal name  
-                        RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx  
-                        RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx 
-                        NULL,                        // client identity 
-                        EOAC_NONE                    // proxy capabilities  
+                        (IUnknown *)pCIMV2,          // Indicates the proxy to set
+                        RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
+                        RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
+                        NULL,                        // Server principal name
+                        RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
+                        RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
+                        NULL,                        // client identity
+                        EOAC_NONE                    // proxy capabilities
+      )))
+      goto cleanup; //Could not set proxy blanket.
+   if (FAILED(hres = CoSetProxyBlanket(
+                        (IUnknown *)pWMI,            // Indicates the proxy to set
+                        RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
+                        RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
+                        NULL,                        // Server principal name
+                        RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
+                        RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
+                        NULL,                        // client identity
+                        EOAC_NONE                    // proxy capabilities
       )))
       goto cleanup; //Could not set proxy blanket.
 
    // Step 6: Use the IWbemServices pointer to make requests of WMI
    if (FAILED(hres = IWbemServices_ExecQuery(
-                        pSvc,
+                        pCIMV2,
                         bstrQueryLanguage,  
-                        bstrQuery, 
+                        bstrQueryAdapters,
                         WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,  
                         NULL, 
-                        &pEnumerator
+                        &pEnumAdapters
       )))
       goto cleanup; //Query for operating system name failed.
     
    // Step 7: Get the data from the query in step 6
    while ((hres = IEnumWbemClassObject_Next(
-                     pEnumerator,
+                     pEnumAdapters,
                      30000,     // flsobral@1.29.1: increased timeout to thirty seconds for netbooks with Windows 7 starter.
                      1,         // return just one class.
-                     &pclsObj,  // pointer to class.
+                     &pAdapterClasses,  // pointer to class.
                      &ulFound   // Number of classes returned.
                      )) == WBEM_S_NO_ERROR && ulFound == 1)
    {
-      VariantInit(&varPropVal);
+      VariantClear(&propertyIndex);
+      VariantInit(&propertyIndex);
+      propertyIndex.bstrVal = null;
 
       hres = IWbemClassObject_Get(
-               pclsObj,
+               pAdapterClasses,
                bstrPropIndex,       // property name 
                0L,                  // Reserved, must be zero.
-               &varPropVal,         // property value(class name) returned.
+               &propertyIndex,      // property value(class name) returned.
                NULL,                // CIM type not needed.
                NULL);               // Flavor not needed.
 
-      if (hres == WBEM_S_NO_ERROR && &varPropVal != null)
+      if (hres == WBEM_S_NO_ERROR && propertyIndex.bstrVal != null)
       {
-         int32 currentIndex = varPropVal.intVal;
-         VariantClear(&varPropVal);
-         VariantInit(&varPropVal);
+         VariantClear(&propertyAdapterName);
+         VariantInit(&propertyAdapterName);
+         propertyAdapterName.bstrVal = null;
 
          hres = IWbemClassObject_Get(
-                  pclsObj,
-                  bstrPropMACAddress,  // property name 
-                  0L,                  // Reserved, must be zero.
-                  &varPropVal,         // property value(class name) returned.
-                  NULL,                // CIM type not needed.
-                  NULL);               // Flavor not needed.
+                  pAdapterClasses,
+                  bstrPropAdapterName,    // property name
+                  0L,                     // Reserved, must be zero.
+                  &propertyAdapterName,   // property value(class name) returned.
+                  NULL,                   // CIM type not needed.
+                  NULL);                  // Flavor not needed.
 
-         if (hres == WBEM_S_NO_ERROR && &varPropVal != null && currentIndex < propIndex)
+         if (hres == WBEM_S_NO_ERROR && propertyAdapterName.bstrVal != null)
          {
-            JCharP2CharPBuf(V_BSTR(&varPropVal), -1, propValue);
-            if (xstrlen(propValue) == 17)
+            OLECHAR aux[256];
+            BSTR bstrQueryAddresses;
+
+            wsprintfW(aux, L"select * from MSNdis_EthernetPermanentAddress where InstanceName='%s'", propertyAdapterName.bstrVal);
+            bstrQueryAddresses = SysAllocString(aux);
+            if (!FAILED(hres = IWbemServices_ExecQuery(
+                                 pWMI,
+                                 bstrQueryLanguage,
+                                 bstrQueryAddresses,
+                                 WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                                 NULL,
+                                 &pEnumAddresses)))
             {
-               serialBuf[0] = propValue[0];
-               serialBuf[1] = propValue[1];
-               serialBuf[2] = propValue[3];
-               serialBuf[3] = propValue[4];
-               serialBuf[4] = propValue[6];
-               serialBuf[5] = propValue[7];
-               serialBuf[6] = propValue[9];
-               serialBuf[7] = propValue[10];
-               serialBuf[8] = propValue[12];
-               serialBuf[9] = propValue[13];
-               serialBuf[10] = propValue[15];
-               serialBuf[11] = propValue[16];
-               serialBuf[12] = 0;
+               if ((hres = IEnumWbemClassObject_Next(pEnumAddresses, 30000, 1, &pAddressClasses, &ulFound)) == WBEM_S_NO_ERROR && ulFound == 1)
+               {
+                  VariantClear(&propertyPermanentAddress);
+                  VariantInit(&propertyPermanentAddress);
+                  propertyPermanentAddress.bstrVal = null;
+
+                  if ((hres = IWbemClassObject_Get(pAddressClasses, bstrPropPermanentAddress, 0L, &propertyPermanentAddress, NULL, NULL)) == WBEM_S_NO_ERROR)
+                  {
+                     IWbemClassObject *pNetworkAddress = NULL;
+                     char permAddress[6];
+                     long index;
+                     IID riid = IID_IWbemClassObject2;
+
+                     if ((hres = IWbemLocator_QueryInterface(propertyPermanentAddress.punkVal, &riid, &pNetworkAddress)) == WBEM_S_NO_ERROR)
+                     {
+                        VariantClear(&propertyAddress);
+                        VariantInit(&propertyAddress);
+
+                        if ((hres = IWbemClassObject_Get(pNetworkAddress, bstrPropAddress, 0L, &propertyAddress, NULL, NULL)) == WBEM_S_NO_ERROR)
+                        {
+                           for (index = 0; index < 6; index++)
+                              SafeArrayGetElement(propertyAddress.parray, &index, &permAddress[index]);
+                           if (*serialBuf != 0)
+                              xstrcat(serialBuf, "-");
+                           xstrprintf(serialBuf + xstrlen(serialBuf), "%02X%02X%02X%02X%02X%02X",(int)(permAddress[0] & 0xFF),(int)(permAddress[1] & 0xFF),(int)(permAddress[2] & 0xFF),(int)(permAddress[3] & 0xFF),(int)(permAddress[4] & 0xFF),(int)(permAddress[5] & 0xFF));
+                        }
+                        IWbemClassObject_Release(pNetworkAddress);
+                     }
+                  }
+                  IWbemClassObject_Release(pAddressClasses);
+               }
+               IEnumWbemClassObject_Release(pEnumAddresses);
             }
-            propIndex = currentIndex;
+            SysFreeString(bstrQueryAddresses);
          }
       }
-      VariantClear(&varPropVal);
    }
-   if (propIndex < INT32_MAX && xstrlen(serialBuf) == 12)
+   if (xstrlen(serialBuf) > 0)
       hres = NO_ERROR;
-
 cleanup:
-   if (pEnumerator != null)
-      IEnumWbemClassObject_Release(pEnumerator);
-   if (pclsObj != null)
-      IWbemClassObject_Release(pclsObj);
-   if (pSvc != null)
-      IWbemServices_Release(pSvc);
+   if (pEnumAdapters != null)
+      IEnumWbemClassObject_Release(pEnumAdapters);
+   if (pAdapterClasses != null)
+      IWbemClassObject_Release(pAdapterClasses);
+   if (pWMI != null)
+      IWbemServices_Release(pCIMV2);
+   if (pCIMV2 != null)
+      IWbemServices_Release(pWMI);
    if (pLoc != null)
       IWbemLocator_Release(pLoc);
    CoUninitialize();
+
+   SysFreeString(namespaceCIMV2);
+   SysFreeString(namespaceWMI);
+   SysFreeString(bstrQueryLanguage);
+   SysFreeString(bstrQueryAdapters);
+   SysFreeString(bstrPropIndex);
+   SysFreeString(bstrPropAdapterName);
+   SysFreeString(bstrPropPermanentAddress);
+   SysFreeString(bstrPropAddress);
 
    return hres;
 }
@@ -729,13 +803,14 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    //use the mac address as the serial number
    hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
    if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
-   {
       debug("Unable to retrieve device registration information, please try again or contact support if the problem persists. (%X)", hres);
-      alert("Unable to retrieve device registration information, please try again or contact support if the problem persists");
-      return false;
+   else if (romSerialNumber[0] == 0)
+   {
+      if (*tcSettings.romVersionPtr < 501)
+         GetMacAddress(romSerialNumber);
+      if (romSerialNumber[0] == 0)
+         debug("Unable to retrieve device registration information, please make sure the network interfaces are enabled and try again or contact support if the problem persists. (%X)", hres);
    }
-   else if (hres != NO_ERROR)
-      GetMacAddress(romSerialNumber);
 
    len = sizeof(userName);
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine

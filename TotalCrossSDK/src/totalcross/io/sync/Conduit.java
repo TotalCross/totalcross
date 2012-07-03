@@ -95,7 +95,6 @@ public abstract class Conduit extends totalcross.ui.MainWindow
          init(cmd);
       else // show an UI so the user can register/unregister
       {
-         setUIStyle(Settings.Vista);
          setBorderStyle(HORIZONTAL_GRADIENT);
          gradientTitleStartColor = 0x0000CC;
          gradientTitleEndColor = Color.CYAN;
