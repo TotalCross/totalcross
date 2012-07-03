@@ -52,6 +52,13 @@ target: init
   <property file="${rootpath}/userpaths.properties"/>
   <fail unless="msvc.path" message="Cannot find file ${rootpath}/userpaths.properties!"/>
 
+  <!-- javac settings -->
+  <property name="compile.listfiles"       value="no"/>
+  <property name="compile.target"          value="1.1"/>
+  <property name="compile.source"          value="1.2"/>
+  <property name="compile.debug"           value="yes"/>
+  <property name="compile.optimize"        value="yes"/>
+
   <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
   <!-- IDEs and compilers project files -->
   <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc6"/>
@@ -80,9 +87,84 @@ target: init
 
   <!-- builder and iphone information -->
   <property file="${rootpath}/buildserver.properties"/>
+   
+  <property name="src"                    value="${source.lb.path}/src/java"/>
 
   <!-- load platform environment variables -->
   <property environment="env"/>
+   
+   <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    get-version
+   
+   -description:
+           retrieves the Litebase version from the file "litebase/LitebaseConnection.java"
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+   
+   <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
+     <filterchain>
+       <linecontains>
+         <contains value="versionStr"/>
+       </linecontains>
+       <striplinebreaks/>
+       <tokenfilter>
+        <replacestring from="public" to=""/>
+        <replacestring from="static" to=""/>
+        <replacestring from="final" to=""/>
+        <replacestring from="String" to=""/>
+        <replacestring from="versionStr" to=""/>
+        <replacestring from="=" to=""/>
+        <deletecharacters chars='";'/>
+        <trim/>
+       </tokenfilter>
+     </filterchain>
+   </loadfile>
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
+     <filterchain>
+       <linecontains>
+         <contains value="int version"/>
+       </linecontains>
+       <striplinebreaks/>
+       <tokenfilter>
+        <replacestring from="public" to=""/>
+        <replacestring from="static" to=""/>
+        <replacestring from="final" to=""/>
+        <replacestring from="int" to=""/>
+        <replacestring from="version" to=""/>
+        <replacestring from="=" to=""/>
+        <deletecharacters chars=';'/>
+        <trim/>
+       </tokenfilter>
+     </filterchain>
+   </loadfile>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: makeNativeHT - updates the native methods hash table.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="makeNativeHT" >
+   <property name="path.to.prototypeGenerator" value="${base.temp.path}/nmPrototypeGenerator" />
+   <mkdir dir="${path.to.prototypeGenerator}" />
+
+   <javac
+      srcdir="${source.tc.sdk.path}/src/tc/tools/"
+      encoding="ISO-8859-1"
+      debug="${compile.debug}"
+      optimize="${compile.optimize}"
+      target="${compile.target}"
+      source="${compile.source}"
+      includes="NativeMethodsPrototypeGenerator.java"
+      destdir="${path.to.prototypeGenerator}"
+      nowarn="true"
+    includeAntRuntime="false"
+   />
+   <java
+      classname="tc.tools.NativeMethodsPrototypeGenerator"
+      classpath="${path.to.prototypeGenerator}"
+      fork="yes"
+   >
+      <arg line="makeNativeHT LB ${source.lb.path}\src\native ${source.lb.path}\src\native\NativeMethods.txt" />
+   </java>
+</target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildPalmOS5
@@ -263,48 +345,6 @@ target: createSkeleton - Create the folders from scratch
   <mkdir dir="${target.vms.path}"/>
 </target>
 
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: buildSkeleton - Build the folders
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildIPhoneTest_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK without cleaning, samples are not built! -->
-
-  <echo message="Building Litebase SDK"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
-
-  <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false">
-   <property name="supportedPlatforms" value="-iphone" />
-  </ant>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
-
-</target>
-
-<target name="buildSkeletonIPhone_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK and iPhone samples, without cleaning -->
-
-  <echo message="Building Litebase SDK"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
-
-  <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false">
-   <property name="supportedPlatforms" value="-iphone" />
-  </ant>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist/lib/palm" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
-
-</target>
-
 <target name="buildSkeletonLinux_sdk" depends="updateSkeleton_sdk">
 
   <!-- Updates and builds the SDK and Linux samples, without cleaning -->
@@ -373,7 +413,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls_sdk" depends="getVersion">
+<target name="buildInstalls_sdk">
 
   <property name="sdk.file"  value="${target.sdk.path}/../LitebaseSDK"/>
 
@@ -397,7 +437,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 </target>
 
-<target name="buildInstalls_vms" depends="getVersion">
+<target name="buildInstalls_vms">
 
   <property name="vms.file"  value="${target.vms.path}/../LitebaseVMS"/>
 
@@ -424,197 +464,90 @@ target: buildInstalls - run installshield to create the SDK and Samples
 target: buildIPhone
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: IPhone builds
-
-  1. build the tcvm and launcher
-  2. copy the launcher
-  3. copy the tcvm
-  4. create a rep for the tcvm and the samples
-  5. ftp to the sw.com.br
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildIPhone_sdk_clean" >
-  <sshexec command="bash -l ~/build.sh -litebase -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+<target name="build-deb">
+   <antcall target="compile-theos" />
+   <antcall target="package-deb" />
 </target>
 
-<target name="buildIPhone_sdk" >
-  <sshexec command="bash -l ~/build.sh -litebase -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+<target name="package-deb">
+   <antcall target="package-deb-release">
+      <param name="release.type"      value="demo" />
+      <param name="output.path"      value="${target.sdk.path}" />
+   </antcall>
+   <antcall target="package-deb-release">
+      <param name="release.type"      value="ras" />
+      <param name="output.path"      value="${target.vms.path}" />
+   </antcall>
 </target>
 
-<target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
+<target name="compile-theos">
+   <property name="remote.path" value="~/ios_workspace/theos/${env.COMPUTERNAME}" />
+   <property name="remote.theos.path" value="${remote.path}/Litebase/LitebaseSDK/builders/theos" />
+   <property name="output.path.demo" value="${basedir}/theos/demo" />
+   <property name="output.path.ras" value="${basedir}/theos/ras" />
+   <delete dir="${output.path.demo}" quiet="yes" />
+   <delete dir="${output.path.ras}" quiet="yes" />
 
-  <!-- iphone 2 -->
-  <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
-    <fileset dir="${target.sdk.path}/dist/lib/iphone2+">
-      <include name="**/*.deb"/>
-    </fileset>
-    <fileset dir="${target.sdk.path}/dist/samples/AllTests/install/iphone2+">
-      <include name="**/*.deb"/>
-    </fileset>
-    <fileset dir="${target.sdk.path}/dist/samples/BenchLitebase/install/iphone2+">
-      <include name="**/*.deb"/>
-    </fileset>
-    <fileset dir="${target.sdk.path}/dist/samples/PhotoDB/install/iphone2+">
-      <include name="**/*.deb"/>
-    </fileset>
-  	<fileset dir="${target.sdk.path}/dist/samples/Migration/install/iphone2+">
-  	  <include name="**/*.deb"/>
-  	</fileset>
-  	<fileset dir="${target.sdk.path}/dist/samples/AddressBook/install/iphone2+">
-  	  <include name="**/*.deb"/>
-  	</fileset>
-  	<fileset dir="${target.sdk.path}/dist/samples/SQLConsole/install/iphone2+">
-  	  <include name="**/*.deb"/>
-  	</fileset>
-  </scp>
-  <sshexec command="dpkg -i /var/mobile/Litebase.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="dpkg -i /var/mobile/AllTests.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="dpkg -i /var/mobile/BenchLitebase.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="dpkg -i /var/mobile/PhotoDB.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="dpkg -i /var/mobile/Migration.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/> 
-  <sshexec command="dpkg -i /var/mobile/AddressBook.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="dpkg -i /var/mobile/SQLConsole.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>	
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/libLitebase.dylib /Applications/TotalCross.app/libLitebase.dylib" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/LitebaseLib.tcz /Applications/TotalCross.app/LitebaseLib.tcz" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="killall SpringBoard" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-</target>
+   <tar
+      basedir="${basedir}/../../.."
+      includes="Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/theos/**, TotalCross/TotalCrossVM/src/**"
+      destfile="${base.temp.path}/Litebase_theos.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/Litebase_theos.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
 
-<target name="copyIPhone_sdk" depends="getVersion">
-
-  <!-- iphone 2 -->
-  <echo message="Retrieve remote 2.x demo builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
-  <scp file="${buildserver.lb.iphone2.path}/demo/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB iPhone 2.x demo package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone2/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.sdk.path}/dist/lib/iphone2+"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
-</target>
-	
-<target name="copyIPhone_vms" depends="getVersion">
-
-   <!-- iphone 2 -->
-   <echo message="Retrieve remote 2.x release builds" />
-
-   <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
-   <scp file="${buildserver.lb.iphone2.path}/ras/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+   <sshexec command="
+      tar -zxpf ${remote.path}/Litebase_theos.tgz -C ${remote.path};
+      bash -l ${remote.theos.path}/build.sh -clean -r demo;
+      bash -l ${remote.theos.path}//build.sh -clean -r ras"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
    
-  <!-- iphone 2 -->
-  <echo message="build the LB iPhone 2.x release package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone2/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.vms.path}/dist/lib/iphone2+"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
-</target>	
-
-<target name="ftp_iphone_sdk" depends="getVersion">
-
-  <property file="${rootpath}/swcombr.properties"/>
-  <property name="temp" value="${source.tc.sdk.path}/output/tempfiles"/>
-  <property name="iphone.remote.dir" value="lb${lb.version}" />
-  <echo message="Litebase iPhone remote directory: ${iphone.remote.dir}"/>
-
-  <!-- copies the files that will be sent via ftp to a single dir -->
-  <mkdir dir="${temp}" />
-  <copy todir="${temp}/samples">
-   <fileset dir="${target.sdk.path}/dist/samples" includes="**/*.zip,**/*.plist" excludes="**/iphone2+/**" />
-  </copy>
-  <copy todir="${temp}">
-   <fileset dir="${target.sdk.path}/dist/lib/iphone1" includes="Litebase.zip,Litebase.plist" />
-  </copy>
-
-  <!-- create the rep.xml file for all these files -->
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${temp}">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
-
-  <!-- copy the files again removing the folders -->
-  <delete dir="${temp}/samples" />
-  <delete file="${temp}/Litebase.plist" />
-  <copy todir="${temp}" flatten="yes">
-   <fileset dir="${target.sdk.path}/dist/samples" includes="**/*.zip" excludes="**/iphone2+/**" />
-  </copy>
-
-  <!-- replace the target folder that will appear in the device -->
-  <replace file="${temp}/rep.xml" token="http://www.totalcross.com/iphone" value="http://www.totalcross.com/${iphone.remote.dir}" />
-  <replace file="${temp}/rep.xml" token="TotalCross SDK" value="Litebase SDK" />
-
-  <!-- delete current folder, recreate the folder and ftp to the site -->
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" action="del" >
-   <fileset includes="totalcross.com/${iphone.remote.dir}/**" />
-  </ftp>
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/${iphone.remote.dir}" action="mkdir" />
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/${iphone.remote.dir}" verbose="yes">
-     <fileset dir="${temp}" />
-  </ftp>
-
-  <delete dir="${temp}" />
-
+   <mkdir dir="${output.path.demo}" />
+   <mkdir dir="${output.path.ras}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.theos.path}/demo/libLitebase.dylib" todir="${output.path.demo}" trust="yes" password="${buildserver.pass}" port="22" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.theos.path}/ras/libLitebase.dylib" todir="${output.path.ras}" trust="yes" password="${buildserver.pass}" port="22" />
 </target>
 
-<target name="buildIPhone_vms" depends="getVersion">
-  <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+<target name="package-deb-release">
+   <fail unless="release.type" />
+   <fail unless="output.path" />
+   
+   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+     <classpath>
+         <pathelement location="${base.temp.path}/classes_desktop"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+     </classpath>
+     <arg line="-n Litebase"/>
+     <arg line="-c 'Litebase Library'"/>
+     <arg line="-d 'TotalCross Litebase library'"/>
+     <arg line="-v ${lb.version}"/>
+     <arg line="-b ${basedir}/theos/${release.type}/libLitebase.dylib"/>
+     <arg line="-t ${output.path}/dist/lib/iphone2+"/>
+     <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
+   </java>
+
+   <!-- package the files -->
+   <mkdir dir="${output.path}/dist/lib/iphone2+" />
+   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${output.path}/dist/lib/iphone2+">
+     <classpath>
+         <pathelement location="${base.temp.path}/classes_desktop"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+     </classpath>
+     <arg line="."/>
+   </java>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -637,7 +570,7 @@ target: Linux builds
   <sshexec command="bash -l ~/build.sh -litebase -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyLinux_sdk" depends="getVersion">
+<target name="copyLinux_sdk">
 
   <echo message="Retrieve remote Linux demo builds" />
 
@@ -664,7 +597,7 @@ target: Linux builds
 
 </target>
 	
-<target name="copyLinux_vms" depends="getVersion">
+<target name="copyLinux_vms">
 
   <echo message="Retrieve Linux release builds" />
 
@@ -691,7 +624,7 @@ target: Linux builds
 
 </target>
 
-<target name="buildLinux_vms" depends="getVersion">
+<target name="buildLinux_vms">
 
   <sshexec command="bash -l ~/build.sh -litebase -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
@@ -707,7 +640,7 @@ target: Android builds
   <delete dir="${android.project.path}/out/apps/litebase" failonerror="false" />
 </target>
 
-<target name="build_android_native" depends="getVersion" description="Compiles liblitebase.so for Android">
+<target name="build_android_native" description="Compiles liblitebase.so for Android">
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
       <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
       <env key="NDK_HOME" value="${android.ndk.path}"/>
@@ -718,7 +651,7 @@ target: Android builds
   <sleep seconds="3"/>
 </target>
 
-<target name="build_android_java" depends="getVersion" description="Builds the Litebase.apk for Android">
+<target name="build_android_java" description="Builds the Litebase.apk for Android">
 
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
@@ -764,42 +697,6 @@ target: Android builds
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: getVersion
-
--description:
-        retrieves the Superwaba version from the file "waba/sys/Settings.java"
-        in the form 4_21
-
-      public static final String versionStr = "4.21"
-
-      IMPORTANT: THIS ONE DOES NOT REPLACE _ BY . !
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="getVersion" >
-
-  <loadfile srcfile="../src/java/litebase/LitebaseConnection.java" property="lb.version">
-    <filterchain>
-      <linecontains>
-        <contains value="versionStr"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="final" to=""/>
-       <replacestring from="String" to=""/>
-       <replacestring from="versionStr" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars='";'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-
-  <echo message="Litebase version : '${lb.version}'"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -864,7 +761,7 @@ target: ftp things to the site
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="checkVersionOnProjects" depends="getVersion">
+<target name="checkVersionOnProjects">
 
   <loadfile srcfile="${source.tc.vm.path}/builders/vc6/litebase.dsp" property="version.updated">
     <filterchain>
@@ -882,16 +779,13 @@ target: checks if we must update the versions of the files prior to a build.
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="iphone_test" depends="buildIPhone_sdk,buildIPhoneTest_sdk,copyIPhone_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK, rebuild and upload iPhone to the test device" />
-
-<target name="update_iphone" depends="buildIPhone_sdk,buildSkeletonIPhone_sdk,copyIPhone_sdk,ftp_iphone_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
 <target name="update_linux" depends="buildLinux_sdk,buildSkeletonLinux_sdk,copyLinux_sdk" description="Update the SDK device and samples, rebuild" />
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
 <target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
 
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
-<target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,build-deb,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
-<target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
+<target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />
 </project>
