@@ -165,10 +165,10 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          if (HIWORD(wParam)) // HIWORD(wParam) == 0 means the app is not minimized
          {
             if (!minimized)
-               postOnMinimizeOrRestore(mainContext, minimized = true);
+               postOnMinimizeOrRestore(minimized = true);
          }
          else if (minimized)
-            postOnMinimizeOrRestore(mainContext, minimized = false);
+            postOnMinimizeOrRestore(minimized = false);
 #endif
 #if defined (WINCE)
          if (wParam == 0)
@@ -183,10 +183,10 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          if (((PWINDOWPOS)lParam)->hwndInsertAfter) // hwndInsertAfter == 0 means the app window is at the top
          {
             if (!minimized)
-               postOnMinimizeOrRestore(mainContext, minimized = true);
+               postOnMinimizeOrRestore(minimized = true);
          }
          else if (minimized)
-            postOnMinimizeOrRestore(mainContext, minimized = false);
+            postOnMinimizeOrRestore(minimized = false);
          break;
       }
 #endif
