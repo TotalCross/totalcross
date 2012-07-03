@@ -105,7 +105,8 @@ public class Deploy
 
                if (DeploySettings.mobileProvision != null && DeploySettings.appleCertStore != null)
                   new Deployer4IPhoneIPA();
-               Deployer4IPhone.run();
+               else
+                  Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
