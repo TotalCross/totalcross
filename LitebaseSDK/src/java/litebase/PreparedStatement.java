@@ -204,21 +204,20 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
     * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
     *
     * @return The <code>ResultSet</code> of the SQL statement.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If an error occurs. This can be the case if the statement to be execute is not a select or an <code>IOException</code> 
     * occurs.
     * @throws SQLParseException If an <code>InvalidDateFormat</code> or <code>InvalidNumberFormat</code> occurs.
     */
-   public ResultSet executeQuery() throws IllegalStateException, DriverException, SQLParseException
+   public ResultSet executeQuery() throws DriverException, SQLParseException
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       try
       {
@@ -303,6 +302,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -311,14 +311,12 @@ public class PreparedStatement
     *
     * @return The result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 for SQL 
     * statements that return nothing.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If an error occurs. This can happen if the query does not update the table or an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberExcepion</code> occurs.
     */
-   public int executeUpdate() throws IllegalStateException, DriverException, SQLParseException
+   public int executeUpdate() throws DriverException, SQLParseException
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (type == SQLElement.CMD_SELECT) // The statement musn't be a select. executeQuery() must be used instead.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_QUERY_DOESNOT_PERFORM_UPDATE));
@@ -419,6 +417,7 @@ public class PreparedStatement
       table.storeNulls = storeNulls;
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -426,12 +425,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setShort(int index, short value) throws IllegalStateException
+   public void setShort(int index, short value)
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -441,6 +438,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -448,12 +446,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setInt(int index, int value) throws IllegalStateException
+   public void setInt(int index, int value)
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       { 
@@ -463,6 +459,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -470,12 +467,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setLong(int index, long value) throws IllegalStateException
+   public void setLong(int index, long value)
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -485,6 +480,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -492,12 +488,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setFloat(int index, double value) throws IllegalStateException
+   public void setFloat(int index, double value)
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null)  // Only sets the parameter if the statement is not null.
       {
@@ -507,6 +501,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -514,12 +509,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setDouble(int index, double value) throws IllegalStateException
+   public void setDouble(int index, double value) 
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -529,6 +522,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -537,12 +531,10 @@ public class PreparedStatement
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter. DO NOT SURROUND IT WITH '!.
     * @throws SQLParseException If an <code>InvalidNumberException</code> or an <code>InvalidDateException</code> is thrown.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setString(int index, String value) throws SQLParseException, IllegalStateException
+   public void setString(int index, String value) throws SQLParseException
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -574,6 +566,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -582,10 +575,9 @@ public class PreparedStatement
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
     */
-   public void setBlob(int index, byte[] value) throws IllegalStateException
+   public void setBlob(int index, byte[] value) 
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -654,6 +646,7 @@ public class PreparedStatement
                               .append(':').append(time.minute).append(':').append(time.second).append(':').append(time.millis).toString());
    }
    
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    // juliana@223_3: PreparedStatement.setNull() now works for blobs.
@@ -663,12 +656,10 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set as null, starting from 0.
     * @throws SQLParseException If an <code>InvalidNumberException</code> or an <code>InvalidDateException</code> is thrown.
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void setNull(int index) throws SQLParseException, IllegalStateException
+   public void setNull(int index) throws SQLParseException
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -679,17 +670,15 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
     * This method clears all of the input parameters that have been set on this statement.
-    *
-    * @throws IllegalStateException If the driver is closed.
     */
-   public void clearParameters() throws IllegalStateException
+   public void clearParameters() 
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (statement != null)  // Only sets the parameter if the statement is not null.
       {    
@@ -699,6 +688,7 @@ public class PreparedStatement
       }
    }
 
+   // juliana@prep_1: added PreparedStatement.close().
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -706,12 +696,10 @@ public class PreparedStatement
     * sql, filled with the arguments.
     *
     * @return the sql used in this statement.
-    * @throws IllegalStateException if the driver is closed.
     */
-   public String toString() throws IllegalStateException
+   public String toString() 
    {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      testPSState();
       
       if (storeParams)
       {
@@ -782,5 +770,44 @@ public class PreparedStatement
    {
       while (initialPos < endPos)
          strBuffer.append(string.charAt(initialPos++));
+   }
+   
+   // juliana@prep_1: added PreparedStatement.close().
+   /**
+    * Tests if the driver is closed or the prepared statement is closed.
+    *
+    * @throws IllegalStateException If one of them is closed.
+    */
+   private void testPSState() throws IllegalStateException
+   {
+      if (driver.htTables == null) // The connection with Litebase can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      if (!driver.htPS.exists(sqlExpression)) // The prepared statement can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PREPARED_CLOSED));
+   }
+   
+   // juliana@prep_1: added PreparedStatement.close().
+   /**
+    * Closes a prepared statement.
+    * 
+    * @throws IllegalStateException If the driver or the prepared statement is closed.
+    */
+   public void close() throws IllegalStateException
+   {
+      if (driver.htTables == null) // The connection with Litebase can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      if (driver.htPS.remove(sqlExpression.hashCode()) == null) // The prepared statement can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PREPARED_CLOSED));
+   }
+   
+   // juliana@prep_2: added PreparedStatement.isValid().
+   /**
+    * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+    *
+    * @return <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+    */
+   public boolean isValid()
+   {
+      return (driver.htTables != null && driver.htPS.exists(sqlExpression));
    }
 }
