@@ -18,6 +18,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UITextView.h>
 #import <CoreLocation/CLLocation.h>
+#import <CoreLocation/CLLocationManager.h>
+#import <CoreLocation/CLLocationManagerDelegate.h>
 
 #include "GraphicsPrimitives.h"
 #import "childview.h"
@@ -41,15 +43,22 @@
 
 @end
 
-@interface MainView : UIViewController<UIImagePickerControllerDelegate>
+@interface MainView : UIViewController<UIImagePickerControllerDelegate,CLLocationManagerDelegate>
 {
    NSMutableArray* _events;
-   NSLock* _lock;
    ChildView *child_view;
+   // keyboard
    UITextView* kbd;
    NSRange lastRange;
+   // camera
    NSString* imageFileName;
    int imageW,imageH;
+   // gps
+@public   
+   CLLocationManager* locationManager;
+   int locationFlags, locationDate, locationTime, locationSat, locationCount;
+   double locationVeloc, locationPDOP, locationDir;
+   double locationLat, locationLon;
 }
 
 - (void)initEvents;
@@ -64,7 +73,9 @@
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
 - (void) dialNumber:(NSString*) number;
 - (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
-
+- (int) gpsStart;
+- (void) gpsStop;
+- (int) gpsUpdateLocation;
 @end
 
 typedef struct

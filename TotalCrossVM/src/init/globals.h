@@ -140,6 +140,9 @@ extern Stack objStack2;
 // context.c
 extern VoidPs* contexts;
 extern Context mainContext,gcContext;
+#ifdef darwin
+extern Context lifeContext;
+#endif
 
 // tcvm.c
 extern int32 vmTweaks;

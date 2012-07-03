@@ -17,12 +17,14 @@
  #include "win/GPS_c.h"
 #elif defined (ANDROID)
  #include "android/GPS_c.h"
+#elif defined (darwin)
+ #include "darwin/GPS_c.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native private boolean startGPS() throws totalcross.io.IOException;
 {
-#if defined(WINCE) || defined(ANDROID)
+#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Err err;
    
    if ((err = nativeStartGPS()) > 0)
@@ -37,7 +39,7 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS native private int updateLocation();
 {
-#if defined(WINCE) || defined(ANDROID)
+#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    int32 flags = 0;
    Err err;
 
@@ -49,7 +51,7 @@ TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native private void stopGPS();
 {
-#if defined(WINCE) || defined(ANDROID)
+#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    nativeStopGPS();
 #endif
 }

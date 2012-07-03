@@ -824,6 +824,7 @@
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
+		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1214,6 +1215,7 @@
 		0F8C8AC91549CFC700E0967F /* gps */ = {
 			isa = PBXGroup;
 			children = (
+				3A8C3EC3159E4A3900D3E666 /* darwin */,
 				0F8C8ACA1549CFC700E0967F /* android */,
 				0F8C8ACC1549CFC700E0967F /* GPS.c */,
 				0F8C8ACD1549CFC700E0967F /* win */,
@@ -1850,6 +1852,14 @@
 				0F8C8C591549CFC700E0967F /* zutil.h */,
 			);
 			path = zlib;
+			sourceTree = "<group>";
+		};
+		3A8C3EC3159E4A3900D3E666 /* darwin */ = {
+			isa = PBXGroup;
+			children = (
+				3A8C3EC4159E4A3900D3E666 /* GPS_c.h */,
+			);
+			path = darwin;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

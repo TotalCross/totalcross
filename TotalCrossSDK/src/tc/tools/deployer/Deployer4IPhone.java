@@ -171,14 +171,6 @@ public class Deployer4IPhone
 
    /////////////////////////////////////////////////////////////////////////////////////
 
-   private void dump(String prefix, InputStream errorStream) throws IOException
-   {
-      String line;
-      BufferedReader br = new BufferedReader(new InputStreamReader(errorStream));
-      while ((line = br.readLine()) != null)
-         System.out.println(prefix+line);
-   }
-
    private void createCommon(Vector vFiles, Vector vExtras, String dir, String version, String name, String cmdLine, String uriBase, String iconfile, boolean isFullScreen) throws Exception
    {
       vFiles.addElement(name + ".tcz");

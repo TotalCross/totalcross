@@ -48,6 +48,8 @@ import totalcross.util.*;
  * <li>Android - "/data/data/totalcross.app.&lt;mainclass name&gt;"
  * </ul>
  * The alias is ALWAYS relative to the built in storage, regardless of the value passed to the argument slot.<br>
+ * 
+ * In iOS and Android, if you don't specify a path, the file will be open in device/ path. 
  */
 
 public class File extends RandomAccessStream
