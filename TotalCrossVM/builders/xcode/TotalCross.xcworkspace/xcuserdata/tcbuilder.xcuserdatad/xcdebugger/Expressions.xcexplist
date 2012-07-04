@@ -3,10 +3,34 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "GLOBAL">
+         <PersistentStrings>
+            <PersistentString
+               value = "htNativeProcAddresses.size">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "htNativeProcAddresses">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "-[ChildView drawRect:]:childview.m">
          <PersistentStrings>
             <PersistentString
                value = "self.pitch">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "initAll:startup.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "htNativeProcAddresses.size">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
