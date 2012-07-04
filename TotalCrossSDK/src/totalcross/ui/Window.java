@@ -687,6 +687,8 @@ public class Window extends Container
             _penEvent.modifiers = modifiers;
             _penEvent.target = null;
             _penEvent.touch();
+            if (_focus != null) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever
+               _focus.postEvent(_penEvent);
             if (!onClickedOutside(_penEvent)) // if clicked outside was not handled by this method...
                if (type == PenEvent.PEN_DOWN && beepIfOut) // alert him! - ds: i changed this accordingly to your comments about win32 problems
                   Sound.beep();

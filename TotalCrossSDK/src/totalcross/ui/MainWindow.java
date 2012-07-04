@@ -206,8 +206,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    /**
     * Notifies the application that it should be minimized, that is, transfered
-    * to the background. Currently, this is only supported on Java, BlackBerry, WinCE, Win32
-    * and Android. Whenever the application is minimized, the following call back function
+    * to the background. Whenever the application is minimized, the following call back function
     * will be called: {@link #onMinimize()}. Note: On Android, calling {@link #minimize()} will
     * pause the application execution and it can only be restored manually by the user.
     * @see #onMinimize
@@ -222,7 +221,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    /**
     * Notifies the application that it should be restored, that is, transfered
-    * to the foreground. Currently, this is only supported on Java, BlackBerry, WinCE and Win32.
+    * to the foreground. 
     * Whenever the application is restored, the following call back function will be called:
     * {@link #onRestore()}. Note: This method is supported on Android; the user must restore
     * the application manually.

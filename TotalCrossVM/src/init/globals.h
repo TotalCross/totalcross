@@ -139,7 +139,7 @@ extern Stack objStack2;
 
 // context.c
 extern VoidPs* contexts;
-extern Context mainContext,gcContext;
+extern Context mainContext,gcContext,lifeContext;
 
 // tcvm.c
 extern int32 vmTweaks;
