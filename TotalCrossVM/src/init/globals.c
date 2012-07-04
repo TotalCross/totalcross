@@ -77,6 +77,7 @@ jmethodID jupdateScreen;
 #endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+bool callingScreenChange;
 
 // mem.c
 #ifdef INITIAL_MEM
