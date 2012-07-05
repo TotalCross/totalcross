@@ -39,8 +39,12 @@ public class LitebaseConnection
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 252;
+   public static int version = 260;
 
+   /** Current build number.
+    */
+   public static int buildNumber = 1;
+   
    /** 
     * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
     * 40 seconds on other platforms.
