@@ -41,7 +41,10 @@ static bool tczReadMore(TCZFile f)
    FILE* fin = fopen(f->header->path, "rb");
    fseek(fin, f->expectedFilePos, SEEK_SET);
    n = fread(f->buf, 1, sizeof(f->buf), fin);
-   f->expectedFilePos += n;
+   f->expectedFilePos += n;                        
+#ifdef ANDROID // try to bypass problem of tcz corruption - shot in the dark
+   fflush(fin); fsync(fileno(fin));
+#endif   
    fclose(fin);
    if (n <= 0)
       return false; // no more data
