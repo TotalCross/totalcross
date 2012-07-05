@@ -508,6 +508,13 @@ public class Image4B extends GfxSurface
       }
    }
 
+   public Image4B smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      return getSmoothScaledInstance(w, h, backColor);
+   }
+
    public Image4B getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
    {
       if (newWidth==width && newHeight==height) return this;
