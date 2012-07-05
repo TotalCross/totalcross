@@ -1138,7 +1138,7 @@ public class Window extends Container
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
          enableUpdateScreen = true;
-         setNextTransitionEffect(newWin.transitionEffect);
+         //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
          repaintActiveWindows();
       }
    }
@@ -1182,11 +1182,12 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+/* transitions on Window is not working fine on android.
+          int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
          if (nextTrans == TRANSITION_NONE)
             loadBehind(); // guich@200b4: restore the saved window
          setNextTransitionEffect(nextTrans);
-         topMost.eventsEnabled = true;
+*/         topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
          else
@@ -1204,6 +1205,7 @@ public class Window extends Container
             topMost.setFocus(topMost.focusOnPopup);
          postUnpop();
          popped = false;
+         needsPaint = true;
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
