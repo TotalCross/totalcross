@@ -77,6 +77,7 @@ public class StandardControls extends Container
          add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
          cb2.enableHorizontalScroll();
          cb2.setSelectedIndex(getBorderStyle());
+         cb2.setSelectedIndex(-1);
    
          Edit e;
          add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
@@ -175,9 +176,11 @@ public class StandardControls extends Container
          else
          if (event.target == cb2 && cb2.getSelectedIndex() >= 0)
          {
-            setBorderStyle((byte)cb2.getSelectedIndex());
+            byte b = (byte)cb2.getSelectedIndex();
+            getParentWindow().setBorderStyle(b);
             removeAll();
             initUI();
+            cb2.setSelectedIndex(b);
          }
          else
          if (event.target == btnMessage1 || event.target == btnMessage2)
