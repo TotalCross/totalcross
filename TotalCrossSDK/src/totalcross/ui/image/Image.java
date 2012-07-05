@@ -862,7 +862,7 @@ public class Image extends GfxSurface
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
 
-   /** Returns the scaled instance for this image, given the scale arguments and scale type. Given values must be &gt; 0.
+   /** Returns the scaled instance for this image, given the scale arguments. Given values must be &gt; 0.
     * The backColor replaces the transparent pixel of the current image to produce a smooth border.
     * Example: <pre>
     * Image img2 = img.smoothScaledBy(0.75,0.75, getBackColor());
@@ -872,6 +872,26 @@ public class Image extends GfxSurface
    public Image smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY), backColor); // guich@400_23: now test if the width/height are the same, what returns the original image
+   }
+
+   /** Returns the scaled instance using fixed aspect ratio for this image, given the scale arguments. Given values must be &gt; 0.
+    * This method is useful to resize an image, specifying only one of its sides: the width or the height. The other side
+    * is computed to keep the aspect ratio.
+    * 
+    * @param newSize The new size (width or height) for the image
+    * @param isHeight If true, the newSize is considered as the new height of the image. If false, the newSize is considered the new width of the image.
+    * @param backColor The background color to be used as transparent pixel; for PNG images with alpha-channel, use -1.
+    * 
+    * Example: <pre>
+    * Image img2 = img.smoothScaledFixed(fmH, true, -1);
+    * </pre>
+    * @since TotalCross 1.53
+    */
+   public Image smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      return getSmoothScaledInstance(w, h, backColor);
    }
 
    /** Creates a rotated and/or scaled version of this Image.

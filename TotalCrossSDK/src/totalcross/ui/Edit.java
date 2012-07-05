@@ -1479,7 +1479,8 @@ public class Edit extends Control
          else
          if (insertChanged)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
-         updateScreen();
+         if (event.target == this && (event instanceof KeyEvent || event instanceof PenEvent)) // guich@tc153: prevent drawing problems when a window is unpopping
+            updateScreen();
       }
    }
 
