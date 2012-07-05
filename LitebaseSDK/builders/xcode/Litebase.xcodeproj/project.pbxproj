@@ -491,6 +491,15 @@
 				DSTROOT = /tmp/Litebase.dst;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Litebase-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					POSIX,
+					linux,
+					darwin,
+					FORCE_LIBC_ALLOC,
+					LB_EXPORTS,
+					ENABLE_DEMO,
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
