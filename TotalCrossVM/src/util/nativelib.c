@@ -42,11 +42,37 @@ VoidP getProcAddress(const VoidP module, const char* funcName)
    return privateGetProcAddress(module, (char*)funcName);
 }
 
+#if defined (darwin) && !defined (THEOS)
+bool LibOpen(OpenParams params);
+void LibClose();
+
 bool attachNativeLib(Context currentContext, CharP name)
 {
-#if defined (darwin) && !defined (THEOS)
-   return strEq(name, "Litebase");
+    NativeLib lib;
+    TOpenParams params;
+    
+    if (!strEq(name, "Litebase"))
+        return false;
+    if ((lib = newX(NativeLib)) != null)
+    {
+        params.commandLine = commandLine;
+        params.alert = alert;
+        params.getProcAddress = getProcAddress;
+        params.currentContext = currentContext;
+        lib->LibOpen     = LibOpen;
+        lib->LibClose    = LibClose;
+        if (lib->LibOpen(&params))
+        {
+            openNativeLibs = VoidPsAdd(openNativeLibs, lib, null);
+            return true;
+        }
+        else xfree(lib);
+    }
+    return false;
+}
 #else
+bool attachNativeLib(Context currentContext, CharP name)
+{
    VoidP h;
    NativeLib lib;
    TOpenParams params;
@@ -85,8 +111,8 @@ bool attachNativeLib(Context currentContext, CharP name)
       else xfree(lib);
    }
    return false;
-#endif
 }
+#endif
 
 bool handleEvent(VoidP event)
 {

@@ -32,7 +32,7 @@
        [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
     [tcvm startVM:&context appName:(char*)name];
-    [Litebase libOpen:context];
+    [Litebase fillNativeProcAddressesLB];
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
