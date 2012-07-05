@@ -13,14 +13,8 @@
 
 @implementation Litebase
 
-+ (void) libOpen:(Context)context
++ (void) fillNativeProcAddressesLB
 {
-    TOpenParams params;
-    params.alert = alert;
-    params.commandLine = commandLine;
-    params.currentContext = context;
-    params.getProcAddress = getProcAddress;
-    LibOpen(&params);
     fillNativeProcAddressesLB();
 }
 
