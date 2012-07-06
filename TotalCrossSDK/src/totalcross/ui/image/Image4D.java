@@ -327,6 +327,12 @@ public class Image4D extends GfxSurface
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
    }
 
+   public totalcross.ui.image.Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      return getModifiedInstance(w, h, 0, 0, backColor, 0, 0, SMOOTH_SCALED_INSTANCE);
+   }
    public totalcross.ui.image.Image4D getScaledInstance(int newWidth, int newHeight) throws totalcross.ui.image.ImageException // guich@350_22
    {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);

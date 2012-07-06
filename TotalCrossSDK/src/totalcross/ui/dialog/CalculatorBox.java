@@ -38,11 +38,12 @@ public class CalculatorBox extends Window
    private String last = null;
    private boolean clearNext;
    private int lastSel=-1;
+   private boolean callNext;
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
    
    /** The default title. */
-   public static String title = "Numeric Pad";
+   public static String defaultTitle = "Numeric Pad";
    
    /** Defines an optional character to be used in the NumericBox. Replaces the decimal separator / 00 char.
     * @since TotalCross 1.5 
@@ -58,6 +59,17 @@ public class CalculatorBox extends Window
    /** The control that had focus when this CalculatorBox was popped up. */
    public Control cOrig;
    
+   /** Set to true to replace the "Clear" button by the "Next" button. This
+    * button is equivalent to the "Ok" button, but it also changes the focus to 
+    * the next field. The user can still clean the edit by clicking the backspace &lt;&lt; button.
+    * 
+    * The default behaviour calls moveFocusToNextControl. You can change it by overriding the 
+    * method <code>gotoNext</code>.
+    * 
+    * @since TotalCross 1.53
+    */
+   public static boolean showNextButtonInsteadOfClear;
+   
    /** Constructs a CalculatorBox with the 6 basic operations visible. */
    public CalculatorBox()
    {
@@ -67,7 +79,7 @@ public class CalculatorBox extends Window
    /** Constructs a CalculatorBox with the 6 basic operations hidden. */
    public CalculatorBox(boolean showOperations)
    {
-      super(title,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
+      super(defaultTitle,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = started = true;
@@ -109,6 +121,7 @@ public class CalculatorBox extends Window
       if (pbgArrows == null)
       {
          pbgArrows = new PushButtonGroup(new String[]{"<",">","<<"},false,-1,2,12,1,true,PushButtonGroup.BUTTON);
+         pbgArrows.autoRepeat = true;
          pbgArrows.setFocusLess(true);
          pbgArrows.clearValueInt = -1;
          add(pbgArrows);
@@ -227,6 +240,22 @@ public class CalculatorBox extends Window
    {
       if (answer != null) // guich@580_27
          postPressedEvent();
+      if (cOrig != null && callNext)
+      {
+         callNext = false;
+         Control next = gotoNext();
+         if (next != null && next instanceof Edit)
+            ((Edit)next).showKeyboardOnNextEvent = true;
+      }
+   }
+   
+   /** Returns the next control to be focused when Next is clicked.
+    * By default, calls moveFocusToNextControl.
+    * @since TotalCross 1.53
+    */
+   protected Control gotoNext()
+   {
+      return cOrig.getParent().moveFocusToNextControl(cOrig, true);
    }
    
    public void onEvent(Event event)
@@ -286,20 +315,20 @@ public class CalculatorBox extends Window
                   switch (pbgAction.getSelectedIndex())
                   {
                      case 0:
-                        clear();
-                        if (pbgOp != null)
-                           pbgOp.clear();
+                        if (showNextButtonInsteadOfClear)
+                        {
+                           callNext = true;
+                           ok();
+                        }
+                        else
+                        {
+                           clear();
+                           if (pbgOp != null)
+                              pbgOp.clear();
+                        }
                         break;
                      case 1:
-                        answer = unformat(edNumber.getTextWithoutMask());
-                        if (cOrig != null)
-                        {
-                           if (cOrig instanceof Edit)
-                              ((Edit)cOrig).setText(answer,true);
-                           else
-                              ((SpinList)cOrig).setSelectedItem(answer);
-                        }
-                        unpop();
+                        ok();
                         break;
                      case 2:
                         clear();
@@ -351,6 +380,19 @@ public class CalculatorBox extends Window
       {
          MessageBox.showException(ee,true);
       }
+   }
+   
+   private void ok()
+   {
+      answer = unformat(edNumber.getTextWithoutMask());
+      if (cOrig != null)
+      {
+         if (cOrig instanceof Edit)
+            ((Edit)cOrig).setText(answer,true);
+         else
+            ((SpinList)cOrig).setSelectedItem(answer);
+      }
+      unpop();
    }
 
    public void reposition()

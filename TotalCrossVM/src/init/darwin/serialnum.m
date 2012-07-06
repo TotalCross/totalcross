@@ -13,27 +13,16 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIDevice.h>
-#if defined (THEOS)
-#import <IOKit/IOKitLib.h>
-#endif
+#import "UIDevice+IdentifierAddition.h"
 
 void getSerialNum(char *id, int maxlen)
 {
-#if defined (THEOS)
-   CFTypeRef serialNumberAsCFString;
-
-   io_service_t platformExpert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
-   if (platformExpert)
-   {
-      serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);
-      IOObjectRelease(platformExpert);
-
-      const char *ser = [ (NSString*)serialNumberAsCFString UTF8String ];
-      strncpy(id, ser, maxlen);
-   }
-   else
-      strcpy(id, "unknown");
-#endif
+    NSString* nsserial = [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier];
+    if (nsserial != nil)
+    {
+       const char* serial = [nsserial cStringUsingEncoding:NSASCIIStringEncoding];
+       strncpy(id, serial, maxlen);
+    }
 }
 
 int getRomVersion()
