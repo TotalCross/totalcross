@@ -436,7 +436,6 @@ public class Button extends Control
                autoRepeatTimer = addTimer(INITIAL_DELAY);
             break;
          case PenEvent.PEN_UP:
-            System.out.println("retirando timer");
             if (autoRepeat && autoRepeatTimer != null)
                disableAutoRepeat();
             if (!isSticky && armed) press(armed = false);
