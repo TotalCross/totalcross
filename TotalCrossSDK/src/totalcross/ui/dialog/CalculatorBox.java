@@ -42,7 +42,7 @@ public class CalculatorBox extends Window
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
    
    /** The default title. */
-   public static String title = "Numeric Pad";
+   public static String defaultTitle = "Numeric Pad";
    
    /** Defines an optional character to be used in the NumericBox. Replaces the decimal separator / 00 char.
     * @since TotalCross 1.5 
@@ -67,7 +67,7 @@ public class CalculatorBox extends Window
    /** Constructs a CalculatorBox with the 6 basic operations hidden. */
    public CalculatorBox(boolean showOperations)
    {
-      super(title,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
+      super(defaultTitle,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = started = true;

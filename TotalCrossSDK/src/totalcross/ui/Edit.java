@@ -147,6 +147,11 @@ public class Edit extends Control
     */
    public String optionalValue4CalculatorBox;
    
+   /** Defines a title that can be used in the Keyboards.
+    * @since TotalCross 1.53
+    */
+   public String keyboardTitle;
+   
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
     * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
     * @since TotalCross 1.3
@@ -978,6 +983,7 @@ public class Edit extends Control
       {
          case KBD_TIME: 
             if (time == null) time = new TimeBox();
+            time.tempTitle = keyboardTitle;
             try 
             {
                time.setTime(new Time(getText(),false,false,false,true,true,true));
@@ -993,18 +999,21 @@ public class Edit extends Control
             
          case KBD_CALENDAR:
             if (calendar == null) calendar = new CalendarBox();
+            calendar.tempTitle = keyboardTitle;
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
             calendar.popupNonBlocking();
             break;
 
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
+            calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
             calculator.popupNonBlocking();
             break;
 
          case KBD_NUMERIC:
             if (numeric == null) numeric = new CalculatorBox(false);
+            numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
             numeric.popupNonBlocking();
             break;
@@ -1029,6 +1038,7 @@ public class Edit extends Control
             else
             {
                if (keyboard == null) keyboard = new KeyboardBox();
+               keyboard.tempTitle = keyboardTitle;
                showInputWindow(keyboard);
             }
       }

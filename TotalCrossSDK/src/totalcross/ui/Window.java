@@ -125,6 +125,10 @@ public class Window extends Container
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
+   /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
+    * @since TotalCross 1.53
+    */
+   public String tempTitle;
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
@@ -150,6 +154,7 @@ public class Window extends Container
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
    private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private String oldTitle;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
@@ -1132,6 +1137,11 @@ public class Window extends Container
             focusOnPopup = this;
 
          newWin.onPopup();
+         if (newWin.tempTitle != null)
+         {
+            newWin.oldTitle = newWin.title;
+            newWin.setTitle(newWin.tempTitle);
+         }
          eventsEnabled = false; // disables this window
          zStack.push(topMost = newWin);
          setFocus(topMost); // guich@567_4: changed from setFocus to swapFocus to fix 566_18 problem - guich@568_17: changed back to setFocus
@@ -1171,6 +1181,11 @@ public class Window extends Container
    {
       if (zStack.size() == 1) // guich@400_69
          return;
+      if (oldTitle != null)
+      {
+         setTitle(oldTitle);
+         oldTitle = null;
+      }
       onUnpop();
       eventsEnabled = false;
       MainWindow.mainWindowInstance.removeTimers(this);

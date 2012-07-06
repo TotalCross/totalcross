@@ -84,7 +84,7 @@ public class StandardControls extends Container
          tp2.activeTabBackColor = Color.darker(backColor);
          tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
          tp2.setRect(LEFT,BOTTOM,SCREENSIZE+60,PREFERRED+ed.getPreferredHeight()+fmH/2,lbox);
-         tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC);
+         tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC); e.keyboardTitle = "Currency";
          tp2.getContainer(1).add(e = new Edit("99/99/9999"), CENTER,CENTER); e.setMode(Edit.DATE);
          tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
          tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
