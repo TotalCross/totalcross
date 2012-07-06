@@ -632,7 +632,7 @@ public class MultiEdit extends Container implements Scrollable
                   boolean moveFocus = !Settings.geographicalFocus && ke.key == SpecialKeys.TAB;
                   if (event.target == this && moveFocus) // guich@tc125_26
                   {
-                     if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0))
+                     if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
                         return;
                   }
                   // if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && (ke.key == SpecialKeys.ESCAPE || ke.key == SpecialKeys.MENU))

@@ -129,6 +129,7 @@ public class Edit extends Control
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
    private int lastPenDown=-1;
+   public boolean showKeyboardOnNextEvent;
    static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
@@ -1112,6 +1113,13 @@ public class Edit extends Control
          case ControlEvent.CURSOR_CHANGED:
             break;
          case TimerEvent.TRIGGERED:
+            if (showKeyboardOnNextEvent)
+            {
+               event.consumed=true;
+               showKeyboardOnNextEvent = false;
+               popupKCC();
+               return;
+            }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
                Window w = getParentWindow();
@@ -1193,7 +1201,7 @@ public class Edit extends Control
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
-                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0))
+                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
                      return;
                }
                boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
