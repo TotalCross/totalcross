@@ -27,12 +27,12 @@
     
     const char* name = 
 #ifdef APPNAME
-       "UIGadgets";
+       APPNAME;
 #else
        [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
     [tcvm startVM:&context appName:(char*)name];
-    [Litebase libOpen:context];
+    [Litebase fillNativeProcAddressesLB];
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
@@ -47,7 +47,7 @@
     return YES;
 }
 
-void postOnMinimizeOrRestoreNC(bool isMinimized);
+void postOnMinimizeOrRestore(bool isMinimized);
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
@@ -59,13 +59,13 @@ void postOnMinimizeOrRestoreNC(bool isMinimized);
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    postOnMinimizeOrRestoreNC(true);
+    postOnMinimizeOrRestore(true);
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-    postOnMinimizeOrRestoreNC(false);
+    postOnMinimizeOrRestore(false);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application

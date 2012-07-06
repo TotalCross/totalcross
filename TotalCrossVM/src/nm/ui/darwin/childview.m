@@ -39,6 +39,9 @@ int realAppH;
    screen->bpp = 32;
 }
 
+void Sleep(int ms);
+extern BOOL callingScreenChange;
+
 - (void)drawRect:(CGRect)frame
 {
    // when rotated, the UIViewController still thinks that we want to draw it horizontally, so we invert the size.
@@ -60,10 +63,12 @@ int realAppH;
       cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
       if (clientW != 0)
       {
+         callingScreenChange = true;
          [self updateScreen: gscreen];
          [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
            @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
-         Sleep(250); // let these 2 events be processed - use Sleep, not sleep. 250, not 1.
+         while (callingScreenChange)
+            Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 250, not 1.
       }
    }
    clientW = w;

@@ -70,13 +70,13 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          postEvent(mainContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_APP_PAUSED:
-         postOnMinimizeOrRestore(mainContext, true);
+         postOnMinimizeOrRestore(true);
          break;
       case totalcross_Launcher4A_APP_RESUMED:
          if (shiftYfield)
             *shiftYfield = 0;
          repaintActiveWindows(mainContext);
-         postOnMinimizeOrRestore(mainContext, false);
+         postOnMinimizeOrRestore(false);
          break;
       case totalcross_Launcher4A_SCREEN_CHANGED:
       {

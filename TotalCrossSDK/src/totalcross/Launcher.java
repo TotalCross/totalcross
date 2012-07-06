@@ -1112,6 +1112,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                img.flush();
             }
             else
+            if (g != null)
                g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
             break;
       }

@@ -77,13 +77,14 @@ public class StandardControls extends Container
          add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
          cb2.enableHorizontalScroll();
          cb2.setSelectedIndex(getBorderStyle());
+         cb2.setSelectedIndex(-1);
    
          Edit e;
          add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
          tp2.activeTabBackColor = Color.darker(backColor);
          tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
          tp2.setRect(LEFT,BOTTOM,SCREENSIZE+60,PREFERRED+ed.getPreferredHeight()+fmH/2,lbox);
-         tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC);
+         tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC); e.keyboardTitle = "Currency";
          tp2.getContainer(1).add(e = new Edit("99/99/9999"), CENTER,CENTER); e.setMode(Edit.DATE);
          tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
          tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
@@ -175,9 +176,11 @@ public class StandardControls extends Container
          else
          if (event.target == cb2 && cb2.getSelectedIndex() >= 0)
          {
-            setBorderStyle((byte)cb2.getSelectedIndex());
+            byte b = (byte)cb2.getSelectedIndex();
+            getParentWindow().setBorderStyle(b);
             removeAll();
             initUI();
+            cb2.setSelectedIndex(b);
          }
          else
          if (event.target == btnMessage1 || event.target == btnMessage2)

@@ -10,14 +10,10 @@
 
 #import "AppDelegate.h"
 
-void notifyStopVM(); // mainview.m
-
 int main(int argc, char *argv[])
 {
     @autoreleasepool 
     {
-        int ret = UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-        notifyStopVM();
-        return ret;
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
     }
 }

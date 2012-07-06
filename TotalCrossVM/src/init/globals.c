@@ -77,6 +77,7 @@ jmethodID jupdateScreen;
 #endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+bool callingScreenChange;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -139,10 +140,7 @@ Stack objStack2;
 
 // context.c
 VoidPs* contexts;
-Context mainContext,gcContext;
-#ifdef darwin
-Context lifeContext;
-#endif
+Context mainContext,gcContext,lifeContext;
 
 // tcvm.c
 int32 vmTweaks;

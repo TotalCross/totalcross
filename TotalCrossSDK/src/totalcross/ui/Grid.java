@@ -336,6 +336,7 @@ public class Grid extends Container implements Scrollable
    public boolean titleMayBeClipped;
    
    // private members
+   private Hashtable htImages;
    private int checkedCount;
    private int lastGetItemsCount; // guich@tc100b5_24
    private String[][] lastGetItems; // guich@tc100b5_24
@@ -1302,6 +1303,7 @@ public class Grid extends Container implements Scrollable
                      int currentRow = i+row0;
                      String []line = (String[])items[i];
                      String columnText = line[j-base];
+                     Image columnImg = htImages != null ? (Image)htImages.get(columnText) : null;
                      if (columnText == null) // prevent NPE
                         columnText = "";
                      if (currencyDecimalPlaces != null && currencyDecimalPlaces[j] >= 0)
@@ -1309,11 +1311,20 @@ public class Grid extends Container implements Scrollable
 
                      if (cc == null || (f = cc.getFont(currentRow,j)) == null) // guich@tc100: allow font change
                         f = this.font;
-                     g.setFont(f);
-
-                     int tx = cx + (align == LEFT   ? 0
-                                  : align == CENTER ? (w - f.fm.stringWidth(columnText)) / 2
+                     int tx;
+                     if (columnImg != null)
+                     {
+                        tx = cx + (align == LEFT   ? 0
+                                 : align == CENTER ? (w - columnImg.getWidth()) / 2
+                                                   : w - 3 - columnImg.getHeight()); // RIGHT
+                     }
+                     else
+                     {
+                        g.setFont(f);
+                        tx = cx + (align == LEFT   ? 0
+                                 : align == CENTER ? (w - f.fm.stringWidth(columnText)) / 2
                                                     : w - 3 - f.fm.stringWidth(columnText)); // RIGHT
+                     }
                      cf = -1;
                      boolean isSelectedLine = drawHighlight && currentRow == selectedLine;
                      if (cc != null || isSelectedLine) // guich@580_31
@@ -1333,7 +1344,10 @@ public class Grid extends Container implements Scrollable
                         if (cc != null && (cf = cc.getForeColor(currentRow,j)) != -1)
                            g.foreColor = enabled ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
                      }
-                     g.drawText(columnText, tx, ty+(lineH-fmH)/2, textShadowColor != -1, textShadowColor);
+                     if (columnImg != null)
+                        g.drawImage(columnImg,tx, ty+(lineH-fmH)/2);
+                     else
+                        g.drawText(columnText, tx, ty+(lineH-fmH)/2, textShadowColor != -1, textShadowColor);
                      if (cf != -1) // restore original fore color if it has changed
                         g.foreColor = cfo;
                   }
@@ -2597,5 +2611,40 @@ public class Grid extends Container implements Scrollable
    public int getCheckCount() // guich@tc126_52
    {
       return checkedCount;
+   }
+
+   /** Sets an image to be used in the Grid. You must use the same tag in the grid's item.
+    * The image will be resized to the current font's height, so be sure to call this method
+    * AFTER the font is set (or after the grid is added to the container).
+    * <pre>
+      try
+      {
+         String []gridCaptions = {"Image", "Name", "Details" };
+         int gridWidths[] = {-25, -50, -25};
+         int gridAligns[] = {CENTER,LEFT,LEFT};
+         String items[][] =
+         {
+            {"@foto1", "Car number one", "good car"},
+            {"@foto2", "Car number two", "great car"},
+         };
+   
+         Grid grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
+         add(grid, LEFT+5, AFTER+2, FILL-10, PREFERRED);
+         grid.setImage("@foto1",new Image("foto1.jpg"));
+         grid.setImage("@foto2",new Image("foto2.jpg"));
+         grid.setItems(items);
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
+      </pre>
+    * @since TotalCross 1.53.
+    */
+   public void setImage(String tag, Image image) throws ImageException
+   {
+      if (htImages == null)
+         htImages = new Hashtable(20);
+      htImages.put(tag, image.smoothScaledFixedAspectRatio(fmH,true,backColor));
    }
 }
