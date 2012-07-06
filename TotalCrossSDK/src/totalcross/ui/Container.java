@@ -887,9 +887,10 @@ public class Container extends Control
    }
 
    /** Moves the focus to the next Edit or MultiEdit control.
+    * @return The selected control or null if none was found.
     * @since TotalCross 1.25
     */
-   protected boolean moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
+   public Control moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
    {
       Vector v = tabOrder;
       int idx = v.indexOf(control);
@@ -911,11 +912,38 @@ public class Container extends Control
                   else
                      ((MultiEdit)c).popupKCC();
                }
-               return true;
+               return c;
             }
          }
       }
-      return false;
+      return null;
+   }
+
+   /** Moves the focus to the next control, which can be an Edit, a MultiEdit, or another control type.
+    * It does not show the keyboard.
+    * @return The selected control or null if none was found.
+    * @since TotalCross 1.53
+    */
+   public Control moveFocusToNextControl(Control control, boolean forward) // guich@tc125_26
+   {
+      Vector v = tabOrder;
+      int idx = v.indexOf(control);
+      int n = v.size();
+      if (idx >= 0 && n > 1)
+      {
+         for (int i = n-1; i >= 0; i--)
+         {
+            if (forward && ++idx == n) idx = 0; else
+            if (!forward && --idx < 0) idx = n-1;
+            Control c = (Control)v.items[idx];
+            if (c != this && c.enabled && c.visible)
+            {
+               c.requestFocus();
+               return c;
+            }
+         }
+      }
+      return null;
    }
 
    /** Changes the focusTraversable property for this container and all controls, recursively */

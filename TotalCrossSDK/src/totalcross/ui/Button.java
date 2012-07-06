@@ -419,7 +419,7 @@ public class Button extends Control
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
-            if (autoRepeatTimer != null && autoRepeatTimer.triggered)
+            if (autoRepeatTimer != null && autoRepeatTimer.triggered && armed)
             {
                if (autoRepeatTimer.millis == INITIAL_DELAY)
                   autoRepeatTimer.millis = AUTO_DELAY;
@@ -436,6 +436,7 @@ public class Button extends Control
                autoRepeatTimer = addTimer(INITIAL_DELAY);
             break;
          case PenEvent.PEN_UP:
+            System.out.println("retirando timer");
             if (autoRepeat && autoRepeatTimer != null)
                disableAutoRepeat();
             if (!isSticky && armed) press(armed = false);

@@ -2899,7 +2899,9 @@ void updateScreen(Context currentContext)
       {
          if (transitionEffect == -1)
             transitionEffect = TRANSITION_NONE;
+         UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
          graphicsUpdateScreen(&screen, transitionEffect);
+         LOCKVAR(screen);
       }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       screen.dirtyX1 = screen.screenW;
