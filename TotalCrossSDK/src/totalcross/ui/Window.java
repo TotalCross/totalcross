@@ -1022,8 +1022,15 @@ public class Window extends Container
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
          if (title == null) title = uiAndroid ? "" : " ";
-         int ww = titleFont.fm.stringWidth(title);
-         int hh = borderStyle == NO_BORDER && title.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         String tit = title;
+         int ww = titleFont.fm.stringWidth(tit);
+         if (ww > this.width-6)
+         {
+            int idx = Convert.getBreakPos(titleFont.fm,new StringBuffer(tit), 0, this.width-6,false);
+            tit = tit.substring(0,idx);
+            ww = titleFont.fm.stringWidth(tit);
+         }            
+         int hh = borderStyle == NO_BORDER && tit.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
          hh += titleGap;
          int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
@@ -1054,7 +1061,7 @@ public class Window extends Container
                case ROUND_BORDER:
                   if (uiAndroid)
                   {
-                     boolean hasTitle = title != null && title.length() > 0;
+                     boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
                      gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
                      if (!hasTitle)
@@ -1083,10 +1090,10 @@ public class Window extends Container
             gg.backColor = b;
          }
          gg.setFont(titleFont);
-         gg.drawText(title, xx, yy, textShadowColor != -1, textShadowColor);
+         gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
          gg.setFont(font);
          if (rTitle == null)
-            rTitle = new Rect(xx-2,0,ww+4,hh==0 && title.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
+            rTitle = new Rect(xx-2,0,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
