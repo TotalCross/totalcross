@@ -485,7 +485,19 @@ The term “
 \series bold
 main class
 \series default
-” always refers to the class that extends totalcross.ui.MainWindow.
+” always refers to the class that extends 
+\family typewriter
+totalcross.ui.MainWindow
+\family default
+ or 
+\family typewriter
+totalcross.io.sync.Conduit
+\family default
+, or implements 
+\family typewriter
+totalcross.MainClass
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -493,10 +505,14 @@ The term “
 \series bold
 <TOTALCROSS_HOME>
 \series default
-” refers to the directory where the TotalCrossSDK is located.
- The default location is “C:
+” refers to the directory where the TotalCross SDK is located.
+ The default location is 
+\family typewriter
+C:
 \backslash
-TotalCrossSDK”.
+TotalCrossSDK
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -508,7 +524,7 @@ reference "chap:Copyright"
 \end_inset
 
 .
- By reading this book, you're agreeing with them.
+ By reading this text, you're agreeing with them.
 \end_layout
 
 \begin_layout Chapter
@@ -587,8 +603,8 @@ It has support for real multi-threading.
 \end_layout
 
 \begin_layout Itemize
-The tclass files stores internal information in little endian, since its
- the most widely used format of actual microprocessors.
+The TotalCross class (tclass) files stores internal information in little
+ endian, since its the most widely used format of actual microprocessors.
 \end_layout
 
 \begin_layout Itemize
@@ -600,23 +616,48 @@ The tclass files are highly optimized to save space.
 
 \begin_layout Itemize
 Supports headless applications (like daemon applications, without user interface
-): just implement the interface totalcross.MainClass and this class will
- be loaded by the TCVM.
- The appStarting and appEnding methods are called and the application exits.
+): just implement the interface 
+\family typewriter
+totalcross.MainClass
+\family default
+ and this class will be loaded by the TCVM.
+ The 
+\family typewriter
+appStarting()
+\family default
+ and 
+\family typewriter
+appEnding()
+\family default
+ methods are called and the application exits.
 \end_layout
 
 \begin_layout Itemize
-Supports the method “finalize”, ran every time the garbage collector (gc)
- finishes its job.
+Supports the method 
+\family typewriter
+finalize()
+\family default
+, ran every time the garbage collector (gc) finishes its job.
  There's a limitation: no objects can be created inside a finally method,
  otherwise the method will silently abort itself.
  Optionally, to improve GC's performance, you can define in your class a
- public non-static field named “dontFinalize” that, if present and set to
- “true”, will skip the finalize call.
- In most cases, the finalize is used to ensure that a class that holds system
- resources (like File or Socket) and should be closed to release these resources
- is always closed, either because the programmer forgot to do it himself
- or because the program was halted by an exception.
+ public non-static field named 
+\family typewriter
+dontFinalize
+\family default
+ that, if present and set to 
+\family typewriter
+true
+\family default
+, will skip the finalize call.
+ In most cases, 
+\family typewriter
+finalize()
+\family default
+ is used to ensure that a class that holds system resources (like file or
+ socket) and should be closed to release these resources is always closed,
+ either because the programmer forgot to do it himself or because the program
+ was halted by an exception.
 \end_layout
 
 \begin_layout Standard
@@ -634,8 +675,15 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Note that you must define the field “dontFinalize” and set it to true when
- the close method is run for the first time.
+Note that you must define the field 
+\family typewriter
+dontFinalize
+\family default
+ and set it to 
+\family typewriter
+true
+\family default
+ when the close method is run for the first time.
  Otherwise the gc will try to finalize an object that was already closed
  by the programmer, which may cause trouble.
  Doing so also speeds up the gc.
@@ -651,16 +699,46 @@ The TotalCross vm also has a drawback:
 \end_layout
 
 \begin_layout Itemize
-It does not support the float type, only double.
+It does not support the 
+\family typewriter
+float
+\family default
+ type, only 
+\family typewriter
+double
+\family default
+.
  This option was adopted because all actual PDA processors have a math co-proces
 sor, and also because the vast majority of mobile applications are not scientifi
 c programs.
- During our research, we found that float types are two times faster than
- double, but this small performance difference does not make up for the
- overhead needed to add float type support to the virtual machine.
- The change from float to double will be done by the translator to let legacy
- applications work, however, you should change your application to use double,
- since there's no benefit by using float.
+ During our research, we found that 
+\family typewriter
+float
+\family default
+ types are two times faster than double, but this small performance difference
+ does not make up for the overhead needed to add 
+\family typewriter
+float
+\family default
+ type support to the virtual machine.
+ The change from 
+\family typewriter
+float
+\family default
+ to 
+\family typewriter
+double
+\family default
+ will be done by the translator to let legacy applications work, however,
+ you should change your application to use 
+\family typewriter
+double
+\family default
+, since there's no benefit by using 
+\family typewriter
+float
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -672,7 +750,7 @@ TotalCross supports preemptive threads using the native thread mechanism
  of each supported platform.
  On Android, iPhone and Linux, it uses pthread; on Palm OS, it uses the
  undocumented (and quite limited) thread api; on Windows, it uses the quite
- well documented thread api, in Blackberry, it uses the Java's thread scheduler.
+ well documented thread api, in BlackBerry, it uses the Java's thread scheduler.
 \end_layout
 
 \begin_layout Standard
@@ -689,20 +767,31 @@ synchronized
 \family typewriter
 synchronized(object)
 \family default
-, and the only object type that can be used as parameter is the totalcross.util.co
-ncurrent.Lock.
+, and the only object type that can be used as parameter is the 
+\family typewriter
+totalcross.util.concurrent.Lock
+\family default
+.
  If you use 
 \family typewriter
 synchronized(this)
 \family default
-, the tc.Deploy will abort during deploy; if you use synchronized with an
- object from any other class besides the Lock class, a 
+, the 
+\family typewriter
+tc.Deploy
+\family default
+ will abort during deploy; if you use synchronized with an object from any
+ other class besides the 
+\family typewriter
+Lock
+\family default
+ class, a 
 \family typewriter
 RuntimeException
 \family default
  will be thrown when your program runs in the TotalCross virtual machine.
- Note that these problems will not occur when running under Java desktop,
- only when running at the TCVM.
+ Note that these problems will not occur when running on Java desktop, only
+ when running on TCVM.
  Here's a sample that shows how to use it:
 \end_layout
 
@@ -725,7 +814,7 @@ TestConcurrent.java}
 
 \begin_layout Standard
 In the sample above, commenting out the line marked with *****, the log
- ListBox will be filled randomly by the threads.
+ list box will be filled randomly by the threads.
  With the lock, it will be filled in sequence, because each thread will
  gain the lock once, and the other threads will have to wait the main loop
  of the lock owner finish before starting their loops.
@@ -748,7 +837,7 @@ Graphics, Palette and Color
 \end_layout
 
 \begin_layout Standard
-TotalCross has a Graphics engine written from scratch, and some important
+TotalCross has a graphics engine written from scratch, and some important
  performance-tailored decisions were taken.
 \end_layout
 
@@ -758,7 +847,7 @@ Regardless of the device's color depth, the screen and images are stored
  All drawings are made into a single off screen, which is then converted
  on the fly to the device's screen color depth when the 
 \family typewriter
-updateScreen
+updateScreen()
 \family default
  method is called.
 \end_layout
@@ -772,9 +861,12 @@ If the screen is 8 bpp, a variant of the 685 palette (6 bits for red, 8
 \end_layout
 
 \begin_layout Standard
-The Graphics class supports real clipping, which allowed us to support container
-s that automatically show scrollbars if components are placed beyond its
- limits.
+The 
+\family typewriter
+Graphics
+\family default
+ class supports real clipping, which allowed us to support containers that
+ automatically show scrollbars if components are placed beyond its limits.
 \end_layout
 
 \begin_layout Standard
@@ -811,14 +903,14 @@ aControl.setRect(LEFT, TOP, FILL, FILL)
  should be used to produce the same result without affecting the repositioning.
  If you really have to use 
 \family typewriter
-getClientRect
+getClientRect()
 \family default
 , you must also override the 
 \family typewriter
-reposition
+reposition()
 \family default
  method to support screen rotation.
- (see the WorldWatch sample)
+ (see the WorldWatch sample).
 \end_layout
 
 \end_inset
@@ -827,8 +919,20 @@ reposition
 \end_layout
 
 \begin_layout Standard
-Colors are represented by int values in the 0xRRGGBB format.
- A null color is represented by the value -1.
+Colors are represented by 
+\family typewriter
+int
+\family default
+ values in the 
+\family typewriter
+0xRRGGBB
+\family default
+ format.
+ A 
+\family typewriter
+null
+\family default
+ color is represented by the value -1.
 \end_layout
 
 \begin_layout Section
@@ -872,9 +976,9 @@ lly when the application is deployed.
 \end_layout
 
 \begin_layout Standard
-However, this also means that you cannot retrieve the your application's
- source files from the deployed application, so don't forget to backup your
- source files!
+However, this also means that you cannot retrieve your application's source
+ files from the deployed application, so don't forget to backup your source
+ files!
 \end_layout
 
 \begin_layout Section
@@ -883,9 +987,9 @@ Getting Started
 
 \begin_layout Standard
 Be sure to read the API javadocs at 
-\series bold
+\family typewriter
 TotalCrossSDK/docs/html/index.html
-\series default
+\family default
 .
  
 \end_layout
@@ -905,8 +1009,8 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The javadocs and this book are complementary, and the javadocs are updated
- more often than this book.
+The javadocs and this reference manual are complementary, and the javadocs
+ are updated more often than this text.
  So make sure to read them for more information.
 \end_layout
 
@@ -917,9 +1021,9 @@ The javadocs and this book are complementary, and the javadocs are updated
 
 \begin_layout Standard
 There are some examples in the 
-\series bold
+\family typewriter
 TotalCrossSDK/src/java/tc/samples
-\series default
+\family default
  directories.
  These samples covers the usage of a great portion of TotalCross' class
  library, so it's a good source of information from where you can start
@@ -943,7 +1047,7 @@ Bug Reporting
 \end_layout
 
 \begin_layout Standard
-If you'd like to report a bug or problem within the TotalCrossSDK – including,
+If you'd like to report a bug or problem within the TotalCross SDK – including,
  but not limited to:
 \end_layout
 
@@ -968,7 +1072,8 @@ target "http://www.superwaba.com.br/en/changelogs.asp"
 
 \end_inset
 
- and check if your bug was already fixed on a later version of the TotalCrossSDK.
+ and check if your bug was already fixed on a later version of the TotalCross
+ SDK.
 \end_layout
 
 \begin_layout Standard
@@ -1006,6 +1111,10 @@ Devices used, e.g.
 \end_layout
 
 \begin_layout Itemize
+Device model.
+\end_layout
+
+\begin_layout Itemize
 Bug description.
 \end_layout
 
@@ -1016,6 +1125,10 @@ How to reproduce the bug?
 \begin_layout Standard
 For documentation problems and such, just pointing the resource and the
  problem is enough.
+\end_layout
+
+\begin_layout Standard
+The purchased support can also be used to solve doubts about using TotalCross.
 \end_layout
 
 \begin_layout Chapter
@@ -1041,8 +1154,8 @@ On devices, performing a hard-reset allows you to reinstall the VM and have
 \end_layout
 
 \begin_layout Standard
-On Win32, this can only be done by reformatting your hard drive and reinstalling
- Windows.
+On Win32 (Windows 2000, XP, Vista or Seven), this can only be done by reformatti
+ng your hard drive and reinstalling Windows.
 \end_layout
 
 \begin_layout Standard
@@ -1054,7 +1167,15 @@ In most situations, you will install several programs that will share the
  same TCVM.
  For instance, you can install 10 or more samples and a single virtual machine.
  However, if you're deploying an application to your costumer, you can package
- the vm with your application, using the tc.Deploy's /p option.
+ the vm with your application, using the 
+\family typewriter
+tc.Deploy
+\family default
+'s 
+\family typewriter
+/p
+\family default
+ option.
  In this case, a single package is needed.
 \end_layout
 
@@ -1079,19 +1200,20 @@ TotalCrossSDK
 - dist
 \end_layout
 
+\begin_deeper
 \begin_layout Description
 
 \family typewriter
 + samples
 \end_layout
 
-\begin_deeper
 \begin_layout Description
 
 \family typewriter
 + vm
 \end_layout
 
+\end_deeper
 \begin_layout Description
 
 \family typewriter
@@ -1111,67 +1233,165 @@ TotalCrossSDK
 \end_layout
 
 \end_deeper
-\end_deeper
 \begin_layout Standard
-Inside dist, we have:
+Inside 
+\family typewriter
+dist
+\family default
+, we have:
 \end_layout
 
 \begin_layout Itemize
-TotalCrossSDK/dist/tc.jar : This file contains all totalcross.* base classes
- and deploy tools, and it should be added to the classpath of your chosen
- IDE.
+
+\family typewriter
+TotalCrossSDK/dist/tc.jar
+\family default
+ : This file contains all 
+\family typewriter
+totalcross.*
+\family default
+ base classes and deploy tools, and it should be added to the classpath
+ of your chosen IDE.
 \end_layout
 
 \begin_layout Itemize
-TotalCrossSDK/dist/tcweb.jar : This file contains all totalcross.* base classes
- and fonts, to be used if you want to run the application in a browser.
+
+\family typewriter
+TotalCrossSDK/dist/tcweb.jar
+\family default
+ : This file contains all 
+\family typewriter
+totalcross.*
+\family default
+ base classes and fonts, to be used if you want to run the application in
+ a browser.
 \end_layout
 
 \begin_layout Itemize
+
+\family typewriter
 TotalCrossSDK
 \backslash
 dist
 \backslash
-samples : Installation files for all samples.
- Lets take the UIGadgets sample, located at TotalCrossSDK
+samples
+\family default
+: Installation files for all samples.
+ Lets take the UIGadgets sample, located at 
+\family typewriter
+TotalCrossSDK
 \backslash
 dist
 \backslash
 samples
 \backslash
-UIGadgets.
+UIGadgets
+\family default
+.
  Inside there's an install folder, and below the following folders:
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-applet: contains some html files (representing most used devices) and the
- application's jar.
+
+\family typewriter
+applet
+\family default
+: contains some 
+\family typewriter
+.html
+\family default
+ files (representing most used devices) and the application's jar.
  Using a multi-tabbed browser, you should close it every time you open one
- of the samples html, otherwise errors may occur.
+ of the samples 
+\family typewriter
+.html
+\family default
+, otherwise errors may occur.
+ You should also give special permission for file usage so that it is possible
+ to manipulate files and Litebase.
 \end_layout
 
 \begin_layout Itemize
-bb: blackberry installation files.
- The alx, cod and jad files are used to deploy the file to the device, and
- the csl and cso to sign the file.
- (more information on the BlackBerry installation section)
+
+\family typewriter
+bb
+\family default
+: BlackBerry installation files.
+ The 
+\family typewriter
+.alx
+\family default
+, 
+\family typewriter
+.cod
+\family default
+ and 
+\family typewriter
+.jad
+\family default
+ files are used to deploy the file to the device, and the 
+\family typewriter
+.csl
+\family default
+ and 
+\family typewriter
+.cso
+\family default
+ to sign the file.
+ (more information on the BlackBerry installation section).
 \end_layout
 
 \begin_layout Itemize
-iphone2+: for newer versions of the iPhone OS, contains a .deb file.
+
+\family typewriter
+iphone2+
+\family default
+: for newer versions of the iPhone OS, contains a 
+\family typewriter
+.deb
+\family default
+ file.
  
 \end_layout
 
 \begin_layout Itemize
-palm: contains the pdb and prc files to be installed on the device.
- Optionally, you may use the install.exe file, which installs the same files,
- but provides a simple installation interface.
+
+\family typewriter
+palm
+\family default
+: contains the 
+\family typewriter
+.pdb
+\family default
+ and 
+\family typewriter
+.prc
+\family default
+ files to be installed on the device.
+ Optionally, you may use the 
+\family typewriter
+install.exe
+\family default
+ file, which installs the same files, but provides a simple installation
+ interface.
 \end_layout
 
 \begin_layout Itemize
-win32: there are two files, an exe and a tcz, which must be copied to the
- same folder where the TotalCross VM for Win32 is located, or to a sub folder.
+
+\family typewriter
+win32
+\family default
+: there are two files, an 
+\family typewriter
+.exe
+\family default
+ and a 
+\family typewriter
+.tcz
+\family default
+, which must be copied to the same folder where the TotalCross VM for Win32
+ is located, or to a sub folder.
  The executable will search for the VM on these locations.
 \end_layout
 
@@ -1192,7 +1412,7 @@ status open
 \begin_layout Plain Layout
 If your desktop has the SDK installed, you may run the application from
  any place, as long as the environment variables set during the installation
- are not changed and the SDK installation folder is not moved
+ are not changed and the SDK installation folder is not moved.
 \end_layout
 
 \end_inset
@@ -1201,52 +1421,155 @@ If your desktop has the SDK installed, you may run the application from
 \end_layout
 
 \begin_layout Itemize
-wince: there are 6 cab files.
- Just run the bat file inside that folder and the correct cab file for the
- currently connected Windows CE device will be chosen.
- If it doesn't work, you may copy the cab file to your device and open it
- using the device's file explorer.
+
+\family typewriter
+wince
+\family default
+: there are 6 
+\family typewriter
+.cab
+\family default
+ files.
+ Just run the 
+\family typewriter
+.bat
+\family default
+ file inside that folder and the correct 
+\family typewriter
+.cab
+\family default
+ file for the currently connected Windows CE device will be chosen.
+ If it doesn't work, you may copy the 
+\family typewriter
+.cab
+\family default
+ file to your device and open it using the device's file explorer.
 \end_layout
 
 \begin_layout Itemize
-linux:a tcz file and a binary file.
+
+\family typewriter
+linux
+\family default
+: a 
+\family typewriter
+.tcz
+\family default
+ file and a binary file.
  They must be copied to where the vm is, or a folder below.
 \end_layout
 
 \begin_layout Itemize
-Android: an apk file that contains the binary and the tcz files.
+
+\family typewriter
+android
+\family default
+: an 
+\family typewriter
+.apk
+\family default
+ file that contains the binary and the 
+\family typewriter
+.tcz
+\family default
+ files.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
+
+\family typewriter
 TotalCrossSDK
 \backslash
 dist
 \backslash
-vm : virtual machine files that which will interpret your TotalCross code
- at the device.
- Below are instructions of how install them in each platform:
+vm
+\family default
+: virtual machine files that which will interpret your TotalCross code on
+ the device.
+ Below are instructions of how to install them in each platform:
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-bb: open the TotalCross.alx file in your blackberry desktop software.
+
+\family typewriter
+bb
+\family default
+: open the 
+\family typewriter
+TotalCross.alx
+\family default
+ file in your BlackBerry desktop software.
 \end_layout
 
 \begin_layout Itemize
-iphone2+: copy the .deb file into the device and execute a “dpkg -i <deb
- file>”
+
+\family typewriter
+iphone2+
+\family default
+: copy the 
+\family typewriter
+.deb
+\family default
+ file into the device and execute a 
+\family typewriter
+dpkg -i <deb file>
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-palm: install TCBase.pdb, TCFont.pdb and TCVM.prc.
- Optionally, you may simply execute the Install.exe file which installs the
- same files.
+
+\family typewriter
+palm
+\family default
+: install 
+\family typewriter
+TCBase.pdb
+\family default
+, 
+\family typewriter
+TCFont.pdb
+\family default
+, and 
+\family typewriter
+TCVM.prc
+\family default
+.
+ Optionally, you may simply execute the 
+\family typewriter
+Install.exe
+\family default
+ file which installs the same files.
 \end_layout
 
 \begin_layout Itemize
-win32: have the files TCSync.dll, TCSyncLib.tcz and TCVM.dll, TCBase.tcz and
- TCFont.tcz on the same folder of the application.
+
+\family typewriter
+win32
+\family default
+: have the files 
+\family typewriter
+TCSync.dll
+\family default
+, 
+\family typewriter
+TCSyncLib.tcz
+\family default
+, 
+\family typewriter
+TCVM.dll
+\family default
+, 
+\family typewriter
+TCBase.tcz
+\family default
+, and 
+\family typewriter
+TCFont.tcz
+\family default
+ on the same folder of the application.
 \end_layout
 
 \begin_layout Standard
@@ -1266,7 +1589,7 @@ status open
 \begin_layout Plain Layout
 If your desktop has the SDK installed, this is not required, as long as
  the environment variables set during the installation are not changed and
- the SDK installation folder is not moved
+ the SDK installation folder is not moved.
 \end_layout
 
 \end_inset
@@ -1275,66 +1598,156 @@ If your desktop has the SDK installed, this is not required, as long as
 \end_layout
 
 \begin_layout Itemize
-wince: just run the _CEInstall-RunMe.bat file and the correct cab file will
- be installed in the device (if the installation fails, there's also a bat
- file that can be used in Windows Mobile).
- Optionally, you can grab the TCVM.dll file inside the target plaform's folder
- and copy it to the device (preferrably, to 
+
+\family typewriter
+wince
+\family default
+: just run the 
+\family typewriter
+_CEInstall-RunMe.bat
+\family default
+ file and the correct 
+\family typewriter
+.cab
+\family default
+ file will be installed on the device (if the installation fails, there's
+ also a 
+\family typewriter
+.bat
+\family default
+ file that can be used on Windows Mobile).
+ Optionally, you can grab the 
+\family typewriter
+TCVM.dll
+\family default
+ file inside the target plaform's folder and copy it to the device (preferrably,
+ to 
+\family typewriter
+
 \backslash
-TotalCross).
- In this case, you must also copy the files TCBase.tcz and TCFont.tcz to the
- same folder.
+TotalCross
+\family default
+).
+ In this case, you must also copy the files 
+\family typewriter
+TCBase.tcz
+\family default
+ and 
+\family typewriter
+TCFont.tcz
+\family default
+ to the same folder.
 \end_layout
 
 \end_deeper
 \begin_layout Standard
-Inside docs, we have:
+Inside 
+\family typewriter
+docs
+\family default
+, we have:
 \end_layout
 
 \begin_layout Itemize
-TotalCross Companion.pdf.
+
+\family typewriter
+TotalCross Companion.pdf
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-The folder “html”, which contains the generated javadocs.
- Open the file index.html to see the javadocs start page.
+The folder 
+\family typewriter
+html
+\family default
+, which contains the generated javadocs.
+ Open the file 
+\family typewriter
+index.html
+\family default
+ to see the javadocs start page.
 \end_layout
 
 \begin_layout Standard
-Inside etc, we have the following folders:
+Inside 
+\family typewriter
+etc
+\family default
+, we have the following folders:
 \end_layout
 
 \begin_layout Itemize
-images: contains images used by the SDK.
+
+\family typewriter
+images
+\family default
+: contains images used by the SDK.
 \end_layout
 
 \begin_layout Itemize
-launchers: contains files used by the tc.Deploy.
+
+\family typewriter
+launchers
+\family default
+: contains files used by 
+\family typewriter
+tc.Deploy
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-security: contains signature files.
+
+\family typewriter
+security
+\family default
+: contains signature files.
 \end_layout
 
 \begin_layout Itemize
-tools: contains tools used by the tc.Deploy.
+
+\family typewriter
+tools
+\family default
+: contains tools used by 
+\family typewriter
+tc.Deploy
+\family default
+.
  Inside this folder, you may have to use the apache folder, which contains
  a xml-rpc server, and the commapi, which contains files that must be added
- to the classpath to use the PortConnector class at desktop.
+ to the classpath to use the 
+\family typewriter
+PortConnector
+\family default
+ class on desktop.
  There's also a high resolution fix for TreoPro devices, and a folder with
- some Android tools used to install the application at the device.
+ some Android tools used to install the application on the device.
 \end_layout
 
 \begin_layout Standard
-Inside src:
+Inside 
+\family typewriter
+src
+\family default
+:
 \end_layout
 
 \begin_layout Itemize
-tc/samples: the sources files of all samples.
+
+\family typewriter
+tc/samples:
+\family default
+ the sources files of all samples.
 \end_layout
 
 \begin_layout Itemize
-totalcross: the sources files of the TotalCross API used at desktop.
+
+\family typewriter
+totalcross
+\family default
+: the sources files of the TotalCross API used on the desktop.
 \end_layout
 
 \begin_layout Section
@@ -1342,7 +1755,7 @@ Running the Samples
 \end_layout
 
 \begin_layout Standard
-The TotalCrossSDK comes with various sample applications along with their
+The TotalCross SDK comes with various sample applications along with their
  source code.
  The samples are simple and most of them address a specific feature.
  They were designed to show you the TotalCross main features and to provide
@@ -1351,9 +1764,9 @@ The TotalCrossSDK comes with various sample applications along with their
 
 \begin_layout Standard
 The built samples can be found on 
-\series bold
+\family typewriter
 TotalCrossSDK/dist/samples
-\series default
+\family default
 .
  Just follow the installation instructions from chapter 6 and run the sample
  on your target platform.
@@ -1377,18 +1790,59 @@ However, this similarity is often also source of problems, so before writing
 
 \begin_layout Itemize
 The entry point of a TotalCross application is always a class that extends
- the class MainWindow (directly or indirectly) or implements the interface
- MainClass.
+ the class 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MainWindow
+\family default
+ (directly or indirectly, such as 
+\family typewriter
+Conduit
+\family default
+) or implements the interface 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MainClass
+\family default
+.
  It is not possible to directly run TotalCross applications in Java, in
- this case, you must use the Launcher provided with the SDK.
- (see Chapter 4 for details about the totalcross.Launcher)
+ this case, you must use the lLauncher provided with the SDK.
+ (see Chapter 4 for details about 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+totalcross.Launcher
+\family default
+)
 \end_layout
 
 \begin_layout Itemize
-For your convenience, the TotalCross package “totalcross.lang” is directly
- mapped to the Java package “java.lang”.
- Therefore, you may refer to classes from this package, like Object or String,
- like you would in any Java application, without requiring any explicit
+For your convenience, the TotalCross package 
+\family typewriter
+totalcross.lang
+\family default
+ is directly mapped to the Java package 
+\family typewriter
+java.lang
+\family default
+.
+ Therefore, you may refer to classes from this package, such as 
+\family typewriter
+Object
+\family default
+ or 
+\family typewriter
+String
+\family default
+, like you would in any Java application, without requiring any explicit
  import.
 \end_layout
 
@@ -1396,12 +1850,30 @@ For your convenience, the TotalCross package “totalcross.lang” is directly
 \begin_layout Standard
 Unfortunately this feature can be misleading, because the opposite is NOT
  true.
- The java.lang package does have members (interfaces, classes, exceptions
- or errors) that are not available in totalcross.lang – and some of the members
- that are available, may not implement all the methods provided by the homonymou
-s member.
- Some examples are the Integer class and the String method “split”, which
- are not implemented by TotalCross.
+ The 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+java.lang
+\family default
+ package does have members (interfaces, classes, exceptions or errors) that
+ are not available in 
+\family typewriter
+totalcross.lang
+\family default
+ – and some of the members that are available, may not implement all the
+ methods provided by the homonymous member.
+ Some examples are the 
+\family typewriter
+Integer
+\family default
+ class and the method 
+\family typewriter
+String.split()
+\family default
+, which are not implemented by TotalCross.
 \end_layout
 
 \begin_layout Standard
@@ -1414,8 +1886,12 @@ This is one of the most common pitfalls when developing TotalCross applications
 \begin_layout Standard
 To avoid this problem, the TotalCross deployer verifies the class files,
  reporting any invalid references found.
- The deployer will throw an Exception if you try to deploy an application
- with references to classes not available in totalcross.lang.
+ The deployer will throw an exception if you try to deploy an application
+ with references to classes not available in 
+\family typewriter
+totalcross.lang
+\family default
+.
 \end_layout
 
 \end_deeper
@@ -1427,8 +1903,15 @@ TotalCross is compatible only with the Java 1.1 class file format, therefore
 
 \begin_deeper
 \begin_layout Standard
-If you're compiling using javac from command line (or an ANT file), add
- this to your command line: "-target 1.1 -source 1.2".
+If you're compiling using 
+\family typewriter
+javac
+\family default
+ from command line (or an ANT file), add this to your command line: 
+\family typewriter
+-target 1.1 -source 1.2
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -1437,7 +1920,7 @@ If you're using a Java IDE, look for its Java Compiler settings and set
 \end_layout
 
 \begin_layout Standard
-Again, the deployer will throw an Exception if it detects an invalid class
+Again, the deployer will throw an exception if it detects an invalid class
  file format.
 \end_layout
 
@@ -1455,28 +1938,46 @@ For our first application, let's make a typical “Hello World” application
 First, make sure you have a JDK installed (preferably the JDK 6) and the
  environment variables are set.
  There should be a JAVA_HOME variable set with the installation path of
- your JDK, like “C:
+ your JDK, like 
+\family typewriter
+C:
 \backslash
 Program Files
 \backslash
 Java
 \backslash
-jdk1.6.0_11”.
+jdk1.6.0_11
+\family default
+.
 \end_layout
 
 \begin_layout Standard
 And another variable named PATH, which should contain a list of paths, separated
- by semicolons, with the path to the JDK's bin directory, like “%JAVA_HOME%
+ by semicolons, with the path to the JDK's bin directory, like 
+\family typewriter
+%JAVA_HOME%
 \backslash
-bin”.
- If you don't do this, you will get the error: “[preverify] JAR file creation
- failed with error -1”.
+bin
+\family default
+.
+ If you don't do this, you will get the error: 
+\family typewriter
+[preverify] JAR file creation failed with error -1
+\family default
+.
 \end_layout
 
 \begin_layout Standard
-You may also add the path to the TotalCross jar file (located in TotalCrossSDK/d
-ist/tc.jar) to your CLASSPATH environment variable (or create one if the
- variables does not exists).
+You may also add the path to the TotalCross 
+\family typewriter
+.jar
+\family default
+ file (located in 
+\family typewriter
+TotalCrossSDK/dist/tc.jar
+\family default
+) to your CLASSPATH environment variable (or create one if the variables
+ does not exists).
 \end_layout
 
 \begin_layout Standard
@@ -1496,7 +1997,10 @@ status open
 \begin_layout Plain Layout
 The usage of the CLASSPATH variable is usually not advised, because it may
  cause conflicts when different classes share the same package structure.
- Creating an ANT build file and using the command line option -classpath
+ Creating an ANT build file and using the command line option 
+\family typewriter
+-classpath
+\family default
  is a better choice.
 \end_layout
 
@@ -1506,8 +2010,11 @@ The usage of the CLASSPATH variable is usually not advised, because it may
 \end_layout
 
 \begin_layout Standard
-Open your text editor and write the code below, saving the file as HelloWorld.jav
-a:
+Open your text editor and write the code below, saving the file as 
+\family typewriter
+HelloWorld.java
+\family default
+:
 \end_layout
 
 \begin_layout Standard
@@ -1532,8 +2039,11 @@ Don't worry about understanding the code, this will be covered later.
 \end_layout
 
 \begin_layout Standard
-Now open a command shell at the directory where the HelloWorld.java was saved,
- and execute the following command:
+Now open a command shell at the directory where the 
+\family typewriter
+HelloWorld.java
+\family default
+ was saved, and execute the following command:
 \end_layout
 
 \begin_layout Standard
@@ -1557,8 +2067,16 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Remember, If you preferred to not use the CLASSPATH variable, you must ALWAYS
- specify the path to the tc.jar file using the -classpath option, like this:
+Remember, if you preferred to not use the CLASSPATH variable, you must ALWAYS
+ specify the path to the 
+\family typewriter
+tc.jar
+\family default
+ file using the 
+\family typewriter
+-classpath
+\family default
+ option, like this:
 \end_layout
 
 \begin_layout Plain Layout
@@ -1585,7 +2103,11 @@ Otherwise, the Java compiler won't be able to find the TotalCross classes
 
 \begin_layout Standard
 If successful, the Java compiler should finish silently, creating a new
- file named HelloWorld.class.
+ file named 
+\family typewriter
+HelloWorld.class
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -1593,7 +2115,7 @@ Running with the Launcher (on JDK)
 \end_layout
 
 \begin_layout Standard
-Using the Launcher, we can run our application and take a look at the result.
+Using the launcher, we can run our application and take a look at the result.
  Using a command shell, execute the following command:
 \end_layout
 
@@ -1604,8 +2126,11 @@ java -classpath .;%CLASSPATH% totalcross.Launcher HelloWorld
 \end_layout
 
 \begin_layout Standard
-Here we are executing the Java application totalcross.Launcher, passing the
- name of our main class (case sensitive) as argument.
+Here we are executing the Java application 
+\family typewriter
+totalcross.Launcher
+\family default
+, passing the name of our main class (case sensitive) as argument.
 \end_layout
 
 \begin_layout Standard
@@ -1623,9 +2148,16 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-In this case, the usage of the option -classpath is needed because the HelloWorl
-d.class is not in a valid package directory structure, so we must add the
- current folder to the classpath.
+In this case, the usage of the option 
+\family typewriter
+-classpath
+\family default
+ is needed because the 
+\family typewriter
+HelloWorld.class
+\family default
+ is not in a valid package directory structure, so we must add the current
+ folder to the classpath.
 \end_layout
 
 \end_inset
@@ -1634,7 +2166,7 @@ d.class is not in a valid package directory structure, so we must add the
 \end_layout
 
 \begin_layout Standard
-The following window should appear on your screen
+The following window should appear on your screen:
 \end_layout
 
 \begin_layout Standard
@@ -1670,7 +2202,7 @@ Deploying and running on Win32
 \end_layout
 
 \begin_layout Standard
-The Launcher provided us a quick way to look at our application's appearance,
+The launcher provided us a quick way to look at our application's appearance,
  but that's still a Java application.
  To actually deploy our application to all platforms supported by TotalCross,
  go back to the command shell and execute this command:
@@ -1697,8 +2229,15 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Remember to use the -classpath option with the tc.jar path if you're not
- using the CLASSPATH environment variable.
+Remember to use the 
+\family typewriter
+-classpath
+\family default
+ option with the 
+\family typewriter
+tc.jar
+\family default
+ path if you're not using the CLASSPATH environment variable.
 \end_layout
 
 \end_inset
@@ -1707,22 +2246,35 @@ Remember to use the -classpath option with the tc.jar path if you're not
 \end_layout
 
 \begin_layout Standard
-This time, we are executing the program tc.Deploy, passing the name of our
- main class as the first argument, and the platforms to deploy as the second
- argument – in this case all platforms.
- (see Chapter 5 for more information about the Deployment process)
+This time, we are executing the program 
+\family typewriter
+tc.Deploy
+\family default
+, passing the name of our main class as the first argument, and the platforms
+ to deploy as the second argument – in this case all platforms.
+ (see Chapter 5 for more information about the Deployment process).
 \end_layout
 
 \begin_layout Standard
-A new folder named “install” will be created, and inside it you should find
- several folders, each one containing the installer (or the executable)
- for each supported platform.
+A new folder named 
+\family typewriter
+install
+\family default
+ will be created, and inside it you should find several folders, each one
+ containing the installer (or the executable) for each supported platform.
 \end_layout
 
 \begin_layout Standard
 We should be able now to run the Win32 version of our application, so let's
- move to ./install/win32 and run the executable HelloWorld.exe, which should
- look like this:
+ move to 
+\family typewriter
+./install/win32
+\family default
+ and run the executable 
+\family typewriter
+HelloWorld.exe
+\family default
+, which should look like this:
 \end_layout
 
 \begin_layout Standard
@@ -1750,8 +2302,11 @@ status open
 
 \begin_layout Standard
 The default screen size is 240x320.
- You can change the screen size and position by editing the exe shortcut
- and adding the parameter 
+ You can change the screen size and position by editing the 
+\family typewriter
+.exe
+\family default
+ shortcut and adding the parameter 
 \family typewriter
 /scr x,y,width,height
 \family default
@@ -1776,9 +2331,9 @@ The Launcher
 \end_layout
 
 \begin_layout Standard
-The TotalCross Launcher, is a Java application that allows you to run a
- TotalCross application over the installed JDK, providing you a quick way
- to run and test your application.
+The TotalCross Launcher is a Java application that allows you to run a TotalCros
+s application over the installed JDK, providing you a quick way to run and
+ test your application.
 \end_layout
 
 \begin_layout Standard
@@ -1796,10 +2351,15 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Some people think that running the application at desktop under an IDE (such
- as Eclipse or Netbeans) will use the TotalCross virtual machine.
+Some people think that running the application on the desktop under an IDE
+ (such as Eclipse or Netbeans) or on BlackBerry will use the TotalCross
+ virtual machine.
  This is not true: the actual virtual machine used is the one provided in
- the Java Development Kit installed (or java.exe).
+ the Java Development Kit installed (or 
+\family typewriter
+java.exe
+\family default
+) on the desktop and a virtual machine based on J2ME on BlackBerry.
 \end_layout
 
 \end_inset
@@ -1808,13 +2368,13 @@ Some people think that running the application at desktop under an IDE (such
 \end_layout
 
 \begin_layout Standard
-You may also pass arguments to the Launcher to simulate different resolutions
+You may also pass arguments to the launcher to simulate different resolutions
  and styles, and have an idea of how your application is going to look like
  on a particular device.
 \end_layout
 
 \begin_layout Standard
-The basic format for using the Launcher is:
+The basic format for using the launcher is:
 \end_layout
 
 \begin_layout Standard
@@ -1830,19 +2390,6 @@ The optional arguments can be any combination of the following (not case
 
 \begin_layout Subsection*
 Screen resolution and color depth
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-TabPositions{3.5cm}
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -1859,266 +2406,208 @@ height "1in"
 height_special "totalheight"
 status open
 
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\begin_layout Itemize
+
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-<W>x<H> : sets the width and height.
+<W>x<H>
+\family default
+: sets the width and height.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\begin_layout Itemize
+
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-<W>x<H>x<BPP> : sets the width, height and color depth.
+<W>x<H>x<bpp>
+\family default
+: sets the width, height and color depth.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\begin_layout Itemize
+
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-PalmLo : Palm OS low 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+PalmLo
+\family default
+: Palm OS low (same of 
+\family typewriter
+/scr 160x160x8
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 160x160x8)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-PalmHI : Palm OS high 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- (same of /scr 320x320x16) 
+PalmHI
+\family default
+: Palm OS high (same of 
+\family typewriter
+/scr 320x320x16
+\family default
+), the 
 \series bold
 default
+\series default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\begin_layout Itemize
+
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-PalmTall : Palm OS tall 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+PalmTall
+\family default
+: Palm OS tall (same of 
+\family typewriter
+/scr 320x480x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 320x480x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-PalmWide : Palm OS wide 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+PalmWide
+\family default
+: Palm OS wide (same of 
+\family typewriter
+/scr 480x320x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 480x320x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-WinCE : Windows CE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+WinCE
+\family default
+: Windows CE (same of 
+\family typewriter
+/scr 240x320x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 240x320x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-Win32 : Windows 32 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+Win32
+\family default
+: Windows 32 (same of 
+\family typewriter
+/scr 240x320x24
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 240x320x24)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-bbLo : BlackBerry low 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+bbLo
+\family default
+: BlackBerry low (same of 
+\family typewriter
+/scr 320x240x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 320x240x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-bbBold : BlackBerry Bold 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+bbBold
+\family default
+: BlackBerry Bold (same of 
+\family typewriter
+/scr 480x360x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 480x360x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-bbStorm : BlackBerry Storm 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+bbStorm
+\family default
+: BlackBerry Storm (same of 
+\family typewriter
+/scr 480x320x16
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 480x320x16)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-iPhone : iPhone 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+iPhone
+\family default
+: iPhone (same of 
+\family typewriter
+/scr 320x480x24
+\family default
+).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (same of /scr 320x480x24)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /scr.<W>x<H>x<BPP>00
+\family typewriter
 /scr
 \begin_inset space ~
 \end_inset
 
-android : Android 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- (same of /scr 320x480x16)
+android
+\family default
+: Android (same of 
+\family typewriter
+/scr 320x480x16
+\family default
+).
 \end_layout
 
 \end_inset
@@ -2128,19 +2617,6 @@ tab
 
 \begin_layout Subsection*
 Color depth
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-TabPositions{6cm}
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -2157,96 +2633,56 @@ height "1in"
 height_special "totalheight"
 status open
 
-\begin_layout Labeling
-\labelwidthstring /bpp.320
+\begin_layout Itemize
+
+\family typewriter
 /bpp
 \begin_inset space ~
 \end_inset
 
-8 : emulates 8 bits per pixel screens.
- 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+8
+\family default
+: emulates 8 bits per pixel screens.
+ (256 colors).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (256 colors)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /bpp.320
+\family typewriter
 /bpp
 \begin_inset space ~
 \end_inset
 
-16 : emulates 16 bits per pixel screens.
- 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+16
+\family default
+: emulates 16 bits per pixel screens.
+ (64K colors).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (64K colors)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /bpp.320
+\family typewriter
 /bpp
 \begin_inset space ~
 \end_inset
 
-24 : emulates 24 bits per pixel screens.
- 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
+24
+\family default
+: emulates 24 bits per pixel screens.
+ (16M colors).
 \end_layout
 
-\end_inset
+\begin_layout Itemize
 
- (16M colors)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring /bpp.320
+\family typewriter
 /bpp
 \begin_inset space ~
 \end_inset
 
-32 : emulates 32 bits per pixel screens.
- 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- (16M colors without transparency)
+32
+\family default
+: emulates 32 bits per pixel screens.
+ (16M colors without transparency).
 \end_layout
 
 \end_inset
@@ -2272,49 +2708,64 @@ height "1in"
 height_special "totalheight"
 status open
 
-\begin_layout Labeling
-\labelwidthstring /uiStyle.PalmOS0
+\begin_layout Itemize
+
+\family typewriter
 /uiStyle
 \begin_inset space ~
 \end_inset
 
-WinCE : Windows CE user interface style
+WinCE
+\family default
+: Windows CE user interface style.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /uiStyle.PalmOS0
+\begin_layout Itemize
+
+\family typewriter
 /uiStyle
 \begin_inset space ~
 \end_inset
 
-PalmOS : Palm OS user interface style
+PalmOS
+\family default
+: Palm OS user interface style.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /uiStyle.PalmOS0
+\begin_layout Itemize
+
+\family typewriter
 /uiStyle
 \begin_inset space ~
 \end_inset
 
-Flat : Flat user interface style
+Flat
+\family default
+: Flat user interface style.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /uiStyle.PalmOS0
+\begin_layout Itemize
+
+\family typewriter
 /uiStyle
 \begin_inset space ~
 \end_inset
 
-Vista : Vista user interface style
+Vista
+\family default
+: Vista user interface style.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /uiStyle.PalmOS0
+\begin_layout Itemize
+
+\family typewriter
 /uiStyle
 \begin_inset space ~
 \end_inset
 
-Android : Android user interface style
+Android
+\family default
+: Android user interface style.
 \end_layout
 
 \end_inset
@@ -2340,40 +2791,70 @@ height "1in"
 height_special "totalheight"
 status open
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/penlessDevice : acts as a device that has no touch screen.
+\begin_layout Itemize
+
+\family typewriter
+/penlessDevice
+\family default
+: acts as a device that has no touch screen.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/geofocus : uses geographical focus (also activates penlessDevice)
+\begin_layout Itemize
+
+\family typewriter
+/geofocus
+\family default
+: uses geographical focus (also activates 
+\family typewriter
+penlessDevice
+\family default
+).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/fingerTouch : simulates the use of fingers (since a finger is less precise
- than a pen, uses an algorithm to find the control near the finger and also
- activates drag and flick).
+\begin_layout Itemize
+
+\family typewriter
+/fingerTouch
+\family default
+: simulates the use of fingers (since a finger is less precise than a pen,
+ uses an algorithm to find the control near the finger and also activates
+ drag and flick).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/unmovableSip : specifies that the Soft Input Panel is unmovable, and simulates
- the screen shift that's made when an Edit or MultiEdit gains focus.
+\begin_layout Itemize
+
+\family typewriter
+/unmovableSip
+\family default
+: specifies that the Soft Input Panel (SIP) is unmovable, and simulates
+ the screen shift that's made when an 
+\family typewriter
+Edit
+\family default
+ or 
+\family typewriter
+MultiEdit
+\family default
+ gains focus.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/keypadOnly : acts as a device that has only the 0-9{*}
+\begin_layout Itemize
+
+\family typewriter
+/keypadOnly
+\family default
+: acts as a device that has only the 0-9{*}
 \backslash
-# keys
+# keys.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /virtualKeyboard0
-/virtualKeyboard : specifies that the device does not have a physical keyboard
- (or it has but the keyboard is closed)
+\begin_layout Itemize
+
+\family typewriter
+/virtualKeyboard
+\family default
+: specifies that the device does not have a physical keyboard (or it has
+ but the keyboard is closed).
 \end_layout
 
 \end_inset
@@ -2399,17 +2880,21 @@ height "1in"
 height_special "totalheight"
 status open
 
-\begin_layout Labeling
-\labelwidthstring /showmousepos00
+\begin_layout Itemize
+
+\family typewriter
 /pos
 \begin_inset space ~
 \end_inset
 
-x,y : sets the opening position of the application.
+x,y
+\family default
+: sets the opening position of the application.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /showmousepos00
+\begin_layout Itemize
+
+\family typewriter
 /scale
 \begin_inset space ~
 \end_inset
@@ -2422,32 +2907,43 @@ to
 \begin_inset space ~
 \end_inset
 
-4> : scales the screen, magnifying the contents (if greater than 1) or shrinking
+4>
+\family default
+: scales the screen, magnifying the contents (if greater than 1) or shrinking
  (if between 0 and 1).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /showmousepos00
+\begin_layout Itemize
+
+\family typewriter
 /dataPath
 \begin_inset space ~
 \end_inset
 
-<path> : sets where the PDB and media files are stored.
+<path>
+\family default
+: sets where the PDB and media files are stored.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /showmousepos00
+\begin_layout Itemize
+
+\family typewriter
 /cmdLine
 \begin_inset space ~
 \end_inset
 
-<...> : the rest of the arguments (except the last one) are passed as the command
+<...>
+\family default
+: the rest of the arguments (except the last one) are passed as the command
  line to the application being launched.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /showmousepos00
-/showmousepos : shows the mouse position (only when running under JavaSE).
+\begin_layout Itemize
+
+\family typewriter
+/showmousepos
+\family default
+: shows the mouse position (only when running on JavaSE).
 \end_layout
 
 \end_inset
@@ -2456,16 +2952,23 @@ to
 \end_layout
 
 \begin_layout Standard
-The last argument passed to the Launcher is always the qualified name of
- the main class of the application to be launched (for example, tc.samples.ui.gadge
-ts.UIGadgets)
+The last argument passed to the launcher is always the qualified name of
+ the main class of the application to be launched (for example, 
+\family typewriter
+tc.samples.ui.gadgets.UIGadgets
+\family default
+).
 \end_layout
 
 \begin_layout Standard
 When running the application, the emulator shows some function keys that
  can be used to emulate a device key.
- For example, F9 tests the screen rotation using the Launcher and F11 opens
- the keyboard (or calendar) in an Edit field.
+ For example, F9 tests the screen rotation using the launcher and F11 opens
+ the keyboard (or calendar) in an 
+\family typewriter
+Edit
+\family default
+ field.
 \end_layout
 
 \begin_layout Chapter
@@ -2474,10 +2977,18 @@ Deployment Process
 
 \begin_layout Standard
 To deploy your TotalCross application, you must use the Java application
- named tc.Deploy, packaged with the tc.jar located at 
-\series bold
+ named 
+\family typewriter
+tc.Deploy
+\family default
+, packaged with the 
+\family typewriter
+tc.jar
+\family default
+ located at 
+\family typewriter
 TotalCrossSDK/dist
-\series default
+\family default
 .
 \end_layout
 
@@ -2496,7 +3007,10 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-To run a Java application from a jar file, you must specify the source jar
+To run a Java application from a jar file, you must specify the source 
+\family typewriter
+.jar
+\family default
  to the Java classpath, e.g.
  
 \family typewriter
@@ -2517,22 +3031,61 @@ tc.jar tc.Deploy […]
 \end_layout
 
 \begin_layout Standard
-The tc.Deploy program will, starting in the working directory, create folders
- with the installation files for each platform.
- A .tcz file is outputted with all classes and its dependencies, already
- translated to the target opcodes, and compressed with ZLib to save space.
+The 
+\family typewriter
+tc.Deploy
+\family default
+ program will, starting in the working directory, create folders with the
+ installation files for each platform.
+ A 
+\family typewriter
+.tcz
+\family default
+ file is outputted with all classes and its dependencies, already translated
+ to the target opcodes, and compressed with ZLib to save space.
  We recommend that the original classes are compiled with debug information,
- because line numbers will be included in the tcz and will be available
- in the stack trace (all other debug information are discarded).
- Bmp and Gif files are automatically converted to 24bpp Png files (JPeg
- are kept in its original format – read more about images below).
- The tcz file is not compliant with the .zip format, although ZLib is used,
- because we need to store more information in the tcz file.
+ because line numbers will be included in the 
+\family typewriter
+.tcz
+\family default
+ and will be available in the stack trace (all other debug information are
+ discarded).
+ 
+\family typewriter
+.bmp
+\family default
+ and 
+\family typewriter
+.gif
+\family default
+ files are automatically converted to 24bpp 
+\family typewriter
+.png
+\family default
+ files (JPeg are kept in its original format – read more about images below).
+ The 
+\family typewriter
+.tcz
+\family default
+ file is not compliant with the 
+\family typewriter
+.zip
+\family default
+ format, although ZLib is used, because we need to store more information
+ in the 
+\family typewriter
+.tcz
+\family default
+ file.
  Note that, since we translate the programs to our opcodes, there's no need
  to run obfuscators in the class file, because obfuscation is already done
  by the converter.
- Actually, tcz files are 1/4 of the original .class size, 50% due to our
- tclass file format and 50% more due to the zlib compression.
+ Actually, 
+\family typewriter
+.tcz
+\family default
+ files are 1/4 of the original class size, 50% due to our tclass file format
+ and 50% more due to the ZLib compression.
  
 \end_layout
 
@@ -2555,18 +3108,50 @@ Where:
 \end_layout
 
 \begin_layout Enumerate
-<application/library to deploy> must be one of the following:
+
+\family typewriter
+<application/library to deploy>
+\family default
+ must be one of the following:
 \end_layout
 
 \begin_deeper
 \begin_layout Itemize
-The main class file name (the .class, not the .java).
+The main class file name (the 
+\family typewriter
+.class
+\family default
+, not the 
+\family typewriter
+.java
+\family default
+).
  You can pass the full path to the main class file instead of its fully
- qualified name (App x my.sample.App).
+ qualified name (
+\family typewriter
+App
+\family default
+ x 
+\family typewriter
+my.sample.App
+\family default
+).
 \begin_inset Newline newline
 \end_inset
 
-For example, to deploy my.sample.App at C:/myprogram/classes/my/sample/App.class:
+For example, to deploy 
+\family typewriter
+my.sample.App
+\family default
+ at 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+C:/myprogram/classes/my/sample/App.class
+\family default
+:
 \begin_inset Newline newline
 \end_inset
 
@@ -2598,9 +3183,31 @@ The correct package is automatically detected from the class file.
 \end_layout
 
 \begin_layout Itemize
-The folder that contains a single class that implements MainClass or directly
- extends one of the following classes: MainWindow, Conduit, TestSuite or
- GameEngineMainWindow.
+The folder that contains a single class that implements 
+\family typewriter
+MainClass
+\family default
+ or directly extends one of the following classes: 
+\family typewriter
+MainWindow
+\family default
+, 
+\family typewriter
+Conduit
+\family default
+, 
+\family typewriter
+TestSuite
+\family default
+ or 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+GameEngineMainWindow
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -2614,19 +3221,43 @@ For instance:
 \end_layout
 
 \begin_layout Standard
-Assuming App is the main class, “MainWindow 
+Assuming 
+\family typewriter
+App
+\family default
+ is the main class, “
+\family typewriter
+MainWindow
+\family default
+ 
 \begin_inset Formula $\Leftarrow$
 \end_inset
 
- App” will work, but “MainWindow 
+ 
+\family typewriter
+App
+\family default
+” will work, but “
+\family typewriter
+MainWindow
+\family default
+ 
 \begin_inset Formula $\Leftarrow$
 \end_inset
 
- AnotherClass 
+ 
+\family typewriter
+AnotherClass
+\family default
+ 
 \begin_inset Formula $\Leftarrow$
 \end_inset
 
- App” will not work.
+ 
+\family typewriter
+App
+\family default
+” will not work.
 \end_layout
 
 \begin_layout Standard
@@ -2635,15 +3266,58 @@ This option will also fail if the given folder contains more than one valid
 \end_layout
 
 \begin_layout Standard
-The deployer automatically detects and includes Class.forName references.
+The deployer automatically detects and includes 
+\family typewriter
+Class.forName()
+\family default
+ references.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-A jar or zip file containing all the required files, like “tc.Deploy App.jar”
- or “tc.Deploy App.zip” (a jar file is basically a zip file with a new extension).
- To create a jar file, open the command prompt, change to the class files
- folder (usually /bin or /classes), and type: jar cvf App.jar .
+A 
+\family typewriter
+.jar
+\family default
+ or 
+\family typewriter
+.zip
+\family default
+ file containing all the required files, like 
+\family typewriter
+tc.Deploy App.jar
+\family default
+ or 
+\family typewriter
+tc.Deploy App.zip
+\family default
+ (a 
+\family typewriter
+.jar
+\family default
+ file is basically a 
+\family typewriter
+.zip
+\family default
+ file with a new extension).
+ To create a 
+\family typewriter
+.jar
+\family default
+ file, open the command prompt, change to the class files folder (usually
+ 
+\family typewriter
+/bin
+\family default
+ or 
+\family typewriter
+/classes
+\family default
+), and type: 
+\family typewriter
+jar cvf App.jar
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -2654,23 +3328,46 @@ Please notice this is the only option that does not require a main class
 \end_layout
 
 \begin_layout Standard
-However, if you use this option to deploy an application, the jar/zip file
- must have the same name of the main class.
+However, if you use this option to deploy an application, the 
+\family typewriter
+.jar/.zip
+\family default
+ file must have the same name of the main class.
  (e.g.
- if your main class is App.class, the resulting jar/zip file must be either
- App.jar or App.zip).
+ if your main class is 
+\family typewriter
+App.class
+\family default
+, the resulting 
+\family typewriter
+.jar/.zip
+\family default
+ file must be either 
+\family typewriter
+App.jar
+\family default
+ or 
+\family typewriter
+App.zip
+\family default
+).
 \end_layout
 
 \end_deeper
 \end_deeper
 \begin_layout Enumerate
-<platforms to deploy> must be any combination of the following:
+
+\family typewriter
+<platforms to deploy>
+\family default
+ must be any combination of the following:
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--palm
+\begin_layout Itemize
+
+\family typewriter
+palm
 \begin_inset space ~
 \end_inset
 
@@ -2678,14 +3375,28 @@ or
 \begin_inset space ~
 \end_inset
 
--palmos Creates the PalmOS files (pdb and prc if a main class is detected,
- otherwise only a pdb file) and also an installer, which is an executable
- that contains the created files.
+-palmos
+\family default
+ Creates the Palm OS files (
+\family typewriter
+.pdb
+\family default
+ and 
+\family typewriter
+.prc
+\family default
+ if a main class is detected, otherwise only a 
+\family typewriter
+.pdb
+\family default
+ file) and also an installer, which is an executable that contains the created
+ files.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--ce
+\begin_layout Itemize
+
+\family typewriter
+ce
 \begin_inset space ~
 \end_inset
 
@@ -2693,23 +3404,40 @@ or
 \begin_inset space ~
 \end_inset
 
--wince Creates the cab files for WinCE, and a batch installer which invokes
- your synchronization software (ActiveSync or Windows Mobile Device Center).
+-wince
+\family default
+ Creates the 
+\family typewriter
+.cab
+\family default
+ files for WinCE, and a batch installer which invokes your synchronization
+ software (ActiveSync or Windows Mobile Device Center).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--winmo Creates a cab file for Windows Mobile only.
+\begin_layout Itemize
+
+\family typewriter
+winmo
+\family default
+ Creates a 
+\family typewriter
+.cab
+\family default
+ file for Windows Mobile only.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--win32 Creates an executable file to run the application in Win32.
+\begin_layout Itemize
+
+\family typewriter
+win32
+\family default
+ Creates an executable file to run the application in Win32.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--bb
+\begin_layout Itemize
+
+\family typewriter
+bb
 \begin_inset space ~
 \end_inset
 
@@ -2717,12 +3445,19 @@ or
 \begin_inset space ~
 \end_inset
 
--blackberry Creates the cod file for BlackBerry.
+-blackberry
+\family default
+ Creates the 
+\family typewriter
+.cod
+\family default
+ file for BlackBerry.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--applet
+\begin_layout Itemize
+
+\family typewriter
+applet
 \begin_inset space ~
 \end_inset
 
@@ -2730,137 +3465,260 @@ or
 \begin_inset space ~
 \end_inset
 
--html Creates the HTML files and a jar file.
+-html
+\family default
+ Creates the HTML files and a 
+\family typewriter
+.jar
+\family default
+ file.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--android Creates the apk file for Android.
+\begin_layout Itemize
+
+\family typewriter
+android
+\family default
+ Creates the 
+\family typewriter
+.apk
+\family default
+ file for Android.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--linux Creates the binary and the tcz files for Linux
+\begin_layout Itemize
+
+\family typewriter
+linux
+\family default
+ Creates the binary and the 
+\family typewriter
+.tcz
+\family default
+ files for Linux.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring -bb.or.-blackberry00
--all Single command to create all of the above.
+\begin_layout Itemize
+
+\family typewriter
+all
+\family default
+ Single command to create all of the above.
 \end_layout
 
 \end_deeper
 \begin_layout Enumerate
-[other options] may be any combination of the following options:
+
+\family typewriter
+[other options]
+\family default
+ may be any combination of the following options:
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /a
 \begin_inset space ~
 \end_inset
 
-ApId : Assigns the application id; can only be used for libraries or passing
- a tcz file.
- Under normal situations, set the Settings.applicationId.
+ApId
+\family default
+ : Assigns the application id; can only be used for libraries or passing
+ a 
+\family typewriter
+.tcz
+\family default
+ file.
+ Under normal situations, set the 
+\family typewriter
+Settings.applicationId
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/autostart : automatically starts the application after a boot is completed.
+\begin_layout Itemize
+
+\family typewriter
+/autostart
+\family default
+ : automatically starts the application after a boot is completed.
  Currently works for Android only.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /c
 \begin_inset space ~
 \end_inset
 
-cmd : Specify a command line to be passed to the application.
+cmd
+\family default
+ : Specify a command line to be passed to the application.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /i
 \begin_inset space ~
 \end_inset
 
-platforms : Pass a list of comma-separated platforms to let the generated
- file be installed.
+platforms
+\family default
+ : Pass a list of comma-separated platforms to let the generated file be
+ installed.
  Currently works on for Android.
- E.G.: “/i android”.
+ E.G.: 
+\family typewriter
+/i android
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/k : Keep the exe and other temporary files during WinCE generation (the
- files needed for manual installation).
+\begin_layout Itemize
+
+\family typewriter
+/k
+\family default
+ : Keeps the .
+\family typewriter
+exe
+\family default
+ and other temporary files during WinCE generation (the files needed for
+ manual installation).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/kn : As /k, but does not create the cab files for wince
+\begin_layout Itemize
+
+\family typewriter
+/kn
+\family default
+ : As 
+\family typewriter
+/k
+\family default
+, but does not create the 
+\family typewriter
+.cab
+\family default
+ files for wince.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /m
 \begin_inset space ~
 \end_inset
 
-path : Specifies a path to the mobileprovision and certificate store to
- deploy an ipa file for iOS
+path
+\family default
+ : Specifies a path to the mobileprovision and certificate store to deploy
+ an 
+\family typewriter
+.ipa
+\family default
+ file for iOS.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /n
 \begin_inset space ~
 \end_inset
 
-name : Override the name of the tcz file with the given one.
- Only works when deploying a jar or a tcz file.
+name
+\family default
+ : Overrides the name of the 
+\family typewriter
+.tcz
+\family default
+ file with the given one.
+ Only works when deploying a 
+\family typewriter
+.jar
+\family default
+ or a 
+\family typewriter
+.tcz
+\family default
+ file.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /o
 \begin_inset space ~
 \end_inset
 
-path : Override the output folder (defaults to the current folder) to the
- given one.
+path
+\family default
+ : Overrides the output folder (defaults to the current folder) to the given
+ one.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /p
 \begin_inset space ~
 \end_inset
 
-type : Package the vm (and optionally Litebase) with the application, creating
+type
+\family default
+ : Packages the vm (and optionally Litebase) with the application, creating
  a single installation file.
- The type parameter can be one of the following: demo, demo+litebase, release,
- release+litebase (where demo/release are the virtual machine types you
- want to include: the time-limited demonstration, or the release that requires
- activation).
- The DEMO SDKs must be in the path or in the TOTALCROSS_HOME/LITEBASE_HOME
+ The type parameter can be one of the following: 
+\family typewriter
+demo
+\family default
+, 
+\family typewriter
+demo+ litebase
+\family default
+, 
+\family typewriter
+release
+\family default
+, 
+\family typewriter
+release+litebase
+\family default
+ (where demo/release are the virtual machine types you want to include:
+ the time-limited demonstration, or the release that requires activation).
+ The DEMO SDKs must be in the path or in the TOTALCROSS_HOME/ LITEBASE_HOME
  environment variables, and the RELEASE SDKs must be in the same parent
  folder of the DEMO ones.
- Example: if TOTALCROSS_HOME points to t:
+ Example: if TOTALCROSS_HOME points to 
+\family typewriter
+t:
 \backslash
 sdks
 \backslash
-TotalCrossSDK, then the VMS must be at t:
+ TotalCrossSDK
+\family default
+, then the VMS must be at 
+\family typewriter
+t:
 \backslash
 sdks
 \backslash
-TotalCrossVMS.
+TotalCrossVMS
+\family default
+.
  If the TOTALCROSS_HOME and LITEBASE_HOME are not set, then all SDKs must
- be at the top-level folder of the TotalCrossSDK
+ be at the top-level folder of the 
+\family typewriter
+TotalCrossSDK
 \backslash
-etc folder.
+etc
+\family default
+ folder.
 \begin_inset Newline newline
 \end_inset
 
@@ -2899,7 +3757,7 @@ tab
 
 \end_inset
 
- : must point to TotalCrossSDK folder
+ : must point to the TotalCross SDK folder
 \end_layout
 
 \begin_layout Itemize
@@ -2916,7 +3774,7 @@ tab
 
 \end_inset
 
- : must point to TotalCross VMS folder
+ : must point to the TotalCross VMS folder
 \end_layout
 
 \begin_layout Itemize
@@ -2933,7 +3791,7 @@ tab
 
 \end_inset
 
- : must point to LitebaseSDK folder
+ : must point to the Litebase SDK folder
 \end_layout
 
 \begin_layout Itemize
@@ -2950,57 +3808,81 @@ tab
 
 \end_inset
 
- : must point to LitebaseVMS folder
+ : must point to the Litebase VMS folder
 \end_layout
 
 \end_deeper
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /r
 \begin_inset space ~
 \end_inset
 
-key : signs the tcz file with the given registration key (used when you
- purchase a vm license).
+key
+\family default
+: Signs the 
+\family typewriter
+.tcz
+\family default
+ file with the given registration key (used when you purchase a vm license).
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /s
 \begin_inset space ~
 \end_inset
 
-pass : Launch the BlackBerry SignatureTool and automatically sign the COD
- module using the password provided.
+pass
+\family default
+: Launches the BlackBerry SignatureTool and automatically sign the COD module
+ using the password provided.
  If no password is provided, the SignatureTool will be launched and you
  will have to specify a password manually.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/t : only tests if the class is ok to be deployed; no tcz files not installation
- files are generated.
+\begin_layout Itemize
+
+\family typewriter
+/t
+\family default
+: Only tests if the class is ok to be deployed; no 
+\family typewriter
+.tcz
+\family default
+ files nor installation files are generated.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/v : Verbose output for information messages.
+\begin_layout Itemize
+
+\family typewriter
+/v
+\family default
+: Verbose output for information messages.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
-/w : if an error occurs, waits for the ENTER key to be pressed before the
- window closes.
+\begin_layout Itemize
+
+\family typewriter
+/w
+\family default
+: If an error occurs, waits for the ENTER key to be pressed before the window
+ closes.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring /i.platforms00
+\begin_layout Itemize
+
+\family typewriter
 /x
 \begin_inset space ~
 \end_inset
 
-list : Comma-separated list of class names that must be excluded (in a starts-wi
-th manner).
+list
+\family default
+: Comma-separated list of class names that must be excluded (in a starts-with
+ manner).
 \end_layout
 
 \end_deeper
@@ -3115,7 +3997,7 @@ Code
 
 inferred 
 \family typewriter
-super("My application" + “ “ + Settings.appVersion, border_type);
+super("My application" + " " + Settings.appVersion, border_type);
 \end_layout
 
 \begin_layout Labeling
@@ -3321,7 +4203,15 @@ Resulting
 
 property "This is my company information" will be used as the company's
  information.
- You may also use this in an About box in your program.
+ You may also use this in an 
+\begin_inset Quotes eld
+\end_inset
+
+about
+\begin_inset Quotes erd
+\end_inset
+
+ box in your program.
 \end_layout
 
 \end_inset
@@ -3405,15 +4295,27 @@ Resulting
 \begin_inset space ~
 \end_inset
 
-property The appCategory is used in the iphone and palm platforms.
+property The 
+\family typewriter
+appCategory
+\family default
+ is used on the iPhone and palm platforms.
 \begin_inset Newline newline
 \end_inset
 
-The appLocation is used in the iphone platform.
+The 
+\family typewriter
+appLocation
+\family default
+ is used on the iPhone platform.
 \begin_inset Newline newline
 \end_inset
 
-The appDescription is used in the iphone and blackberry platforms.
+The 
+\family typewriter
+appDescription
+\family default
+ is used on the iPhone and BlackBerry platforms.
 \end_layout
 
 \end_inset
@@ -3432,28 +4334,59 @@ There are other options that are set by the programmer in the static initializer
 \end_layout
 
 \begin_layout Itemize
-Settings.closeButtonType: for WinCE only, can assume three options: NO_BUTTON,
- which shows no button in the task bar; CLOSE_BUTTON, which shows the default
- OK button that closes the application, or MINIMIZE_BUTTON, which uses a
- x button to minimize the application.
+
+\family typewriter
+Settings.closeButtonType
+\family default
+: for WinCE only, can assume three options: 
+\family typewriter
+NO_BUTTON
+\family default
+, which shows no button in the task bar; 
+\family typewriter
+CLOSE_BUTTON
+\family default
+, which shows the default OK button that closes the application, or 
+\family typewriter
+MINIMIZE_BUTTON
+\family default
+, which uses a X button to minimize the application.
 \end_layout
 
 \begin_layout Itemize
-Settings.fullScreen: makes it full screen at startup.
+
+\family typewriter
+Settings.fullScreen
+\family default
+: makes it full screen at startup.
 \end_layout
 
 \begin_layout Itemize
-Settings.fullScreenPlatforms: select which platforms the fullScreen member
- will be applied to.
+
+\family typewriter
+Settings.fullScreenPlatforms
+\family default
+: selects which platforms the fullScreen member will be applied to.
 \end_layout
 
 \begin_layout Itemize
-Settings.useNewFont: use the new font format introduced in version 1.3
+
+\family typewriter
+Settings.useNewFont
+\family default
+: uses the new font format introduced in version 1.3
 \end_layout
 
 \begin_layout Itemize
-Settings.activationServerURI and activationServerNamespace: define the middleware
- server that will be used to restrict the activations.
+
+\family typewriter
+Settings.activationServerURI
+\family default
+ and 
+\family typewriter
+activationServerNamespace
+\family default
+: defines the middleware server that will be used to restrict the activations.
  Read more in the Activation Server chapter.
 \end_layout
 
@@ -3462,15 +4395,29 @@ Specifying the Icon
 \end_layout
 
 \begin_layout Standard
-The easiest way to create an icon is to provide an 'appicon.gif' file of
- any SQUARE size (80x80 preferable) and any palette, which will be automatically
- converted to the target icon sizes.
- Put the file in the src folder.
+The easiest way to create an icon is to provide an 
+\family typewriter
+appicon.gif
+\family default
+ file of any SQUARE size (80x80 preferable) and any palette, which will
+ be automatically converted to the target icon sizes.
+ Put the file in the 
+\family typewriter
+src
+\family default
+ folder.
 \end_layout
 
 \begin_layout Standard
-If the appearance of the icons does not satisfy, you can create some bmp
- and png files for each platform: 
+If the appearance of the icons does not look good, you can create some 
+\family typewriter
+.bmp
+\family default
+ and 
+\family typewriter
+.png
+\family default
+ files for each platform: 
 \end_layout
 
 \begin_layout Standard
@@ -3493,27 +4440,63 @@ Palm
 \begin_inset space ~
 \end_inset
 
-OS icon15x9x8.bmp, icon30x18x8.bmp, icon22x22x8.bmp, icon44x44x8.bmp
+OS 
+\family typewriter
+icon15x9x8.bmp
+\family default
+, 
+\family typewriter
+icon30x18x8.bmp
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+icon22x22x8.bmp
+\family default
+, 
+\family typewriter
+icon44x44x8.bmp
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-Windows icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp
+Windows 
+\family typewriter
+icon16x16x8.bmp
+\family default
+, 
+\family typewriter
+icon32x32x8.bmp
+\family default
+, 
+\family typewriter
+icon48x48x8.bmp
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-iPhone icon60x60.png
+iPhone 
+\family typewriter
+icon60x60.png
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-Blackberry icon80x80.png
+BlackBerry 
+\family typewriter
+icon80x80.png
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-Android icon72x72.png.
+Android 
+\family typewriter
+icon72x72.png
+\family default
+.
  Use alpha-channel on PNG for better appearance).
 \end_layout
 
@@ -3523,9 +4506,17 @@ Android icon72x72.png.
 \end_layout
 
 \begin_layout Standard
-Be careful with the palette of the bmp files, never use the MSPaint program;
- instead, get the bmp files that are in the etc/images folder and edit them
- in a software that keeps the original palette, like Photoshop and PaintShopPro.
+Be careful with the palette of the bmp files, never use the MS Paint program;
+ instead, get the 
+\family typewriter
+.bmp
+\family default
+ files that are in the 
+\family typewriter
+etc/images
+\family default
+ folder and edit them in a software that keeps the original palette, like
+ Photoshop and PaintShopPro.
 \end_layout
 
 \begin_layout Section
@@ -3534,7 +4525,11 @@ Adding other files to the package
 
 \begin_layout Standard
 Optionally, you can create a PKG file with additional files that will be
- added to the install.exe or to the cab files.
+ added to the 
+\family typewriter
+install.exe
+\family default
+ or to the cab files.
  The file must have a set of [G] and/or [L] lines followed by the file name
  (which is searched in the classpath and in current folder).
  Files prefixed with [G] are placed in the same folder of the tcvm, and
@@ -3949,7 +4944,7 @@ java tc.Deploy .....
 \end_layout
 
 \begin_layout Subsection
-Deploying as DEB for jailbroken devices
+Deploying as .deb for jailbroken devices
 \end_layout
 
 \begin_layout Standard
@@ -3983,7 +4978,15 @@ When the iOS is jailbroken, most programs have problems to keep the wifi
 \end_layout
 
 \begin_layout Standard
-Upload the 2 files (bz2 and deb) that were created by tc.Deploy to a site.
+Upload the 2 files (
+\family typewriter
+.bz2
+\family default
+ and 
+\family typewriter
+.deb
+\family default
+) that were created by tc.Deploy to a site.
  For example, we will use www.totalcross.com/androidui.
 \end_layout
 
@@ -3998,8 +5001,15 @@ Run Cydia on the iphone/ipad, press Manage and then the Sources button.
 \end_layout
 
 \begin_layout Standard
-If you're running a Windows server, you must add two mimetypes to it: bz2
- (application/bzip2) and deb (application/x-deb).
+If you're running a Windows server, you must add two mimetypes to it: 
+\family typewriter
+.bz2
+\family default
+ (application/bzip2) and 
+\family typewriter
+.deb
+\family default
+ (application/x-deb).
  Otherwise, Cydia will fail to locate the files in the folder.
 \end_layout
 
@@ -4010,12 +5020,16 @@ rce tool.
 \end_layout
 
 \begin_layout Subsubsection
-Manual installation of DEB files 
+Manual installation of .deb files 
 \end_layout
 
 \begin_layout Standard
 You can also follow these instructions, which shows two ways to install
- a deb file manually:
+ a 
+\family typewriter
+.deb
+\family default
+ file manually:
 \end_layout
 
 \begin_layout Standard
@@ -4055,13 +5069,21 @@ Press the [Install app] button from the iSpirit menu
 
 \begin_layout Enumerate
 From the file browser dialog box that appears below, navigate to and select
- the desired .DEB file by tapping the Select File button.
+ the desired 
+\family typewriter
+.deb
+\family default
+ file by tapping the Select File button.
  
 \end_layout
 
 \begin_layout Enumerate
-After selecting the desired .DEB file, press the install button shown in
- the above dialog box, and ispirit will do the rest.
+After selecting the desired 
+\family typewriter
+.deb
+\family default
+ file, press the install button shown in the above dialog box, and ispirit
+ will do the rest.
  When it completes, your application will be installed and ready to run.
 \end_layout
 
@@ -4486,8 +5508,8 @@ Activating your application
 \end_layout
 
 \begin_layout Standard
-After you login with the right account, download the TotalCrossVMS package.
- This package is complimentary to the TotalCrossSDK: it only contains special
+After you login with the right account, download the TotalCross VMS package.
+ This package is complimentary to the TotalCross SDK: it only contains special
  virtual machines that will authenticate to our server (hosted at Rackspace
  – Boston USA) at the first time that the application runs.
 \end_layout
@@ -9260,7 +10282,7 @@ To keep memory usage low, some VM routines reuse PenEvents and KeyEvents
 The Event class also has a static method called getNextAvailableEventId.
  This method is used to avoid conflicts when your application or library
  creates a new Event type.
- It is discussed in more details in PART V of this book.
+ It is discussed in more details in PART V of this manual.
  
 \end_layout
 
@@ -23171,8 +24193,8 @@ Intermec
 
 \begin_layout Standard
 To use the Scanner class at the device, you must also install the scanner
- library included within the TotalCrossSDK, by copying the desired dll to
- the TotalCross folder on the device.
+ library included within the TotalCross SDK, by copying the desired dll
+ to the TotalCross folder on the device.
 \end_layout
 
 \begin_layout Standard
@@ -24534,7 +25556,7 @@ Apache Ant is a Java-based build tool, similar to Make, that may be executed
 \end_layout
 
 \begin_layout Standard
-The TotalCrossSDK comes with a sample Ant build file.
+The TotalCross SDK comes with a sample Ant build file.
  Just copy the build.xml file located in TotalCrossSDK/docs/companion_resources/a
 nt_build to your application's directory, and change its properties as described
  below:
@@ -24573,7 +25595,7 @@ sdk.root
 \end_layout
 
 \begin_layout Standard
-TotalCrossSDK installation path
+TotalCross SDK installation path
 \end_layout
 
 \begin_layout Standard
@@ -24606,7 +25628,11 @@ One of the below:
 
 \begin_layout Standard
 2.
- The path to the jar that contains all classes and resources.
+ The path to the 
+\family typewriter
+.jar
+\family default
+ that contains all classes and resources.
 \end_layout
 
 \begin_layout Standard
@@ -24675,7 +25701,7 @@ The Eclipse IDE with Java Development Tools installed.
 \end_layout
 
 \begin_layout Itemize
-We'll refer to the TotalCross location as TotalCrossSDK.
+We'll refer to the TotalCross location as TotalCross SDK.
 \end_layout
 
 \begin_layout Standard
