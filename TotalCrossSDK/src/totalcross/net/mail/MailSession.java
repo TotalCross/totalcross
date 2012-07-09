@@ -167,6 +167,10 @@ public class MailSession extends Properties
    public static final String SMTP_AUTH = "mail.smtp.auth";
    public static final String SMTP_STARTTLS = "mail.smtp.starttls.enable";
    public static final String SMTP_PASS = "mail.smtp.password";
+   
+   public static final String SMTP_STARTTLS_REQUIRED = "abc";
+   
+   public static final String SMTP_SSL_PORT = "mail.smtp.ssl.port";
 
    public static final String POP3_USER = "mail.pop3.user";
    public static final String POP3_HOST = "mail.pop3.host";
@@ -178,6 +182,12 @@ public class MailSession extends Properties
    protected MailSession()
    {
       super();
+      put(SMTP_CONNECTIONTIMEOUT, new Int(0));
+      put(SMTP_TIMEOUT, new Int(0));
+      put(SMTP_STARTTLS, new Boolean(false));
+      put(SMTP_STARTTLS_REQUIRED, new Boolean(false));
+      put(SMTP_PORT, new Int(25));
+      put(SMTP_SSL_PORT, new Int(465));
    }
 
    /**
@@ -214,6 +224,15 @@ public class MailSession extends Properties
    {
       if (protocol.equals("pop3"))
          return new POP3Store(this);
+      return null;
+   }
+   
+   public Transport getTransport(String protocol)
+   {
+      if (protocol.equals("smtp"))
+         return new SMTPTransport(this);
+      if (protocol.equals("smtps"))
+         return new SMTPSSLTransport(this);      
       return null;
    }
 }
