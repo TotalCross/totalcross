@@ -133,11 +133,12 @@ public class SMTPTransport extends Transport
       }
    }
 
-   protected void ehlo() throws MessagingException
+   protected boolean ehlo() throws MessagingException
    {
-      issueCommand(ehlo, 220);
-      while (readServerResponse() == 220); // the HELO reply may be followed by textual messages, just ignore them.
-      
+      boolean ret = simpleCommand(ehlo) == 220;
+      while (readServerResponse() == 220)
+         ; // the HELO reply may be followed by textual messages, just ignore them.
+
       authSupported = 0;
       do
       {
@@ -157,8 +158,9 @@ public class SMTPTransport extends Transport
             supportsTLS = true; //flsobral: server supports secure connections            
          readServerResponse();
       } while (lastServerResponse.charAt(3) != ' ');
-      
+
       requiresTLS = supportsTLS && authSupported == 0;
+      return ret;
    }
 
    public void connect(Socket connection) throws MessagingException
