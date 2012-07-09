@@ -49,29 +49,13 @@ public class SMTPTransport extends Transport
    {
       super(session);
    }
-   
-   protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException, MessagingException
+
+   protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException,
+         MessagingException
    {
-      this.host = host;
-      if (port != -1)
-         this.port = port;
-      this.user = user;
-      this.password = password;    
-      
-      try
-      {
-         connect(new Socket(host, port));
-         ehlo();
-      }
-      catch (UnknownHostException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      
+      startTLS();
+      ehlo();
+
       switch (authSupported)
       {
          case 1: // auth with LOGIN
@@ -106,7 +90,7 @@ public class SMTPTransport extends Transport
             else
                returnPath = ConnectionManager.getLocalHost();
          }
- 
+
          issueCommand("MAIL FROM:<" + returnPath + ">" + Convert.CRLF, 250);
          // RCPT TO
          for (int i = message.recipients.size() - 1; i >= 0; i--)
@@ -248,4 +232,7 @@ public class SMTPTransport extends Transport
       // TODO Auto-generated method stub
       
    }   
+
+   protected void startTLS() throws MessagingException
+   {}
 }
