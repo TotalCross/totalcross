@@ -14,15 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 import totalcross.io.IOException;
-import totalcross.net.AuthenticationException;
-import totalcross.net.Socket;
-import totalcross.net.SocketFactory;
-import totalcross.net.UnknownHostException;
+import totalcross.net.*;
+import totalcross.net.ssl.SSLSocketFactory;
 import totalcross.util.Properties;
 
 /**
@@ -79,7 +75,7 @@ public abstract class Transport extends Service
       
       try
       {
-         SocketFactory sf = (SocketFactory) Class.forName("totalcross.net.SocketFactory").newInstance();
+         SocketFactory sf = tlsEnabled ? SSLSocketFactory.getDefault() : SocketFactory.getDefault();
          Socket connection = sf.createSocket(host, port, connectionTimeout);
          connection.readTimeout = connection.writeTimeout = timeout;
          
@@ -104,18 +100,6 @@ public abstract class Transport extends Service
          smtp.sendMessage(message);         
       }
       catch (UnknownHostException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (InstantiationException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (ClassNotFoundException e)
       {
          throw new MessagingException(e.getMessage());
       }
