@@ -16,8 +16,8 @@
 
 package totalcross.net.mail;
 
+import totalcross.io.BufferedStream;
 import totalcross.io.IOException;
-import totalcross.io.LineReader;
 import totalcross.net.*;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
@@ -32,18 +32,18 @@ public class SMTPTransport extends Transport
 {
    Socket connection;
 
-   LineReader connectionReader; //flsobral@tc123_55: use LineReader for reading.
-   
+   BufferedStream connectionReader;
+
    int authSupported = 0;
-   
+
    boolean supportsTLS;
-   
+
    boolean requiresTLS;
-   
+
    String lastServerResponse;
-   
+
    private static final String ehlo = "EHLO ..." + Convert.CRLF;
-   private static final String starttls = "STARTTLS" + Convert.CRLF;
+   protected static final String starttls = "STARTTLS" + Convert.CRLF;
 
    protected SMTPTransport(MailSession session)
    {
@@ -149,10 +149,17 @@ public class SMTPTransport extends Transport
 
    public void connect(Socket connection) throws MessagingException
    {
+      boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
+
       this.connection = connection;
       try
       {
-         connectionReader = new LineReader(connection);
+         connectionReader = new BufferedStream(connection, BufferedStream.READ);
+         if (!ehlo())
+            throw new MessagingException("Failed to greet the remote server.");
+         if (requiresTLS && !tlsEnabled)
+            throw new MessagingException(
+                  "Server requires authentication through a secure connection - See MailSession.SMTP_STARTTLS");
       }
       catch (IOException e)
       {

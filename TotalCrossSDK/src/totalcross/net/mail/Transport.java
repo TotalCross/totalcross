@@ -67,37 +67,27 @@ public abstract class Transport extends Service
    public static void send(Message message, MailSession session) throws MessagingException, AuthenticationException
    {
       String host = session.get(MailSession.SMTP_HOST).toString();
-      int port = ((Properties.Int) session.get(MailSession.SMTP_PORT)).value;
       int connectionTimeout = ((Properties.Int) session.get(MailSession.SMTP_CONNECTIONTIMEOUT)).value;
-      int timeout = ((Properties.Int) (Properties.Int) session.get(MailSession.SMTP_TIMEOUT)).value;
+      int timeout = ((Properties.Int) session.get(MailSession.SMTP_TIMEOUT)).value;
       boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
-      boolean tlsRequired = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS_REQUIRED)).value;
-      
+
+      int port = tlsEnabled ?
+            ((Properties.Int) session.get(MailSession.SMTP_SSL_PORT)).value :
+            ((Properties.Int) session.get(MailSession.SMTP_PORT)).value;
+      String user = session.get(MailSession.SMTP_USER).toString();
+      String password = session.get(MailSession.SMTP_PASS).toString();
+
       try
       {
          SocketFactory sf = tlsEnabled ? SSLSocketFactory.getDefault() : SocketFactory.getDefault();
          Socket connection = sf.createSocket(host, port, connectionTimeout);
          connection.readTimeout = connection.writeTimeout = timeout;
-         
-         SMTPTransport smtp = new SMTPTransport(session);
+
+         SMTPTransport smtp = (SMTPTransport) session.getTransport(tlsEnabled ? "smtps" : "smtp");
          smtp.connect(connection);
-         smtp.ehlo();
-         boolean requiresTLS = smtp.getRequireStartTLS();
-         if (!tlsRequired && !tlsEnabled && requiresTLS)
-            throw new MessagingException("Server requires authentication through a secure connection - See MailSession.SMTP_STARTTLS");         
-         boolean supportsTLS = requiresTLS ? true : smtp.supportsExtension("STARTTLS");
-         if (tlsRequired && !supportsTLS)
-            throw new MessagingException("MailSession.SMTP_STARTTLS_REQUIRED is enabled, but server doesn't support secure connections");
-         
-         if (supportsTLS && (tlsRequired || tlsEnabled))
-         {
-            int sslPort = ((Properties.Int) session.get(MailSession.SMTP_SSL_PORT)).value;
-            smtp.ehlo();
-         }
-         String user = session.get(MailSession.SMTP_USER).toString();
-         String pass = session.get(MailSession.SMTP_PASS).toString();
-         smtp.protocolConnect(host, port, user, pass);            
-         smtp.sendMessage(message);         
+
+         smtp.protocolConnect(host, port, user, password);
+         smtp.sendMessage(message);
       }
       catch (UnknownHostException e)
       {
