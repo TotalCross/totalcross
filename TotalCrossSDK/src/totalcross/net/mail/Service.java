@@ -54,10 +54,7 @@ public abstract class Service
     */
    public abstract void connect() throws AuthenticationException, MessagingException;
    
-   public void connect(String host, int port, String user, String password) throws AuthenticationException, MessagingException
-   {
-      protocolConnect(host, port, user, password);
-   }
+   public abstract void connect(String host, int port, String user, String password) throws AuthenticationException, MessagingException;
 
    /**
     * Close this store and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
