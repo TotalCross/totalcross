@@ -101,12 +101,12 @@ public abstract class Transport extends Service
       }
       catch (UnknownHostException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
-      }      
+         throw new MessagingException(e);
+      }
    }
 
    public abstract void sendMessage(Message message) throws MessagingException;

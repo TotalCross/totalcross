@@ -246,7 +246,7 @@ public class Message extends Part
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 

@@ -113,7 +113,7 @@ public class SMTPTransport extends Transport
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
@@ -156,7 +156,7 @@ public class SMTPTransport extends Transport
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
@@ -170,11 +170,11 @@ public class SMTPTransport extends Transport
       catch (InvalidNumberException e)
       {
          throw new MessagingException(e.getMessage() + "\n Reply: " + lastServerResponse);
-      }      
+      }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
-      }      
+         throw new MessagingException(e);
+      }
    }
 
    public void issueCommand(String cmd, int expect) throws MessagingException
@@ -182,26 +182,26 @@ public class SMTPTransport extends Transport
       int responseCode = simpleCommand(cmd.getBytes());
       if (expect != -1 && responseCode != expect)
          throw new MessagingException("Unexpected response code. Expected " + expect + ", but received " + responseCode);
-   } 
-   
+   }
+
    protected int simpleCommand(byte[] command) throws MessagingException
    {
       try
       {
          connection.writeBytes(command);
          return readServerResponse();
-      }      
+      }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
-   
+
    public int simpleCommand(String command) throws MessagingException
    {
       return simpleCommand(command.getBytes());
-   } 
-   
+   }
+
    public boolean supportsExtension(String ext)
    {
       if ("STARTTLS".equals(ext))
@@ -217,21 +217,21 @@ public class SMTPTransport extends Transport
    public void connect() throws AuthenticationException, MessagingException
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void close() throws MessagingException
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    public void connect(String host, int port, String user, String password) throws AuthenticationException,
          MessagingException
    {
       // TODO Auto-generated method stub
-      
-   }   
+
+   }
 
    protected void startTLS() throws MessagingException
    {}
