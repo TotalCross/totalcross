@@ -2647,4 +2647,43 @@ public class Grid extends Container implements Scrollable
          htImages = new Hashtable(20);
       htImages.put(tag, image.smoothScaledFixedAspectRatio(fmH,true,backColor));
    }
+
+   private class NextEdit extends Thread
+   {
+      int col,row;
+
+      NextEdit(int col, int row) {this.col=col; this.row=row;}
+      public void run()
+      {
+         setSelectedIndex(row);
+         showControl(row,col);
+      }
+   }
+
+   /** Traverse throught the Edits of this Grid. */
+   public Control moveFocusToNextControl(Control c, boolean forward) // guich@tc125_26
+   {
+      if (c instanceof Edit)
+      {         
+         int col = (c.appId >> 24 & 127);
+         int row = (c.appId & 0xFFFFFF) + (forward ? 1 : -1);
+         if (0 <= row && row < itemsCount && (cc == null || cc.isEnabled(row,col)))
+         {
+            new NextEdit(col,row).start();
+            return c;
+         }
+         else
+         {
+            col += (forward ? 1 : -1);
+            if (0 <= col && col < widths.length && controls[col] != null && controls[col] instanceof Edit)
+               for (int i = 0; i < itemsCount; i++)
+                  if (cc == null || cc.isEnabled(i,col))
+                  {
+                     new NextEdit(col,i).start();
+                     return c;
+                  }
+         }
+      }
+      return parent.moveFocusToNextControl(c, forward);
+   }
 }
