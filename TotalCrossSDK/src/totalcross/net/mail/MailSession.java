@@ -187,7 +187,7 @@ public class MailSession extends Properties
       put(SMTP_STARTTLS, new Boolean(false));
       put(SMTP_STARTTLS_REQUIRED, new Boolean(false));
       put(SMTP_PORT, new Int(25));
-      put(SMTP_SSL_PORT, new Int(465));
+      put(SMTP_SSL_PORT, new Int(587));
    }
 
    /**
