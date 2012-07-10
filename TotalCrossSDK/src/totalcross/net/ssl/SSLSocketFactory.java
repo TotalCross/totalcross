@@ -3,6 +3,9 @@ package totalcross.net.ssl;
 import totalcross.io.IOException;
 import totalcross.net.*;
 
+/**
+ * SSLSocketFactorys create SSLSockets.
+ */
 public class SSLSocketFactory extends SocketFactory
 {
    private static SSLSocketFactory instance;
