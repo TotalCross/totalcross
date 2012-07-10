@@ -226,9 +226,11 @@ VM_FILES =                                     \
 	$(sourcedir)/tcvm/tcvm.c
 
 EXTRA_INIT_FILES = \
-	$(sourcedir)/init/darwin/demo_c.m          \
-	$(sourcedir)/init/darwin/startup_c.m       \
-	$(sourcedir)/init/darwin/serialnum.m
+	$(sourcedir)/init/darwin/demo_c.m                          \
+	$(sourcedir)/init/darwin/startup_c.m                       \
+	$(sourcedir)/init/darwin/serialnum.m                       \
+	$(sourcedir)/init/darwin/NSString+MD5Addition.m            \
+	$(sourcedir)/init/darwin/UIDevice+IdentifierAddition.m
 
 INIT_FILES =                                  \
 	${EXTRA_INIT_FILES}                        \
