@@ -586,4 +586,9 @@ public class ScrollContainer extends Container implements Scrollable
     {
        bag.setFont(font);
     }
+
+    public Control moveFocusToNextControl(Control control, boolean forward) // guich@tc125_26
+    {
+       return bag.moveFocusToNextControl(control, forward);
+    }    
 }

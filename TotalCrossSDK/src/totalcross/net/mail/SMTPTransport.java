@@ -14,12 +14,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
+import totalcross.io.BufferedStream;
 import totalcross.io.IOException;
-import totalcross.io.LineReader;
 import totalcross.net.*;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
@@ -34,121 +32,48 @@ public class SMTPTransport extends Transport
 {
    Socket connection;
 
-   LineReader connectionReader; //flsobral@tc123_55: use LineReader for reading.
+   BufferedStream connectionReader;
+
+   int authSupported = 0;
+
+   boolean supportsTLS;
+
+   boolean requiresTLS;
+
+   String lastServerResponse;
 
    private static final String ehlo = "EHLO ..." + Convert.CRLF;
+   protected static final String starttls = "STARTTLS" + Convert.CRLF;
 
    protected SMTPTransport(MailSession session)
    {
       super(session);
    }
 
-   protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException, MessagingException
+   protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException,
+         MessagingException
    {
-      try
-      {
-         SocketFactory sf = (SocketFactory) Class.forName("totalcross.net.SocketFactory").newInstance();
-         if (session == null)
-            connection = sf.createSocket(host, port);
-         else
-         {
-            Properties.Int connectionTimeout = (Properties.Int) session.get(MailSession.SMTP_CONNECTIONTIMEOUT);
-            connection = sf.createSocket(host, port, connectionTimeout != null ? connectionTimeout.value : Socket.DEFAULT_OPEN_TIMEOUT);
-            Properties.Int timeout = (Properties.Int) session.get(MailSession.SMTP_TIMEOUT);
-            if (timeout != null)
-               connection.readTimeout = connection.writeTimeout = timeout.value;
-            connectionReader = new LineReader(connection);
-         }
-         authenticate(login, password);
-      }
-      catch (InstantiationException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (InvalidNumberException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (UnknownHostException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-   }
-
-   private void authenticate(String login, String password) throws IOException, MessagingException, InvalidNumberException,
-         AuthenticationException
-   {
-      connection.writeBytes(ehlo);
-      String reply = connectionReader.readLine();
-      int receivedCode = Convert.toInt(reply.substring(0, 3));
-
-      if (receivedCode != 220)
-         throw new AuthenticationException(reply);
-
-      String serverConfiguration;
-      int authSupported = 0; // no auth required
-      do
-      {
-         serverConfiguration = connectionReader.readLine();
-         int start = serverConfiguration.indexOf("AUTH");
-         if (start != -1)
-         {
-            if ((start = serverConfiguration.indexOf("LOGIN")) != -1)
-               authSupported = 1;
-            else if ((start = serverConfiguration.indexOf("PLAIN")) != -1)
-               authSupported = 2;
-            else if ((start = serverConfiguration.indexOf("CRAM-MD5")) != -1)
-               authSupported = 3;
-            else
-            {
-               authSupported = -1;
-               reply = serverConfiguration;
-            }
-         }
-      } while (serverConfiguration.charAt(3) != ' ');
+      startTLS();
+      ehlo();
 
       switch (authSupported)
       {
          case 1: // auth with LOGIN
-            connection.writeBytes("AUTH LOGIN" + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 334)
-               throw new AuthenticationException(reply);
-            connection.writeBytes(Base64.encode(login.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 334)
-               throw new AuthenticationException(reply);
-            connection.writeBytes(Base64.encode(password.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 235)
-               throw new AuthenticationException(reply);
+            issueCommand("AUTH LOGIN" + Convert.CRLF, 334);
+            issueCommand(Base64.encode(user.getBytes()) + Convert.CRLF, 334);
+            issueCommand(Base64.encode(password.getBytes()) + Convert.CRLF, 235);
          break;
          case 2: // auth with PLAIN
-            String auth = login + '\0' + login + '\0' + password;
-            connection.writeBytes("AUTH PLAIN " + Base64.encode(auth.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 235)
-               throw new AuthenticationException(reply);
+            String auth = user + '\0' + user + '\0' + password;
+            issueCommand("AUTH PLAIN " + Base64.encode(auth.getBytes()) + Convert.CRLF, 235);
          break;
          case 3: // auth with CRAM-MD5, not supported yet.
          default:
-            throw new AuthenticationException("Unsupported authentication type: " + reply);
+            throw new AuthenticationException("Unsupported authentication type.");
       }
    }
 
-   protected void sendMessage(Message message) throws MessagingException
+   public void sendMessage(Message message) throws MessagingException
    {
       try
       {
@@ -165,21 +90,22 @@ public class SMTPTransport extends Transport
             else
                returnPath = ConnectionManager.getLocalHost();
          }
- 
-         writeCommand(connection, "MAIL FROM:<" + returnPath + ">" + Convert.CRLF, 250);
+
+         issueCommand("MAIL FROM:<" + returnPath + ">" + Convert.CRLF, 250);
          // RCPT TO
          for (int i = message.recipients.size() - 1; i >= 0; i--)
-            writeCommand(connection, "RCPT TO:<" + ((String) message.recipients.items[i]) + ">" + Convert.CRLF, 250);
+            issueCommand("RCPT TO:<" + ((String) message.recipients.items[i]) + ">" + Convert.CRLF, 250);
          // START DATA
-         writeCommand(connection, "DATA" + Convert.CRLF, 354);
+         issueCommand("DATA" + Convert.CRLF, 354);
 
          // WRITE MESSAGE
          message.writeTo(connection);
 
          // END DATA
-         writeCommand(connection, Convert.CRLF + "." + Convert.CRLF, 250);
+         connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
+         issueCommand(Convert.CRLF + "." + Convert.CRLF, 250);
          // QUIT
-         writeCommand(connection, "QUIT" + Convert.CRLF, 221);
+         issueCommand("QUIT" + Convert.CRLF, 221);
 
          connection.close();
          connectionReader = null;
@@ -187,26 +113,138 @@ public class SMTPTransport extends Transport
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
-   private void writeCommand(Socket stream, String command, int expectedCode) throws IOException, MessagingException
+   protected boolean ehlo() throws MessagingException
    {
-      int receivedCode = -1;
-      stream.writeBytes(command);
-      String reply = connectionReader.readLine();
+      boolean ret = simpleCommand(ehlo) == 220;
+      while (readServerResponse() == 220)
+         ; // the HELO reply may be followed by textual messages, just ignore them.
+
+      authSupported = 0;
+      do
+      {
+         int start = lastServerResponse.indexOf("AUTH");
+         if (start != -1)
+         {
+            if ((start = lastServerResponse.indexOf("LOGIN")) != -1)
+               authSupported = 1;
+            else if ((start = lastServerResponse.indexOf("PLAIN")) != -1)
+               authSupported = 2;
+            else if ((start = lastServerResponse.indexOf("CRAM-MD5")) != -1)
+               authSupported = 3;
+            else
+               authSupported = -1;
+         }
+         else if (lastServerResponse.indexOf("STARTTLS") != -1)
+            supportsTLS = true; //flsobral: server supports secure connections            
+         readServerResponse();
+      } while (lastServerResponse.charAt(3) != ' ');
+
+      requiresTLS = supportsTLS && authSupported == 0;
+      return ret;
+   }
+
+   public void connect(Socket connection) throws MessagingException
+   {
+      boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
+
+      this.connection = connection;
       try
       {
-         receivedCode = Convert.toInt(reply.substring(0, 3));
+         connectionReader = new BufferedStream(connection, BufferedStream.READ);
+         if (!ehlo())
+            throw new MessagingException("Failed to greet the remote server.");
+         if (requiresTLS && !tlsEnabled)
+            throw new MessagingException(
+                  "Server requires authentication through a secure connection - See MailSession.SMTP_STARTTLS");
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e);
+      }
+   }
+
+   protected int readServerResponse() throws MessagingException
+   {
+      try
+      {
+         lastServerResponse = connectionReader.readLine();
+         return Convert.toInt(lastServerResponse.substring(0, 3));
       }
       catch (InvalidNumberException e)
       {
+         throw new MessagingException(e.getMessage() + "\n Reply: " + lastServerResponse);
       }
-      finally
+      catch (IOException e)
       {
-         if (receivedCode != expectedCode)
-            throw new MessagingException(reply);
+         throw new MessagingException(e);
       }
    }
+
+   public void issueCommand(String cmd, int expect) throws MessagingException
+   {
+      int responseCode = simpleCommand(cmd.getBytes());
+      if (expect != -1 && responseCode != expect)
+         throw new MessagingException("Unexpected response code. Expected " + expect + ", but received " + responseCode);
+   }
+
+   protected int simpleCommand(byte[] command) throws MessagingException
+   {
+      try
+      {
+         connection.writeBytes(command);
+         return readServerResponse();
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e);
+      }
+   }
+
+   public int simpleCommand(String command) throws MessagingException
+   {
+      return simpleCommand(command.getBytes());
+   }
+
+   public boolean supportsExtension(String ext)
+   {
+      if ("STARTTLS".equals(ext))
+         return supportsTLS;
+      return false;
+   }
+
+   public boolean getRequireStartTLS()
+   {
+      return requiresTLS;
+   }
+
+   public void connect() throws AuthenticationException, MessagingException
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public void close() throws MessagingException
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   public void connect(String host, int port, String user, String password) throws AuthenticationException,
+         MessagingException
+   {
+      // TODO Auto-generated method stub
+
+   }
+
+   /**
+    * Issue the STARTTLS command and switch the socket to TLS mode if it succeeds.
+    * 
+    * @throws MessagingException
+    */
+   protected void startTLS() throws MessagingException
+   {}
 }

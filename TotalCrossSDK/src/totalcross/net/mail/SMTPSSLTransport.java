@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -16,44 +16,41 @@
 
 package totalcross.net.mail;
 
+import totalcross.io.IOException;
+import totalcross.net.Socket;
+import totalcross.net.ssl.SSLSocket;
+import totalcross.util.Properties;
+
 /**
- * Thrown when a write operation fails when sending a Message, or when an unexpected code is received from the remote
- * host.
- * 
- * @since TotalCross 1.13
+ * This class implements the Transport abstract class using SMTP for message submission and transport over secure sockets.
  */
-public class MessagingException extends Exception
+public class SMTPSSLTransport extends SMTPTransport
 {
-   private Throwable cause;
-
-   /** Constructs an empty Exception. */
-   public MessagingException()
+   protected SMTPSSLTransport(MailSession session)
    {
-      super();
+      super(session);
    }
 
-   /** Constructs an exception with the given message. */
-   public MessagingException(String msg)
+   public void connect(Socket connection) throws MessagingException
    {
-      super(msg);
+      super.connect(connection);
+
+      boolean tlsRequired = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS_REQUIRED)).value;
+      if (tlsRequired && !supportsTLS)
+         throw new MessagingException(
+               "MailSession.SMTP_STARTTLS_REQUIRED is enabled, but server doesn't support secure connections");
    }
 
-   public MessagingException(Throwable cause)
+   protected void startTLS() throws MessagingException
    {
-      super(cause == null ? null : cause.getMessage());
-      this.cause = cause;
-   }
-
-   public void printStackTrace()
-   {
-      if (cause != null)
-         cause.printStackTrace();
-      else
-         super.printStackTrace();
-   }
-
-   public Throwable getCause()
-   {
-      return cause;
+      try
+      {
+         issueCommand(starttls, 220);
+         ((SSLSocket) connection).startHandshake();
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e);
+      }
    }
 }

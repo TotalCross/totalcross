@@ -68,23 +68,23 @@ public class POP3Store extends Store
       }
       catch (InstantiationException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (IllegalAccessException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (ClassNotFoundException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (UnknownHostException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
@@ -115,7 +115,7 @@ public class POP3Store extends Store
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
