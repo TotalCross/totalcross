@@ -149,6 +149,7 @@ NM_UI_FILES =                                   \
 	$(sourcedir)/nm/ui/MainWindow.c              \
 	$(sourcedir)/nm/ui/media_Sound.c             \
 	$(sourcedir)/nm/ui/media_MediaClip.c         \
+	$(sourcedir)/nm/ui/media_Camera.c            \
 	$(sourcedir)/nm/ui/Window.c
 
 NM_UTIL_FILES =                            \
