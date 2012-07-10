@@ -16,17 +16,13 @@
 
 package totalcross.net.mail;
 
-import totalcross.crypto.CryptoException;
 import totalcross.io.IOException;
-import totalcross.io.IllegalArgumentIOException;
 import totalcross.net.Socket;
 import totalcross.net.ssl.SSLSocket;
 import totalcross.util.Properties;
 
 /**
- * This class implements the Transport abstract class using SMTP for message submission and transport.
- * 
- * @since TotalCross 1.13
+ * This class implements the Transport abstract class using SMTP for message submission and transport over secure sockets.
  */
 public class SMTPSSLTransport extends SMTPTransport
 {
@@ -52,15 +48,7 @@ public class SMTPSSLTransport extends SMTPTransport
          issueCommand(starttls, 220);
          ((SSLSocket) connection).startHandshake();
       }
-      catch (IllegalArgumentIOException e)
-      {
-         throw new MessagingException(e);
-      }
       catch (IOException e)
-      {
-         throw new MessagingException(e);
-      }
-      catch (CryptoException e)
       {
          throw new MessagingException(e);
       }

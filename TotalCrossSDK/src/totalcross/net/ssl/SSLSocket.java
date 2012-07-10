@@ -7,6 +7,13 @@ import totalcross.net.Socket;
 import totalcross.net.UnknownHostException;
 import totalcross.sys.Vm;
 
+/**
+ * This class extends Sockets and provides secure socket using protocols such as the "Secure Sockets Layer" (SSL) or
+ * IETF "Transport Layer Security" (TLS) protocols.<br>
+ * 
+ * The initial handshake on this connection is initiated by calling startHandshake which explicitly begins handshakes.
+ * If handshaking fails for any reason, the SSLSocket is closed, and no further communications can be done.
+ */
 public class SSLSocket extends Socket
 {
    private SSLClient sslClient;
@@ -14,26 +21,77 @@ public class SSLSocket extends Socket
    private SSLReadHolder sslReader;
    private ByteArrayStream buffer = null;
 
+   /**
+    * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
+    * the client side of the connection a given address and port. This acts as the SSL client.
+    * 
+    * @param host
+    *           the server's host
+    * @param port
+    *           its port
+    * @param timeout
+    *           the timeout for this operation
+    * @throws UnknownHostException
+    *            if the host is not known
+    * @throws IOException
+    *            if an I/O error occurs when creating the socket
+    */
    public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException
    {
       super(host, port, timeout);
    }
 
-   public void startHandshake() throws IOException, CryptoException
+   /**
+    * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
+    * does not perform any kind of validation. Subclasses may override this method to use their own implementation of
+    * SSLClient.
+    * 
+    * @return a SSLClient initialized with the objects required to perform the validation for this socket.
+    * @throws CryptoException
+    */
+   protected SSLClient prepareContext() throws CryptoException
    {
-      sslClient = new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
-      sslConnection = sslClient.connect(this, null);
-      Exception e = sslConnection.getLastException();
-      if (e != null)
-         throw new IOException(e.getMessage());
-      int status;
-      while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
-         Vm.sleep(25);
-      if (status != Constants.SSL_OK)
-         throw new CryptoException("SSL handshake failed");
-      sslReader = new SSLReadHolder();
-      buffer = new ByteArrayStream(256);
-      buffer.mark();
+      return new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
+   }
+
+   /**
+    * Starts an SSL handshake on this connection.
+    * 
+    * @throws IOException
+    *            on a network level error
+    */
+   public void startHandshake() throws IOException
+   {
+      try
+      {
+         sslClient = prepareContext();
+         sslConnection = sslClient.connect(this, null);
+         Exception e = sslConnection.getLastException();
+         if (e != null)
+            throw new IOException(e.getMessage());
+         int status;
+         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
+            Vm.sleep(25);
+         if (status != Constants.SSL_OK)
+            throw new IOException("SSL handshake failed");
+         sslReader = new SSLReadHolder();
+         buffer = new ByteArrayStream(256);
+         buffer.mark();
+      }
+      catch (Exception e)
+      {
+         try
+         {
+            this.close();
+         }
+         catch (IOException e2)
+         {
+         }
+         if (e instanceof IOException)
+            throw (IOException) e;
+         else
+            throw new IOException(e.getMessage());
+      }
    }
 
    public int readBytes(byte[] buf, int start, int count) throws IOException
@@ -75,11 +133,11 @@ public class SSLSocket extends Socket
    public void close() throws IOException
    {
       if (buffer != null)
-      {
          buffer = null;
+      if (sslConnection != null)
          sslConnection.dispose();
+      if (sslClient != null)
          sslClient.dispose();
-      }
       super.close();
    }
 }

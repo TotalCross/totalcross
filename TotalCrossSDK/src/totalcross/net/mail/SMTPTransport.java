@@ -240,6 +240,11 @@ public class SMTPTransport extends Transport
 
    }
 
+   /**
+    * Issue the STARTTLS command and switch the socket to TLS mode if it succeeds.
+    * 
+    * @throws MessagingException
+    */
    protected void startTLS() throws MessagingException
    {}
 }
