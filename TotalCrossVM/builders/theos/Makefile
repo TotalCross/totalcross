@@ -3,7 +3,7 @@ GO_EASY_ON_ME = 1
 
 type ?= demo
 
-ARCHS = armv6
+ARCHS = armv7 armv6
 
 libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork CoreLocation Foundation
 
