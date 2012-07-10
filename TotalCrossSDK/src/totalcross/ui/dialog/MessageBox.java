@@ -37,11 +37,11 @@ import totalcross.ui.image.ImageException;
 public class MessageBox extends Window
 {
    protected Label msg;
-   protected PushButtonGroup btns;
+   public PushButtonGroup btns;
    private int selected = -1;
    private boolean hasScroll;
    protected int xa,ya,wa,ha; // arrow coords
-   private TimerEvent unpopTimer;
+   private TimerEvent unpopTimer,buttonTimer;
    private boolean oldHighlighting;
    private static String[] ok = {"Ok"};
    private int captionCount;
@@ -263,6 +263,8 @@ public class MessageBox extends Window
       {
          btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
          if (uiAndroid && !removeTitleLine) footerH = height - (sc != null ? sc.getY2()+2 : msg.getY2()) - 1;
+         if (buttonTimer != null)
+            btns.setVisible(false);
       }
    }
 
@@ -314,6 +316,13 @@ public class MessageBox extends Window
       switch (e.type)
       {
          case TimerEvent.TRIGGERED:
+            if (buttonTimer != null && buttonTimer.triggered)
+            {
+               removeTimer(buttonTimer);
+               if (btns != null)
+                  btns.setVisible(true);
+            }
+            else  
             if (e.target == this)
             {
                removeTimer(unpopTimer);
@@ -426,5 +435,21 @@ public class MessageBox extends Window
    protected void onFontChanged()
    {
 
+   }
+
+   /** Calling this method will make the buttons initially hidden and will show them after
+    * the specified number of milisseconds.
+    * 
+    * Here's a sample:
+    * <pre>
+    * MessageBox mb = new MessageBox("Novo Tweet!",tweet);
+    * mb.setTimeToShowButton(7000);
+    * mb.popup();
+    * </pre>
+    * @since TotalCross 1.53
+    */ 
+   public void setDelayToShowButton(int ms)
+   {
+      buttonTimer = addTimer(ms);      
    }
 }
