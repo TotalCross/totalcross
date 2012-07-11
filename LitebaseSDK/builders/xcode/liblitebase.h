@@ -10,6 +10,6 @@
 
 @interface Litebase : NSObject
 
-+ (void) libOpen:(Context) context;
++ (void) fillNativeProcAddressesLB;
 
 @end
