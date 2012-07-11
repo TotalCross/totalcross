@@ -4,7 +4,7 @@ import totalcross.io.IOException;
 import totalcross.net.*;
 
 /**
- * SSLSocketFactorys create SSLSockets.
+ * SSLSocketFactory creates SSLSockets.
  */
 public class SSLSocketFactory extends SocketFactory
 {

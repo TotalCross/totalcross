@@ -79,7 +79,17 @@ public abstract class Transport extends Service
 
       try
       {
-         SocketFactory sf = tlsEnabled ? SSLSocketFactory.getDefault() : SocketFactory.getDefault();
+         SocketFactory sf = null;
+         if (!tlsEnabled)
+            sf = SocketFactory.getDefault();
+         else
+         {
+            Properties.Str sslSocketFactoryClass = (Properties.Str) session.get(MailSession.SMTP_SSL_SOCKET_FACTORY_CLASS);
+            if (sslSocketFactoryClass != null && sslSocketFactoryClass.value != null)
+               sf = (SocketFactory) Class.forName(sslSocketFactoryClass.value).newInstance();
+            else
+               sf = SSLSocketFactory.getDefault();
+         }
          Socket connection = sf.createSocket(host, port, connectionTimeout);
          connection.readTimeout = connection.writeTimeout = timeout;
 
@@ -88,6 +98,18 @@ public abstract class Transport extends Service
 
          smtp.protocolConnect(host, port, user, password);
          smtp.sendMessage(message);
+      }
+      catch (InstantiationException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (IllegalAccessException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new MessagingException(e);
       }
       catch (UnknownHostException e)
       {

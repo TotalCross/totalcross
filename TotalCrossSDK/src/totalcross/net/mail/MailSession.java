@@ -113,6 +113,14 @@ import totalcross.util.Properties;
  * Defaults to 587.</TD>
  * </TR>
  * 
+ * <TR>
+ * <TD>mail.smtp.ssl.socketFactory.class</TD>
+ * <TD>String</TD>
+ * <TD>
+ * If set, specifies the name of a class that extends the totalcross.net.ssl.SSLSocketFactory class. This class will be
+ * used to create SMTP SSL sockets.</TD>
+ * </TR>
+ * 
  * </TABLE>
  * <P>
  * 
@@ -207,6 +215,11 @@ public class MailSession extends Properties
     * one. Defaults to 587.
     */
    public static final String SMTP_SSL_PORT = "mail.smtp.ssl.port";
+   /**
+    * If set, specifies the name of a class that extends the totalcross.net.ssl.SSLSocketFactory class. This class will
+    * be used to create SMTP SSL sockets.
+    */
+   public static final String SMTP_SSL_SOCKET_FACTORY_CLASS = "mail.smtp.ssl.socketFactory.class";
 
    public static final String POP3_USER = "mail.pop3.user";
    public static final String POP3_HOST = "mail.pop3.host";
