@@ -170,7 +170,7 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (DriverException exception) {}
       
-      assertFalse(meta.hasDefaultValue(1));
+      assertTrue(meta.hasDefaultValue(1));
       assertFalse(meta.hasDefaultValue(2));
       
       // Invalid Column index.
@@ -199,8 +199,8 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (IllegalArgumentException exception) {}
       
-      assertFalse(meta.hasDefaultValue("Tempo"));
-      assertFalse(meta.hasDefaultValue("time"));
+      assertTrue(meta.hasDefaultValue("Tempo"));
+      assertTrue(meta.hasDefaultValue("time"));
       assertFalse(meta.hasDefaultValue("name"));
       
       // Invalid Column name.
@@ -284,9 +284,9 @@ public class TestDeleteAndMetaData extends TestCase
       assertFalse(meta.isNotNull("time"));
       assertTrue(meta.isNotNull("name"));
       assertFalse(meta.hasDefaultValue(1));
-      assertFalse(meta.hasDefaultValue(2));
-      assertFalse(meta.hasDefaultValue("Tempo"));
-      assertFalse(meta.hasDefaultValue("time"));
+      assertTrue(meta.hasDefaultValue(2));
+      assertTrue(meta.hasDefaultValue("Tempo"));
+      assertTrue(meta.hasDefaultValue("time"));
       assertFalse(meta.hasDefaultValue("name"));
       rs.close();
 
@@ -427,7 +427,7 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (DriverException exception) {}
       
-      assertFalse(meta.hasDefaultValue(1));
+      assertTrue(meta.hasDefaultValue(1));
       assertFalse(meta.hasDefaultValue(2));
       
       // Invalid Column index.
@@ -456,7 +456,7 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (IllegalArgumentException exception) {}
       
-      assertFalse(meta.hasDefaultValue("time"));
+      assertTrue(meta.hasDefaultValue("time"));
       assertFalse(meta.hasDefaultValue("name"));
       
       // Invalid Column index.
@@ -723,7 +723,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       
       assertFalse(meta.hasDefaultValue(1));
-      assertFalse(meta.hasDefaultValue(2));
+      assertTrue(meta.hasDefaultValue(2));
       assertFalse(meta.hasDefaultValue(3));
       
       // Invalid Column index.
@@ -753,7 +753,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (IllegalArgumentException exception) {}
       
       assertFalse(meta.hasDefaultValue("rowid"));
-      assertFalse(meta.hasDefaultValue("time"));
+      assertTrue(meta.hasDefaultValue("time"));
       assertFalse(meta.hasDefaultValue("name"));
       
       // Invalid Column index.
@@ -951,7 +951,7 @@ public class TestDeleteAndMetaData extends TestCase
          fail("112");
       } 
       catch (DriverException exception) {}
-      assertFalse(meta.hasDefaultValue(1));
+      assertTrue(meta.hasDefaultValue(1));
       assertFalse(meta.hasDefaultValue(2));
       assertFalse(meta.hasDefaultValue(3));
       assertTrue(meta.hasDefaultValue(4));
@@ -967,7 +967,7 @@ public class TestDeleteAndMetaData extends TestCase
          fail("114");
       } 
       catch (IllegalArgumentException exception) {}
-      assertFalse(meta.hasDefaultValue("time"));
+      assertTrue(meta.hasDefaultValue("time"));
       assertFalse(meta.hasDefaultValue("name"));
       assertFalse(meta.hasDefaultValue("life"));
       try 
@@ -1055,7 +1055,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertFalse(meta.hasDefaultValue(2));
       assertTrue(meta.hasDefaultValue(3));
-      assertFalse(meta.hasDefaultValue(4));
+      assertTrue(meta.hasDefaultValue(4));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue("c");
@@ -1064,7 +1064,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertFalse(meta.hasDefaultValue("n1"));
       assertTrue(meta.hasDefaultValue("n2"));
-      assertFalse(meta.hasDefaultValue("abt"));
+      assertTrue(meta.hasDefaultValue("abt"));
       rs.close();
 
       // Tests what happens if the result set is closed in a complex query.
