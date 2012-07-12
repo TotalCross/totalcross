@@ -20963,6 +20963,234 @@ count(*)
 .
 \end_layout
 
+\begin_layout Subsection
+
+\family typewriter
+getDefaultValue()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String 
+\series bold
+getDefaultValue
+\series default
+(int columnIndex) 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+columnIdx
+\family default
+: The column index (starting at 1).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+The default value of the column as a string or 
+\family typewriter
+null
+\family default
+ if it does not have a default value.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the column does not have an underlining table column, such as 
+\family typewriter
+count(*)
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getDefaultValue()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String 
+\series bold
+getDefaultValue
+\series default
+(String columnName) 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+columnName
+\family default
+: The column name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+The default value of the column as a string or 
+\family typewriter
+null
+\family default
+ if it does not have a default value.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the column does not have an underlining table column, such as 
+\family typewriter
+count(*)
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getPKColumnIndices()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public byte[] 
+\series bold
+getPKColumnIndices
+\series default
+(String tableName)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+tableName
+\family default
+: The table name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+null
+\family default
+ if the given table does not have primary key or an array with the column
+ indices of the primary key.
+\end_layout
+
+\begin_layout Standard
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the given table name is not part of the query of this result set.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getPKColumnNames()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String[] 
+\series bold
+getPKColumnNames
+\series default
+(String tableName)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+tableName
+\family default
+: The table name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+null
+\family default
+ if the given table does not have primary key or an array with the column
+ names of the primary key.
+\end_layout
+
+\begin_layout Standard
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the given table name is not part of the query of this result set.
+\end_layout
+
 \begin_layout Section
 
 \family typewriter
