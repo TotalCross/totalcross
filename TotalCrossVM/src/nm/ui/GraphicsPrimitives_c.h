@@ -2884,7 +2884,9 @@ static bool checkScreenPixels()
 
 void updateScreen(Context currentContext)
 {
+#ifdef darwin   
    if (callingScreenChange) return;
+#endif      
 #ifdef ANDROID
    if (appPaused) return;
 #endif
