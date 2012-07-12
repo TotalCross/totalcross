@@ -15616,8 +15616,8 @@ An easy to use interface for adding/removing information to the grid.
 \end_layout
 
 \begin_layout Itemize
-Optional check column, this is a column that is clickable marking an specific
- line as checked/unchecked, this is usefull if you want the user to be able
+Optional check column which is a column that is clickable, marking an specific
+ line as checked/unchecked; this is usefull if you want the user to be able
  to select multiple lines displayed on the grid.
 \end_layout
 
@@ -15627,8 +15627,8 @@ Columns can be resized so that the user can see all the information displayed
 \end_layout
 
 \begin_layout Itemize
-Style configuration, you can set the color of captions boxes all the way
- thru the stripes colors and vertical line types.
+Style configuration, which you can set the color of captions boxes all the
+ way through the stripes colors and vertical line types.
 \end_layout
 
 \begin_layout Itemize
@@ -15641,8 +15641,8 @@ GridEvent
 
 \begin_layout Itemize
 A column may be marked as editable.
- In this case, an Edit will be placed in the currently focused cell.
- A column can also have choices (ComboBox).
+ In this case, an edit will be placed in the currently focused cell.
+ A column can also have choices (combo box).
 \end_layout
 
 \begin_layout Itemize
@@ -15753,7 +15753,7 @@ row) adds a new item to the grid at the given position.
 
 \begin_layout FieldList
 \labelwidthstring 0
-clear() remove all items from the grid.
+clear() removes all items from the grid.
 \end_layout
 
 \begin_layout FieldList
@@ -15948,7 +15948,7 @@ boolean
 \begin_inset space ~
 \end_inset
 
-editable) enabled/disable the edition for all cells of a grid's column.
+editable) enables/disables the edition for all cells of a grid's column.
 \end_layout
 
 \begin_layout FieldList
@@ -15965,7 +15965,7 @@ String[]
 \begin_inset space ~
 \end_inset
 
-choices) enable a ComboBox with choices for all cells of a grid's column.
+choices) enables a combo box with choices for all cells of a grid's column.
 \end_layout
 
 \begin_layout Standard
@@ -16524,7 +16524,7 @@ name "chap:Advanced-Controls"
 
 \begin_layout Standard
 Placeholder for a future section.
- Color List
+ 
 \end_layout
 
 \begin_layout Chapter
