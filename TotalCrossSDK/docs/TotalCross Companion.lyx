@@ -11460,7 +11460,7 @@ onEvent()
 Events are supposed to be handled only by the control that receives the
  event.
  Handling events received by a control in another class is a hard task.
- An example is the tool tip control, which works by handling the pen events
+ An example is the tooltip control, which works by handling the pen events
  received by the control it refers to.
 \end_layout
 
@@ -11973,7 +11973,7 @@ In this chapter we will learn the details of all basic controls in the package
 totalcross.ui
 \family default
 : button, edit, label, check, radio, radio group controller, combo box,
- list box, multi edit, grid, and tool tip.
+ list box, multi edit, grid, and tooltip.
 \end_layout
 
 \begin_layout Standard
@@ -15617,8 +15617,8 @@ An easy to use interface for adding/removing information to the grid.
 
 \begin_layout Itemize
 Optional check column which is a column that is clickable, marking an specific
- line as checked/unchecked; this is usefull if you want the user to be able
- to select multiple lines displayed on the grid.
+ line as checked/ unchecked; this is usefull if you want the user to be
+ able to select multiple lines displayed on the grid.
 \end_layout
 
 \begin_layout Itemize
@@ -15651,13 +15651,17 @@ The columns can be sorted by clicking in the title.
 
 \begin_layout Itemize
 If the text is bigger than the size of the column, you can click and hold
- in the cell to display a tool tip with the full text.
+ in the cell to display a tooltip with the full text.
 \end_layout
 
 \begin_layout Itemize
 You can customize cell back and fore colors, enabled state and choices by
  using the 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 CellController
 \family default
  class
@@ -15833,18 +15837,19 @@ getCheckedRows() returns an
 \family typewriter
 IntVector
 \family default
- containing the indexes of the lines that have been marked with a check
+ containing the indexes of the lines that have been marked with a check.
  
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedIndex() get the number of the currently selected line 
+getSelectedIndex() gets the number of the currently selected line.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedItem() gets the string array for the currently selected line
+getSelectedItem() gets the string array for the currently selected line.
 \end_layout
 
 \begin_layout FieldList
@@ -15931,7 +15936,7 @@ items) sets the grid items to be displayed, notice that it needs to conform
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() returns the number of lines in this grid
+size() returns the number of lines in this grid.
 \end_layout
 
 \begin_layout FieldList
@@ -15983,9 +15988,25 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Note that the setColumnEditable and setColumnChoices are mutually exclusive:
- calling one cancels the effects of the other.
- The setDataSource and setItems methods are also mutually exclusive.
+Note that the 
+\family typewriter
+setColumnEditable()
+\family default
+ and 
+\family typewriter
+setColumnChoices()
+\family default
+ methods are mutually exclusive: calling one cancels the effects of the
+ other.
+ The 
+\family typewriter
+setDataSource()
+\family default
+ and 
+\family typewriter
+setItems()
+\family default
+ methods are also mutually exclusive.
 \end_layout
 
 \end_inset
@@ -16007,14 +16028,21 @@ int
 \begin_inset space ~
 \end_inset
 
-nrItems) passing the class that implements the Grid.DataSource interface
- and the total number of items, allows the grid to request data on demand.
+nrItems) passing the class that implements the 
+\family typewriter
+Grid.DataSource
+\family default
+ interface and the total number of items allows the grid to request data
+ on demand.
  This greatly reduces the memory usage, because only the number of visible
  items may be loaded at each time, but makes the grid navigation slower.
  Note that in this mode the grid scroll will not be realtime: the data will
  be requested only when the user releases the scroll bar.
- The DataSource has a single method: String[][]getItems(int startingRow,
- int count), that must return the given number of items or less.
+ The data source has a single method: 
+\family typewriter
+String[][] getItems(int startingRow, int count)
+\family default
+, that must return the given number of items or less.
 \end_layout
 
 \begin_layout FieldList
@@ -16025,7 +16053,7 @@ setCellController(Grid.CellController
 
 cc) passing the class that extends Grid.CellController will allow you to
  have a fine control of each cell of the grid.
- Note that using a CellController will make the drawings slower.
+ Note that using a cell controller will make the drawings slower.
  The class has the following methods:
 \end_layout
 
@@ -16044,8 +16072,11 @@ int
 \begin_inset space ~
 \end_inset
 
-col) must return the background color for the given cell, or null if you
- want to use the default one.
+col) must return the background color for the given cell, or 
+\family typewriter
+null
+\family default
+ if you want to use the default one.
 \end_layout
 
 \begin_layout FieldList
@@ -16062,8 +16093,11 @@ int
 \begin_inset space ~
 \end_inset
 
-col) must return the foreground color for the given cell, or null if you
- want to use the default one.
+col) must return the foreground color for the given cell, or 
+\family typewriter
+null
+\family default
+ if you want to use the default one.
 \end_layout
 
 \begin_layout FieldList
@@ -16080,9 +16114,16 @@ int
 \begin_inset space ~
 \end_inset
 
-col) must return if the given cell is enabled, ie, can have input and can
- be selected.
- Regarding the input, it will only work if the setColumnChoices or setEditable
+col) must return if the given cell is enabled, i.
+ e., can have input and can be selected.
+ Regarding the input, it will only work if the 
+\family typewriter
+setColumnChoices()
+\family default
+ or 
+\family typewriter
+setEditable()
+\family default
  was called to the given column.
  Regarding the selection, it may also disable column's check state change.
 \end_layout
@@ -16106,8 +16147,16 @@ int
 \end_inset
 
 col) returns a customized set of choices for the given cell.
- Must return null if you want to use the default set.
- Only works if setColumnChoices was called to the given column.
+ Must return 
+\family typewriter
+null
+\family default
+ if you want to use the default set.
+ Only works if 
+\family typewriter
+setColumnChoices()
+\family default
+ was called to the given column.
 \end_layout
 
 \end_deeper
@@ -16123,7 +16172,7 @@ boldCheck draws a bold check instead of the tiny one.
 
 \begin_layout FieldList
 \labelwidthstring 0
-canClickSelectAll set to false to disable the click on the check column
+canClickSelectAll sets to false to disable the click on the check column
  of the captions to select and unselect all checks.
 \end_layout
 
@@ -16140,8 +16189,8 @@ drawCheckBox boolean that defines if the box around the check will or not
 
 \begin_layout FieldList
 \labelwidthstring 0
-enableColumnResize set to false to disable the column resize by dragging
- the column separator line.
+enableColumnResize must be set to false to disable the column resize by
+ dragging the column separator line.
 \end_layout
 
 \begin_layout FieldList
@@ -16152,7 +16201,7 @@ extraHorizScrollButtonHeight a value that can increase the horizontal buttons
 
 \begin_layout FieldList
 \labelwidthstring 0
-oldCellText the text that was in the cell before the user had editted it..
+oldCellText the text that was in the cell before the user had editted it.
 \end_layout
 
 \begin_layout FieldList
@@ -16174,13 +16223,29 @@ firstStripeColor color of the first stripe.
 \begin_layout FieldList
 \labelwidthstring 0
 secondStripeColor color of the second stripe.
- drawStripes must also be set to true.
+ 
+\family typewriter
+drawStripes
+\family default
+ must also be set to true.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 verticalLineStyle defines the vertical line style of the grid.
- Possible values are VERT_DOT (default), VERT_LINE and VERT_NONE.
+ Possible values are 
+\family typewriter
+VERT_DOT
+\family default
+ (default), 
+\family typewriter
+VERT_LINE
+\family default
+ and 
+\family typewriter
+VERT_NONE
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -16191,11 +16256,15 @@ String[]
 
 captions these are the column captions.
  Can be directly assigned, but always make sure it has the same number of
- columns of the Grid.
+ columns of the grid.
 \end_layout
 
 \begin_layout Standard
-A GridEvent is dispatched in the following situations:
+A 
+\family typewriter
+GridEvent
+\family default
+ is dispatched in the following situations:
 \end_layout
 
 \begin_layout Itemize
@@ -16203,7 +16272,19 @@ When the user selects a row:
 \begin_inset Newline newline
 \end_inset
 
-type = SELECTED_EVENT, row and col are set with the cell that was clicked.
+type = 
+\family typewriter
+SELECTED_EVENT
+\family default
+; 
+\family typewriter
+row
+\family default
+ and 
+\family typewriter
+col
+\family default
+ are set with the cell that was clicked.
 \end_layout
 
 \begin_layout Itemize
@@ -16211,8 +16292,23 @@ When the user checks a row:
 \begin_inset Newline newline
 \end_inset
 
-type = CHECK_CHANGED_EVENT, row is set with the row that was checked, col
- is 0 and checked contains the current state.
+type = 
+\family typewriter
+CHECK_CHANGED_EVENT
+\family default
+; 
+\family typewriter
+row
+\family default
+ is set with the row that was checked, 
+\family typewriter
+col
+\family default
+ is 0, and 
+\family typewriter
+checked
+\family default
+ contains the current state.
 \end_layout
 
 \begin_layout Itemize
@@ -16220,18 +16316,60 @@ When the user press the check/uncheck all box:
 \begin_inset Newline newline
 \end_inset
 
-type = CHECK_CHANGED_EVENT, col is 0 and row is set to Grid.ALL_CHECKED and
- Grid.ALL_UNCHECKED.
-\end_layout
+type = 
+\family typewriter
+CHECK_CHANGED_EVENT
+\family default
+; 
+\family typewriter
+col
+\family default
+ is 0 and 
+\family typewriter
+row
+\family default
+ is set to 
+\family typewriter
+Grid.ALL_CHECKED
+\family default
+ and 
+\family typewriter
 
-\begin_layout Itemize
-When the user changes the text of a editable column or selected a new choice:
 \begin_inset Newline newline
 \end_inset
 
-type = TEXT_CHANGED_EVENT, row and col are set with the cell that changed.
- The new text can be found with getCellText, and Grid.oldCellText contains
- the old text.
+Grid.ALL_UNCHECKED
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+When the user changes the text of an editable column or selected a new choice:
+\begin_inset Newline newline
+\end_inset
+
+type = 
+\family typewriter
+TEXT_CHANGED_EVENT
+\family default
+; 
+\family typewriter
+row
+\family default
+ and 
+\family typewriter
+col
+\family default
+ are set with the cell that changed.
+ The new text can be found with 
+\family typewriter
+getCellText()
+\family default
+ whereas 
+\family typewriter
+Grid.oldCellText()
+\family default
+ contains the old text.
 \end_layout
 
 \begin_layout Standard
@@ -16353,21 +16491,35 @@ ToolTip
 
 \begin_layout Standard
 It allows the display of a tooltip when user keeps the pen in the control.
- The default popup delay is 1000ms and the amount of time it will be displayed
- is 2000ms (a pen up also hides the control).
+ The default popup delay is 1000 ms and the amount of time it will be displayed
+ is 2000 ms (a pen up also hides the control).
  The tooltip must always be added after the control is added and had its
  bounds set; otherwise, you must call the added method to initialize the
  tip's bounds.
 \end_layout
 
 \begin_layout Standard
-You can set the border color by changing the borderColor field (no border
- by default) and also the internal gap (see field insideGap).
+You can set the border color by changing the 
+\family typewriter
+borderColor
+\family default
+ field (no border by default) and also the internal gap (see field 
+\family typewriter
+insideGap
+\family default
+).
 \end_layout
 
 \begin_layout Standard
-The static members distX and distY lets you set the default distance from
- the control for all tooltips.
+The static members 
+\family typewriter
+distX
+\family default
+ and 
+\family typewriter
+distY
+\family default
+ lets you set the default distance from the control for all tooltips.
  They must be set before the tooltip is created.
  
 \end_layout
@@ -16375,9 +16527,13 @@ The static members distX and distY lets you set the default distance from
 \begin_layout Standard
 The constructor receives the control which the tooptip refers to and the
  message that will be displayed.
- You can use the new line character '
+ You can use the new line character 
+\family typewriter
+
 \backslash
-n' like a label control.
+n
+\family default
+ like a label control.
 \end_layout
 
 \begin_layout Standard
@@ -16395,7 +16551,15 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-ToolTip implements PenListener interface.
+
+\family typewriter
+ToolTip
+\family default
+ implements the 
+\family typewriter
+PenListener
+\family default
+ interface.
 \end_layout
 
 \end_inset
@@ -16523,8 +16687,201 @@ name "chap:Advanced-Controls"
 \end_layout
 
 \begin_layout Standard
-Placeholder for a future section.
- 
+Here a list of advanced controls is found.
+ For more details, please check the JavaDocs for now.
+ In the future this chapter will be filled with more detail.
+\end_layout
+
+\begin_layout Itemize
+Tree
+\end_layout
+
+\begin_layout Itemize
+AlignedLabelsContainer 
+\end_layout
+
+\begin_layout Itemize
+ArrowButton 
+\end_layout
+
+\begin_layout Itemize
+Bar 
+\end_layout
+
+\begin_layout Itemize
+ButtonMenu 
+\end_layout
+
+\begin_layout Itemize
+ClippedContainer 
+\end_layout
+
+\begin_layout Itemize
+ColorList 
+\end_layout
+
+\begin_layout Itemize
+ComboBoxEditable 
+\end_layout
+
+\begin_layout Itemize
+FlowContainer 
+\end_layout
+
+\begin_layout Itemize
+ImageControl 
+\end_layout
+
+\begin_layout Itemize
+ImageList 
+\end_layout
+
+\begin_layout Itemize
+Keypad 
+\end_layout
+
+\begin_layout Itemize
+ListContainer 
+\end_layout
+
+\begin_layout Itemize
+MenuBar 
+\end_layout
+
+\begin_layout Itemize
+MenuBarDropDown 
+\end_layout
+
+\begin_layout Itemize
+MultiListBox 
+\end_layout
+
+\begin_layout Itemize
+PagePosition 
+\end_layout
+
+\begin_layout Itemize
+PopupMenu 
+\end_layout
+
+\begin_layout Itemize
+ProgressBar 
+\end_layout
+
+\begin_layout Itemize
+PushButtonGroup 
+\end_layout
+
+\begin_layout Itemize
+Ruler 
+\end_layout
+
+\begin_layout Itemize
+ScrollBar 
+\end_layout
+
+\begin_layout Itemize
+ScrollContainer 
+\end_layout
+
+\begin_layout Itemize
+ScrollPosition 
+\end_layout
+
+\begin_layout Itemize
+Slider 
+\end_layout
+
+\begin_layout Itemize
+Spacer 
+\end_layout
+
+\begin_layout Itemize
+SpinList 
+\end_layout
+
+\begin_layout Itemize
+Spinner 
+\end_layout
+
+\begin_layout Itemize
+TabbedContainer 
+\end_layout
+
+\begin_layout Itemize
+Whiteboard 
+\end_layout
+
+\begin_layout Itemize
+Chart 
+\end_layout
+
+\begin_layout Itemize
+ColumnChart 
+\end_layout
+
+\begin_layout Itemize
+LineChart 
+\end_layout
+
+\begin_layout Itemize
+PieChart 
+\end_layout
+
+\begin_layout Itemize
+PointLineChart 
+\end_layout
+
+\begin_layout Itemize
+XYChart 
+\end_layout
+
+\begin_layout Itemize
+CalculatorBox 
+\end_layout
+
+\begin_layout Itemize
+CalendarBox 
+\end_layout
+
+\begin_layout Itemize
+ColorChooserBox 
+\end_layout
+
+\begin_layout Itemize
+ControlBox 
+\end_layout
+
+\begin_layout Itemize
+FileChooserBox 
+\end_layout
+
+\begin_layout Itemize
+InputBox 
+\end_layout
+
+\begin_layout Itemize
+KeyboardBox 
+\end_layout
+
+\begin_layout Itemize
+MessageBox 
+\end_layout
+
+\begin_layout Itemize
+ProgressBox 
+\end_layout
+
+\begin_layout Itemize
+TimeBox 
+\end_layout
+
+\begin_layout Itemize
+Document 
+\end_layout
+
+\begin_layout Itemize
+HtmlContainer 
 \end_layout
 
 \begin_layout Chapter
@@ -16532,9 +16889,14 @@ The Window class
 \end_layout
 
 \begin_layout Standard
-As you already know, a TotalCross program consists of one and only one MainWindo
-w.
- This MainWindow can pop up a window, and this new window can pop up another
+As you already know, a TotalCross program with user interface consists of
+ one and only one main window (a class that directly or indirecly extends
+ 
+\family typewriter
+MainWindow
+\family default
+).
+ This main window can pop up a window, and this new window can pop up another
  one, and so on.
  Windows in TotalCross are always modal, therefore, only the last popped
  up window can receive events and you cannot switch from the topmost Window
@@ -16542,29 +16904,70 @@ w.
 \end_layout
 
 \begin_layout Standard
-Although the Window class extends Control, you may not add a Window to a
- Container.
- Doing this results in a RuntimeException.
- To show a Window, you must use the method popup or the method popupNonBlocking.
+Although the 
+\family typewriter
+Window
+\family default
+ class extends 
+\family typewriter
+Control
+\family default
+, you can't add a 
+\family typewriter
+Window
+\family default
+ to a 
+\family typewriter
+Container
+\family default
+.
+ Doing this results in a 
+\family typewriter
+RuntimeException
+\family default
+.
+ To show a window, you must use the method 
+\family typewriter
+popup()
+\family default
+ or the method 
+\family typewriter
+popupNonBlocking()
+\family default
+.
 \end_layout
 
 \begin_layout Standard
-Some other features of the Window class:
+Some other features of the 
+\family typewriter
+Window
+\family default
+ class:
 \end_layout
 
 \begin_layout Itemize
-Windows can have a title that can be set by the method setTitle or passed
- to the constructor.
+Windows can have a title that can be set by the method 
+\family typewriter
+setTitle()
+\family default
+ or passed to the constructor.
 \end_layout
 
 \begin_layout Itemize
 The window border can be selected from one of the multiple styles shown
- below, by using the setBorderStyle method or passing the desired style
- to the Window constructor.
+ below, by using the 
+\family typewriter
+setBorderStyle()
+\family default
+ method or passing the desired style to the 
+\family typewriter
+Window
+\family default
+ constructor.
 \end_layout
 
 \begin_layout Itemize
-There are two constructors: the default one, that creates a Window with
+There are two constructors: the default one, that creates a window with
  no title and no border, and one constructor with both title and border
  parameters.
 \end_layout
@@ -16572,47 +16975,148 @@ There are two constructors: the default one, that creates a Window with
 \begin_layout Itemize
 Windows can be moved around the screen by dragging the window’s title.
  If the window has no title, it can’t be moved.
- You can make a titled window unmovable by calling the makeUnmovable method.
+ You can make a titled window unmovable by calling the 
+\family typewriter
+makeUnmovable()
+\family default
+ method.
 \end_layout
 
 \begin_layout Itemize
-The title font can be changed using the setTitleFont method.
- By default, the font is the one used by the MainWindow, with bold style.
+The title font can be changed using the 
+\family typewriter
+setTitleFont()
+\family default
+ method.
+ By default, the font is the one used by the main window, with bold style.
 \end_layout
 
 \begin_layout Itemize
 Only one control can hold the focus at a time.
- To change focus to another control, use the setFocus method (this can also
- be done through the requestFocus method in the totalcross.ui.Control class).
- The getFocus method returns the control that currently owns the focus.
+ To change focus to another control, use the 
+\family typewriter
+setFocus()
+\family default
+ method (this can also be done through the 
+\family typewriter
+requestFocus()
+\family default
+ method in the 
+\family typewriter
+totalcross.ui.Control
+\family default
+ class).
+ The 
+\family typewriter
+getFocus()
+\family default
+ method returns the control that currently owns the focus.
 \end_layout
 
 \begin_layout Itemize
 The rectangle area excluding the border and the title is defined as the
  client rectangle.
- You can get it with the getClientRect method.
+ You can get it with the 
+\family typewriter
+getClientRect()
+\family default
+ method.
 \end_layout
 
 \begin_layout Itemize
-A window can be popped up by calling the popupNonBlicking method and can
- be unpopped by calling the unpop method.
- The popup process saves the area behind the Window that is being popped
+A window can be popped up by calling the 
+\family typewriter
+popupNonBlocking()
+\family default
+ method and can be unpopped by calling the 
+\family typewriter
+unpop()
+\family default
+ method.
+ The popup process saves the area behind the window that is being popped
  up and the unpop process restores that area.
- The unpop method posts a ControlEvent.WINDOW_CLOSED event to the caller
- window.
- The popupNonBlocking method can be called like this.popupNonBlocking().
+ The 
+\family typewriter
+unpop()
+\family default
+ method posts a 
+\family typewriter
+ControlEvent.WINDOW_CLOSED
+\family default
+ event to the caller window.
+ The 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+popupNonBlocking()
+\family default
+ method can be called like 
+\family typewriter
+this.popupNonBlocking()
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-A window can also be popped up by calling the popup method, and be unpopped
- by the same unpop method described above.
- The big difference is that in popupNonBlocking, the program execution continues
- to the next line, while in popup, the program execution is halted and only
- continues when the popped up Window is dismissed.
- Menu, MessageBox, ComboBox and ComboBoxDropDown are popped up using popupNonBlo
-cking, because execution does not need to be halted.
- InputDialog, Calendar, Calculator, usually are popped up using popup because
- the user may want to get the result of the dialog in an easy way.
+A window can also be popped up by calling the 
+\family typewriter
+popup()
+\family default
+ method, and be unpopped by the same 
+\family typewriter
+unpop() 
+\family default
+method described above.
+ The big difference is that in 
+\family typewriter
+popupNonBlocking()
+\family default
+, the program execution continues to the next line, while in 
+\family typewriter
+popup()
+\family default
+, the program execution is halted and only continues when the popped up
+ window is dismissed.
+ 
+\family typewriter
+Menu
+\family default
+, 
+\family typewriter
+MessageBox
+\family default
+, 
+\family typewriter
+ComboBox
+\family default
+, and 
+\family typewriter
+ComboBoxDropDown
+\family default
+ are popped up using 
+\family typewriter
+popupNonBlocking()
+\family default
+, because execution does not need to be halted.
+ 
+\family typewriter
+InputDialog
+\family default
+, 
+\family typewriter
+Calendar
+\family default
+, and 
+\family typewriter
+Calculator
+\family default
+ are usually popped up using 
+\family typewriter
+popup()
+\family default
+ because the user may want to get the result of the dialog in an easy way.
 \end_layout
 
 \begin_deeper
@@ -16631,13 +17135,55 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-You can't use popup to popup alternating windows that call each other recursivel
-y.
- For example, suppose that from Win1 you call win2.popup(), then at Win2
- you call unpop and then win1.popup).
- Then, from Win1 you do unpop again and win2.popup(), and so on.
- This will lead to a hard reset on the device due to a native stack overflow.
- To fix this, just replace the popup by popupNonBlocking.
+You can't use 
+\family typewriter
+popup()
+\family default
+ to popup alternating windows that call each other recursively.
+ For example, suppose that from 
+\family typewriter
+win1
+\family default
+ you call 
+\family typewriter
+win2.popup()
+\family default
+, then at 
+\family typewriter
+win2
+\family default
+ you call 
+\family typewriter
+unpop()
+\family default
+ and then 
+\family typewriter
+win1.popup()
+\family default
+.
+ Then, from 
+\family typewriter
+win1
+\family default
+ you do 
+\family typewriter
+unpop()
+\family default
+ again and 
+\family typewriter
+win2.popup()
+\family default
+, and so on.
+ This will lead to an 
+\family typewriter
+OutOfMemoryError
+\family default
+ on the device due to a native stack overflow.
+ To fix this, just replace the popup by 
+\family typewriter
+popupNonBlocking()
+\family default
+.
 \end_layout
 
 \end_inset
@@ -16925,7 +17471,7 @@ It's important to be aware that it is not a good practice to create classes
  In these cases, it is better to use Containers.
 \end_layout
 
-\begin_layout Section
+\begin_layout Chapter
 UIColors
 \end_layout
 
