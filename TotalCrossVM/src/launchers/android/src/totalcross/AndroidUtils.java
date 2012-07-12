@@ -339,4 +339,9 @@ public class AndroidUtils
          handleException(e,false);
       }
    }
+   
+   public static boolean isImage(String argl)
+   {
+      return argl.endsWith(".png") || argl.endsWith(".jpg") || argl.endsWith(".jpeg");
+   }
 }

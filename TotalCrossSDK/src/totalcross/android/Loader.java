@@ -253,7 +253,7 @@ public class Loader extends Activity
          }
       }
    }
-      
+   
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -278,23 +278,34 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            if (args.toLowerCase().endsWith(".pdf"))
+            String argl = args.toLowerCase();
+            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
+               intent.putExtra("file",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
+            if (argl.endsWith(".pdf"))
             {
                File pdfFile = new File(args);
-               if(pdfFile.exists()) 
+               if (pdfFile.exists()) 
                {
-                   Uri path = Uri.fromFile(pdfFile); 
-                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                   pdfIntent.setDataAndType(path, "application/pdf");
-                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                   try
-                   {
-                       startActivity(pdfIntent);
-                   }
-                   catch (ActivityNotFoundException e)
-                   {
-                       e.printStackTrace(); 
-                   }
+                  Uri path = Uri.fromFile(pdfFile); 
+                  Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                  pdfIntent.setDataAndType(path, "application/pdf");
+                  pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                  try
+                  {
+                     startActivity(pdfIntent);
+                  }
+                  catch (ActivityNotFoundException e)
+                  {
+                     e.printStackTrace(); 
+                  }
                }
             }
             else

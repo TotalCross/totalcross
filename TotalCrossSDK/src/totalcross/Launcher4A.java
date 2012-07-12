@@ -945,6 +945,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command.equals("viewer"))
+      {
+         if (args == null)
+            return -1;
+         String argl = args.toLowerCase();
+         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+            return -2;
+      }
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("command", command);

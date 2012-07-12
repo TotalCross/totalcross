@@ -11,10 +11,21 @@
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
         />
+
+
+
+
+
+        <activity android:name=".TouchImageViewer" />
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
+
+
+
+
+
     </application>
     <uses-sdk android:minSdkVersion="4" />
     <uses-permission android:name="android.permission.READ_LOGS" />
