@@ -166,7 +166,7 @@ target: compile
   <mkdir dir="${output}/classes" />
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="totalcross/android/**,**/*4A.*,**/*4B*" />
+     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*,**/*4B*" />
      <fileset dir="${src}" includes="ras/CompilationDate4B.java,tc/tools/deployer/Deployer4BB.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
@@ -214,7 +214,7 @@ target: compile
   <mkdir dir="${output}/classes_bb" />
   <mkdir dir="${output}/src_bb" />
   <copy todir="${output}/src_bb" overwrite="true" preservelastmodified="true">
-    <fileset dir="${src}" excludes="totalcross/android/**,**/*4A.*" />
+    <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*" />
   </copy>
   
   <taskdef name="bbprecomp" classname="tc.tools.ant.BBPreComp" classpath="${etc}/tools/ant/tctasks.jar" />
@@ -260,7 +260,7 @@ target: compile
   <mkdir dir="${output}/classes_desktop" />
   <mkdir dir="${output}/desktopsrc" />
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/android/,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
+     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/android/,tc/tools/InvalidateIPA.java,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
      <fileset dir="${src}" includes="ras/ActivationClient.java,ras/ActivationException.java" />
   </copy>
   
