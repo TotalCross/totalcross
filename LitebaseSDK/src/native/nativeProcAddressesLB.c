@@ -95,6 +95,10 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_hasDefaultValue_s"), &lRSMD_hasDefaultValue_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_isNotNull_i"), &lRSMD_isNotNull_i);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_isNotNull_s"), &lRSMD_isNotNull_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getPKColumnIndices_s"), &lRSMD_getPKColumnIndices_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getPKColumnNames_s"), &lRSMD_getPKColumnNames_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getDefaultValue_i"), &lRSMD_getDefaultValue_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getDefaultValue_s"), &lRSMD_getDefaultValue_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_executeQuery"), &lPS_executeQuery);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_executeUpdate"), &lPS_executeUpdate);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_setShort_is"), &lPS_setShort_is);
