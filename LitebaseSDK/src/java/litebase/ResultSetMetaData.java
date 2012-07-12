@@ -574,8 +574,7 @@ public class ResultSetMetaData
          int type = table.columnTypes[index];
          SQLValue value = table.defaultValues[index];
          
-         // No default value, returns null.
-         if ((table.columnAttrs[index] & Utils.ATTR_COLUMN_HAS_DEFAULT) == 0)
+         if (value == null) // No default value, returns null.
             return null;
          
          switch (type)
