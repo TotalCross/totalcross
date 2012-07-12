@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="etc/tools/ipa/truezip-swing-7.5.1.jar"/>
 	<classpathentry kind="lib" path="etc/tools/ipa/dd-plist.jar"/>
 	<classpathentry kind="lib" path="etc/tools/ipa/commons-io-2.2.jar"/>
+	<classpathentry kind="lib" path="etc/tools/ipa/commons-compress-1.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -803,6 +803,61 @@ target: IPhone builds
    </antcall>
 </target>
 
+<target name="invalidate-ipas" >
+   <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
+   <mkdir dir="${path.to.invalidator}" />
+
+   <javac
+      srcdir="${source.sdk.path}/src/tc/tools/"
+      encoding="ISO-8859-1"
+      debug="${compile.debug}"
+      optimize="${compile.optimize}"
+      target="${compile.target}"
+      source="${compile.source}"
+      includes="InvalidateIPA.java, deployer/ipa/**"
+      destdir="${path.to.invalidator}"
+      nowarn="true"
+    includeAntRuntime="false"
+   >
+      <classpath>
+         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+         <pathelement location="${tools}/ipa/dd-plist.jar"/>
+         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+      </classpath>
+   </javac>
+   <java
+      classname="tc.tools.InvalidateIPA"
+      fork="yes"
+   >
+      <classpath>
+         <pathelement location="${path.to.invalidator}"/>
+         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+         <pathelement location="${tools}/ipa/commons-compress-1.4.jar"/>
+         <pathelement location="${tools}/ipa/dd-plist.jar"/>
+         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+      </classpath>
+      <arg line="${tools} ${target.sdk.path}\dist\vm\ios\TotalCross.ipa ${target.vms.path}\dist\vm\ios\TotalCross.ipa ${target.noras.path}\dist\vm\ios\TotalCross.ipa" />
+   </java>
+</target>
+
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
