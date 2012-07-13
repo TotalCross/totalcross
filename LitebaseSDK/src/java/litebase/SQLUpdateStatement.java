@@ -48,7 +48,7 @@ class SQLUpdateStatement extends SQLStatement
    /**
     * The array with the indexes of the parameters.
     */
-   byte[] paramIndexes;
+   short[] paramIndexes; // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
 
    /**
     * An array that indicates if a parameters is defined or not.
@@ -84,7 +84,8 @@ class SQLUpdateStatement extends SQLStatement
       Vm.arrayCopy(parser.fieldNames, 0, fields, 0, nValues);
 
       // Allocates space for the list of the parameters. Worst case: all fields are parameters.
-      paramIndexes = new byte[nValues];
+   // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
+      paramIndexes = new short[nValues];
       paramDefined = new boolean[nValues];
       
       while (--nValues >= 0)
@@ -365,7 +366,7 @@ class SQLUpdateStatement extends SQLStatement
       SQLValue value;
       SQLBooleanClause clause = whereClause;
 
-      totalcross.sys.Convert.fill(paramDefined, 0, paramDefined.length, false); // Cleans the parameter values of the update clause.
+      Convert.fill(paramDefined, 0, paramDefined.length, false); // Cleans the parameter values of the update clause.
 
       while (--i >= 0)
       {
@@ -473,7 +474,7 @@ class SQLUpdateStatement extends SQLStatement
       {
          String string;
          if ((string = record[i].asString) != null && string.equals("?")) // Identifies the values that are placeholders for parameters.
-            paramIndexes[paramCount++] = (byte)i;
+            paramIndexes[paramCount++] = (short)i;
       }
 
       table.reorder(this);  // Makes sure the fields are in correct order, aligned with the table order.

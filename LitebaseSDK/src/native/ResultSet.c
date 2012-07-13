@@ -1324,3 +1324,119 @@ bool testRSClosed(Context context, Object resultSet)
    }
    return true;
 }
+
+// juliana@newmeta_1: added methods to return the primary key columns of a table.
+/**
+ * Returns a table used in a select given its name.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set.
+ * @param tableName The table name.
+ * @return The table with the given name or <code>null</code> if an exception occurs.
+ * @throws DriverException if the given table name is not used in the select.
+ */
+Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName)
+{
+   SQLResultSetField** fields = resultSet->selectClause->fieldList;
+   int32 i = resultSet->selectClause->fieldsCount;
+      
+   // The table name must be used in the select.
+   while (--i >= 0 && (!fields[i]->tableName || xstrcmp(fields[i]->tableName, tableName)));         
+   if (i == -1)
+   {
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_NAME_NOT_FOUND), tableName);
+      return null;
+   }
+   return getTable(context, resultSet->driver, tableName);  
+}
+
+/**
+ * Gets the default value of a column.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set.
+ * @param tableName The name of the table.
+ * @param index The column index.
+ * @return The default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column index is of a column of type <code>BLOB</code>.
+ */
+Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index) 
+{
+   Table* table;
+   
+   if ((table = getTable(context, resultSet->driver, tableName)))
+   {
+      int32 type = table->columnTypes[index];
+      SQLValue* value = table->defaultValues[index];  
+      DoubleBuf buffer;
+      CharP valueCharP;     
+                
+      if (!value) // No default value, returns null.
+         return null;
+      
+      switch (type)
+      {
+         case CHARS_TYPE:
+         case CHARS_NOCASE_TYPE:
+         {
+            Object string = TC_createStringObjectWithLen(context, value->length);
+            if (!string)
+               return null;
+            xmemmove(String_charsStart(string), value->asChars, value->length << 1); 
+            return string;
+         }
+         case SHORT_TYPE: 
+         {
+            valueCharP = TC_int2str(value->asShort, buffer);
+            break;
+         }   
+         case INT_TYPE:
+         {
+            valueCharP = TC_int2str(value->asInt, buffer);
+            break;
+         }
+         case LONG_TYPE:
+         {
+            valueCharP = TC_long2str(value->asLong, buffer);
+            break;
+         }
+         case FLOAT_TYPE:
+         {
+            valueCharP = TC_double2str(value->asFloat, -1, buffer);
+            break;
+         }
+         case DOUBLE_TYPE:
+         {
+            valueCharP = TC_double2str(value->asDouble, -1, buffer);
+            break;
+         }
+         case DATE_TYPE:
+         {
+            int32 dateInt = value->asDate;
+            
+            xstrprintf(valueCharP = buffer, "%04d/%02d/%02d", dateInt / 10000, dateInt / 100 % 100, dateInt % 100);
+            break;
+         }    
+         case DATETIME_TYPE:
+         {
+            int32 dateInt = value->asDate,
+                  timeInt = value->asTime;
+            
+            xstrprintf(valueCharP = buffer, "%04d/%02d/%02d", dateInt / 10000, dateInt / 100 % 100, dateInt % 100);               
+            xstrprintf(&buffer[11], "%02d:%02d:%02d:%03d", timeInt / 10000000, timeInt / 100000 % 100, timeInt / 1000 % 100, timeInt % 1000);
+            buffer[10] = ' ';
+            break;
+         }
+         case BLOB_TYPE: // Blob can't be used with default.
+         {
+             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_BLOB_STRING));
+             return null;
+         }
+      }
+      
+      // Types that are not string.
+      return TC_createStringObjectFromCharP(context, valueCharP, -1);
+   }
+   
+   return null;
+}

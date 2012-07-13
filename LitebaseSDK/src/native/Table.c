@@ -56,22 +56,25 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
          columns = currCompIndex->columns;
          j = currCompIndex->numberColumns;
 
-         while (--j >= 0 && columnNumbers[j] == columns[j]);
-         
-         if (j < 0)
+         if (j == indexCount)
          {
-            // Builds the exception message.
-				char errorMsg[1024];
-            CharP* columnNames = table->columnNames;
-		      
-            xstrcpy(errorMsg, columnNames[columnNumbers[j = 0]]);
-            while (++j < indexCount)
-				{
-					xstrcat(errorMsg, ", ");
-					xstrcat(errorMsg, columnNames[columnNumbers[j]]);
-				}
-            TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), errorMsg);
-            return -1;
+            while (--j >= 0 && columnNumbers[j] == columns[j]);
+         
+            if (j < 0)
+            {
+               // Builds the exception message.
+				   char errorMsg[1024];
+               CharP* columnNames = table->columnNames;
+   		      
+               xstrcpy(errorMsg, columnNames[columnNumbers[j = 0]]);
+               while (++j < indexCount)
+				   {
+					   xstrcat(errorMsg, ", ");
+					   xstrcat(errorMsg, columnNames[columnNumbers[j]]);
+				   }
+               TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), errorMsg);
+               return -1;
+            }
          }
       }
       return size + 1;
@@ -356,7 +359,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    // juliana@226_8: a table without metadata (with an empty .db, for instance) can't be recovered: it is corrupted.
    if (!plainDB->headerSize) // The header size can't be zero.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      // juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
       return false;
    }
 
@@ -413,7 +417,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	ptr += 16;
    if ((table->columnCount = columnCount) <= 0)
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
+      // juliana@253_13: corrected a possible crash on Palm when trying to recover a table with corrupted header.
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), &table->name[5]);
 		goto error;
    }
 
@@ -2483,7 +2488,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {	
         	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
-               length = MAX((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+               // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+               // juliana@253_12: corrected a possible table corruption when adding a small blob.
+               length = MIN((uint32)columnSizes[j], values[j]->length); 
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
