@@ -12,7 +12,8 @@
 package litebase;
 
 import totalcross.io.IOException;
-import totalcross.util.InvalidDateException;
+import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * This class returns useful information for the <code>ResultSet</code> columns. Note that the information can be retrieved even if the 
@@ -392,6 +393,117 @@ public class ResultSetMetaData
       return false;
    }
    
+   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   /**
+    * Returns the primary key column indices of a table.
+    * 
+    * @param tableName The table name.
+    * @return <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
+    */
+   public byte[] getPKColumnIndices(String tableName)
+   {      
+      rs.verifyResultSet(); // The driver or result set can't be closed.
+
+      Table table = getTable(tableName); // Gets the table given its name in the result set.
+      
+      if (table.primaryKeyCol != Utils.NO_PRIMARY_KEY) // Simple primary key.
+         return new byte[] {(byte)table.primaryKeyCol};
+      if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
+      { 
+         byte[] composedPK = new byte[table.composedPrimaryKeyCols.length];
+         Vm.arrayCopy(table.composedPrimaryKeyCols, 0, composedPK, 0, composedPK.length);
+         return composedPK;
+      }
+      
+      return null; // The table does not have a primary key.
+   }
+   
+   /**
+    * Returns the primary key column names of a table.
+    * 
+    * @param tableName The table name.
+    * @return <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
+    */
+   public String[] getPKColumnNames(String tableName)
+   {
+      rs.verifyResultSet(); // The driver or result set can't be closed.
+
+      Table table = getTable(tableName); // Gets the table given its name in the result set.
+      
+      if (table.primaryKeyCol != Utils.NO_PRIMARY_KEY) // Simple primary key.
+         return new String[] {table.columnNames[table.primaryKeyCol]};
+      if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
+      { 
+         byte[] composedPKCols = table.composedPrimaryKeyCols;
+         int i = composedPKCols.length;
+         String[] composedPKNames = new String[i];
+         String[] columnNames = table.columnNames;
+        
+         while (--i >= 0) 
+            composedPKNames[i] = columnNames[composedPKCols[i]];
+         
+         return composedPKNames;
+      }
+
+      return null; // The table does not have a primary key.
+   }
+   
+   // juliana@newmeta_2: added methods to return the default value of a column.
+   /**
+    * Returns the default value of a column.
+    * 
+    * @param columnIndex The column index.
+    * @return The default value of the column as a string or <code>null</code> if there is no default value.
+    * @throws DriverException If the column index does not have an underlining table.
+    */
+   public String getDefaultValue(int columnIndex) throws DriverException
+   {      
+      String name = getColumnTableName(columnIndex); // Already checks if the result set is valid.
+      ResultSet resultSet = rs;
+      SQLResultSetField field = resultSet.fields[columnIndex - 1];
+            
+      if (name == null) // The column does not have an underlining table.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
+      
+      // Returns the default value of the column or the parameter of a function.
+      return getDefault(name, field.tableColIndex >= 0? field.tableColIndex : field.parameter.tableColIndex);  
+   }
+   
+   /**
+    * Returns the default value of a column.
+    * 
+    * @param columnName The column name.
+    * @return The default value of the column as a string or <code>null</code> if there is no default value.
+    * @throws DriverException If the column name does not have an underlining table.
+    */
+   public String getDefaultValue(String columnName) throws DriverException
+   {
+      ResultSet resultSet = rs;
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      SQLResultSetField[] fields = resultSet.fields;
+      SQLResultSetField field;
+      int i = -1, 
+          len = fields.length;
+
+      while (++i < len) // Gets the name of the table or its alias given the column name and gets the table column info.
+      {
+         if (columnName.equalsIgnoreCase((field = fields[i]).tableColName) || columnName.equalsIgnoreCase(fields[i].alias))
+         {
+            if (field.tableName != null)
+               return getDefault(field.tableName, field.tableColIndex >= 0? field.tableColIndex : field.parameter.tableColIndex);
+               
+            // The column does not have an underlining table.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
+         }   
+      }
+      if (i == len)
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND));
+      
+      return null;
+   }
+   
    // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
    /**
     * Checks if the driver or the result set is closed, and if the column index is invalid.
@@ -411,4 +523,101 @@ public class ResultSetMetaData
       if (column <= 0 || column > resultSet.fields.length)
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
+   
+   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   /**
+    * Returns a table used in a select given its name.
+    * 
+    * @param tableName The table name.
+    * @return The table with the given name. It will never return null.
+    * @throws DriverException if the given table name is not used in the select or an <code>IOException</code> occurs.
+    */
+   private Table getTable(String tableName) throws DriverException
+   {
+      SQLResultSetField[] fields = rs.fields;
+      int i = fields.length;
+      
+      // The table name must be used in the select.
+      while (--i >= 0 && (fields[i].tableName == null || !fields[i].tableName.equals(tableName)));         
+      if (i == -1)
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NAME_NOT_FOUND) + tableName);
+      
+      try
+      {
+         return rs.driver.getTable(tableName);
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+      catch (InvalidDateException exception) {}
+      
+      return null;
+   }   
+   
+   // juliana@newmeta_2: added methods to return the default value of a column.
+   
+   /**
+    * Gets the default value of a column.
+    * 
+    * @param tableName The name of the table.
+    * @param index The column index.
+    * @return The default value of the column as a string or <code>null</code> if there is no default value.
+    * @throws DriverException If an <code>IOException</code> occurs or the column index is of a column of type <code>BLOB</code>.
+    */
+   private String getDefault(String tableName, int index) throws DriverException
+   {
+      try
+      {
+         ResultSet resultSet = rs;
+         Table table = resultSet.driver.getTable(tableName);
+         int type = table.columnTypes[index];
+         SQLValue value = table.defaultValues[index];
+         
+         if (value == null) // No default value, returns null.
+            return null;
+         
+         switch (type)
+         {
+            case SQLElement.CHARS:
+            case SQLElement.CHARS_NOCASE:
+               return value.asString;
+            case SQLElement.SHORT: 
+               return Convert.toString(value.asShort);
+            case SQLElement.INT:
+               return Convert.toString(value.asInt);
+            case SQLElement.LONG:
+               return Convert.toString(value.asLong);
+            case SQLElement.FLOAT:
+            case SQLElement.DOUBLE:
+               return Convert.toString(value.asDouble);
+            case SQLElement.DATE:
+            {
+               int dateInt = value.asInt;
+               Date dateObj = resultSet.driver.tempDate;
+               dateObj.set(dateInt % 100, (dateInt /= 100) % 100, dateInt / 100);
+               return dateObj.toString();
+            }    
+            case SQLElement.DATETIME:
+            {
+               StringBuffer buffer = resultSet.driver.sBuffer;
+               
+               buffer.setLength(0);
+               Utils.formatDate(buffer, value.asInt);
+               buffer.append(' ');
+               Utils.formatTime(buffer, value.asShort);
+               return buffer.toString();
+            }
+            case SQLElement.BLOB: // Blob can't be used with default.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));       
+         }
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+      catch (InvalidDateException exception) {}
+      
+      return null;
+   }   
 }

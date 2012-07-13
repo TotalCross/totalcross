@@ -403,7 +403,7 @@ bool testPSClosed(NMParams params)
    TRACE("testPSClosed")
    Object statement = params->obj[0];
 
-   if (OBJ_PreparedStatementDontFinalize(statement)) // Prepared Statement Closed.
+   if (OBJ_PreparedStatementDontFinalize(statement)) // Tests if the prepared statement is closed.
    {
       TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
       return false;
