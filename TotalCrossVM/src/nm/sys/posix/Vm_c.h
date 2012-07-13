@@ -59,8 +59,11 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       argv[2] = szCommand ? szCommand : szArgs;
       argv[3] = 0;
       execv("/bin/sh", argv);
-
+#ifndef darwin
       exit(127); // exit the fork
+#else
+      keepRunning = false;      
+#endif      
    }
    if (wait)
    {

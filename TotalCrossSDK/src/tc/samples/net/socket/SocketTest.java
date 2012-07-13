@@ -84,7 +84,7 @@ public class SocketTest extends MainWindow
       
       add(new Label("Address: "),LEFT, TOP+1);
       add(edA = new Edit(""), AFTER+3, SAME);
-      edA.setText("www.google.com");
+      edA.setText("www.superwaba.com.br");
       add(new Label("Port: "), LEFT, AFTER+3);
       add(edP = new Edit("8080"), AFTER+3, SAME);
       edP.setText("80");

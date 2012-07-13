@@ -68,7 +68,7 @@ public class ImageModifier extends MainWindow
       if (Settings.platform.equals(Settings.WIN32))
          mainPath = ".\\";
       else
-      if (Settings.platform.equals(Settings.LINUX) || Settings.platform.equals(Settings.IPHONE))
+      if (Settings.platform.equals(Settings.LINUX) || Settings.isIOS())
          mainPath = Settings.appPath + "/";
       else
          mainPath = "\\TotalCross\\";

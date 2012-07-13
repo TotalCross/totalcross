@@ -61,6 +61,7 @@ public class MultiEdit extends Container implements Scrollable
 {
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';
+   private int lastZ1y = -9999;
    private Graphics drawg; // only valid while the edit has focus --   original
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
    private boolean hasFocus;
@@ -576,7 +577,7 @@ public class MultiEdit extends Container implements Scrollable
                if (parent != null && (editMode || Settings.fingerTouch)) 
                   draw(drawg, true);
                // guich@tc130: show the copy/paste menu
-               if (lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
+               if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
                   {
                      event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
@@ -631,7 +632,7 @@ public class MultiEdit extends Container implements Scrollable
                   boolean moveFocus = !Settings.geographicalFocus && ke.key == SpecialKeys.TAB;
                   if (event.target == this && moveFocus) // guich@tc125_26
                   {
-                     if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0))
+                     if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
                         return;
                   }
                   // if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && (ke.key == SpecialKeys.ESCAPE || ke.key == SpecialKeys.MENU))
@@ -1239,8 +1240,6 @@ public class MultiEdit extends Container implements Scrollable
          cursorShowing = false;
    }
    
-   private int lastZ1y = -9999;
-
    protected void onWindowPaintFinished()
    {
        if (editable && !hasFocus) _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // this event is called on the focused control of the parent window. so, if we are not in FOCUS state, set it now. --original - guich@350_7: added the editable check

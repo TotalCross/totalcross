@@ -1862,6 +1862,7 @@ public class Launcher4B
       public byte[] bitmapTable;
       public int[]bitIndexTable;
       public String fontName;
+      public int numberWidth;
 
       private net.rim.device.api.ui.Font prvNativeFont;
       private IntHashtable sysFontMaxWidths = new IntHashtable(5);
@@ -1897,6 +1898,7 @@ public class Launcher4B
          firstChar = 0;
          lastChar = 255;
          spaceWidth = font.getAdvance(' ');
+         numberWidth = font.getAdvance('0');
          maxWidth = sysFontMaxWidths.get((fontName + suffix).hashCode(), -1);
          maxHeight = font.getHeight();
          ascent = font.getLeading() + font.getAscent();

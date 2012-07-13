@@ -116,7 +116,7 @@ typedef JChar* JCharP;
 typedef TCHAR* TCHARP;
 
 #if !defined(__cplusplus) && !defined(__OBJC__) && !defined(_STDBOOL_H)
-#define _STDBOOL_H // prevent stdbool.h include on darwin9
+#define _STDBOOL_H // prevent stdbool.h include on darwin
 #if defined (darwin) && !defined (THEOS)
 #undef bool
 #define bool int

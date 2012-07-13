@@ -62,6 +62,11 @@ jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;
 #endif
 
+// window.c
+#ifdef ANDROID
+jmethodID jtransitionEffectChanged;
+#endif
+
 // graphicsprimitives.c
 uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
@@ -72,6 +77,7 @@ jmethodID jupdateScreen;
 #endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+bool callingScreenChange;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -134,7 +140,7 @@ Stack objStack2;
 
 // context.c
 VoidPs* contexts;
-Context mainContext,gcContext;
+Context mainContext,gcContext,lifeContext;
 
 // tcvm.c
 int32 vmTweaks;

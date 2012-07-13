@@ -129,6 +129,7 @@ public class Edit extends Control
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
    private int lastPenDown=-1;
+   public boolean showKeyboardOnNextEvent;
    static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
@@ -146,6 +147,11 @@ public class Edit extends Control
     * @since TotalCross 1.5 
     */
    public String optionalValue4CalculatorBox;
+   
+   /** Defines a title that can be used in the Keyboards.
+    * @since TotalCross 1.53
+    */
+   public String keyboardTitle;
    
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
     * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
@@ -538,6 +544,9 @@ public class Edit extends Control
             {
                int i=0,pos=0;
                for (; i < n; pos++)
+                  if (pos >= mask.length)
+                     break;
+                  else
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
@@ -762,7 +771,7 @@ public class Edit extends Control
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (!uiAndroid || alwaysDrawAll) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (hasBorder && uiAndroid)
             {
                try
@@ -854,6 +863,9 @@ public class Edit extends Control
       {
          int n = Math.min(len,mask.length),i=0,pos=0;
          while (i < n)
+            if (pos >= mask.length)
+               break;
+            else
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i++));
@@ -972,6 +984,7 @@ public class Edit extends Control
       {
          case KBD_TIME: 
             if (time == null) time = new TimeBox();
+            time.tempTitle = keyboardTitle;
             try 
             {
                time.setTime(new Time(getText(),false,false,false,true,true,true));
@@ -981,25 +994,32 @@ public class Edit extends Control
                time.setTime(new Time(0));
                if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
             }
+            hideSip();
             time.popup();
             setText(time.getTime().toString(),true);
             break;
             
          case KBD_CALENDAR:
             if (calendar == null) calendar = new CalendarBox();
+            calendar.tempTitle = keyboardTitle;
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
+            hideSip();
             calendar.popupNonBlocking();
             break;
 
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
+            calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
+            hideSip();
             calculator.popupNonBlocking();
             break;
 
          case KBD_NUMERIC:
             if (numeric == null) numeric = new CalculatorBox(false);
+            numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
+            hideSip();
             numeric.popupNonBlocking();
             break;
 
@@ -1023,8 +1043,19 @@ public class Edit extends Control
             else
             {
                if (keyboard == null) keyboard = new KeyboardBox();
+               keyboard.tempTitle = keyboardTitle;
                showInputWindow(keyboard);
             }
+            return;
+      }
+   }
+   
+   private void hideSip()
+   {
+      if (Window.isSipShown) // non-default keyboards gets here
+      {
+         Window.isSipShown = false;
+         Window.setSIP(Window.SIP_HIDE,null,false);
       }
    }
 
@@ -1042,10 +1073,7 @@ public class Edit extends Control
    private void focusOut()
    {
       if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
-      {
-         Window.isSipShown = false;
-         Window.setSIP(Window.SIP_HIDE,null,false);
-      }
+         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
@@ -1085,6 +1113,13 @@ public class Edit extends Control
          case ControlEvent.CURSOR_CHANGED:
             break;
          case TimerEvent.TRIGGERED:
+            if (showKeyboardOnNextEvent)
+            {
+               event.consumed=true;
+               showKeyboardOnNextEvent = false;
+               popupKCC();
+               return;
+            }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
                Window w = getParentWindow();
@@ -1095,7 +1130,7 @@ public class Edit extends Control
                {
                   draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
-                  if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
                      {
                         event.consumed = true;
@@ -1166,7 +1201,7 @@ public class Edit extends Control
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
-                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0))
+                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
                      return;
                }
                boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
@@ -1473,7 +1508,8 @@ public class Edit extends Control
          else
          if (insertChanged)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
-         updateScreen();
+         if (event.target == this && (event instanceof KeyEvent || event instanceof PenEvent)) // guich@tc153: prevent drawing problems when a window is unpopping
+            updateScreen();
       }
    }
 
@@ -1502,36 +1538,56 @@ public class Edit extends Control
       return false;
    }
    
+   private static class ClipboardMenuListener implements PressListener
+   {
+      public void controlPressed(ControlEvent e)
+      {
+         clipSel = clipboardMenu.selectedIndex;
+      }
+   }
+   static int clipSel = -2;
    static int showClipboardMenu(Control host)
    {
       try
       {
          if (clipboardMenu == null)
          {
-            String[] names = {cutStr,copyStr,replaceStr,pasteStr,"x"};
-            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,1,true,PushButtonGroup.BUTTON);
+            String[] names = {cutStr,copyStr,replaceStr,pasteStr};
+            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,2,true,PushButtonGroup.BUTTON)
+            {
+               protected boolean willOpenKeyboard()
+               {
+                  return true;
+               }
+            };
             clipboardMenu.setFocusLess(true);
          }
-         Container w = host.parent;
-         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
+         Container w = host.getParentWindow();
          clipboardMenu.setSelectedIndex(-1);
-         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? BOTTOM_OF : (host.y > w.height/2 ? BEFORE-2 : AFTER+2), PREFERRED+4,PREFERRED+4,host);
+         Rect cli = host.getAbsoluteRect();
+         int ph = clipboardMenu.getPreferredHeight();
+         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? cli.y+cli.height-ph : (cli.y > w.height/2 ? cli.y-ph : cli.y+cli.height), PREFERRED+4,PREFERRED+4,host);
+         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
          clipboardMenu.bringToFront();
          w.repaintNow();
-         
-         for (int i = 0; i < 300; i++)
+         clipSel = -2;
+         PressListener pl;
+         clipboardMenu.addPressListener(pl = new ClipboardMenuListener());
+         int end = Vm.getTimeStamp() + 3000; // make sure we will elapse only 3 seconds
+         while (Vm.getTimeStamp() < end)
          {
             Vm.sleep(10);
             if (Event.isAvailable())
             {
                Window.pumpEvents();
-               if (clipboardMenu.selectedIndex != -1)
+               if (clipSel != -2)
                   break;
             }
          }
+         clipboardMenu.removePressListener(pl);
          w.remove(clipboardMenu);
          
-         return clipboardMenu.selectedIndex;
+         return clipSel;
       }
       catch (Exception e)
       {

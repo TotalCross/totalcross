@@ -27,7 +27,7 @@ public class ArrowButton extends Button
 {
    protected byte direction;
    protected int prefWH;
-   private int xx,yy,kk;
+   private int xx,yy,kk,dkk;
    private boolean horiz;
    
    /** The arrow's color */
@@ -65,6 +65,9 @@ public class ArrowButton extends Button
    
    private void recomputeParameters()
    {
+      if (dkk != 0)
+         kk = dkk;
+      else
       if (border != BORDER_NONE)
          kk = Math.min(width,height)/2-1;
       else
@@ -84,6 +87,12 @@ public class ArrowButton extends Button
          xx = width/2 - kk + 1;
          yy = (height - kk) / 2;
       }
+   }
+   
+   public void setArrowSize(int kk)
+   {
+      dkk = kk;
+      recomputeParameters();
    }
    
    protected void onBoundsChanged(boolean screenChanged)

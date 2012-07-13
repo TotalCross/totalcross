@@ -139,10 +139,10 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
    }
 }
 
-void postOnMinimizeOrRestore(Context c, bool isMinimized)
+void postOnMinimizeOrRestore(bool isMinimized)
 {
    if (mainClass != null)
-      executeMethod(c, (isMinimized ? onMinimize : onRestore), mainClass); // events are always posted to the main execution line
+      executeMethod(lifeContext, (isMinimized ? onMinimize : onRestore), mainClass); // events are always posted to the main execution line
 }
 
 bool initEvent()

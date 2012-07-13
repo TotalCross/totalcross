@@ -77,6 +77,8 @@ typedef struct
    int32* deviceFontHeightPtr;           // int
    Object* iccidPtr;                     // java.lang.String
    int32* useNewFont;                    // boolean
+   int32* resizableWindow;               // boolean
+   int32* windowFont;                    // int
 } TTCSettings, *TCSettings;
 
 typedef struct

@@ -154,7 +154,7 @@ public class Socket4D extends Stream
          {
             byte[] temp = new byte[buf.length+256];
             Vm.arrayCopy(buf, 0, temp, 0, pos);
-            buf = temp;
+            rlbuf = buf = temp;
          }
       }
       return (pos > 0 || r == 1) ? new String(buf, 0, pos) : null; // brunosoares@582_11 - charConverter is already used

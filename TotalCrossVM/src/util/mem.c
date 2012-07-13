@@ -276,7 +276,7 @@ void heapFree(Heap m, void* ptr)
    for (head = m->current, prev = null; head != null; prev = head, head = head->next)
       if (head->block == ptr)
       {
-         int32 size = ARRAYLEN(head);
+         int32 size = ARRAYLEN(head->block);
          if (size > MEMBLOCK_SIZE)
          {
             // remove from the linked list

@@ -100,6 +100,16 @@ public class TCZ
    public static final short ATTR_LIBRARY = 4;
    /** Defines that the application uses the new font set. */
    public static final short ATTR_NEW_FONT_SET = 8;
+   /** Defines that the application has resizable window. */
+   public static final short ATTR_RESIZABLE_WINDOW = 16;
+   /** Defines that the application uses the default font. */
+   public static final short ATTR_WINDOWFONT_DEFAULT = 32;
+   /** Defines that the application uses the given window size. */
+   public static final short ATTR_WINDOWSIZE_320X480 = 64;
+   /** Defines that the application uses the given window size. */
+   public static final short ATTR_WINDOWSIZE_480X640 = 128;
+   /** Defines that the application uses the given window size. */
+   public static final short ATTR_WINDOWSIZE_600X800 = 256;
 
    /** The names of the files. */
    public String[] names;
@@ -108,6 +118,7 @@ public class TCZ
     * @see #ATTR_HAS_MAINWINDOW
     * @see #ATTR_LIBRARY
     * @see #ATTR_NEW_FONT_SET
+    * @see #ATTR_RESIZABLE_WINDOW
     */
    public int attr;
    /** Version of the tcz file.

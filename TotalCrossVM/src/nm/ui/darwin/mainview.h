@@ -16,25 +16,14 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+#import <UIKit/UITextView.h>
+#import <CoreLocation/CLLocation.h>
+#import <CoreLocation/CLLocationManager.h>
+#import <CoreLocation/CLLocationManagerDelegate.h>
 
 #include "GraphicsPrimitives.h"
-#import "kbdview.h"
 #import "childview.h"
 #import "sipargs.h"
-
-#if 0
- #define DEBUG0(fmt)         _debug(fmt)
- #define DEBUG1(fmt,a)       _debug(fmt,a)
- #define DEBUG2(fmt,a,b)     _debug(fmt,a,b)
- #define DEBUG3(fmt,a,b,c)   _debug(fmt,a,b,c)
- #define DEBUG4(fmt,a,b,c,d) _debug(fmt,a,b,c,d)
-#else
- #define DEBUG0(fmt)
- #define DEBUG1(fmt,a)
- #define DEBUG2(fmt,a,b)
- #define DEBUG3(fmt,a,b,c)
- #define DEBUG4(fmt,a,b,c,d)
-#endif
 
 /*
  * fdie@ add iPhone full screen support.
@@ -54,45 +43,39 @@
 
 @end
 
-@interface MainView : UIView
+@interface MainView : UIViewController<UIImagePickerControllerDelegate,CLLocationManagerDelegate>
 {
    NSMutableArray* _events;
-   NSLock* _lock;
-   KeyboardView *kbd_view;
-   bool child_added;
    ChildView *child_view;
-   ChildView *old_view;
-   int current_orientation;
-   bool full_screen;
+   // keyboard
+   UITextView* kbd;
+   NSRange lastRange;
+   // camera
+   NSString* imageFileName;
+   int imageW,imageH;
+   // gps
+@public   
+   CLLocationManager* locationManager;
+   int locationFlags, locationDate, locationTime, locationSat, locationCount;
+   double locationVeloc, locationPDOP, locationDir;
+   double locationLat, locationLon;
 }
 
-- (double)durationForTransition:(int)type;
-
-- (id)initWithFrame:(CGRect)rect;
-- (void)setFullscreen:(bool)mode;
-- (bool)isFullscreen;
-- (void)geometryChanged;
-- (bool)isKbdShown;
-- (int)orientation;
-
-- (void)lock:(const char *)info;
-- (void)unlock;
-
+- (void)initEvents;
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
 - (NSArray*)getEvents;
-
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
-
-- (void)screenChange: (bool)force;
-- (void)scheduleScreenChange: (CGSize)size;
-- (void)doScreenChange: (SSize*)size;
-
-- (void)didRotate:(NSNotification *)notification;
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
-
+- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
+- (void) dialNumber:(NSString*) number;
+- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+- (int) gpsStart;
+- (void) gpsStop;
+- (int) gpsUpdateLocation;
 @end
 
 typedef struct

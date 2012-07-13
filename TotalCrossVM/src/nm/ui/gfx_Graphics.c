@@ -49,9 +49,9 @@
 #define Vista        3
 #define Android      4
 
-bool initGraphicsBeforeSettings(Context currentContext) // no thread are running at this point
+bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
 {
-   return startupGraphics() && createScreenSurface(currentContext, false) && (screen.bpp != 8 || createColorPaletteLookupTables());
+   return startupGraphics(appTczAttr) && createScreenSurface(currentContext, false) && (screen.bpp != 8 || createColorPaletteLookupTables());
 }
 
 void destroyGraphics()
@@ -810,6 +810,18 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
    if (thickness < 1) thickness = 1; else
    if (thickness > 3) thickness = 3;
    drawWindowBorder(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], borderColor, titleColor, bodyColor, footerColor, thickness, p->i32[11]);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor)
+{
+   Object g = p->obj[0];
+   dither(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4]);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
+{
+   Object g = p->obj[0];
+   drawCylindricShade(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
 }
 
 #ifdef ENABLE_TEST_SUITE

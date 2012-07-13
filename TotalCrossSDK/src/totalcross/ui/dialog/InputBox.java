@@ -30,7 +30,7 @@ import totalcross.ui.gfx.*;
     <pre>
     // on some event...
       if (renameDialog == null)
-         renameDialog = new InputDialog("Project Rename","Please enter the new name which will be used for the project:","");
+         renameDialog = new InputBox("Project Rename","Please enter the new name which will be used for the project:","");
       renameDialog.setValue(projectName);
       renameDialog.popup();
       // when window closes...
@@ -51,7 +51,11 @@ public class InputBox extends Window
    private String[] buttonCaptions;
    private int labelAlign = CENTER;
    private int gap, insideGap;
-   
+
+   /** Set to true to automatically open the keyboard once the InputBox is open.
+    * @since TotalCross 1.53
+    */
+   public static boolean openKeyboardOnPopup;
    /**
     * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
     * one.<br>
@@ -80,7 +84,7 @@ public class InputBox extends Window
     */
    public int[] buttonKeys; // guich@tc126_40
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
      * the given label Text, the given Default value for the Edit,
      * and two buttons "Ok" and "Cancel".
      * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
@@ -91,7 +95,7 @@ public class InputBox extends Window
       buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
    }
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
      * the given label Text, the given Default value for the Edit
      * and with the given buttons.
      * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
@@ -101,7 +105,7 @@ public class InputBox extends Window
       this(title,text,defaultValue,buttonCaptions,false,4,6);
    }
 
-   /** Creates a new InputDialog with the given window Title,
+   /** Creates a new InputBox with the given window Title,
     * the given label Text, the given Default value for the Edit
     * and with the given buttons.
     * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
@@ -117,7 +121,7 @@ public class InputBox extends Window
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
-      this.originalText = text.replace('|','\n'); // guich@tc100: now we use \n instead of |
+      this.originalText = text;
       ed = new Edit("@@@@@@@@@@");
       if (defaultValue != null) ed.setText(defaultValue);
    }
@@ -185,6 +189,8 @@ public class InputBox extends Window
    protected void postPopup()
    {
       ed.requestFocus();
+      if (openKeyboardOnPopup)
+         ed.popupKCC();
       if (Settings.keyboardFocusTraversable) // guich@570_39: use this instead of pen less
          isHighlighting = false; // allow a direct click to dismiss this dialog
    }

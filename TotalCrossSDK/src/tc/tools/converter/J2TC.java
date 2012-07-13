@@ -219,8 +219,29 @@ public final class J2TC implements JConstants, TCConstants
                   if (field.equals("useNewFont") && bcs[j-1] instanceof BC004_iconst_1)
                      DeploySettings.fontTCZ =  Font.NEW_FONT_SET+".tcz";
                   else
+                  if (field.equals("resizableWindow"))
+                     DeploySettings.resizableWindow = bcs[j-1] instanceof BC004_iconst_1;
+                  else
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
+                  else
+                  if (field.equals("windowFont"))
+                  {
+                     if (bcs[j-1] instanceof BC004_iconst_1)
+                        DeploySettings.windowFont = Settings.WINDOWFONT_DEFAULT;
+                  }
+                  else
+                  if (field.equals("windowSize"))
+                  {
+                     if (bcs[j-1] instanceof BC004_iconst_1)
+                        DeploySettings.windowSize = Settings.WINDOWSIZE_320X480;
+                     else
+                     if (bcs[j-1] instanceof BC005_iconst_2)
+                        DeploySettings.windowSize = Settings.WINDOWSIZE_480X640;
+                     else
+                     if (bcs[j-1] instanceof BC006_iconst_3)
+                        DeploySettings.windowSize = Settings.WINDOWSIZE_600X800;
+                  }
                   else
                   if (18 <= bcs[j-1].bc && bcs[j-1].bc <= 20) // guich@tc113_14: supports ldc_w and lcd2_w too
                   {
@@ -1250,6 +1271,16 @@ public final class J2TC implements JConstants, TCConstants
             cn = fName;
          if (!DeploySettings.fontTCZ.startsWith(Font.OLD_FONT_SET)) // new: TCFont.tcz; old: TCFontOld.tcz
             attr |= TCZ.ATTR_NEW_FONT_SET;
+         if (DeploySettings.resizableWindow)
+            attr |= TCZ.ATTR_RESIZABLE_WINDOW;
+         if (DeploySettings.windowFont == Settings.WINDOWFONT_DEFAULT)
+            attr |= TCZ.ATTR_WINDOWFONT_DEFAULT;
+         switch (DeploySettings.windowSize)
+         {
+            case Settings.WINDOWSIZE_320X480: attr |= TCZ.ATTR_WINDOWSIZE_320X480; break;
+            case Settings.WINDOWSIZE_480X640: attr |= TCZ.ATTR_WINDOWSIZE_480X640; break;
+            case Settings.WINDOWSIZE_600X800: attr |= TCZ.ATTR_WINDOWSIZE_600X800; break;
+         }
          if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
          if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
             cn = cn.substring(0,cn.length()-4);

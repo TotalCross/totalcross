@@ -188,9 +188,6 @@ public class Image4B extends GfxSurface
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
-      if ((width % n) != 0)
-         throw new IllegalArgumentException(
-               "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);
 
       if (n > 1 && frameCount <= 1)
          try
@@ -509,6 +506,13 @@ public class Image4B extends GfxSurface
       {
          throw new ImageException("Out of memory");
       }
+   }
+
+   public Image4B smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      return getSmoothScaledInstance(w, h, backColor);
    }
 
    public Image4B getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
@@ -1169,73 +1173,5 @@ public class Image4B extends GfxSurface
          currentFrame = -1;
          setCurrentFrame(0);
       }
-   }
-   
-   public void dither()
-   {
-      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
-      int[] buff1 = getRowBuf(true);
-      int[] buff2 = getRowBuf(false);
-      for (int i =0; i < frameCount; i++)
-      {
-         Bitmap in = frames[i];
-         int w = in.getWidth();
-         int h = in.getHeight();
-         for (int y = 0; y < h; y++)
-         {
-            getRGB(in, buff1, 0, w, 0, y, w, 1, useAlpha);
-            if (y+1 < h)
-               getRGB(in, buff2, 0, w, 0, y+1, w, 1, useAlpha);
-            for (int x = 0; x < w; x++)
-            {
-               p = buff1[x];
-               if (!useAlpha && p == transparentColor) continue;
-               // get current pixel values
-               oldR = (p>>16) & 0xFF;
-               oldG = (p>>8) & 0xFF;
-               oldB = p & 0xFF;
-               // convert to 565 component values
-               newR = oldR >> 3 << 3; 
-               newG = oldG >> 2 << 2;
-               newB = oldB >> 3 << 3;
-               // compute error
-               errR = oldR-newR;
-               errG = oldG-newG;
-               errB = oldB-newB;
-               // set new pixel
-               buff1[x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
-
-               addError(buff1, x+1, y ,w,h, errR,errG,errB,7,16);
-               addError(buff2, x-1,y+1,w,h, errR,errG,errB,3,16);
-               addError(buff2, x,y+1  ,w,h, errR,errG,errB,5,16);
-               addError(buff2, x+1,y+1,w,h, errR,errG,errB,1,16);
-            }
-            setRGB(in, buff1, 0, w, 0, y, w, 1, useAlpha);
-            if (y+1 < h)
-               setRGB(in, buff2, 0, w, 0, y+1, w, 1, useAlpha);
-         }
-      }
-      if (frameCount != 1)
-      {
-         currentFrame = -1;
-         setCurrentFrame(0);
-      }
-   }
-
-   private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
-   {
-      if (x >= w || y >= h || x < 0 || y < 0) return;
-      int i = x;
-      int p = pixel[i];
-      int r = (p>>16) & 0xFF;
-      int g = (p>>8) & 0xFF;
-      int b = p & 0xFF;
-      r += j*errR/k;
-      g += j*errG/k;
-      b += j*errB/k;
-      if (r > 255) r = 255; else if (r < 0) r = 0;
-      if (g > 255) g = 255; else if (g < 0) g = 0;
-      if (b > 255) b = 255; else if (b < 0) b = 0;
-      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
 }

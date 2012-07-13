@@ -34,7 +34,6 @@ public class AndroidUI extends MainWindow
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
       //ScrollPosition.AUTO_HIDE = false;
-      //Settings.uiAdjustmentsBasedOnFontHeight = true; - not completely functional
    }
    
    public void initUI()

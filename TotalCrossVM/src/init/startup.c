@@ -31,7 +31,7 @@
 #endif
 
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
-bool initGraphicsBeforeSettings(Context currentContext);
+bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr);
 bool initGraphicsAfterSettings(Context currentContext);
 void destroyGraphics();
 
@@ -397,7 +397,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    if (!tczLoad(currentContext, tcbase))
    {
-      alert("TCBase not found or corrupted");
+      alert("TCBase not found or corrupted. Please reinstall TotalCross");
       return 101;
    }
    initException(); // load exceptions
@@ -425,7 +425,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          #ifdef ENABLE_TEST_SUITE
           initSettings(currentContext, "", null);
           retrieveSettings(currentContext, "TestSuite");
-          if (!initGraphicsBeforeSettings(currentContext) || !initGraphicsAfterSettings(currentContext))
+          if (!initGraphicsBeforeSettings(currentContext,0) || !initGraphicsAfterSettings(currentContext))
           {
              alert("Could not start graphics. Out of memory or problem with the fonts?");
              return exitProgram(103);
@@ -489,6 +489,7 @@ jumpArgument:
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+   lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    loadExceptionClasses(currentContext); // guich@tc112_18
 
    // Create a Java thread for the main context and call it "TC Event Thread"
@@ -528,7 +529,7 @@ jumpArgument:
 #endif
          // 1. Initialize the graphics
          isMainWindow = (loadedTCZ->header->attr & ATTR_HAS_MAINWINDOW) != 0;
-         if (isMainWindow && (!initGraphicsBeforeSettings(currentContext) || !keepRunning))
+         if (isMainWindow && (!initGraphicsBeforeSettings(currentContext,loadedTCZ->header->attr) || !keepRunning))
             return exitProgram(107);
          else
          {

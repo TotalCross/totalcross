@@ -82,10 +82,9 @@ public class MainWindow extends Window implements totalcross.MainClass
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
-      boolean isIphone = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD);
+      boolean isIphone = Settings.isIOS();
       if (isAndroid || isIphone)
          Settings.unmovableSIP = true;
-      Settings.enableWindowTransitionEffects = !isAndroid; // guich@tc126_30
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = fmH/2;
       
@@ -207,8 +206,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    /**
     * Notifies the application that it should be minimized, that is, transfered
-    * to the background. Currently, this is only supported on Java, BlackBerry, WinCE, Win32
-    * and Android. Whenever the application is minimized, the following call back function
+    * to the background. Whenever the application is minimized, the following call back function
     * will be called: {@link #onMinimize()}. Note: On Android, calling {@link #minimize()} will
     * pause the application execution and it can only be restored manually by the user.
     * @see #onMinimize
@@ -223,7 +221,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    /**
     * Notifies the application that it should be restored, that is, transfered
-    * to the foreground. Currently, this is only supported on Java, BlackBerry, WinCE and Win32.
+    * to the foreground. 
     * Whenever the application is restored, the following call back function will be called:
     * {@link #onRestore()}. Note: This method is supported on Android; the user must restore
     * the application manually.
@@ -497,23 +495,11 @@ public class MainWindow extends Window implements totalcross.MainClass
             }
          }
          else
+         if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
          {
-            //not a demo release
-            if (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0)
-            {
-               new MessageBox(
-                     "Error retrieving device identification",
-                     "Failed to retrieve a unique device identification to activate the TotalCross VM."
-                     + (Settings.WIN32.equals(Settings.platform) ?
-                           " Please check your network settings and activate any disabled networks." : ""))
-               {
-                  public void initUI()
-                  {
-                     setFont(font.asBold());
-                  };
-               }.popup();
-               exit(0);
-            }
+            new MessageBox("Fatal Error", "Failed to retrieve a unique device identification to activate the TotalCross VM. Please check your network settings and activate any disabled networks.").popup();
+            exit(0);
+            return;
          }
          Window.needsPaint = true;
          initUI();

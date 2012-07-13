@@ -119,7 +119,6 @@ public class CalendarBox extends Window
 
       setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
-
       // arrows
       btnYearPrev = new ArrowButton(Graphics.ARROW_LEFT,arrowW,yearColor);
       btnYearNext = new ArrowButton(Graphics.ARROW_RIGHT,arrowW,yearColor);
@@ -129,13 +128,13 @@ public class CalendarBox extends Window
       btnYearNext.setFont(font);
       btnMonthPrev.setFont(font);
       btnMonthNext.setFont(font);
-      btnYearPrev.setBorder(Button.BORDER_NONE);
+      btnYearPrev.setBorder(Button.BORDER_NONE); 
       btnYearNext.setBorder(Button.BORDER_NONE);
       btnMonthPrev.setBorder(Button.BORDER_NONE);
       btnMonthNext.setBorder(Button.BORDER_NONE);
       btnYearPrev.transparentBackground = btnYearNext.transparentBackground = btnMonthPrev.transparentBackground = btnMonthNext.transparentBackground = true;
       
-      int bw = uiAndroid ? PREFERRED+fmH/2 : PREFERRED;
+      int bw = uiAndroid ? PREFERRED+fmH : PREFERRED;
       
       int yb = (titleGap+titleFont.fm.height-labH)/2;
       

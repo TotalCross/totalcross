@@ -19,10 +19,11 @@
 package totalcross.ui.media;
 
 import totalcross.io.*;
+import totalcross.ui.dialog.*;
 
 /**
  * This class is used to enable the camera of the underlying device. The following platforms are supported:
- * Windows Mobile devices, Blackberry, Palm OS and Android.
+ * Windows Mobile devices, Blackberry, Palm OS, Android and iOS.
  * 
  * For more information about the possible parameters on Windows, see: http://msdn2.microsoft.com/en-us/library/bb431794.aspx 
  * 
@@ -44,7 +45,10 @@ import totalcross.io.*;
  * 
  * In Android you can set the defaultFileName, stillQuality, resolutionWidth and resolutionHeight. All other options are ignored.
  * 
- * You can call the getSupportedResolutions method to see the resolutions that are available at the device.
+ * You can call the getSupportedResolutions method to see the resolutions that are available at the device. 
+ * 
+ * In iOS there's no way to return the supported resolutions; it will take a photo using the default camera's resolution, and 
+ * then will resize to the resolution defined in resolutionWidth/resolutionHeight, keeping the camera's aspect ratio. In iOS you can specify the defaultFileName with a path or just the name, or use a system-generated name. 
  * 
  * @see #getSupportedResolutions()
  */
@@ -126,8 +130,9 @@ public class Camera
     */
    public String click() throws IOException
    {
-      new totalcross.ui.dialog.MessageBox("Camera", "Say cheese!", new String[] { "Click" }).popup();
-      return defaultFileName;
+      FileChooserBox fcb = new FileChooserBox("Select a photo",FileChooserBox.defaultButtonCaptions,null);
+      fcb.popup();
+      return fcb.getAnswer();
    }
 
    /** Returns the resolutions that are supported by the device. Works for Windows CE, Blackberry and Android.

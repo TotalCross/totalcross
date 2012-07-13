@@ -100,9 +100,6 @@ public class Image4D extends GfxSurface
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
-      if ((width % n) != 0)
-         throw new IllegalArgumentException(
-               "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);      
       
       if (n > 1 && frameCount <= 1)
          try
@@ -330,6 +327,12 @@ public class Image4D extends GfxSurface
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
    }
 
+   public totalcross.ui.image.Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      return getModifiedInstance(w, h, 0, 0, backColor, 0, 0, SMOOTH_SCALED_INSTANCE);
+   }
    public totalcross.ui.image.Image4D getScaledInstance(int newWidth, int newHeight) throws totalcross.ui.image.ImageException // guich@350_22
    {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
@@ -474,5 +477,4 @@ public class Image4D extends GfxSurface
    
    native private boolean nativeEquals(Image other);
    native public void applyColor2(int color);
-   native public void dither();
 }

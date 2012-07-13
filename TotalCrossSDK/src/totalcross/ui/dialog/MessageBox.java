@@ -37,11 +37,11 @@ import totalcross.ui.image.ImageException;
 public class MessageBox extends Window
 {
    protected Label msg;
-   protected PushButtonGroup btns;
+   public PushButtonGroup btns;
    private int selected = -1;
    private boolean hasScroll;
    protected int xa,ya,wa,ha; // arrow coords
-   private TimerEvent unpopTimer;
+   private TimerEvent unpopTimer,buttonTimer;
    private boolean oldHighlighting;
    private static String[] ok = {"Ok"};
    private int captionCount;
@@ -50,6 +50,7 @@ public class MessageBox extends Window
    private String[] buttonCaptions;
    private int gap, insideGap;
    private Image icon;
+   private ScrollContainer sc;
    protected int lgap;
    
    /**
@@ -151,7 +152,7 @@ public class MessageBox extends Window
       wa = ha*2+1; // guich@570_52: now wa is computed from ha
       if (text == null)
          text = "";
-      this.originalText = text.replace('|','\n'); // guich@tc100: now we use \n instead of |
+      this.originalText = text; // guich@tc100: now we use \n instead of |
       if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsDevice()) // guich@tc110_53
          setFont(font.asBold());
    }
@@ -197,7 +198,7 @@ public class MessageBox extends Window
             btns.setFont(font);
             wb = btns.getPreferredWidth();
          }
-         hb = btns.getPreferredHeight();
+         hb = btns.getPreferredHeight() + (multiRow ? insideGap*buttonCaptions.length : insideGap);
          hb += androidGap;
       }
       int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),maxW);
@@ -232,9 +233,17 @@ public class MessageBox extends Window
          ic.transparentBackground = true;
          add(ic,LEFT+fmH/2,(captionH-iconH)/2 - titleFont.fm.descent);
       }
-      add(msg);
+      if (!uiAndroid || !hasScroll)
+         add(msg);
+      else
+      {
+         add(sc = new ScrollContainer(false,true), LEFT+2+lgap,btns == null ? CENTER : ly+2,FILL-2,hm-2);
+         sc.add(msg,LEFT,TOP,FILL,PREFERRED);
+         hasScroll = false;
+      }
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      if (sc == null)
+         msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
       if (btns != null)
       {
          if (uiAndroid && !multiRow)
@@ -242,7 +251,7 @@ public class MessageBox extends Window
          else
             btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
       }
-      Rect r = msg.getRect();
+      Rect r = sc != null ? sc.getRect() : msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
       if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
@@ -253,7 +262,9 @@ public class MessageBox extends Window
       if (btns != null)
       {
          btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
-         if (uiAndroid && !removeTitleLine) footerH = height - msg.getY2() - 1;
+         if (uiAndroid && !removeTitleLine) footerH = height - (sc != null ? sc.getY2()+2 : msg.getY2()) - 1;
+         if (buttonTimer != null)
+            btns.setVisible(false);
       }
    }
 
@@ -305,6 +316,13 @@ public class MessageBox extends Window
       switch (e.type)
       {
          case TimerEvent.TRIGGERED:
+            if (buttonTimer != null && buttonTimer.triggered)
+            {
+               removeTimer(buttonTimer);
+               if (btns != null)
+                  btns.setVisible(true);
+            }
+            else  
             if (e.target == this)
             {
                removeTimer(unpopTimer);
@@ -417,5 +435,21 @@ public class MessageBox extends Window
    protected void onFontChanged()
    {
 
+   }
+
+   /** Calling this method will make the buttons initially hidden and will show them after
+    * the specified number of milisseconds.
+    * 
+    * Here's a sample:
+    * <pre>
+    * MessageBox mb = new MessageBox("Novo Tweet!",tweet);
+    * mb.setTimeToShowButton(7000);
+    * mb.popup();
+    * </pre>
+    * @since TotalCross 1.53
+    */ 
+   public void setDelayToShowButton(int ms)
+   {
+      buttonTimer = addTimer(ms);      
    }
 }

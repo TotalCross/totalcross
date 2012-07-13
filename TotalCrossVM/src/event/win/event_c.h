@@ -111,6 +111,8 @@ static bool minimized;
 // IME Input Modes
 #define IM_SPELL                           0
 
+void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
+
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -131,16 +133,42 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
+#ifndef WINCE
+      case WM_GETMINMAXINFO:
+         if (screen.pixels && *tcSettings.resizableWindow)
+         {
+            MINMAXINFO* mmi = (MINMAXINFO*)lParam;
+            int32 w=0,h=0;
+            bool landscape = screen.screenW > screen.screenH;
+            adjustWindowSizeWithBorders(*tcSettings.resizableWindow, &w, &h);
+            mmi->ptMinTrackSize.x = max32(landscape ? 320 : 240,screen.minScreenW/2)+w;
+            mmi->ptMinTrackSize.y = max32(landscape ? 240 : 320,screen.minScreenH/2)+h;
+            mmi->ptMaxTrackSize.x = GetSystemMetrics(SM_CXFULLSCREEN);
+            mmi->ptMaxTrackSize.y = GetSystemMetrics(SM_CYFULLSCREEN);
+         }
+         break;
+      case WM_SIZE:
+      {
+         if (screen.pixels && *tcSettings.resizableWindow)
+         {
+            int32 w = lParam & 0xFFFF,h = lParam >> 16;
+            if (w != 0 && h != 0 && (lastW != w || lastH != h))
+               screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
+         }
+         break;
+      }
+#endif      
       case WM_ACTIVATE:
       {
+         applyPalette();
 #if defined (WIN32)
          if (HIWORD(wParam)) // HIWORD(wParam) == 0 means the app is not minimized
          {
             if (!minimized)
-               postOnMinimizeOrRestore(mainContext, minimized = true);
+               postOnMinimizeOrRestore(minimized = true);
          }
          else if (minimized)
-            postOnMinimizeOrRestore(mainContext, minimized = false);
+            postOnMinimizeOrRestore(minimized = false);
 #endif
 #if defined (WINCE)
          if (wParam == 0)
@@ -155,10 +183,10 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          if (((PWINDOWPOS)lParam)->hwndInsertAfter) // hwndInsertAfter == 0 means the app window is at the top
          {
             if (!minimized)
-               postOnMinimizeOrRestore(mainContext, minimized = true);
+               postOnMinimizeOrRestore(minimized = true);
          }
          else if (minimized)
-            postOnMinimizeOrRestore(mainContext, minimized = false);
+            postOnMinimizeOrRestore(minimized = false);
          break;
       }
 #endif
@@ -353,7 +381,12 @@ cont:
                   postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, pkey, 0,0,-1);
                else
                if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
+               {
+                  int t = screen.minScreenW;
+                  screen.minScreenW = screen.minScreenH;
+                  screen.minScreenH = t;
                   screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
+               }
             }
          }
          break;
@@ -375,6 +408,9 @@ cont:
       case WM_CLOSE:
 #ifdef WINCE // with this postQuitMessage, any MessageBox issued after it will be ignored in win32
          PostQuitMessage(0);
+#else
+         if (*tcSettings.closeButtonTypePtr == NO_BUTTON)
+            break;
 #endif
          keepRunning = false;
          break;

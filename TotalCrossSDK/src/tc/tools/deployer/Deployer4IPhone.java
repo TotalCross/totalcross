@@ -83,8 +83,7 @@ public class Deployer4IPhone
       if (args.length > DeploySettings.defaultArgument.length)
          throw new IllegalArgumentException("Error: command line for iPhone too long. It has "+args.length+", while the maximum allowed is "+DeploySettings.defaultArgument.length);
 
-      String ipath = ("iphone2");
-      targetDir = DeploySettings.targetDir + ("iphone2+");
+      targetDir = DeploySettings.targetDir + "ios";
       // create the output folder
       File f = new File(targetDir);
       if (!f.exists())
@@ -95,9 +94,9 @@ public class Deployer4IPhone
          String version = DeploySettings.appVersion != null ? DeploySettings.appVersion : DeploySettings.filePrefix.equals("TotalCross") ? totalcross.sys.Settings.versionStr : "1.0";
 
          // copy the launcher for win32 to there
-         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/" + ipath + "/Launcher", false);
+         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/iphone2/Launcher", false);
          if (buf == null)
-            throw new DeployerException("File " + ipath + "/Launcher not found!");
+            throw new DeployerException("File launchers/iphone2/Launcher not found!");
 
          File fout = new File(DeploySettings.filePrefix, File.CREATE_EMPTY);
          fout.writeBytes(buf, 0, buf.length);
@@ -171,14 +170,6 @@ public class Deployer4IPhone
    }
 
    /////////////////////////////////////////////////////////////////////////////////////
-
-   private void dump(String prefix, InputStream errorStream) throws IOException
-   {
-      String line;
-      BufferedReader br = new BufferedReader(new InputStreamReader(errorStream));
-      while ((line = br.readLine()) != null)
-         System.out.println(prefix+line);
-   }
 
    private void createCommon(Vector vFiles, Vector vExtras, String dir, String version, String name, String cmdLine, String uriBase, String iconfile, boolean isFullScreen) throws Exception
    {
@@ -415,7 +406,7 @@ public class Deployer4IPhone
                         new String[] { "Applications" + java.io.File.separatorChar + "**" }, // includes 
                         new String[0], // excludes
                         new Mapper[] { mapper });
-      String debName = "install/iphone2+/" + name + ".deb";
+      String debName = "install/ios/" + name + ".deb";
       java.io.File debOut = new java.io.File(debName);
 
       PackageDescriptor pdsc = debProc.createDeb(ctrlFiles, dataProd, debOut, "bzip2");

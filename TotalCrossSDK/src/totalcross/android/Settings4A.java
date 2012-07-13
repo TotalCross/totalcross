@@ -81,6 +81,7 @@ public final class Settings4A
 	// this class can't be instantiated
 	private Settings4A()
 	{
+	   
 	}
 	
 	static void fillSettings(boolean isActivationVM)
@@ -190,8 +191,8 @@ public final class Settings4A
       
       // number representation
       java.text.DecimalFormatSymbols dfs = new java.text.DecimalFormatSymbols();
-      thousandsSeparator = dfs.getGroupingSeparator();
-      decimalSeparator = dfs.getDecimalSeparator();	   
+      thousandsSeparator = dfs.getGroupingSeparator(); if (thousandsSeparator <= ' ') thousandsSeparator = ',';
+      decimalSeparator = dfs.getDecimalSeparator();	 if (decimalSeparator <= ' ') decimalSeparator = '.';
 	   
       // date representation
       java.util.Calendar calendar = java.util.Calendar.getInstance();

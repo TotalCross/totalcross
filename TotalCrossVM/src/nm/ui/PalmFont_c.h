@@ -98,6 +98,7 @@ FontFile loadFontFile(char *fontName)
    FontFile ff;
    TCZFile tcz;
    FILE* f;
+   char fullpath[MAX_PATHNAME];
 
    IF_HEAP_ERROR(fontsHeap)
    {
@@ -109,12 +110,12 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-      f = findFile(fontName,"rb");
+      f = findFile(fontName,fullpath);
       if (f == null)
       {
          char fullName[150];
          xstrprintf(fullName,"%s.tcz",fontName); // append a tcz to the font name
-         f = findFile(fullName,"rb");
+         f = findFile(fullName,fullpath);
       }
       #ifndef WIN32 // win32 file system is not case sensitive
       if (f == null && 'a' <= fontName[0] && fontName[0] <= 'z')
@@ -125,7 +126,7 @@ FontFile loadFontFile(char *fontName)
       #endif
       if (f != null)
       {
-         tcz = tczOpen(f,null);
+         tcz = tczOpen(f,fullpath,null);
          if (tcz != null)
          {
             ff = newXH(FontFile, fontsHeap);
@@ -265,6 +266,8 @@ UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar c
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch)
 {
    UserFont uf = loadUserFontFromFontObj(currentContext, fontObj, ch);
+   if (ch == 160) // guich@tc153: now the char 160 have the same width of a number
+      ch = '0';
    if (ch < ' ') // guich@tc126_22: since enter can be inside the range of this font, we have to handle it before and make sure its width is 0.
       return (ch == '\t') ? uf->fontP.spaceWidth * *tabSizeField : 0; // guich@tc100: handle tabs
    if (uf == null || ch < uf->fontP.firstChar || ch > uf->fontP.lastChar) // invalid char - guich@tc122_23: must also check the font's range

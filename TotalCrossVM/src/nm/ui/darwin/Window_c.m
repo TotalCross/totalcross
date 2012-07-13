@@ -33,7 +33,6 @@ void windowSetSIP(Context currentContext, int32 sipOption, Object control, bool 
 
    if (DEVICE_CTX && DEVICE_CTX->_mainview)
    {
-      DEBUG2("view=%x str value: %x\n", DEVICE_CTX->_mainview, str);
       if (allowMainThread)
          [ DEVICE_CTX->_mainview  performSelectorOnMainThread:@selector(showSIP:) withObject:args waitUntilDone: YES ];
    }
@@ -44,7 +43,7 @@ void setEditText(Context currentContext, Object control, NSString *str)
    if (control)
    {
       int len = [ str length ];
-      unichar *data = xmalloc(len * sizeof(unichar));
+      unichar *data = (unichar*)xmalloc(len * sizeof(unichar));
       [ str getCharacters: data ];
       if (control && OBJ_CLASS(control))
       {

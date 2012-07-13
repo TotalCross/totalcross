@@ -96,7 +96,7 @@ public class SSL
    {
       this.ssl = ssl;
       this.socket = socket;
-      ((SSLSocket)ssl).addHandshakeCompletedListener(new HandshakeCompletedListener() {
+      ((javax.net.ssl.SSLSocket)ssl).addHandshakeCompletedListener(new HandshakeCompletedListener() {
          public void handshakeCompleted(HandshakeCompletedEvent arg)
          {
             status = Constants.SSL_OK;
@@ -116,7 +116,7 @@ public class SSL
    {
       try
       {
-         ((SSLSocket)ssl).close();
+         ((javax.net.ssl.SSLSocket)ssl).close();
          cachePutSSL(socket, null);
       }
       catch (java.io.IOException e)
@@ -146,7 +146,7 @@ public class SSL
    {
       if (ssl != null)
       {
-         String cs = ((SSLSocket)ssl).getSession().getCipherSuite();
+         String cs = ((javax.net.ssl.SSLSocket)ssl).getSession().getCipherSuite();
          if      (cs.equals("TLS_RSA_WITH_AES_128_CBC_SHA"))  return Constants.TLS_RSA_WITH_AES_128_CBC_SHA;
          else if (cs.equals("TLS_RSA_WITH_AES_256_CBC_SHA"))  return Constants.TLS_RSA_WITH_AES_256_CBC_SHA;
          else if (cs.equals("TLS_RSA_WITH_RC4_128_SHA"))      return Constants.TLS_RSA_WITH_RC4_128_SHA;
@@ -166,7 +166,7 @@ public class SSL
    final public byte[] getSessionId()
    {
       if (ssl != null)
-         return ((SSLSocket)ssl).getSession().getId();
+         return ((javax.net.ssl.SSLSocket)ssl).getSession().getId();
       return null;
    }
 
@@ -195,7 +195,7 @@ public class SSL
    {
       if (ssl != null)
       {
-         SSLSession session = ((SSLSocket) ssl).getSession();
+         SSLSession session = ((javax.net.ssl.SSLSocket) ssl).getSession();
          java.security.cert.Certificate chain[];
          try
          {
@@ -289,7 +289,7 @@ public class SSL
       {
          try
          {
-            SSLSocket sslSocket = (SSLSocket) ssl;
+            javax.net.ssl.SSLSocket sslSocket = (javax.net.ssl.SSLSocket) ssl;
             sslSocket.setSoTimeout(socket.readTimeout);
 
             InputStream is = sslSocket.getInputStream();
@@ -339,7 +339,7 @@ public class SSL
       {
          try
          {
-            ((SSLSocket)ssl).getOutputStream().write(out_data, 0, out_len);
+            ((javax.net.ssl.SSLSocket)ssl).getOutputStream().write(out_data, 0, out_len);
             return out_len;
          }
          catch (java.io.IOException e)
@@ -363,7 +363,7 @@ public class SSL
       {
          try
          {
-            Certificate[] certs = ((SSLSocket)ssl).getSession().getPeerCertificates();
+            Certificate[] certs = ((javax.net.ssl.SSLSocket)ssl).getSession().getPeerCertificates();
             java.security.cert.X509Certificate[] _certs = new java.security.cert.X509Certificate[certs.length]; 
             for (int c = 0; c < certs.length; c++)
                _certs[c] = (java.security.cert.X509Certificate)certs[c];
@@ -399,7 +399,7 @@ public class SSL
          try
          {
             status = Constants.SSL_HANDSHAKE_IN_PROGRESS;
-            ((SSLSocket)ssl).startHandshake();
+            ((javax.net.ssl.SSLSocket)ssl).startHandshake();
          }
          catch (java.io.IOException e)
          {

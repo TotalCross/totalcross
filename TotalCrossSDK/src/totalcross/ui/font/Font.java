@@ -64,7 +64,7 @@ public final class Font
    /** The minimum font size: 6. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 44;
 
 
    /** Returns the default font size, based on the screen's size.
@@ -88,9 +88,12 @@ public final class Font
          w = Math.min(Settings.screenWidth,Settings.screenHeight);
          h = Math.max(Settings.screenWidth,Settings.screenHeight);
       }
-      
+
+      if (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)
+         fontSize = Settings.deviceFontHeight;
+      else
       if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-         fontSize = 12; // added this exception to get the right font when running in the WM phone in landscape mode
+         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 12; // added this exception to get the right font when running in the WM phone in landscape mode
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
@@ -123,7 +126,7 @@ public final class Font
                else
                   fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
          }
-      if (Settings.deviceFontHeight == 0 && Settings.useNewFont) // keep font height of the new font the same as before on platforms that are not Android
+      if (Settings.useNewFont && ((Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_12) || Settings.deviceFontHeight == 0)) // keep font height of the new font the same as before on platforms that are not Android
       {
          byte[] new2oldInc = {1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7};
          fontSize += new2oldInc[fontSize-MIN_FONT_SIZE];
@@ -221,6 +224,14 @@ public final class Font
    public Font adjustedBy(int delta, boolean bold)
    {
       return getFont(name,bold, size + delta);
+   }
+   
+   /** Returns if this font is bold.
+    * @since TotalCross 1.53
+    */
+   public boolean isBold()
+   {
+      return style == 1;
    }
 
    ///// Native methods

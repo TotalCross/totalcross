@@ -105,7 +105,8 @@ public class Deploy
 
                if (DeploySettings.mobileProvision != null && DeploySettings.appleCertStore != null)
                   new Deployer4IPhoneIPA();
-               Deployer4IPhone.run();
+               else
+                  Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
@@ -228,6 +229,7 @@ public class Deploy
       iht.put("blackberry".hashCode(), BUILD_BB);
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
+      iht.put("ios"    .hashCode(), BUILD_IPHONE);
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
@@ -385,12 +387,13 @@ public class Deploy
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
             "   -palm or -palmos : create the prc and installation files for Palm OS\n" +
             "   -ce or -wince : create the cab files for Windows CE\n" +
+            "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
             "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
-            "   -iphone : create the iPhone 2.x (and up) installer packages\n" +
+            "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n" +
             "   -android: create the apk file for Android\n" +
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+

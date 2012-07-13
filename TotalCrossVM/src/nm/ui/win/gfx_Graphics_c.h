@@ -9,14 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
+void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h)
+{
+#ifndef WINCE // windows ce already does this for us
+   *w += GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CXFIXEDFRAME)*2;
+   *h += GetSystemMetrics(resizableWindow ? SM_CYSIZEFRAME : SM_CYFIXEDFRAME)*2 + GetSystemMetrics(SM_CYCAPTION);
+#endif
+}
 void privateScreenChange(int32 w, int32 h)
 {
 #ifndef WINCE // windows ce already does this for us
-   w += GetSystemMetrics(SM_CXFIXEDFRAME)*2;
-   h += GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)*2;
-   MoveWindow(mainHWnd, 0, 0, w, h, TRUE);
+   adjustWindowSizeWithBorders(*tcSettings.resizableWindow,&w, &h);
+   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
 #endif
 }
 
@@ -64,7 +68,7 @@ void getScreenSize(int32 *w, int32* h)
 extern int32 defScrX,defScrY,defScrW,defScrH;
 #endif
 
-bool graphicsStartup(ScreenSurface screen)
+bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
    DWORD style;
    int32 width, height;
@@ -73,6 +77,7 @@ bool graphicsStartup(ScreenSurface screen)
    HANDLE instance = GetModuleHandle(0);
    char* dot;
    HDC deviceContext;
+   bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -83,22 +88,21 @@ bool graphicsStartup(ScreenSurface screen)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   width = defScrW == -1 ? 240 : defScrW;
-   height = defScrH == -1 ? 320 : defScrH;
-
-#ifdef DESIRED_SCREEN_WIDTH          // tweak to work in IBGE's NETBOOK
-   width = DESIRED_SCREEN_WIDTH;
-#endif
-#ifdef DESIRED_SCREEN_HEIGHT
-   height = DESIRED_SCREEN_HEIGHT;
-#endif
-
+   if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   {
+      width = defScrW == -1 ? 240 : defScrW;
+      height = defScrH == -1 ? 320 : defScrH;
+   }
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
-   rect.bottom = height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)*2;
-   rect.right = width  + GetSystemMetrics(SM_CXFIXEDFRAME)*2;
+   rect.bottom = height;
+   rect.right = width;
+   adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
 
    style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+   if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;
 #else
    SystemParametersInfo(SPI_GETWORKAREA, 0, &defaultWorkingArea, 0);
    deviceContext = GetDC(mainHWnd);
@@ -125,8 +129,8 @@ bool graphicsStartup(ScreenSurface screen)
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
    screen->screenX = rect.left;
-   screen->screenW = width;
-   screen->screenH = height;
+   screen->minScreenW = screen->screenW = width;
+   screen->minScreenH = screen->screenH = height;
    screen->hRes = GetDeviceCaps(deviceContext, LOGPIXELSX);
    screen->vRes = GetDeviceCaps(deviceContext, LOGPIXELSY);
 
@@ -139,13 +143,29 @@ bool graphicsStartup(ScreenSurface screen)
    return true;
 }
 
+struct
+{
+   BITMAPINFO bi;
+	RGBQUAD	 bmiColors[256];
+} dibInfo;
+struct
+{
+   LOGPALETTE lp;
+   PALETTEENTRY pe[256];
+} curPal;
+HPALETTE hPalette;
+
+void applyPalette()
+{
+   if (SCREEN_EX(&screen) != null)
+   {
+      SelectPalette(SCREEN_EX(&screen)->dc, hPalette, 0);
+      RealizePalette(SCREEN_EX(&screen)->dc);
+   }
+}
+
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-	struct
-   {
-      BITMAPINFO bi;
-	   RGBQUAD	 bmiColors[256];
-   } dibInfo;
    uint32 *ptr;
 
    screen->pitch = screen->screenW * screen->bpp / 8;
@@ -173,12 +193,6 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    else
    if (screen->bpp == 8) // apply our 485 palette to the screen
    {
-      struct
-      {
-         LOGPALETTE lp;
-         PALETTEENTRY pe[256];
-      } curPal;
-      HPALETTE hPalette;
       // create the custom 685 palette
       dibInfo.bi.bmiHeader.biClrUsed = dibInfo.bi.bmiHeader.biClrImportant = 256;
       fillWith8bppPalette(ptr);

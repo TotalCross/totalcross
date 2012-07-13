@@ -50,6 +50,7 @@ public class PushButtonGroup extends Control
    private int gap;
    /** Space between the text and the button border. The ideal is 4. If allSameWidth is true, it is only used to compute the preferred width and may be overriden; otherwise, it is used as the internal gap. */
    public int insideGap;
+   private int selAtPenDown=-1;
    private int rows, cols;
    private boolean atLeastOne,actLikeButton,actLikeCheck;
    private int cellH,rowH;
@@ -68,6 +69,20 @@ public class PushButtonGroup extends Control
    private int nullNames;
    private Rect clip;
    
+   /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
+    * Works only when the type is BUTTON.
+    * @see #INITIAL_DELAY
+    * @see #AUTO_DELAY
+    * @since TotalCross 1.53
+    */
+   public boolean autoRepeat; // guich@tc122_47
+   private TimerEvent autoRepeatTimer;
+   
+   /** The initial delay to start the auto-repeat. Defaults to 600ms. */
+   public int INITIAL_DELAY = 600;
+   /** The frequency in which the PRESSED event will be posted after the INITIAL_DELAY was reached. Defaults to 150ms. */
+   public int AUTO_DELAY = 150;
+
    /** The boolean array that defines which buttons are hidden. If you want to hide a button,
     * just access this and set an array index to true. Note that you must also explicitly call the repaint
     * function to update the control. Sample:
@@ -283,6 +298,8 @@ public class PushButtonGroup extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      if (!enabled && autoRepeatTimer != null)
+         disableAutoRepeat();
       if (colorsChanged) // backColor has changed
          dColor = userCursorColor >= 0 ? userCursorColor : Color.getCursorColor(backColor);
       fColor = getForeColor();
@@ -479,8 +496,19 @@ public class PushButtonGroup extends Control
 
       switch (event.type)
       {
-         case PenEvent.PEN_DRAG:
+         case TimerEvent.TRIGGERED:
+            if (autoRepeatTimer != null && autoRepeatTimer.triggered)
+            {
+               if (autoRepeatTimer.millis == INITIAL_DELAY)
+                  autoRepeatTimer.millis = AUTO_DELAY;
+               setSelectedIndex(selAtPenDown,true);
+            }
+            break;
          case PenEvent.PEN_DOWN:
+            selAtPenDown = sel;
+            if (actLikeButton && autoRepeat) 
+               autoRepeatTimer = addTimer(INITIAL_DELAY);
+         case PenEvent.PEN_DRAG:
             if (actLikeButton && Settings.fingerTouch)
                break;
             if (sel != selectedIndex && (!atLeastOne || sel != -1))
@@ -543,6 +571,8 @@ public class PushButtonGroup extends Control
             if (!ke.isActionKey())
                break;
          case PenEvent.PEN_UP:
+            if (autoRepeat && autoRepeatTimer != null)
+               disableAutoRepeat();
             if (!Settings.fingerTouch || !hadParentScrolled())
             {
                if (actLikeButton && Settings.fingerTouch)
@@ -564,6 +594,13 @@ public class PushButtonGroup extends Control
       }
    }
 
+   private void disableAutoRepeat() // luciana@570_22
+   {
+      removeTimer(autoRepeatTimer);
+      autoRepeatTimer = null;
+      Window.needsPaint = true; // guich@tc123_3
+   }
+
    private void setSelectedIndex(int sel, boolean selectIt)
    {
       if (selectIt)
@@ -580,7 +617,7 @@ public class PushButtonGroup extends Control
             setSelectedIndex(-1);
          }
       } else
-      if ((actLikeButton || (sel == -1 && !atLeastOne)))
+      if (actLikeButton || (sel == -1 && !atLeastOne))
       {
          //Vm.safeSleep(150); - guich@tc130: with this, clicking fast on buttons will make them laggy
          setSelectedIndex(-1);

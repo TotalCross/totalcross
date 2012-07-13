@@ -762,7 +762,8 @@ public class Utils
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
-      String cmd = DeploySettings.pathAddQuotes(jarsignerExe)+" -keystore "+DeploySettings.pathAddQuotes(keystore)+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
+      String algo = DeploySettings.dJavaVersion >= 1.7 ? " -digestalg SHA1 -sigalg MD5withRSA" : "";
+      String cmd = DeploySettings.pathAddQuotes(jarsignerExe)+algo+" -keystore "+DeploySettings.pathAddQuotes(keystore)+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
       String out = Utils.exec(cmd, targetDir);
       if (out != null)
          throw new DeployerException("An error occured when signing the APK. The output is "+out);

@@ -70,6 +70,7 @@ public class CameraViewer extends Activity // guich@tc126_34
          {
             Camera.Parameters parameters=camera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             int ww = Math.max(width,height);
             int hh = Math.min(width,height);
             Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
@@ -107,7 +108,9 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,true);
+            AndroidUtils.handleException(e,false);
+            setResult(RESULT_CANCELED);
+            finish();
          }
    }
 
@@ -216,7 +219,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             }
             catch (Exception e) 
             {
-               AndroidUtils.handleException(e,true);
+               AndroidUtils.handleException(e,false);
                stopPreview();
                setResult(RESULT_CANCELED);
                finish();
@@ -240,7 +243,9 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,true);
+            AndroidUtils.handleException(e,false);
+            setResult(RESULT_CANCELED);
+            finish();
          }
       }
    };

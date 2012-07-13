@@ -419,7 +419,7 @@ public class Button extends Control
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
-            if (autoRepeatTimer != null && autoRepeatTimer.triggered)
+            if (autoRepeatTimer != null && autoRepeatTimer.triggered && armed)
             {
                if (autoRepeatTimer.millis == INITIAL_DELAY)
                   autoRepeatTimer.millis = AUTO_DELAY;

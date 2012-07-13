@@ -101,11 +101,12 @@ public class ControlBox extends Window
    public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions, int buttonRows)
    {
       super(title,ROUND_BORDER);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
       if (buttonCaptions != null) // guich@tc114_7 
-         btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,buttonRows,false,PushButtonGroup.BUTTON);
+         btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
       msg = new Label(text,Label.CENTER);
       this.cb = cb;
       this.prefW = prefW;
@@ -122,6 +123,8 @@ public class ControlBox extends Window
       msg.setFont(font);
       int wb = btns == null ? 0 : btns.getPreferredWidth();
       int hb = btns == null ? 0 : btns.getPreferredHeight();
+      if (uiAndroid && wb > 0)
+      {wb += fmH*btns.names.length; hb += fmH;}
       int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
       int hm = msg.getPreferredHeight();
       int we = prefW == PREFERRED ? cb.getPreferredWidth() : prefW;
@@ -129,6 +132,7 @@ public class ControlBox extends Window
       int captionH = titleFont.fm.height+10;
 
       int h = captionH + hb + hm + he;
+      if (uiAndroid) h += fmH;
       int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       h = Math.min(h,Settings.screenHeight);
@@ -137,7 +141,7 @@ public class ControlBox extends Window
       if (btns != null) add(btns);
       add(cb);
       msg.setRect(LEFT,TOP,FILL,hm);
-      if (btns != null) btns.setRect(CENTER,BOTTOM-2,wb,hb);
+      if (btns != null) btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
       msg.setBackForeColors(backColor, foreColor);
       cb.setRect(we==FILL ? LEFT : CENTER,AFTER+2,we,he,msg);
    }

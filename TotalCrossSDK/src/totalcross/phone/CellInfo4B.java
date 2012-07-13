@@ -33,6 +33,11 @@ public class CellInfo4B
    public static int signal;
    static CellInfo instance;
    
+   public static boolean isSupported()
+   {
+      return true;
+   }
+   
    public static void update()
    {
       GPRSCellInfo cellInfo = GPRSInfo.getCellInfo();

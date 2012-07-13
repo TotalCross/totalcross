@@ -45,8 +45,11 @@ import totalcross.util.*;
  * <li>Java - "/" (current directory)
  * <li>Win32 - "/" (root of the current drive)
  * <li>iPhone - "/private/var/" (root of big partition)
+ * <li>Android - "/data/data/totalcross.app.&lt;mainclass name&gt;"
  * </ul>
  * The alias is ALWAYS relative to the built in storage, regardless of the value passed to the argument slot.<br>
+ * 
+ * In iOS and Android, if you don't specify a path, the file will be open in device/ path. 
  */
 
 public class File extends RandomAccessStream
@@ -996,6 +999,8 @@ public class File extends RandomAccessStream
     * returning the first one that exists. You can set the winceVols string to the ones you want to be searched. <br>
     * <br>
     * To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
+    * Some android devices have more than one sdcard, an internal and an external ones. In such devices, the /sdcard is the internal one; to find the external path, you must get into the device
+    * because there's no api to get it. For example, in Galaxy devices, it is /mnt/extSdCard.
     * 
     * @return The File object which references the volume, ended with backslash, or null if none found.
     * @see #winceVols
@@ -1322,5 +1327,21 @@ public class File extends RandomAccessStream
       {
          throw new IOException(e.getMessage()); //flsobral@tc126: throw exception on error.
       }
+   }
+
+   /** Reads the entire file into a byte array and closes itself. A handy method that can be used like this:
+    * <pre>
+    * byte[] bytes = new File(...,File.READ_ONLY).readAndClose();
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public byte[] readAndClose() throws IOException
+   {
+      int len = getSize();
+      byte[] ret = new byte[len];
+      readBytes(ret,0,len);
+      close();
+      return ret;
    }
 }

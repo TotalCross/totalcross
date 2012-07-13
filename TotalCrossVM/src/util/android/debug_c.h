@@ -9,10 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-//#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
-
-
 #include <android/log.h>
 
 #define MODE_ADB 2

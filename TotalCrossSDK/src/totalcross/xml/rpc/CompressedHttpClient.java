@@ -14,13 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml.rpc;
 
-import totalcross.util.zip.*;
-import totalcross.io.*;
-import totalcross.sys.*;
+import totalcross.io.ByteArrayStream;
+import totalcross.io.IOException;
+import totalcross.net.UnknownHostException;
+import totalcross.sys.Convert;
+import totalcross.sys.InvalidNumberException;
+import totalcross.util.zip.ZLib;
 
 /**
  * @author pvanhout
@@ -32,7 +33,12 @@ public class CompressedHttpClient extends StandardHttpClient
    /**
     * See the constructor for the StandardHttpClient
     */
-   public CompressedHttpClient(String hostname, int port, String uri) throws XmlRpcException, totalcross.net.UnknownHostException
+   public CompressedHttpClient(String hostname, int port, String uri, int openTimeout, int readTimeout, int writeTimeout) throws XmlRpcException, UnknownHostException
+   {
+      super(hostname, port, uri, openTimeout, readTimeout, writeTimeout);
+   }
+
+   public CompressedHttpClient(String hostname, int port, String uri) throws XmlRpcException, UnknownHostException
    {
       super(hostname, port, uri);
    }
@@ -52,7 +58,7 @@ public class CompressedHttpClient extends StandardHttpClient
          }
 
       byte[] contentBuff = new byte[contentLength];
-      int contentRead = socket.readBytes(contentBuff);
+      int contentRead = reader.readBytes(contentBuff, 0, contentLength);
       if (contentRead != contentLength)
          throw new XmlRpcException("Could not read answer: "+contentRead+" is less than "+contentLength);
       ByteArrayStream is = new ByteArrayStream(contentBuff);

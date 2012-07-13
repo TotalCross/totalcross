@@ -90,7 +90,7 @@ import totalcross.util.*;
  *     }
  *  }
  *</pre>
- * Blocking popup may be use in InputDialog/MessageBox classes, while non-blocking popup
+ * Blocking popup may be use in InputBox/MessageBox classes, while non-blocking popup
  * is used in MenuBar and other classes.
  * <p> Important note: you can't use popup with a delay to unpop it.
  * In this case, the correct would be to use popupNonBlocking:
@@ -125,13 +125,17 @@ public class Window extends Container
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
+   /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
+    * @since TotalCross 1.53
+    */
+   public String tempTitle;
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
 
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
-   protected Control _focus;
+   protected Control _focus,focusOnPenUp;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
    public Control firstFocus; // kmeehl@tc100
@@ -149,7 +153,8 @@ public class Window extends Container
    private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
-   private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private String oldTitle;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
@@ -558,6 +563,7 @@ public class Window extends Container
          {
             shiftScreen(null,0);
             isSipShown = false;
+            repaintActiveWindows();
             return;
          }
          if (shiftY != 0) // is the screen shifted?
@@ -686,6 +692,8 @@ public class Window extends Container
             _penEvent.modifiers = modifiers;
             _penEvent.target = null;
             _penEvent.touch();
+            if (_focus != null && _focus != this && _focus == _dragEvent.target && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever
+               _focus.postEvent(_penEvent);
             if (!onClickedOutside(_penEvent)) // if clicked outside was not handled by this method...
                if (type == PenEvent.PEN_DOWN && beepIfOut) // alert him! - ds: i changed this accordingly to your comments about win32 problems
                   Sound.beep();
@@ -878,6 +886,7 @@ public class Window extends Container
                      isSipShown = false;
                      setSIP(SIP_HIDE,null,false);
                      needsPaint = true;
+                     
                   }
                }
             }
@@ -941,7 +950,10 @@ public class Window extends Container
       event.timeStamp = timeStamp;
       
       if (event.type == PenEvent.PEN_UP) // guich@320_31: release tempFocus - bruno@tc126: release tempFocus BEFORE posting PEN_UP event
+      {
+         focusOnPenUp = _focus != null && (_focus instanceof Edit || _focus instanceof MultiEdit) ? _focus : null;
          tempFocus = null;
+      }
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)
@@ -960,7 +972,7 @@ public class Window extends Container
       if (event.target != null)
          ((Control)event.target).postEvent(event);
       
-      if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
+      if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
 
@@ -1010,8 +1022,15 @@ public class Window extends Container
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
          if (title == null) title = uiAndroid ? "" : " ";
-         int ww = titleFont.fm.stringWidth(title);
-         int hh = borderStyle == NO_BORDER && title.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         String tit = title;
+         int ww = titleFont.fm.stringWidth(tit);
+         if (ww > this.width-6)
+         {
+            int idx = Convert.getBreakPos(titleFont.fm,new StringBuffer(tit), 0, this.width-6,false);
+            tit = tit.substring(0,idx);
+            ww = titleFont.fm.stringWidth(tit);
+         }            
+         int hh = borderStyle == NO_BORDER && tit.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
          hh += titleGap;
          int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
@@ -1042,7 +1061,7 @@ public class Window extends Container
                case ROUND_BORDER:
                   if (uiAndroid)
                   {
-                     boolean hasTitle = title != null && title.length() > 0;
+                     boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
                      gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
                      if (!hasTitle)
@@ -1071,10 +1090,10 @@ public class Window extends Container
             gg.backColor = b;
          }
          gg.setFont(titleFont);
-         gg.drawText(title, xx, yy, textShadowColor != -1, textShadowColor);
+         gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
          gg.setFont(font);
          if (rTitle == null)
-            rTitle = new Rect(xx-2,0,ww+4,hh==0 && title.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
+            rTitle = new Rect(xx-2,0,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1125,13 +1144,18 @@ public class Window extends Container
             focusOnPopup = this;
 
          newWin.onPopup();
+         if (newWin.tempTitle != null)
+         {
+            newWin.oldTitle = newWin.title;
+            newWin.setTitle(newWin.tempTitle);
+         }
          eventsEnabled = false; // disables this window
          zStack.push(topMost = newWin);
          setFocus(topMost); // guich@567_4: changed from setFocus to swapFocus to fix 566_18 problem - guich@568_17: changed back to setFocus
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
          enableUpdateScreen = true;
-         nextTransitionEffect = newWin.transitionEffect;
+         //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
          repaintActiveWindows();
       }
    }
@@ -1164,6 +1188,11 @@ public class Window extends Container
    {
       if (zStack.size() == 1) // guich@400_69
          return;
+      if (oldTitle != null)
+      {
+         setTitle(oldTitle);
+         oldTitle = null;
+      }
       onUnpop();
       eventsEnabled = false;
       MainWindow.mainWindowInstance.removeTimers(this);
@@ -1175,9 +1204,12 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         nextTransitionEffect = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
-         loadBehind(); // guich@200b4: restore the saved window
-         topMost.eventsEnabled = true;
+/* transitions on Window is not working fine on android.
+          int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+         if (nextTrans == TRANSITION_NONE)
+            loadBehind(); // guich@200b4: restore the saved window
+         setNextTransitionEffect(nextTrans);
+*/         topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
          else
@@ -1195,6 +1227,7 @@ public class Window extends Container
             topMost.setFocus(topMost.focusOnPopup);
          postUnpop();
          popped = false;
+         needsPaint = true;
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1317,9 +1350,12 @@ public class Window extends Container
       if (newContainer == null)
          newContainer = mainSwapContainer;
       // add the new container.
-      lastSwappedContainer = newContainer;
       if (newContainer.transitionEffect != TRANSITION_NONE)
-         nextTransitionEffect = newContainer.transitionEffect;
+         setNextTransitionEffect(newContainer.transitionEffect);
+      else
+      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
+      lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
          newContainer.setRect(LEFT,TOP,FILL,FILL);
@@ -1327,8 +1363,8 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
-      firstTarget.requestFocus();
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
+      firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
    }

@@ -105,7 +105,7 @@ public class GifAnimatedTest extends MainWindow
             case 5: img.changeColors(no ? 0xA5B500 : 0x31CE31, 0x0077E5); break;
             case 6: img = img.getFadedInstance(backColor); break;
             case 7: img.applyColor(Color.RED); break;
-            case 8: img.applyColor2(Color.RED); img.dither(); break;
+            case 8: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight(),img.transparentColor); break;
          }
          int fim = Vm.getTimeStamp();
          lab.setText((fim-ini)+"ms");
@@ -116,7 +116,7 @@ public class GifAnimatedTest extends MainWindow
       }
       catch (Exception e)
       {
-         MessageBox.showException(e, false);
+         MessageBox.showException(e, true);
       }
    }
 }

@@ -89,15 +89,7 @@ public class Container extends Control
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
 
-   /** The transition effect to apply in the next screen update.
-    * After this effect is applied, the next effect is set to TRANSITION_NONE.
-    * @since TotalCross 1.2
-    * @see #transitionEffect
-    * @see #TRANSITION_NONE
-    * @see #TRANSITION_OPEN
-    * @see #TRANSITION_CLOSE
-    */
-   public static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
+   static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
    protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
    int numChildren;
@@ -144,6 +136,33 @@ public class Container extends Control
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
    }
+
+   /** The transition effect to apply in the next screen update.
+    * After this effect is applied, the next effect is set to TRANSITION_NONE.
+    * @since TotalCross 1.2
+    * @see #transitionEffect
+    * @see #TRANSITION_NONE
+    * @see #TRANSITION_OPEN
+    * @see #TRANSITION_CLOSE
+    */
+   static void setNextTransitionEffect(int t)
+   {
+      nextTransitionEffect = t;
+      if (t != TRANSITION_NONE)
+         transitionEffectChanged(t);
+   }
+
+   public static int getNextTransitionEffect()
+   {
+      int ret = nextTransitionEffect;
+      nextTransitionEffect = Container.TRANSITION_NONE;
+      return ret;
+   }
+
+   static void transitionEffectChanged(int t)
+   {
+   }
+   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01
@@ -868,9 +887,10 @@ public class Container extends Control
    }
 
    /** Moves the focus to the next Edit or MultiEdit control.
+    * @return The selected control or null if none was found.
     * @since TotalCross 1.25
     */
-   protected boolean moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
+   public Control moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
    {
       Vector v = tabOrder;
       int idx = v.indexOf(control);
@@ -892,11 +912,38 @@ public class Container extends Control
                   else
                      ((MultiEdit)c).popupKCC();
                }
-               return true;
+               return c;
             }
          }
       }
-      return false;
+      return null;
+   }
+
+   /** Moves the focus to the next control, which can be an Edit, a MultiEdit, or another control type.
+    * It does not show the keyboard.
+    * @return The selected control or null if none was found.
+    * @since TotalCross 1.53
+    */
+   public Control moveFocusToNextControl(Control control, boolean forward) // guich@tc125_26
+   {
+      Vector v = tabOrder;
+      int idx = v.indexOf(control);
+      int n = v.size();
+      if (idx >= 0 && n > 1)
+      {
+         for (int i = n-1; i >= 0; i--)
+         {
+            if (forward && ++idx == n) idx = 0; else
+            if (!forward && --idx < 0) idx = n-1;
+            Control c = (Control)v.items[idx];
+            if (c != this && c.enabled && c.visible)
+            {
+               c.requestFocus();
+               return c;
+            }
+         }
+      }
+      return null;
    }
 
    /** Changes the focusTraversable property for this container and all controls, recursively */
