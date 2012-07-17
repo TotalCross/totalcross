@@ -2117,7 +2117,7 @@ Running with the Launcher (on JDK)
 \end_layout
 
 \begin_layout Standard
-Using the launcher, we can run our application and take a look at the result.
+Using the launcher, we can run our application and take alook at the result.
  Using a command shell, execute the following command:
 \end_layout
 
@@ -16687,7 +16687,8 @@ name "chap:Advanced-Controls"
 \end_layout
 
 \begin_layout Standard
-Here a list of advanced controls is found.
+Here a list of advanced controls which are not described in the other chapter
+ is found.
  For more details, please check the JavaDocs for now.
  In the future this chapter will be filled with more detail.
 \end_layout
@@ -16837,14 +16838,6 @@ XYChart
 \end_layout
 
 \begin_layout Itemize
-CalculatorBox 
-\end_layout
-
-\begin_layout Itemize
-CalendarBox 
-\end_layout
-
-\begin_layout Itemize
 ColorChooserBox 
 \end_layout
 
@@ -16854,18 +16847,6 @@ ControlBox
 
 \begin_layout Itemize
 FileChooserBox 
-\end_layout
-
-\begin_layout Itemize
-InputBox 
-\end_layout
-
-\begin_layout Itemize
-KeyboardBox 
-\end_layout
-
-\begin_layout Itemize
-MessageBox 
 \end_layout
 
 \begin_layout Itemize
@@ -17071,6 +17052,10 @@ unpop()
 method described above.
  The big difference is that in 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 popupNonBlocking()
 \family default
 , the program execution continues to the next line, while in 
@@ -17194,60 +17179,140 @@ popupNonBlocking()
 \end_deeper
 \begin_layout Itemize
 The topmost window (the one who receive events) can be obtained with the
- static method getTopMost.
- To check if this window is the topmost, use the isTopMost method.
+ static method 
+\family typewriter
+getTopMost()
+\family default
+.
+ To check if this window is the topmost, use the 
+\family typewriter
+isTopMost()
+\family default
+ method.
 \end_layout
 
 \begin_layout Itemize
-Try setGrabPenEvents for set to a control to redirect all pen events directly
- to it.
+Try 
+\family typewriter
+setGrabPenEvents()
+\family default
+ for settting to a control to redirect all pen events directly to it.
  This method speeds up pen event processing.
- Used in Whiteboard class.
+ Used in 
+\family typewriter
+Whiteboard
+\family default
+ class.
  
 \end_layout
 
 \begin_layout Itemize
-You may check if this window is visible using the isVisible method.
- This method is inherited from totalcross.ui.Control, but it simply checks
- if the current window is the topmost one.
+You may check if this window is visible using the 
+\family typewriter
+isVisible()
+\family default
+ method.
+ This method is inherited from 
+\family typewriter
+totalcross.ui.Control
+\family default
+, but it simply checks if the current window is the topmost one.
 \end_layout
 
 \begin_layout Itemize
-Using the setStatePosition method can show PalmOS Grafitti state characters.
- To hide it, call setStatePosition(HIDE_STATE, HIDE_STATE).
+Using the 
+\family typewriter
+setStatePosition()
+\family default
+ method can show PalmOS grafitti state characters.
+ To hide it, call 
+\family typewriter
+setStatePosition(HIDE_STATE, HIDE_STATE)
+\family default
+.
  This method is also used in Windows CE and Pocket PC to show/hide the virtual
  keyboard (when applicable).
- Just use as parameter VK_HIDE, VK_TOP and VK_BOTTOM to hide, display the
- virtual keyboard at top of the screen or at the bottom of the screen.
+ Just use as parameter 
+\family typewriter
+VK_HIDE
+\family default
+, 
+\family typewriter
+VK_TOP
+\family default
+ and 
+\family typewriter
+VK_BOTTOM
+\family default
+ to hide, display the virtual keyboard at the top of the screen or at the
+ bottom of the screen.
  Note that this will have no effect in devices that don't have a virtual
  keyboard.
 \end_layout
 
 \begin_layout Itemize
-Each window can have a menu attached by using the method setMenuBar.
- The menuBar can be made visible programatically by calling the popupMenuBar
+Each window can have a menu attached by using the method 
+\family typewriter
+setMenuBar()
+\family default
+.
+ The menuBar can be made visible programatically by calling the 
+\family typewriter
+popupMenuBar()
+\family default
  method.
 \end_layout
 
 \begin_layout Itemize
 Suppose you wish to allow the user to abort a task being executed by pressing.
- You can use the method pumpEvents to process all events in the queue.
+ You can use the method 
+\family typewriter
+pumpEvents()
+\family default
+ to process all events in the queue.
 \end_layout
 
 \begin_layout Itemize
-The methods getPreferredWidth and getPreferredHeight have a special meaning
- for the Window class.
+The methods 
+\family typewriter
+getPreferredWidth()
+\family default
+ and 
+\family typewriter
+getPreferredHeight()
+\family default
+ have a special meaning for the 
+\family typewriter
+Window
+\family default
+ class.
  They return the minimum width/height needed for the correct display of
- this Window.
- The getPreferredWidth returns the width of the title (if any) plus the
- width of the border (if any).
- The getPreferredHeight returns the height of the title (if any) plus the
- height of the border (if any).
+ this window.
+ 
+\family typewriter
+getPreferredWidth()
+\family default
+ returns the width of the title (if any) plus the width of the border (if
+ any).
+ 
+\family typewriter
+getPreferredHeight()
+\family default
+ returns the height of the title (if any) plus the height of the border
+ (if any).
 \end_layout
 
 \begin_layout Standard
 There are some useful protected methods that may be implemented by controls
- that extend totalcross.ui.Window.
+ that extend 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.Window
+\family default
+.
  Those methods are placeholders and there is no need to call the super method.
 \end_layout
 
@@ -17272,13 +17337,32 @@ y) This method is used in popup windows.
 \begin_inset Newline newline
 \end_inset
 
-If you had handled the action, return true in this method.
-\begin_inset Newline newline
-\end_inset
-
-Otherwise, false must be returned and if the beepIfOut member is true, a
- beep is played (in other words, beepIfOut can be set to false to disable
- this beep).
+If you had handled the action, return 
+\family typewriter
+true
+\family default
+ in this method.
+ Otherwise, 
+\family typewriter
+false
+\family default
+ must be returned and if the 
+\family typewriter
+beepIfOut
+\family default
+ member is 
+\family typewriter
+true
+\family default
+, a beep is played (in other words, 
+\family typewriter
+beepIfOut
+\family default
+ can be set to 
+\family typewriter
+false
+\family default
+ to disable this beep).
 \end_layout
 
 \begin_layout FieldList
@@ -17286,15 +17370,18 @@ Otherwise, false must be returned and if the beepIfOut member is true, a
 onPopup() Called just after the behind contents are saved and before the
  popup process begin.
  When this method is called, the topmost window is still the parent of the
- Window being popped up.
+ window being popped up.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 postPopup() Called after the popup process ended.
  When this method is called, the popped up window is fully functional.
- It is a good place to put a control.requestFocus() to make the window popup
- with the focus in a default control.
+ It is a good place to put a 
+\family typewriter
+control.requestFocus()
+\family default
+ to make the window popup with the focus in a default control.
 \end_layout
 
 \begin_layout FieldList
@@ -17306,7 +17393,7 @@ onUnpop() Called just before the unpop process begin.
 \labelwidthstring 0
 postUnpop() Called after the unpop process ended.
  When this method is called, the unpopped window has gone away and the parent
- Window is currently the topmost.
+ window is currently the topmost.
 \end_layout
 
 \begin_layout Standard
@@ -17324,7 +17411,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-A very common mistake is to popup a Window without setting its bounds.
+A very common mistake is to popup a window without setting its bounds.
  If no bounds are set, the window will not receive events.
 \end_layout
 
@@ -17334,7 +17421,11 @@ A very common mistake is to popup a Window without setting its bounds.
 \end_layout
 
 \begin_layout Standard
-Some other important members of the Window class are explained here:
+Some other important members of the 
+\family typewriter
+Window
+\family default
+ class are explained here:
 \end_layout
 
 \begin_layout FieldList
@@ -17343,7 +17434,11 @@ boolean
 \begin_inset space ~
 \end_inset
 
-needsPaint true if there are any controls marked for repaint.
+needsPaint 
+\family typewriter
+true
+\family default
+ if there are any controls marked for repaint.
 \end_layout
 
 \begin_layout FieldList
@@ -17352,7 +17447,11 @@ boolean
 \begin_inset space ~
 \end_inset
 
-flickEnabled if true, the background area is erased during the repaint process.
+flickEnabled If 
+\family typewriter
+true
+\family default
+, the background area is erased during the repaint process.
  This causes flickering if the window is not double buffered.
 \end_layout
 
@@ -17362,7 +17461,7 @@ Window
 \begin_inset space ~
 \end_inset
 
-topmost stores the topmost Window.
+topmost Stores the topmost window.
 \end_layout
 
 \begin_layout FieldList
@@ -17371,8 +17470,12 @@ boolean
 \begin_inset space ~
 \end_inset
 
-canDrag if true and if this is a popup window, the user is allowed to drag
- the title and make the window move around.
+canDrag If 
+\family typewriter
+true
+\family default
+ and if this is a popup window, the user is allowed to drag the title and
+ make the window move around.
 \end_layout
 
 \begin_layout FieldList
@@ -17382,23 +17485,30 @@ boolean
 \end_inset
 
 highResPrepared This extremely important member is used when your program
- runs in devices with a screen resolution greater than the default 160x160
+ runs on devices with a screen resolution greater than the default 160x160
  of Palm OS.
  Some devices have 320x320, 240x320, etc.
  For each device, the font is usually proportional to the resolution.
  Since TotalCross programs are placed in a relative way, and since the relativen
-ess depends on the Window's size, your popped up Window would look squashed
- because the Windows bounds are usually set with an absolute coordinate.
- To avoid this, the Window manager checks if your Window is prepared for
+ess depends on the window's size, your popped up window would look squashed
+ because the windows bounds are usually set with an absolute coordinate.
+ To avoid this, the window manager checks if your window is prepared for
  high resolution devices (i.e., you tested it against other resolutions and
- set the right value for the Window depending on each case).
- If your Window is not prepared, then the setRect method will multiply the
- size of the Window by a factor that depends on how much the screen resolution
- has changed from the basic 160x160 (E.g.: in a 240x320 device, a 80x40 Window
- will be changed to 120x80).
+ set the right value for the window depending on each case).
+ If your window is not prepared, then the 
+\family typewriter
+setRect()
+\family default
+ method will multiply the size of the window by a factor that depends on
+ how much the screen resolution has changed from the basic 160x160 (E.g.:
+ in a 240x320 device, a 80x40 window will be changed to 120x80).
  Also, the window will be centered on screen.
- So, if you have tested your Window in other resolutions, set this flag
- to true.
+ So, if you have tested your window in other resolutions, set this flag
+ to 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -17416,9 +17526,17 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Never mess with the public member zStack.
+Never mess with the public member 
+\family typewriter
+zStack
+\family default
+.
  It is used to store the windows that are currently popped up.
- It is made public because the totalcross.Launcher class uses it.
+ It is made public because the 
+\family typewriter
+totalcross.Launcher
+\family default
+ class uses it.
 \end_layout
 
 \end_inset
@@ -17427,48 +17545,118 @@ Never mess with the public member zStack.
 \end_layout
 
 \begin_layout Standard
-Next is explained how controls inside a Window are repainted: 
+Next is explained how controls inside a window are repainted: 
 \end_layout
 
 \begin_layout Enumerate
-The programmer calls the repaint method of some controls, or a control is
- clicked and marks itself for repaint.
+The programmer calls the 
+\family typewriter
+repaint()
+\family default
+ method of some controls, or a control is clicked and marks itself for repaint.
 \end_layout
 
 \begin_layout Enumerate
-The damageRect method in class Window creates a rectangle (stored in the
- paintX, paintY, paintWidth and paintHeight members) with the union of the
- bounds of all controls marked for repaint.
+The 
+\family typewriter
+damageRect()
+\family default
+ method in class window creates a rectangle (stored in the 
+\family typewriter
+paintX
+\family default
+, 
+\family typewriter
+paintY
+\family default
+, 
+\family typewriter
+paintWidth
+\family default
+ and 
+\family typewriter
+paintHeight
+\family default
+ members) with the union of the bounds of all controls marked for repaint.
  
 \end_layout
 
 \begin_layout Enumerate
-The next time a VM event is posted, the _doPaint method of the topmost window
- is called.
- This method paints the window’s title/border (if any) and calls the onPaint
+The next time a VM event is posted, the 
+\family typewriter
+_doPaint()
+\family default
+ method of the topmost window is called.
+ This method paints the window’s title/border (if any) and calls the 
+\family typewriter
+onPaint()
+\family default
  method of all containers and controls that lies inside the rectangle area
  marked for repaint.
  This explains why nothing in the window is updated when you receive events
- directly from a native library (the Scanner class, for example).
+ directly from a native library (the 
+\family typewriter
+Scanner
+\family default
+ class, for example).
  Because the VM is not receiving the event, it never validates the window.
- In these cases, you must update the window yourself, calling repaintNow
+ In these cases, you must update the window yourself, calling 
+\family typewriter
+repaintNow()
+\family default
  or the validate methods.
 \end_layout
 
 \begin_layout Standard
-Many classes in the totalcross.ui package extend totalcross.ui.Window.
- Examples of such classes are CalculatorBox and CalendarBox.
- Other good examples are ComboBoxDropDown and MessageBox.
+Many classes in the 
+\family typewriter
+totalcross.ui
+\family default
+ package extend 
+\family typewriter
+totalcross.ui.Window
+\family default
+.
+ Examples of such classes are 
+\family typewriter
+CalculatorBox
+\family default
+ and 
+\family typewriter
+CalendarBox
+\family default
+.
+ Other good examples are 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ComboBoxDropDown
+\family default
+ and 
+\family typewriter
+MessageBox
+\family default
+.
  
 \end_layout
 
 \begin_layout Standard
 It's important to be aware that it is not a good practice to create classes
- that extend Window if they will occupy the whole screen, because they use
- a lot of memory to store the underlying area.
+ that extend 
+\family typewriter
+Window
+\family default
+ if they will occupy the whole screen, because they use a lot of memory
+ to store the underlying area.
  Opening the menu may lead to time-consuming redraws of all opened windows
  due to out-of-memory problems.
- In these cases, it is better to use Containers.
+ In these cases, it is better to use 
+\family typewriter
+Containers
+\family default
+.
 \end_layout
 
 \begin_layout Chapter
@@ -17477,8 +17665,28 @@ UIColors
 
 \begin_layout Standard
 This class contains the default colors used in most user interface windows,
- like the CalendarBox, KeyboardBox, CalculatorBox, InputBox, MessageBox,
- and also the default foreground and background colors of all controls created.
+ like 
+\family typewriter
+CalendarBox
+\family default
+, 
+\family typewriter
+KeyboardBox
+\family default
+, 
+\family typewriter
+CalculatorBox
+\family default
+, 
+\family typewriter
+InputBox
+\family default
+, 
+\family typewriter
+MessageBox
+\family default
+, and also the default foreground and background colors of all controls
+ created.
  
 \end_layout
 
@@ -17498,10 +17706,32 @@ The TotalCross SDK provides some handy interface dialogs, which are windows
 \end_layout
 
 \begin_layout Standard
-Interface dialogs are pop-up windows that extend the Window class, and just
- like the Window, they are not automatically displayed under creation.
- To show or hide a dialog you must use Window methods: popup, popupNonBlocking
- and unpop.
+Interface dialogs are pop-up windows that extend the 
+\family typewriter
+Window
+\family default
+ class, and just like 
+\family typewriter
+Window
+\family default
+, they are not automatically displayed under creation.
+ To show or hide a dialog you must use 
+\family typewriter
+Window
+\family default
+ methods: 
+\family typewriter
+popup()
+\family default
+, 
+\family typewriter
+popupNonBlocking()
+\family default
+ and 
+\family typewriter
+unpop()
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -17516,7 +17746,11 @@ Simple dialog used to display a text with some user-defined buttons.
 \end_layout
 
 \begin_layout Standard
-MessageBox has three constructors:
+
+\family typewriter
+MessageBox
+\family default
+ has three constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -17533,12 +17767,24 @@ String
 \begin_inset space ~
 \end_inset
 
-msg) Creates a MessageBox with the given title and message.
+msg) Creates a 
+\family typewriter
+MessageBox
+\family default
+ with the given title and message.
  The message is displayed using a label, and can be displayed in multiple
- lines if previously parsed with the '
+ lines if previously parsed with the 
+\family typewriter
+
 \backslash
-n' character.
- It also displays a single <Ok> button to dismiss the window.
+n
+\family default
+ character.
+ It also displays a single 
+\family typewriter
+<Ok>
+\family default
+ button to dismiss the window.
 \end_layout
 
 \begin_layout FieldList
@@ -17565,9 +17811,24 @@ String[]
 
 buttonCaptions) Same as the above, but also receives a string array specifying
  the button captions.
- A PushButtonGroup is used to display the buttons, and the method getPressedButt
-onIndex() returns the index of the pressed button (where the first one has
- index 0).
+ A 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+PushButtonGroup
+\family default
+ is used to display the buttons, and the method 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+getPressedButtonIndex()
+\family default
+ returns the index of the pressed button (where the first one has index
+ 0).
 \end_layout
 
 \begin_layout FieldList
@@ -17592,20 +17853,34 @@ gap,int
 \begin_inset space ~
 \end_inset
 
-insideGap) Same as the above, but also receives the gap (space between buttons)
- and insideGap (space between the button's text and it's bounds) to be used
- by the PushButtonGroup.
+insideGap) Same as the above, but also receives the 
+\family typewriter
+gap
+\family default
+ (space between buttons) and 
+\family typewriter
+insideGap
+\family default
+ (space between the button's text and it's bounds) to be used by the 
+\family typewriter
+PushButtonGroup
+\family default
+.
 \end_layout
 
 \begin_layout Standard
-The MessageBox is displayed on the center of the device screen, and its
+The message box is displayed on the center of the device screen, and its
  bounds are calculated based on the given title, text and buttons.
  If the text height is above the screen limits, two arrows are added to
- the MessageBox to allow the text scrolling.
+ the message box to allow the text scrolling.
 \end_layout
 
 \begin_layout Itemize
-MessageBox has only three instance methods:
+
+\family typewriter
+MessageBox
+\family default
+ has only three instance methods:
 \end_layout
 
 \begin_deeper
@@ -17618,10 +17893,28 @@ getPressedButtonIndex() Returns the index of the pressed button.
 
 This method returns -1 if invoked before the window is closed (or if it
  is closed without any button being pressed).
- To make sure you're retrieving the correct value, consider using popup
- instead of popupNonBlocking, or invoke this method only after the window
- is closed (the MessageBox is a Window, so it also posts the event ControlEvent.W
-INDOW_CLOSED when closed).
+ To make sure you're retrieving the correct value, consider using 
+\family typewriter
+popup()
+\family default
+ instead of 
+\family typewriter
+popupNonBlocking()
+\family default
+, or invoke this method only after the window is closed (
+\family typewriter
+MessageBox
+\family default
+ is a 
+\family typewriter
+Window
+\family default
+, so it also posts the event 
+\family typewriter
+ControlEvent.
+ WINDOW_CLOSED
+\family default
+ when closed).
 \end_layout
 
 \begin_layout FieldList
@@ -17631,8 +17924,24 @@ setTextAlignment(int
 \end_inset
 
 align) Sets the alignment of the label that displays the text.
- The argument must be one of the following constants LEFT, CENTER, RIGHT.
- The default alignment is CENTER.
+ The argument must be one of the following constants 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, 
+\family typewriter
+RIGHT
+\family default
+.
+ The default alignment is 
+\family typewriter
+CENTER
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -17641,15 +17950,30 @@ setUnpopDelay(int
 \begin_inset space ~
 \end_inset
 
-unpopDelay) Automatically unpops the MessageBox after the given time in
+unpopDelay) Automatically unpops the message box after the given time in
  milliseconds.
- You must use this method just before displaying the window (either by popup
- or popupNonBlocking).
+ You must use this method just before displaying the window (either by 
+\family typewriter
+popup()
+\family default
+ or
 \begin_inset Newline newline
 \end_inset
 
-This method actually adds a timer to the MessageBox, invoking the unpop
- method when the TimerEvent is triggered.
+
+\family typewriter
+popupNonBlocking()
+\family default
+).
+ This method actually adds a timer to the message box, invoking the 
+\family typewriter
+unpop()
+\family default
+ method when the 
+\family typewriter
+TimerEvent
+\family default
+ is triggered.
  Be sure to learn how the timer works to better understand this method.
 \end_layout
 
@@ -17669,10 +17993,21 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The method setUnpopDelay does not affect the regular behavior of the MessageBox
- – the popupNonBlocking method will not block the program execution and
- will still return immediately, the popup method will still block the program
- execution, and the MessageBox may still be dismissed by the user (e.g.
+The method 
+\family typewriter
+setUnpopDelay()
+\family default
+ does not affect the regular behavior of the message box – the 
+\family typewriter
+popupNonBlocking()
+\family default
+ method will not block the program execution and will still return immediately,
+ the 
+\family typewriter
+popup()
+\family default
+ method will still block the program execution, and the message box may
+ still be dismissed by the user (e.g.
  pressing one of its buttons) before the timer finishes.
 \end_layout
 
@@ -17684,18 +18019,36 @@ The method setUnpopDelay does not affect the regular behavior of the MessageBox
 \end_deeper
 \end_deeper
 \begin_layout Standard
-An interesting feature of the MessageBox is that you may create it with
- no buttons, just passing the null value for the constructor's argument
- buttonCaptions.
- However, a MessageBox created with no buttons does not provide a default
+An interesting feature of the message box is that you may create it with
+ no buttons, just passing the 
+\family typewriter
+null
+\family default
+ value for the constructor's argument 
+\family typewriter
+buttonCaptions
+\family default
+.
+ However, a message box created with no buttons does not provide a default
  way of being dismissed by the user.
- You must dismiss it programatically, by invoking unpop, using setUnpopDelay
+ You must dismiss it programatically, by invoking 
+\family typewriter
+unpop()
+\family default
+, using 
+\family typewriter
+setUnpopDelay()
+\family default
  or handling events (e.g.
- You may handle PenEvents to make it unpop after the user touches the screen).
+ you may handle pen events to make it unpop after the user touches the screen).
 \end_layout
 
 \begin_layout Standard
-The MessageBox class has a handy method to debug your application:
+The 
+\family typewriter
+MessageBox
+\family default
+ class has a handy method to debug your application:
 \end_layout
 
 \begin_layout FieldList
@@ -17712,10 +18065,17 @@ boolean
 \begin_inset space ~
 \end_inset
 
-dumpToConsole) Immediately displays a MessageBox showing the given throwable
+dumpToConsole) Immediately displays a message box showing the given throwable
  name, message and its stack trace.
- This information is dumped to the debug console if the dumpToConsole is
- true.
+ This information is dumped to the debug console if the field 
+\family typewriter
+dumpToConsole
+\family default
+ is 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -17735,7 +18095,15 @@ status open
 \begin_layout Plain Layout
 If you use an IDE with customizable templates for automatic code generation
  (like Eclipse), try changing the template for try/catch blocks to call
- MessageBox.showException instead of Throwable.printStackTrace.
+ 
+\family typewriter
+MessageBox.showException()
+\family default
+ instead of 
+\family typewriter
+Throwable.printStackTrace()
+\family default
+.
 \end_layout
 
 \end_inset
@@ -17749,9 +18117,9 @@ InputBox
 
 \begin_layout Standard
 Simple dialog used to get a text input from the user.
- It contains a label do display some text, and edit to receive the user
- input, and some user-defined buttons.
- Basically it's like a MessageBox with an edit.
+ It contains a label do display some text, an edit to receive the user input,
+ and some user-defined buttons.
+ Basically it's like a message box with an edit.
 \end_layout
 
 \begin_layout Standard
@@ -17780,8 +18148,16 @@ String
 \begin_inset space ~
 \end_inset
 
-defaultValue) Creates an InputBox with the given title, text, a default
- value for the edit and two buttons: <Ok> and <Cancel>.
+defaultValue) Creates an input box with the given title, text, a default
+ value for the edit and two buttons: 
+\family typewriter
+<Ok>
+\family default
+ and 
+\family typewriter
+<Cancel>
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -17816,8 +18192,15 @@ String[]
 
 buttonCaptions) Same as the above, plus a string array specifying the buttons
  captions.
- A PushButtonGroup is used to display the buttons, and the getPressedButtonIndex
-() method returns the pressed button index.
+ A 
+\family typewriter
+PushButtonGroup
+\family default
+ is used to display the buttons, and the 
+\family typewriter
+getPressedButtonIndex()
+\family default
+ method returns the pressed button index.
 \end_layout
 
 \begin_deeper
@@ -17836,7 +18219,15 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Unlike the MessageBox, the argument buttonCaptions cannot have a null value.
+Unlike the message box, the argument 
+\family typewriter
+buttonCaptions
+\family default
+ cannot have a 
+\family typewriter
+null
+\family default
+ value.
 \end_layout
 
 \end_inset
@@ -17846,35 +18237,53 @@ Unlike the MessageBox, the argument buttonCaptions cannot have a null value.
 
 \end_deeper
 \begin_layout Standard
-The InputBox is displayed on the center of the device screen, and its bounds
+The input box is displayed on the center of the device screen, and its bounds
  are calculated based on the given title, text, edit and buttons.
  If the text height is above the screen limits, two arrows are added to
- the InputBox to allow the text scrolling.
- And its edit receives the focus when the InputBox is popped up.
+ the input box to allow the text scrolling.
+ And its edit receives the focus when the input box is popped up.
 \end_layout
 
 \begin_layout Standard
-The InputBox provides the following instance methods:
+The 
+\family typewriter
+InputBox
+\family default
+ class provides the following instance methods:
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 getPressedButtonIndex() Returns the index of the pressed button.
  This index is zero based (the first element has index 0).
-\begin_inset Newline newline
-\end_inset
-
-This method returns -1 if invoked before the window is closed (or if it
+ This method returns -1 if invoked before the window is closed (or if it
  is closed without any button being pressed).
- To make sure you're retrieving the correct value, consider using popup
- instead of popupNonBlocking, or invoke this method only after the window
- is closed (the InputBox is a Window, so it also posts the event ControlEvent.WIN
-DOW_CLOSED when closed).
+ To make sure you're retrieving the correct value, consider using 
+\family typewriter
+popup()
+\family default
+ instead of 
+\family typewriter
+popupNonBlocking()
+\family default
+, or invoke this method only after the window is closed (
+\family typewriter
+InputBox
+\family default
+ is a 
+\family typewriter
+Window
+\family default
+, so it also posts the event 
+\family typewriter
+ControlEvent.WINDOW_CLOSED
+\family default
+ when closed).
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getEdit() Returns a reference to this InputBox's edit, so you can change
+getEdit() Returns a reference to this input box's edit, so you can change
  its properties.
 \end_layout
 
@@ -17903,22 +18312,26 @@ Dialog that displays a virtual keyboard that can be used to handle text
 \end_layout
 
 \begin_layout Standard
-Unlike other dialogs, the KeyboardBox constructor does not receive any arguments
-, and it does not provide any methods for its manipulation.
+Unlike other dialogs, the 
+\family typewriter
+KeyboardBox
+\family default
+ constructor does not receive any arguments, and it does not provide any
+ methods for its manipulation.
  So how does it work?
 \end_layout
 
 \begin_layout Standard
-When the KeyboardBox is popped up, it gets the control of the topmost window
+When the keyboard box is popped up, it gets the control of the topmost window
  that currently holds the focus.
- The control is shown at the top of the KeyboardBox, and any text input
+ The control is shown at the top of the keyboard box, and any text input
  received is passed to the control as a key event.
- If the virtual keyboard is used, the KeyboardBox handles the pen event,
+ If the virtual keyboard is used, the keyboard box handles the pen event,
  converting it to a key event before passing to the target control.
 \end_layout
 
 \begin_layout Standard
-The Edit and MultiEdit controls may use the KeyboardBox for text input.
+The edit and multi edit controls may use the keyboard box for text input.
 \end_layout
 
 \begin_layout Section
@@ -17933,7 +18346,11 @@ A dialog with a simpler calculator.
 \end_layout
 
 \begin_layout Standard
-The CalculatorBox has only the default constructor and the following methods:
+The 
+\family typewriter
+CalculatorBox
+\family default
+ class has only the default constructor and the following methods:
 \end_layout
 
 \begin_layout FieldList
@@ -17958,19 +18375,33 @@ CalendarBox
 \begin_layout Standard
 Displays a calendar where a date can be chosen.
  It pops up with the current day as default and the user can scroll through
- months or year.
- When a day is selected the calendar is closed and you may retrieve a Date
+ months or years.
+ When a day is selected the calendar is closed and you may retrieve a 
+\family typewriter
+Date
+\family default
  object representing the chosen date.
 \end_layout
 
 \begin_layout Standard
-The CalendarBox has only the default constructor and the following methods:
+The 
+\family typewriter
+CalendarBox
+\family default
+ class has only the default constructor and the following methods:
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedDate() Returns a Date object representing the selected date,
- or null if the calendar is canceled.
+getSelectedDate() Returns a 
+\family typewriter
+Date
+\family default
+ object representing the selected date, or 
+\family typewriter
+null
+\family default
+ if the calendar is canceled.
 \end_layout
 
 \begin_layout FieldList
@@ -17979,13 +18410,24 @@ setSelectedDate(Date
 \begin_inset space ~
 \end_inset
 
-d) Changes this CalendarBox current date by the given one.
- If the given date is null, the current date is set to today.
+d) Changes this calendar box current date by the given one.
+ If the given date is 
+\family typewriter
+null
+\family default
+, the current date is set to today.
 \end_layout
 
 \begin_layout Standard
-To correctly retrieve the selected date, you can handle the ControlEvent.PRESSED
- event posted by the calendar, and call getSelectedDate.
+To correctly retrieve the selected date, you can handle the 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event posted by the calendar, and call 
+\family typewriter
+getSelectedDate()
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -18057,7 +18499,7 @@ public void onEvent(Event event)
 
 \begin_layout Plain Layout
 
-		String text = date == null ? "No date selected" : date.toString();
+		String text = (date == null)? "No date selected" : date.toString();
 \end_layout
 
 \begin_layout Plain Layout
@@ -18081,20 +18523,16 @@ public void onEvent(Event event)
 \end_layout
 
 \begin_layout Chapter
-Splitting your application's logic using Container
-\end_layout
-
-\begin_layout Standard
-Placeholder for this section.
-\end_layout
-
-\begin_layout Chapter
 Image
 \end_layout
 
 \begin_layout Standard
 Image is a rectangular image, which you can draw into or copy to a surface
- (using a Graphics object).
+ (using a 
+\family typewriter
+Graphics
+\family default
+ object).
  They are always 24bpp, and TotalCross supports only the PNG and JPEG formats
  when running on the TCVM.
 \end_layout
@@ -18107,13 +18545,35 @@ However, you may still use GIF and BMP files on your application, because
 \end_layout
 
 \begin_layout Standard
-Image objects cannot be directly added to the user interface because they
- are not controls (i.e.
- the Image class does not extend the Control class).
- To display an image on the user interface, you may either use the Graphics
- object to draw the Image on the screen, or use a control that better suits
- your needs, like ImageControl or Button (both described at the user interface
- section of this document).
+
+\family typewriter
+Image
+\family default
+ objects cannot be directly added to the user interface because they are
+ not controls (i.e.
+ the 
+\family typewriter
+Image
+\family default
+ class does not extend the 
+\family typewriter
+Control
+\family default
+ class).
+ To display an image on the user interface, you may either use the 
+\family typewriter
+Graphics
+\family default
+ object to draw the image on the screen, or use a control that better suits
+ your needs, like 
+\family typewriter
+ImageControl
+\family default
+ or 
+\family typewriter
+Button
+\family default
+ (both described at the user interface section of this document).
 \end_layout
 
 \begin_layout Standard
@@ -18134,7 +18594,11 @@ int
 \begin_inset space ~
 \end_inset
 
-height) Creates an image object with the given width and height.
+height) Creates an 
+\family typewriter
+Image
+\family default
+ object with the given width and height.
  The new image has the same color depth and color map of the default drawing
  surface.
 \end_layout
@@ -18145,8 +18609,12 @@ Image(byte[]
 \begin_inset space ~
 \end_inset
 
-fullDescription) Creates an image object from the given byte array, which
- must specify the whole image, including its headers.
+fullDescription) Creates an 
+\family typewriter
+Image
+\family default
+ object from the given byte array, which must specify the whole image, including
+ its headers.
 \end_layout
 
 \begin_layout FieldList
@@ -18165,7 +18633,10 @@ Image(Stream
 \begin_inset space ~
 \end_inset
 
-s) Attempts to read the contents of the given stream, and create an image
+s) Attempts to read the contents of the given stream, and create an 
+\family typewriter
+Image
+\family default
  object from the bytes read.
 \end_layout
 
@@ -18186,7 +18657,7 @@ status open
 
 \begin_layout Plain Layout
 The usage of this last constructor with connection oriented streams (like
- Socket) is not advised.
+ socket) is not advised.
 \end_layout
 
 \end_inset
@@ -18197,22 +18668,45 @@ The usage of this last constructor with connection oriented streams (like
 \end_deeper
 \begin_layout Itemize
 If you want to check if a specific file is supported by the platform at
- runtime, you may use the static method Image.isSupported(String filename).
+ runtime, you may use the static method 
+\family typewriter
+Image.isSupported(String filename)
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-To retrieve the image dimensions, you may use the methods getWidth() and
- getHeight().
+To retrieve the image dimensions, you may use the methods 
+\family typewriter
+getWidth()
+\family default
+ and 
+\family typewriter
+getHeight()
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-The method getGraphics() returns the Graphics object used by this image,
- which provides several methods that may be used for drawing in this image.
+The method 
+\family typewriter
+getGraphics()
+\family default
+ returns the 
+\family typewriter
+Graphics
+\family default
+ object used by this image, which provides several methods that may be used
+ for drawing in this image.
 \end_layout
 
 \begin_layout Itemize
 You may change all pixels of the same color by another color with the method
- changeColors(int from, int to).
+ 
+\family typewriter
+changeColors(int from, int to)
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -18223,28 +18717,43 @@ The deployer also convert animated GIFs into multi-frame PNGs – which are
 \end_layout
 
 \begin_layout Standard
-In this case, you may use the method getFrameCount() to check if the loaded
- image contains more than one frame.
+In this case, you may use the method 
+\family typewriter
+getFrameCount()
+\family default
+ to check if the loaded image contains more than one frame.
 \end_layout
 
 \begin_layout Standard
 However, you may want to load an actual PNG or JPEG file created in multi-frame
  format to display an animation.
  In this case, the number of frames contained in the file will be unknown
- and getFrameCount() will return 1.
+ and 
+\family typewriter
+getFrameCount()
+\family default
+ will return 1.
 \end_layout
 
 \begin_layout Standard
-To set the actual number of frames on the image, you must use the method
- setFrameCount(int n), which sets the total number of frames of the image
- by the given one, but only if the total image width (including all frames)
- is divisible by the given value.
+To set the actual number of frames of the image, you must use the method
+ 
+\family typewriter
+setFrameCount (int n)
+\family default
+, which sets the total number of frames of the image by the given one, but
+ only if the total image width (including all frames) is divisible by the
+ given value.
 \end_layout
 
 \begin_layout Standard
 The image's frame count cannot be changed if their value is already higher
  than 1.
- In this case, the setFrameCount method simply returns without doing anything.
+ In this case, the 
+\family typewriter
+setFrameCount()
+\family default
+ method simply returns without doing anything.
 \end_layout
 
 \begin_layout Standard
@@ -18265,7 +18774,7 @@ setCurrentFrame(int
 nr) Sets the given frame index as the current frame, moving its contents
  to the set of visible pixels.
  If the given index is negative, the last frame is set as the current frame;
- If it's higher than the number of frames, the first one is set instead.
+ if it's higher than the number of frames, the first one is set instead.
 \end_layout
 
 \begin_layout FieldList
@@ -18294,9 +18803,17 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Both nextFrame and prevFrame treat the multi-frame image as a circular list,
- looping back to the first frame if moving forward from the last frame,
- or to the last frame if moving backwards from the first frame.
+Both 
+\family typewriter
+nextFrame()
+\family default
+ and 
+\family typewriter
+prevFrame()
+\family default
+ treat the multi-frame image as a circular list, looping back to the first
+ frame if moving forward from the last frame, or to the last frame if moving
+ backwards from the first frame.
 \end_layout
 
 \end_inset
@@ -18306,8 +18823,15 @@ Both nextFrame and prevFrame treat the multi-frame image as a circular list,
 
 \end_deeper
 \begin_layout Standard
-The Image class also provides the methods that creates a new Image object
- to be changed and returned, instead of changing the original instance:
+The 
+\family typewriter
+Image
+\family default
+ class also provides the methods that creates a new 
+\family typewriter
+Image
+\family default
+ object to be changed and returned, instead of changing the original instance:
 \end_layout
 
 \begin_layout FieldList
@@ -18370,7 +18894,11 @@ int
 \end_inset
 
 backColor) Returns a scaled instance of this image.
- Transparent pixels are replaced by backColor, which produces a smooth border.
+ Transparent pixels are replaced by 
+\family typewriter
+backColor
+\family default
+, which produces a smooth border.
 \end_layout
 
 \begin_layout FieldList
@@ -18398,7 +18926,11 @@ int
 backColor) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
- Transparent pixels are replaced by backColor, which produces a smooth border.
+ Transparent pixels are replaced by 
+\family typewriter
+backColor
+\family default
+, which produces a smooth border.
 \end_layout
 
 \begin_layout FieldList
@@ -18444,8 +18976,15 @@ status open
 \begin_layout Plain Layout
 Do not use this method for scaling only, because the scaling methods are
  faster.
- If you need a smooth scale and rotate, scale it first with smoothScaledBy
- or getSmoothScaledInstance and rotate it without scaling (or vice-versa).
+ If you need a smooth scale and rotate, scale it first with 
+\family typewriter
+smoothScaledBy()
+\family default
+ or 
+\family typewriter
+getSmoothScaledInstance()
+\family default
+ and rotate it without scaling (or vice-versa).
 \end_layout
 
 \end_inset
@@ -18488,9 +19027,24 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The methods getSmoothScaledInstance and smoothScaleBy uses the area averaging
- algorithm, instead of the replication algorithm used by scaleBy and getScaledIn
-stance.
+The methods 
+\family typewriter
+getSmoothScaledInstance()
+\family default
+ and 
+\family typewriter
+smoothScaleBy()
+\family default
+ uses the area averaging algorithm instead of the replication algorithm
+ used by 
+\family typewriter
+scaleBy()
+\family default
+ and 
+\family typewriter
+getScaledInstance()
+\family default
+.
  Although slower, the area averaging algorithm provides better results.
  You may now create only 320x320 images for your application, and smoothly
  resizes it to the target resolution, instead of providing one image per
@@ -18509,7 +19063,11 @@ Images with anti-aliased borders produce better results because of the extra
 
 \end_deeper
 \begin_layout Standard
-And finally, to save your image object, you may use one of the methods below:
+And finally, to save your 
+\family typewriter
+Image
+\family default
+ object, you may use one of the methods below:
 \end_layout
 
 \begin_layout FieldList
@@ -18536,7 +19094,11 @@ String
 \end_inset
 
 name) Writes this image as a 24bpp PNG file on the currently selected record
- of the given PDBFile, using the given name.
+ of the given 
+\family typewriter
+PDBFile
+\family default
+, using the given name.
 \end_layout
 
 \begin_layout Standard
@@ -18784,7 +19346,7 @@ public void initUI()
 
 \begin_layout Plain Layout
 
-	MessageBox.showException(e, true);
+		MessageBox.showException(e, true);
 \end_layout
 
 \begin_layout Plain Layout
@@ -18864,8 +19426,30 @@ Date
 \end_layout
 
 \begin_layout Standard
-The Date class is a general date data type implementation of the Gregorian
- Calendar, and supports dates from January 1st, 1000 to December 31st, 2999.
+The 
+\family typewriter
+Date
+\family default
+ class is a general date data type implementation of the Gregorian Calendar,
+ and supports dates from January 1
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+st
+\end_layout
+
+\end_inset
+
+, 1000 to December 31
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+, 2999.
 \end_layout
 
 \begin_layout Standard
@@ -19131,7 +19715,11 @@ Date.SATURDAY
 \end_layout
 
 \begin_layout Itemize
-Date has six constructors:
+
+\family typewriter
+Date
+\family default
+ has six constructors:
 \end_layout
 
 \begin_deeper
@@ -19141,7 +19729,11 @@ Date has six constructors:
 \family typewriter
 Date()
 \family default
- Creates a Date object set with today's date.
+ Creates a 
+\family typewriter
+Date
+\family default
+ object set with today's date.
 \end_layout
 
 \begin_layout FieldList
@@ -19154,8 +19746,15 @@ Date(int
 
 sentDate)
 \family default
- Creates a Date object using the given value, which must be in the format
- YYYYMMDD.
+ Creates a 
+\family typewriter
+Date
+\family default
+ object using the given value, which must be in the format 
+\family typewriter
+YYYYMMDD
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -19184,7 +19783,11 @@ int
 
 sentYear)
 \family default
- Creates a Date object using the given values.
+ Creates a 
+\family typewriter
+Date
+\family default
+ object using the given values.
 \end_layout
 
 \begin_layout FieldList
@@ -19197,8 +19800,19 @@ Date(String
 
 strDate) 
 \family default
-Creates a Date object with the given strDate, which must be a valid date
- in the current device date format (See Settings.dateFormat).
+Creates a 
+\family typewriter
+Date
+\family default
+ object with the given 
+\family typewriter
+strDate
+\family default
+, which must be a valid date in the current device date format (See 
+\family typewriter
+Settings.dateFormat
+\family default
+).
  The date separator can be any non-number character, the constructor auto-detect
 s what character is being used as separator.
 \end_layout
@@ -19221,9 +19835,28 @@ byte
 
 dateFormat) 
 \family default
-Creates a Date object with the given strDate, which must be a valid date
- in the given dateFormat.
- The argument dateFormat must be one of the Settings.DATE_XXX constants.
+Creates a 
+\family typewriter
+Date
+\family default
+ object with the given 
+\family typewriter
+strDate
+\family default
+, which must be a valid date in the given 
+\family typewriter
+dateFormat
+\family default
+.
+ The argument 
+\family typewriter
+dateFormat
+\family default
+ must be one of the 
+\family typewriter
+Settings.DATE_XXX
+\family default
+ constants.
 \end_layout
 
 \begin_layout FieldList
@@ -19236,17 +19869,43 @@ Date(Time
 
 t) 
 \family default
-Creates a date object using the given Time object (See Time).
+Creates a 
+\family typewriter
+Date
+\family default
+ object using the given 
+\family typewriter
+Time
+\family default
+ object (See section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Time"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
-Except for the default constructor, all Date constructors may throw the
- checked exception InvalidDateException.
+Except for the default constructor, all 
+\family typewriter
+Date
+\family default
+ constructors may throw the checked exception 
+\family typewriter
+InvalidDateException
+\family default
+.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-Date objects can be manipulated in a simple way with the following methods:
+
+\family typewriter
+Date
+\family default
+ objects can be manipulated in a simple way with the following methods:
 \end_layout
 
 \begin_deeper
@@ -19256,8 +19915,11 @@ advance(int
 \begin_inset space ~
 \end_inset
 
-numberDays) Advances (or regresses if numberDays is negative) the date by
- the given value.
+numberDays) Advances (or regresses if 
+\family typewriter
+numberDays
+\family default
+ is negative) the date by the given value.
 \end_layout
 
 \begin_layout FieldList
@@ -19291,12 +19953,20 @@ direction) Changes the date to the beginning of the next or previous week.
 
 \begin_layout FieldList
 \labelwidthstring 0
-setToday() Sets this date object to the current day.
+setToday() Sets this 
+\family typewriter
+Date
+\family default
+ object to the current day.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-Date objects can be easily compared using the following methods:
+
+\family typewriter
+Date
+\family default
+ objects can be easily compared using the following methods:
 \end_layout
 
 \begin_deeper
@@ -19306,7 +19976,19 @@ isAfter(Date
 \begin_inset space ~
 \end_inset
 
-sentDate) Returns true if sentDate is after this date object.
+sentDate) Returns 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+sentDate
+\family default
+ is after this 
+\family typewriter
+Date
+\family default
+ object.
 \end_layout
 
 \begin_layout FieldList
@@ -19315,7 +19997,19 @@ isBefore(Date
 \begin_inset space ~
 \end_inset
 
-sentDate) Returns true if sentDate is before this date object.
+sentDate) Returns 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+sentDate
+\family default
+ is before this 
+\family typewriter
+Date
+\family default
+ object.
 \end_layout
 
 \begin_layout FieldList
@@ -19324,7 +20018,22 @@ equals(Object
 \begin_inset space ~
 \end_inset
 
-sentDate) Returns true if sentDate represents the same date as this date
+sentDate) Returns 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+sentDate
+\family default
+ represents the same 
+\family typewriter
+Date
+\family default
+ as this 
+\family typewriter
+Date
+\family default
  object.
 \end_layout
 
@@ -19334,15 +20043,32 @@ compareTo(Object
 \begin_inset space ~
 \end_inset
 
-other) Implementation of the Comparable interface.
- Return is > 0 if this object is greater than the other one, < 0 if its
- smaller, and 0 if they are equal.
+other) Implementation of the 
+\family typewriter
+Comparable
+\family default
+ interface.
+ Return is 
+\family typewriter
+> 0
+\family default
+ if this object is greater than the other one, 
+\family typewriter
+< 0
+\family default
+ if its smaller, and 0 if they are equal.
 \end_layout
 
 \begin_layout Standard
-You can get the difference in days between two dates using the method subtract(D
-ate other).
- (other – this).
+You can get the difference in days between two dates using the method 
+\family typewriter
+subtract(Date other)
+\family default
+ (
+\family typewriter
+other – this
+\family default
+).
 \end_layout
 
 \begin_layout Standard
@@ -19360,11 +20086,26 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Never use subtract to compare dates.
- Using subtract to compare dates can be 15 times slower than using one of
- the above methods, like compareTo.
- Use subtract only when you need to know the exact difference between two
- dates.
+Never use 
+\family typewriter
+subtract()
+\family default
+ to compare dates.
+ Using 
+\family typewriter
+subtract()
+\family default
+ to compare dates can be 15 times slower than using one of the above methods,
+ like 
+\family typewriter
+compareTo()
+\family default
+.
+ Use 
+\family typewriter
+subtract()
+\family default
+ only when you need to know the exact difference between two dates.
 \end_layout
 
 \end_inset
@@ -19406,7 +20147,11 @@ getWeek() Calculates and returns the ordinal value of the week (1-52).
 
 \begin_layout FieldList
 \labelwidthstring 0
-getDateInt() Returns an integer representing the date in the format YYYYMMDD.
+getDateInt() Returns an integer representing the date in the format 
+\family typewriter
+YYYYMMDD
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -19425,32 +20170,54 @@ month) Returns the number of days in the given month of the set year.
 
 \begin_layout FieldList
 \labelwidthstring 0
-getGregorianDay() Returns the number of days since the January 1st of the
- epoch year 1000.
+getGregorianDay() Returns the number of days since the January 1
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+st
+\end_layout
+
+\end_inset
+
+ of the epoch year 1000.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-You can also retrieve the date as a String:
+You can also retrieve the date as a string:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-formatDayMonth() Returns a zero padded String representation of the day
- and month, using the current device settings (see Settings.dateFormat).
+formatDayMonth() Returns a zero padded string representation of the day
+ and month, using the current device settings (see 
+\family typewriter
+Settings.dateFormat
+\family default
+).
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getDate() Returns a String representation of the date using the current
- device settings (see Settings.dateFormat).
+getDate() Returns a string representation of the date using the current
+ device settings (see 
+\family typewriter
+Settings.
+ dateFormat
+\family default
+).
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-toString() Returns a String representation of the date using the current
- device settings (see Settings.dateFormat).
+toString() Returns a string representation of the date using the current
+ device settings (see 
+\family typewriter
+Settings.
+ dateFormat
+\family default
+).
 \end_layout
 
 \begin_layout FieldList
@@ -19459,13 +20226,21 @@ toString(byte
 \begin_inset space ~
 \end_inset
 
-format) Returns a String representation of the date using the given format,
- which must be one of the Settings.DATE_XXX constants.
+format) Returns a string representation of the date using the given format,
+ which must be one of the 
+\family typewriter
+Settings.DATE_XXX
+\family default
+ constants.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-The Date class provides a few static utility methods:
+The 
+\family typewriter
+Date
+\family default
+ class provides a few static utility methods:
 \end_layout
 
 \begin_deeper
@@ -19475,7 +20250,7 @@ getMonthName(int
 \begin_inset space ~
 \end_inset
 
-m) Returns the String representation of the given month.
+m) Returns the string representation of the given month.
 \end_layout
 
 \begin_layout FieldList
@@ -19517,8 +20292,12 @@ int
 \begin_inset space ~
 \end_inset
 
-year) Returns the String representation of the given date (zero padded)
- using the current device settings (See Settings.dateFormat).
+year) Returns the string representation of the given date (zero padded)
+ using the current device settings (See 
+\family typewriter
+Settings.dateFormat
+\family default
+).
 \end_layout
 
 \begin_layout FieldList
@@ -19551,8 +20330,11 @@ byte
 \begin_inset space ~
 \end_inset
 
-dateFormat) Returns the String representation of the given date (zero padded)
- using the specified dateFormat, which must be one of the Settings.DATE_XXX
+dateFormat) Returns the string representation of the given date (zero padded)
+ using the specified date format, which must be one of the 
+\family typewriter
+Settings.DATE_XXX
+\family default
  constants.
 \end_layout
 
@@ -19653,7 +20435,7 @@ else
 
 \begin_layout Plain Layout
 
-PaulBorn.setToday(); /* Now, Paul has just been born */
+PaulBorn.setToday(); // Now Paul has just been born.
 \end_layout
 
 \end_inset
@@ -19666,27 +20448,66 @@ Vector
 \end_layout
 
 \begin_layout Standard
-The Vector class implements a growable array of objects.
+The 
+\family typewriter
+Vector
+\family default
+ class implements a growable array of objects.
  Like an array, it contains components that can be accessed using an integer
  index.
- However, the size of a Vector can dynamically grow as needed.
+ However, the size of a 
+\family typewriter
+Vector
+\family default
+ can dynamically grow as needed.
+ If the array never needs to be increased, an array should be used.
 \end_layout
 
 \begin_layout Standard
-In Java you cannot directly access the Vector's internal array, you must
- use its methods to insert, remove, retrieve or replace elements in a Vector.
+In Java you cannot directly access the 
+\family typewriter
+Vector
+\family default
+'s internal array, you must use its methods to 
+\family typewriter
+insert()
+\family default
+, 
+\family typewriter
+remove()
+\family default
+, 
+\family typewriter
+retrieve()
+\family default
+ or 
+\family typewriter
+replace()
+\family default
+ elements in a 
+\family typewriter
+Vector
+\family default
+.
  This way the programmer cannot accidentally (or intentionally) corrupt
  the object's internal state.
 \end_layout
 
 \begin_layout Standard
-Unfortunately this makes Vector iteration a very costly operation, because
- each iteration requires at least one method call.
+Unfortunately this makes 
+\family typewriter
+Vector
+\family default
+ iteration a very costly operation, because each iteration requires at least
+ one method call.
 \end_layout
 
 \begin_layout Standard
-To avoid this performance issue, TotalCross' Vector implementation allows
- public access to its internal array.
+To avoid this performance issue, TotalCross' 
+\family typewriter
+Vector
+\family default
+ implementation allows public access to its internal array.
  However, to guarantee the Vector's integrity
 \emph on
  you must only access it to retrieve (get) or replace (set) elements, and
@@ -19696,17 +20517,29 @@ To avoid this performance issue, TotalCross' Vector implementation allows
 \end_layout
 
 \begin_layout Standard
-You may also use a Vector as a Stack, this feature is better explained below.
+You may also use a 
+\family typewriter
+Vector
+\family default
+ as a stack, which feature is better explained below.
 \end_layout
 
 \begin_layout Itemize
-Vector has three constructors:
+
+\family typewriter
+Vector
+\family default
+ has three constructors:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Vector() Default constructor, creates a Vector with the default size 8.
+Vector() Default constructor, creates a 
+\family typewriter
+Vector
+\family default
+ with the default size 8.
  This constructor should be avoided.
 \end_layout
 
@@ -19716,8 +20549,11 @@ Vector(int
 \begin_inset space ~
 \end_inset
 
-size) Creates a Vector with the given size, which cannot be negative (minimum
- size is 0).
+size) Creates a 
+\family typewriter
+Vector
+\family default
+ with the given size, which cannot be negative (minimum size is 0).
 \end_layout
 
 \begin_layout FieldList
@@ -19726,8 +20562,15 @@ Vector(Object[]
 \begin_inset space ~
 \end_inset
 
-startingWith) Creates a Vector, assigning the given array as the internal
- buffer and its size as the Vector size.
+startingWith) Creates a 
+\family typewriter
+Vector
+\family default
+, assigning the given array as the internal buffer and its size as the 
+\family typewriter
+Vector
+\family default
+ size.
 \end_layout
 
 \begin_layout Standard
@@ -19747,9 +20590,24 @@ status open
 \begin_layout Plain Layout
 Please notice this constructor uses the given array as internal buffer,
  not a copy.
- So you should not use this array after initializing the Vector with it.
- If you want to initialize the Vector with a copy of the array, use Vm.arrayCopy,
- or for String arrays, Convert.cloneStringArray.
+ So you should not use this array after initializing the 
+\family typewriter
+Vector
+\family default
+ with it.
+ If you want to initialize the 
+\family typewriter
+Vector
+\family default
+ with a copy of the array, use 
+\family typewriter
+Vm.arrayCopy()
+\family default
+, or for string arrays, 
+\family typewriter
+Convert.cloneStringArray()
+\family default
+.
 \end_layout
 
 \end_inset
@@ -19769,7 +20627,11 @@ addElement(Object
 \begin_inset space ~
 \end_inset
 
-obj) Adds a reference to the given object to the end of this vector.
+obj) Adds a reference to the given object to the end of this 
+\family typewriter
+Vector
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -19787,8 +20649,12 @@ int
 \end_inset
 
 index) Inserts a reference to the given object at the specified index of
- this vector, shifting elements with index greater or equal to the specified
- index to have an index one greater than it had previously.
+ this 
+\family typewriter
+Vector
+\family default
+, shifting elements with index greater or equal to the specified index to
+ have an index one greater than it had previously.
 \end_layout
 
 \end_deeper
@@ -19803,9 +20669,12 @@ removeElement(Object
 \begin_inset space ~
 \end_inset
 
-obj) Removes the reference of the given object from this vector, shifting
- elements with index greater than the specified index to have an index one
- smaller than it had previously.
+obj) Removes the reference of the given object from this 
+\family typewriter
+Vector
+\family default
+, shifting elements with index greater than the specified index to have
+ an index one smaller than it had previously.
 \end_layout
 
 \begin_layout FieldList
@@ -19814,20 +20683,30 @@ removeElementAt(int
 \begin_inset space ~
 \end_inset
 
-index) Removes the reference to the object at the given index of this vector,
- shifting elements with index greater than the specified index to have an
- index one smaller than it had previously.
+index) Removes the reference to the object at the given index of this 
+\family typewriter
+Vector
+\family default
+, shifting elements with index greater than the specified index to have
+ an index one smaller than it had previously.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-removeAllElements() Removes all elements from this vector, reseting its
- length to 0.
+removeAllElements() Removes all elements from this 
+\family typewriter
+Vector
+\family default
+, reseting its length to 0.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To find the index of a vector's element:
+To find the index of a 
+\family typewriter
+Vector
+\family default
+'s element:
 \end_layout
 
 \begin_deeper
@@ -19847,8 +20726,12 @@ int
 
 startIndex) Returns the index of the given object, or -1 if the object is
  not found.
- The array is searched using a O(n) linear search, starting at the given
- startIndex, until the object is found or the end of the array is reached.
+ The array is searched using a 
+\family typewriter
+O(n)
+\family default
+ linear search, starting at the given start index, until the object is found
+ or the end of the array is reached.
 \end_layout
 
 \begin_layout FieldList
@@ -19859,24 +20742,43 @@ indexOf(Object
 
 obj) Like the above, but always start the search at the first position (index
  0).
- In fact its implementation consists of a single method call: indexOf(obj,
- 0).
+ In fact its implementation consists of a single method call: 
+\family typewriter
+indexOf(obj, 0)
+\family default
+.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-Vector also provides the following handy methods:
+
+\family typewriter
+Vector
+\family default
+ also provides the following handy methods:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-isEmpty() Returns true if this vector is empty.
+isEmpty() Returns 
+\family typewriter
+true
+\family default
+ if this 
+\family typewriter
+Vector
+\family default
+ is empty.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this vector.
+size() Returns the number of elements in this 
+\family typewriter
+Vector
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -19885,16 +20787,35 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this vector.
- If the new size is greater than the current size, new null items are added
- to the end of the vector.
+newSize) Sets the size of this 
+\family typewriter
+Vector
+\family default
+.
+ If the new size is greater than the current size, new 
+\family typewriter
+null
+\family default
+ items are added to the end of the 
+\family typewriter
+Vector
+\family default
+.
  If the new size is less than the current size, all components at index
- newSize and greater are discarded.
+ 
+\family typewriter
+newSize
+\family default
+ and greater are discarded.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this vector.
+qsort() Sorts the elements of this 
+\family typewriter
+Vector
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -19913,10 +20834,20 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-If the elements are Strings, the sort will be faster because a cast to String
+If the elements are strings, the sort will be faster because a cast to 
+\family typewriter
+String
+\family default
  will be done.
- Otherwise, it will use the method toString() to get a String representation
- of the object to use on the sort.
+ Otherwise, it will use the method 
+\family typewriter
+toString()
+\family default
+ to get a 
+\family typewriter
+String
+\family default
+ representation of the object to use on the sort.
 \end_layout
 
 \end_inset
@@ -19928,7 +20859,19 @@ If the elements are Strings, the sort will be faster because a cast to String
 \begin_layout FieldList
 \labelwidthstring 0
 toObjectArray() Returns an array of objects containing all elements of this
- vector, or null if the vector is empty.
+ 
+\family typewriter
+Vector
+\family default
+, or 
+\family typewriter
+null
+\family default
+ if the 
+\family typewriter
+Vector
+\family default
+ is empty.
 \end_layout
 
 \begin_deeper
@@ -19947,10 +20890,30 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-If the first element of this vector is a String, it will assume all elements
- are of the same type and create a String array instead of an Object array.
- In this case, you may safely cast the return from Object[] to String[].
- This is only valid for Strings.
+If the first element of this 
+\family typewriter
+Vector
+\family default
+ is a string, it will assume all elements are of the same type and create
+ a 
+\family typewriter
+String
+\family default
+ array instead of an 
+\family typewriter
+Object
+\family default
+ array.
+ In this case, you may safely cast the return from 
+\family typewriter
+Object[]
+\family default
+ to 
+\family typewriter
+String[]
+\family default
+.
+ This is only valid for strings.
 \end_layout
 
 \end_inset
@@ -19961,14 +20924,21 @@ If the first element of this vector is a String, it will assume all elements
 \end_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-dump() Dumps the contents of this vector, returning a String representation
- of it.
+dump() Dumps the contents of this 
+\family typewriter
+Vector
+\family default
+, returning a string representation of it.
  
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To use a vector as a stack, you may use the following methods:
+To use a 
+\family typewriter
+Vector
+\family default
+ as a stack, you may use the following methods:
 \end_layout
 
 \begin_deeper
@@ -19979,7 +20949,11 @@ push(Object
 \end_inset
 
 obj) Pushes an item onto the top of this stack.
- It actually just calls the method addElement passing the given object.
+ It actually just calls the method 
+\family typewriter
+addElement()
+\family default
+ passing the given object.
 \end_layout
 
 \begin_layout FieldList
@@ -19996,14 +20970,25 @@ peek() Returns the object the object at the top of this stack without removing
 
 \end_deeper
 \begin_layout Standard
-Although the Vector can grow to accommodate more elements, this is a costly
- operation that should be avoided.
- Keep in mind the following when using Vectors:
+Although the 
+\family typewriter
+Vector
+\family default
+ can grow to accommodate more elements, this is a costly operation that
+ should be avoided.
+ Keep in mind the following when using 
+\family typewriter
+Vector
+\family default
+s:
 \end_layout
 
 \begin_layout Itemize
-If you can estimate the number of elements, you can create the Vector with
- enough room for them:
+If you can estimate the number of elements, you can create the 
+\family typewriter
+Vector
+\family default
+ with enough room for them:
 \end_layout
 
 \begin_deeper
@@ -20029,7 +21014,7 @@ Foo f;
 
 \begin_layout Plain Layout
 
-while ((f != getNextFoo()) != null)
+while ((f = getNextFoo()) != null)
 \end_layout
 
 \begin_layout Plain Layout
@@ -20045,7 +21030,11 @@ while ((f != getNextFoo()) != null)
 \end_deeper
 \begin_layout Itemize
 If you know the exact number of elements, you can create an array and initialize
- the Vector with this array:
+ the 
+\family typewriter
+Vector
+\family default
+ with this array:
 \end_layout
 
 \begin_deeper
@@ -20106,7 +21095,11 @@ status open
 \begin_layout Plain Layout
 Use this approach only when you know the initial number of elements is not
  too low and you do not expect to make several insertions later.
- Otherwise the Vector may need to grow several times, decreasing the performance.
+ Otherwise the 
+\family typewriter
+Vector
+\family default
+ may need to grow several times, decreasing the performance.
 \end_layout
 
 \end_inset
@@ -20116,18 +21109,38 @@ Use this approach only when you know the initial number of elements is not
 
 \end_deeper
 \begin_layout Itemize
-The Vector growth rate is 20% + 1 on device (100% + 1 on Java), so you should
- avoid using the default constructor (the default size is 8) or initializing
- the Vector with less than 20 positions.
+The 
+\family typewriter
+Vector
+\family default
+ growth rate is 20% + 1 on device (100% + 1 on Java), so you should avoid
+ using the default constructor (the default size is 8) or initializing the
+ 
+\family typewriter
+Vector
+\family default
+ with less than 20 positions.
 \end_layout
 
 \begin_layout Itemize
-The Vector does not shrinks automatically.
+
+\family typewriter
+Vector
+\family default
+ does not shrinks automatically.
  If you make several inserts followed by even more removals, you may end
- up with a huge Vector consuming more memory than it actually needs.
- (IE.
- After the inserts the Vector ends up with 1200 positions but after the
- removals only 500 positions are actually being used).
+ up with a huge 
+\family typewriter
+Vector
+\family default
+ consuming more memory than it actually needs (i.
+ e.
+ after the inserts the 
+\family typewriter
+Vector
+\family default
+ ends up with 1200 positions but after the removals only 500 positions are
+ actually being used).
 \end_layout
 
 \begin_layout Section
@@ -20135,14 +21148,33 @@ IntVector
 \end_layout
 
 \begin_layout Standard
-The IntVector is a growable array of integers.
- It's a Vector implementation specific for integers, which provides better
- performance and takes less memory than using Vector to hold only integers.
+The 
+\family typewriter
+IntVector
+\family default
+ is a growable array of integers.
+ It's a 
+\family typewriter
+Vector
+\family default
+ implementation specific for integers, which provides better performance
+ and takes less memory than using 
+\family typewriter
+Vector
+\family default
+ to hold only integers.
 \end_layout
 
 \begin_layout Standard
-For efficiency, IntVector was implemented exactly like Vector: It also allows
- public access to its internal array, but 
+For efficiency, 
+\family typewriter
+IntVector
+\family default
+ was implemented exactly like 
+\family typewriter
+Vector
+\family default
+: It also allows public access to its internal array, but 
 \emph on
 you must only access it to retrieve (get) or replace (set) elements, and
  never to insert, remove, or resize the buffer
@@ -20151,22 +21183,36 @@ you must only access it to retrieve (get) or replace (set) elements, and
 \end_layout
 
 \begin_layout Standard
-Like the Vector, the IntVector may also be used as a Stack (an IntStack
- in this case).
+Like 
+\family typewriter
+Vector
+\family default
+, 
+\family typewriter
+IntVector
+\family default
+ may also be used as a stack (an integer stack in this case).
  It can also be used as a bit array.
  These features are better described below.
  
 \end_layout
 
 \begin_layout Itemize
-IntVector has three constructors:
+
+\family typewriter
+IntVector
+\family default
+ has three constructors:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-IntVector() Default constructor, creates an IntVector with the default size
- 20.
+IntVector() Default constructor, creates an 
+\family typewriter
+IntVector
+\family default
+ with the default size 20.
 \end_layout
 
 \begin_layout FieldList
@@ -20175,8 +21221,11 @@ IntVector(int
 \begin_inset space ~
 \end_inset
 
-size) Creates an IntVector with the given size, which cannot be negative
- (minimum size is 0).
+size) Creates an 
+\family typewriter
+IntVector
+\family default
+ with the given size, which cannot be negative (minimum size is 0).
 \end_layout
 
 \begin_layout FieldList
@@ -20185,8 +21234,16 @@ IntVector(int[]
 \begin_inset space ~
 \end_inset
 
-items) Creates an IntVector, assigning the given array as the internal buffer
- and its size as the an IntVector size.
+items) Creates an 
+\family typewriter
+IntVector
+\family default
+, assigning the given array as the internal buffer and its size as the an
+ 
+\family typewriter
+IntVector
+\family default
+ size.
 \end_layout
 
 \begin_layout Standard
@@ -20206,10 +21263,20 @@ status open
 \begin_layout Plain Layout
 Please notice this constructor uses the given array as internal buffer,
  not a copy.
- So you should not use this array after initializing the IntVector with
- it.
- If you want to initialize the IntVector with a copy of the array, use Vm.arrayCo
-py.
+ So you should not use this array after initializing the 
+\family typewriter
+IntVector
+\family default
+ with it.
+ If you want to initialize the 
+\family typewriter
+IntVector
+\family default
+ with a copy of the array, use
+\family typewriter
+ Vm.arrayCopy()
+\family default
+.
 \end_layout
 
 \end_inset
@@ -20219,7 +21286,11 @@ py.
 
 \end_deeper
 \begin_layout Itemize
-To add an element to an intVector, you may use:
+To add an element to an 
+\family typewriter
+IntVector
+\family default
+, you may use:
 \end_layout
 
 \begin_deeper
@@ -20229,7 +21300,11 @@ addElement(int
 \begin_inset space ~
 \end_inset
 
-item) Adds the given integer to the end of this intVector.
+item) Adds the given integer to the end of this 
+\family typewriter
+intVector
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -20246,8 +21321,11 @@ int
 \begin_inset space ~
 \end_inset
 
-index) Inserts the given integer at the specified index of this intVector,
- shifting elements with index greater or equal to the specified index to
+index) Inserts the given integer at the specified index of this 
+\family typewriter
+IntVector
+\family default
+, shifting elements with index greater or equal to the specified index to
  have an index one greater than it had previously.
 \end_layout
 
@@ -20263,9 +21341,12 @@ removeElement(int
 \begin_inset space ~
 \end_inset
 
-item) Removes the given integer from this intVector, shifting elements with
- index greater than the specified index to have an index one smaller than
- it had previously.
+item) Removes the given integer from this 
+\family typewriter
+IntVector
+\family default
+, shifting elements with index greater than the specified index to have
+ an index one smaller than it had previously.
 \end_layout
 
 \begin_layout FieldList
@@ -20274,20 +21355,30 @@ removeElementAt(int
 \begin_inset space ~
 \end_inset
 
-index) Removes the integer at the given index of this intVector, shifting
- elements with index greater than the specified index to have an index one
- smaller than it had previously.
+index) Removes the integer at the given index of this 
+\family typewriter
+IntVector
+\family default
+, shifting elements with index greater than the specified index to have
+ an index one smaller than it had previously.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-removeAllElements() Removes all elements from this intVector, reseting its
- length to 0.
+removeAllElements() Removes all elements from this 
+\family typewriter
+IntVector
+\family default
+, reseting its length to 0.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To find the index of an element of this intVector:
+To find the index of an element of this 
+\family typewriter
+IntVector
+\family default
+:
 \end_layout
 
 \begin_deeper
@@ -20307,8 +21398,12 @@ int
 
 startIndex) Returns the index of the given integer, or -1 if the integer
  is not found.
- The array is searched using a O(n) linear search, starting at the given
- startIndex, until the integer is found or the end of the array is reached.
+ The array is searched using a 
+\family typewriter
+O(n)
+\family default
+ linear search, starting at the given start index, until the integer is
+ found or the end of the array is reached.
 \end_layout
 
 \begin_layout FieldList
@@ -20319,35 +21414,58 @@ indexOf(int
 
 item) Like the above, but always start the search at the first position
  (index 0).
- In fact its implementation consists of a single method call: indexOf(item,
- 0).
+ In fact its implementation consists of a single method call: 
+\family typewriter
+indexOf(item, 0)
+\family default
+.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-IntVector also provides the following handy methods:
+
+\family typewriter
+IntVector
+\family default
+ also provides the following handy methods:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-isEmpty() Returns true if this intVector is empty.
+isEmpty() Returns true if this 
+\family typewriter
+IntVector
+\family default
+ is empty.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this intVector.
+size() Returns the number of elements in this 
+\family typewriter
+IntVector
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this intVector.
+qsort() Sorts the elements of this 
+\family typewriter
+IntVector
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 toIntArray() Returns an array of integers containing all elements of this
- intVector.
+ 
+\family typewriter
+IntVector
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -20366,9 +21484,24 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Unlike Vector.toObjectArray, the method toIntArray does not returns null
- if the IntVector is empty.
- It always returns an int array, which may contain elements or not.
+Unlike 
+\family typewriter
+Vector.toObjectArray()
+\family default
+, the method 
+\family typewriter
+toIntArray()
+\family default
+ does not returns 
+\family typewriter
+null
+\family default
+ if the 
+\family typewriter
+IntVector
+\family default
+ is empty.
+ It always returns an integer array, which may contain elements or not.
 \end_layout
 
 \end_inset
@@ -20383,16 +21516,32 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this vector.
- If the new size is greater than the current size, new items are added to
- the end of the vector.
+newSize) Sets the size of this 
+\family typewriter
+IntVector
+\family default
+.
+ If the new size is greater than the current size, new items equals to zero
+ are added to the end of the 
+\family typewriter
+IntVector
+\family default
+.
  If the new size is less than the current size, all components at index
- newSize and greater are discarded.
+ 
+\family typewriter
+newSize
+\family default
+ and greater are discarded.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To use an IntVector as a stack, you may use the following methods:
+To use an 
+\family typewriter
+IntVector
+\family default
+ as a stack, you may use the following methods:
 \end_layout
 
 \begin_deeper
@@ -20403,7 +21552,11 @@ push(int
 \end_inset
 
 item) Pushes an item onto the top of this stack.
- It actually just calls the method addElement passing the given integer.
+ It actually just calls the method 
+\family typewriter
+addElement()
+\family default
+ passing the given integer.
 \end_layout
 
 \begin_layout FieldList
@@ -20461,17 +21614,31 @@ A single boolean variable is stored in memory as an integer, which costs
 \end_layout
 
 \begin_layout Standard
-As an alternative, you may use the IntVector as a a real bit array using
- the provided methods and save a lot of memory.
+As an alternative, you may use the 
+\family typewriter
+IntVector
+\family default
+ as a a real bit array using the provided methods and save a lot of memory.
  But there is a drawback: the internal array does not grow by itself when
  you try to access an index bigger than the array's size.
- So you must make sure the IntVector is large enough to hold the number
- of bits you want to manipulate, otherwise you may get an ArrayIndexOutOfBoundsE
-xception.
+ So you must make sure the 
+\family typewriter
+IntVector
+\family default
+ is large enough to hold the number of bits you want to manipulate, otherwise
+ you may get an 
+\family typewriter
+ArrayIndexOutOfBoundsException
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-The IntVector provides the following methods to be used as a bit array:
+The 
+\family typewriter
+IntVector
+\family default
+ provides the following methods to be used as a bit array:
 \end_layout
 
 \begin_deeper
@@ -20481,8 +21648,11 @@ ensureBit(int
 \begin_inset space ~
 \end_inset
 
-sizeInBits) Makes sure the intVector is large enough to hold the given number
- of bits.
+sizeInBits) Makes sure the 
+\family typewriter
+IntVector
+\family default
+ is large enough to hold the given number of bits.
  You should always call this method before using it as a bit array.
 \end_layout
 
@@ -20500,7 +21670,11 @@ boolean
 \begin_inset space ~
 \end_inset
 
-on) Sets the bit at the given index if on is true.
+on) Sets the bit at the given index if on is 
+\family typewriter
+true
+\family default
+; unsets it, otherwise.
 \end_layout
 
 \begin_layout FieldList
@@ -20509,12 +21683,24 @@ isBitSet(int
 \begin_inset space ~
 \end_inset
 
-index) Returns true if the bit at the given index is set.
+index) Returns 
+\family typewriter
+true
+\family default
+ if the bit at the given index is set; 
+\family typewriter
+false
+\family default
+, otherwise.
 \end_layout
 
 \end_deeper
 \begin_layout Standard
-Sample code of the IntVector as a bit array:
+Sample code of the 
+\family typewriter
+IntVector
+\family default
+ as a bit array:
 \end_layout
 
 \begin_layout Itemize
@@ -20547,7 +21733,7 @@ boolean aux = bitArray[5]; // easy to get a bit.
 \end_layout
 
 \begin_layout Itemize
-Now using a IntVector:
+Now using an IntVector:
 \end_layout
 
 \begin_layout Standard
@@ -20562,12 +21748,12 @@ IntVector bitVector = new IntVector();
 
 \begin_layout Plain Layout
 
-// First we make sure the array is large enough.
+bitVector.ensureBits(40000); // First we make sure the array is large enough.
+ 
 \end_layout
 
 \begin_layout Plain Layout
 
-bitVector.ensureBits(40000); 
 \end_layout
 
 \begin_layout Plain Layout
@@ -20599,8 +21785,15 @@ This class implements a hash table, which is a data structure that associates
  keys with values.
  It's primary operation is a lookup: given a key, find the corresponding
  value.
- It works by transforming the key into a hash using the method hashCode()
- (inherited from Object), which is then used as an index for the hash table.
+ It works by transforming the key into a hash using the method 
+\family typewriter
+hashCode()
+\family default
+ (inherited from 
+\family typewriter
+Object
+\family default
+), which is then used as an index for the hash table.
 \end_layout
 
 \begin_layout Standard
@@ -20615,7 +21808,11 @@ Any non-null object can be used as a key or as a value, optionally, you
 \end_layout
 
 \begin_layout Itemize
-Hashtable has two important constructors:
+
+\family typewriter
+Hashtable
+\family default
+ has two important constructors:
 \end_layout
 
 \begin_deeper
@@ -20645,8 +21842,12 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The argument initialCapacity's value should be the final number of entries
- in the hash table to avoid rehashing.
+The argument 
+\family typewriter
+initialCapacity
+\family default
+'s value should be the final number of entries in the hash table to avoid
+ rehashing.
 \end_layout
 
 \end_inset
@@ -20661,10 +21862,18 @@ Hashtable(String
 \begin_inset space ~
 \end_inset
 
-res) Creates a new hash table parsing the elements from the given String.
- The String must be in the form: key = value, split in lines (
+res) Creates a new hash table parsing the elements from the given string.
+ The string must be in the form: 
+\family typewriter
+key = value
+\family default
+, split in lines (
+\family typewriter
+
 \backslash
-n).
+n
+\family default
+).
 \end_layout
 
 \end_deeper
@@ -20711,13 +21920,20 @@ value) Maps the given value to the given hash.
 If the given hash (or key's hash code) already exists in the hash table,
  the old value will be replaced by the given value and the put method will
  return the old value.
- Otherwise, a null value will be returned.
+ Otherwise, a 
+\family typewriter
+null
+\family default
+ value will be returned.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To test if a key is already mapped in the hash table, use the method exists(Obje
-ct key).
+To test if a key is already mapped in the hash table, use the method 
+\family typewriter
+exists(Object key)
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -20753,12 +21969,20 @@ To retrieve all values and/or keys from a hash table:
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getKeys() Returns a Vector with all the keys in this hash table.
+getKeys() Returns a 
+\family typewriter
+Vector
+\family default
+ with all the keys in this hash table.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getValues() Returns a Vector with all the values in this hash table.
+getValues() Returns a 
+\family typewriter
+Vector
+\family default
+ with all the values in this hash table.
 \end_layout
 
 \begin_layout FieldList
@@ -20767,22 +21991,36 @@ getKeyValuePairs(String
 \begin_inset space ~
 \end_inset
 
-separator) Returns a Vector with all the key/value pairs in the form key
- + separator + value.
+separator) Returns a 
+\family typewriter
+Vector
+\family default
+ with all the key/value pairs in the form key + separator + value.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-The method size() returns the number of keys in this hash table.
+The method 
+\family typewriter
+size()
+\family default
+ returns the number of keys in this hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use remove(Obj
-ect key).
+To remove a key and its corresponding value from this hash table, use 
+\family typewriter
+remove(Object key)
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use clear().
+To clear this hash table, removing all its entries, use 
+\family typewriter
+clear()
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -20831,7 +22069,7 @@ status open
 
 \begin_layout Plain Layout
 
-String n = (String) numbers.get("two");
+String n = (String)numbers.get("two");
 \end_layout
 
 \begin_layout Plain Layout
@@ -20859,7 +22097,11 @@ This class implements a hash table where both the keys and values inserted
 \end_layout
 
 \begin_layout Itemize
-IntHashtable has a important constructor:
+
+\family typewriter
+IntHashtable
+\family default
+ has an important constructor:
 \end_layout
 
 \begin_deeper
@@ -20906,8 +22148,11 @@ If the given hash (or key's hash code) already exists in the hash table,
 
 \end_deeper
 \begin_layout Itemize
-To test if a key is already mapped in the hash table, use the method exists(int
- key).
+To test if a key is already mapped in the hash table, use the method 
+\family typewriter
+exists(int key)
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -20940,7 +22185,11 @@ int
 \end_inset
 
 def) Returns the value to which the specified key is mapped in this hash
- table, or the given default value (def) if the key is not found.
+ table, or the given default value (
+\family typewriter
+def
+\family default
+) if the key is not found.
 \end_layout
 
 \begin_layout Standard
@@ -20958,12 +22207,22 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Make sure you choose value for def that is never inserted as a value in
- the hash table, otherwise the return value of this method may be treated
- as a false negative (IE.
- The key maps to a value equals to the given def, thus, if you test if the
- return is not equals to def to check if the key was found, the result will
- be a false negative.)
+Make sure you choose a value for 
+\family typewriter
+def
+\family default
+ that is never inserted as a value in the hash table, otherwise the return
+ value of this method may be treated as a false negative (i.
+ e.
+ the key maps to a value equals to the given 
+\family typewriter
+def
+\family default
+, thus, if you test if the return is not equals to 
+\family typewriter
+def
+\family default
+ to check if the key was found, the result will be a false negative).
 \end_layout
 
 \end_inset
@@ -20979,33 +22238,62 @@ To retrieve all keys and values from a hash table:
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getKeys() Returns a IntVector with all the keys in this hash table.
+getKeys() Returns an 
+\family typewriter
+IntVector
+\family default
+ with all the keys in this hash table.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getValues() Returns a IntVector with all the values in this hash table.
+getValues() Returns an 
+\family typewriter
+IntVector
+\family default
+ with all the values in this hash table.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-You may use the method getKey(int pos) to retrieve the key at the given
- position (pos).
- An ArrayIndexOutOfBoundsException is thrown if the given position is out
- of range.
+You may use the method 
+\family typewriter
+getKey(int pos)
+\family default
+ to retrieve the key at the given position (
+\family typewriter
+pos
+\family default
+).
+ An 
+\family typewriter
+ArrayIndexOutOfBoundsException
+\family default
+ is thrown if the given position is out of range.
 \end_layout
 
 \begin_layout Itemize
-The method size() returns the number of keys in this hash table.
+The method 
+\family typewriter
+size()
+\family default
+ returns the number of keys in this hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use remove(int
- key).
+To remove a key and its corresponding value from this hash table, use 
+\family typewriter
+remove(int key)
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use clear().
+To clear this hash table, removing all its entries, use 
+\family typewriter
+clear()
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -21108,12 +22396,20 @@ Properties
 \begin_layout Standard
 Properties can be used to store properties pairs (key, value) using a hash
  table.
- Currently, the key must be a String and the value must be an instance of
- Properties.Value.
+ Currently, the key must be a string and the value must be an instance of
+ 
+\family typewriter
+Properties.Value
+\family default
+.
 \end_layout
 
 \begin_layout Standard
-The properties can be saved and loaded to/from a DataStream.
+The properties can be saved and loaded to/from a 
+\family typewriter
+DataStream
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -21123,7 +22419,11 @@ Properties has the following constructors:
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Properties() Default constructor, creates an empty Properties object.
+Properties() Default constructor, creates an empty 
+\family typewriter
+Properties
+\family default
+ object.
 \end_layout
 
 \begin_layout FieldList
@@ -21140,13 +22440,20 @@ Properties.Value[]
 \begin_inset space ~
 \end_inset
 
-values) Creates a Properties object, storing the given keys/values pairs.
+values) Creates a 
+\family typewriter
+Properties
+\family default
+ object, storing the given keys/values pairs.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-The following methods are provided to handle a Properties objects and its
- entries:
+The following methods are provided to handle a 
+\family typewriter
+Properties
+\family default
+ objects and its entries:
 \end_layout
 
 \begin_deeper
@@ -21164,7 +22471,11 @@ Properties.Value
 \begin_inset space ~
 \end_inset
 
-v) Maps the given value to the given key in this properties.
+v) Maps the given value to the given key in this 
+\family typewriter
+Properties
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -21173,7 +22484,11 @@ get(String
 \begin_inset space ~
 \end_inset
 
-key) Returns the value which the given key is mapped to in this properties.
+key) Returns the value which the given key is mapped to in this 
+\family typewriter
+Properties
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -21182,27 +22497,47 @@ remove(String
 \begin_inset space ~
 \end_inset
 
-key) Remove the value mapped to the given key from the property.
+key) Remove the value mapped to the given key from the 
+\family typewriter
+Properties
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of properties stored.
+size() Returns the number of 
+\family typewriter
+Properties
+\family default
+ stored.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getKeys() Returns a Vector with the current keys.
+getKeys() Returns a 
+\family typewriter
+Vector
+\family default
+ with the current keys.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-clear() Clears this properties.
+clear() Clears this 
+\family typewriter
+Properties
+\family default
+.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To load or save data directly from/to a DataStream:
+To load or save data directly from/to a 
+\family typewriter
+DataStream
+\family default
+:
 \end_layout
 
 \begin_deeper
@@ -21212,7 +22547,15 @@ load(DataStream
 \begin_inset space ~
 \end_inset
 
-ds) Load all properties from the given DataStream.
+ds) Load all 
+\family typewriter
+Properties
+\family default
+ from the given 
+\family typewriter
+DataStream
+\family default
+.
  
 \end_layout
 
@@ -21222,44 +22565,98 @@ save(DataStream
 \begin_inset space ~
 \end_inset
 
-ds) Save all properties in the given DataStream.
+ds) Save all 
+\family typewriter
+Properties
+\family default
+ in the given 
+\family typewriter
+DataStream
+\family default
+.
  
 \end_layout
 
 \end_deeper
 \begin_layout Standard
-To store a value in Properties, you must extend the abstract class Properties.Val
-ue and implement the method toString().
+To store a value in 
+\family typewriter
+Properties
+\family default
+, you must extend the abstract class 
+\family typewriter
+Properties.Value
+\family default
+ and implement the method 
+\family typewriter
+toString()
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
-The following classes are already implemented on the SDK:
+The following classes are already implemented in the SDK:
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring Properties.Boolean0
-Properties.Boolean Implements a value of type boolean.
+\begin_layout Enumerate
+
+\family typewriter
+Properties.Boolean
+\family default
+ Implements a value of type 
+\family typewriter
+boolean
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring Properties.Boolean0
-Properties.Double Implements a value of type double.
+\begin_layout Enumerate
+
+\family typewriter
+Properties.Double
+\family default
+ Implements a value of type 
+\family typewriter
+double
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring Properties.Boolean0
-Properties.Int Implements a value of type int.
+\begin_layout Enumerate
+
+\family typewriter
+Properties.Int
+\family default
+ Implements a value of type 
+\family typewriter
+int
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring Properties.Boolean0
-Properties.Long Implements a value of type long.
+\begin_layout Enumerate
+
+\family typewriter
+Properties.Long
+\family default
+ Implements a value of type 
+\family typewriter
+long
+\family default
+.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring Properties.Boolean0
-Properties.Str Implements a value of type String.
+\begin_layout Enumerate
+
+\family typewriter
+Properties.Str
+\family default
+ Implements a value of type 
+\family typewriter
+String
+\family default
+.
 \end_layout
 
 \end_deeper
@@ -21273,10 +22670,17 @@ This is a simple Linear Congruential Generator which produces random numbers
 \begin_inset Formula $\left[0,2^{31}\right)$
 \end_inset
 
-, derived from ran0 in Numerical Recipes.
- Note that ran0 isn't that great – there are much better generators out
- there -- but it is fast and has low memory consumption, and it will do
- the job.
+, derived from 
+\family typewriter
+ran0()
+\family default
+ in Numerical Recipes.
+ Note that 
+\family typewriter
+ran0()
+\family default
+ isn't that great – there are much better generators out there -- but it
+ is fast and has low memory consumption, and it will do the job.
 \end_layout
 
 \begin_layout Itemize
@@ -21286,8 +22690,11 @@ Random has the following constructors:
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Random() Default constructor, creates a Random instance using a seed based
- on the timestamp.
+Random() Default constructor, creates a 
+\family typewriter
+Random
+\family default
+ instance using a seed based on the timestamp.
 \end_layout
 
 \begin_layout FieldList
@@ -21296,7 +22703,11 @@ Random(int
 \begin_inset space ~
 \end_inset
 
-seed) Creates a Random object using the given seed.
+seed) Creates a 
+\family typewriter
+Random
+\family default
+ object using the given seed.
  The only reasonable seeds are between 0 and 231 inclusive.
  If a negative value is received, its absolute value will be used.
 \end_layout
@@ -21313,12 +22724,20 @@ nextInt(int
 \begin_inset space ~
 \end_inset
 
-n) Returns a random integer in the range [0,n).
+n) Returns a random integer in the range 
+\family typewriter
+[0, n)
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-nextDouble() Returns a random double in the half-open range [0,1).
+nextDouble() Returns a random double in the half-open range 
+\family typewriter
+[0, 1)
+\family default
+.
  
 \end_layout
 
@@ -21373,8 +22792,11 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-You should only use one instance of Random, otherwise you might not get
- good values.
+You should only use one instance of 
+\family typewriter
+Random
+\family default
+, otherwise you might not get good values.
  Creating a new instance using always the same seed will always result on
  the same sequence of numbers.
 \end_layout
@@ -21389,19 +22811,52 @@ Logger
 \end_layout
 
 \begin_layout Standard
-A Logger object is used to log messages for a specific system or application
- component.
+A 
+\family typewriter
+Logger
+\family default
+ object is used to log messages for a specific system or application component.
  Loggers are usually named using a hierarchical dot-separated namespace.
  Logger names can be arbitrary strings, but they should usually be based
- on the package name or class name of the logged component, such as totalcross.ne
-t or totalcross.io.
- In addition it is possible to retrieve one global "anonymous" Logger that
+ on the package name or class name of the logged component, such as 
+\family typewriter
+totalcross.net
+\family default
+ or 
+\family typewriter
+totalcross.io
+\family default
+.
+ In addition it is possible to retrieve one global "anonymous" logger that
  can be used in the whole system.
- A logger can be created or retrieved (if it already exists) by getLogger.
- To dispose a logger after using it, just call dispose and it will be permanentl
-y discarded.
- To log a message, you may call the log method or any of the other convenience
- methods (info, severe, entering, etc).
+ A logger can be created or retrieved (if it already exists) by 
+\family typewriter
+getLogger()
+\family default
+.
+ To dispose a logger after using it, just call 
+\family typewriter
+dispose()
+\family default
+ and it will be permanently discarded (it will be closed and it won't be
+ possible to use it anymore).
+ To log a message, you may call the 
+\family typewriter
+log()
+\family default
+ method or any of the other convenience methods (
+\family typewriter
+info()
+\family default
+, 
+\family typewriter
+severe()
+\family default
+, 
+\family typewriter
+entering()
+\family default
+, etc).
  
 \end_layout
 
@@ -21412,42 +22867,70 @@ First you must be familiar with the different message levels:
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring WARNING0
-CONFIG Message level for static configuration messages.
+
+\family typewriter
+CONFIG
+\family default
+ Message level for static configuration messages.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-INFO Message level for informational messages.
+
+\family typewriter
+INFO
+\family default
+ Message level for informational messages.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-FINE Message level providing tracing information.
+
+\family typewriter
+FINE
+\family default
+ Message level providing tracing information.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-FINER Indicates a fairly detailed tracing message.
+
+\family typewriter
+FINER
+\family default
+ Indicates a fairly detailed tracing message.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-FINEST Indicates a highly detailed tracing message.
+
+\family typewriter
+FINEST
+\family default
+ Indicates a highly detailed tracing message.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-WARNING Message level indicating a potential problem.
+
+\family typewriter
+WARNING
+\family default
+ Message level indicating a potential problem.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring WARNING0
-SEVERE Message level indicating a serious failure.
+
+\family typewriter
+SEVERE
+\family default
+ Message level indicating a serious failure.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-You may get or set the Logger default settings with these static methods:
+You may get or set the logger default settings with these static methods:
 \end_layout
 
 \begin_deeper
@@ -21483,25 +22966,37 @@ level) Sets the initial logger level to be used by new loggers.
 
 \end_deeper
 \begin_layout Itemize
-The Logger level may be one of the above message levels, or any composition
- of them ORed together.
+The logger level may be one of the above message levels, or any composition
+ of them 
+\family typewriter
+OR
+\family default
+ed together.
  You may also use one of the following constants:
 \end_layout
 
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-ALL Indicates that all messages should be logged.
+
+\family typewriter
+ALL
+\family default
+ Indicates that all messages should be logged.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-OFF Special level that can be used to turn off logging.
+
+\family typewriter
+OFF
+\family default
+ Special level that can be used to turn off logging.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-To get a Logger, you may use one of the following static methods:
+To get a logger, you may use one of the following static methods:
 \end_layout
 
 \begin_deeper
@@ -21566,7 +23061,11 @@ outputStream) Returns the logger with the given name, setting the level
 
 \begin_layout FieldList
 \labelwidthstring 0
-getGlobalLogger() Returns the global anonymous logger.
+getGlobalLogger() Returns the global anonymous logger (
+\family typewriter
+name == null
+\family default
+).
 \end_layout
 
 \end_deeper
@@ -21623,7 +23122,7 @@ addOutputHandler(Stream
 \end_inset
 
 output) Adds an output stream to this logger's output handler set.
- Does nothing if the given Stream was previously added to this logger.
+ Does nothing if the given stream was previously added to this logger.
 \end_layout
 
 \begin_layout FieldList
@@ -21655,8 +23154,11 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-You may use the static field DEBUG_CONSOLE, which is a stream to the TotalCross'
- debug file.
+You may use the static field 
+\family typewriter
+DEBUG_CONSOLE
+\family default
+, which is a stream to the TotalCross' debug file.
 \end_layout
 
 \end_inset
@@ -21693,7 +23195,11 @@ String
 \begin_inset space ~
 \end_inset
 
-params) Logs a FINER message reporting a method entry.
+params) Logs a 
+\family typewriter
+FINER
+\family default
+ message reporting a method entry.
 \end_layout
 
 \begin_layout FieldList
@@ -21710,7 +23216,11 @@ String
 \begin_inset space ~
 \end_inset
 
-sourceMethod) Logs a FINER message reporting a method return.
+sourceMethod) Logs a 
+\family typewriter
+FINER
+\family default
+ message reporting a method return.
 \end_layout
 
 \begin_layout FieldList
@@ -21735,7 +23245,11 @@ Throwable
 \begin_inset space ~
 \end_inset
 
-thrown) Logs a SEVERE message reporting an exception being thrown.
+thrown) Logs a 
+\family typewriter
+SEVERE
+\family default
+ message reporting an exception being thrown.
 \end_layout
 
 \end_deeper
@@ -21774,7 +23288,14 @@ prependInfo) Logs the given message, using the given level.
 \end_deeper
 \begin_layout Itemize
 Or one of the convenience methods, which are actually just calls to the
- method log using the given message, the appropriate level and the prependInfo
+ method 
+\family typewriter
+log()
+\family default
+ using the given message, the appropriate level and the 
+\family typewriter
+prependInfo
+\family default
  flag always on:
 \end_layout
 
@@ -21789,7 +23310,11 @@ config(String
 
 message)
 \family default
- Logs a CONFIG message.
+ Logs a 
+\family typewriter
+CONFIG
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21802,7 +23327,11 @@ info(String
 
 message)
 \family default
- Logs an INFO message.
+ Logs an 
+\family typewriter
+INFO
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21815,7 +23344,11 @@ fine(String
 
 message)
 \family default
- Logs a FINE message.
+ Logs a 
+\family typewriter
+FINE
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21828,7 +23361,11 @@ finer(String
 
 message)
 \family default
- Logs a FINER message.
+ Logs a 
+\family typewriter
+FINER
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21841,7 +23378,11 @@ finest(String
 
 message)
 \family default
- Logs a FINEST message.
+ Logs a 
+\family typewriter
+FINEST
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21854,7 +23395,11 @@ warning(String
 
 message)
 \family default
- Logs a WARNING message.
+ Logs a 
+\family typewriter
+WARNING
+\family default
+ message.
 \end_layout
 
 \begin_layout Labeling
@@ -21867,7 +23412,11 @@ severe(String
 
 message)
 \family default
- Logs a SEVERE message.
+ Logs a 
+\family typewriter
+SEVERE
+\family default
+ message.
 \end_layout
 
 \end_deeper
@@ -21885,8 +23434,19 @@ dispose(boolean
 
 closeOutputHandlers) Permanently discards this logger, removing it from
  the loggers registry.
- If closeOutputHandlers is true, all streams associated to this logger are
- closed.
+ If 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+closeOutputHandlers
+\family default
+ is 
+\family typewriter
+true
+\family default
+, all streams associated to this logger are closed.
 \end_layout
 
 \end_deeper
@@ -21906,8 +23466,12 @@ status open
 
 \begin_layout Plain Layout
 You shouldn't (and in fact you can't) dispose the global logger.
- Calling dispose for the global logger does not discards it, only adds an
- useless method call to your code.
+ Calling 
+\family typewriter
+dispose()
+\family default
+ for the global logger does not discards it, only adds an useless method
+ call to your code.
 \end_layout
 
 \end_inset
@@ -21921,22 +23485,40 @@ totalcross.sys
 
 \begin_layout Section
 Time
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Time"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The Time class stores a specific a date and time.
+The 
+\family typewriter
+Time
+\family default
+ class stores a specific a date and time.
  The year must have 4 digits and the hour is numbered in 24-hour notation,
  which is the international standard notation of time, and may also be referred
  as military time or astronomical time.
 \end_layout
 
 \begin_layout Standard
-For performance reasons, the Time fields have public access.
+For performance reasons, the 
+\family typewriter
+Time
+\family default
+ fields have public access.
  So you can directly access the field day to get or set its value, instead
  of calling a method.
- However, that makes the Time objects unsafe because the fields' values
- are not checked when they are set, and may not be within the field valid
- range.
+ However, that makes the 
+\family typewriter
+Time
+\family default
+ objects unsafe because the fields' values are not checked when they are
+ set, and may not be within the field valid range.
 \end_layout
 
 \begin_layout Standard
@@ -21948,61 +23530,107 @@ the Time fields' values are never validated by any method or constructor
 .
  So you must know and always respect the fields' range, and never set a
  field with a variable without first checking if the value is withing range
- (for instance, let the user type the hour in an Edit and simply convert
- it to int and set the hour field, without checking if its value is between
- 0 and 23).
+ (for instance, let the user type the hour in an edit and simply convert
+ it to 
+\family typewriter
+int
+\family default
+ and set the 
+\family typewriter
+hour
+\family default
+ field, without checking if its value is between 0 and 23).
 \end_layout
 
 \begin_layout Itemize
-The Time fields with their respective range:
+The 
+\family typewriter
+Time
+\family default
+ fields with their respective range:
 \end_layout
 
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-year The year in 4 digits.
+
+\family typewriter
+year
+\family default
+ The year in 4 digits.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-month The month in the range of 1 to 12.
+
+\family typewriter
+month
+\family default
+ The month in the range of 1 to 12.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-day The day in the range of 1 to the last day of the specified month.
+
+\family typewriter
+day
+\family default
+ The day in the range of 1 to the last day of the specified month.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-hour The hour in the range of 0 to 23.
+
+\family typewriter
+hour
+\family default
+ The hour in the range of 0 to 23.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-minute The minute in the range of 0 to 59.
+
+\family typewriter
+minute
+\family default
+ The minute in the range of 0 to 59.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-second The second in the range of 0 to 59.
+
+\family typewriter
+second
+\family default
+ The second in the range of 0 to 59.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-millis Milliseconds in the range of 0 to 999.
+
+\family typewriter
+millis
+\family default
+ Milliseconds in the range of 0 to 999.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-Time has four constructors:
+
+\family typewriter
+Time
+\family default
+ has four constructors:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Time() Default constructor, creates a time object set with the device's
- current date and time.
+Time() Default constructor, creates a 
+\family typewriter
+Time
+\family default
+ object set with the device's current date and time.
 \end_layout
 
 \begin_deeper
@@ -22021,8 +23649,12 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-WindowsCE does not keep track of milliseconds, therefore, the field millis
- of the new object will always have the default value 0 on WindowsCE devices.
+Most devices do not keep track of the milliseconds, therefore, the field
+ 
+\family typewriter
+millis
+\family default
+ of the new object will always have the default value 0 on them.
 \end_layout
 
 \end_inset
@@ -22085,7 +23717,11 @@ int
 \begin_inset space ~
 \end_inset
 
-millis) Creates a time object with the given values.
+millis) Creates a 
+\family typewriter
+Time
+\family default
+ object with the given values.
 \end_layout
 
 \begin_layout FieldList
@@ -22094,8 +23730,15 @@ Time(long
 \begin_inset space ~
 \end_inset
 
-t) Creates a time object from the given value, which must be in the format
- YYYYMMDDHHMMSS.
+t) Creates a 
+\family typewriter
+Time
+\family default
+ object from the given value, which must be in the format 
+\family typewriter
+YYYYMMDDHHMMSS
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22104,8 +23747,15 @@ Time(String
 \begin_inset space ~
 \end_inset
 
-iso8601) Creates a time object using the given string, which must be in
- the ISO8601 format: YYYYMMDDTHH:MM:SS.
+iso8601) Creates a 
+\family typewriter
+Time
+\family default
+ object using the given string, which must be in the ISO8601 format: 
+\family typewriter
+YYYYMMDDTHH:MM:SS
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -22124,8 +23774,12 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Please notice the last two constructors do not include milliseconds, so
- the field millis will keep its default value 0.
+Please notice the last two constructors do not include the milliseconds,
+ so the field 
+\family typewriter
+millis
+\family default
+ will keep its default value 0.
 \end_layout
 
 \end_inset
@@ -22149,11 +23803,17 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Remember: no kind of validation is done on the Time fields values, not even
- on the constructors.
+Remember: no kind of validation is done on the 
+\family typewriter
+Time
+\family default
+ fields values, not even on the constructors.
  However, the default constructor will never initialize an object with invalid
- values, and the last constructor may throw an InvalidNumberException if
- it fails to parse the given string.
+ values, and the last constructor may throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if it fails to parse the given string.
 \end_layout
 
 \end_inset
@@ -22168,30 +23828,66 @@ equals(Object
 \begin_inset space ~
 \end_inset
 
-o) Compares two Time objects for equality.
- The result is true if and only if the argument is not null and its a Time
- object that represents the same point in time, to the millisecond, as this
- object.
+o) Compares two 
+\family typewriter
+Time
+\family default
+ objects for equality.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and its a 
+\family typewriter
+Time
+\family default
+ object that represents the same point in time, from year to millisecond,
+ as this object.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getTimeLong() Converts this time object to a long value in the format YYYYMMDDHH
-MMSS.
+getTimeLong() Converts this 
+\family typewriter
+Time
+\family default
+ object to a long value in the format 
+\family typewriter
+YYYYMMDDHHMMSS.
+
+\family default
  Milliseconds is not included.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-toIso8601() Converts this time object to a string in the ISO8601 format:
- YYYYMMDDTHH:MM:SS.
+toIso8601() Converts this 
+\family typewriter
+Time
+\family default
+ object to a string in the ISO8601 format: 
+\family typewriter
+YYYYMMDDTHH:MM:SS
+\family default
+.
  Milliseconds is not included.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-toString() Converts this time object to a string using the date format specified
- in Settings.dateFormat.
+toString() Converts this 
+\family typewriter
+Time
+\family default
+ object to a string using the date format specified in 
+\family typewriter
+Settings.dateFormat
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -22202,16 +23898,37 @@ CharacterConvert
 This class is used to correctly handle international character conversions.
  The default character scheme converter is the 8859-1 (ISO Latin 1).
  If you want to use a different one, you must extend this class, implementing
- the bytes2chars and chars2bytes methods, and then assign the public member
- of Convert.charConverter to use your class instead of this default one.
- You can also use the method Convert.setDefaultConverter to change it, passing,
- as parameter, the prefix of your CharacterConverter class (better look
- at the implementation to know what to pass on).
+ the 
+\family typewriter
+bytes2chars()
+\family default
+ and 
+\family typewriter
+chars2bytes()
+\family default
+ methods, and then assign the public member of 
+\family typewriter
+Convert.charConverter
+\family default
+ to use your class instead of this default one.
+ You can also use the method 
+\family typewriter
+Convert.setDefaultConverter()
+\family default
+ to change it, passing, as parameter, the prefix of your 
+\family typewriter
+CharacterConverter
+\family default
+ class (better look at the implementation to know what to pass on).
 \end_layout
 
 \begin_layout Standard
-To find out which sun.io.CharacterEncoder you're using on JDK to implement
- an equivalent version for TotalCross, use:
+To find out which 
+\family typewriter
+sun.io.CharacterEncoder
+\family default
+ you're using on JDK to implement an equivalent version for TotalCross,
+ use:
 \end_layout
 
 \begin_layout Standard
@@ -22234,8 +23951,11 @@ UTF8CharacterConvert
 \end_layout
 
 \begin_layout Standard
-This class extends the CharacterConvert class, and implements the UTF8 byte
- to UCS-2 character conversion.
+This class extends the 
+\family typewriter
+CharacterConvert
+\family default
+ class, and implements the UTF8 byte to UCS-2 character conversion.
  To use this class, you can call:
 \end_layout
 
@@ -22259,13 +23979,17 @@ Convert
 \end_layout
 
 \begin_layout Standard
-Convert basically provides methods that allows object and basic type conversion.
+
+\family typewriter
+Convert
+\family default
+ basically provides methods that allows object and basic type conversion.
  Furthermore, it also provides handy methods for common operations that
  should be used for a better performance.
 \end_layout
 
 \begin_layout Standard
-This class if final and cannot be instantiated – its methods and fields
+This class is final and cannot be instantiated – its methods and fields
  are static.
 \end_layout
 
@@ -22275,19 +23999,29 @@ To give you a better view of this class, its documentation was split into
 \end_layout
 
 \begin_layout Subsection
-Changing the default Character Converter
+Changing the default character converter
 \end_layout
 
 \begin_layout Standard
-The field charConverter keeps a reference to a Character Converter that
- will be used by default.
- You may change it by setting another Character Converter of your choice.
+The field 
+\family typewriter
+charConverter
+\family default
+ keeps a reference to a character converter that will be used by default.
+ You may change it by setting another character converter of your choice.
 \end_layout
 
 \begin_layout Standard
-You may also use the method setDefaultConverter(String name), which searches
- for a Character Converter by its name, and makes it the default by changing
- the charConverter field.
+You may also use the method 
+\family typewriter
+setDefaultConverter(String name)
+\family default
+, which searches for a character converter by its name, and makes it the
+ default by changing the 
+\family typewriter
+charConverter
+\family default
+ field.
 \end_layout
 
 \begin_layout Subsection
@@ -22300,7 +24034,11 @@ toDouble(String
 \begin_inset space ~
 \end_inset
 
-s) Converts the given String to double.
+s) Converts the given string to 
+\family typewriter
+double
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22309,7 +24047,11 @@ toInt(String
 \begin_inset space ~
 \end_inset
 
-s) Converts the given String to int.
+s) Converts the given string to 
+\family typewriter
+int
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22318,7 +24060,11 @@ toLong(String
 \begin_inset space ~
 \end_inset
 
-s) Converts the given String to long.
+s) Converts the given string to 
+\family typewriter
+long
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22335,8 +24081,11 @@ int
 \begin_inset space ~
 \end_inset
 
-radix) Converts the given String to long in the given radix, which must
- be between 2 and 16.
+radix) Converts the given string to 
+\family typewriter
+long
+\family default
+ in the given radix, which must be between 2 and 16.
 \end_layout
 
 \begin_layout FieldList
@@ -22345,7 +24094,7 @@ toString(boolean
 \begin_inset space ~
 \end_inset
 
-b) Converts the given boolean to a String.
+b) Converts the given boolean to a string.
 \end_layout
 
 \begin_layout FieldList
@@ -22354,7 +24103,11 @@ toString(char
 \begin_inset space ~
 \end_inset
 
-c) Converts the given char to a String.
+c) Converts the given 
+\family typewriter
+char
+\family default
+ to a string.
 \end_layout
 
 \begin_layout FieldList
@@ -22363,7 +24116,11 @@ toString(double
 \begin_inset space ~
 \end_inset
 
-d) Converts the given double to a String, formatted in scientific notation.
+d) Converts the given 
+\family typewriter
+double
+\family default
+ to a string, formatted in scientific notation.
 \end_layout
 
 \begin_layout FieldList
@@ -22380,8 +24137,11 @@ int
 \begin_inset space ~
 \end_inset
 
-decimalCount) Converts the given double to a String, formatted with the
- given number of decimal places.
+decimalCount) Converts the given 
+\family typewriter
+double
+\family default
+ to a string, formatted with the given number of decimal places.
 \end_layout
 
 \begin_layout FieldList
@@ -22390,7 +24150,11 @@ toString(int
 \begin_inset space ~
 \end_inset
 
-i) Converts the given int to a String.
+i) Converts the given 
+\family typewriter
+int
+\family default
+ to a string.
 \end_layout
 
 \begin_layout FieldList
@@ -22399,7 +24163,11 @@ toString(long
 \begin_inset space ~
 \end_inset
 
-l) Converts the given long to a String using base 10.
+l) Converts the given 
+\family typewriter
+long
+\family default
+ to a string using base 10.
 \end_layout
 
 \begin_layout FieldList
@@ -22416,8 +24184,11 @@ int
 \begin_inset space ~
 \end_inset
 
-radix) Converts the given long to a String in the given radix, which must
- be between 2 and 16.
+radix) Converts the given 
+\family typewriter
+long
+\family default
+ to a string in the given radix, which must be between 2 and 16.
 \end_layout
 
 \begin_layout FieldList
@@ -22434,7 +24205,15 @@ int
 \begin_inset space ~
 \end_inset
 
-n) Formats the given String as a double, rounding with n decimal places.
+n) Formats the given string as a 
+\family typewriter
+double
+\family default
+, rounding with 
+\family typewriter
+n
+\family default
+ decimal places.
 \end_layout
 
 \begin_layout FieldList
@@ -22492,8 +24271,11 @@ int
 \begin_inset space ~
 \end_inset
 
-radix) Returns the value of digit stored as char in the specified radix,
- which must be between 2 and 16.
+radix) Returns the value of the digit stored as 
+\family typewriter
+char
+\family default
+ in the specified radix, which must be between 2 and 16.
  This method only handles the standard ASCII table.
 \end_layout
 
@@ -22511,7 +24293,15 @@ int
 \begin_inset space ~
 \end_inset
 
-count) Returns a String filled with the given char and size equals to count.
+count) Returns a string filled with the given 
+\family typewriter
+char
+\family default
+ and size equals to 
+\family typewriter
+count
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22555,9 +24345,13 @@ width,boolean
 \end_inset
 
 doWordWrap) Finds the best position to break the line with the given width,
- respecting word-wrap option and line ends ('
+ respecting word-wrap option and line endings (
+\family typewriter
+
 \backslash
-n').
+n
+\family default
+).
 \end_layout
 
 \begin_layout FieldList
@@ -22566,7 +24360,11 @@ hashCode(StringBuffer
 \begin_inset space ~
 \end_inset
 
-sb) Returns the hash code of the String stored by this StringBuffer.
+sb) Returns the hash code of the string stored by this 
+\family typewriter
+StringBuffer
+\family default
+.
 \end_layout
 
 \begin_deeper
@@ -22585,9 +24383,20 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The class StringBuffer does not have a method that returns its hash code,
- so you would have to first create a String from the StringBuffer to get
- its hash code, like this:
+The class 
+\family typewriter
+StringBuffer
+\family default
+ does not have a method that returns its hash code, so you would have to
+ first create a 
+\family typewriter
+String
+\family default
+ from the 
+\family typewriter
+StringBuffer
+\family default
+ to get its hash code, like this:
 \end_layout
 
 \begin_layout Plain Layout
@@ -22597,9 +24406,19 @@ int hashCode = sb.toString.hashCode();
 \end_layout
 
 \begin_layout Plain Layout
-On device, Convert.hashCode calculates the StringBuffer's hash code directly,
- without using an intermediary String object.
- Resulting in better performance and memory usage.
+
+\family typewriter
+Convert.hashCode()
+\family default
+ calculates the
+\family typewriter
+ StringBuffer
+\family default
+'s hash code directly, without using an intermediary 
+\family typewriter
+String
+\family default
+ object, resulting in better performance and memory usage.
 \end_layout
 
 \end_inset
@@ -22630,7 +24449,15 @@ char
 \begin_inset space ~
 \end_inset
 
-c) Inserts the given char at the specified position in the StringBuffer.
+c) Inserts the given 
+\family typewriter
+char
+\family default
+ at the specified position in the 
+\family typewriter
+StringBuffer
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22655,8 +24482,16 @@ String
 \begin_inset space ~
 \end_inset
 
-text) Returns a new String which is a copy of the given text with line breaks,
- placed based on the maxWidth and fm arguments.
+text) Returns a new string which is a copy of the given text with line breaks,
+ placed based on the 
+\family typewriter
+maxWidth
+\family default
+ and 
+\family typewriter
+fm
+\family default
+ arguments.
 \end_layout
 
 \begin_deeper
@@ -22676,8 +24511,8 @@ status open
 
 \begin_layout Plain Layout
 Very useful method to help you keep your application's interface cross-platform.
- It can be used to insert line breaks on Strings passed to MessageBox or
- ListBox.
+ It can be used to insert line breaks on strings passed to message boxes
+ or list boxes.
 \end_layout
 
 \end_inset
@@ -22700,8 +24535,11 @@ char
 \begin_inset space ~
 \end_inset
 
-c) Returns the number of occurrences of the specified char in the given
- String.
+c) Returns the number of occurrences of the specified 
+\family typewriter
+char
+\family default
+ in the given string.
 \end_layout
 
 \begin_layout FieldList
@@ -22726,8 +24564,15 @@ String
 \begin_inset space ~
 \end_inset
 
-to) Searches the String source for occurrences of the String from, replacing
- them by the String to.
+to) Searches the string source for occurrences of the string 
+\family typewriter
+from
+\family default
+, replacing them by the string 
+\family typewriter
+to
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -22744,8 +24589,8 @@ char
 \begin_inset space ~
 \end_inset
 
-delim) Tokenizes the given String using the given char as separator.
- The return is a String array with size equal to the number of tokens.
+delim) Tokenizes the given string using the given char as separator.
+ The return is a string array with size equal to the number of tokens.
 \end_layout
 
 \begin_layout FieldList
@@ -22762,7 +24607,15 @@ String
 \begin_inset space ~
 \end_inset
 
-delim) Same as the above, but uses a String instead of a char as separator.
+delim) Same as the above, but uses a 
+\family typewriter
+String
+\family default
+ instead of a 
+\family typewriter
+char
+\family default
+ as separator.
 \end_layout
 
 \begin_deeper
@@ -22783,7 +24636,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Never use this method with 1 character length Strings, like:
+Never use this method with 1 character length strings, like:
 \end_layout
 
 \begin_layout Plain Layout
@@ -22822,7 +24675,11 @@ toLowerCase(char
 \begin_inset space ~
 \end_inset
 
-c) Converts the given char to lower case.
+c) Converts the given 
+\family typewriter
+char
+\family default
+ to lower case.
 \end_layout
 
 \begin_layout FieldList
@@ -22831,7 +24688,11 @@ toUpperCase(char
 \begin_inset space ~
 \end_inset
 
-c) Converts the given char to upper case.
+c) Converts the given 
+\family typewriter
+char
+\family default
+ to upper case.
 \end_layout
 
 \begin_layout FieldList
@@ -22848,7 +24709,7 @@ int
 \begin_inset space ~
 \end_inset
 
-size) Pads the String, adding zeros at left.
+size) Pads the string, adding zeros at left.
 \end_layout
 
 \begin_layout FieldList
@@ -22857,7 +24718,7 @@ zeroUnpad(String
 \begin_inset space ~
 \end_inset
 
-s) Removes left zeros of the String.
+s) Removes left zeros of the string.
 \end_layout
 
 \begin_layout Subsection
@@ -22870,7 +24731,7 @@ cloneStringArray(String[]
 \begin_inset space ~
 \end_inset
 
-strs) Returns a copy of the given String array.
+strs) Returns a copy of the given string array.
 \end_layout
 
 \begin_layout FieldList
@@ -22879,8 +24740,11 @@ toStringArray(Object[]
 \begin_inset space ~
 \end_inset
 
-objs) Converts the given Object array into a String array, by calling toString
- for each Object.
+objs) Converts the given object array into a string array, by calling 
+\family typewriter
+toString()
+\family default
+ for each object.
 \end_layout
 
 \begin_layout FieldList
@@ -22894,7 +24758,7 @@ item) Returns the sort type for the given item sample (which is usually
 \end_layout
 
 \begin_layout Standard
-Convert provides the Quick Sort algorithm for array sorting.
+Convert provides the quick sort algorithm for array sorting.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -22903,46 +24767,108 @@ Constants
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_AUTODETECT Chooses between one of the sort types below based on the
- first element of the array.
+
+\family typewriter
+SORT_AUTODETECT
+\family default
+ Chooses between one of the sort types below based on the first element
+ of the array.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_OBJECT The objects are compared by their String representation.
+
+\family typewriter
+SORT_OBJECT
+\family default
+ The objects are compared by their string representation.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_STRING The array contains String objects, and the sort is case sensitive.
+
+\family typewriter
+SORT_STRING
+\family default
+ The array contains 
+\family typewriter
+String
+\family default
+ objects, and the sort is case sensitive.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_INT The array contains String objects that represents integer values.
+
+\family typewriter
+SORT_INT
+\family default
+ The array contains 
+\family typewriter
+String
+\family default
+ objects that represents integer values.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_DOUBLE The array contains String objects that represents double values.
+
+\family typewriter
+SORT_DOUBLE
+\family default
+ The array contains 
+\family typewriter
+String
+\family default
+ objects that represents double values.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_DATE The array contains String objects that represents a Date object
- with day, month and year.
+
+\family typewriter
+SORT_DATE
+\family default
+ The array contains 
+\family typewriter
+String
+\family default
+ objects that represents a 
+\family typewriter
+Date
+\family default
+ object with day, month and year.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_COMPARABLE The array contain Comparable objects (objects that implements
- the Comparable interface).
+
+\family typewriter
+SORT_COMPARABLE
+\family default
+ The array contain comparable objects (objects that implements the 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Comparable
+\family default
+ interface).
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring SORT.STRING.NOCASE00
-SORT_STRING_NOCASE The array contains String objects, and the sort is case
- insensitive, which is slower than case sensitive sorting.
+
+\family typewriter
+SORT_STRING_NOCASE
+\family default
+ The array contains 
+\family typewriter
+String
+\family default
+ objects, and the sort is case insensitive, which is slower than case sensitive
+ sorting.
 \end_layout
 
 \begin_layout Subsubsection*
@@ -22971,8 +24897,12 @@ int
 \begin_inset space ~
 \end_inset
 
-last) Applies the Quick Sort algorithm to the elements of the given array,
- sorting in ascending order and sort type equals to SORT_AUTODETECT.
+last) Applies the quick sort algorithm to the elements of the given array,
+ sorting in ascending order and sort type equals to 
+\family typewriter
+SORT_AUTODETECT
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -23060,7 +24990,11 @@ chars2int(String
 \begin_inset space ~
 \end_inset
 
-fourChars) Converts a creator id or type to int.
+fourChars) Converts a creator id or type to 
+\family typewriter
+int
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -23069,7 +25003,11 @@ int2chars(int
 \begin_inset space ~
 \end_inset
 
-i) Converts an int to a creator id or type.
+i) Converts an 
+\family typewriter
+int
+\family default
+ to a creator id or type.
 \end_layout
 
 \begin_layout FieldList
@@ -23079,7 +25017,11 @@ doubleToIntBits(double
 \end_inset
 
 f) Converts the given double to its bit representation in IEEE 754 format,
- using 4 bytes instead of 8 (a conversion to float is applied).
+ using 4 bytes instead of 8 (a conversion to 
+\family typewriter
+float
+\family default
+ is applied).
 \end_layout
 
 \begin_layout FieldList
@@ -23088,7 +25030,15 @@ intBitsToDouble(int
 \begin_inset space ~
 \end_inset
 
-i) Converts the given IEEE 754 bit representation of a float to a double.
+i) Converts the given IEEE 754 bit representation of a 
+\family typewriter
+float
+\family default
+ to a 
+\family typewriter
+double
+\family default
+.
  
 \end_layout
 
@@ -23109,7 +25059,11 @@ longBitsToDouble(long
 \begin_inset space ~
 \end_inset
 
-bits) Converts the given bit representation to a double.
+bits) Converts the given bit representation to a 
+\family typewriter
+double
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -23134,10 +25088,33 @@ int
 \begin_inset space ~
 \end_inset
 
-bits) Does a rol of n bits in the given long.
- n must be < bits.
- Unlike the shift left operator (<<), bits that would have been lost are
- reinserted in order at the right.
+bits) Does a 
+\family typewriter
+rol
+\family default
+ of 
+\family typewriter
+n
+\family default
+ bits in the given 
+\family typewriter
+long
+\family default
+.
+ 
+\family typewriter
+n
+\family default
+ must be 
+\family typewriter
+< bits
+\family default
+.
+ Unlike the shift left operator (
+\family typewriter
+<<
+\family default
+), bits that would have been lost are reinserted in order at the right.
 \end_layout
 
 \begin_layout FieldList
@@ -23162,10 +25139,33 @@ int
 \begin_inset space ~
 \end_inset
 
-bits) Does a ror of n bits in the given long.
- n must be < bits.
- Unlike the shift right operator (>>), bits that would have been lost are
- reinserted in order at the left.
+bits) Does a 
+\family typewriter
+ror
+\family default
+ of 
+\family typewriter
+n
+\family default
+ bits in the given 
+\family typewriter
+long
+\family default
+.
+ 
+\family typewriter
+n
+\family default
+ must be 
+\family typewriter
+< bits
+\family default
+.
+ Unlike the shift right operator (
+\family typewriter
+>>
+\family default
+), bits that would have been lost are reinserted in order at the left.
 \end_layout
 
 \begin_layout Part
@@ -23177,53 +25177,107 @@ Overview
 \end_layout
 
 \begin_layout Standard
-The purpose of this part is to teach you how to use the classes in the totalcros
-s.io package.
+The purpose of this part is to teach you how to use the classes in the 
+\family typewriter
+totalcross.io
+\family default
+ package.
  The classes that will be covered in this tutorial are outlined below:
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.device.PortConnector: used to send and receive bytes via Serial
- cradle, USB, IrComm and Bluetooth.
+
+\family typewriter
+totalcross.io.device.PortConnector
+\family default
+: used to send and receive bytes via Serial Cradle, USB, IrComm, and Bluetooth.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.net.Socket: used to send and receive bytes via a TCP/IP connection.
+
+\family typewriter
+totalcross.net.Socket
+\family default
+: used to send and receive bytes via a TCP/IP connection.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.File: used to create files and manage directories.
+
+\family typewriter
+totalcross.io.File
+\family default
+: used to create files and manage directories.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.PDBFile: used to store data on the handheld
+
+\family typewriter
+totalcross.io.PDBFile
+\family default
+: used to store data on the handheld, specially on Palm OS.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.ByteArrayStream: a resizable buffer that can be used to feed
- data to a stream or to store data coming from a stream.
+
+\family typewriter
+totalcross.io.ByteArrayStream
+\family default
+: a resizable buffer that can be used to feed data to a stream or to store
+ data coming from a stream.
  It can be used to emulate a virtual stream.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.DataStream (and DataStreamLE): used to read/write primitive
- types and Strings in Big Endian (default) or Little Endian format.
+
+\family typewriter
+totalcross.io.DataStream
+\family default
+ (and 
+\family typewriter
+DataStreamLE
+\family default
+): used to read/write primitive types and strings in Big Endian (default)
+ or Little Endian format.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.ResizeRecord: used when creating a PDBFile record of unknown
- size.
- When output to the record is complete, the ResizeRecord shrinks the record
- to the optimal size.
+
+\family typewriter
+totalcross.io.ResizeRecord
+\family default
+: used when creating a 
+\family typewriter
+PDBFile
+\family default
+ record of unknown size.
+ When output to the record is complete, the 
+\family typewriter
+ResizeRecord
+\family default
+ shrinks the record to the optimal size.
 \end_layout
 
 \begin_layout Enumerate
-totalcross.io.Stream: is the main Class of all classes inside the totalcross.io
+
+\family typewriter
+totalcross.io.Stream
+\family default
+: is the main class of all classes inside the 
+\family typewriter
+totalcross.io
+\family default
  package.
  It can be viewed as a generic stream where data can flow in and out of
  the device.
- All classes inside package totalcross.io extend this Class, and most classes
- receive a totalcross.io.Stream in their constructor parameter.
+ All classes inside package 
+\family typewriter
+totalcross.io
+\family default
+ extend this class, and most classes receive a 
+\family typewriter
+totalcross.io.Stream
+\family default
+ in their constructor parameter.
  This allows you to combine different streams to meet your needs.
 \end_layout
 
