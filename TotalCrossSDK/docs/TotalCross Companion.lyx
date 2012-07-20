@@ -2941,6 +2941,7 @@ to
 <path>
 \family default
 : sets where the PDB and media files are stored.
+ This is also the default path for Litebase table files.
 \end_layout
 
 \begin_layout Itemize
@@ -2981,8 +2982,8 @@ tc.samples.ui.gadgets.UIGadgets
 \begin_layout Standard
 When running the application, the emulator shows some function keys that
  can be used to emulate a device key.
- For example, F9 tests the screen rotation using the launcher and F11 opens
- the keyboard (or calendar) in an 
+ For example, F6 opens the application menu, F9 tests the screen rotation
+ using the launcher and F11 opens the keyboard (or calendar) in an 
 \family typewriter
 Edit
 \family default
@@ -16716,182 +16717,1345 @@ name "chap:Advanced-Controls"
 \begin_layout Standard
 Here a list of advanced controls which are not described in the other chapter
  is found.
- For more details, please check the JavaDocs for now.
- In the future this chapter will be filled with more detail.
+ For more details, please check the JavaDocs.
 \end_layout
 
 \begin_layout Itemize
+
+\family typewriter
 Tree
 \end_layout
 
-\begin_layout Itemize
-AlignedLabelsContainer 
+\begin_deeper
+\begin_layout Standard
+This class is a simple implementation of a tree widget.
+ Since it's natural to render the tree in rows, this class borrows most
+ of the code from 
+\family typewriter
+ListBox
+\family default
+.
+ Features: 
 \end_layout
 
 \begin_layout Itemize
-ArrowButton 
+Similar to Microsoft Windows Explorer tree.
+ 
 \end_layout
 
 \begin_layout Itemize
+Horizontal and vertical scrolling.
+ 
+\end_layout
+
+\begin_layout Itemize
+Allows setting of folder and leaf icons.
+ 
+\end_layout
+
+\begin_layout Itemize
+Expands and collapses of folder.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+allowsChildren
+\family default
+ flag to determine if the node is a leaf or folder.
+ 
+\end_layout
+
+\begin_layout Itemize
+Delete, insert, and modify (user object) of a node.
+ 
+\end_layout
+
+\begin_layout Itemize
+Clicking on leaf node will swap leaf icon (like hyperlink).
+ 
+\end_layout
+
+\begin_layout Itemize
+Allows the creation of tree to show or hide root node.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+AlignedLabelsContainer
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This class is a 
+\family typewriter
+Container
+\family default
+ used to align all controls to the maximum width of a set of labels.
+ You can define the label alignment.
+ The controls that you add to this container are placed at the right of
+ the labels.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ArrowButton
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A class used to display a button with an arrow inside.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 Bar 
 \end_layout
 
-\begin_layout Itemize
-ButtonMenu 
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+Bar
+\family default
+ is a class that provides a title area and a button area (at right).
+ The title and the button are optional, although it doesn't make sense to
+ have a bar without title and buttons.
+ You can add or remove buttons, and change the title text; the title text
+ can have an icon at left.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-ClippedContainer 
+
+\family typewriter
+ButtonMenu
+\family default
+ 
 \end_layout
 
-\begin_layout Itemize
-ColorList 
+\begin_deeper
+\begin_layout Standard
+This class adds a multi-button menu that can be scrolled horizontally (single-ro
+w) or vertically (multiple-rows), using a scrollbar or flicking.
+ The buttons can have almost all properties present in the 
+\family typewriter
+Button
+\family default
+ class and some others.
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-ComboBoxEditable 
+
+\family typewriter
+ColorList
 \end_layout
 
-\begin_layout Itemize
-FlowContainer 
+\begin_deeper
+\begin_layout Standard
+Implements a list box where colors can be choosen from.
+ The only functional methods are 
+\family typewriter
+setColors()
+\family default
+, 
+\family typewriter
+getSelectedItem()
+\family default
+ and 
+\family typewriter
+getSelectedColor()
+\family default
+.
+ Consider using 
+\family typewriter
+ColorChooserBox
+\family default
+ instead.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-ImageControl 
+
+\family typewriter
+ComboBoxEditable
+\family default
+ 
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+This control is usually used as an edit that holds old typed values.
+ When the user types a word, it is automatically selected in the combo box.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
+
+\family typewriter
+FlowContainer
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This class is a container that will place controls one after the other and,
+ once the width has been reached, it wraps to the next line.
+ All controls must be added before calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ When calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+ for this control, the height must be 
+\family typewriter
+PREFERRED
+\family default
+ (with adjustments, if needed).
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ImageControl
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A control that can show an image bigger than its area and that can be dragged
+ using a pen to show the hidden parts.
+ Note that, by default, events (and dragging) are disabled.
+ You must call 
+\family typewriter
+setEventsEnabled()
+\family default
+ to allow dragging.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 ImageList 
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+Implements a list box where the items are images.
+ If you don't add at least one image before calling 
+\family typewriter
+add()
+\family default
+/
+\family typewriter
+setRect()
+\family default
+, you must compute the preferred size yourself.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
+
+\family typewriter
 Keypad 
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+This class is used to handle letters and numbers input on devices with only
+ a keypad (
+\family typewriter
+Settings .keypadOnly = true
+\family default
+).
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-ListContainer 
+
+\family typewriter
+ListContainer
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+ListContainer
+\family default
+ is a 
+\family typewriter
+ListBox
+\family default
+ where each item is a 
+\family typewriter
+Container
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The correct way to create a 
+\family typewriter
+ListContainer
+\family default
+ item is by subclassing a 
+\family typewriter
+Container
+\family default
+ and adding the controls in the 
+\family typewriter
+initUI()
+\family default
+ method.
+ Adding directly using 
+\family typewriter
+getContainer().
+ add()
+\family default
+ will not work.
+\end_layout
+
+\begin_layout Standard
+When an item is selected, a 
+\family typewriter
+PRESSED
+\family default
+ event is dispatched.
+ The list container supports navigation using the keys up/down, page-up/down,
+ and enter.
+ The left and right keys acts like clicking in the left or right buttons
+ (if any).
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+MenuBar
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Constructs a menu with the given items.
+ The menu supports disabled and checked items.
+ A menu can be opened by the user in a couple of ways: 
 \end_layout
 
 \begin_layout Itemize
-MenuBar 
+By clickingon the menu button on Palm OS devices.
 \end_layout
 
 \begin_layout Itemize
-MenuBarDropDown 
+By clicking on the title of a Window.
+ 
 \end_layout
 
 \begin_layout Itemize
-MultiListBox 
+By holding during 1 second the middle button of the 5-way navigation buttons.
+\end_layout
+
+\begin_layout Standard
+The menu can be closed by a click on a valid item or clicking outside of
+ its bounds.
+ A 
+\family typewriter
+PRESSED
+\family default
+ event will be thrown when the menu is closed and a menu item was selected.
+ To discover which item was selected, see the method 
+\family typewriter
+getSelectedIndex()
+\family default
+, which returns -1 if none, or the matrix index otherwise.
+ Note that the separator dotted line doesn't generate events and can't be
+ selected.
+ 
+\end_layout
+
+\begin_layout Standard
+Note that, after changing the 
+\family typewriter
+isChecked
+\family default
+ and 
+\family typewriter
+isEnabled
+\family default
+ states, there's no need to call 
+\family typewriter
+repaint()
+\family default
+, bacause they will show up only the next time the menu bar opens.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+MenuBarDropDown
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Constructs a 
+\family typewriter
+MenuBarDropDown
+\family default
+ with the given items.
+ This class is used in conjunction with the 
+\family typewriter
+MenuBar
+\family default
+.
+ However, you can also use it to create a stand alone "right click" menu.
+ The menu items must fit on the screen.
+ No clipping is applied.
+ Also, the font and colors can be changed if desired.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+MultiListBox
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+MultiListBox
+\family default
+ is a 
+\family typewriter
+ListBox
+\family default
+ that allows more than one item to be selected.
+ The maximum number of selections can be defined using 
+\family typewriter
+setMaxSelections
+\family default
+.
+ Be sure to save a reference to the 
+\family typewriter
+MultiListBox
+\family default
+ so you can call the specific methods of this class.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+getSelectedIndex()
+\family default
+ returns just the last selected index; to retrieve all indexes, use 
+\family typewriter
+getSelectedIndexes()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In penless devices, there will be a cursor which will be used to highlight
+ an item; to select or unselect it, you must press the left key.
+ 
+\family typewriter
+MultiListBox
+\family default
+ requires the 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+useFullWidthOnSelection
+\family default
+ on penless devices.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+PagePosition
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+PagePosition
+\family default
+ implements the empty and filled balls that indicates the current page in
+ a set of pages, very common on Android and iPhone.
+ It has three properties: 
 \end_layout
 
 \begin_layout Itemize
-PagePosition 
+
+\family typewriter
+visibleCount
+\family default
+: the number of visible balls 
 \end_layout
 
 \begin_layout Itemize
-PopupMenu 
+
+\family typewriter
+count
+\family default
+: the number of balls that will be displayed.
+ Can be less, equal or greater than visible count.
+ 
 \end_layout
 
 \begin_layout Itemize
-ProgressBar 
+
+\family typewriter
+position
+\family default
+: the current position of the filled ball.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+PopupMenu
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Creates a popup menu with a single line list and some radio buttons at right,
+ like the Android combo box styles.
+ The 
+\family typewriter
+PRESSED
+\family default
+ event is sent when an item is selected.
+ The colors must be set before the control's bounds are defined using 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ProgressBar
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A basic progress bar, with the bar and a text.
+ The text is comprised of a prefix and a suffix.
+ 
+\end_layout
+
+\begin_layout Standard
+You can create a horizontal endless progress bar, always going from left
+ to right, by setting the given parameters: 
 \end_layout
 
 \begin_layout Itemize
-PushButtonGroup 
+Call 
+\family typewriter
+setEndless()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
-Ruler 
+
+\family typewriter
+max-min
+\family default
+: used to compute the width of the bar.
+ 
 \end_layout
 
 \begin_layout Itemize
-ScrollBar 
+
+\family typewriter
+prefix
+\family default
+ and 
+\family typewriter
+suffix
+\family default
+: displayed, but the current value is not displayed.
+ 
 \end_layout
 
 \begin_layout Itemize
+
+\family typewriter
+setValue(n)
+\family default
+: 
+\family typewriter
+n
+\family default
+ used to increment the current value, not to set the value to 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Then set a timer to update the value.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+PushButtonGroup
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Group or matrix of push buttons in a single control.
+ It is one of the most versatiles controls of TotalCross.
+ The width of each button is calculated based on its caption size plus 
+\family typewriter
+insideGap
+\family default
+, if you use 
+\family typewriter
+PREFERRED
+\family default
+ as the width; otherwise, it uses the size you specified (e.
+ g.: 
+\family typewriter
+FILL
+\family default
+, 
+\family typewriter
+FIT
+\family default
+, etc).
+ The height is calculated based on the font's size or on the height you
+ specified.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Ruler
+\family default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+Ruler
+\family default
+ is a horizontal or vertical ruler.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ScrollBar
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+The scroll bar orientation can be horizontal or vertical.
+ It implements auto scroll when pressing and holding a button or the gap
+ area of the scroll bar.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 ScrollContainer 
 \end_layout
 
-\begin_layout Itemize
-ScrollPosition 
+\begin_deeper
+\begin_layout Standard
+This is a container with a horizontal only, vertical only, both or no scroll
+ bars, depending on the control positions.
+ The default unit scroll is an edit's height (for the vertical scrollbar),
+ and the width of an 
+\family typewriter
+@
+\family default
+ (for the horizontal scrollbar).
+ 
 \end_layout
 
-\begin_layout Itemize
-Slider 
+\begin_layout Standard
+Caution: you must not use 
+\family typewriter
+RIGHT
+\family default
+, 
+\family typewriter
+BOTTOM
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, and 
+\family typewriter
+FILL
+\family default
+ when setting the control bounds, unless you disable the corresponding scroll
+ bar! The only exception to this is to use 
+\family typewriter
+FILL
+\family default
+ on the control's height, which is allowed.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-Spacer 
+
+\family typewriter
+ScrollPosition
 \end_layout
 
-\begin_layout Itemize
-SpinList 
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+ScrollPosition
+\family default
+ implements the auto-hide scroll bar that exists in finger-touched devices.
+ This special scroll bar is just a small position indicator that appears
+ when the area is dragged.
+ 
+\family typewriter
+ScrollPosition
+\family default
+ does not take an area of the control, since it appears and disappears automatic
+ally.
+ All 
+\family typewriter
+Scrollable
+\family default
+ controls change their 
+\family typewriter
+ScrollBar
+\family default
+ by 
+\family typewriter
+ScrollPosition
+\family default
+ when 
+\family typewriter
+Settings.fingerTouch = true
+\family default
+.
+ If the back color and the bar color are the same, the bar is not drawn;
+ this is how the 
+\family typewriter
+ButtonMenu
+\family default
+ class hides this control.
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-Spinner 
+
+\family typewriter
+Slider
 \end_layout
 
-\begin_layout Itemize
-TabbedContainer 
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+Slider
+\family default
+ is a simple slider.
+ You can set some properties of the slider, like 
+\family typewriter
+drawTicks
+\family default
+, 
+\family typewriter
+invertDirection
+\family default
+ and 
+\family typewriter
+drawFilledArea
+\family default
+.
+ You can change the thumb size by setting the 
+\family typewriter
+minDragBarSize
+\family default
+ public field and then call 
+\family typewriter
+setValues()
+\family default
+, 
+\family typewriter
+setMaximum()
+\family default
+, or 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+setMinimum()
+\family default
+ method (the value must always be ODD!).
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-Whiteboard 
+
+\family typewriter
+Spacer
 \end_layout
 
-\begin_layout Itemize
-Chart 
+\begin_deeper
+\begin_layout Standard
+Control used to add a space between controls.
+ It shows nothing on the screen.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-ColumnChart 
+
+\family typewriter
+SpinList
 \end_layout
 
-\begin_layout Itemize
-LineChart 
+\begin_deeper
+\begin_layout Standard
+Creates a control with two arrows, so that you can scroll values and show
+ the current one.
+ It supports auto-scroll (by clicking and holding) and can also dynamically
+ compute the items based on ranges.
+ The spin list can be horizontal or vertical.
+ 
 \end_layout
 
-\begin_layout Itemize
-PieChart 
+\begin_layout Standard
+In finger-touch devices, it will use the horizontal appearance, which is
+ easier to deal with on such devices.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-PointLineChart 
+
+\family typewriter
+Spinner
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+Spinner
+\family default
+ is a control that shows an image indicating that something is running in
+ the background.
+ It has two styles: 
+\family typewriter
+IPHONE
+\family default
+ and 
+\family typewriter
+ANDROID
+\family default
+.
+ It's used in the 
+\family typewriter
+ProgressBox
+\family default
+.
+ To start the spin call the 
+\family typewriter
+start()
+\family default
+ method, and to stop it call the 
+\family typewriter
+stop()
+\family default
+ method.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
+
+\family typewriter
+TabbedContainer
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+TabbedContainer
+\family default
+ is a bar of text or image tabs.
+ It is assumed that all images will have the same height, but they may have
+ different widths.
+ A scroll is automatically added when the total width of the titles is bigger
+ than the control's width.
+ The containers are created automatically and switched when the user press
+ the corresponding tab.
+ 
+\end_layout
+
+\begin_layout Standard
+When the user interface has Android style, the tabs do not look good if
+ the background is the same of the parent's.
+ In this case, we force the background to be slighly darker.
+ There are a few fields that you can use to change the color, like 
+\family typewriter
+activeTabBackColor
+\family default
+, 
+\family typewriter
+useOnTabTheContainerColor
+\family default
+, and 
+\family typewriter
+pressedColor
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Important: with 
+\family typewriter
+Settings.fingerTouch = true
+\family default
+, you CANNOT call 
+\family typewriter
+setRect()
+\family default
+ in your container.
+ Otherwise, the flick and drag will not work and your container will be
+ positioned incorrectly.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Whiteboard
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This is a whiteboard that can be used to draw something.
+ It uses a special event flag in order to improve the accuracy.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Chart
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+The base class of all 
+\family typewriter
+Chart
+\family default
+ classes.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ColumnChart
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A vertical column chart.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+LineChart
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+This class represents a line chart.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+PieChart
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A simple pie chart.
+ 
+\end_layout
+
+\begin_layout Standard
+The values do not have to be in percentage; the percentage is computed based
+ on the series values.
+ If the user clicks on the slice, a popup shows the corresponding value.
+ By setting the 
+\family typewriter
+legendValueSuffix
+\family default
+ to 
+\family typewriter
+"%"
+\family default
+, the value displayed will be the percentage instead of the serie's value.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+PointLineChart
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Abstract class used by points and line charts.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 XYChart 
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+XYChart
+\family default
+ is a scatter chart.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-ColorChooserBox 
+
+\family typewriter
+ColorChooserBox
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Shows a color dialog that can be used to select a color.
+ There are several ways to choose a color: 
 \end_layout
 
 \begin_layout Itemize
+Using a color matrix.
+\end_layout
+
+\begin_layout Itemize
+Using a websafe palette.
+ 
+\end_layout
+
+\begin_layout Itemize
+Writting the red, green, and blue components.
+ 
+\end_layout
+
+\begin_layout Itemize
+Writting the color in hexdecimal.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
 ControlBox 
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+A popup window that displays any control, given as parameter to the constructor.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-FileChooserBox 
+
+\family typewriter
+FileChooserBox
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+A class that shows all folders from a startup one to allow the user select
+ a file or a folder.
+ The file tree is mounted 
+\emph on
+on demand
+\emph default
+ to speedup the process.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a list of customizations you can do: 
 \end_layout
 
 \begin_layout Itemize
-ProgressBox 
+You can set a path to be selected initially by setting the 
+\family typewriter
+initialPath
+\family default
+ property.
+ 
 \end_layout
 
 \begin_layout Itemize
-TimeBox 
+Set the 
+\family typewriter
+defaultButton
+\family default
+ property to allow the selection of an item doing a double-click on it.
+ 
 \end_layout
 
+\end_deeper
 \begin_layout Itemize
-Document 
+
+\family typewriter
+ProgressBox
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+This class implements a message box that shows a spinner at the left of
+ the text.
+ You can set the spinner color and type before constructing the progress
+ box (usually you do this in your application's constructor, and not for
+ each progress bar created).
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-HtmlContainer 
+
+\family typewriter
+TimeBox
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+Class used to input a time from the user.
+ Correctly handles the AM/PM depending on 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Settings.is24Hour
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+When the window closes, a 
+\family typewriter
+PRESSED
+\family default
+ event is sent to the caller, and the time can be retrieved using 
+\family typewriter
+getTime()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The time can be entered also using the arrow keys and by typing the numbers
+ directly.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Document
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Represents an HTML Document.
+ To change the font size, you must change 
+\family typewriter
+Style.
+\begin_inset Newline newline
+\end_inset
+
+defaultFontSize
+\family default
+.
+ To change the default colors, change 
+\family typewriter
+UIColors.htmlXXX
+\family default
+ fields, and don't forget to call 
+\family typewriter
+htmlContainer.setBackForeColors()
+\family default
+ with these colors.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+HtmlContainer
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+
+\family typewriter
+HtmlContainer
+\family default
+ renders an HTML Page.
+\end_layout
+
+\begin_layout Standard
+Note that the form controls back and fore colors are defined by 
+\family typewriter
+UIColors.
+\begin_inset Newline newline
+\end_inset
+
+htmlContainerControlsFore
+\family default
+ and 
+\family typewriter
+UIColors.htmlContainerControlsBack
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+When a link is clicked, a 
+\family typewriter
+PRESSED
+\family default
+ event is thrown, with this 
+\family typewriter
+HtmlContainer
+\family default
+ as target.
+ The link can then be retrieved with the 
+\family typewriter
+pressedLink
+\family default
+ property.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Chapter
 The Window class
 \end_layout
@@ -33062,6 +34226,204 @@ Press “Ok” to confirm and close the “Properties” dialog.
 \begin_layout Enumerate
 Re-build the project and the build errors should all be gone (skip this
  step if your Eclipse is configured to Build automatically).
+\end_layout
+
+\begin_layout Chapter
+Logging errors
+\end_layout
+
+\begin_layout Section
+Example
+\end_layout
+
+\begin_layout Standard
+We have developped a way to automatically generate an error log.
+ In our case, the log is sent by email on each data synchronization.
+ Thus, it is possible to catch errors that occur when the application is
+ in production and the user can't send the device to us.
+ The option described here uses commands that are available in version 1.52,
+ released on March 20.
+ The code written here is NOT in the SDK.
+ 
+\end_layout
+
+\begin_layout Standard
+Firstly, you need to centralize all exception processing to throw them into
+ a file.
+ We must also find out if the program aborted for some reason.
+ With the class below you can do this for Android.
+ You can change it for other devices: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class GerenciamentoDeErros 
+\end_layout
+
+\begin_layout Plain Layout
+
+{    
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static String retornaRaizTemp()    
+\end_layout
+
+\begin_layout Plain Layout
+
+	{       
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (Settings.onJavaSE)          
+\end_layout
+
+\begin_layout Plain Layout
+
+			return Settings.appPath+"/../";              
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\end_layout
+
+\begin_layout Plain Layout
+
+		try        
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			if (new File("/sdcard/DCIM").exists())             
+\end_layout
+
+\begin_layout Plain Layout
+
+				return "/sdcard";       
+\end_layout
+
+\begin_layout Plain Layout
+
+		} 
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e) {}        		
+\end_layout
+
+\begin_layout Plain Layout
+
+		return Settings.appPath;    
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static String NOME_ARQUIVO = retornaRaizTemp()+"/errolm.log";   
+     
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static void finalizouCorretamente()    
+\end_layout
+
+\begin_layout Plain Layout
+
+	{       
+\end_layout
+
+\begin_layout Plain Layout
+
+		try       
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			File fin = new File("device/finalizou",File.CREATE_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+			fin.writeBytes(new byte[]{(byte)1},0,1);          
+\end_layout
+
+\begin_layout Plain Layout
+
+			fin.close();       
+\end_layout
+
+\begin_layout Plain Layout
+
+		}       
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e)       
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			e.printStackTrace();       
+\end_layout
+
+\begin_layout Plain Layout
+
+		}    
+\end_layout
+
+\begin_layout Plain Layout
+
+	}  	
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_body
