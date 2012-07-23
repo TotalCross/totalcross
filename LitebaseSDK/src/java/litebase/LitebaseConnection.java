@@ -41,7 +41,8 @@ public class LitebaseConnection
     */
    public static int version = 260;
 
-   /** Current build number.
+   /** 
+    * Current build number.
     */
    public static int buildNumber = 1;
    
