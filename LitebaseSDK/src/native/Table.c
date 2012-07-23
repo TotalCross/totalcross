@@ -1810,7 +1810,6 @@ bool renameTableColumn(Context context, Table* table, CharP oldColumn, CharP new
       xstrcpy(table->columnNames[oldIdx], newColumn);
    else
       table->columnNames[oldIdx] = newColumn;
-
    return tableSaveMetaData(context, table, TSMD_EVERYTHING);
 }
 

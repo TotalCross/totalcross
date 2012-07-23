@@ -246,11 +246,31 @@ bool yyparse(LitebaseParser* parser)
          
          switch (yylex(parser))
          {
-            case TK_ADD: // Adds a primary key.
-               if (yylex(parser) != TK_PRIMARY || yylex(parser) != TK_KEY || yylex(parser) != TK_OPEN || colnameCommaList(parser) != TK_CLOSE)
-                  return lbError(ERR_SYNTAX_ERROR, parser);              
-               parser->command = CMD_ALTER_ADD_PK;
-               break;
+            case TK_ADD: // Adds a primary key or a new column.
+
+                  // juliana@add_1: added command ALTER TABLE ADD column.
+                  if ((token = createColumn(parser)) == TK_PRIMARY) // Adds a primary key.
+                  {
+                     if (parser->fieldListSize == 1)
+                        return lbError(ERR_SYNTAX_ERROR, parser);
+                     if (yylex(parser) != TK_KEY || yylex(parser) != TK_OPEN || colnameCommaList(parser) != TK_CLOSE)
+                        return lbError(ERR_SYNTAX_ERROR, parser);                
+                     parser->command = CMD_ALTER_ADD_PK;
+                  }
+                  else if (token == -1) // Adds a new column.
+                  {
+                     SQLFieldDefinition* field = parser->fieldList[0];
+                     if (field->isNotNull && !field->defaultValue) // A field declared as not null must have a default value.
+                        return lbError(ERR_NOT_NULL_DEFAULT, parser);
+                     if (field->isPrimaryKey) // The new field can't be declared as a primary key when being added.
+                     {   
+                        if (field->defaultValue) // All the keys would be the same.
+                           return lbErrorWithMessage(getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), parser->tableList[0]->tableName, parser);
+                        return lbError(ERR_PK_CANT_BE_NULL, parser); // All the keys would be null.
+                     }
+                     parser->command = CMD_ALTER_ADD_COLUMN;
+                  }
+                  break;
             
             case TK_DROP: // Drops a primary key.
                if (yylex(parser) != TK_PRIMARY || yylex(parser) != TK_KEY)
@@ -533,7 +553,7 @@ int32 createColumn(LitebaseParser* parser)
    columnName = parser->yylval;
    
    // Column type.
-   if ((type = yylex(parser)) == BOOLEAN_TYPE || type > BLOB_TYPE)
+   if ((type = yylex(parser)) == BOOLEAN_TYPE || type > BLOB_TYPE || type < CHARS_TYPE)
       return lbError(ERR_SYNTAX_ERROR, parser);
    if (type == TK_VARCHAR)
       type = CHARS_TYPE;

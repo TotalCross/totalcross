@@ -34,7 +34,7 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.6";
+   public static String versionStr = "2.52.2";
 
    /**
     * The integer corresponding to the current Litebase version.
@@ -397,7 +397,7 @@ public class LitebaseConnection
             byte[] columnAttrs = new byte[count];
             SQLFieldDefinition field;
             Date tempDateAux = tempDate; // juliana@224_2: improved memory usage on BlackBerry.
-            String defaultValue;
+            String defaultValue; 
             
             // Creates column 0 (rowid).
             names[0] = "rowid";
@@ -447,7 +447,7 @@ public class LitebaseConnection
                         break;
                      case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
                         defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
-                        break;   
+                        break;
                      case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
                         int pos = defaultValue.lastIndexOf(' ');
                         if (pos == -1) // There is no time here.
@@ -595,14 +595,14 @@ public class LitebaseConnection
          else
          if (tempSQL.startsWith("drop index"))
             parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
-         else
-         if (tempSQL.startsWith("alter table")) 
+         else if (tempSQL.startsWith("alter table")) 
             if (tempSQL.indexOf("rename") != -1)
                parser.fieldNames = new String[2];
-            else
-            if (tempSQL.indexOf("add primary key") != -1)
+            else if (tempSQL.indexOf("add primary key") != -1)
                parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];   
-         
+            else if (tempSQL.indexOf("add") != -1) // juliana@add_1: added command ALTER TABLE ADD column.
+               parser.fieldList = new SQLFieldDefinition[1];
+            
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does the parsing.
          
@@ -624,6 +624,7 @@ public class LitebaseConnection
             case SQLElement.CMD_ALTER_ADD_PK: // ADD PRIMARY KEY
             case SQLElement.CMD_ALTER_RENAME_TABLE: // RENAME TABLE
             case SQLElement.CMD_ALTER_RENAME_COLUMN: // RENAME COLUMN
+            case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN // juliana@add_1: added command ALTER TABLE ADD column.
                litebaseExecuteAlter(parser); 
                return 0;
          }
@@ -643,6 +644,7 @@ public class LitebaseConnection
       return -1;
    }
 
+   // juliana@add_1: added command ALTER TABLE ADD column.
    /**
     * Executes an alter statement.
     *
@@ -653,9 +655,10 @@ public class LitebaseConnection
     * @throws SQLParseException If there is a blob in a primary key definition.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
     */
    private void litebaseExecuteAlter(LitebaseParser parser) throws DriverException, AlreadyCreatedException, SQLParseException, IOException, 
-                                                                                                                                InvalidDateException
+                                                                                    InvalidDateException, InvalidNumberException
    {
       String tableName = parser.tableList[0].tableName;
       Table table = getTable(tableName);
@@ -766,7 +769,227 @@ public class LitebaseConnection
 
          case SQLElement.CMD_ALTER_RENAME_COLUMN: // RENAME COLUMN
             table.renameTableColumn(parser.fieldNames[1], parser.fieldNames[0]);
-      }
+            break;
+            
+         case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN
+            SQLFieldDefinition field = parser.fieldList[0];
+            int oldCount = table.columnCount,
+                newCount = oldCount + 1,
+                bytes = (oldCount + 7) >> 3,
+                hash = field.fieldName.hashCode();
+
+            if (table.htName2index.exists(hash)) // The column name can't exist yet.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATED_COLUMN_NAME) + field.fieldName);
+            
+            if (oldCount == SQLElement.MAX_NUM_COLUMNS) // The maximum number of columns can't be exceeded.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMNS_OVERFLOW) + field.fieldName);
+            
+            if (((oldCount + 8) >> 3) > bytes) // Increases the nulls fields if the number of bytes must be increased.
+            {
+               byte[][] columnNulls = table.columnNulls;
+               columnNulls[0] = new byte[++bytes];
+               columnNulls[1] = new byte[bytes];
+               
+               if (columnNulls[2] != null)
+                  columnNulls[2] = new byte[bytes];
+               table.storeNulls = new byte[bytes]; 
+            }
+            
+            // Increases all the columns.  
+            table.ghas = new byte[newCount];
+            table.gvOlds = new SQLValue[newCount];
+            
+            // Column attrs.
+            byte[] newAttrs = new byte[newCount];
+            Vm.arrayCopy(table.columnAttrs, 0, newAttrs, 0, oldCount);
+            (table.columnAttrs = newAttrs)[oldCount] = (byte)((field.defaultValue != null? Utils.ATTR_COLUMN_HAS_DEFAULT : 0)
+                                                                                         | (field.isNotNull? Utils.ATTR_COLUMN_IS_NOT_NULL : 0)); 
+            
+            // Column hashes.
+            int[] newHashes = new int[newCount];
+            Vm.arrayCopy(table.columnHashes, 0, newHashes, 0, oldCount);
+            table.htName2index.put((table.columnHashes = newHashes)[oldCount] = hash, oldCount);
+            
+            // Column offsets.
+            short[] newOffsets = new short[newCount + 1];
+            Vm.arrayCopy(table.columnOffsets, 0, newOffsets, 0, newCount);
+            (table.columnOffsets = newOffsets)[newCount] = (short)(newOffsets[oldCount] + Utils.typeSizes[field.fieldType]);
+            
+            // Column types.
+            byte[] newTypes = new byte[newCount];
+            Vm.arrayCopy(table.columnTypes, 0, newTypes, 0, oldCount);
+            (table.columnTypes = newTypes)[oldCount] = (byte)field.fieldType;
+            
+            // Column sizes.
+            int[] newSizes = new int[newCount];
+            Vm.arrayCopy(table.columnSizes, 0, newSizes, 0, oldCount);
+            (table.columnSizes = newSizes)[oldCount] = field.fieldSize;
+            
+            // Column names.
+            String[] newNames = new String[newCount];
+            Vm.arrayCopy(table.columnNames, 0, newNames, 0, oldCount);
+            (table.columnNames = newNames)[oldCount] = field.fieldName;
+            
+            // Default values.
+            SQLValue[] newDefaultValues = new SQLValue[newCount];
+            SQLValue newDefaultValue = null;
+            Vm.arrayCopy(table.defaultValues, 0, newDefaultValues, 0, oldCount);            
+            table.defaultValues = newDefaultValues;
+            String defaultValue = field.defaultValue;
+            
+            if (defaultValue != null) // Sets the new default value if it exists.
+            {
+               newDefaultValue = newDefaultValues[oldCount] = new SQLValue();
+               
+               // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
+               // the type range.
+               switch (field.fieldType) 
+               {
+                  case SQLElement.CHARS:
+                  case SQLElement.CHARS_NOCASE:
+                     if (defaultValue.length() > field.fieldSize) // The default value size can't be larger than the size of the field definition.
+                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
+                     newDefaultValue.asString = defaultValue;
+                     break;
+                  case SQLElement.SHORT:
+                     newDefaultValue.asShort = Convert.toShort(defaultValue);
+                     break;
+                  case SQLElement.INT:
+                     newDefaultValue.asInt = Convert.toInt(defaultValue);
+                     break;
+                  case SQLElement.LONG:
+                     newDefaultValue.asLong = Convert.toLong(defaultValue);
+                     break;
+                  case SQLElement.FLOAT:
+                     newDefaultValue.asDouble = Utils.toFloat(defaultValue);
+                     break;
+                  case SQLElement.DOUBLE:
+                     newDefaultValue.asDouble = Convert.toDouble(defaultValue);
+                  case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
+                     newDefaultValue.asInt = tempDate.set(defaultValue, Settings.DATE_YMD);
+                     break;
+                  case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
+                     int pos = defaultValue.lastIndexOf(' ');
+                     if (pos == -1) // There is no time here.
+                     {
+                        newDefaultValue.asInt = tempDate.set(defaultValue, Settings.DATE_YMD);
+                        newDefaultValue.asShort = 0;
+                     }
+                     else
+                     {
+                        newDefaultValue.asInt = tempDate.set(defaultValue.substring(0, pos), Settings.DATE_YMD);
+                        newDefaultValue.asShort = Utils.testAndPrepareTime(defaultValue.substring(pos + 1).trim());
+                     }
+                     break;
+               } 
+            }
+            
+            // Column indices.
+            Index[] newIndices = new Index[newCount];
+            Vm.arrayCopy(table.columnIndices, 0, newIndices, 0, oldCount);
+            table.columnIndices = newIndices; 
+                  
+            // Sets the new plain db.
+            PlainDB newDB = new PlainDB(table.name + '_', sourcePath, true),
+                    oldDB = table.db; 
+            newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+            newDB.useCrypto = oldDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+            newDB.headerSize = oldDB.headerSize;
+            newDB.driver = this; 
+            int newRowSize = newOffsets[newCount] + ((newCount + 7) >> 3) + 4;
+            byte[] newBuffer = newDB.basbuf = new byte[newRowSize];
+            newDB.setRowSize(newRowSize, newBuffer);
+            newDB.rowInc = oldDB.rowCount;
+
+            // Sets the new streams.
+            ByteArrayStream newBas = newDB.bas; 
+            DataStreamLB newBasds = newDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+            
+            // Sets some variables for reading and writing the records.
+            SQLValue[] record = SQLValue.newSQLValues(newCount);
+            byte[] columnNulls0 = table.columnNulls[0];
+            int length = columnNulls0.length;
+            boolean isNull = (record[oldCount] = newDefaultValue) == null;
+                        
+            // Saves the new meta data.
+            table.db = newDB;
+            table.columnCount++;
+            table.tableSaveMetaData(Utils.TSMD_EVERYTHING); 
+            table.db = oldDB;
+            table.columnCount--;
+            
+            // juliana@230_12
+            int crc32,
+                k;
+            int[] intArray = new int[1];
+            
+            size = oldDB.rowCount;
+            i = -1;  
+            while (++i < size)
+            {
+               table.readRecord(record, i, 0, null, null, false, null); // juliana@220_3 juliana@227_20
+               j = -1;
+               
+               if (isNull)
+                  columnNulls0[oldCount >> 3] |= (1 << (oldCount & 7)); // Sets the column as null.
+               
+               // juliana@230_44: solved a NullPointerException when purging a table with a null value on a CHAR or VARCHAR column.
+               // juliana@220_3
+               while (++j < newCount)
+                  newDB.writeValue(newTypes[j], record[j], newBasds, (columnNulls0[j >> 3] & (1 << (j & 7))) == 0, true, newSizes[j], 0, false); 
+               
+               newBasds.writeBytes(columnNulls0, 0, length); 
+               
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
+               // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
+               // juliana@220_4: added a crc32 code for every record. Please update your tables.
+               k = newBuffer[3];
+               newBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+               
+               // Computes the crc for the record and stores at the end of the record.
+               crc32 = Table.updateCRC32(newBuffer, newBas.getPos(), 0);
+               if (table.version == Table.VERSION)
+               {
+                  byte[] byteArray;
+                  
+                  j = newCount;
+                  while (--j > 0)
+                     if ((newTypes[j] == SQLElement.CHARS || newTypes[j] == SQLElement.CHARS_NOCASE) 
+                      && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {
+                        byteArray = Utils.toByteArray(record[j].asString);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                     }
+                     else if (newTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {  
+                        intArray[0] = record[j].asBlob.length;
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                     }
+               }
+               newBasds.writeInt(crc32); 
+               newBuffer[3] = (byte)k;
+               
+               newDB.add();
+               newDB.write();
+            }
+            
+            // Puts the new plain db in the table and deletes the old one.            
+            newDB.rowInc = Utils.DEFAULT_ROW_INC;
+            ((NormalFile)oldDB.db).f.delete();
+            ((NormalFile)oldDB.dbo).f.delete();
+            newDB.rename(table.name, sourcePath);
+            table.db = newDB;
+            table.columnCount++;
+            
+            i = newCount;
+            while (--i >= 0) // Recreates the simple indices.
+               if (newIndices[i] != null && (newTypes[i] == SQLElement.CHARS || newTypes[i] == SQLElement.CHARS_NOCASE))
+                  table.tableReIndex(i, null, false);
+
+            if ((i = table.numberComposedIndices) > 0) // Recreates the composed indices.  
+               while (--i >= 0)
+                  table.tableReIndex(i, table.composedIndices[i], false);
+      }             
    }
 
    /**

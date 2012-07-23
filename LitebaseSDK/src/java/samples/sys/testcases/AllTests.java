@@ -52,6 +52,7 @@ public class AllTests extends TestSuite
       super("Litebase Test Suite");
       if (Settings.platform.equals(Settings.ANDROID))
          Vm.debug(Vm.ALTERNATIVE_DEBUG);
+      addTestCase(TestAddColumn.class);
       addTestCase(TestAsciiTables.class); // juliana@210_2: now Litebase supports tables with ascii strings.
       addTestCase(TestBigJoins.class);
       addTestCase(TestBlob.class);

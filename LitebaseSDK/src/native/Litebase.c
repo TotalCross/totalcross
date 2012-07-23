@@ -534,8 +534,8 @@ error:
                   
                case DATE_TYPE:
                case DATETIME_TYPE:
-                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
-                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
+                  TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf);                 
+                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, type))
                      goto error;
             }
 
@@ -693,6 +693,7 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
       case CMD_ALTER_ADD_PK:
       case CMD_ALTER_RENAME_TABLE:
       case CMD_ALTER_RENAME_COLUMN:
+      case CMD_ALTER_ADD_COLUMN:
          litebaseExecuteAlter(context, driver, parser);
          return 0;
       case CMD_INSERT:
@@ -1020,7 +1021,8 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
 {
 	TRACE("litebaseExecuteAlter")
    Table* table = getTable(context, driver, parser->tableList[0]->tableName);
-   Heap heap;
+   Heap heap,
+        parserHeap = parser->heap;
    CharP* fieldNames = parser->fieldNames;
    int32 i;
 
@@ -1168,11 +1170,247 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             xmemmove(newColumn, fieldNames[0], length);
          }
          renameTableColumn(context, table, oldColumn, newColumn, reuseSpace);
+         break;
+      }
+      
+      case CMD_ALTER_ADD_COLUMN:
+      {
+         SQLFieldDefinition* field = parser->fieldList[0];
+         int32 oldCount = table->columnCount,
+               newCount = oldCount + 1,
+               bytes = (oldCount + 7) >> 3,
+               hash = TC_hashCode(field->fieldName);
+               
+         if (TC_htGet32Inv(&table->htName2index, hash) >= 0)
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), field->fieldName);    
+         else if (oldCount == MAXIMUMS)
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_MAX_NUM_FIELDS_REACHED));
+         else
+         {
+            uint8* newAttrs = TC_heapAlloc(heap, newCount);
+            uint8* newTypes = TC_heapAlloc(heap, newCount);
+            uint8* newBuffer;
+            uint8* columnNulls;
+            uint16* newOffsets = TC_heapAlloc(heap, (newCount + 1) << 1);
+            int32* newHashes = (int32*)TC_heapAlloc(heap, newCount << 2);
+            int32* newSizes = (int32*)TC_heapAlloc(heap, newCount << 2);          
+            CharP* newNames = (CharP*)TC_heapAlloc(heap, newCount << 2);         
+            SQLValue** newDefaultValues = (SQLValue**)TC_heapAlloc(heap, newCount << 2);
+            SQLValue** record = (SQLValue**)TC_heapAlloc(parserHeap, newCount << 2);
+            SQLValue* newDefaultValue = null;
+            Index** newIndices = (Index**)TC_heapAlloc(heap, newCount << 2);
+            JCharP defaultValue = field->defaultValue;
+            int32 type = field->fieldType;
+            PlainDB newDB,
+                    oldDB;
+            char tempName[DBNAME_SIZE + 1];
+            bool isNull = (field->defaultValue == null),
+                 useCrypto = table->db.db.useCrypto;
+            int32 crc32,
+                  j,
+                  k,
+                  size,
+                  length,
+                  blobLength;
+            
+            if (((oldCount + 8) >> 3) > bytes) // Increases the nulls fields if the number of bytes must be increased.
+            {
+               columnNulls = table->columnNulls = TC_heapAlloc(heap, ++bytes);
+               table->storeNulls = TC_heapAlloc(heap, bytes);
+            }
+            else
+               columnNulls = table->columnNulls;
+            
+            // Increases all the columns.              
+            
+            // Column attrs.
+            xmemmove(newAttrs, table->columnAttrs, oldCount);
+            (table->columnAttrs = newAttrs)[oldCount] = (field->defaultValue? ATTR_COLUMN_HAS_DEFAULT : 0)
+                                                      | (field->isNotNull? ATTR_COLUMN_IS_NOT_NULL : 0); 
+            
+            // Column hashes.
+            xmemmove(newHashes, table->columnHashes, oldCount << 2);
+            TC_htPut32(&table->htName2index, (table->columnHashes = newHashes)[oldCount] = hash, oldCount);
+            
+            // Column offsets.
+            xmemmove(newOffsets, table->columnOffsets, newCount << 1);
+            (table->columnOffsets = newOffsets)[newCount] = (newOffsets[oldCount] + typeSizes[field->fieldType]);
+            length = table->columnOffsets[newCount] + NUMBEROFBYTES(newCount);
+            
+            // Column types.
+            xmemmove(newTypes, table->columnTypes, oldCount);
+            (table->columnTypes = newTypes)[oldCount] = type;
+            
+            // Column sizes.
+            xmemmove(newSizes, table->columnSizes, oldCount << 2);
+            (table->columnSizes = newSizes)[oldCount] = field->fieldSize;
+            
+            // Column names.
+            xmemmove(newNames, table->columnNames, oldCount << 2);
+            (table->columnNames = newNames)[oldCount] = TC_heapAlloc(heap, i = (xstrlen(field->fieldName) + 1));
+            xmemmove(newNames[oldCount], field->fieldName, i);  
+            
+            // Default values.
+            xmemmove(newDefaultValues, table->defaultValues, oldCount << 2);            
+            table->defaultValues = newDefaultValues;            
+            if (defaultValue) // Sets the new default value if it exists.
+            {   
+               bool error = false;
+               DoubleBuf doubleBuf;
+               
+               newDefaultValue = newDefaultValues[oldCount] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
+               i = JCharPLen(defaultValue);
+               if ((type != CHARS_TYPE && type != CHARS_NOCASE_TYPE && i > 39) 
+                || ((type == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && i > field->fieldSize))
+               {
+                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
+                  goto finish;
+               }
+               
+               // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
+               // the type range.
+               switch (field->fieldType) 
+               {
+                  case CHARS_TYPE:
+                  case CHARS_NOCASE_TYPE:
+                     newDefaultValue->asChars = (JCharP)TC_heapAlloc(heap, (i + 1) << 1);
+                     xmemmove(newDefaultValue->asChars, defaultValue, (newDefaultValue->length = i) << 1);                     
+                     break;
+                  case SHORT_TYPE:
+                     newDefaultValue->asShort = str2short(TC_JCharP2CharPBuf(defaultValue, i, doubleBuf), &error);
+                     break;
+                  case INT_TYPE:
+                     newDefaultValue->asInt = TC_str2int(TC_JCharP2CharPBuf(defaultValue, i, doubleBuf), &error);
+                     break;
+                  case LONG_TYPE:
+                     newDefaultValue->asLong = TC_str2long(TC_JCharP2CharPBuf(defaultValue, i, doubleBuf), &error);
+                     break;
+                  case FLOAT_TYPE:
+                     newDefaultValue->asFloat = str2float(TC_JCharP2CharPBuf(defaultValue, i, doubleBuf), &error);
+                     break;
+                  case DOUBLE_TYPE:
+                     newDefaultValue->asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, i, doubleBuf), &error);
+                     break;
+                  case DATE_TYPE: 
+                  case DATETIME_TYPE:    
+                     TC_JCharP2CharPBuf(defaultValue, i, doubleBuf);                 
+                     if (!testAndPrepareDateAndTime(context, newDefaultValue, doubleBuf, type))
+                        goto finish;
+               } 
+            }
+            
+            // Column indices.
+            xmemmove(newIndices, table->columnIndexes, oldCount << 2);
+            table->columnIndexes = newIndices;
+            
+            // Sets the new plain db.
+            xstrcpy(tempName, table->name);
+            xstrcat(tempName, "_");
+            xmemzero(&newDB, sizeof(PlainDB));
+            xmemmove(&oldDB, &table->db, sizeof(PlainDB));
+            if (!(createPlainDB(context, &newDB, tempName, true, useCrypto, table->sourcePath, table->slot)))
+               goto finish;
+            newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+            newDB.headerSize = oldDB.headerSize;
+            newBuffer = newDB.basbuf = TC_heapAlloc(heap, i = newOffsets[newCount] + ((newCount + 7) >> 3) + 4);
+            plainSetRowSize(&newDB, i, newBuffer);
+            newDB.rowInc = oldDB.rowCount;
+
+            record[oldCount] = newDefaultValue; // Sets the record for the new column.
+                        
+            // Saves the new meta data.
+            xmemmove(&table->db, &newDB, sizeof(PlainDB));
+            table->columnCount++;
+            tableSaveMetaData(context, table, TSMD_EVERYTHING); 
+            xmemmove(&newDB, &table->db, sizeof(PlainDB));
+            xmemmove(&table->db, &oldDB, sizeof(PlainDB));
+            table->columnCount--;
+            
+            size = oldDB.rowCount;
+            
+            i = oldCount;
+            while (--i >= 0)
+            {
+               record[i] = (SQLValue*)TC_heapAlloc(parserHeap, sizeof(SQLValue));
+               if (newTypes[i] == CHARS_TYPE || newTypes[i] == CHARS_NOCASE_TYPE)
+				      record[i]->asChars = (JCharP)TC_heapAlloc(parserHeap, (newSizes[i] << 1) + 2); 
+               else if (newTypes[i] == BLOB_TYPE)
+				      record[i]->asBlob = (uint8*)TC_heapAlloc(parserHeap, newSizes[i]);
+            }
+            
+            i = -1;  
+            while (++i < size)
+            {
+               if (!readRecord(context, table, record, i, columnNulls, null, 0, false, null, null)) // juliana@220_3 juliana@227_20
+               {
+free:               
+                  plainRemove(context, &newDB, table->sourcePath, table->slot);
+                  goto finish;
+               }   
+               j = -1;
+               
+               if (isNull)
+                  columnNulls[oldCount >> 3] |= (1 << (oldCount & 7)); // Sets the column as null.
+               
+               while (++j < newCount)
+                  if (!writeValue(context, &newDB, record[j], &newBuffer[newOffsets[j]], newTypes[j], newSizes[j], true, true, (columnNulls[j >> 3] & (1 << (j & 7))), false)) 
+                     goto free;
+               xmemmove(&newBuffer[newOffsets[j]], columnNulls, bytes); 
+               
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
+               // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
+               // juliana@220_4: added a crc32 code for every record. Please update your tables.
+               k = newBuffer[3];
+               newBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+               
+               // Computes the crc for the record and stores at the end of the record.
+               crc32 = updateCRC32(newBuffer, length, 0, useCrypto);
+               if (table->version == VERSION_TABLE)
+               {  
+                  j = newCount;
+                  while (--j > 0)
+                     if ((newTypes[j] == CHARS_TYPE || newTypes[j] == CHARS_NOCASE_TYPE) 
+                      && (columnNulls[j >> 3] & (1 << (j & 7))) == 0)
+                     {
+                        crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
+                     }
+                     else if (newTypes[j] == BLOB_TYPE && (columnNulls[j >> 3] & (1 << (j & 7))) == 0)
+                     {  
+                        blobLength = record[j]->length;
+                        crc32 = updateCRC32((uint8*)&blobLength, 4, crc32, false);
+                     }
+               }
+               xmove4(&newBuffer[length], &crc32); // Computes the crc for the record and stores at the end of the record.
+               newBuffer[3] = k;
+               
+               if (!plainAdd(context, &newDB) || !plainWrite(context, &newDB))
+                  goto free;
+            }
+            
+            // Puts the new plain db in the table and deletes the old one.            
+            newDB.rowInc = DEFAULT_ROW_INC;
+            
+            if (!plainRemove(context, &oldDB, table->sourcePath, table->slot) || !plainRename(context, &newDB, table->name, table->sourcePath, table->slot))
+               goto finish;
+            xstrcpy(newDB.name, table->name);
+            xmemmove(&table->db, &newDB, sizeof(PlainDB));
+            table->columnCount++;
+            
+            i = newCount;
+            while (--i >= 0) // Recreates the simple indices.
+               if (newIndices[i] && (newTypes[i] == CHARS_TYPE || newTypes[i] == CHARS_NOCASE_TYPE) && !tableReIndex(context, table, i, false, null))
+                  goto finish;
+
+            if ((i = table->numberComposedIndexes) > 0) // Recreates the composed indices.  
+               while (--i >= 0)
+                  if (!tableReIndex(context, table, -1, false, table->composedIndexes[i]))
+                     goto finish;
+         }
       }
    }
 
 finish:
-   heapDestroy(parser->heap);
+   heapDestroy(parserHeap);
 }
 
 // 
@@ -1865,103 +2103,104 @@ TESTCASE(LibOpen)
 
    // Default value errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[25], "Length of default value is bigger than column size."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[26], "An added column declared as NOT NULL must have a not null default value."));
 
 	// Driver errors. 
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[26], "This driver instance was closed and cannot be used anymore. Please get a new instance of it."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[27], "ResultSet already closed!"));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[28], "ResultSetMetaData cannot be used after the ResultSet is closed."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[29], "The application id must be four characters long."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[30], "The increment must be greater than 0 or -1."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[31], "Iterator already closed."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[32], "Prepared statement closed. Please prepare it again."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[33], "Invalid connection parameter: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[27], "This driver instance was closed and cannot be used anymore. Please get a new instance of it."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[28], "ResultSet already closed!"));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[29], "ResultSetMetaData cannot be used after the ResultSet is closed."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[30], "The application id must be four characters long."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[31], "The increment must be greater than 0 or -1."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[32], "Iterator already closed."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[33], "Prepared statement closed. Please prepare it again."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[34], "Invalid connection parameter: %s."));
 
    // Table errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[34], "Table name not found: %s."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[35], "Table already created: %s."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[36], "It is not possible to open a table within a connection with a different string format."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[37], "It is not possible to open a table within a connection with a different cryptography format."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[35], "Table name not found: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[36], "Table already created: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[37], "It is not possible to open a table within a connection with a different string format."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[38], "It is not possible to open a table within a connection with a different cryptography format."));
 
    // ROWID errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[38], "ROWID can't be changed by the user!"));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[39], "ROWID can't be changed by the user!"));
 
    // Prepared Statement errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[39], "Query does not return result set."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[40], "Query does not perform updates in the database."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[41], "Not all parameters of the query had their values defined."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[42], "A value was not defined for the parameter %d."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[43], "Invalid parameter index."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[40], "Query does not return result set."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[41], "Query does not perform updates in the database."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[42], "Not all parameters of the query had their values defined."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[43], "A value was not defined for the parameter %d."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[44], "Invalid parameter index."));
 
 	// Rename errors. 
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[44], "Can't rename table. This table already exists: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[45], "Column already exists: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[45], "Can't rename table. This table already exists: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[46], "Column already exists: %s."));
 
 	// Alias errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[46], "Not unique table/alias: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[47], "This alias is already being used in this expression: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[48], "An alias is required for the aggregate function column."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[47], "Not unique table/alias: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[48], "This alias is already being used in this expression: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[49], "An alias is required for the aggregate function column."));
 
 	// Litebase.execute() error.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[49], "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[50], "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."));
    
 	// Order by and group by errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[50], "ORDER BY and GROUP BY clauses must match."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[51], "No support for virtual columns in SQL queries with GROUP BY clause."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[51], "ORDER BY and GROUP BY clauses must match."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[52], "No support for virtual columns in SQL queries with GROUP BY clause."));
    
    // Function errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[52], "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[53], 
-	 "%s is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[53], "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."));
 	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[54], 
+	 "%s is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[55], 
                                                 "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[55], "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[56], 
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[56], "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], 
 "%s was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation funtions."
 ));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."));
 
    // DATE and DATETIME errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "Value is not a DATE: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Value is not a DATETIME: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Value is not a DATE: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Value is not a DATETIME: %s."));
 
    // Index error.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Index already created for column %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[61], "Can't drop a primary key index withdrop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[62], "Index too large. It can't have more than 65534 nodes."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[61], "Index already created for column %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[62], "Can't drop a primary key index withdrop index."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[63], "Index too large. It can't have more than 65534 nodes."));
       
    // NOT NULL errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[63], "Primary key can't have null."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[64], "Field can't be null: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[65], "A parameter in a where clause can't be null."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[64], "Primary key can't have null."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[65], "Field can't be null: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[66], "A parameter in a where clause can't be null."));
 
    // Result set errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[66], "ResultSet in invalid record position: %d."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[67], "Invalid value for decimal places: %d. It must range from -1 to 40."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[67], "ResultSet in invalid record position: %d."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[68], "Invalid value for decimal places: %d. It must range from -1 to 40."));
 
    // File errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[68], "Can't read from table %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[69], "Can't load leaf node!"));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[70], "Table is corrupted: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[71], "Table not closed properly: %s.")); // juliana@220_2
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[72], "A properly closed table can't be used in recoverTable(): %s.")); // juliana@222_2
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[73], "Can't find index record position on delete."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[74], "The table format (%d) is incompatible with Litebase version. Please update your tables."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[75], "The table format is not the previous one: %s.")); // juliana@220_11
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[76], "Invalid path: %s.")); // juliana@214_1
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[77], "Invalid file position: %d."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[78], "Database not found."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[79], "An opened table can't be recovered or converted: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[69], "Can't read from table %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[70], "Can't load leaf node!"));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[71], "Table is corrupted: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[72], "Table not closed properly: %s.")); // juliana@220_2
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[73], "A properly closed table can't be used in recoverTable(): %s.")); // juliana@222_2
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[74], "Can't find index record position on delete."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[75], "The table format (%d) is incompatible with Litebase version. Please update your tables."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[76], "The table format is not the previous one: %s.")); // juliana@220_11
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[77], "Invalid path: %s.")); // juliana@214_1
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[78], "Invalid file position: %d."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[79], "Database not found."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[80], "An opened table can't be recovered or converted: %s."));
    
    // BLOB errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[80], "The total size of a blob can't be greater then 10 Mb."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[81], "This is not a valid size multiplier."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[82], "A blob type can't be part of a primary key."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[83], "A BLOB column can't be indexed."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[84], "A BLOB can't be in the where clause."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[85], "A BLOB can't be converted to a string."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[86], "Blobs types can't be in ORDER BY or GROUP BY clauses."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[87], "It is not possible to compare BLOBs."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[88], "It is only possible to insert or update a BLOB through prepared statements using setBlob()."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[81], "The total size of a blob can't be greater then 10 Mb."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[82], "This is not a valid size multiplier."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[83], "A blob type can't be part of a primary key."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[84], "A BLOB column can't be indexed."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[85], "A BLOB can't be in the where clause."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[86], "A BLOB can't be converted to a string."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[87], "Blobs types can't be in ORDER BY or GROUP BY clauses."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[88], "It is not possible to compare BLOBs."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[89], "It is only possible to insert or update a BLOB through prepared statements using setBlob()."));
 
    // Portuguese messages.
 	// General errors.
@@ -2003,104 +2242,105 @@ TESTCASE(LibOpen)
 
    // Default value errors.
 	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[25], "Tamanho do valor padrão é maior que o tamanho definido para a coluna."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[26], "Uma coluna adicionada declarada como NOT NULL deve ter um valor padrão não nulo."));
 
 	// Driver errors. 
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[26], 
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[27], 
                                  "Esta instância do driver está fechada e não pode ser mais utilizada. Por favor, obtenha uma nova instância."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[27], "ResultSet já está fechado!"));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[28], "ResultSetMetaData não pode ser usado depois que o ResultSet estiver fechado."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[29], "O id da aplicação de ter 4 characteres."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[30], "O incremento deve ser maior do que 0 ou -1."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[31], "Iterador já foi fechado."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[32], "Prepared statement fechado. Por favor, prepare-o novamente."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[33], "Parâmetro de conexão inválido: %s."));
-
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[28], "ResultSet já está fechado!"));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[29], "ResultSetMetaData não pode ser usado depois que o ResultSet estiver fechado."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[30], "O id da aplicação de ter 4 characteres."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[31], "O incremento deve ser maior do que 0 ou -1."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[32], "Iterador já foi fechado."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[33], "Prepared statement fechado. Por favor, prepare-o novamente."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[34], "Parâmetro de conexão inválido: %s."));
+   
 	// Table errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[34], "Nome da tabela não encontrado: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[35], "Tabela já existe: %s."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[36], "Não é possível abrir uma tabela com uma conexão com um tipo de strings diferente."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[37], "Não é possível abrir uma tabela com uma conexão com um tipo de criptografia diferente.")); 
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[35], "Nome da tabela não encontrado: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[36], "Tabela já existe: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[37], "Não é possível abrir uma tabela com uma conexão com um tipo de strings diferente."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[38], "Não é possível abrir uma tabela com uma conexão com um tipo de criptografia diferente.")); 
 
 	// ROWID errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[38], "ROWID não pode ser mudado pelo usuário!"));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[39], "ROWID não pode ser mudado pelo usuário!"));
 
    // Prepared Statement errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[39], "Comando SQL não retorna um ResultSet."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[40], "Comando SQL não executa uma atualização no banco de dados."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[41], "Nem todos os parâmetros da consulta tiveram seus valores definidos."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[42], "Não foi definido um valor para o parâmetro %d."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[43], "Invalid parameter index."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[40], "Comando SQL não retorna um ResultSet."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[41], "Comando SQL não executa uma atualização no banco de dados."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[42], "Nem todos os parâmetros da consulta tiveram seus valores definidos."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[43], "Não foi definido um valor para o parâmetro %d."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[44], "Invalid parameter index."));
    
    // Rename errors. 
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[44], "Não é possível renomear a tabela. Esta tabela já existe: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[45], "Coluna já existe: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[45], "Não é possível renomear a tabela. Esta tabela já existe: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[46], "Coluna já existe: %s."));
 
 	// Alias errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[46], "Nome de tabela/alias repetido: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[47], "Este alias já está sendo utilizado no sql: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[48], "Um alias é necessário para colunas com função de agregação."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[47], "Nome de tabela/alias repetido: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[48], "Este alias já está sendo utilizado no sql: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[49], "Um alias é necessário para colunas com função de agregação."));
    
 	// Litebase.execute() error.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[49], "Apenas CREATE TABLE e CREATE INDEX são permitidos no Litebase.execute()"));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[50], "Apenas CREATE TABLE e CREATE INDEX são permitidos no Litebase.execute()"));
    
    // Order by and group by errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[50], "Cláusulas ORDER BY e GROUP BY devem coincidir."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[51], "SQL com cláusula GROUP BY não tem suporte para colunas virtuais."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[51], "Cláusulas ORDER BY e GROUP BY devem coincidir."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[52], "SQL com cláusula GROUP BY não tem suporte para colunas virtuais."));
    
    // Function errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[52], 
-	            "Todas colunas que nãosão funções de agregação na cláusula SELECT devem estar na cláusula GROUP BY."));
 	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[53], 
+	            "Todas colunas que nãosão funções de agregação na cláusula SELECT devem estar na cláusula GROUP BY."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[54], 
 	           "%s não é uma função de agregação. Todos as colunas da cláusula HAVING devem ser listadas no SELECT utilizando alias."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[54], "Não é possivel misturar colunas reais e de agregação no SELECT sem cláusula GROUP BY."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[55], "Não é possível ter funções de agregação com cláusula ORDER BY sem cláusula GROUP BY."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[56], 
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[55], "Não é possivel misturar colunas reais e de agregação no SELECT sem cláusula GROUP BY."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[56], "Não é possível ter funções de agregação com cláusula ORDER BY sem cláusula GROUP BY."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], 
 	            "%s não foi listado no SELECT. Todas as colunas da cláusula HAVING devem ser listadas no SELECT utilizando alias."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], "Funções de agregação SUM e AVG não são usadas com colunas do tipo DATE e DATETIME."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Funções de agregação SUM e AVG não são usadas com colunas do tipo DATE e DATETIME."));
 
    // DATE and DATETIME errors.
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Valor não é um tipo DATE válido: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Valor não é um tipo DATETIME válido: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Valor não é um tipo DATE válido: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Valor não é um tipo DATETIME válido: %s."));
 
    // Index error.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Índice já criado para a coluna %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[61], "Não é possível remover uma chave primária usando drop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[62], "Índice muito grande. Ele não pode ter mais do que 65534 nós."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[61], "Índice já criado para a coluna %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[62], "Não é possível remover uma chave primária usando drop index."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[63], "Índice muito grande. Ele não pode ter mais do que 65534 nós."));
       
    // NOT NULL errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[63], "Chave primária não pode ter NULL."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[64], "Coluna não pode ser NULL: %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[65], "Um parâmetro em uma where clause não pode ser NULL."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[64], "Chave primária não pode ter NULL."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[65], "Coluna não pode ser NULL: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[66], "Um parâmetro em uma where clause não pode ser NULL."));
 
    // Result set errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[66], "ResultSet em uma posição de registro inválida %d."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[67], "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[67], "ResultSet em uma posição de registro inválida %d."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[68], "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40."));
 
    // File errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[68], "Não é possível ler da tabela %s."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[69], "Não é possível carregar nó folha!"));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[70], "Tabela está corrompida: %s."));
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[71], "Tabela não foi fechada corretamente: %s.")); // juliana@220_2
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[72], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s.")); // juliana@222_2
-	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[73], "Não é possível achar a posição de registro no índice na exclusão."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[74], 
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[69], "Não é possível ler da tabela %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[70], "Não é possível carregar nó folha!"));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[71], "Tabela está corrompida: %s."));
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[72], "Tabela não foi fechada corretamente: %s.")); // juliana@220_2
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[73], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s.")); // juliana@222_2
+	ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[74], "Não é possível achar a posição de registro no índice na exclusão."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[75], 
                                  "O formato de tabela (%d) não é compatível com a versão do Litebase. Por favor, atualize suas tabelas."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[75], "O formato de tabela não é o anterior: %s.")); // juliana@220_11
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[76], "Caminho inválido: %s.")); // juliana@214_1
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[77], "Posição inválida no arquivo: %d."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[78], "Base de dados não encontrada."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[79], "Uma tabela aberta não pode ser recuperada ou convertida: %s."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[76], "O formato de tabela não é o anterior: %s.")); // juliana@220_11
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[77], "Caminho inválido: %s.")); // juliana@214_1
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[78], "Posição inválida no arquivo: %d."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[79], "Base de dados não encontrada."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[80], "Uma tabela aberta não pode ser recuperada ou convertida: %s."));
 
    // BLOB errors.
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[80], "O tamanho total de um BLOB não pode ser maior do que 10 Mb."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[81], "O multiplicador de tamanho não é válido."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[82], "Um tipo BLOB não pode ser parte de uma chave primária."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[83], "Uma coluna do tipo BLOB não pode ser indexada."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[84], "Um BLOB não pode estar na cláusula WHERE."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[85], "Um BLOB não pode ser convertido em uma string."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[86], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[87], "Não é possível comparar BLOBs."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[88], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob()."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[81], "O tamanho total de um BLOB não pode ser maior do que 10 Mb."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[82], "O multiplicador de tamanho não é válido."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[83], "Um tipo BLOB não pode ser parte de uma chave primária."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[84], "Uma coluna do tipo BLOB não pode ser indexada."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[85], "Um BLOB não pode estar na cláusula WHERE."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[86], "Um BLOB não pode ser convertido em uma string."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[87], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[88], "Não é possível comparar BLOBs."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[89], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob()."));
    
    // Lex structures.
    while (++i < '[') // The values for the letters.

@@ -234,12 +234,12 @@ class Table
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private SQLValue[] gvOlds;
+   SQLValue[] gvOlds;
    
    /**
     * Stores flags from the record. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private byte[] ghas;
+   byte[] ghas;
    
    /**
     * An array to store the primary key values. Used in <code>writeRecord()</code>. 
@@ -296,12 +296,12 @@ class Table
                         
             if (j == indexCount) // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.  
             {
-               while (--j >= 0)
-                  if (columnNumbers[j] != columns[j])
-                  {
-                     alreadyExists = false;
-                     break;
-                  }
+            while (--j >= 0)
+               if (columnNumbers[j] != columns[j])
+               {
+                  alreadyExists = false;
+                  break;
+               }
             }
             else
                alreadyExists = false; 
@@ -899,7 +899,7 @@ class Table
                   {
                      auxDs.writeByte((ci = compIndices[i]).indexId); // The composed index id.
                      auxDs.writeByte(numberColumns = ci.columns.length); // Number of columns on the composed index.
-                     auxDs.skipBytes(1);
+                     auxDs.writeByte(0); // Ignored.
                      columns = ci.columns;
                      j = -1;
                      while (++j < numberColumns)
