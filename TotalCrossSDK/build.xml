@@ -769,7 +769,7 @@ target: blackberry_sdk
 </target>
 
 <target name="bb-codesign" description="Signs all the cods in the output path">
-   <retry retrycount="5">
+   <retry retrycount="3">
       <sequential>
          <var name="signaturetool.output" unset="true"/>
          <java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output" timeout="180000">
