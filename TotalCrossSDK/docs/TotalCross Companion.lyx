@@ -5557,27 +5557,76 @@ Each
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring POCKETPC
+\labelwidthstring POCKETPC0
 HPC211 Handheld PC with Windows CE 2.11.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring POCKETPC
+\labelwidthstring POCKETPC0
 HPC2000 Handheld PC 2000.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring POCKETPC
+\labelwidthstring POCKETPC0
 POCKETPC PocketPC with Windows CE 3.0+.
 \end_layout
 
 \begin_layout Labeling
-\labelwidthstring POCKETPC
+\labelwidthstring POCKETPC0
 WMOBILE Windows Mobile.
 \end_layout
 
 \begin_layout Standard
 The Pocket PC also supports the given processors: ARM, MIPS, and SH3.
+\end_layout
+
+\begin_layout Subsection
+Debugging
+\end_layout
+
+\begin_layout Standard
+Starting in version 1.15, on Windows Mobile, it is possible to find exactly
+ where an error, that results in a critical stop, occured.
+ This can help a lot to fix problems in the virtual machine.
+\end_layout
+
+\begin_layout Standard
+When the program starts, the virtual machine makes two changes in the Windows
+ Mobile registry, enabling the error reporting, but disabling the dialog
+ that appears when such error occurs.
+ This way, the crash dumps are kept in place, allowing us to recover it.
+ It's throught this crash dump that we can now find the exact point where
+ the error occured (in both TotalCross and Litebase VMs).
+\end_layout
+
+\begin_layout Standard
+See what you have to do when a critical error happens:
+\end_layout
+
+\begin_layout Enumerate
+Go to the folder 
+\family typewriter
+
+\backslash
+Windows
+\backslash
+System
+\backslash
+DumpFiles
+\family default
+ and zip all files that you find.
+ If you can't do that, the most important files are the ones that has the
+ 
+\family typewriter
+.kdmp
+\family default
+ extension.
+\end_layout
+
+\begin_layout Enumerate
+Send this file to us, specifying which virtual machine version you're using
+ and if its a demo or one that requires activation.
+ 
 \end_layout
 
 \begin_layout Section
@@ -34229,11 +34278,7 @@ Re-build the project and the build errors should all be gone (skip this
 \end_layout
 
 \begin_layout Chapter
-Logging errors
-\end_layout
-
-\begin_layout Section
-Example
+Logging errors Example
 \end_layout
 
 \begin_layout Standard
@@ -34413,7 +34458,520 @@ public class GerenciamentoDeErros
 
 \begin_layout Plain Layout
 
-	}  	
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static void verificaSeFinalizou()    
+\end_layout
+
+\begin_layout Plain Layout
+
+	{       
+\end_layout
+
+\begin_layout Plain Layout
+
+		try       
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			File fin = new File("device/finalizou",File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+			byte[] b = new byte[1];          
+\end_layout
+
+\begin_layout Plain Layout
+
+			int leu = fin.readBytes(b,0,1);          
+\end_layout
+
+\begin_layout Plain Layout
+
+			if (leu != 1 || b[0] != 1)                       
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (Settings.platform.equals(Settings.ANDROID))             
+\end_layout
+
+\begin_layout Plain Layout
+
+				{                
+\end_layout
+
+\begin_layout Plain Layout
+
+					TelaBase.mensagem("The program has not been finalized properly.
+ Synchronize the device as soon as possible so that the error report can
+ be sent");     					
+\end_layout
+
+\begin_layout Plain Layout
+
+					processaLogCat();             
+\end_layout
+
+\begin_layout Plain Layout
+
+				}                    					
+\end_layout
+
+\begin_layout Plain Layout
+
+				fin.setPos(0);          
+\end_layout
+
+\begin_layout Plain Layout
+
+				fin.writeBytes(new byte[]{(byte)0},0,1);          
+\end_layout
+
+\begin_layout Plain Layout
+
+				fin.close();       
+\end_layout
+
+\begin_layout Plain Layout
+
+		}       
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (FileNotFoundException fnfe)       
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			Vm.debug("finalizou does not exist");       
+\end_layout
+
+\begin_layout Plain Layout
+
+		}       
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e)       
+\end_layout
+
+\begin_layout Plain Layout
+
+		{          
+\end_layout
+
+\begin_layout Plain Layout
+
+			e.printStackTrace();       
+\end_layout
+
+\begin_layout Plain Layout
+
+		}    
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static void log(Throwable t)    
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (!Settings.onJavaSE)
+\end_layout
+
+\begin_layout Plain Layout
+
+			log(t.getClass().getName()+" "+t.getMessage());
+\end_layout
+
+\begin_layout Plain Layout
+
+		log(Vm.getStackTrace(t));
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (Settings.onJavaSE)
+\end_layout
+
+\begin_layout Plain Layout
+
+			t.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+		TelaBase.mensagem("An error has occurred.
+ Synchronize the device to send the error report.");    
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static void log(String s)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		byte[] bytes = s.getBytes();
+\end_layout
+
+\begin_layout Plain Layout
+
+		log(bytes,0,bytes.length);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public static void log(byte[] bytes, int ofs, int len)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		try
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			File f = new File(NOME_ARQUIVO, File.CREATE);
+\end_layout
+
+\begin_layout Plain Layout
+
+			f.setPos(f.getSize());
+\end_layout
+
+\begin_layout Plain Layout
+
+			f.writeBytes(("========== "+new Date()+" "+new Time()+" TC: "+Settings.versionS
+tr+" LM: "+Settings.appVersion+" ==========").getBytes());
+\end_layout
+
+\begin_layout Plain Layout
+
+			f.writeBytes(bytes, ofs, len);
+\end_layout
+
+\begin_layout Plain Layout
+
+			f.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			e.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	private static void processaLogCat()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (!Settings.platform.equals(Settings.ANDROID))
+\end_layout
+
+\begin_layout Plain Layout
+
+			return;
+\end_layout
+
+\begin_layout Plain Layout
+
+		String saida1 = "/sdcard/errocheio.log";
+\end_layout
+
+\begin_layout Plain Layout
+
+		try
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			new File(saida1).delete();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e) {}
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.exec("cmd","logcat -d -f "+saida1+" -v time *:I",0,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+		try
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			byte[] enter = {'
+\backslash
+n',' '};
+\end_layout
+
+\begin_layout Plain Layout
+
+			File f = new File(saida1);
+\end_layout
+
+\begin_layout Plain Layout
+
+			while (!f.exists())
+\end_layout
+
+\begin_layout Plain Layout
+
+				Vm.sleep(500);
+\end_layout
+
+\begin_layout Plain Layout
+
+			File fi = new File(saida1, File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+			ByteArrayStream bas = new ByteArrayStream(f.getSize()/2);
+\end_layout
+
+\begin_layout Plain Layout
+
+			LineReader lr = new LineReader(fi);
+\end_layout
+
+\begin_layout Plain Layout
+
+			bas.writeBytes(enter,0,enter.length);
+\end_layout
+
+\begin_layout Plain Layout
+
+			String s;
+\end_layout
+
+\begin_layout Plain Layout
+
+			while ((s = lr.readLine()) != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (s.indexOf(" W/ResourceType") != -1) // remove useless tags
+\end_layout
+
+\begin_layout Plain Layout
+
+					continue;
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (s.indexOf(" I/DEBUG") != -1 && s.endsWith("code around pc:"))
+\end_layout
+
+\begin_layout Plain Layout
+
+					while ((s = lr.readLine()) != null && s.indexOf(" I/DEBUG")!= -1) {}
+ // skips the stack, which is useless (and consumes 20% of log file!)
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (s != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+				{
+\end_layout
+
+\begin_layout Plain Layout
+
+					bas.writeBytes(s);
+\end_layout
+
+\begin_layout Plain Layout
+
+					bas.writeBytes(enter,0,enter.length);
+\end_layout
+
+\begin_layout Plain Layout
+
+				}
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+			fi.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+			log(bas.getBuffer(),0,bas.getPos());
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			e.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
 \end_layout
 
 \begin_layout Plain Layout
@@ -34424,6 +34982,240 @@ public class GerenciamentoDeErros
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+How to use it:
+\end_layout
+
+\begin_layout Enumerate
+On the application 
+\family typewriter
+initUI()
+\family default
+, call:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+GerenciamentoDeErros.verificaSeFinalizou(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+On the application 
+\family typewriter
+onExit()
+\family default
+, call:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+GerenciamentoDeErros.finalizouCorretamente(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Whenever treating exceptions, call:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	GerenciamentoDeErros.log(e);
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+When synchronizing, check if the error file exists, load it, send it, and
+ erase it:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String nomeLog = GerenciamentoDeErros.NOME_ARQUIVO;
+\end_layout
+
+\begin_layout Plain Layout
+
+if (new File(nomeLog).exists())
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	sinc.log("Sending error report.");
+\end_layout
+
+\begin_layout Plain Layout
+
+	File log = new File(nomeLog,File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+	byte[] lbuf = new byte[2048];
+\end_layout
+
+\begin_layout Plain Layout
+
+	int tam = log.getSize();
+\end_layout
+
+\begin_layout Plain Layout
+
+	final int TAM_MAX = 100000;
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (tam > TAM_MAX) // If the file is too big, only sends the last 100 K
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		log.setPos(tam-TAM_MAX);
+\end_layout
+
+\begin_layout Plain Layout
+
+		tam = TAM_MAX;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeInt(tam);
+\end_layout
+
+\begin_layout Plain Layout
+
+	int nn;
+\end_layout
+
+\begin_layout Plain Layout
+
+	while ((nn = log.readBytes(lbuf,0,lbuf.length)) > 0)
+\end_layout
+
+\begin_layout Plain Layout
+
+		ds.writeBytes(lbuf,0,nn);
+\end_layout
+
+\begin_layout Plain Layout
+
+	log.delete();
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+else ds.writeInt(0);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Observations:
+\end_layout
+
+\begin_layout Enumerate
+The 
+\family typewriter
+GerenciamentoDeErros
+\family default
+ class allows logging everything.
+ AVOID THAT: only errors should be there.
+\end_layout
+
+\begin_layout Enumerate
+In our synchronization, we send the log error using a servlet; if you preffer
+ using a webservice, you must implement something different.
+\end_layout
+
+\begin_layout Enumerate
+In the server, we get the report and send it by e-mail directly to the developer
+ support service.
+ If the report has tcvmlib errors, you should open a request in our support
+ service with the error log and addicional information to help us to reproduce
+ the errors.
+ 
 \end_layout
 
 \end_body
