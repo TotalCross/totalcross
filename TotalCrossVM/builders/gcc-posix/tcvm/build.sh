@@ -3,7 +3,6 @@
 function display_help
 {
   echo "`basename $0` arguments:"
-  echo "  -clean             clean before building"
   echo "  -demo              build a demo version"
   echo "  -help              this help message"
   echo "  -noras id          build a noras version"
@@ -18,10 +17,6 @@ out_folder="ras"
 while [ $1 ];
 do
   case "$1" in
-    -c|-clean)
-      do_clean=1
-      shift
-      ;;
     -d|-demo)
       type="demo"
       out_folder="demo"
@@ -71,9 +66,7 @@ fi
 mkdir -p $BASEDIR/linux/$type
 cd $BASEDIR/linux/$type
 ../../configure --enable-$type --with-sdk-prefix=$SDK $SPEC_OPTS
-if [ $do_clean ]; then
-   make clean
-fi
+make clean
 make -s -j $NUMBER_OF_PROCESSORS
 
 # copy back the default noras.inc
@@ -81,4 +74,3 @@ if [ $noras ];
 then
    cp $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_none.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
 fi
-
