@@ -1005,11 +1005,7 @@ target: Linux builds
   <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 </target>
 
-<target name="copyLinuxTCVM" >
-
-  <mkdir dir="${gcc.project.path}/tcvm/linux/${type}"/>
-  <scp file="${buildserver.tc.linux.path}/${type}/.libs/libtcvm.so" todir="${gcc.project.path}/tcvm/linux/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
+<target name="packageLinux" >
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
@@ -1028,34 +1024,27 @@ target: Linux builds
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
   </java>
-
 </target>
 
-<target name="copyLinuxTCVM_sdk" >
-
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_sdk" >
+   <antcall target="packageLinux">
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
-
 </target>
 	
-<target name="copyLinuxTCVM_vms" >
-   <echo message="retrieve remote release build" />
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_vms" >
+   <antcall target="packageLinux">
     <param name="type" value="release" />
     <param name="target.path" value="${target.vms.path}" />
    </antcall>
-
 </target>
    
-<target name="copyLinuxTCVM_vms_noras" >
-   <echo message="retrieve remote NORAS release build" />
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_vms_noras" >
+   <antcall target="packageLinux">
        <param name="type" value="noras" />
        <param name="target.path" value="${target.noras.path}" />
    </antcall>
-
 </target>   
 
 <target name="buildLinux_vms" depends="updateCompilerDate4D">
@@ -1064,7 +1053,7 @@ target: Linux builds
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
-  <antcall target="copyLinuxTCVM_vms" />
+  <antcall target="packageLinux_vms" />
 
 </target>
 
@@ -1074,7 +1063,7 @@ target: Linux builds
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
    
-   <antcall target="copyLinuxTCVM_vms_noras" />
+   <antcall target="packageLinux_vms_noras" />
    
 </target>
 
@@ -1335,8 +1324,8 @@ target: build targets
 <target name="updateJavaInInstall" depends="createSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Update the Java files and rebuilds the installer" />
 
 <target name="build_sdk_java" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Builds the Java device, desktop and javadocs."/>
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildSamples_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
-<target name="build_sdk_no_samples" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />	
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,packageLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildSamples_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
+<target name="build_sdk_no_samples" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,packageLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />	
 <target name="build_sdk_fast" depends="checkVersionOnProjects,createSkeleton_sdk" description="Create a smaller version of the SDK DEMO from scratch" >
   <property name="iphone.build_clean" value="YES" />
   <property name="type" value="demo" />
