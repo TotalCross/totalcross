@@ -29262,6 +29262,438 @@ setTime()
 .
 \end_layout
 
+\begin_layout Chapter
+GPS
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+GPS
+\family default
+ is a class that retrieves GPS coordinates read from the COM (or Bluetooth,
+ or IR) port on Palm OS.
+ Windows Mobile, Android, BlackBerry, and iOS use the native API instead
+ of reading from the COM port.
+ This class only retrieves data updating the internal fields.
+ If you want to display that data, you may use the 
+\family typewriter
+GPSView
+\family default
+ class.
+ If the GPS fails connecting to the satellites, and the phone has signal,
+ you can use the cell tower location as a rough location.
+ The precision is vary between 50m to 3km, depending on the phone location.
+ You can get the latitude and longitude using 
+\family typewriter
+CellInfo.toCoordinates()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
+GPS class
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+GPS
+\family default
+ class has two constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPS() Constructs a GPS control, opening a default port using 9600 bps.
+ Already prepared for PIDION scanners.
+ It automatically scans the Windows CE registry searching for the correct
+ GPS COM port.
+ Under Windows Mobile and Android, uses the internal GPS api.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPS(PortConnector
+\begin_inset space ~
+\end_inset
+
+
+\family typewriter
+sp)
+\family default
+ Constructs a GPS control with the given serial port.
+ Don't use this constructor on Android or Windows Mobile.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector sp = new PortConnector(PortConnector.BLUETOOTH, 9600);
+\end_layout
+
+\begin_layout Plain Layout
+
+sp.setReadTimeout(500);
+\end_layout
+
+\begin_layout Plain Layout
+
+gps = new GPS(sp); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following fields are useful for fetching GPS data:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+location Stores the location - latitude on first index (0) and longitude
+ on second index (1).
+ On low signal, it contains the value 
+\family typewriter
+INVALID
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+direction Stores the direction in degrees from the North.
+ On low signal, it contains the value 
+\family typewriter
+INVALID
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+velocity Stores the speed in knots.
+ On low signal, it contains the value 
+\family typewriter
+INVALID
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+satellites Number of satellites in view.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastFix Stores the time of the last updated.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+messageReceived The retrieved message, or 
+\family typewriter
+null
+\family default
+ on Windows Mobile and Android.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pdop The last PDOP (Dilution of Precision), if any.
+ On low signal, it contains the value 
+\family typewriter
+INVALID
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lowSignalReason The reason for the low signal, if 
+\family typewriter
+retrieveGPSData()
+\family default
+ returned 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The class has the following useful methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getWinCEGPSCom() Returns the Windows CE GPS COM port, which can be used
+ to open a 
+\family typewriter
+PortConnector
+\family default
+.
+ The return is a string like "COM3", or 
+\family typewriter
+null
+\family default
+ if no keys with GPS were found under 
+\family typewriter
+HKLM
+\backslash
+Drivers
+\backslash
+ BuildIn
+\family default
+.
+ Sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (Settings.isWindowsDevice() && (com = GPS.getWinCEGPSCom()) != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN
+, 1);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stop() Closes the underlying 
+\family typewriter
+PortConnector
+\family default
+ or native api.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLatitude() Returns the latitude (
+\family typewriter
+location[0]
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLongitude() Returns the longitude (
+\family typewriter
+location[1]
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toCoordinate(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+dir) Returns the coordinate of the given string in coordinate format and
+ direction, which can be 
+\family typewriter
+S
+\family default
+ (South), 
+\family typewriter
+W
+\family default
+ (West), 
+\family typewriter
+E
+\family default
+ (East), or 
+\family typewriter
+N
+\family default
+ (North).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toCoordinateGGMMSS(String
+\begin_inset space ~
+\end_inset
+
+coord,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+dir) The same as above but returns the coordinate in the format 
+\family typewriter
+degrees:minutes:seconds
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+retrieveGPSData() Call this method to retrieve the data from the GPS.
+ If there is low signal, it will return 
+\family typewriter
+false
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Here is an example of GPS usage:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+new Thread()   
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void run()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		gps = new GPS();
+\end_layout
+
+\begin_layout Plain Layout
+
+		for (int i = 0; i < 60*2 && gps.location[0] == 0; i++) // wait 60s
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			Vm.safeSleep(500);
+\end_layout
+
+\begin_layout Plain Layout
+
+			try
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				gps.retrieveGPSData();
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+			catch (Exception eee)
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				eee.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+				break;
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}.start(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+GPSView class
+\end_layout
+
 \begin_layout Part
 COMPRESSION
 \end_layout
