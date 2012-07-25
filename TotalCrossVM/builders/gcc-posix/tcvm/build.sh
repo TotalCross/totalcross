@@ -68,6 +68,7 @@ cd $BASEDIR/linux/$type
 ../../configure --enable-$type --with-sdk-prefix=$SDK $SPEC_OPTS
 make clean
 make -s -j $NUMBER_OF_PROCESSORS
+cp -L .libs/libtcvm.so .
 
 # copy back the default noras.inc
 if [ $noras ];
