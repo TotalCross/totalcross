@@ -532,7 +532,7 @@ target: createSkeleton - Create the folders from scratch
   <echo message="Copying SDK"/>
   <copy todir="${target.sdk.path}" overwrite="yes" >
    <fileset dir="${source.sdk.path}"
-    excludes=".*,deletemounts.reg,.settings/**,src/tc/samples/app/activation/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,etc/tools/bb/bin/sigtool.csk,etc/tools/bb/lib/**,etc/tools/bb/bin/sigtool.db,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
+    excludes=".*,.settings/**,src/tc/samples/app/activation/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,etc/tools/bb/bin/sigtool.csk,etc/tools/bb/lib/**,etc/tools/bb/bin/sigtool.db,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
   </copy>
   <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
