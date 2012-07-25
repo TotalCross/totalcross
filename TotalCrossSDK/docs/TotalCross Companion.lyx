@@ -29281,15 +29281,25 @@ GPS
 GPSView
 \family default
  class.
- If the GPS fails connecting to the satellites, and the phone has signal,
+ 
+\end_layout
+
+\begin_layout Standard
+If the GPS fails connecting to the satellites, and the phone has signal,
  you can use the cell tower location as a rough location.
- The precision is vary between 50m to 3km, depending on the phone location.
- You can get the latitude and longitude using 
+ The precision varies between 50m to 3km, depending on the phone location.
+ In this case, you can get the latitude and longitude using 
 \family typewriter
 CellInfo.toCoordinates()
 \family default
 .
  
+\end_layout
+
+\begin_layout Standard
+On Android, don't forget to turn on the GPS, going to Settings / Security
+ & Location / Enable GPS satellites.
+ The other platforms may require that as well.
 \end_layout
 
 \begin_layout Section
@@ -29692,6 +29702,248 @@ new Thread()
 
 \begin_layout Section
 GPSView class
+\end_layout
+
+\begin_layout Standard
+This control displays the GPS coordinates read, using the 
+\family typewriter
+GPS
+\family default
+ class to show the values on labels.
+ You can use the 
+\family typewriter
+GPS
+\family default
+ class standalone if you wish.
+ The field 
+\family typewriter
+gps
+\family default
+ is the class used to retrieve the GPS coordinates.
+ One way to use this class is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add(gps = new GPSView(1000),LEFT,TOP); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+GPSView
+\family default
+ has four constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPSView() Constructs a 
+\family typewriter
+GPSView
+\family default
+ using a read interval of 2 seconds.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPSView(int
+\begin_inset space ~
+\end_inset
+
+readInterval) Constructs a 
+\family typewriter
+GPSView
+\family default
+ using the given read interval in milliseconds.
+ A 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ is posted each time the 
+\family typewriter
+TRIGGERED
+\family default
+ event occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPSView(PortConnector
+\begin_inset space ~
+\end_inset
+
+sp,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+readInterval) Constructs a 
+\family typewriter
+GPSView
+\family default
+ using the given 
+\family typewriter
+PortConnector
+\family default
+ and read interval.
+ On Android and Windows Mobile, you should use one of the other constructors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GPSView(GPS
+\begin_inset space ~
+\end_inset
+
+gps,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+readInterval) Constructs a 
+\family typewriter
+GPSView
+\family default
+ using the given 
+\family typewriter
+GPS
+\family default
+ and read interval as input.
+ 
+\end_layout
+
+\begin_layout Standard
+The useful methods are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stop() Removes the timer and stops the GPS.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+retrieveGPSData() Retrieves the GPS data and updates the fields with it.
+\end_layout
+
+\begin_layout Section
+GoogleMaps class
+\end_layout
+
+\begin_layout Standard
+Shows a Google Maps viewer on a separate window.
+ Internet connection is required.
+ Currently works on Android and iOS only.
+ Pressing back returns to the application on Android.
+ On iPhone you must do a double-click on the home button to open the task
+ manager to return to your application.
+ This class only has a default constructor and a method, which is described
+ below:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showAddress(String
+\begin_inset space ~
+\end_inset
+
+address,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+showSatellitePhotos) Shows the given address in a separate window.
+ If you want to show your current location, you will have to turn the GPS
+ on, get the coordinates and pass to this method.
+\begin_inset Newline newline
+\end_inset
+
+The 
+\family typewriter
+address
+\family default
+ parameter is the address to show (e.
+ g.
+ 
+\family typewriter
+"rua tonelero 10, copacabana, rio de janeiro, brasil"
+\family default
+, or 
+\family typewriter
+"22030,brasil"
+\family default
+).
+ The address is resolved and its latitude and logitude coordinates are retrieved.
+ You must be careful with the address given, be sure to make some tests
+ before.
+ If you want to pass the lat/lon coordinates, pass them in the form: 
+\family typewriter
+"@lat,lon"
+\family default
+ (e.
+ g.: 
+\family typewriter
+"@-22.966000,-43.185000"
+\family default
+).
+ Note that, due to Android's restrictions, only the first 6 decimal digits
+ in the coordinates are used.
+ Passing an empty string will make the engine search for a valid "last known
+ position".
+ If there's no such position, it will return 
+\family typewriter
+false
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If 
+\family typewriter
+showSatellitePhotos == true
+\family default
+, an image of the satellite is combined with the map.
+ May require more bandwidth and Internet resources.
+\begin_inset Newline newline
+\end_inset
+
+The method returns 
+\family typewriter
+true
+\family default
+ if the map was shown; 
+\family typewriter
+false
+\family default
+, otherwise.
+ 
+\family typewriter
+false
+\family default
+ is often returned when there's no Internet connection.
 \end_layout
 
 \begin_layout Part
