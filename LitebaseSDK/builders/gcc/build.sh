@@ -52,3 +52,4 @@ cd $BASEDIR/linux/$type
 ../../configure --enable-$type --with-sdk-prefix=$SDK
 make clean
 make -s -j $NUMBER_OF_PROCESSORS
+cp -L .libs/libLitebase.so .

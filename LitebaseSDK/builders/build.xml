@@ -323,64 +323,26 @@ target: buildWinCE
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="createSkeleton_sdk" >
-  <delete failonerror="yes" dir="${target.sdk.path}"/>
-  <antcall target="updateSkeleton_sdk"/>
+<target name="createSkeleton" >
+  <delete dir="${base.target.path}/Litebase*" failonerror="yes" />
+   <mkdir dir="${target.sdk.path}/dist/lib"/>
+   <mkdir dir="${target.vms.path}/dist/lib"/>
+   <copy todir="${target.sdk.path}">
+      <fileset dir="${source.lb.path}" includes="src/java/samples/**,License.txt,setup.bat" excludes="src/java/samples/sys/joins/**" />
+      </copy>
 </target>
 
-<target name="updateSkeleton_sdk" description="copy the changed files to the SDK">
-  <echo message="Copying SDK"/>
-  <copy todir="${target.sdk.path}">
-   <fileset dir="${source.lb.path}" includes="src/java/samples/**,License.txt,setup.bat" excludes="src/java/samples/sys/joins/**" />
-  </copy>
-</target>
-
-<target name="createSkeleton_vms" >
-  <delete failonerror="yes" dir="${target.vms.path}"/>
-  <antcall target="updateSkeleton_vms"/>
-</target>
-
-<target name="updateSkeleton_vms" description="copy the changed files to the VMS">
-  <echo message="Copying VMS"/>
-  <mkdir dir="${target.vms.path}"/>
-</target>
-
-<target name="buildSkeletonLinux_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK and Linux samples, without cleaning -->
-
-  <echo message="Building Litebase SDK"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
-
-  <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false">
-   <property name="supportedPlatforms" value="-linux" />
-  </ant>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
-
-</target>
-
-<target name="buildSkeleton_sdk" >
-
+<target name="buildSkeleton" >
   <echo message="Building Litebase SDK"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="clean"           inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-sdk"  inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="javadoc"  		inheritAll="false"/>
 
   <!-- copy the changed files to the release folder -->
   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
   <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
   <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist/lib/palm" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
-
 </target>
 
 <target name="buildSamples_sdk" >
@@ -388,24 +350,14 @@ target: createSkeleton - Create the folders from scratch
   <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/dist/samples" /></copy>
 </target>
 
-<target name="buildJava_sdk" >
-
-  <ant antfile="build.xml" dir="${source.lb.path}" target="clean" inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="desktop" inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.lb.path}" target="device" inheritAll="false"/>
-
-  <copy toDir="${target.sdk.path}/dist">
-   <fileset dir="${source.lb.path}/dist" includes="*.jar"/>
-  </copy>
-  <copy file="${source.lb.path}/dist/lib/palm/LitebaseLib.pdb" todir="${target.sdk.path}/dist/lib/palm"/>
-
+<target name="buildBB_sdk" >
+   <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-sdk"  inheritAll="false"/>
+   <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
 </target>
 
 <target name="buildBB_vms" >
-
   <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-vms" inheritAll="false"/>
   <copy todir="${target.vms.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
-
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -569,59 +521,38 @@ target: Linux builds
 <target name="buildLinux_sdk" >
   <sshexec command="bash -l ~/build.sh -litebase -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
-
-<target name="copyLinux_sdk">
-
-  <echo message="Retrieve remote Linux demo builds" />
-
-  <mkdir dir="${gcc.project.path}/linux/.libs"/>
-  <scp file="${buildserver.lb.linux.path}/demo/.libs/libLitebase.so" todir="${gcc.project.path}/linux/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB Linux demo package" />
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/linux/.libs/libLitebase.so"/>
-    <arg line="-t ${target.sdk.path}/dist/lib/linux"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
-
+   
+<target name="packageLinux" >
+   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+     <classpath>
+         <pathelement location="${base.temp.path}/classes_desktop"/>
+         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+     </classpath>
+     <arg line="-n Litebase"/>
+     <arg line="-c 'Litebase Library'"/>
+     <arg line="-d 'TotalCross Litebase library'"/>
+     <arg line="-v ${lb.version}"/>
+     <arg line="-b ${gcc.project.path}/linux/${type}/libLitebase.so"/>
+     <arg line="-t ${target.path}/dist/lib/linux"/>
+     <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
+   </java>
 </target>
-	
-<target name="copyLinux_vms">
 
-  <echo message="Retrieve Linux release builds" />
-
-  <mkdir dir="${gcc.project.path}/linux/.libs"/>
-  <scp file="${buildserver.lb.linux.path}/release/.libs/libLitebase.so" todir="${gcc.project.path}/linux/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB Linux release package" />
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/linux/.libs/libLitebase.so"/>
-    <arg line="-t ${target.vms.path}/dist/lib/linux"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
-
+<target name="packageLinux_sdk">
+   <antcall target="packageLinux">
+      <param name="type" value="demo" />
+      <param name="target.path" value="${target.sdk.path}" />
+   </antcall>
+</target>
+   
+<target name="packageLinux_vms">
+   <antcall target="packageLinux">
+      <param name="type" value="release" />
+      <param name="target.path" value="${target.vms.path}" />
+   </antcall>
 </target>
 
 <target name="buildLinux_vms">
@@ -779,12 +710,8 @@ target: checks if we must update the versions of the files prior to a build.
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="update_linux" depends="buildLinux_sdk,buildSkeletonLinux_sdk,copyLinux_sdk" description="Update the SDK device and samples, rebuild" />
-<target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
-<target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
-
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,build-deb,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
-<target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_vms" depends="checkVersionOnProjects,createSkeleton,buildBB_vms,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />
