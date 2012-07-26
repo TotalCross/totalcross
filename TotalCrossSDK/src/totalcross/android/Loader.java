@@ -262,28 +262,6 @@ public class Loader extends Activity
    {
       try
       {
-         if (command.endsWith(".pdf"))
-         {
-            File pdfFile = new File(command);
-            AndroidUtils.debug(command+" "+pdfFile.exists());
-            if(pdfFile.exists()) 
-            {
-                Uri path = Uri.fromFile(pdfFile); 
-                AndroidUtils.debug("uri: "+path);
-                Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                pdfIntent.setDataAndType(path, "application/pdf");
-                pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                try
-                {
-                    startActivity(pdfIntent);
-                }
-                catch (ActivityNotFoundException e)
-                {
-                    e.printStackTrace(); 
-                }
-            }
-         }
-         else
          if (command.equalsIgnoreCase("cmd"))
          {
             try 
@@ -300,13 +278,35 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
-            intent.putExtra("url",args);
-            if (!wait)
-               startActivityForResult(intent, JUST_QUIT);
+            if (args.toLowerCase().endsWith(".pdf"))
+            {
+               File pdfFile = new File(args);
+               if(pdfFile.exists()) 
+               {
+                   Uri path = Uri.fromFile(pdfFile); 
+                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                   pdfIntent.setDataAndType(path, "application/pdf");
+                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   try
+                   {
+                       startActivity(pdfIntent);
+                   }
+                   catch (ActivityNotFoundException e)
+                   {
+                       e.printStackTrace(); 
+                   }
+               }
+            }
             else
-               startActivity(intent);
-            return;
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
+               intent.putExtra("url",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
          }
          else
          if (command.equalsIgnoreCase("url"))
@@ -361,6 +361,8 @@ public class Loader extends Activity
    
    protected void onPause()
    {
+      if (runningVM)
+         Launcher4A.sendCloseSIPEvent();
       Launcher4A.appPaused = true;
       if (onMainLoop)
          Launcher4A.appPaused();

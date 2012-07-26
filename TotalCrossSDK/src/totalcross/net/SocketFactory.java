@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import totalcross.io.IOException;
@@ -46,13 +44,13 @@ import totalcross.io.IOException;
  */
 public class SocketFactory
 {
-   /**
-    * Creates a SocketFactory.
-    * 
-    * @since TotalCross 1.13
-    */
-   public SocketFactory()
+   private static SocketFactory instance;
+
+   public static SocketFactory getDefault()
    {
+      if (instance == null)
+         instance = new SocketFactory();
+      return instance;
    }
 
    /**

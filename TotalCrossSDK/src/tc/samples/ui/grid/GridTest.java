@@ -18,7 +18,9 @@ package tc.samples.ui.grid;
 
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.Color;
+import totalcross.ui.image.*;
 import totalcross.ui.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.sys.*;
 import totalcross.util.*;
@@ -45,7 +47,7 @@ public class GridTest extends MainWindow
 
    public void initUI()
    {
-      String tabCaptions[] = { "Line", "Check 1", "Check 2", "Edit&Pop", "Sort", "CellControl" };
+      String tabCaptions[] = { "Line", "Check 1", "Check 2", "Edit&Pop", "Sort", "CellControl", "Image" };
       add(tp = new TabbedContainer(tabCaptions), LEFT,TOP,FILL,FILL);
       tp.setContainer(0, new Grid1());
       tp.setContainer(1, new Grid2());
@@ -53,6 +55,7 @@ public class GridTest extends MainWindow
       tp.setContainer(3, new Grid4());
       tp.setContainer(4, new Grid5());
       tp.setContainer(5, new Grid6());
+      tp.setContainer(6, new Grid7());
       tp.setActiveTab(1);
       MenuItem col0[] =
       {
@@ -415,6 +418,37 @@ public class GridTest extends MainWindow
          grid.setColumnChoices(0, new String[]{"Adams family","Tom and Jerry"});
          grid.setCellController(new CellController6());
          grid.setItems(items);
+      }
+   }
+
+   private class Grid7 extends Container
+   {
+      public void initUI()
+      {
+         try
+         {
+            try
+            {
+               String []gridCaptions = {"Image", "Name", "Details" };
+               int gridWidths[] = {-25, -50, -25};
+               int gridAligns[] = {CENTER,LEFT,LEFT};
+               String items[][] =
+               {
+                  {"@car1", "Car number one", "good car"},
+                  {"@car2", "Car number two", "great car"},
+               };
+         
+               Grid grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
+               add(grid, LEFT+5, AFTER+2, FILL-10, PREFERRED);
+               grid.setImage("@car1",new Image("tc/samples/ui/grid/car1.png"));
+               grid.setImage("@car2",new Image("tc/samples/ui/grid/car2.png"));
+               grid.setItems(items);
+            }
+            catch (Exception ee)
+            {
+               MessageBox.showException(ee,true);
+            }
+         } catch (Exception ide) {ide.printStackTrace();}
       }
    }
 }

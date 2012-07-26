@@ -9,13 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
+void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h)
+{
+#ifndef WINCE // windows ce already does this for us
+   *w += GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CXFIXEDFRAME)*2;
+   *h += GetSystemMetrics(resizableWindow ? SM_CYSIZEFRAME : SM_CYFIXEDFRAME)*2 + GetSystemMetrics(SM_CYCAPTION);
+#endif
+}
 void privateScreenChange(int32 w, int32 h)
 {
 #ifndef WINCE // windows ce already does this for us
-   int32 border = GetSystemMetrics(*tcSettings.resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
-   w += border*2;
-   h += GetSystemMetrics(SM_CYCAPTION) + border*2;
-   MoveWindow(mainHWnd, 0, 0, w, h, TRUE);
+   adjustWindowSizeWithBorders(*tcSettings.resizableWindow,&w, &h);
+   SetWindowPos(mainHWnd,0,0,0, w, h, SWP_NOMOVE);
 #endif
 }
 
@@ -73,9 +78,6 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    char* dot;
    HDC deviceContext;
    bool resizableWindow = appTczAttr & ATTR_RESIZABLE_WINDOW;
-#ifndef WINCE
-   int32 border;
-#endif
 
    screen->extension = (TScreenSurfaceEx*)xmalloc(sizeof(TScreenSurfaceEx));
 
@@ -86,21 +88,18 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->bpp = GetDeviceCaps(deviceContext,BITSPIXEL) * GetDeviceCaps(deviceContext,PLANES);
    DeleteDC(deviceContext);
 
-   width = defScrW == -1 ? 240 : defScrW;
-   height = defScrH == -1 ? 320 : defScrH;
-
-#ifdef DESIRED_SCREEN_WIDTH          // tweak to work in IBGE's NETBOOK
-   width = DESIRED_SCREEN_WIDTH;
-#endif
-#ifdef DESIRED_SCREEN_HEIGHT
-   height = DESIRED_SCREEN_HEIGHT;
-#endif
-
+   if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   {
+      width = defScrW == -1 ? 240 : defScrW;
+      height = defScrH == -1 ? 320 : defScrH;
+   }
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
-   border = GetSystemMetrics(resizableWindow ? SM_CXSIZEFRAME : SM_CYFIXEDFRAME);
-   rect.bottom = height + GetSystemMetrics(SM_CYCAPTION) + border*2;
-   rect.right = width  + border*2;
+   rect.bottom = height;
+   rect.right = width;
+   adjustWindowSizeWithBorders(resizableWindow,&rect.right,&rect.bottom);
 
    style |= WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
    if (resizableWindow) style |= WS_THICKFRAME | WS_MAXIMIZEBOX;

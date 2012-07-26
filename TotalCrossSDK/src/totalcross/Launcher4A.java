@@ -202,6 +202,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
+      if (h == 0 || w == 0) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
@@ -210,12 +211,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
-         int screenSize = Math.max(screenHeight, display.getWidth());
+         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
             // if first try, check if the value was already cached
             int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) != -1)
+            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
             {
                screenSize = temp;
                //AndroidUtils.debug("restoring size from cache: "+screenSize);
@@ -226,17 +227,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                // not yet cached. first try? store the size and cache it
                if (firstOrientationSize == 0)
                {
-                  //AndroidUtils.debug("first: "+screenSize);
+                  //AndroidUtils.debug("@@@@ first: "+screenSize);
                   firstOrientationSize = screenSize;
                   sendOrientationChange(true);
                   return;
                }
-               //AndroidUtils.debug("second: "+screenSize);
+               //AndroidUtils.debug("@@@@ second: "+screenSize);
                if (firstOrientationSize > screenSize)
                   screenSize = firstOrientationSize;
                AndroidUtils.setSavedScreenSize(screenSize);
                sendOrientationChange(false); // restore orientation to what user wants
             }
+         }
+         if (screenSize == 0)
+         {
+            screenSize = screenSize0;
+            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
          }
          sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
          sScreenBitmap.eraseColor(0xFFFFFFFF);
@@ -261,7 +267,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (sipVisible) // sip changed?
       {
          if (rotated) // close the sip if a rotation occurs
-            setSIP(SIP_HIDE,true);
+            setSIP(SIP_HIDE);
          return;
       }
       
@@ -319,7 +325,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
-      outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+      //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
 
       return new BaseInputConnection(this, false)
@@ -365,7 +371,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (!hardwareKeyboardIsVisible && sipVisible)
          {
             if (event.getAction() == KeyEvent.ACTION_UP)
-               setSIP(SIP_HIDE,true);
+               setSIP(SIP_HIDE);
             return false;
          }
       }
@@ -721,11 +727,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    static boolean sipVisible;
    
-   public static void setSIP(int sipOption)
-   {
-      setSIP(sipOption,false);
-   }
-   
    class SipClosedReceiver extends ResultReceiver
    {
       public SipClosedReceiver()
@@ -748,7 +749,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public SipClosedReceiver siprecv = new SipClosedReceiver();
    private SipClosedThread sipthread = new SipClosedThread();
    
-   public static void setSIP(int sipOption, boolean sendEvent)
+   public static void setSIP(int sipOption)
    {
       InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
@@ -756,7 +757,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case SIP_HIDE:
             sipVisible = false;
             if (Loader.isFullScreen)
-               setLoaderFullScreen(true,sendEvent);
+               setLoaderFullScreen(true);
             else
                imm.hideSoftInputFromWindow(instance.getWindowToken(), 0, instance.siprecv);
             break;
@@ -765,19 +766,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case SIP_BOTTOM:
             sipVisible = true;
             if (Loader.isFullScreen)
-               setLoaderFullScreen(false,sendEvent);
+               setLoaderFullScreen(false);
             else
                imm.showSoftInput(instance, 0); 
             break;
       }
    }
 
-   private static void setLoaderFullScreen(boolean full, boolean sendEvent)
+   private static void setLoaderFullScreen(boolean full)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putBoolean("fullScreen", full);
-      b.putBoolean("sendEvent", sendEvent);
       b.putInt("type",Loader.FULLSCREEN);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -785,7 +785,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void sendCloseSIPEvent()
    {
-      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+      if (eventThread != null)
+         eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
    }
 
    public static int getAppHeight()
@@ -1177,7 +1178,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       appPaused = true;
       if (eventThread != null)
       {
-         setSIP(SIP_HIDE,true);
+         setSIP(SIP_HIDE);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
    }

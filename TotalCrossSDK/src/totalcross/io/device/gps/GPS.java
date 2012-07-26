@@ -23,7 +23,7 @@ import totalcross.util.*;
 
 /**
  * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
- * In Windows Mobile and Android, it uses the native API instead of reading from the COM port. 
+ * Windows Mobile, Android and iOS use the native API instead of reading from the COM port.
  * 
  * This class only retrieves data updating the internal fields. If you want to display that data,
  * you may use the GPSView class.
@@ -106,7 +106,7 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
+   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:

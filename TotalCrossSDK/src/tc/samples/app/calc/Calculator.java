@@ -429,7 +429,7 @@ public class Calculator extends MainWindow
       {
          case 1: // set precision
             InputBox id = new InputBox("Set Precision",
-                  "Please enter the number|of decimal places to be used|(2 to 12):", "" + places);
+                  "Please enter the number\nof decimal places to be used\n(2 to 12):", "" + places);
             id.getEdit().setMode(Edit.CURRENCY);
             id.popup();
             if (id.getPressedButtonIndex() == 0)

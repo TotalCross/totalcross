@@ -125,7 +125,9 @@ void z_error (m)
     char *m;
 {
     debug(stderr, "z_error calling exit: %s\n", m);
-    exit(1);
+#ifndef darwin    
+    exit(1);  
+#endif    
 }
 #endif
 

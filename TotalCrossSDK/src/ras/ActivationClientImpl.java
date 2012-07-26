@@ -162,23 +162,37 @@ final class ActivationClientImpl extends ActivationClient
          if (!success.verify(pkcs1Signature))
             throw new Exception("The activation information is not authentic");
 
+         String devicePlatform = deviceInfo.getString("PLATFORM");
+         String activationPlatform = actDeviceInfo.getString("PLATFORM");
+
          logger.info("Verifying device information");
-         if (!deviceInfo.get("PLATFORM").equals(actDeviceInfo.get("PLATFORM"))
-               || !deviceInfo.get("ID").equals(actDeviceInfo.get("ID")))
-            throw new Exception("The device type does not match with the registration.");
+         if (!devicePlatform.equals(activationPlatform))
+            throw new Exception("The device platform does not match with the registration.");
 
          String deviceIMEI = (String) deviceInfo.get("IMEI");
          String deviceSerial = (String) deviceInfo.get("SERIAL");
          String activationIMEI = (String) actDeviceInfo.get("IMEI");
          String activationSerial = (String) actDeviceInfo.get("SERIAL");
 
-         if (!deviceInfo.get("HASH").equals(actDeviceInfo.get("HASH"))
-               && !(deviceIMEI != null && activationIMEI != null && deviceIMEI.length() > 0 && deviceIMEI.equals(activationIMEI))
-               && !(deviceSerial != null && activationSerial != null && deviceSerial.length() > 0 && deviceSerial.equals(activationSerial)))
+         boolean checkRegistration = deviceInfo.get("HASH").equals(actDeviceInfo.get("HASH"));
+         if (!checkRegistration)
+            checkRegistration = (deviceIMEI != null) && (activationIMEI != null) && (deviceIMEI.length() > 0) && deviceIMEI.equals(activationIMEI);
+         if (!checkRegistration && deviceSerial != null && activationSerial != null && (deviceSerial.length() > 0))
+         {
+            checkRegistration = deviceSerial.equals(activationSerial);
+            if (!checkRegistration && Settings.WIN32.equals(activationPlatform))
+            {
+               String[] tokens = Convert.tokenizeString(deviceSerial, '-');
+               for (int i = tokens.length - 1 ; i >= 0 && !checkRegistration; i--)
+                  checkRegistration = activationSerial.indexOf(tokens[i]) != -1;
+            }
+         }
+
+         if (!checkRegistration)
             throw new Exception("The device information does not match with the registration.");
 
          logger.info("Verifying activation code");
-         if (!isValidActivationCode(
+         if (!Settings.WIN32.equals(activationPlatform) && !isValidActivationCode(
                Convert.hexStringToBytes(request.getActivationCode()),
                Convert.hexStringToBytes((String) deviceInfo.get("HASH"))))
             throw new Exception("The activation code does not match with the registration.");

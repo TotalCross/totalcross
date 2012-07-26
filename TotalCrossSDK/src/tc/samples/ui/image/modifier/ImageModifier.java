@@ -68,7 +68,7 @@ public class ImageModifier extends MainWindow
       if (Settings.platform.equals(Settings.WIN32))
          mainPath = ".\\";
       else
-      if (Settings.platform.equals(Settings.LINUX) || Settings.platform.equals(Settings.IPHONE))
+      if (Settings.platform.equals(Settings.LINUX) || Settings.isIOS())
          mainPath = Settings.appPath + "/";
       else
          mainPath = "\\TotalCross\\";
@@ -305,7 +305,7 @@ public class ImageModifier extends MainWindow
                      sbBrightness.setLiveScrolling(miLiveChanges.isChecked);
                      break;
                   case 201: // about
-                     tellUser("About", "ImageModifier|$Revision: 1.26 $\nWritten by: Pierre G. Richard\nand Guilherme Campos Hazan");
+                     tellUser("About", "ImageModifier\nWritten by: Pierre G. Richard\nand Guilherme Campos Hazan");
                      break;
                }
                onEvent(getPressedEvent(sbScale));

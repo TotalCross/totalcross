@@ -166,7 +166,7 @@ target: compile
   <mkdir dir="${output}/classes" />
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="totalcross/android/**,**/*4A.*,**/*4B*" />
+     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*,**/*4B*" />
      <fileset dir="${src}" includes="ras/CompilationDate4B.java,tc/tools/deployer/Deployer4BB.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
@@ -214,7 +214,7 @@ target: compile
   <mkdir dir="${output}/classes_bb" />
   <mkdir dir="${output}/src_bb" />
   <copy todir="${output}/src_bb" overwrite="true" preservelastmodified="true">
-    <fileset dir="${src}" excludes="totalcross/android/**,**/*4A.*" />
+    <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*" />
   </copy>
   
   <taskdef name="bbprecomp" classname="tc.tools.ant.BBPreComp" classpath="${etc}/tools/ant/tctasks.jar" />
@@ -260,7 +260,7 @@ target: compile
   <mkdir dir="${output}/classes_desktop" />
   <mkdir dir="${output}/desktopsrc" />
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/android/,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
+     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/android/,tc/tools/InvalidateIPA.java,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
      <fileset dir="${src}" includes="ras/ActivationClient.java,ras/ActivationException.java" />
   </copy>
   
@@ -772,7 +772,7 @@ target: blackberry_sdk
    <retry retrycount="3">
       <sequential>
          <var name="signaturetool.output" unset="true"/>
-         <java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
+         <java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output" timeout="180000">
             <arg line="-a -c -C -p superwaba -r ${target}" />
          </java>
          <fail>
@@ -818,20 +818,6 @@ target: conduit
 
 </target>
 
-<!-- if the deploy was stopped, reinsert the stored regkeys. -->
-<target name="reinsert_savedmounts">
-	<available file="savedmounts.reg" property="savedmounts.present"/>
-	<if>
-		<equals arg1="${savedmounts.present}" arg2="true" />
-		<then>
-			<exec executable="regedit.exe" failonerror="no" osfamily="windows">
-				<arg line="/s savedmounts.reg" />
-			</exec>
-			<delete file="savedmounts.reg" />
-		</then>
-	</if>
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: samples
 
@@ -839,8 +825,7 @@ target: samples
         build the TotalCross samples
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="samples" depends="compile-device,reinsert_savedmounts" description="build all the samples">
-
+<target name="samples" depends="compile-device" description="build all the samples">
    <delete dir="${dist}/samples" failonerror="no" />
    <mkdir dir="${dist}/samples" />
 
@@ -849,22 +834,9 @@ target: samples
       <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
    </copy>
 
-   <!-- to be able to build iphone2, we have to get rid of the mounted volumes of the installed cygwin. so first we export it, then delete, then recover -->
-   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
-      <arg line='/e savedmounts.reg "HKEY_LOCAL_MACHINE\SOFTWARE\Cygnus Solutions\Cygwin\mounts v2"' />
-   </exec>
-   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
-      <arg line="/s deletemounts.reg" />
-   </exec>
-   
    <subant target="deploy-app" inheritall="yes">
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant>
-
-   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
-      <arg line="/s savedmounts.reg" />
-   </exec>
-   <delete file="savedmounts.reg" />
 </target>
 
 <target name="deploy-app">

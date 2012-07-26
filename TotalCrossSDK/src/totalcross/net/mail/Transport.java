@@ -14,11 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
-import totalcross.net.AuthenticationException;
+import totalcross.io.IOException;
+import totalcross.net.*;
+import totalcross.net.ssl.SSLSocketFactory;
 import totalcross.util.Properties;
 
 /**
@@ -26,13 +26,11 @@ import totalcross.util.Properties;
  * 
  * @since TotalCross 1.13
  */
-public abstract class Transport
+public abstract class Transport extends Service
 {
-   protected MailSession session;
-
    protected Transport(MailSession session)
    {
-      this.session = session;
+      super(session);
    }
 
    /**
@@ -68,14 +66,60 @@ public abstract class Transport
     */
    public static void send(Message message, MailSession session) throws MessagingException, AuthenticationException
    {
-      SMTPTransport smtp = new SMTPTransport(session);
       String host = session.get(MailSession.SMTP_HOST).toString();
-      int port = ((Properties.Int) session.get(MailSession.SMTP_PORT)).value;
+      int connectionTimeout = ((Properties.Int) session.get(MailSession.SMTP_CONNECTIONTIMEOUT)).value;
+      int timeout = ((Properties.Int) session.get(MailSession.SMTP_TIMEOUT)).value;
+      boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
+
+      int port = tlsEnabled ?
+            ((Properties.Int) session.get(MailSession.SMTP_SSL_PORT)).value :
+            ((Properties.Int) session.get(MailSession.SMTP_PORT)).value;
       String user = session.get(MailSession.SMTP_USER).toString();
-      String pass = session.get(MailSession.SMTP_PASS).toString();
-      smtp.protocolConnect(host, port, user, pass);
-      smtp.sendMessage(message);
+      String password = session.get(MailSession.SMTP_PASS).toString();
+
+      try
+      {
+         SocketFactory sf = null;
+         if (!tlsEnabled)
+            sf = SocketFactory.getDefault();
+         else
+         {
+            Properties.Str sslSocketFactoryClass = (Properties.Str) session.get(MailSession.SMTP_SSL_SOCKET_FACTORY_CLASS);
+            if (sslSocketFactoryClass != null && sslSocketFactoryClass.value != null)
+               sf = (SocketFactory) Class.forName(sslSocketFactoryClass.value).newInstance();
+            else
+               sf = SSLSocketFactory.getDefault();
+         }
+         Socket connection = sf.createSocket(host, port, connectionTimeout);
+         connection.readTimeout = connection.writeTimeout = timeout;
+
+         SMTPTransport smtp = (SMTPTransport) session.getTransport(tlsEnabled ? "smtps" : "smtp");
+         smtp.connect(connection);
+
+         smtp.protocolConnect(host, port, user, password);
+         smtp.sendMessage(message);
+      }
+      catch (InstantiationException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (IllegalAccessException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (UnknownHostException e)
+      {
+         throw new MessagingException(e);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e);
+      }
    }
 
-   protected abstract void sendMessage(Message message) throws MessagingException;
+   public abstract void sendMessage(Message message) throws MessagingException;
 }

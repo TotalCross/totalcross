@@ -183,13 +183,13 @@ public class HtmlBrowser extends MainWindow
    
    private void about()
    {
-      MessageBox mb = new MessageBox(title, "Copyright Jaxo Systems|developed by Pierre G. Richard");
+      MessageBox mb = new MessageBox(title, "Copyright Jaxo Systems\ndeveloped by Pierre G. Richard");
       mb.setBackForeColors(Color.WHITE, bgColor);
       mb.popup();
    }
    private void info()
    {
-      MessageBox mb = new MessageBox(title, "This program uses an HtmlContainer,|which is a Container having its|contents described in HTML.|This isn't yet a full-featured browser.|Alpha version is a proof-of-concept|and does not handle all HTML tags or|process any HTML events.");
+      MessageBox mb = new MessageBox(title, "This program uses an HtmlContainer,\nwhich is a Container having its\ncontents described in HTML.\nThis isn't yet a full-featured browser.\nAlpha version is a proof-of-concept\nand does not handle all HTML tags or\nprocess any HTML events.");
       mb.setTextAlignment(LEFT);
       mb.setBackForeColors(Color.WHITE, bgColor);
       mb.popup();

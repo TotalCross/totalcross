@@ -52,14 +52,17 @@ import totalcross.ui.image.*;
 public class Check extends Control
 {
    private String text;
-   //Font font; removed by guich
    private boolean checked;
    private int cbColor, cfColor;
    private int fourColors[] = new int[4];
-   private int textW;
+   private String []lines = Label.emptyStringArray;
+   private int []linesW;
+   private int lastASW;
+   private String originalText;
    /** Set to true to left-justify the text in the control. The default is right-justified,
     * if the control's width is greater than the preferred one.
     * @since TotalCross 1.0
+    * @deprecated Now the align is always at left
     */
    public boolean leftJustify;
    
@@ -67,12 +70,18 @@ public class Check extends Control
     * @since TotalCross 1.3
     */
    public int checkColor = -1;
+   
+   /** Set to true to let the Check split its text based on the width every time its width
+    * changes. If the height is PREFERRED, the Label will change its size accordingly.
+    * You may change the height again calling setRect.
+    * @since TotalCross 1.14
+    */
+   public boolean autoSplit; // guich@tc114_74
 
    /** Creates a check control displaying the given text. */
    public Check(String text)
    {
-      this.text = text;
-      textW = fm.stringWidth(text);
+      setText(text);
    }
 
    /** Called by the system to pass events to the check control. */
@@ -103,8 +112,10 @@ public class Check extends Control
    /** Sets the text that is displayed in the check. */
    public void setText(String text)
    {
+      originalText = text;
       this.text = text;
-      textW = fm.stringWidth(text);
+      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
+      onFontChanged();
       Window.needsPaint = true;
    }
    /** Gets the text displayed in the check. */
@@ -136,16 +147,26 @@ public class Check extends Control
       }
    }
 
+   /** Returns the maximum text width for the lines of this Label. */
+   public int getMaxTextWidth()
+   {
+      int w = 0;
+      for (int i =lines.length-1; i >= 0; i--)
+         if (linesW[i] > w) // guich@450_36: why call stringWidth if linesW has everything?
+            w = linesW[i];
+      return w;
+   }
+
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return Settings.useNewFont ? textW+fmH+Edit.prefH+2 : textW+getPreferredHeight() + 2;
+      return getMaxTextWidth() + (Settings.useNewFont ? fmH+Edit.prefH+2 : fm.ascent + 2);
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+      return Settings.useNewFont ? fmH*lines.length+Edit.prefH : fm.ascent*lines.length;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -155,15 +176,10 @@ public class Check extends Control
       if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
    }
 
-   protected void onFontChanged()
-   {
-      textW = fm.stringWidth(text);
-   }
-   
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
-      int wh = height;
+      int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
       int xx,yy;
 
       // guich@200b4_126: repaint the background of the whole control
@@ -181,21 +197,22 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(height,height,foreColor) : Resources.checkBkg.getDisabledInstance(height, height, backColor),0,0);
+            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh, backColor),0,0);
             if (checked)
-               g.drawImage(Resources.checkSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+               g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
       else
          g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
       g.foreColor = checkColor != -1 ? checkColor : uiAndroid ? foreColor : cfColor;
 
       if (!uiAndroid && checked)
-         paintCheck(g, fmH, height);
+         paintCheck(g, fmH, wh);
       // draw label
-      yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? (wh+2) : (this.width - textW); // guich@300_69
+      yy = (this.height - fmH*lines.length) >> 1;
+      xx = wh+2; // guich@300_69
       g.foreColor = cfColor;
-      g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
+      for (int i =0; i < lines.length; i++,yy+=fmH)
+         g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }
 
    /** Paints a check in the given coordinates. The g must have been translated to destination x,y coordinates.
@@ -244,6 +261,40 @@ public class Check extends Control
    public void clear() // guich@572_19
    {
       setChecked(clearValueInt == 1);
+   }
+
+   /** Splits the text to the given width. Remember to set the font (or add the Label to its parent) 
+    * before calling this method.
+    * @since TotalCross 1.14
+    * @see #autoSplit
+    */
+   public void split(int maxWidth) // guich@tc114_73
+   {
+      String text = originalText; // originalText will be changed by setText
+      setText(Convert.insertLineBreak(maxWidth, fm, text)); // guich@tc126_18: text cannot be assigned here or originalText will be overwritten
+      originalText = text;
+   }
+
+   protected void onFontChanged()
+   {
+      int i;
+      if (linesW == null || linesW.length != lines.length) // guich@450_36: avoid keep recreating the int array
+         linesW = new int[lines.length];
+      int []linesW = this.linesW; // guich@450_36: use local var
+      for (i = lines.length-1; i >= 0; i--)
+         linesW[i] = fm.stringWidth(lines[i]);
+   }
+
+   protected void onBoundsChanged(boolean screenChanged)
+   {
+      if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
+      {
+         lastASW = this.width;
+         int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+         split(this.width-wh-2);
+         if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
+            setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
+      }
    }
 
 }

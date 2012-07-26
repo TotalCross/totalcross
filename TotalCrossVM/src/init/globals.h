@@ -79,6 +79,7 @@ extern jmethodID jupdateScreen;
 #endif
 extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
+extern bool callingScreenChange;
 
 // mem.c
 extern uint32 maxAvail; // in bytes
@@ -139,7 +140,7 @@ extern Stack objStack2;
 
 // context.c
 extern VoidPs* contexts;
-extern Context mainContext,gcContext;
+extern Context mainContext,gcContext,lifeContext;
 
 // tcvm.c
 extern int32 vmTweaks;

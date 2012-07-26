@@ -867,7 +867,7 @@ public final class Convert
      */
    public static String insertLineBreak(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
    {
-      StringBuffer chars = new StringBuffer(text.replace('|','\n')); // guich@tc114_76: change | to \n before applying our algorithm.
+      StringBuffer chars = new StringBuffer(text); // guich@tc114_76: change | to \n before applying our algorithm.
       int last = chars.length()-1;
       for (int pos = 0; pos <= last; pos++)
       {

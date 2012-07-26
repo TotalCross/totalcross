@@ -108,7 +108,9 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,true);
+            AndroidUtils.handleException(e,false);
+            setResult(RESULT_CANCELED);
+            finish();
          }
    }
 
@@ -217,7 +219,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             }
             catch (Exception e) 
             {
-               AndroidUtils.handleException(e,true);
+               AndroidUtils.handleException(e,false);
                stopPreview();
                setResult(RESULT_CANCELED);
                finish();
@@ -241,7 +243,9 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,true);
+            AndroidUtils.handleException(e,false);
+            setResult(RESULT_CANCELED);
+            finish();
          }
       }
    };

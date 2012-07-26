@@ -54,7 +54,7 @@ public class Deployer4IPhoneIPA
       // locate template and target
       File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
             DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
-            "iphone2+/TotalCross.ipa"));
+            "ios/TotalCross.ipa"));
       File targetFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       targetFile.deleteOnExit();
       // create a copy of the original file
@@ -96,11 +96,10 @@ public class Deployer4IPhoneIPA
       // TCBase
       new TFile(DeploySettings.distDir, "vm/TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
       // TCFont
-//      new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
-      new TFile(DeploySettings.distDir, "vm/" + "TCFont.tcz").cp(new TFile(appFolder, "TCFont.tcz"));
-      new TFile(DeploySettings.distDir, "vm/" + "TCFontOld.tcz").cp(new TFile(appFolder, "TCFontOld.tcz"));
+      new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       // Litebase
-      new TFile(DeploySettings.folderLitebaseSDKDistLIB, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
+      if (DeploySettings.folderLitebaseSDKDistLIB != null)
+         new TFile(DeploySettings.folderLitebaseSDKDistLIB, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
       
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
@@ -140,6 +139,7 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
+      rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
@@ -230,9 +230,9 @@ public class Deployer4IPhoneIPA
       
       TVFS.umount(targetZip);      
 
-      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/iphone2+/" + DeploySettings.appTitle + ".ipa")));
+      FileUtils.copyFile(targetFile, new File(Convert.appendPath(DeploySettings.targetDir, "/ios/" + DeploySettings.appTitle + ".ipa")));
       
-      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/iphone2+/"));
+      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/ios/"));
    }
    
    private void addMetadata(TFile targetZip) throws Exception

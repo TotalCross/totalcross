@@ -129,6 +129,7 @@ public class Edit extends Control
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
    private int lastPenDown=-1;
+   public boolean showKeyboardOnNextEvent;
    static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
@@ -146,6 +147,11 @@ public class Edit extends Control
     * @since TotalCross 1.5 
     */
    public String optionalValue4CalculatorBox;
+   
+   /** Defines a title that can be used in the Keyboards.
+    * @since TotalCross 1.53
+    */
+   public String keyboardTitle;
    
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
     * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
@@ -239,6 +245,11 @@ public class Edit extends Control
 
    /** to be used in the capitalise property */
    public static final byte ALL_LOWER = 2;
+
+   /** Defines if this Edit can behave as with virtual keyboard or not. 
+    * @since TotalCross 1.6
+    */
+   public boolean virtualKeyboard = Settings.virtualKeyboard;
 
    /** Construct an Edit with FILL as preferred width. Note that you cannot use RIGHT or CENTER at the x coordinate if you use this constructor. */
    public Edit()
@@ -978,6 +989,7 @@ public class Edit extends Control
       {
          case KBD_TIME: 
             if (time == null) time = new TimeBox();
+            time.tempTitle = keyboardTitle;
             try 
             {
                time.setTime(new Time(getText(),false,false,false,true,true,true));
@@ -987,30 +999,37 @@ public class Edit extends Control
                time.setTime(new Time(0));
                if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
             }
+            hideSip();
             time.popup();
             setText(time.getTime().toString(),true);
             break;
             
          case KBD_CALENDAR:
             if (calendar == null) calendar = new CalendarBox();
+            calendar.tempTitle = keyboardTitle;
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
+            hideSip();
             calendar.popupNonBlocking();
             break;
 
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
+            calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
+            hideSip();
             calculator.popupNonBlocking();
             break;
 
          case KBD_NUMERIC:
             if (numeric == null) numeric = new CalculatorBox(false);
+            numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
+            hideSip();
             numeric.popupNonBlocking();
             break;
 
          default:
-            if (Settings.virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
+            if (virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
             {
                if (editable && !"".equals(validChars))
                {
@@ -1029,8 +1048,19 @@ public class Edit extends Control
             else
             {
                if (keyboard == null) keyboard = new KeyboardBox();
+               keyboard.tempTitle = keyboardTitle;
                showInputWindow(keyboard);
             }
+            return;
+      }
+   }
+   
+   protected void hideSip()
+   {
+      if (Window.isSipShown) // non-default keyboards gets here
+      {
+         Window.isSipShown = false;
+         Window.setSIP(Window.SIP_HIDE,null,false);
       }
    }
 
@@ -1047,11 +1077,8 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
-      {
-         Window.isSipShown = false;
-         Window.setSIP(Window.SIP_HIDE,null,false);
-      }
+      if (Settings.isWindowsDevice() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
@@ -1091,6 +1118,13 @@ public class Edit extends Control
          case ControlEvent.CURSOR_CHANGED:
             break;
          case TimerEvent.TRIGGERED:
+            if (showKeyboardOnNextEvent)
+            {
+               event.consumed=true;
+               showKeyboardOnNextEvent = false;
+               popupKCC();
+               return;
+            }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
                Window w = getParentWindow();
@@ -1101,7 +1135,7 @@ public class Edit extends Control
                {
                   draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
-                  if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
                      {
                         event.consumed = true;
@@ -1172,7 +1206,7 @@ public class Edit extends Control
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
-                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0))
+                  if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
                      return;
                }
                boolean loseFocus = moveFocus || ke.key == SpecialKeys.ESCAPE;
@@ -1378,7 +1412,7 @@ public class Edit extends Control
          }
          case PenEvent.PEN_UP:
             lastPenDown = -1;
-            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
+            if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
             {
                if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();
@@ -1479,7 +1513,8 @@ public class Edit extends Control
          else
          if (insertChanged)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
-         updateScreen();
+         if (event.target == this && (event instanceof KeyEvent || event instanceof PenEvent)) // guich@tc153: prevent drawing problems when a window is unpopping
+            updateScreen();
       }
    }
 

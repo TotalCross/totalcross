@@ -782,6 +782,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
+                  int t = toWidth;
+                  toWidth = toHeight;
+                  toHeight = t;
                   screenResized(Settings.screenHeight,Settings.screenWidth,true);
                   key = 0;
                }
@@ -802,7 +805,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    
    private void screenResized(int w, int h, boolean setframe)
    {
-      if (screenMis == null) return;
+      if (screenMis == null || (Settings.screenWidth == w && Settings.screenHeight == h)) return;
       Settings.screenWidth = w;
       Settings.screenHeight = h;
       frame.setFrameSize(w,h,setframe);
@@ -1109,6 +1112,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                img.flush();
             }
             else
+            if (g != null)
                g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
             break;
       }

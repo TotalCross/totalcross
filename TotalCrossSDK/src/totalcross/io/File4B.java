@@ -982,7 +982,8 @@ public class File4B extends RandomAccessStream
    {
       if (mode != DONT_OPEN)
       {
-         flush();
+         if (mode != READ_ONLY)
+            flush();
          
          block = null;
          if (cacheEnabled)

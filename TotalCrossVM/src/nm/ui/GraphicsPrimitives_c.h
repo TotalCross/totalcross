@@ -59,6 +59,7 @@ static inline Pixel* getGraphicsPixels(Object g)
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
+   callingScreenChange = true;
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
@@ -75,6 +76,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
+   callingScreenChange = false;
 }
 
 void repaintActiveWindows(Context currentContext)
@@ -1859,7 +1861,7 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
-#ifdef darwin9
+#ifdef darwin
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
 
@@ -1965,7 +1967,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#if defined ANDROID || defined darwin9
+#if defined ANDROID || defined darwin
    checkKeyboardAndSIP(&shiftY,&shiftH);
 #ifdef ANDROID   
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)
@@ -1991,6 +1993,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if ((shiftY+shiftH) > screen.screenH)
       shiftH = screen.screenH - shiftY;
+   if (shiftY != 0 && shiftH <= 0)
+      return false;
+      
    if (!screen.fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
    {
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
@@ -2818,6 +2823,9 @@ char* createPixelsBuffer(int width, int height) // called from childview.m
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
+   if (screen.screenW <= 0 || screen.screenH <= 0)
+      return false;
+      
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
@@ -2830,7 +2838,8 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       }
       *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
-#else
+#else                    
+      
       if (isScreenChange)
       {
          screen.mainWindowPixels = *screenObj = null;
@@ -2841,7 +2850,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
-
+                                                                                          
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
@@ -2875,6 +2884,9 @@ static bool checkScreenPixels()
 
 void updateScreen(Context currentContext)
 {
+#ifdef darwin   
+   if (callingScreenChange) return;
+#endif      
 #ifdef ANDROID
    if (appPaused) return;
 #endif
@@ -2889,7 +2901,9 @@ void updateScreen(Context currentContext)
       {
          if (transitionEffect == -1)
             transitionEffect = TRANSITION_NONE;
+         UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
          graphicsUpdateScreen(&screen, transitionEffect);
+         LOCKVAR(screen);
       }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       screen.dirtyX1 = screen.screenW;

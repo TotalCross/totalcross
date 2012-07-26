@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 /**
@@ -26,6 +24,8 @@ package totalcross.net.mail;
  */
 public class MessagingException extends Exception
 {
+   private Throwable cause;
+
    /** Constructs an empty Exception. */
    public MessagingException()
    {
@@ -36,5 +36,24 @@ public class MessagingException extends Exception
    public MessagingException(String msg)
    {
       super(msg);
+   }
+
+   public MessagingException(Throwable cause)
+   {
+      super(cause == null ? null : cause.getMessage());
+      this.cause = cause;
+   }
+
+   public void printStackTrace()
+   {
+      if (cause != null)
+         cause.printStackTrace();
+      else
+         super.printStackTrace();
+   }
+
+   public Throwable getCause()
+   {
+      return cause;
    }
 }

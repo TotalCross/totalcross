@@ -26,15 +26,20 @@ package totalcross.sys;
 public final class Settings
 {
    /**
-    * Field that represents the version of the TotalCross Virtual Machine. The major version is
-    * base 100. For example, version 1.0 has value 100. version 4 has a
-    * version value of 400. A beta 0.8 VM will have version 80.
-    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-    */
-    public static int version = 153;
+   * Field that represents the version of the TotalCross Virtual Machine. The major version is
+   * base 100. For example, version 1.0 has value 100. version 4 has a
+   * version value of 400. A beta 0.81 VM will have version 81.
+   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
+   */
+   public static int version = 160;
     
-    /** Field that represents the version in a string form, like "1.36beta" */
-    public static String versionStr = "1.53";
+   /** Field that represents the version in a string form, like "1.36beta" */
+   public static String versionStr = "1.6";
+    
+   /** Current build number.
+    * @since TotalCross 1.53 
+    */
+   public static int buildNumber = 3;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -111,6 +116,7 @@ public final class Settings
     * @see #BLACKBERRY   
     * @see #ANDROID      
     * @see #isWindowsDevice()
+    * @see #isIOS()
     */
    public static String platform;
    
@@ -337,7 +343,7 @@ public final class Settings
     */
    public static String appPath; // guich@581_1
    
-   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices.
+   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. In Windows 32, the X button will still be visible, but clicking on it will not close the application
     * If the device does not support removing the button, it will change to a MINIMIZE_BUTTON, which is the default on CE devices. 
     */
    public static final int NO_BUTTON = 0;
@@ -599,6 +605,14 @@ public final class Settings
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
    }
+   
+   /** Returns true if this is an iPad or an iPhone.
+    * @since TotalCross 1.53
+    */
+   public static boolean isIOS()
+   {
+      return IPAD.equals(platform) || IPHONE.equals(platform);
+   }
 
    /** Refresh some fields thay may have been updated since the program 
    started.
@@ -755,6 +769,40 @@ public final class Settings
     * @since TotalCross 1.53
     */
    public static boolean resizableWindow;
+   
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_320X480 = 1;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_480X640 = 2;
+   /** Used in the windowSize field. */
+   public static final int WINDOWSIZE_600X800 = 3;
+
+   /** Defines the window size when running in a desktop computer (the default is 240x320).
+    * Must be set in the static initializer.
+    * If used, the window will be centered on screen with the given resolution.
+    * @since TotalCross 1.53
+    * @see #WINDOWSIZE_320X480
+    * @see #WINDOWSIZE_480X640
+    * @see #WINDOWSIZE_600X800
+    * @see #resizableWindow
+    * @see #windowFont
+    */
+   public static int windowSize;
+   
+   /** Used in the windowFont field; sets the size to 12. */
+   public static final int WINDOWFONT_12 = 0;
+   /** Used in the windowFont field; sets the size to the one defined by user. */
+   public static final int WINDOWFONT_DEFAULT = 1;
+   
+   /** Defines the window font size when running in a desktop computer.
+    * Must be set in the static initializer.
+    * @since TotalCross 1.53
+    * @see #WINDOWFONT_12
+    * @see #WINDOWFONT_DEFAULT
+    * @see #windowSize
+    * @see #resizableWindow
+    */
+   public static int windowFont;
    
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()

@@ -19,6 +19,8 @@
  #include "palm\media_Camera_c.h"
 #elif defined(ANDROID)
  #include "android\media_Camera_c.h"
+#elif defined(darwin)
+ #include "darwin/media_Camera_c.h"
 #endif
 
 //#define TOGGLE_CLICK_BENCH
@@ -69,7 +71,7 @@ TC_API void tumC_nativeClick(NMParams p) // totalcross/ui/media/Camera native pr
       p->retO = createStringObjectFromCharP(p->currentContext, fileName, -1);
       setObjectLock(p->retO, UNLOCKED);
    }
-#elif defined(ANDROID) || (defined(WINCE) && _WIN32_WCE >= 300) //flsobral@tc115_56: fixed Camera API support for WinCE. (nothing was changed, for some reason the compiler was ignoring the WinCE code)
+#elif defined(ANDROID) || (defined(WINCE) && _WIN32_WCE >= 300) || defined(darwin) //flsobral@tc115_56: fixed Camera API support for WinCE. (nothing was changed, for some reason the compiler was ignoring the WinCE code)
    cameraClick(p);
 #else
    UNUSED(p);

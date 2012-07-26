@@ -86,8 +86,12 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
    tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
+   tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
    if (loadedTCZ != null)
+   {
+      *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
       *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
+   }
 }
 
 static uint32 getSecretKeyCreator(uint32 crtr)

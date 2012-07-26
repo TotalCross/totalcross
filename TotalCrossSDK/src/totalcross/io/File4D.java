@@ -32,6 +32,7 @@ public class File4D extends RandomAccessStream
    boolean dontFinalize;
 
    static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
+   static final boolean isIOS = Settings.isIOS();
    static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;
@@ -73,7 +74,7 @@ public class File4D extends RandomAccessStream
       {
          path = path.substring(6);
          //flsobral@tc129.2: path for both iphone and ipad.
-         if (Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD)) // guich@tc115_14: as per greg's suggestion
+         if (Settings.isIOS()) // guich@tc115_14: as per greg's suggestion
             path = Convert.appendPath(deviceAlias, path);
          else if (isAndroid)
             path = Settings.appPath + "/" + path;
@@ -82,6 +83,9 @@ public class File4D extends RandomAccessStream
       else 
       if (isAndroid && !path.startsWith("/sdcard") && !path.startsWith("/mnt") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
          path = Settings.appPath+"/"+path;
+      else
+      if (isIOS && !path.startsWith("/"))
+         path = Convert.appendPath(deviceAlias, path);
       
       this.path = path;
       this.mode = mode;
