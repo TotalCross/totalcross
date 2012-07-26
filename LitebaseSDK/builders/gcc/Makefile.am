@@ -5,7 +5,7 @@
 ###############################################################################
 
 sourcedir	= ${srcdir}/../../src/native
-tcvmdir     = ${srcdir}/../../../TotalCrossVM/src
+tcvmdir     = ${srcdir}/../../../../TotalCross/TotalCrossVM/src
 
 AM_CFLAGS = -DTHEOS -DPOSIX -D_REENTRANT -DLITEBASE -Wall -Wunused-function -Wno-import -DLB_EXPORTS -fno-strict-aliasing -I${sourcedir} -I${sourcedir}/parser -I${tcvmdir}/util -I${tcvmdir}/tcvm -I${tcvmdir}/nm/io -I${tcvmdir}/nm/lang
 
