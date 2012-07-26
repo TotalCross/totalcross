@@ -1259,7 +1259,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                DoubleBuf doubleBuf;
                
                newDefaultValue = newDefaultValues[oldCount] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-               i = JCharPLen(defaultValue);
+               i = TC_JCharPLen(defaultValue);
                if ((type != CHARS_TYPE && type != CHARS_NOCASE_TYPE && i > 39) 
                 || ((type == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && i > field->fieldSize))
                {
