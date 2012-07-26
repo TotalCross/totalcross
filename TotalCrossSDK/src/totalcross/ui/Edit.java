@@ -246,6 +246,11 @@ public class Edit extends Control
    /** to be used in the capitalise property */
    public static final byte ALL_LOWER = 2;
 
+   /** Defines if this Edit can behave as with virtual keyboard or not. 
+    * @since TotalCross 1.6
+    */
+   public boolean virtualKeyboard = Settings.virtualKeyboard;
+
    /** Construct an Edit with FILL as preferred width. Note that you cannot use RIGHT or CENTER at the x coordinate if you use this constructor. */
    public Edit()
    {
@@ -1024,7 +1029,7 @@ public class Edit extends Control
             break;
 
          default:
-            if (Settings.virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
+            if (virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
             {
                if (editable && !"".equals(validChars))
                {
@@ -1050,7 +1055,7 @@ public class Edit extends Control
       }
    }
    
-   private void hideSip()
+   protected void hideSip()
    {
       if (Window.isSipShown) // non-default keyboards gets here
       {
@@ -1072,7 +1077,7 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+      if (Settings.isWindowsDevice() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
          hideSip();
       hasFocus = false;
       clearPosState();
@@ -1407,7 +1412,7 @@ public class Edit extends Control
          }
          case PenEvent.PEN_UP:
             lastPenDown = -1;
-            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
+            if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
             {
                if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();

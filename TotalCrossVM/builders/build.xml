@@ -522,61 +522,60 @@ target: buildWinCE
   </delete>
 
 </target>	
-	
+
+<!-- updates the file that stores the compilation date. -->
+<target name="updateCompilerDate" >
+   <tstamp />
+   <echo message="Compiler date: ${DSTAMP}" />
+   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
+   <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+</target>
+
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="createSkeleton_sdk" depends="updateCompilerDate4D" description="copy the changed files to the SDK">
-   <delete failonerror="yes" dir="${target.sdk.path}"/>
-  <echo message="Copying SDK"/>
-  <copy todir="${target.sdk.path}" overwrite="yes" >
-   <fileset dir="${source.sdk.path}"
-    excludes=".*,deletemounts.reg,.settings/**,src/tc/samples/app/activation/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,etc/tools/bb/bin/sigtool.csk,etc/tools/bb/lib/**,etc/tools/bb/bin/sigtool.db,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
-  </copy>
-  <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
-  <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
-  <copy file="${source.sdk.path}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${target.sdk.path}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
-</target>
+<target name="createSkeleton" depends="updateCompilerDate" description="copy the changed files to the SDK">
+   <delete dir="${base.target.path}/TotalCross*" failonerror="yes" />
+   <mkdir dir="${target.sdk.path}/dist/vm"/>
+   <mkdir dir="${target.vms.path}/dist/vm"/>
+   <mkdir dir="${target.noras.path}/dist/vm"/>
 
-<target name="createSkeleton_vms" depends="updateCompilerDate4D">
-  <delete failonerror="yes" dir="${target.vms.path}"/>
-  <mkdir dir="${target.vms.path}"/>
-</target>
-
-<target name="createSkeleton_vms_noras" depends="updateCompilerDate4D">
-   <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
-  <delete failonerror="yes" dir="${target.noras.path}"/>
-  <mkdir dir="${target.noras.path}"/>
+   <echo message="Copying SDK"/>
+   <copy todir="${target.sdk.path}" overwrite="yes" >
+      <fileset dir="${source.sdk.path}"
+         excludes=".*,.settings/**,src/tc/samples/app/activation/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,etc/tools/bb/bin/sigtool.csk,etc/tools/bb/lib/**,etc/tools/bb/bin/sigtool.db,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
+      </copy>
+   <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <copy file="${source.sdk.path}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${target.sdk.path}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildSkeleton - Build the folders
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildSkeleton_sdk" >
+<target name="buildSkeleton" >
+   <!-- try to delete this, it may be blocked by the classpath referencing it -->
+   <delete failonerror="true">
+      <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
+      </delete>
 
-  <!-- try to delete this, it may be blocked by the classpath referencing it -->
-  <delete failonerror="true">
-   <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
-  </delete>
+   <echo message="Building TotalCross SDK"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false"/>
 
-  <echo message="Building TotalCross SDK"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false"/>
-
-  <!-- copy the changed files to the release folder -->
-  <mkdir dir="${target.sdk.path}/dist/vm" />
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
-  <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/dist/vm/palm/TCBase.pdb" />
-  <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFont.pdb" />
-  <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFontOld.pdb" />
-  <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
-  <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
-  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />
-
+   <!-- copy the changed files to the release folder -->
+   <mkdir dir="${target.sdk.path}/dist/vm" />
+   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
+   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/dist/vm/palm/TCBase.pdb" />
+   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFont.pdb" />
+   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFontOld.pdb" />
+   <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
+   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
+   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
+   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />
 </target>
 
 <target name="buildSamples_sdk" >
@@ -601,7 +600,7 @@ target: buildSkeleton - Build the folders
    BlackBerry builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildBB_sdk" depends="updateCompilerDate4B">
+<target name="buildBB_sdk" >
 
   <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_sdk" inheritAll="false"/>
 
@@ -612,7 +611,7 @@ target: buildSkeleton - Build the folders
 
 </target>
 
-<target name="buildBB_vms" depends="updateCompilerDate4B">
+<target name="buildBB_vms" >
 
   <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_vms" inheritAll="false"/>
 
@@ -622,7 +621,7 @@ target: buildSkeleton - Build the folders
 
 </target>
 
-<target name="buildBB_vms_noras" depends="updateCompilerDate4B">
+<target name="buildBB_vms_noras" >
 
   <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_vms_noras" inheritAll="false"/>
 
@@ -858,7 +857,7 @@ target: IPhone builds
    </java>
 </target>
 
-<target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
+<target name="buildIPhone_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
@@ -962,7 +961,7 @@ target: IPhone builds
    </antcall>
 </target>   
 
-<target name="buildIPhone_vms" depends="updateCompilerDate4D">
+<target name="buildIPhone_vms" >
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -972,7 +971,7 @@ target: IPhone builds
 
 </target>
 
-<target name="buildIPhone_vms_noras" depends="updateCompilerDate4D">
+<target name="buildIPhone_vms_noras" >
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -990,7 +989,7 @@ target: Linux builds
   3. copy the tcvm
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildLinux_sdk_clean" depends="updateCompilerDate4D">
+<target name="buildLinux_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
@@ -1005,11 +1004,7 @@ target: Linux builds
   <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 </target>
 
-<target name="copyLinuxTCVM" >
-
-  <mkdir dir="${gcc.project.path}/tcvm/linux/${type}"/>
-  <scp file="${buildserver.tc.linux.path}/${type}/.libs/libtcvm.so" todir="${gcc.project.path}/tcvm/linux/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
+<target name="packageLinux" >
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
@@ -1028,53 +1023,46 @@ target: Linux builds
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
   </java>
-
 </target>
 
-<target name="copyLinuxTCVM_sdk" >
-
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_sdk" >
+   <antcall target="packageLinux">
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
-
 </target>
 	
-<target name="copyLinuxTCVM_vms" >
-   <echo message="retrieve remote release build" />
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_vms" >
+   <antcall target="packageLinux">
     <param name="type" value="release" />
     <param name="target.path" value="${target.vms.path}" />
    </antcall>
-
 </target>
    
-<target name="copyLinuxTCVM_vms_noras" >
-   <echo message="retrieve remote NORAS release build" />
-   <antcall target="copyLinuxTCVM">
+<target name="packageLinux_vms_noras" >
+   <antcall target="packageLinux">
        <param name="type" value="noras" />
        <param name="target.path" value="${target.noras.path}" />
    </antcall>
-
 </target>   
 
-<target name="buildLinux_vms" depends="updateCompilerDate4D">
+<target name="buildLinux_vms" >
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
-  <antcall target="copyLinuxTCVM_vms" />
+  <antcall target="packageLinux_vms" />
 
 </target>
 
-<target name="buildLinux_vms_noras" depends="updateCompilerDate4D">
+<target name="buildLinux_vms_noras" >
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
    
-   <antcall target="copyLinuxTCVM_vms_noras" />
+   <antcall target="packageLinux_vms_noras" />
    
 </target>
 
@@ -1163,23 +1151,6 @@ target: Android builds
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
 
-<!-- updates the file that stores the compilation date. -->
-<target name="updateCompilerDate4D" >
-
-   <tstamp />
-   <echo message="Compiler date: ${DSTAMP}" />
-   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
-
-</target>
-
-<target name="updateCompilerDate4B" >
-
-   <tstamp />
-   <echo message="Compiler date: ${DSTAMP}" />
-   <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
-
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: companion
 
@@ -1237,13 +1208,6 @@ target: ftp things to the site
   <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/doc" verbose="yes">
      <fileset dir="${target.sdk.path}/docs/html" />
   </ftp>
-
-</target>
-
-<target name="updateCompilationDateOnUnix" >
-
-   <echo message="Executing updateCompilationDateOnUnix" />
-   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.user}@${buildserver.host}:~/workspace" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
 </target>
 
@@ -1330,50 +1294,5 @@ target: build targets
 </target>
  
 <target name="iphone_test" depends="buildIPhone_sdk,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the device" />
-
-<target name="update_sdk" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Update SDK DEMO, just copying over the changed files" />
-<target name="updateJavaInInstall" depends="createSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Update the Java files and rebuilds the installer" />
-
-<target name="build_sdk_java" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Builds the Java device, desktop and javadocs."/>
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildSamples_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
-<target name="build_sdk_no_samples" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />	
-<target name="build_sdk_fast" depends="checkVersionOnProjects,createSkeleton_sdk" description="Create a smaller version of the SDK DEMO from scratch" >
-  <property name="iphone.build_clean" value="YES" />
-  <property name="type" value="demo" />
-  <property name="target.path" value="${target.sdk.path}" />
-  <antcall target="buildIPhone_sdk_base" />
-  <antcall target="copyIPhoneLauncher_sdk" />
-  <antcall target="buildSkeleton_sdk" />
-  <antcall target="buildBB_sdk" />
-  <antcall target="copyIPhoneTCVM" />
-  <antcall target="buildWinCE_sdk_ARM" />
-  <antcall target="buildWin32_sdk" />
-  <antcall target="buildPalmOS5_sdk" />
-  <antcall target="buildAndroid_sdk" />
-  <antcall target="buildPostInstall" />
-  <antcall target="buildInstalls">
-    <param name="type" value="SDK" />
-    <param name="file_suffix" value="_SMALL" />
-    <param name="target.path" value="${target.sdk.path}" />
-  </antcall>  
-</target>
-<target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Build the VMs full version" />
-<target name="build_vms_noras" description="Build the VMs full version WITHOUT RAS for all NORAS costumers" >
-   <property name="norasid" value="20" />
-   
-   <antcall target="checkVersionOnProjects"/>  
-   <antcall target="createSkeleton_vms_noras" inheritall="true"/>   
-   <antcall target="buildBB_vms_noras"/>  
-   <antcall target="buildIPhone_vms_noras" inheritall="true"/>  
-   <antcall target="buildLinux_vms_noras" inheritall="true"/>
-   <antcall target="buildWinCE_vms_noras"/>  
-   <antcall target="buildWin32_vms_noras"/>  
-   <antcall target="buildPalmOS5_vms_noras"/>  
-   <antcall target="buildAndroid_vms_noras"/>
-   <antcall target="buildInstalls_vms_noras" inheritall="true"/>   
-</target>
-<target name="build_all_from_android" depends="buildAndroid_sdk,buildPostInstall,buildInstalls_sdk,build_vms,build_vms_noras" description="Restarts the build_all from the Android generation" />
-
 <target name="ftp" depends="ftp_demo_vms,ftp_sdk,ftp_javadoc" description="FTP the iphone sdk and javadoc" />
-<target name="build_all" depends="build_sdk,build_vms,build_vms_noras" description="builds sdk, vms and vms_noras" />
 </project>

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
 import java.io.*;
@@ -40,40 +38,7 @@ public class Deployer4IPhone
    
    public static void run() throws Exception
    {
-      boolean noError = true;
-      try
-      {
-         if (DeploySettings.isWindows()) //flsobral@tc120: allow iphone deploy to work on systems with cygwin installed.
-         {
-            Process p = Runtime.getRuntime().exec("regedit.exe /e " + DeploySettings.homeDir + "savedmounts.reg \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\" ", null);
-            if (p.waitFor() != 0)
-               noError = false;
-            else
-            {
-               p = Runtime.getRuntime().exec("regedit.exe /s " + DeploySettings.homeDir + "deletemounts.reg", null);
-               if (p.waitFor() != 0)
-                  noError = false;
-            }
-         }
-         if (noError)
-         {
-            new Deployer4IPhone();
-            cleanup();
-         }
-      }
-      finally
-      {
-         if (DeploySettings.isWindows())
-         {
-            java.io.File f = new java.io.File(DeploySettings.homeDir + "savedmounts.reg");
-            if (f.exists())
-            {
-               Process p = Runtime.getRuntime().exec("regedit.exe /s " + DeploySettings.homeDir + "savedmounts.reg", null);
-               if (p.waitFor() == 0)
-                  f.delete();
-            }
-         }
-      }
+      new Deployer4IPhone();
    }
 
    public Deployer4IPhone() throws Exception
