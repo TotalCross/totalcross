@@ -28,7 +28,8 @@ import totalcross.sys.*;
 
 public class CalculatorBox extends Window
 {
-   private Edit edNumber;
+   /** The Edit used to show the number. */
+   public Edit edNumber;
    private PushButtonGroup pbgAction,numericPad,pbgArrows,pbgOp,pbgOp2,pbgEq;
    private String answer;
    private KeyEvent ke = new KeyEvent(),backspace; // guich@421_59
@@ -58,6 +59,9 @@ public class CalculatorBox extends Window
    
    /** The control that had focus when this CalculatorBox was popped up. */
    public Control cOrig;
+   
+   /** Set to true to don't replace the original value in the Edit if user pressed Ok. */
+   public boolean keepOriginalValue;
    
    /** Set to true to replace the "Clear" button by the "Next" button. This
     * button is equivalent to the "Ok" button, but it also changes the focus to 
@@ -385,7 +389,7 @@ public class CalculatorBox extends Window
    private void ok()
    {
       answer = unformat(edNumber.getTextWithoutMask());
-      if (cOrig != null)
+      if (cOrig != null && !keepOriginalValue)
       {
          if (cOrig instanceof Edit)
             ((Edit)cOrig).setText(answer,true);

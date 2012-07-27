@@ -305,7 +305,7 @@ public class ImageModifier extends MainWindow
                      sbBrightness.setLiveScrolling(miLiveChanges.isChecked);
                      break;
                   case 201: // about
-                     tellUser("About", "ImageModifier|$Revision: 1.26 $\nWritten by: Pierre G. Richard\nand Guilherme Campos Hazan");
+                     tellUser("About", "ImageModifier\nWritten by: Pierre G. Richard\nand Guilherme Campos Hazan");
                      break;
                }
                onEvent(getPressedEvent(sbScale));
