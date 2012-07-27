@@ -5351,7 +5351,7 @@ finish: ;
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 
 //////////////////////////////////////////////////////////////////////////
-// juliana@prep_1: added PreparedStatement.close().
+// juliana@253_20: added PreparedStatement.close().
 /**
  * Closes a prepared statement.
  * 
@@ -5374,7 +5374,7 @@ LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native vo
 }
 
 //////////////////////////////////////////////////////////////////////////
-// juliana@prep_2: added PreparedStatement.isValid().
+// juliana@253_21: added PreparedStatement.isValid().
 /**
  * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
  *

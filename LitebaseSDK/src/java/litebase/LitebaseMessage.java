@@ -138,7 +138,7 @@ class LitebaseMessage
    /**
     * "An added column declared as NOT NULL must have a not null default value."
     */
-   static final int ERR_NOT_NULL_DEFAULT = 22; // juliana@add_1: added command ALTER TABLE ADD column.
+   static final int ERR_NOT_NULL_DEFAULT = 22; // juliana@253_22: added command ALTER TABLE ADD column.
    
    // Driver errors.
    /**
@@ -182,7 +182,7 @@ class LitebaseMessage
     */
    static final int ERR_INVALID_PARAMETER = 30;
    
-   // juliana@prep_1: added PreparedStatement.close().
+   // juliana@253_20: added PreparedStatement.close().
    /**
     * "The prepared statement is already closed."
     */

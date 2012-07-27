@@ -248,7 +248,7 @@ bool yyparse(LitebaseParser* parser)
          {
             case TK_ADD: // Adds a primary key or a new column.
 
-                  // juliana@add_1: added command ALTER TABLE ADD column.
+                  // juliana@253_22: added command ALTER TABLE ADD column.
                   if ((token = createColumn(parser)) == TK_PRIMARY) // Adds a primary key.
                   {
                      if (parser->fieldListSize == 1)

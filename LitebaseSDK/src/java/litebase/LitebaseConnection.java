@@ -87,7 +87,7 @@ public class LitebaseConnection
    /** 
     * A hash table of prepared statements.
     */
-   Hashtable htPS = new Hashtable(30); // guich@201_3 // juliana@prep_1: added PreparedStatement.close().
+   Hashtable htPS = new Hashtable(30); // guich@201_3 // juliana@253_20: added PreparedStatement.close().
    
    /**
     * The creator id for the tables managed by Litebase.
@@ -600,7 +600,7 @@ public class LitebaseConnection
                parser.fieldNames = new String[2];
             else if (tempSQL.indexOf("add primary key") != -1)
                parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];   
-            else if (tempSQL.indexOf("add") != -1) // juliana@add_1: added command ALTER TABLE ADD column.
+            else if (tempSQL.indexOf("add") != -1) // juliana@253_22: added command ALTER TABLE ADD column.
                parser.fieldList = new SQLFieldDefinition[1];
             
          // juliana@224_2: improved memory usage on BlackBerry.
@@ -624,7 +624,7 @@ public class LitebaseConnection
             case SQLElement.CMD_ALTER_ADD_PK: // ADD PRIMARY KEY
             case SQLElement.CMD_ALTER_RENAME_TABLE: // RENAME TABLE
             case SQLElement.CMD_ALTER_RENAME_COLUMN: // RENAME COLUMN
-            case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN // juliana@add_1: added command ALTER TABLE ADD column.
+            case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN // juliana@253_22: added command ALTER TABLE ADD column.
                litebaseExecuteAlter(parser); 
                return 0;
          }
@@ -644,7 +644,7 @@ public class LitebaseConnection
       return -1;
    }
 
-   // juliana@add_1: added command ALTER TABLE ADD column.
+   // juliana@253_22: added command ALTER TABLE ADD column.
    /**
     * Executes an alter statement.
     *

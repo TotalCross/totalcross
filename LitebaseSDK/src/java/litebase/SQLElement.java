@@ -67,7 +67,7 @@ class SQLElement
    /**
     * Represents the SQL command <code>ALTER TABLE ADD... (new column definition) </code>.
     */
-   static final int CMD_ALTER_ADD_COLUMN = 9; // juliana@add_1: added command ALTER TABLE ADD column.
+   static final int CMD_ALTER_ADD_COLUMN = 9; // juliana@253_22: added command ALTER TABLE ADD column.
 
    /**
     * Represents the SQL command <code>SELECT [DISTINCT]...</code>.
