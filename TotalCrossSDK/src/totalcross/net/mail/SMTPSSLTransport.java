@@ -46,7 +46,7 @@ public class SMTPSSLTransport extends SMTPTransport
       try
       {
          issueCommand(starttls, 220);
-         ((SSLSocket) connection.getStream()).startHandshake();
+         ((SSLSocket) connection).startHandshake();
       }
       catch (IOException e)
       {

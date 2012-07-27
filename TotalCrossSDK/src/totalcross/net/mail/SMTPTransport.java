@@ -29,9 +29,11 @@ import totalcross.util.Properties;
  */
 public class SMTPTransport extends Transport
 {
-   DataStream connection;
+   Socket connection;
 
-   BufferedStream connectionReader;
+   DataStream writer;
+
+   LineReader reader;
 
    int authSupported = 0;
 
@@ -98,17 +100,11 @@ public class SMTPTransport extends Transport
          issueCommand("DATA" + Convert.CRLF, 354);
 
          // WRITE MESSAGE
-         message.writeTo(connection);
+         message.writeTo(writer);
 
          // END DATA
-         ((Socket) connection.getStream()).readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
+         connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
          issueCommand(Convert.CRLF + "." + Convert.CRLF, 250);
-         // QUIT
-         issueCommand("QUIT" + Convert.CRLF, 221);
-
-         connection.close();
-         connectionReader = null;
-         connection = null;
       }
       catch (IOException e)
       {
@@ -150,10 +146,11 @@ public class SMTPTransport extends Transport
    {
       boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
 
-      this.connection = new DataStream(connection);;
+      this.connection = connection;
+      this.writer = new DataStream(connection);
       try
       {
-         connectionReader = new BufferedStream(this.connection, BufferedStream.READ);
+         reader = new LineReader(connection);
          if (!ehlo())
             throw new MessagingException("Failed to greet the remote server.");
          if (requiresTLS && !tlsEnabled)
@@ -170,7 +167,7 @@ public class SMTPTransport extends Transport
    {
       try
       {
-         lastServerResponse = connectionReader.readLine();
+         lastServerResponse = reader.readLine();
          return Convert.toInt(lastServerResponse.substring(0, 3));
       }
       catch (InvalidNumberException e)
@@ -194,7 +191,7 @@ public class SMTPTransport extends Transport
    {
       try
       {
-         connection.writeBytes(command);
+         writer.writeBytes(command);
          return readServerResponse();
       }
       catch (IOException e)
@@ -226,10 +223,50 @@ public class SMTPTransport extends Transport
 
    }
 
+   /*
+    * This method MUST ensure the service is completely invalidated and closed, even when an exception is thrown. That's
+    * why each command is issued inside a try/catch block. (non-Javadoc)
+    * 
+    * @see totalcross.net.mail.Service#close()
+    */
    public void close() throws MessagingException
    {
-      // TODO Auto-generated method stub
+      MessagingException exception = null;
+      try
+      {
+         // QUIT
+         issueCommand("QUIT" + Convert.CRLF, 221);
+      }
+      catch (MessagingException e)
+      {
+         exception = e;
+      }
 
+      try
+      {
+         writer.close();
+      }
+      catch (IOException e)
+      {
+         if (exception != null)
+            exception = new MessagingException(e);
+      }
+
+      try
+      {
+         connection.close();
+      }
+      catch (IOException e)
+      {
+         if (exception != null)
+            exception = new MessagingException(e);
+      }
+
+      reader = null;
+      writer = null;
+      connection = null;
+      if (exception != null)
+         throw exception;
    }
 
    public void connect(String host, int port, String user, String password) throws AuthenticationException,
