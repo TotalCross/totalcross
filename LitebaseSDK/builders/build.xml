@@ -101,7 +101,7 @@ target: init
    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
    
    <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
-   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="lb.version">
      <filterchain>
        <linecontains>
          <contains value="versionStr"/>
@@ -115,24 +115,6 @@ target: init
         <replacestring from="versionStr" to=""/>
         <replacestring from="=" to=""/>
         <deletecharacters chars='";'/>
-        <trim/>
-       </tokenfilter>
-     </filterchain>
-   </loadfile>
-   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
-     <filterchain>
-       <linecontains>
-         <contains value="int version"/>
-       </linecontains>
-       <striplinebreaks/>
-       <tokenfilter>
-        <replacestring from="public" to=""/>
-        <replacestring from="static" to=""/>
-        <replacestring from="final" to=""/>
-        <replacestring from="int" to=""/>
-        <replacestring from="version" to=""/>
-        <replacestring from="=" to=""/>
-        <deletecharacters chars=';'/>
         <trim/>
        </tokenfilter>
      </filterchain>
