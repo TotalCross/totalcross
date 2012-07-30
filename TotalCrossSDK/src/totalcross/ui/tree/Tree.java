@@ -1067,7 +1067,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          if (isLeaf && pe.x >= xstart)
             node.visited = true;
          else
-         if ((!(scScrolled && Settings.fingerTouch) && expandClickingOnText) || pe.x < xstart)
+         if (((!scScrolled || !Settings.fingerTouch) && expandClickingOnText) || (!scScrolled && pe.x < xstart))
          {
             // call expand and collapse or change the leaf icon on when clicked anywhere
             if (!node.expanded)
