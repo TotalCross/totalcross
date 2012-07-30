@@ -46,7 +46,7 @@ public class GpsTest extends MainWindow
    {
       add(btn = new Button("  Exit  "),RIGHT,TOP);
       if (Settings.platform.equals(Settings.ANDROID) || Settings.isWindowsDevice())
-         add(new Label("In "+Settings.platform+" platform\nyou should select AUTODETECT|as COM port"),CENTER,AFTER);
+         add(new Label("In "+Settings.platform+" platform\nyou should select AUTODETECT\nas COM port"),CENTER,AFTER);
       add(new Label("1. Select baudRate: "),LEFT,AFTER);
       add(cbBaud = new ComboBox(),AFTER,SAME,FILL,PREFERRED);
       cbBaud.add("1200");

@@ -89,6 +89,43 @@ public class ListBox extends Container implements Scrollable
    private boolean isScrolling;
    private Image npback;
    private boolean scScrolled;
+   
+   /** The gap between the icon and the text. Used in IconItem. Defaults to fmH*4/3.
+    * If you plan to change this value, do it after calling setFont (if you call it).
+    * @since TotalCross 1.61
+    */
+   public int iconGap;
+   
+   /** Used to show an icon and a text. You can mix IconItem with other item types in the
+    * ListBox. Example:
+    * <pre>
+    * lb.add("this is a simple text");
+    * lb.add(new IconItem("this is a text with icon", iconImage));
+    * </pre>
+    * 
+    * The icon should have the same size of the font's height, which can be set with:
+    * <pre>
+    * iconImage = originalImage.smoothScaledFixedAspectRatio(fmH,true,-1);
+    * </pre>
+    *  
+    * @since TotalCross 1.61
+    */
+   public static class IconItem
+   {
+      String text;
+      Image icon;
+
+      public IconItem(String text, Image icon)
+      {
+         this.text = text;
+         this.icon = icon;
+      }
+      
+      public String toString()
+      {
+         return text;
+      }
+   }
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
@@ -184,6 +221,7 @@ public class ListBox extends Container implements Scrollable
       this.focusTraversable = true; // kmeehl@tc100
       if (Settings.fingerTouch)
          flick = new Flick(this);
+      iconGap = fmH*4/3;
    }
    
    public boolean flickStarted()
@@ -634,6 +672,7 @@ public class ListBox extends Container implements Scrollable
    /** This is needed to recalculate the box size for the selected item if the control is resized by the main application */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      iconGap = fmH*4/3;
       npback = null;
       int btnW = sbar.getPreferredWidth();
       int extraHB = 0;
@@ -958,7 +997,13 @@ public class ListBox extends Container implements Scrollable
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawItem(Graphics g, int index, int dx, int dy)
    {
-      String s = items.items[index].toString();
+      Object obj = items.items[index];
+      if (obj instanceof IconItem)
+      {
+         g.drawImage(((IconItem)obj).icon,dx,dy);
+         dx += iconGap;
+      }
+      String s = obj.toString();
       // guich@tc100b4: allow change of back/fore colors
       int f = g.foreColor;
       if (ihtForeColors != null)
@@ -981,7 +1026,8 @@ public class ListBox extends Container implements Scrollable
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)
    {
-      return fm.stringWidth(items.items[index].toString());
+      Object obj = items.items[index];
+      return fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
    }
 
    int getIndexY(int sel)
