@@ -39,6 +39,7 @@ public class Deployer4IPhone
    public static void run() throws Exception
    {
       new Deployer4IPhone();
+      cleanup();
    }
 
    public Deployer4IPhone() throws Exception
