@@ -466,13 +466,13 @@ target: buildIPhone
      <arg line="-d 'TotalCross Litebase library'"/>
      <arg line="-v ${lb.version}"/>
      <arg line="-b ${basedir}/theos/${release.type}/libLitebase.dylib"/>
-     <arg line="-t ${output.path}/dist/lib/iphone2+"/>
+     <arg line="-t ${output.path}/dist/lib/ios"/>
      <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
    </java>
 
    <!-- package the files -->
-   <mkdir dir="${output.path}/dist/lib/iphone2+" />
-   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${output.path}/dist/lib/iphone2+">
+   <mkdir dir="${output.path}/dist/lib/ios" />
+   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${output.path}/dist/lib/ios">
      <classpath>
          <pathelement location="${base.temp.path}/classes_desktop"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
@@ -644,7 +644,7 @@ target: ftp things to the site
     <zipfileset dir="${vm.dir}" includes="LitebaseLib.tcz" />
   </zip>
   <zip destfile="${temp}/lb_android.zip" compress="true" filesonly="true" basedir="${vm.dir}/android" />
-  <copy todir="${temp}"><fileset dir="${vm.dir}/iphone2+" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
+  <copy todir="${temp}"><fileset dir="${vm.dir}/ios" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
   <copy todir="${temp}"><fileset dir="${vm.dir}/linux"    includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
 
   <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="superwaba.com.br/vms" verbose="yes">
