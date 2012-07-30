@@ -131,7 +131,7 @@ class NormalFile extends XFile
     * @param buf The byte array to write data from.
     * @param start The offset position in the array.
     * @param count The number of bytes to write.
-    * @return 1, to indicate that everything is ok.
+    * @return count, to indicate that everything is ok.
     * @throws IOException If an internal method throws it.
     */
    public int writeBytes(byte[] buf, int start, int count) throws IOException
@@ -145,7 +145,7 @@ class NormalFile extends XFile
       pos += count;
       if (pos > cacheDirtyEnd) 
          cacheDirtyEnd = pos;
-      return 1;
+      return count;
    }
 
    /**
