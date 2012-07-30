@@ -397,6 +397,15 @@ public class Deployer4BB
       if (ht.size() > 0)
          codit(ht);
       
+      targetDir.listFiles(new FilenameFilter()
+      {
+         public boolean accept(File arg0, String arg1)
+         {
+            if (arg1.endsWith(".debug"))
+               new File(arg0, arg1).delete();
+            return false;
+         }
+      });
       System.out.println("... Files written to folder "+(targetDir.toString().replace('\\','/')+"/"));
    }
 
@@ -495,7 +504,9 @@ public class Deployer4BB
           while ((r = fis.read(buf)) > 0)
              os.write(buf, 0, r);
           
-          ((DeflaterOutputStream) os).finish();          
+          ((DeflaterOutputStream) os).finish();
+          fis.close();
+          os.close();
           jos.closeEntry();
        }
        

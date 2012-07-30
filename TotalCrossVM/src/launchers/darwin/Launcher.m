@@ -182,18 +182,11 @@ static char *cmdLine;
 
 int main(int argc, char *argv[])
 {
-   NSString* cmdLineKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"TCCommandLine"];
-   const char* args = [[cmdLineKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
    cmdLine = strdup(argv && argv[0] ? argv[0] : "");
-   if (argc > 1 || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
+   if (argc > 1) // if there's a commandline passed by the system or one passed by the user
    {
       cmdLine = (char*)realloc(cmdLine, strlen(cmdLine) + sizeof(" /cmd "));
       strcat(cmdLine, " /cmd ");
-      if (args[0] != '1')
-      {
-         cmdLine = (char*)realloc(cmdLine, strlen(cmdLine) + strlen(args) + 1);
-         strcat(cmdLine, args);
-      }
       char **p = argv + 1;
       int n = argc;
       while (n-- > 1)

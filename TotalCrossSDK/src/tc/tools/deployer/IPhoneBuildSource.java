@@ -98,6 +98,7 @@ public class IPhoneBuildSource
                os.write(content);
                os.close();
             }
+            tis.close();
          }
          else if (entry.getName().equals("control.tar.gz")) // debian control files (information file "control") 
          {
@@ -114,9 +115,11 @@ public class IPhoneBuildSource
                while (tk.hasMoreTokens())
                   ps.println(tk.nextToken());
             }
+            tis.close();
          }
       }
       ps.println();
+      ais.close();
       is.close();
       return true;
    }

@@ -39,15 +39,11 @@ public class Deployer4IPhone
    public static void run() throws Exception
    {
       new Deployer4IPhone();
+      cleanup();
    }
 
    public Deployer4IPhone() throws Exception
    {
-      String iPhoneArguments = DeploySettings.commandLine; // the name of the tcz will be the same of the .exe
-      byte[] args = iPhoneArguments.trim().getBytes();
-      if (args.length > DeploySettings.defaultArgument.length)
-         throw new IllegalArgumentException("Error: command line for iPhone too long. It has "+args.length+", while the maximum allowed is "+DeploySettings.defaultArgument.length);
-
       targetDir = DeploySettings.targetDir + "ios";
       // create the output folder
       File f = new File(targetDir);
@@ -59,9 +55,9 @@ public class Deployer4IPhone
          String version = DeploySettings.appVersion != null ? DeploySettings.appVersion : DeploySettings.filePrefix.equals("TotalCross") ? totalcross.sys.Settings.versionStr : "1.0";
 
          // copy the launcher for win32 to there
-         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/iphone2/Launcher", false);
+         byte[] buf = Utils.findAndLoadFile(DeploySettings.etcDir + "launchers/ios/Launcher", false);
          if (buf == null)
-            throw new DeployerException("File launchers/iphone2/Launcher not found!");
+            throw new DeployerException("File launchers/ios/Launcher not found!");
 
          File fout = new File(DeploySettings.filePrefix, File.CREATE_EMPTY);
          fout.writeBytes(buf, 0, buf.length);
@@ -129,7 +125,7 @@ public class Deployer4IPhone
             maintainer = "author@company.com";
          
          createIPhone2xInstaller(author, maintainer, version, DeploySettings.mainClassName, DeploySettings.filePrefix,
-                                 DeploySettings.appTitle, iPhoneArguments, category, location, url, uriBase, description, iconfile, DeploySettings.isFullScreenPlatform(Settings.IPHONE));
+                                 DeploySettings.appTitle, DeploySettings.commandLine, category, location, url, uriBase, description, iconfile, DeploySettings.isFullScreenPlatform(Settings.IPHONE));
       }
       System.out.println("... Files written to folder "+targetDir+"/");
    }
@@ -180,8 +176,6 @@ public class Deployer4IPhone
             "  <string>" + version + "</string>\n"+
             "  <key>UIStatusBarHidden</key>\n" +   //flsobral@tc125: added key for full screen property on plist file.
             "  <" + isFullScreen + "/>\n" +
-            "  <key>TCCommandLine</key>\n"+
-            "  <string>" + DeploySettings.defaultArgument + "</string>\n"+
             "  <key>UIDeviceFamily</key>\n" + //flsobral@tc126_39: added support for full screen on iPad.
             "  <array>\n" +
             "   <integer>1</integer>\n" +

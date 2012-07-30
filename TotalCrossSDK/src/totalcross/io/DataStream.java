@@ -916,7 +916,7 @@ public class DataStream extends Stream
       int len = readUnsignedByte();
       if (len == 0)
          return "";
-      readBytes(buffer, 0, len);
+      readBytesInternal(buffer, 0, len);
       return new String(totalcross.sys.Convert.charConverter.bytes2chars(buffer, 0, len));
    }
 
@@ -955,7 +955,12 @@ public class DataStream extends Stream
    
    protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
-      return stream.writeBytes(buf, start, count);
+      int written = 0;
+      do
+      {
+         written += stream.writeBytes(buf, start + written, count - written);
+      } while (written < count);
+      return written;
    }
    
    /**
