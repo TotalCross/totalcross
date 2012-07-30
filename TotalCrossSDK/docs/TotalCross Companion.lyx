@@ -20644,6 +20644,271 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Chapter
+Camera
+\end_layout
+
+\begin_layout Standard
+This class is used to enable the camera of the underlying device.
+ The following platforms are supported: Windows Mobile, Blackberry, Palm
+ OS, Android, and iOS.
+ It is not possible to use the webcam on PC platforms (JavaSE, Windows 2000,
+ XP, Vista, Seven and Linux).
+ 
+\end_layout
+
+\begin_layout Standard
+For more information about the possible parameters on Windows Mobile devices,
+ see:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+name "http://msdn2.microsoft.com/en-us/library/bb431794.aspx"
+target "http://msdn2.microsoft.com/en-us/library/bb431794.aspx"
+
+\end_inset
+
+.
+ Note that you can easily rotate the image to put it in portrait mode, using
+ the 
+\family typewriter
+Image.getRotatedScaledInstance()
+\family default
+ method, after retrieving the image.
+ To use this class with the Hand Held Dolphin barcode scanners, you must
+ install 
+\family typewriter
+TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Dolphin.dll
+\family default
+.
+ Only 640x480 photos are supported, and you may change the following options:
+ 
+\family typewriter
+initialDir, defaultFileName
+\family default
+ (must end with 
+\family typewriter
+.jpg
+\family default
+), and 
+\family typewriter
+resolutionWidth
+\family default
+ x 
+\family typewriter
+resolutionHeight
+\family default
+ (possible values are 640x480 and 212x160; different values defaults to
+ 640x480) .
+ All other options are ignored.
+ 
+\end_layout
+
+\begin_layout Standard
+On Android you can set the 
+\family typewriter
+defaultFileName
+\family default
+, 
+\family typewriter
+stillQuality
+\family default
+, 
+\family typewriter
+resolutionWidth
+\family default
+ and 
+\family typewriter
+resolutionHeight
+\family default
+.
+ All other options are ignored.
+ You can call the
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+getSupportedResolutions()
+\family default
+ method to see the resolutions that are available on the device.
+ 
+\end_layout
+
+\begin_layout Standard
+On iOS there's no way to return the supported resolutions; it will take
+ a photo using the default camera's resolution, and then will resize to
+ the resolution defined in 
+\family typewriter
+resolutionWidth
+\family default
+ x 
+\family typewriter
+resolutionHeight
+\family default
+, keeping the camera's aspect ratio.
+ On iOS you can specify the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+defaultFileName
+\family default
+ with a path or just the name, or use a system-generated name.
+\end_layout
+
+\begin_layout Standard
+This class only has de default constructor.
+ The other interesting fields are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+title The title to display in the window opened for the camera.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stillQuality Defines the quality of the image.
+ It can be equal to
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_STILLQUALITY_DEFAULT
+\family default
+ (default quality),
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_STILLQUALITY_LOW
+\family default
+ (low quality),
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_STILLQUALITY_NORMAL
+\family default
+ (normal quality), or
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_STILLQUALITY_HIGH
+\family default
+ (high quality).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+videoType Can be one of 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_VIDEOTYPE_ALL
+\family default
+ (produces video clips that match video profiles, using just the video resolutio
+n for the match criteria, the default value)
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+CAMERACAPTURE_VIDEOTYPE_STANDARD
+\family default
+ (0roduces high-quality video clips used for home movies and e-mail video
+ messaging, using a video encoder such as the Windows Media encoder), or
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_VIDEOTYPE_MESSAGING
+\family default
+ (Produces video clips used for Multimedia Messaging Service (MMS) video
+ messaging, which require a video encoder that conforms to the 3rd Generation
+ Partnership Project (3GPP) specification on
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+name "http://go.microsoft.com/fwlink/?LinkId=32710"
+target "http://go.microsoft.com/fwlink/?LinkId=32710"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+videoTimeLimit Maximum time limit for recording a video.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+captureMode Can be one of
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_MODE_STILL
+\family default
+ (only picture, the default value), 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_MODE_VIDEOONLY
+\family default
+ (no sound), or
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CAMERACAPTURE_MODE_VIDEOWITHAUDIO
+\family default
+ (video and sound).
+\end_layout
+
+\begin_layout Standard
+The class 
+\family typewriter
+Camera
+\family default
+ only has one method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+click() Takes a photo or records a video based on the members set.
+ It returns a string with the file name where the image or video is located
+ or 
+\family typewriter
+null
+\family default
+ if the user canceled.
+ 
+\end_layout
+
 \begin_layout Part
 UTILITY CLASSES
 \end_layout
@@ -26436,25 +26701,9 @@ totalcross.io.device.PortConnector
 \begin_layout Enumerate
 
 \family typewriter
-totalcross.net.Socket
-\family default
-: used to send and receive bytes via a TCP/IP connection.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
 totalcross.io.File
 \family default
 : used to create files and manage directories.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-totalcross.io.PDBFile
-\family default
-: used to store data on the handheld, specially on Palm OS.
 \end_layout
 
 \begin_layout Enumerate
@@ -26483,23 +26732,6 @@ DataStreamLE
 \begin_layout Enumerate
 
 \family typewriter
-totalcross.io.ResizeRecord
-\family default
-: used when creating a 
-\family typewriter
-PDBFile
-\family default
- record of unknown size.
- When output to the record is complete, the 
-\family typewriter
-ResizeRecord
-\family default
- shrinks the record to the optimal size.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
 totalcross.io.Stream
 \family default
 : is the main class of all classes inside the 
@@ -26519,6 +26751,22 @@ totalcross.io.Stream
 \family default
  in their constructor parameter.
  This allows you to combine different streams to meet your needs.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.device.gps.GPS 
+\family default
+retrieves GPS coordinates.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.device.RadioDevice
+\family default
+ provides access to the device's radios and information about their status.
 \end_layout
 
 \begin_layout Chapter
@@ -28556,6 +28804,82 @@ DONT_OPEN
 \end_layout
 
 \begin_layout Standard
+When creating a new file, you may start the path using the alias 
+\family typewriter
+device/
+\family default
+, which evaluates to the platform's base user directory: 
+\end_layout
+
+\begin_layout Itemize
+Palm OS and Windows CE - 
+\family typewriter
+/
+\family default
+ (root) 
+\end_layout
+
+\begin_layout Itemize
+BlackBerry - 
+\family typewriter
+/store/home/user/
+\family default
+ 
+\end_layout
+
+\begin_layout Itemize
+Java - 
+\family typewriter
+/
+\family default
+ (current directory) 
+\end_layout
+
+\begin_layout Itemize
+Windows 32 - 
+\family typewriter
+/
+\family default
+ (root of the current drive) 
+\end_layout
+
+\begin_layout Itemize
+iPhone - 
+\family typewriter
+/private/var/
+\family default
+ (root of the big partition) 
+\end_layout
+
+\begin_layout Itemize
+Android - 
+\family typewriter
+/data/data/totalcross.app.<main class name> 
+\family default
+or
+\family typewriter
+ /data/data/
+\begin_inset Newline newline
+\end_inset
+
+totalcross.app.<application id>
+\family default
+ if using single package 
+\end_layout
+
+\begin_layout Standard
+The alias is ALWAYS relative to the built in storage, regardless of the
+ value passed to the argument slot.
+ On iOS and Android, if you don't specify a path, the file will be open
+ in 
+\family typewriter
+device/
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
 The argument slot specifies the index of the storage media to be used only
  for Palm OS.
  This parametes is ignored on all other platforms.
@@ -28574,10 +28898,55 @@ If the device has one or more slots for external storage medias (e.g.
 \begin_layout Standard
 You may also use the value -1 to access the storage media of higher index
  (i.e.
- 1 if not external media is available, 2 if one external media is available,
+ 1 if no external media is available, 2 if one external media is available,
  and so on...).
  0, the internal memory, MUST NOT be used, because it will cause a device
  reset.
+ 
+\end_layout
+
+\begin_layout Standard
+This may vary on some Palm devices, so use prefer using the
+\family typewriter
+ Settings.nvfsVolume
+\family default
+ property.
+ You can find the available slots using this code: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+for (int i = 0; i < 10; i++) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (File.isCardInserted(i)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Label("found " + i), LEFT, AFTER);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To access the card in Android devices, prefix the path with 
+\family typewriter
+/sdcard
+\family default
+.
+ Be sure that the card is NOT MOUNTED (being used by the desktop), otherwise
+ your application will not have access to it.
  
 \end_layout
 
@@ -29944,6 +30313,27 @@ false
 false
 \family default
  is often returned when there's no Internet connection.
+\end_layout
+
+\begin_layout Chapter
+RadioDevice
+\end_layout
+
+\begin_layout Standard
+This class provides access to the device's radios and information about
+ their status.
+ This class is fully functional on Windows CE based devices version 4.2 and
+ later.
+ All methods are static.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isSupported(int
+\begin_inset space ~
+\end_inset
+
+type) 
 \end_layout
 
 \begin_layout Part
@@ -32523,6 +32913,151 @@ SSL_OK
 \family default
  that indicates that the read is not yet terminated and may be called again
  to achieve the reading of a block of decipherable data.
+\end_layout
+
+\begin_layout Part
+PHONE
+\end_layout
+
+\begin_layout Chapter
+Dial
+\end_layout
+
+\begin_layout Standard
+Used to dial a number in a smartphone.
+ A single listener can receive messages from the system informing the current
+ status.
+ Currently works on Windows CE, BlackBerry, Android, and iOS.
+ It is not possible to complete a call if there is no chip.
+ On Android and iOS, the application goes to background and another window
+ is opened.
+ 
+\end_layout
+
+\begin_layout Standard
+The class 
+\family typewriter
+Dial
+\family default
+ has the field 
+\family typewriter
+listener
+\family default
+, which is a 
+\family typewriter
+Dial.Listener
+\family default
+, a listener that will receive events informing the actual status of the
+ dialing.
+ The class that implements it must have the method 
+\family typewriter
+dialStatusChange()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class only has a default constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+number(String
+\begin_inset space ~
+\end_inset
+
+number) Dials the given number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hangup() Hangs up a running call.
+ Does not work on Android.
+ 
+\end_layout
+
+\begin_layout Chapter
+SMS
+\end_layout
+
+\begin_layout Standard
+Class used to send and receive SMS messages.
+ Currently supports Windows CE and Blackberry only.
+ 
+\end_layout
+
+\begin_layout Standard
+It only has the default constructor and two public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+send(String
+\begin_inset space ~
+\end_inset
+
+destination,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+message) Sends the given message to the destination.
+ The 
+\family typewriter
+destination
+\family default
+ is the number to send to and the 
+\family typewriter
+message
+\family default
+ may have the unicode characters stripped on some phones.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+receive() Blocks until a message becomes available.
+ You may want to call this from within a thread, otherwise your program
+ will block forever.
+ 
+\begin_inset Newline newline
+\end_inset
+
+On Windows CE, if you get an error 0x105, there's another program that is
+ listening to SMS.
+ In this case you will have to close that program.
+ Only one program can receive SMS messages at a time.
+ All messages that are received are not visualized by the phone's SMS program
+ (in other words, if you don't save them, they will be lost).
+ 
+\begin_inset Newline newline
+\end_inset
+
+The method returns a string array where the first string contains the number
+ and the second string contains the message.
+\end_layout
+
+\begin_layout Standard
+Both methods may throw an 
+\family typewriter
+IOException
+\family default
+.
+ For Windows CE errors, refer to
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+target "http://msdn.microsoft.com/en-us/library/aa455072.aspx"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Part
