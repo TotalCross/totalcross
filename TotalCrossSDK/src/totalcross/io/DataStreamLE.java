@@ -57,31 +57,31 @@ public class DataStreamLE extends DataStream
       super(stream);
    }
 
-   public int readInt() throws totalcross.io.IOException
+   public int readInt() throws EOFException, totalcross.io.IOException
    {
       byte[] b = buffer;
-      readBytesInternal(b, 0, 4);
+      readBytesInternal(b, 0, 4, true);
       return (((b[3] & 0xFF) << 24) | ((b[2] & 0xFF) << 16) | ((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
    }
 
-   public short readShort() throws totalcross.io.IOException
+   public short readShort() throws EOFException, totalcross.io.IOException
    {
       byte[] b = buffer;
-      readBytesInternal(b, 0, 2);
+      readBytesInternal(b, 0, 2, true);
       return (short) (((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
    }
 
-   public long readLong() throws totalcross.io.IOException
+   public long readLong() throws EOFException, totalcross.io.IOException
    {
       long l1 = (long) readInt() & 0xFFFFFFFFL;
       long l2 = (long) readInt() & 0xFFFFFFFFL;
       return (l2 << 32) | l1;
    }
 
-   public int readUnsignedShort() throws totalcross.io.IOException
+   public int readUnsignedShort() throws EOFException, totalcross.io.IOException
    {
       byte[] b = buffer;
-      readBytesInternal(b, 0, 2);
+      readBytesInternal(b, 0, 2, true);
       return (((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
    }
 
@@ -112,10 +112,10 @@ public class DataStreamLE extends DataStream
       return writeInt((int)l) + writeInt((int)(l >> 32));
    }
 
-   public char readChar() throws totalcross.io.IOException // guich@421_31
+   public char readChar() throws EOFException, totalcross.io.IOException // guich@421_31
    {
       byte[] b = buffer;
-      readBytesInternal(b, 0, 2);
+      readBytesInternal(b, 0, 2, true);
       return (char) (((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
    }
 
@@ -133,24 +133,25 @@ public class DataStreamLE extends DataStream
     * 
     * @param chars An already created chars array.
     * @param len The array length.
+    * @throws EOFException
     * @throws totalcross.io.IOException
     * @since TotalCross 1.01 
     */
-   public void readChars(char[] chars, int len) throws totalcross.io.IOException
+   public void readChars(char[] chars, int len) throws EOFException, totalcross.io.IOException
    {
       byte[] bytes = buffer;
       int buflen = bytes.length / 2, start = 0;
       while (len > 0)
       {
          int avail = (len > buflen ? buflen : len) * 2;
-         readBytesInternal(bytes, 0, avail);
+         readBytesInternal(bytes, 0, avail, true);
          for (int i =0; i < avail; i += 2)
             chars[start++] = (char) (((bytes[i+1] & 0xFF) << 8) | (bytes[i] & 0xFF));
          len -= avail / 2;
       }
    }
 
-   protected char[] readChars(int len) throws totalcross.io.IOException
+   protected char[] readChars(int len) throws EOFException, totalcross.io.IOException
    {
       char[] chars = new char[len];
       byte[] bytes = buffer;
@@ -158,7 +159,7 @@ public class DataStreamLE extends DataStream
       while (len > 0)
       {
          int avail = (len > buflen ? buflen : len) * 2;
-         readBytesInternal(bytes, 0, avail);
+         readBytesInternal(bytes, 0, avail, true);
          for (int i =0; i < avail; i += 2)
             chars[start++] = (char) (((bytes[i+1] & 0xFF) << 8) | (bytes[i] & 0xFF));
          len -= avail / 2;
