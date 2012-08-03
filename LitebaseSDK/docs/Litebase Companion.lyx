@@ -17313,7 +17313,7 @@ afterLast()
 \family default
 ), it reads all result set rows that's being requested from the current
  one.
- 
+ This method moves the cursor to the row after the last one fetched.
 \end_layout
 
 \begin_layout Labeling
@@ -17419,7 +17419,7 @@ afterLast()
 ), it reads the smallest number of rows between the requested amount and
  the number of rows from the current cursor position till the end of the
  result set.
- 
+ This method moves the cursor to the row after the last one fetched.
 \end_layout
 
 \begin_layout Labeling
