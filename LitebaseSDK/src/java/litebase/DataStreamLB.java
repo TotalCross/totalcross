@@ -43,12 +43,13 @@ class DataStreamLB extends DataStreamLE
     * @param buffer The buffer to be read.
     * @param start The first position of the stream to be read.
     * @param count The number of bytes to be read.
+    * @param throwEOF Indicates if an <code>EOFException</code> should be thrown if an EOF is found. 
     * @return The number of bytes read: count.
     * @throws IOException If the stream reaches its end before all bytes are read.
     */
-   protected int readBytesInternal(byte[] buffer, int start, int count) throws IOException
+   protected int readBytesInternal(byte[] buffer, int start, int count, boolean throwEOF) throws IOException
    {
-      super.readBytesInternal(buffer, start, count);
+      super.readBytesInternal(buffer, start, count, throwEOF);
             
       if (useCrypto) // Decrypts data if necessary.
          while (start < count)
