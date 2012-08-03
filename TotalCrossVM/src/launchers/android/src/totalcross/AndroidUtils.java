@@ -189,6 +189,25 @@ public class AndroidUtils
          configs.install_md5hash = newHash;
          configs.save();
       }
+      else // search for .tcz.bak files and copy them over the original files
+      {
+         String dataDir = pinfo.applicationInfo.dataDir;
+         String[] files = new File(dataDir).list();
+         if (files != null)
+            for (int i = 0; i < files.length; i++)
+               if (files[i].endsWith(".tcz.bak"))
+               {
+                  debug("Updating "+dataDir+"/"+files[i]);
+                  RandomAccessFile in  = new RandomAccessFile(new File(dataDir, files[i]),"r");
+                  RandomAccessFile out = new RandomAccessFile(new File(dataDir, files[i].substring(files[i].length()-4)),"rw");
+                  int len = 0;
+                  for (int n; (n = in.read(buf)) > 0; len += n)
+                     out.write(buf, 0, n);
+                  out.setLength(len);
+                  in.close();
+                  out.close();
+               }
+      }         
    }
    
    public static int getSavedScreenSize()
@@ -230,11 +249,22 @@ public class AndroidUtils
             name = name.substring(slash+1);
          }
          
+         boolean isTCZ = name.endsWith(".tcz") && !name.toLowerCase().contains("tcfont");
          nativeCreateFile(path+"/"+name);
-         RandomAccessFile raf = new RandomAccessFile(new File(path, name),"rw");
+         if (isTCZ)
+            nativeCreateFile(path+"/"+name+".bak");
+         RandomAccessFile raf = new RandomAccessFile(new File(path, name),"rw"), raf2=null;
+         if (isTCZ)
+            raf2 = new RandomAccessFile(new File(path, name+".bak"),"rw");
          for (int n; (n = zis.read(buf)) > 0;)
+         {
             raf.write(buf, 0, n);
+            if (isTCZ)
+               raf2.write(buf, 0, n);
+         }
          raf.close();
+         if (isTCZ)
+            raf2.close();
       }
       zis.close();
       long fim = System.currentTimeMillis();
