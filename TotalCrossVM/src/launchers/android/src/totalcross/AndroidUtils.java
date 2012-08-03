@@ -87,7 +87,7 @@ public class AndroidUtils
 
    private static Activity main;
    public static PackageInfo pinfo;
-   private static byte[] buf = new byte[8192];
+   private static byte[] buf = new byte[8192]; // no gain changing to 32768
    public static Config configs;
 
    public static void initialize(Activity main) throws Exception
@@ -197,7 +197,7 @@ public class AndroidUtils
             for (int i = 0; i < files.length; i++)
                if (files[i].endsWith(".tcz.bak"))
                {
-                  debug("Updating "+dataDir+"/"+files[i]);
+                  long t1 = System.currentTimeMillis();
                   RandomAccessFile in  = new RandomAccessFile(new File(dataDir, files[i]),"r");
                   RandomAccessFile out = new RandomAccessFile(new File(dataDir, files[i].substring(files[i].length()-4)),"rw");
                   int len = 0;
@@ -206,6 +206,7 @@ public class AndroidUtils
                   out.setLength(len);
                   in.close();
                   out.close();
+                  debug("Updated "+dataDir+"/"+files[i]+" in "+(System.currentTimeMillis()-t1)+" ms");
                }
       }         
    }
