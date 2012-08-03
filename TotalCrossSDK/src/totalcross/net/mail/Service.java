@@ -27,13 +27,13 @@ import totalcross.net.AuthenticationException;
 public abstract class Service
 {
    protected MailSession session;
-   
+
    protected String host;
-   
+
    protected int port;
-   
+
    protected String user;
-   
+
    protected String password;
 
    protected Service(MailSession session)
@@ -53,11 +53,12 @@ public abstract class Service
     * @since TotalCross 1.13
     */
    public abstract void connect() throws AuthenticationException, MessagingException;
-   
-   public abstract void connect(String host, int port, String user, String password) throws AuthenticationException, MessagingException;
+
+   public abstract void connect(String host, int port, String user, String password) throws AuthenticationException,
+         MessagingException;
 
    /**
-    * Close this store and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
+    * Close this service and terminate its connection. Any Messaging components (Folders, Messages, etc.) belonging to
     * this service are invalid after this store is closed. Note that the store is closed even if this method terminates
     * abnormally by throwing a MessagingException.
     * 
@@ -65,8 +66,8 @@ public abstract class Service
     * @since TotalCross 1.13
     */
    public abstract void close() throws MessagingException;
-   
-   protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException, MessagingException
-   {
-   }
+
+   protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException,
+         MessagingException
+   {}
 }
