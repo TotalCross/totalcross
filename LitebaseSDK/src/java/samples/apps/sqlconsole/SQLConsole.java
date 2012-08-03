@@ -428,7 +428,12 @@ public class SQLConsole extends MainWindow
          if (res >= 0)
             status(res + " records affected.");
       }
-      
+      else if (command.equals("purge"))
+      {
+         int res = conn.purge(sql.substring(6).trim());
+         if (res >= 0)
+            status(res + " records affected.");
+      }
       else // Creates a table or an index.
       {
          conn.execute(sql);
