@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.android;
 
 import android.app.*;
@@ -113,6 +111,24 @@ public class Loader extends Activity
    {
       try
       {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RoutePath"));
+         intent.putExtra("latI",lat);
+         intent.putExtra("lonI",lon);
+         intent.putExtra("latF",lat);
+         intent.putExtra("lonF",lon);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
+   private void callGoogleMap_(double lat, double lon, boolean sat)
+   {
+      try
+      {
          Intent intent = new Intent(this, Class.forName(totalcrossPKG+".MapViewer"));
          intent.putExtra("lat",lat);
          intent.putExtra("lon",lon);
@@ -124,7 +140,7 @@ public class Loader extends Activity
          AndroidUtils.handleException(e,false);
       }
    }
-   
+
    private void captureCamera(String s, int quality, int width, int height)
    {
       try
@@ -253,7 +269,7 @@ public class Loader extends Activity
          }
       }
    }
-   
+      
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -278,34 +294,23 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            String argl = args.toLowerCase();
-            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
-            {
-               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
-               intent.putExtra("file",args);
-               if (!wait)
-                  startActivityForResult(intent, JUST_QUIT);
-               else
-                  startActivity(intent);
-               return;
-            }
-            if (argl.endsWith(".pdf"))
+            if (args.toLowerCase().endsWith(".pdf"))
             {
                File pdfFile = new File(args);
-               if (pdfFile.exists()) 
+               if(pdfFile.exists()) 
                {
-                  Uri path = Uri.fromFile(pdfFile); 
-                  Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                  pdfIntent.setDataAndType(path, "application/pdf");
-                  pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                  try
-                  {
-                     startActivity(pdfIntent);
-                  }
-                  catch (ActivityNotFoundException e)
-                  {
-                     e.printStackTrace(); 
-                  }
+                   Uri path = Uri.fromFile(pdfFile); 
+                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                   pdfIntent.setDataAndType(path, "application/pdf");
+                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   try
+                   {
+                       startActivity(pdfIntent);
+                   }
+                   catch (ActivityNotFoundException e)
+                   {
+                       e.printStackTrace(); 
+                   }
                }
             }
             else

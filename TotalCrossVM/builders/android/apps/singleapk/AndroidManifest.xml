@@ -21,6 +21,7 @@
           <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         </activity>
+        <activity android:name=".RoutePath"/>
         <activity android:name=".TouchImageViewer" />
         <activity android:name=".WebViewer" /> 
         <activity android:name=".CameraViewer" />

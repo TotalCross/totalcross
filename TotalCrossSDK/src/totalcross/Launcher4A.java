@@ -21,6 +21,7 @@ package totalcross;
 import totalcross.android.*;
 import totalcross.android.compat.*;
 
+import java.io.*;
 import java.util.*;
 
 import android.view.animation.*;
@@ -139,19 +140,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       lastOrientation = getOrientation();
-      
-      try
-      {
-         java.io.FileInputStream fis = new java.io.FileInputStream("/mnt/extSdCard/GettingStarted-BombTechs.pdf");
-         fis.close();
-         AndroidUtils.debug("abriu!!!!");
-/*      java.io.File f = context.getExternalFilesDir(null);
-      f.mkdirs();
-      java.io.FileOutputStream fos = new java.io.FileOutputStream(new java.io.File(f,"teste.txt"));
-      fos.close();
-      AndroidUtils.debug("getExternalFilesDir(): "+f);
-*/      } catch (Exception e) {AndroidUtils.handleException(e,false);}
-      
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
@@ -1050,6 +1038,86 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
    }
 
+   private static double[] getLatLon(String address) throws IOException
+   {
+      if (address.equals("")) // last known location?
+      {
+         // first, use the location manager
+         LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+         List<String> pros = loc.getProviders(true);
+         Location position = null;
+         for (String p : pros)
+         {
+            position = loc.getLastKnownLocation(p);
+            if (position != null)
+               return new double[]{position.getLatitude(),position.getLongitude()};
+         }
+      }
+      else
+      if (address.startsWith("@"))
+      {
+         String[] st = address.substring(1).split(",");
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
+      }
+      else
+      {         
+         Geocoder g = new Geocoder(instance.getContext());
+         List<Address> al = g.getFromLocationName(address, 1);
+         if (al != null && al.size() > 0)
+         {
+            Address a = al.get(0);
+            if (a.hasLatitude() && a.hasLongitude())
+               return new double[]{a.getLatitude(),a.getLongitude()};
+         }
+      }
+      return null;
+   }
+   
+   public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
+   {
+      boolean tryAgain = true;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            double[] llI = getLatLon(addressI);
+            double[] llF = getLatLon(addressF);
+            if (llI != null && llF != null)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAP);
+               b.putDouble("latI", llI[0]);
+               b.putDouble("lonI", llI[1]);
+               b.putDouble("latF", llF[0]);
+               b.putDouble("lonF", llF[1]);
+               b.putString("coords", coords);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return false;
+   }
+   
    public static boolean showingMap;
    public static boolean showGoogleMaps(String address, boolean showSatellite)
    {
@@ -1059,59 +1127,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
-            double lat=0,lon=0;
-            boolean latlonOk = false;
-            if (address.equals("")) // last known location?
-            {
-               // first, use the location manager
-               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
-               List<String> pros = loc.getProviders(true);
-               Location position = null;
-               for (String p : pros)
-               {
-                  position = loc.getLastKnownLocation(p);
-                  //AndroidUtils.debug("Provider: "+p+"  "+position);
-                  if (position != null)
-                  {
-                     lat = position.getLatitude();
-                     lon = position.getLongitude();
-                     latlonOk = true;
-                     break;
-                  }
-               }
-            }
-            else
-            if (address.startsWith("@"))
-            {
-               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
-               lat = Double.parseDouble(st.nextToken());
-               lon = Double.parseDouble(st.nextToken());
-               latlonOk = true;
-            }
-            else
-            {         
-               Geocoder g = new Geocoder(instance.getContext());
-               List<Address> al = g.getFromLocationName(address, 1);
-               if (al != null && al.size() > 0)
-               {
-                  Address a = al.get(0);
-                  if (a.hasLatitude() && a.hasLongitude())
-                  {
-                     lat = a.getLatitude();
-                     lon = a.getLongitude();
-                     latlonOk = true;
-                  }
-               }
-            }
-            if (latlonOk)
+            double [] ll = getLatLon(address);
+            if (ll != null)
             {
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
                Bundle b = new Bundle();
                b.putInt("type", Loader.MAP);
-               b.putDouble("lat", lat);
-               b.putDouble("lon", lon);
+               b.putDouble("lat", ll[0]);
+               b.putDouble("lon", ll[1]);
                b.putBoolean("sat", showSatellite);
                msg.setData(b);
                loader.achandler.sendMessage(msg);

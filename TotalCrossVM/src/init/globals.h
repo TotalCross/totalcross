@@ -39,7 +39,7 @@ extern int32 deviceFontHeight;
 
 // GoogleMaps.c
 #ifdef ANDROID
-extern jmethodID jshowGoogleMaps;
+extern jmethodID jshowGoogleMaps,jshowRoute;
 #endif
 
 // startup.c
