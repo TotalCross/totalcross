@@ -375,4 +375,14 @@ public class AndroidUtils
    {
       return argl.endsWith(".png") || argl.endsWith(".jpg") || argl.endsWith(".jpeg");
    }
+
+   public static byte[] readFully(InputStream input) throws IOException
+   {
+       byte[] buffer = new byte[2048];
+       int bytesRead;
+       ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+       while ((bytesRead = input.read(buffer)) != -1)
+           output.write(buffer, 0, bytesRead);
+       return output.toByteArray();
+   }
 }

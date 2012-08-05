@@ -107,15 +107,16 @@ public class Loader extends Activity
       }
    }
    
-   private void callGoogleMap(double lat, double lon, boolean sat)
+   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, boolean sat)
    {
       try
       {
-         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RoutePath"));
-         intent.putExtra("latI",lat);
-         intent.putExtra("lonI",lon);
-         intent.putExtra("latF",lat);
-         intent.putExtra("lonF",lon);
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RouteViewer"));
+         intent.putExtra("latI",latI);
+         intent.putExtra("lonI",lonI);
+         intent.putExtra("latF",latF);
+         intent.putExtra("lonF",lonF);
+         intent.putExtra("coord",coord);
          intent.putExtra("sat",sat);
          startActivityForResult(intent, MAP_RETURN);
       }
@@ -125,7 +126,7 @@ public class Loader extends Activity
       }
    }
 
-   private void callGoogleMap_(double lat, double lon, boolean sat)
+   private void callGoogleMap(double lat, double lon, boolean sat)
    {
       try
       {
@@ -171,6 +172,7 @@ public class Loader extends Activity
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
    public static final int INVERT_ORIENTATION = 8;
+   public static final int ROUTE = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -237,6 +239,9 @@ public class Loader extends Activity
                break;
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
+               break;
+            case ROUTE:
+               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getBoolean("sat"));
                break;
             case INVERT_ORIENTATION:
                if (!b.getBoolean("invert"))

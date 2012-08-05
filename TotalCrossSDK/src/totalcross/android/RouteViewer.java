@@ -112,39 +112,53 @@ public class RouteViewer extends MapActivity
       super.onCreate(savedInstanceState);
       setContentView(R.layout.route);
 
-      MapView mapview = (MapView) findViewById(R.id.myMapView1);
-      mapview.setBuiltInZoomControls(true);
-      mapview.setClickable(true);
-      mapview.setStreetView(true);
-      if (Loader.isFullScreen)
-         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      // get passed parameters
-      Bundle extras = getIntent().getExtras();
-      double latI = extras.getInt("latI");
-      double lonI = extras.getInt("lonI");
-      double latF = extras.getDouble("latF");
-      double lonF = extras.getDouble("lonF");
-      String scoords = extras.getString("coords");
-      mapview.setSatellite(extras.getBoolean("sat"));
-      GeoPoint srcGeoPoint = new GeoPoint((int) (latI * 1E6), (int) (lonI * 1E6));
-      GeoPoint dstGeoPoint = new GeoPoint((int) (latF * 1E6), (int) (lonF * 1E6));
-      GeoPoint center = srcGeoPoint;
-      drawRoute(srcGeoPoint, dstGeoPoint, Color.RED, mapview);
-      // traversed points
-      if (scoords != null)
+      try
       {
-         String[] s = scoords.split(",");
-         GeoPoint[]coords = new GeoPoint[s.length/2];
-         for (int i = 0,j=0; i < s.length;)
-            coords[j++] = new GeoPoint((int)(Double.valueOf(s[i++])*1E6),(int)(Double.valueOf(s[i++])*1E6));
-         List<Overlay> overs = mapview.getOverlays();
-         for (int i = 1; i < coords.length; i++)
-            overs.add(new MyOverLay(coords[i-1], coords[i], 2, 0x00FF00));
-         center = coords[0];
+         MapView mapview = (MapView) findViewById(R.id.myMapView1);
+         mapview.setBuiltInZoomControls(true);
+         mapview.setClickable(true);
+         mapview.setStreetView(true);
+         if (Loader.isFullScreen)
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+         // get passed parameters
+         Bundle extras = getIntent().getExtras();
+         double latI = extras.getDouble("latI");
+         double lonI = extras.getDouble("lonI");
+         double latF = extras.getDouble("latF");
+         double lonF = extras.getDouble("lonF");
+         String scoords = extras.getString("coord");
+         mapview.setSatellite(extras.getBoolean("sat"));
+         GeoPoint srcGeoPoint = new GeoPoint((int) (latI * 1E6), (int) (lonI * 1E6));
+         GeoPoint dstGeoPoint = new GeoPoint((int) (latF * 1E6), (int) (lonF * 1E6));
+         GeoPoint center = srcGeoPoint;
+         if (latI != 0 && lonI != 0 && latF != 0 && lonF != 0)
+            drawRoute(srcGeoPoint, dstGeoPoint, Color.RED, mapview);
+         // traversed points
+         if (scoords != null)
+         {
+            String[] s = scoords.split(",");
+            GeoPoint[]coords = new GeoPoint[s.length/2];
+            for (int i = 0,j=0; i < s.length;)
+               coords[j++] = new GeoPoint((int)(Double.valueOf(s[i++])*1E6),(int)(Double.valueOf(s[i++])*1E6));
+            List<Overlay> overs = mapview.getOverlays();
+            overs.add(new MyOverLay(coords[0], coords[0], 1));
+            if (coords.length > 1)
+            {
+               for (int i = 1; i < coords.length; i++)
+                  overs.add(new MyOverLay(coords[i-1], coords[i], 2, 0x00FF00));
+               overs.add(new MyOverLay(coords[coords.length-1], coords[coords.length-1], 3));
+            }
+            center = coords[0];
+         }
+         // move the map to the given point
+         mapview.getController().setCenter(center);
+         mapview.getController().setZoom(21);
       }
-      // move the map to the given point
-      mapview.getController().setCenter(center);
-      mapview.getController().setZoom(21);
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+         finish();
+      }
    }
 
    protected boolean isRouteDisplayed()
@@ -152,68 +166,60 @@ public class RouteViewer extends MapActivity
       return true;
    }
 
-   private void drawRoute(GeoPoint src, GeoPoint dest, int color, MapView mapview)
+   private void drawRoute(GeoPoint src, GeoPoint dest, int color, MapView mapview) throws Exception
    {
       // connect to map web service
       StringBuilder urlString = new StringBuilder(128).
          append("http://maps.google.com/maps?f=d&hl=pt-br").
          append("&saddr=").// from
-         append("rua+tonelero+210%2Erio+de+janeiro").
-         //append(Double.toString((double) src.getLatitudeE6() / 1.0E6)).
-         //append(",").
-         //append(Double.toString((double) src.getLongitudeE6() / 1.0E6)).
+         append(Double.toString((double) src.getLatitudeE6() / 1.0E6)).
+         append(",").
+         append(Double.toString((double) src.getLongitudeE6() / 1.0E6)).
          append("&daddr=").// to
-         append("rua+humaita+70%2Erio+de+janeiro").
-         //append(Double.toString((double) dest.getLatitudeE6() / 1.0E6)).
-         //append(",").
-         //append(Double.toString((double) dest.getLongitudeE6() / 1.0E6)).
+         append(Double.toString((double) dest.getLatitudeE6() / 1.0E6)).
+         append(",").
+         append(Double.toString((double) dest.getLongitudeE6() / 1.0E6)).
          append("&ie=UTF8&0&om=0&output=kml");
 
       // get the kml (XML) doc. And parse it to get the coordinates(direction route).
       Document doc = null;
       HttpURLConnection urlConnection = null;
-      URL url = null;
-      try
+      URL url = new URL(urlString.toString());
+      urlConnection = (HttpURLConnection) url.openConnection();
+      urlConnection.setRequestMethod("GET");
+      urlConnection.setDoOutput(true);
+      urlConnection.setDoInput(true);
+      urlConnection.connect();
+      byte[] bytes = AndroidUtils.readFully(urlConnection.getInputStream());
+      AndroidUtils.debug(new String(bytes));
+
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      doc = dbf.newDocumentBuilder().parse(new java.io.ByteArrayInputStream(bytes));
+      List<Overlay> overs = mapview.getOverlays();
+
+      NodeList node = doc.getElementsByTagName("GeometryCollection");
+      if (node.getLength() > 0)
       {
-         url = new URL(urlString.toString());
-         urlConnection = (HttpURLConnection) url.openConnection();
-         urlConnection.setRequestMethod("GET");
-         urlConnection.setDoOutput(true);
-         urlConnection.setDoInput(true);
-         urlConnection.connect();
+         String path = node.item(0).getFirstChild().getFirstChild().getFirstChild().getNodeValue();
 
-         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-         doc = dbf.newDocumentBuilder().parse(urlConnection.getInputStream());
-         List<Overlay> overs = mapview.getOverlays();
+         String[] pairs = path.split(" ");
+         String[] lngLat = pairs[0].split(","); // lngLat[0]=longitude, lngLat[1]=latitude, lngLat[2]=height
 
-         NodeList node = doc.getElementsByTagName("GeometryCollection");
-         if (node.getLength() > 0)
+         // src
+         GeoPoint startGP = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
+         overs.add(new MyOverLay(startGP, startGP, 1));
+
+         GeoPoint gp1;
+         GeoPoint gp2 = startGP;
+         for (int i = 1; i < pairs.length; i++) // the last one would be crash
          {
-            String path = node.item(0).getFirstChild().getFirstChild().getFirstChild().getNodeValue();
-
-            String[] pairs = path.split(" ");
-            String[] lngLat = pairs[0].split(","); // lngLat[0]=longitude, lngLat[1]=latitude, lngLat[2]=height
-
-            // src
-            GeoPoint startGP = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
-            overs.add(new MyOverLay(startGP, startGP, 1));
-
-            GeoPoint gp1;
-            GeoPoint gp2 = startGP;
-            for (int i = 1; i < pairs.length; i++) // the last one would be crash
-            {
-               lngLat = pairs[i].split(",");
-               gp1 = gp2;
-               // watch out! For GeoPoint, first:latitude, second:longitude
-               gp2 = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
-               overs.add(new MyOverLay(gp1, gp2, 2, color));
-            }
-            overs.add(new MyOverLay(dest, dest, 3)); // use the default color
+            lngLat = pairs[i].split(",");
+            gp1 = gp2;
+            // watch out! For GeoPoint, first:latitude, second:longitude
+            gp2 = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
+            overs.add(new MyOverLay(gp1, gp2, 2, color));
          }
-      }
-      catch (Exception e)
-      {
-         AndroidUtils.handleException(e,false);
+         overs.add(new MyOverLay(dest, dest, 3)); // use the default color
       }
    }
 }

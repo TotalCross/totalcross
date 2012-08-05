@@ -21,7 +21,7 @@
 
 
 
-        <activity android:name=".RoutePath"/>
+        <activity android:name=".RouteViewer"/>
         <activity android:name=".TouchImageViewer" />
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />

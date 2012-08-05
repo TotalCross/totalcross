@@ -1075,26 +1075,28 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
    {
-      boolean tryAgain = true;
+      boolean tryAgain = false;
       int tryAgainCount = 0;
       do
       {
          try
          {
+            AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = getLatLon(addressF);
+            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
             if (llI != null && llF != null)
             {
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
                Bundle b = new Bundle();
-               b.putInt("type", Loader.MAP);
+               b.putInt("type", Loader.ROUTE);
                b.putDouble("latI", llI[0]);
                b.putDouble("lonI", llI[1]);
                b.putDouble("latF", llF[0]);
                b.putDouble("lonF", llF[1]);
-               b.putString("coords", coords);
+               b.putString("coord", coords);
                b.putBoolean("sat", showSatellite);
                msg.setData(b);
                loader.achandler.sendMessage(msg);
