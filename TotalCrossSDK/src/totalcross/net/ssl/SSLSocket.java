@@ -101,13 +101,12 @@ public class SSLSocket extends Socket
       if (buffer.available() == 0)
       {
          int sslReadBytes = sslConnection.read(sslReader);
+         buffer.reuse();
          if (sslReadBytes > 0)
             buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
          buffer.mark();
       }
       int readBytes = buffer.readBytes(buf, start, count);
-      buffer.reuse();
-      buffer.mark();
 
       return readBytes;
    }

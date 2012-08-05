@@ -27,12 +27,11 @@ public class RASConnectionSOAP extends RASConnection
 
    RASConnectionSOAP(int openTimeout, int readWriteTimeout) throws IOException
    {
-      ActivationHtml html = ActivationHtml.getInstance();
       if (Settings.activationServerURI != null)
       {
          this.uri = Settings.activationServerURI;
          this.namespace = Settings.activationServerNamespace;
-         this.userDefinedParams = html != null ? html.getUserDefinedParams() : new Hashtable(10);
+         this.userDefinedParams = ActivationHtml.getUserDefinedParams();
          
          //flsobral@tc125: send fields for the user defined webservice.
          userDefinedParams.put("Settings.deviceId", Settings.deviceId);
