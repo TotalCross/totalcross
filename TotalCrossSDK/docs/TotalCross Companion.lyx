@@ -26673,6 +26673,780 @@ n
 ), bits that would have been lost are reinserted in order at the left.
 \end_layout
 
+\begin_layout Section
+Settings
+\end_layout
+
+\begin_layout Standard
+This class provides some preferences from the device configuration and other
+ VM settings.
+ All settings are read-only, unless otherwise specified.
+ Changing their values may cause the VM to crash.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Settings
+\family default
+ has the following fields:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+version Field that represents the version of the TotalCross Virtual Machine.
+ The major version is base 100.
+ For example, version 1.0 has value 100.
+ version 4 has a version value of 400.
+ A beta 0.81 VM will have version 81.
+ ex: TotalCross = 110 (1.1) and beyond.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+versionStr Field that represents the version in a string form, like "1.36beta".
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buildNumber The current build number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dateFormat Can be one of the following constants: 
+\family typewriter
+DATE_MDY
+\family default
+, 
+\family typewriter
+DATE_DMY
+\family default
+, 
+\family typewriter
+DATE_YMD
+\family default
+; where D stands for Day, M stands for month, and Y stands for year.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dateSeparator The date character separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+weekStart The week day start.
+ It ranges from 0 (Sunday) to 6 (Saturday).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+is24Hour 
+\family typewriter
+true
+\family default
+ if the time format is the 24 hour format or 
+\family typewriter
+false
+\family default
+ if it is in the AM/PM format.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timeSeparator The time character separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+thousandsSeparator The thousands separator for numbers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+decimalSeparator The decimal separator for numbers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenWidth Field that represents the device's screen width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenHeight Field that represents the device's screen height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenWidthInDPI Field that represents the device's screen horizontal pixels
+ density, in dots per inch (DPI).
+ Note that this value can be incorrect in many devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenHeightInDPI Field that represents the device's screen vertical pixels
+ density, in dots per inch (DPI).
+ Note that this value can be incorrect in many devices.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenBPP Field that represents the screen's number of bits per pixel.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onJavaSE Field that defines if running on Java Standard Edition (i.
+ e., on Eclipse, Java in your desktop, or even on an applet in a browser)
+ instead of a handheld device.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+romVersion Field that stores the ROM version of the device, like 0x02000000
+ or 0x03010000.
+ On the desktop, stores the oldest version of the destination platform where
+ TotalCross can run.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+platform Field that returns the current platform name.
+ The possible values are: 
+\family typewriter
+JAVA
+\family default
+, 
+\family typewriter
+PALMOS
+\family default
+, 
+\family typewriter
+WINDOWSCE
+\family default
+, 
+\family typewriter
+POCKETPC
+\family default
+, 
+\family typewriter
+WINDOWSMOBILE
+\family default
+, 
+\family typewriter
+WIN32
+\family default
+, 
+\family typewriter
+IPAD
+\family default
+, 
+\family typewriter
+LINUX
+\family default
+, 
+\family typewriter
+IPHONE
+\family default
+, 
+\family typewriter
+BLACKBERRY
+\family default
+, and 
+\family typewriter
+ANDROID
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+userName Field that returns the username of the user running the Virtual
+ Machine.
+ Because of Java's security model, this field is 
+\family typewriter
+null
+\family default
+ when checked in a Java applet.
+ This field is also 
+\family typewriter
+null
+\family default
+ under most Windows CE devices.
+ On Windows 32, this has the currently logged in user.
+ On Android, iOS, Palm OS, and BlackBerry, it is also 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appSettingsBin Application defined settings, stored as a byte array.
+ If you set the value of this field to something other than 
+\family typewriter
+null
+\family default
+, the VM will save it when exiting and load it when restarting.
+ On Palm OS, the value is stored in the unsaved preferences database, which
+ is not backed up during hot-sync.
+ On the desktop, a file named 
+\family typewriter
+settings4<application id>.pdb
+\family default
+ stores the 
+\family typewriter
+appSettingsBin
+\family default
+ for the current running TotalCross program.
+ On Windows 32 and Windows CE, this data is saved in the registry.
+ Use this to save small amount of data, up to 2 or 4 kb maximum.
+ This property is saved only at the application's exit; you can force an
+ update by calling 
+\family typewriter
+Settings.refresh()
+\family default
+.
+ Here's a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (Settings.appSettingsBin == null})
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(new Label("empty"),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	ByteArrayStream bas = new ByteArrayStream(100);
+\end_layout
+
+\begin_layout Plain Layout
+
+	DataStream ds = new DataStream(bas);
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeDouble(1234.567);
+\end_layout
+
+\begin_layout Plain Layout
+
+	Settings.appSettingsBin = bas.getCopy();
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+else
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ByteArrayStream bas = new ByteArrayStream(Settings.appSettingsBin);
+\end_layout
+
+\begin_layout Plain Layout
+
+	DataStream ds = new DataStream(bas);
+\end_layout
+
+\begin_layout Plain Layout
+
+	double d = ds.readDouble();
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(new Label("d = "+Convert.toString(d,3)),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	Settings.appSettingsBin = null;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appSettings Application defined settings.
+ If you set the value of this field to something other than 
+\family typewriter
+null
+\family default
+, the VM will save it when exiting and load it when restarting.
+ This is stored in the same way as the previous property.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appSecretKey Application defined secret key.
+ Similar to the above property.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+applicationId The application's ID.
+ MUST BE CHANGED IN THE STATIC INITIALIZER! Used by the deployer and by
+ the virtual machine.
+ On Palm OS, all data created is assigned to an application id.
+ So when a program is uninstalled, all of its data is also removed from
+ device.
+ On Android, when the single package option is passed to 
+\family typewriter
+tc.Deploy
+\family default
+ (
+\family typewriter
+/p
+\family default
+), the application's package is changed to 
+\family typewriter
+totalcross.app<application id>
+\family default
+.
+ On BlackBerry, it is used to define the folder where the application is
+ stored.
+ It must have 4 letters or digits, and the first character must be a letter.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+uiStyle Field that stores the current user interface style.
+ It must be set by calling 
+\family typewriter
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+setUIStyle()
+\family default
+.
+ The values can be 
+\family typewriter
+PalmOS
+\family default
+, 
+\family typewriter
+WinCE
+\family default
+, 
+\family typewriter
+Flat
+\family default
+, 
+\family typewriter
+Vista
+\family default
+, and 
+\family typewriter
+Android
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+daylightSavings Field that represents if the device is in daylight savings
+ mode.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timeZone Field that represents the timezone used for this device.
+ This is the number of hours away from GMT (e.
+ g.: for Brazil it will return -3).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+virtualKeyboard 
+\family typewriter
+true
+\family default
+ if this handheld has a virtual keyboard, i.
+ e., like the soft input panel in windows CE devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dataPath Specifies the directory where the files should be read/written.
+ Used on the desktop when:
+\end_layout
+
+\begin_layout Enumerate
+Running under Windows 32 VM.
+ Can be specified anywhere.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Running under JDK, as application (java.exe).
+ Can also be specified with the 
+\family typewriter
+/dataPath 
+\family default
+commandline parameter.
+ 
+\end_layout
+
+\begin_layout Standard
+Some warnings: 
+\end_layout
+
+\begin_layout Enumerate
+If this member is not 
+\family typewriter
+null
+\family default
+, any paths specified for the file are replaced by this path.
+\end_layout
+
+\begin_layout Enumerate
+Slashes are normalized by the VM.
+\end_layout
+
+\begin_layout Enumerate
+The path existence is not verified on Windows 32.
+\end_layout
+
+\begin_layout Enumerate
+Changing this member also changes the place where local libraries are loaded
+ (global libraries are loaded when the VM starts, before the application
+ is initialized).
+ So, before loading any library, change this member back to 
+\family typewriter
+null
+\family default
+ (unless the library is also in the 
+\family typewriter
+dataPath
+\family default
+).
+ 
+\end_layout
+
+\begin_layout Enumerate
+The system ensures that the datapath ends with a slash, if you don't put
+ one.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+romSerialNumber Field that represents the ROM serial number for this device.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\series bold
+Important
+\series default
+: don't rely only on this information to uniquely identify a device! Its
+ very easy to change this number, and it won't be available in all devices.
+ It will contain 
+\family typewriter
+null
+\family default
+ if unavailable, such as some Palm OS 5 devices, like Treo 6xx.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\series bold
+Note
+\series default
+: this was correctly tested; you can ensure that your Palm OS device has
+ or not a serial number pressing App/Info/Version: the serial number will
+ appear in the top; if nothing appears, it means that the device doesn't
+ have a serial number.
+ If it appears but nothing is returned from here, it means that the device
+ has a non-standard function that retrieves the serial number, and thus
+ we don't support it.
+ On Android 3.0 or greater it will have the serial number; On Androids 1.x
+ and 2.x it will have a consistent number that MAY be the same across resets,
+ but has no relation to the real serial number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showSecrets Field that represents if the PDA has a password and the user
+ choosen to hide the secret records (via the Apps/Security/Current Privacy).
+ Returns 
+\family typewriter
+true
+\family default
+ in all other cases.
+ Specific for Palm OS (the other devices do not let the user hide records).
+ This can be used to let the operating system do the login for a program
+ that requires privacy.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keypadOnly Field that represents if this device has a keypad only (BlackBerry
+ only).
+ On such devices, presses in the 1-9 and *# pops up the 
+\family typewriter
+KeyPad
+\family default
+ class (used in phones without alpha keys).
+ You can set 
+\family typewriter
+keypadOnly
+\family default
+ to enable/disable the the 
+\family typewriter
+KeyPad
+\family default
+ popup.
+ The disabling occurs everytime a non-digit is pressed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keyboardFocusTraversable Defines if the arrow keys will be used to change
+ the focus using the keyboard.
+ Note that some controls will behave differently.
+ It will be 
+\family typewriter
+true
+\family default
+ for pen less devices, and it may be changed if your application wants to
+ use navigation keys to change the focus between the controls.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deviceId Field that represents a device id that can be used to identify
+ the device's name.
+ For Palm OS devices, see: 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.mobilegeographics.com/dev/devices.php"
+
+\end_inset
+
+ and 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+target "http://homepage.mac.com/alvinmok/palm/codenames.html"
+
+\end_inset
+
+.
+ For Windows CE devices, it will have the device's name.
+ For Windows 32 VM, it will have the computer name.
+ On iOS devices it will have the model identifier.
+ If the device can't be identified, it will contain 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+vmPath The main path used to derive 
+\family typewriter
+appPath
+\family default
+ and also to store TotalCross global files.
+ This is a read-only property: changing it will have no effect.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appPath The path from where the application is running from.
+ On Palm OS devices, it will be 
+\family typewriter
+null
+\family default
+.
+ This is the default location where the files are created.
+ This is a read-only property: changing it will have no effect.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+closeButtonType Set it at the application's static initializer.
+ If set to 
+\family typewriter
+MINIMIZE_BUTTON
+\family default
+, replaces the ok button on Windows CE devices, which closes the application,
+ by the x one, which just minimizes the application.
+ The ok closes the application, and the x minimizes it.
+ By default, it is 
+\family typewriter
+CLOSE_BUTTON
+\family default
+, which closes the application.
+ On BlackBerry, if this is set to 
+\family typewriter
+CLOSE_BUTTON
+\family default
+, the application is closed when the END key is pressed; otherwise, it is
+ sent to background (minimized).
+ The default behavior is sending the application to background (set to 
+\family typewriter
+MINIMIZE_BUTTON
+\family default
+).
+ It cans also be 
+\family typewriter
+NO_BUTTON
+\family default
+, which will remove the x/ok button from screen on Windows CE devices.
+ On Windows 32, the x button will still be visible, but clicking on it will
+ not close the application.
+ If the device does not support removing the button, it will change to a
+ 
+\family typewriter
+MINIMIZE_BUTTON
+\family default
+, which is the default on CE devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isFullScreen Set it at the application's static initializer.
+ Makes the application full screen.
+ Only a simple assignment to true is supported; you cannot check the platform
+ nor any other attribute of this class because the static initializer is
+ called BEFORE this class have its fields set.
+ Also, some platforms set it at deploying time.
+ Note that Android applications are always full screen.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fullScreenPlatforms Set this to a list of platforms that will set the fullscreen
+ mode.
+ If this member is 
+\family typewriter
+null
+\family default
+, all platforms will have full screen set to the 
+\family typewriter
+isFullScreen
+\family default
+ member.
+ You can use any separator.
+ The only platform that does not work with this is Java.
+ You must provide a string like the one above, concatenating the platform
+ strings in a single line.
+ Using a 
+\family typewriter
+StringBuffer
+\family default
+ or anything else may result in incorrect results.
+ Here's a sample, to use full screen on windows devices (but not windows
+ desktop): 
+\end_layout
+
+\begin_layout Standard
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+static
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Settings.isFullScreen = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+	Settings.fullScreenPlatforms = Settings.WINDOWSCE + "," + Settings.WINDOWSMOBILE;
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\end_layout
+
 \begin_layout Part
 INPUT & OUTPUT
 \end_layout
@@ -30333,7 +31107,103 @@ isSupported(int
 \begin_inset space ~
 \end_inset
 
-type) 
+type) Determines if the provided radio type is supported by the device.
+ The possible types are 
+\family typewriter
+WIFI
+\family default
+, 
+\family typewriter
+PHONE
+\family default
+, or 
+\family typewriter
+BLUETOOTH
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+Fully functional on Windows CE and Android devices.
+ BlackBerry supports only 
+\family typewriter
+WIFI
+\family default
+, always returning 
+\family typewriter
+false
+\family default
+ for other types.
+ Always return 
+\family typewriter
+false
+\family default
+ on other platforms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getState(int
+\begin_inset space ~
+\end_inset
+
+type) Retrieves the current state of the provided radio.
+\begin_inset Newline newline
+\end_inset
+
+Currently works only on Windows CE, Android devices, and BlackBerry.
+ However, it will always return 
+\family typewriter
+RADIO_STATE_DISABLED
+\family default
+ for 
+\family typewriter
+BLUETOOTH
+\family default
+ on BlackBerry.
+ Always return
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+RADIO_STATE_DISABLED
+\family default
+ on the other platforms.
+ The other possible return is
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+RADIO_STATE_ENABLED
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setState(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+state) Change the state of the provided radio.
+ Fully functional on Windows CE and Android devices.
+ BlackBerry supports only 
+\family typewriter
+WIFI
+\family default
+.
+ Does nothing on other platforms.
+ 
 \end_layout
 
 \begin_layout Part
