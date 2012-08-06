@@ -84,7 +84,7 @@ class SQLUpdateStatement extends SQLStatement
       Vm.arrayCopy(parser.fieldNames, 0, fields, 0, nValues);
 
       // Allocates space for the list of the parameters. Worst case: all fields are parameters.
-   // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
+      // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
       paramIndexes = new short[nValues];
       paramDefined = new boolean[nValues];
       
@@ -465,6 +465,10 @@ class SQLUpdateStatement extends SQLStatement
    {
       Table table = rsTable.table = driver.getTable(rsTable.tableName); // Gets the statement table.
       int valuesCount = record.length;
+      
+      // juliana@262_1: now it is not allowed duplicated fields in an update statement.
+      if (valuesCount >= table.columnCount)
+         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATED_COLUMN_NAME));
       
       paramCount = 0;
       int i = -1;
