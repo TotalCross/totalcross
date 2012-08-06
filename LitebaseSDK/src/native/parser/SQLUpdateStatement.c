@@ -80,7 +80,13 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	updateStmt->paramIndexes = (uint8*)TC_heapAlloc(heap, i);
 	updateStmt->paramDefined = (uint8*)TC_heapAlloc(heap, i);
 
-	i = updateStmt->nValues;
+   // juliana@262_1: now it is not allowed duplicated fields in an update statement.
+   if ((i = updateStmt->nValues) >= table->columnCount)
+   {
+      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), "");
+      return null;
+   }    
+
    while (--i >= 0)
    {
       // juliana@230_40: rowid cannot be an update field.
