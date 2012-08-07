@@ -508,7 +508,6 @@ TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream nat
       throwException(p->currentContext, IOException, "Internal zip error: %d", ret);
    else
       p->retI = ret == 0 ? -1 : ret;
-   }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
