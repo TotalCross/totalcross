@@ -39,7 +39,7 @@ public final class Settings
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 5;
+   public static int buildNumber = 6;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
