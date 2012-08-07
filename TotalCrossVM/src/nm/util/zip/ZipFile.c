@@ -505,7 +505,7 @@ TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream nat
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
    else if ((ret = unzReadCurrentFile(zipNativeP->zipFile, bufP + start, count)) < 0)
-      throwException(p->currentContext, IOException, "Internal zip error: %d", err);
+      throwException(p->currentContext, IOException, "Internal zip error: %d", ret);
    else
       p->retI = ret == 0 ? -1 : ret;
    }
