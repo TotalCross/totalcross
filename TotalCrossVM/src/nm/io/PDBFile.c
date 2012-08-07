@@ -674,7 +674,7 @@ TC_API void tiPDBF_readWriteBytes_Biib(NMParams p)
    err = MemHandleUnlock(handle);
 
    PDBFile_hvRecordOffset(obj) += count;
-   p->retI = count == 0 ? -1 : count; // guich@tc110_65: return -1 if eof
+   p->retI = count == 0 && isRead ? -1 : count; // guich@tc110_65: return -1 if eof
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiPDBF_inspectRecord_Bii(NMParams p) // totalcross/io/PDBFile native public int inspectRecord(byte []buf, int recPosition) throws totalcross.io.IOException;
