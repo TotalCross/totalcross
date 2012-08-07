@@ -55,11 +55,11 @@ public class POP3Folder extends Folder
       }
       catch (InvalidNumberException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
@@ -115,7 +115,7 @@ public class POP3Folder extends Folder
             catch (SocketTimeoutException e)
             {
                if (!new String(msgHeaderBuffer, totalRead - 5, 5).equals("\r\n.\r\n"))
-                  throw new MessagingException(e.getMessage());
+                  throw new MessagingException(e);
             }
             msgRet = new Message(this, msgNumber, uidl, msgSize, totalRead);
             String s = new String(msgHeaderBuffer, 0, totalRead - 5);
@@ -135,17 +135,17 @@ public class POP3Folder extends Folder
       catch (InvalidNumberException e)
       {
          try {store.connection.close();} catch (IOException ee) {}
-         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
+         throw new MessagingException(e);
       }
       catch (AddressException e)
       {
          try {store.connection.close();} catch (IOException ee) {}
-         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
+         throw new MessagingException(e);
       }
       catch (IOException e)
       {
          try {store.connection.close();} catch (IOException ee) {}
-         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
+         throw new MessagingException(e);
       }
       return msgRet;
    }
@@ -178,7 +178,7 @@ public class POP3Folder extends Folder
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 
@@ -199,7 +199,7 @@ public class POP3Folder extends Folder
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         throw new MessagingException(e);
       }
    }
 }

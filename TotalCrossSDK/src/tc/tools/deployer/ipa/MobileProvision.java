@@ -131,7 +131,7 @@ public class MobileProvision
       if (startIdx == -1)
          return null;
 
-      int length = (inputData[startIdx - 2] << 8) | inputData[startIdx - 1];
+      int length = ((inputData[startIdx - 2] & 0xFF) << 8) | (inputData[startIdx - 1] & 0xFF);
       int endIdx = inputString.lastIndexOf('>', length + startIdx) + 1;
       inputString = inputString.substring(startIdx, endIdx);
 

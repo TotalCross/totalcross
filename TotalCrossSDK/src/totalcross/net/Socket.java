@@ -485,4 +485,21 @@ public class Socket extends Stream
    {
       return port;
    }
+
+   /** Returns true if we can connect to google.com using port 80, false otherwise.
+    * @since TotalCross 1.62 
+    */
+   public static boolean isInternetAccessible()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
 }

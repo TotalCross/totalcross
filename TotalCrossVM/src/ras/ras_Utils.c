@@ -132,7 +132,17 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #endif
 
    if (*serial)
+   {
+#if defined (WIN32) && !defined (WINCE)
+      int32 serialLen = xstrlen(serial);
+      if (serialLen > 12) // use only the first mac address to keep the hash the same as the previous versions.
+         MD5Update(&ctx, serial, 12);
+      else
+         MD5Update(&ctx, serial, serialLen);
+#else
       MD5Update(&ctx, serial, xstrlen(serial));
+#endif
+   }
    else notFound++;
 
 #if defined (WINCE)

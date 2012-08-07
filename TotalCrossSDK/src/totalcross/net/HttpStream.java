@@ -21,9 +21,11 @@ package totalcross.net;
 
 import totalcross.io.*;
 import totalcross.net.mail.*;
+import totalcross.net.ssl.SSLSocket;
 import totalcross.sys.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.Hashtable;
 
 /**
  * A HttpStream HAS-A totalcross.net.Socket and takes care of exchange protocol. It starts reading (in a buffer) at the
@@ -241,6 +243,14 @@ public class HttpStream extends Stream
       
       /** Number of bytes to write at once. Defaults to 1024. */
       public int writeBytesSize = 1024;
+
+      /**
+       * Socket factory used to create the underlying connection. You may replace it with a SSLSocketFactory to make a
+       * HTTPS connection over a secure socket, or with your own subclass of SocketFactory.
+       * 
+       * @since TotalCross 1.6
+       */
+      public SocketFactory socketFactory = SocketFactory.getDefault();
 
       /** Constructs a new Options class, from where you change the behaviour of an Http connection.
        * Sets the <code>postHeaders</code> to:
@@ -509,9 +519,11 @@ public class HttpStream extends Stream
       if (port <= 0) port = 80;
       state = -1;
 
-      socket = new Socket(strUri, port, options.openTimeOut);
+      socket = options.socketFactory.createSocket(strUri, port, options.openTimeOut);
       socket.readTimeout = options.readTimeOut;
       socket.writeTimeout = options.writeTimeOut == -1 ? options.readTimeOut : options.writeTimeOut;
+      if (socket instanceof SSLSocket)
+         ((SSLSocket) socket).startHandshake();
       writeBytesSize = options.writeBytesSize;
       getResponse(options);
    }

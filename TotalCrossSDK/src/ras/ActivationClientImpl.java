@@ -168,8 +168,6 @@ final class ActivationClientImpl extends ActivationClient
          logger.info("Verifying device information");
          if (!devicePlatform.equals(activationPlatform))
             throw new Exception("The device platform does not match with the registration.");
-         if (!Settings.WIN32.equals(activationPlatform) && !deviceInfo.get("ID").equals(actDeviceInfo.get("ID")))
-            throw new Exception("The device id does not match with the registration.");
 
          String deviceIMEI = (String) deviceInfo.get("IMEI");
          String deviceSerial = (String) deviceInfo.get("SERIAL");

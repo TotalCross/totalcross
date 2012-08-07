@@ -448,7 +448,7 @@ public class MainWindow extends Window implements totalcross.MainClass
             Class.forName("litebase+DriverException".replace('+','.')); // bypass deploy issue
             return true;
          }
-         catch (Throwable t)
+         catch (ClassNotFoundException e)
          {
             return false;
          }

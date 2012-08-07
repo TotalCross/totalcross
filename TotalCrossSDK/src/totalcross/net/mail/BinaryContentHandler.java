@@ -58,7 +58,7 @@ public class BinaryContentHandler extends DataContentHandler
       }
       else if (input instanceof Stream) //flsobral@tc123_45: now we use ByteArrayStream with fixed length, which should GREATLY reduce the memory usage when processing large files.
       {
-         Stream inputStream = (Stream) input;
+         DataStream inputStream = (input instanceof DataStream) ? ((DataStream) input) : new DataStream((Stream) input);
          ByteArrayStream inputBAS = new ByteArrayStream(bytesPerLine + 1);
          ByteArrayStream outputBAS = new ByteArrayStream(bytesPerLine * 2);
          inputBytes = inputBAS.getBuffer();
@@ -66,25 +66,18 @@ public class BinaryContentHandler extends DataContentHandler
          int bytesRead;
 
          outputStream.writeBytes(Convert.CRLF_BYTES);
-         while (true)
+         do
          {
             bytesRead = inputStream.readBytes(inputBytes, 0, bytesPerLine);
-            if (bytesRead <= 0)
-               break;
 
             inputBAS.setPos(bytesRead);
             Base64.encode(inputBAS, outputBAS);
-            int count = outputBAS.getPos();
-            int start = 0;
-            do
-            {
-               start += outputStream.writeBytes(encodedLineBytes, start, count - start); //flsobral@tc115_10: ensure everything is written to the output stream.
-            } while (start < count);
+            outputStream.writeBytes(encodedLineBytes, 0, outputBAS.getPos());
             outputStream.writeBytes(Convert.CRLF_BYTES);
 
             inputBAS.reset();
             outputBAS.reset();
-         }
+         } while (bytesRead == bytesPerLine);
          outputStream.writeBytes(Convert.CRLF_BYTES);
       }
       else if (input != null) //flsobral@tc122_40: handle unknown types using toString().getBytes()

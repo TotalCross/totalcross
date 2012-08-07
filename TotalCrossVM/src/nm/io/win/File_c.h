@@ -60,7 +60,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
       case READ_WRITE:     dwDesiredAccess = GENERIC_READ | GENERIC_WRITE; dwCreationDisposition = OPEN_EXISTING;  break;
       case CREATE:         dwDesiredAccess = GENERIC_READ | GENERIC_WRITE; dwCreationDisposition = CREATE_NEW;     break;
       case CREATE_EMPTY:   dwDesiredAccess = GENERIC_READ | GENERIC_WRITE; dwCreationDisposition = CREATE_ALWAYS;  break;
-      case READ_ONLY:      dwDesiredAccess = GENERIC_READ;                 dwCreationDisposition = OPEN_EXISTING;  break;
+      case READ_ONLY:      dwDesiredAccess = GENERIC_READ;                 dwCreationDisposition = OPEN_EXISTING;  dwShareMode |= FILE_SHARE_WRITE; break;
    }
 
    hFile = CreateFile(path, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
