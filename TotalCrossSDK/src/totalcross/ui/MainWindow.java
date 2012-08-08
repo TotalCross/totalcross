@@ -19,6 +19,9 @@
 
 package totalcross.ui;
 
+import ras.*;
+import ras.ui.*;
+
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -370,7 +373,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
-      if (timeAvailable != 0) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
+      if (timeAvailable > 0) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
       if (restoreRegistry) // guich@tc115_90
          try
@@ -474,6 +477,26 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
    }
    
+   private void startProgram()
+   {
+      Window.needsPaint = true;
+      initUI();
+      Window.needsPaint = Graphics.needsUpdate = true; // required by device
+      started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
+      repaintActiveWindows();
+      // start a robot if one is passed as parameter
+      String cmd = getCommandLine();
+      if (cmd != null && cmd.endsWith(".robot"))
+         try
+         {
+            new UIRobot(cmd+" (cmdline)");
+         }
+         catch (Exception e)
+         {
+            MessageBox.showException(e,true);
+         }
+   }
+   
    /**
    * Called by the VM to process timer interrupts. This method is not private
    * to prevent the compiler from removing it during optimization.
@@ -485,7 +508,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          TimerEvent t = startTimer;
          startTimer = null; // removeTimer calls again onTimerTick, so we have to null out this before calling it
          removeTimer(t);
-         if (timeAvailable != -1) // guich@tc126_46
+         if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
             new DemoBox().popup();
             if (timeAvailable == 0)
@@ -501,22 +524,20 @@ public class MainWindow extends Window implements totalcross.MainClass
             exit(0);
             return;
          }
-         Window.needsPaint = true;
-         initUI();
-         Window.needsPaint = Graphics.needsUpdate = true; // required by device
-         started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
-         repaintActiveWindows();
-         // start a robot if one is passed as parameter
-         String cmd = getCommandLine();
-         if (cmd != null && cmd.endsWith(".robot"))
-            try
+         if (timeAvailable == -999999)
+         {
+            timeAvailable = -1;
+            Window w = new ActivationWindow(ActivationClient.getInstance());
+            w.addWindowListener(new WindowListener()
             {
-               new UIRobot(cmd+" (cmdline)");
-            }
-            catch (Exception e)
-            {
-               MessageBox.showException(e,true);
-            }
+               public void windowClosed(ControlEvent e)
+               {
+                  startProgram();
+               }
+            });
+            w.popupNonBlocking();
+         }
+         else startProgram();            
       }
       int minInterval = 0;
       TimerEvent timer = firstTimer;

@@ -208,6 +208,7 @@ bool canLoadLitebase()
 TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
+   bool mustActivate = false;
 #if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
    Object rasClientInstance;
    Method m;
@@ -228,12 +229,7 @@ TC_API int32 startProgram(Context currentContext)
    if (!m)
       return exitProgram(114);
 
-   if (!executeMethod(currentContext, m, rasClientInstance).asInt32)
-   {
-      mainClass = createObjectWithoutCallingDefaultConstructor(currentContext, "ras.ui.ActivationWindow");
-      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, CONSTRUCTOR_NAME, 1, "ras.ActivationClient"), mainClass, rasClientInstance);
-   }
-   else
+   mustActivate = !executeMethod(currentContext, m, rasClientInstance).asInt32;
    {
       // get the product id to see if litebase is allowed
       litebaseAllowedPtr = getStaticFieldInt(c, "litebaseAllowed");
@@ -309,7 +305,7 @@ TC_API int32 startProgram(Context currentContext)
 #ifndef ENABLE_DEMO // in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
       if (isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow
 #endif
-      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT), mainClass, checkDemo());
+      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, mustActivate ? -999999 : checkDemo());
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding
