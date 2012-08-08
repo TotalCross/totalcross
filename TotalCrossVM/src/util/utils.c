@@ -755,6 +755,20 @@ static FILE* updateFile(FILE* fin, CharP name)
 #endif
       rename(update,name); // rename update into original
       fin = fopen(name, "rb");
+#ifdef ANDROID // copy the file as .bak
+      uint8* buf = xmalloc(2048);
+      if (buf)
+      {  
+         int32 n;
+         xstrprintf(update, "%s.bak", name);
+         fu = fopen(update,"wb");
+         while ((n = fread(buf, 1, 2048, fin)) > 0)
+            fwrite(buf,1,n,fu);
+         fclose(fu);
+         fseek(fin,0,SEEK_SET);
+         xfree(buf);
+      }      
+#endif      
    }
 #endif   
    return fin;
