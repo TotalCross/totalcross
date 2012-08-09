@@ -27372,9 +27372,13 @@ MINIMIZE_BUTTON
 \labelwidthstring 0
 isFullScreen Set it at the application's static initializer.
  Makes the application full screen.
- Only a simple assignment to true is supported; you cannot check the platform
- nor any other attribute of this class because the static initializer is
- called BEFORE this class have its fields set.
+ Only a simple assignment to 
+\family typewriter
+true
+\family default
+ is supported; you cannot check the platform nor any other attribute of
+ this class because the static initializer is called BEFORE this class has
+ its fields set.
  Also, some platforms set it at deploying time.
  Note that Android applications are always full screen.
  
@@ -27402,12 +27406,11 @@ isFullScreen
 StringBuffer
 \family default
  or anything else may result in incorrect results.
- Here's a sample, to use full screen on windows devices (but not windows
+ Here's a sample, to use full screen on Windows devices (but not Windows
  desktop): 
 \end_layout
 
 \begin_layout Standard
-
 \begin_inset listings
 inline false
 status open
@@ -27440,6 +27443,1085 @@ static
 \end_inset
 
 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appVersion Set it at the application's static initializer.
+ Defines the current application's version, which will be applied to the
+ deployed files.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+companyInfo Set it at the application's static initializer.
+ Defines the company's information, which is used in some installations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+companyContact Set it at the application's static initializer.
+ Defines the user's or company's contact email, which is used in some installati
+ons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appDescription Set it at the application's static initializer.
+ Defines the application's description, which is used in some installations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appLocation Set it at the application's static initializer.
+ Defines the application's location, which is used in some installations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+appCategory Set it at the application's static initializer.
+ Defines the application's category, which is used in some installations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+activationServerURI Set it at the application's static initializer.
+ Specifies a URI to a WebService to be used by the VM activation process.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+activationServerNamespace Set it at the application's static initializer.
+ Specifies a namespace for the WebService provided by the user.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showDesktopMessages Set to 
+\family typewriter
+false
+\family default
+ to hide all messages that are sent to the console when running on the desktop.
+ Note that doing so may hide important messages! Do it with caution.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+nvfsVolume Field that represents the number of the hidden volume (flash
+ memory), or -1 if the device does not have it or if its not a Palm OS device.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+imei Field that represents the smartphone IMEI (if this device is a GSM,
+ UMTS or IDEN smartphone), or 
+\family typewriter
+null
+\family default
+ if there's none.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+esn Field that represents the smartphone ESN (if this device is a CDMA smartphon
+e) or 
+\family typewriter
+null
+\family default
+ if there's none.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+iccid Field that represents the serial number of the GSM chip or 
+\family typewriter
+null
+\family default
+ if there's none.
+ Works for Windows Mobile and Android.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontCloseApplication If set to 
+\family typewriter
+true
+\family default
+, the application will ignore the event "Close application" issued by the
+ operating system.
+ This is specially useful to avoid that an incoming call exits the application
+ on Palm OS.
+ You must provide a way to terminate the application by calling the 
+\family typewriter
+exit()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+geographicalFocus When directional keys are used to change focus, the next
+ control to receive focus will be determined based on their physical location
+ on the screen.
+ Also, when 
+\family typewriter
+geographicalFocus
+\family default
+ is 
+\family typewriter
+true
+\family default
+, the highlight/action key model will not be used.
+ Instead, controls will be highlighted and given focus immediately.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multipleInstances Setting this field to 
+\family typewriter
+true
+\family default
+ allows the execution of multiple instances of the same application.
+ When the application is started, it first checks if there is a running
+ instance of the same application.
+ If so, the running instance is moved to the foreground and the starting
+ application exits.
+ It only works on Java, Windows 32, and Windows CE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+circularNavigation Set to 
+\family typewriter
+false
+\family default
+ to disable the default circular navigation when using the arrows: it will
+ stop at the first or the last item.
+ It applies to: 
+\family typewriter
+ListBox
+\family default
+, 
+\family typewriter
+MenuBar
+\family default
+, 
+\family typewriter
+ComboBoxEditable
+\family default
+, 
+\family typewriter
+Grid
+\family default
+, 
+\family typewriter
+MenuBarDropDown
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gcCount Number of times that the GC (garbage collector) ran.
+ Updated by the VM during the application execution.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gcTime How much time the GC took in all runs.
+ Updated by the VM during the application execution.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chunksCreated Number of memory chunks (blocks of memory that store 
+\family typewriter
+Object
+\family default
+s) created.
+ Updated by the VM during the application execution.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastInteractionTime Time when the user last interacted with the device using
+ the keyboard, pen, trackball, etc.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showMemoryMessagesAtExit Set this flag to 
+\family typewriter
+false
+\family default
+ (default is 
+\family typewriter
+true
+\family default
+) to don't display the memory errors when the program exits.
+ It is highly recommended that you keep this flag on while debugging your
+ programs, but you may not want to let it on when deploying your application
+ to your costumers.
+ Note that the log messages will still be dumped to the console.
+ The possible errors are: 
+\end_layout
+
+\begin_layout Itemize
+Memory error: out of memory when allocating.
+ Usually an 
+\family typewriter
+OutOfMemoryError
+\family default
+ will be also thrown.
+\end_layout
+
+\begin_layout Itemize
+Memory leak: memory was not freed properly.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showMousePosition Shows the mouse position in the Window's title when running
+ as a Java application.
+ This greatly helps the creation of 
+\family typewriter
+UIRobot
+\family default
+'s user interface unit tests (using absolute coordinates to simulate the
+ events).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deviceRobotSpecialKey Makes the generation of user interface tests much
+ easier by using the built-in User Interface Robot.
+ To enable it on the device, you must assign a special key that will open
+ the interface.
+ To enable it on the desktop (Java), you must press control+1.
+ For example, if you want to set the 
+\family typewriter
+SpecialKeys.FIND
+\family default
+ to be the one that will open the 
+\family typewriter
+UIRobot
+\family default
+, do: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.interceptSpecialKeys(new int[]{SpecialKeys.FIND});
+\end_layout
+
+\begin_layout Plain Layout
+
+Settings.deviceRobotSpecialKey = SpecialKeys.FIND; 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showDebugTimestamp Set to 
+\family typewriter
+false
+\family default
+ to don't display the timestamp before each 
+\family typewriter
+Vm.debug()
+\family default
+ output.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timeZoneStr Textual description of the time zone currently used by the device.
+ This value is completely platform dependent, and may be localized for the
+ platform current settings.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fingerTouch Defines platforms that the touchscreen is used MOSTLY with the
+ finger.
+ We say mostly because there are special pens that can be used with iPhone;
+ however, we consider this an exception, not the rule.
+ Currently this value is 
+\family typewriter
+true
+\family default
+ for iPhone and Android platforms, and the BlackBerry Storm.
+ 
+\begin_inset Newline newline
+\end_inset
+
+When 
+\family typewriter
+fingerTouch
+\family default
+ is 
+\family typewriter
+true
+\family default
+, all controls that can scroll, like 
+\family typewriter
+ListBox
+\family default
+, 
+\family typewriter
+Grid
+\family default
+,
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+ScrollContainer
+\family default
+, 
+\family typewriter
+MultiEdit
+\family default
+, etc, will have the flick and drag enabled and the 
+\family typewriter
+ScrollBar
+\family default
+ will be replaced by 
+\family typewriter
+ScrollPosition
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+touchTolerance Defines a touch tolerance to find the closest control.
+ Used in 
+\family typewriter
+fingerTouch
+\family default
+ devices.
+ You can disable it setting this property to 0.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fadeOtherWindows Default 
+\family typewriter
+fadeOtherWindows
+\family default
+ value used in the 
+\family typewriter
+totalcross.ui.dialog
+\family default
+ windows.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableWindowTransitionEffects Set to 
+\family typewriter
+true
+\family default
+ to enable the transition effects when a window is shown and hidden.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+debugEvents Set to 
+\family typewriter
+true
+\family default
+ to debug all events that are received at 
+\family typewriter
+Window._postEvent()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+activationId READ-ONLY unique identifier available for registered applications
+ after the TotalCross VM is activated.
+ Value defaults to "NOT AVAILABLE" when running on DEMO.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+vibrateMessageBox Set to 
+\family typewriter
+true
+\family default
+ to enable the vibration when a 
+\family typewriter
+MessageBox
+\family default
+ appears on screen (only on device).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableScreenRotation Set to 
+\family typewriter
+true
+\family default
+ to disable screen rotation.
+ Works only on Java.
+ If you need this feature on the device, override the 
+\family typewriter
+screenResized()
+\family default
+ method in your 
+\family typewriter
+MainWindow
+\family default
+ and add something like: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public void screenResized()
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (Settings.isLandscape())
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		// make sure that the MessageBox takes the whole screen
+\end_layout
+
+\begin_layout Plain Layout
+
+		MessageBox mb = new MessageBox("Attention","This program must be run in
+ portrait mode.
+\backslash
+nPlease rotate the device.",null)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			public void setRect(int x, int y, int w, int h)
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				super.setRect(x,y,Settings.screenWidth,Settings.screenHeight);
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+		};
+\end_layout
+
+\begin_layout Plain Layout
+
+		mb.transitionEffect = TRANSITION_NONE;
+\end_layout
+
+\begin_layout Plain Layout
+
+		mb.popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+		while (Settings.isLandscape())
+\end_layout
+
+\begin_layout Plain Layout
+
+			pumpEvents();
+\end_layout
+
+\begin_layout Plain Layout
+
+		mb.unpop();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	else
+\end_layout
+
+\begin_layout Plain Layout
+
+		super.screenResized();
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unmovableSIP Set to 
+\family typewriter
+true
+\family default
+ to move an 
+\family typewriter
+Edit
+\family default
+ or 
+\family typewriter
+MultiEdit
+\family default
+ to the top of the screen if the application is running on a platform that
+ does not support moving the Soft Input Panel to the top.
+ Otherwise, the SIP (Soft Input Panel) will be placed on top of the 
+\family typewriter
+Edit
+\family default
+.
+ You must set this in the 
+\family typewriter
+MainWindow
+\family default
+'s constructor, never in the static block.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deviceFontHeight The size in pixels of the device's system font.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveCursorToEndOnFocus Set to 
+\family typewriter
+true
+\family default
+ to put the cursor at the end of the 
+\family typewriter
+Edit
+\family default
+ and 
+\family typewriter
+MultiEdit
+\family default
+ when focus was set to the control (default is at the start).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SIPBottomLimit The limit that will make the Soft Input Panel be placed at
+ bottom.
+ If the control's absolute rect is < this value, the SIP will stay at the
+ bottom of the screen (otherwise, it will be moved to the top).
+ Before TotalCross 1.3, this value used to be the half of the screen, but
+ since in some new Windows Mobile the SIP is very tall (specially in landscape
+ mode), we added this field so you can change it if desired.
+ For example, to set to 5 times the font's height, do: 
+\family typewriter
+Settings.SIPBottomLimit = 5 * fmH;
+\family default
+ Setting it to -1 (default value) will use half the current screen height.
+ This field is used in Windows CE devices only.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+uiAdjustmentsBasedOnFontHeight Set to 
+\family typewriter
+true
+\family default
+ to make the extra adjustment values used in the relative positioning be
+ a percentage of the control's font height.
+ In modern devices, a single pixel can have different sizes in inches (or,
+ in other words, the devices have different screen densities).
+ So, something like 
+\family typewriter
+PREFERRED+4
+\family default
+ in a 320x480 device with 160 DPI (DIPS PER INCH - or pixels per inch) will
+ have the half size of a device with the same resolution but 320 DPI.
+ Since the font sizes change according to the DPI and not the resolution,
+ its good to change the relative positioning to use a percentage of the
+ font's height instead of absolute pixels.
+ By setting this flag to true will make the adjustment a PERCENTAGE of the
+ font's height.
+ So, you can use something like 
+\family typewriter
+PREFERRED+50
+\family default
+ (50% of font's height), 
+\family typewriter
+SAME+150
+\family default
+ (150% of font's height), and so on.
+ It is possible to disable the adjustment for a single 
+\family typewriter
+Control
+\family default
+, 
+\family typewriter
+Container
+\family default
+, or 
+\family typewriter
+Window
+\family default
+, using 
+\family typewriter
+Control.
+ uiAdjustmentsBasedOnFontHeightIsSupported
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useNewFont Change to 
+\family typewriter
+true
+\family default
+ to use the new font added in version 1.3.
+ The main difference between the old and the new fonts is that the new one
+ was generated INSIDE an Android emulator, thus, it uses the Android's True
+ Type Font engine, which is far better than the Java's engine, used to generate
+ the old font.
+ Thus, the new font has a better appearance, and its also a bit smaller
+ than the old font (the new height is about 2 below the old height, so if
+ you used 20 for the old font, you should use 22 for the new one).
+ To have your application's font optimzed for all platforms, start by using
+ the new font.
+ Android's default font size is computed based on the new font.
+ Using the old font on Android will result in less-than optimal results
+ on Android devices.
+ The standard VM installation files includes both new and old font files.
+ However, if you use the 
+\family typewriter
+tc.Deploy
+\family default
+ option that generates a single package (
+\family typewriter
+/p
+\family default
+), only the choosen font will be packaged.
+ You must change this property at the application's static initializer.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+static
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Settings.useNewFont = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sendPressEventOnChange Set to 
+\family typewriter
+true
+\family default
+ to post a 
+\family typewriter
+PRESSED
+\family default
+ event when an item is programatically selected or changed.
+ Works with the following controls: 
+\family typewriter
+Edit
+\family default
+, 
+\family typewriter
+MultiEdit
+\family default
+, 
+\family typewriter
+Check
+\family default
+, 
+\family typewriter
+Radio
+\family default
+, 
+\family typewriter
+ComboBox
+\family default
+, 
+\family typewriter
+ListBox
+\family default
+, 
+\family typewriter
+SpinList
+\family default
+.
+ Usually this event only occurs when the user selects an item, not when
+ you call 
+\family typewriter
+setSelectedItem
+\family default
+/
+\family typewriter
+Index()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resizableWindow Set to 
+\family typewriter
+true
+\family default
+ to make the program's window resizable on Windows and desktop.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+windowSize Defines the window size when running on a desktop computer (the
+ default is 240x320).
+ Must be set in the static initializer.
+ If used, the window will be centered on screen with the given resolution.
+ It can have the values: 
+\family typewriter
+WINDOWSIZE_320X480
+\family default
+, 
+\family typewriter
+WINDOWSIZE_480X640
+\family default
+, and 
+\family typewriter
+WINDOWSIZE_600X800
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+windowFont Defines the window font size when running on a desktop computer.
+ Must be set in the static initializer.
+\end_layout
+
+\begin_layout Standard
+This class just have a few methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isWindowsDevice() Returns 
+\family typewriter
+true
+\family default
+ if the current platform is Windows Mobile or Pocket PC.
+ Note that Windows Desktop (aka WIN32) returns 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isIOS() Returns 
+\family typewriter
+true
+\family default
+ if this is an iPad or an iPhone.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+refresh() Refresh some fields that may have been updated since the program
+ started.
+ The currently refreshed fields are: 
+\family typewriter
+daylightSavings
+\family default
+, 
+\family typewriter
+timeZone
+\family default
+, and 
+\family typewriter
+timeZoneStr
+\family default
+.
+ Also saves the 
+\family typewriter
+appSettings
+\family default
+ properties, which otherwise is saved only at program's end.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isLandscape() Returns 
+\family typewriter
+true
+\family default
+ if the device is currently in landscale (
+\family typewriter
+screenWidth > screenHeight
+\family default
+).
+ 
+\end_layout
+
+\begin_layout Section
+Vm
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Vm
+\family default
+ contains various system-level methods.
+ This class contains methods to copy arrays, obtain a timestamp, sleep,
+ and get platform and version information, among many other things.
+ 
+\end_layout
+
+\begin_layout Standard
+It has the following field:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableDebug Set to 
+\family typewriter
+true
+\family default
+ to disable 
+\family typewriter
+Vm.debug()
+\family default
+ message output.
+ Note that the method calls will still remain, and can slowdown your program.
+ Note also that 
+\family typewriter
+Vm.warning()
+\family default
+ is not affected by this flag.
+\end_layout
+
+\begin_layout Standard
+The methods are described below:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+arrayCopy(Object
+\begin_inset space ~
+\end_inset
+
+srcArray,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+srcStart,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+dstArray,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+dstStart,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Copies the elements of one array (
+\family typewriter
+srcArray
+\family default
+) to another array (
+\family typewriter
+dstArray
+\family default
+).
+ This method returns 
+\family typewriter
+true
+\family default
+ if the copy is successful.
+ It will return 
+\family typewriter
+false
+\family default
+ if either array is 
+\family typewriter
+null
+\family default
+ or 
+\family typewriter
+length
+\family default
+ is less than zero.
+ If the 
+\family typewriter
+length
+\family default
+ parameter would cause the copy to read or write past the end of one of
+ the arrays, an index out of range error will occur.
+ If 
+\family typewriter
+false
+\family default
+ is returned then no copying has been performed.
+ 
+\family typewriter
+srcStart
+\family default
+ is the the starting position in the source array and 
+\family typewriter
+dstStart
+\family default
+ is the the starting position in the destination array.
+ It throws an 
+\family typewriter
+ArrayStoreException
+\family default
+ if the source and destination array are not compatible.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTimeStamp() Returns a time stamp in milliseconds.
+ The time stamp is the time in milliseconds since the program started.
+ The maximum time stamp value is (1 << 30) which represents near 14 days
+ of continuous use, and when it is reached, the timer will reset to 0 and
+ will continue counting from there.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTime(Time
+\begin_inset space ~
+\end_inset
+
+t) Sets the device time to the given arguments.
+ Note that in some systems, the millis field is ignored.
+ Some devices require that you add 
+\family typewriter
+Settings.timeZone
+\family default
+.
+ Does not work on Android, which does not allow to do this programatically.
+ 
 \end_layout
 
 \begin_layout FieldList
