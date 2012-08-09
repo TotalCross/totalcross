@@ -59,8 +59,6 @@ import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.StringUtilities;
-import ras.ActivationClient;
-import ras.ui.ActivationWindow;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 import totalcross.io.File;
@@ -216,21 +214,11 @@ public class Launcher4B
          f.createDir();
       f.close();
 
-      Class clazz = null;
       //$IF,FULLVERSION
-      ActivationClient client = null;
-
-      client = ActivationClient.getInstance();
-      if (!(activated = client.isActivatedSilent())) // check activation
-         clazz = ActivationWindow.class;
-      else
-      {
-         //$END
-         clazz = Class.forName(className);
-         logger.info("Class '" + className + "' loaded");
-         //$IF,FULLVERSION
-      }
+      activated = ras.ActivationClient.getInstance().isActivatedSilent();
       //$END
+      Class clazz = Class.forName(className);
+      logger.info("Class '" + className + "' loaded");
       
       String path = clazz.getName().replace('.', '/');
       int idx = path.lastIndexOf('/');

@@ -30,11 +30,11 @@ public class ActivationWindow extends Window
    private TimerEvent startTimer;
    private Bar headerBar;
 
-   public ActivationWindow(ActivationClient client)
+   public ActivationWindow()
    {
       super("", NO_BORDER);
       setBackColor(Color.WHITE);
-      this.client = client;
+      this.client = ras.ActivationClient.getInstance();
       setRect(LEFT,TOP,FILL,FILL);
    }
    
