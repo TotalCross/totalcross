@@ -523,18 +523,20 @@ public class MainWindow extends Window implements totalcross.MainClass
          }
          //$START:REMOVE-ON-SDK-GENERATION$                         
          if (timeAvailable == -999999)
-         {
-            timeAvailable = -1;
-            Window w = new ras.ui.ActivationWindow(ras.ActivationClient.getInstance());
-            w.addWindowListener(new WindowListener()
+            try
             {
-               public void windowClosed(ControlEvent e)
+               timeAvailable = -1;
+               Window w = (Window)Class.forName("ras.ui.ActivationWindow").newInstance();
+               w.addWindowListener(new WindowListener()
                {
-                  startProgram();
-               }
-            });
-            w.popupNonBlocking();
-         }
+                  public void windowClosed(ControlEvent e)
+                  {
+                     startProgram();
+                  }
+               });
+               w.popupNonBlocking();
+            }
+            catch (Exception e) {Vm.alert("Fatal error: "+e.getMessage()+". Exiting..."); exit(1); return;}
          else 
          //$END:REMOVE-ON-SDK-GENERATION$
             startProgram();            
