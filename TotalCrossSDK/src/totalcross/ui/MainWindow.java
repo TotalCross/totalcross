@@ -19,9 +19,6 @@
 
 package totalcross.ui;
 
-import ras.*;
-import ras.ui.*;
-
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -524,10 +521,11 @@ public class MainWindow extends Window implements totalcross.MainClass
             exit(0);
             return;
          }
+         //$START:REMOVE-ON-SDK-GENERATION$                         
          if (timeAvailable == -999999)
          {
             timeAvailable = -1;
-            Window w = new ActivationWindow(ActivationClient.getInstance());
+            Window w = new ras.ui.ActivationWindow(ras.ActivationClient.getInstance());
             w.addWindowListener(new WindowListener()
             {
                public void windowClosed(ControlEvent e)
@@ -537,7 +535,9 @@ public class MainWindow extends Window implements totalcross.MainClass
             });
             w.popupNonBlocking();
          }
-         else startProgram();            
+         else 
+         //$END:REMOVE-ON-SDK-GENERATION$
+            startProgram();            
       }
       int minInterval = 0;
       TimerEvent timer = firstTimer;
