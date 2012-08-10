@@ -23,27 +23,19 @@ import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.xml.soap.*;
 
-public class ActivationWindow extends MainWindow
+public class ActivationWindow extends Window
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-   
    private ActivationClient client;
    private ActivationHtml html;
+   private TimerEvent startTimer;
+   private Bar headerBar;
 
-   public ActivationWindow() // used just to test on JavaSE
-   {
-      this(null);
-   }
-
-   public ActivationWindow(ActivationClient client)
+   public ActivationWindow()
    {
       super("", NO_BORDER);
-      setUIStyle(Settings.Android);
       setBackColor(Color.WHITE);
-      this.client = client;
+      this.client = ras.ActivationClient.getInstance();
+      setRect(LEFT,TOP,FILL,FILL);
    }
    
    public void initUI()
@@ -57,7 +49,7 @@ public class ActivationWindow extends MainWindow
       {      
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
-         Bar headerBar = new Bar("Activation");
+         headerBar = new Bar("Activation");
          headerBar.createSpinner(Color.WHITE);
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
@@ -71,7 +63,33 @@ public class ActivationWindow extends MainWindow
          headerBar.startSpinner();
          
          repaintNow();
-   
+         startTimer = addTimer(100);
+      }
+   }
+
+   private void failure(ActivationException ex)
+   {
+      Throwable cause = ex.getCause();
+      String s = ex.getMessage() + " The activation process cannot continue. The application will be terminated.";
+
+      if (cause instanceof SOAPException || cause instanceof IOException)
+         s += " Try again 2 or 3 times if there's really an internet connection.";
+
+      alert("Failure",s,-1);
+      MainWindow.exit(1);
+   }
+
+   private void success()
+   {
+      alert("Success", "TotalCross is now activated!",0x008800);
+      unpop();
+   }
+
+   public void onEvent(Event e)
+   {
+      if (e.type == TimerEvent.TRIGGERED && startTimer.triggered)
+      {
+         removeTimer(startTimer);
          try
          {
             if (client == null)
@@ -87,32 +105,16 @@ public class ActivationWindow extends MainWindow
             failure(ex);
          }
       }
-   }
-
-   private void failure(ActivationException ex)
-   {
-      Throwable cause = ex.getCause();
-      String s = ex.getMessage() + " The activation process cannot continue. The application will be terminated.";
-
-      if (cause instanceof SOAPException || cause instanceof IOException)
-         s += " Try again 2 or 3 times if there's really an internet connection.";
-
-      alert("Failure",s,-1);
-      exit(1);
-   }
-
-   private void success()
-   {
-      alert("Success", "TotalCross is now activated!\nPlease restart your application.",0x008800);
-      exit(0);
-   }
-
-   public void onEvent(Event e)
-   {
+      else
       if (e.type == ControlEvent.PRESSED && html != null && e.target == html)
       {
          if (html.type != ActivationHtml.ACTIVATION_START)
-            exit(html.type == ActivationHtml.ACTIVATION_SUCCESS ? 0 : 1);
+         {
+            if (html.type == ActivationHtml.ACTIVATION_SUCCESS)
+               unpop();
+            else
+               MainWindow.exit(1);
+         }
          else
             try
             {
@@ -147,6 +149,7 @@ public class ActivationWindow extends MainWindow
       mb.setTextAlignment(LEFT);
       mb.titleColor = Color.WHITE;
       mb.yPosition = BOTTOM;
+      mb.setBackColor(bg);
       mb.popup();
    }
    

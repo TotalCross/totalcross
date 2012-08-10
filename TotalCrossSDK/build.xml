@@ -277,6 +277,7 @@ target: compile
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true" >
      <fileset dir="${src}" includes="totalcross/lang/**" excludes="**/*4B.*" />
   </copy>
+  <replaceregexp file="${output}/desktopsrc/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 
   <javac srcdir="${output}/desktopsrc"
      sourcepath=""
