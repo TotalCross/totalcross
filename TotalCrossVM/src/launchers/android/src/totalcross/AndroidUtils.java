@@ -277,6 +277,7 @@ public class AndroidUtils
    public static void handleException(Throwable e, boolean terminateProgram)
    {
       String stack = Log.getStackTraceString(e);
+      debug(terminateProgram ? "FATAL EXCEPTION" : "NON-FATAL EXCEPTION");
       debug(stack);
       if (terminateProgram)
          error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
