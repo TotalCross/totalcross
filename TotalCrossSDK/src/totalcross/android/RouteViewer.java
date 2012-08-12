@@ -6,8 +6,6 @@ import android.view.*;
 import com.google.android.maps.*;
 import java.net.*;
 import java.util.*;
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
 
 import totalcross.*;
 
@@ -130,29 +128,32 @@ public class RouteViewer extends MapActivity
          mapview.setSatellite(extras.getBoolean("sat"));
          GeoPoint srcGeoPoint = new GeoPoint((int) (latI * 1E6), (int) (lonI * 1E6));
          GeoPoint dstGeoPoint = new GeoPoint((int) (latF * 1E6), (int) (lonF * 1E6));
-         GeoPoint center = srcGeoPoint;
+         List<GeoPoint> pairs = null;
          if (latI != 0 && lonI != 0 && latF != 0 && lonF != 0)
-            drawRoute(srcGeoPoint, dstGeoPoint, Color.RED, mapview);
-         // traversed points
+            pairs = getRoute(srcGeoPoint, dstGeoPoint);
+         else // traversed points
          if (scoords != null)
          {
             String[] s = scoords.split(",");
-            GeoPoint[]coords = new GeoPoint[s.length/2];
-            for (int i = 0,j=0; i < s.length;)
-               coords[j++] = new GeoPoint((int)(Double.valueOf(s[i++])*1E6),(int)(Double.valueOf(s[i++])*1E6));
-            List<Overlay> overs = mapview.getOverlays();
-            overs.add(new MyOverLay(coords[0], coords[0], 1));
-            if (coords.length > 1)
-            {
-               for (int i = 1; i < coords.length; i++)
-                  overs.add(new MyOverLay(coords[i-1], coords[i], 2, 0x00FF00));
-               overs.add(new MyOverLay(coords[coords.length-1], coords[coords.length-1], 3));
-            }
-            center = coords[0];
+            pairs = new ArrayList<GeoPoint>(s.length/2);
+            for (int i = 0; i < s.length;)
+               pairs.add(new GeoPoint((int)(Double.valueOf(s[i++])*1E6),(int)(Double.valueOf(s[i++])*1E6)));
          }
+         if (pairs == null)
+            throw new Exception("No lat/lon found");
+         int color = Color.RED;
+         int n = pairs.size();
+         List<Overlay> overs = mapview.getOverlays();
+         GeoPoint p1 = pairs.get(0);
+         GeoPoint p2 = pairs.get(n-1);
+         overs.add(new MyOverLay(p1,p1, 1));
+         for (int i = 1; i < n; i++) // the last one would be crash
+            overs.add(new MyOverLay(pairs.get(i-1), pairs.get(i), 2, color));
+         overs.add(new MyOverLay(p2,p2, 3));
+     
          // move the map to the given point
-         mapview.getController().setCenter(center);
-         mapview.getController().setZoom(21);
+         mapview.getController().zoomToSpan(Math.abs(p1.getLatitudeE6() - p2.getLatitudeE6()), Math.abs(p1.getLongitudeE6() - p2.getLongitudeE6()));
+         mapview.getController().animateTo(new GeoPoint(p1.getLatitudeE6() - ((p1.getLatitudeE6() - p2.getLatitudeE6())/2), p1.getLongitudeE6() - ((p1.getLongitudeE6() - p2.getLongitudeE6())/2)));
       }
       catch (Exception e)
       {
@@ -166,60 +167,66 @@ public class RouteViewer extends MapActivity
       return true;
    }
 
-   private void drawRoute(GeoPoint src, GeoPoint dest, int color, MapView mapview) throws Exception
+   private List<GeoPoint> getRoute(GeoPoint src, GeoPoint dest) throws Exception
    {
       // connect to map web service
       StringBuilder urlString = new StringBuilder(128).
-         append("http://maps.google.com/maps?f=d&hl=pt-br").
-         append("&saddr=").// from
+         append("http://maps.googleapis.com/maps/api/directions/xml?origin=").
          append(Double.toString((double) src.getLatitudeE6() / 1.0E6)).
          append(",").
          append(Double.toString((double) src.getLongitudeE6() / 1.0E6)).
-         append("&daddr=").// to
+         append("&destination=").// to
          append(Double.toString((double) dest.getLatitudeE6() / 1.0E6)).
          append(",").
          append(Double.toString((double) dest.getLongitudeE6() / 1.0E6)).
-         append("&ie=UTF8&0&om=0&output=kml");
-
-      // get the kml (XML) doc. And parse it to get the coordinates(direction route).
-      Document doc = null;
-      HttpURLConnection urlConnection = null;
-      URL url = new URL(urlString.toString());
-      urlConnection = (HttpURLConnection) url.openConnection();
-      urlConnection.setRequestMethod("GET");
-      urlConnection.setDoOutput(true);
-      urlConnection.setDoInput(true);
+         append("&sensor=false");
+      // http://maps.googleapis.com/maps/api/directions/xml?origin=-22.966923,-43.185766&destination=-22.955736,-43.198185&sensor=false
+      // http://stackoverflow.com/questions/11323500/google-maps-api-version-difference/11357351#11357351
+      AndroidUtils.debug(urlString.toString());
+      HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString.toString()).openConnection();
       urlConnection.connect();
       byte[] bytes = AndroidUtils.readFully(urlConnection.getInputStream());
-      AndroidUtils.debug(new String(bytes));
-
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-      doc = dbf.newDocumentBuilder().parse(new java.io.ByteArrayInputStream(bytes));
-      List<Overlay> overs = mapview.getOverlays();
-
-      NodeList node = doc.getElementsByTagName("GeometryCollection");
-      if (node.getLength() > 0)
-      {
-         String path = node.item(0).getFirstChild().getFirstChild().getFirstChild().getNodeValue();
-
-         String[] pairs = path.split(" ");
-         String[] lngLat = pairs[0].split(","); // lngLat[0]=longitude, lngLat[1]=latitude, lngLat[2]=height
-
-         // src
-         GeoPoint startGP = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
-         overs.add(new MyOverLay(startGP, startGP, 1));
-
-         GeoPoint gp1;
-         GeoPoint gp2 = startGP;
-         for (int i = 1; i < pairs.length; i++) // the last one would be crash
-         {
-            lngLat = pairs[i].split(",");
-            gp1 = gp2;
-            // watch out! For GeoPoint, first:latitude, second:longitude
-            gp2 = new GeoPoint((int) (Double.parseDouble(lngLat[1]) * 1E6), (int) (Double.parseDouble(lngLat[0]) * 1E6));
-            overs.add(new MyOverLay(gp1, gp2, 2, color));
-         }
-         overs.add(new MyOverLay(dest, dest, 3)); // use the default color
-      }
+      String s = new String(bytes);
+      int idx = s.indexOf("<overview_polyline>");
+      if (idx == -1) throw new Exception("Cannot find overview_polyline");
+      int idx1 = s.indexOf("<points>", idx) + 8;
+      int idx2 = s.indexOf("</points>",idx);
+      return decodePoly(s,idx1,idx2);
    }
+   
+   private List<GeoPoint> decodePoly(String encoded, int index, int end) 
+   {
+      List<GeoPoint> poly = new ArrayList<GeoPoint>(50);
+      int lat = 0, lng = 0;
+
+      while (index < end) 
+      {
+          int b, shift = 0, result = 0;
+          do 
+          {
+              b = encoded.charAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+          } while (b >= 0x20);
+          int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+          lat += dlat;
+
+          shift = 0;
+          result = 0;
+          do 
+          {
+              b = encoded.charAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+          } while (b >= 0x20);
+          int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+          lng += dlng;
+
+          GeoPoint p = new GeoPoint((int) (((double) lat / 1E5) * 1E6), (int) (((double) lng / 1E5) * 1E6));
+          poly.add(p);
+      }
+
+      return poly;
+  }
+
 }
