@@ -7334,7 +7334,11 @@ catch (Exception e)
 
 \begin_layout Standard
 Finally, what's the correct way to handle the exception? The most common
- is call 
+ is call
+\begin_inset Newline newline
+\end_inset
+
+
 \family typewriter
 printStackTrace()
 \family default
@@ -7417,7 +7421,11 @@ catch (Exception e)
 
 \begin_layout Standard
 The first parameter is the exception itself, and the second parameter indicates
- if 
+ if
+\begin_inset Newline newline
+\end_inset
+
+
 \family typewriter
 printStackTrace()
 \family default
@@ -28526,12 +28534,1409 @@ Settings.timeZone
 
 \begin_layout FieldList
 \labelwidthstring 0
-exitAndReboot 
+exitAndReboot() Reboots the device.
+ This is the equivalent of a warm boot (or soft reset).
+ Calling this method terminates the program, closes all open files, calls
+ 
+\family typewriter
+MainWindow.onExit()
+\family default
+ and, finaly, resets the device.
+ The implementation on JDK just exits the program: there's no reboot at
+ all.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+exec(String
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+args,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+launchCode,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+wait) Executes a command.
+ 
+\begin_inset Newline newline
+\end_inset
+
+As an example, the following call could be used to run the command 
+\family typewriter
+scandir /p mydir
+\family default
+ on Java, Windows 32, or Windows CE: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+int result = Vm.exec("scandir", "/p mydir", 0, true);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+To install a cab file on Windows Mobile, you can use:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("wceload.exe", fullPathToCabFile, 0, true);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+However, trying to update the program itself or the vm will close the program.
+ So, update it at last.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This example executes the Scribble program on Palm OS: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Vm.exec("Scribble", null, 0, false);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+This example executes the web clipper program on Palm OS, telling it to
+ display a web page by using 
+\family typewriter
+launchCode
+\family default
+ 54 (
+\family typewriter
+CmdGoToURL
+\family default
+):
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("Clipper", "http://www.yahoo.com", 54, true);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+The 
+\family typewriter
+args
+\family default
+ parameter passed to this method is the arguments string to pass to the
+ program being executed.
+\begin_inset Newline newline
+\end_inset
+
+The 
+\family typewriter
+launchCode
+\family default
+ parameter is only used on Palm OS.
+ On Palm OS, it is the launch code value to use when the VM calls 
+\family typewriter
+SysUIAppSwitch()
+\family default
+.
+ If 0 is passed, the default launch code (
+\family typewriter
+CmdNormalLaunch
+\family default
+) is used to execute the program.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The 
+\family typewriter
+wait
+\family default
+ parameter passed to this method determines whether to execute the command
+ asynchronously.
+ If 
+\family typewriter
+false
+\family default
+, then the method will return without waiting for the command to complete
+ execution.
+ If 
+\family typewriter
+true
+\family default
+, the method will wait for the program to finish executing and the return
+ value of the method will be the value returned from the application on
+ all platforms except for Palm OS, wehere only a few headless applications
+ can be called with 
+\family typewriter
+wait
+\family default
+ being 
+\family typewriter
+true
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\series bold
+Note
+\series default
+: this method kills all running threads if the wait parametes is 
+\family typewriter
+false
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+To run another TotalCross program on Windows CE devices, use: 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("
+\backslash
+
+\backslash
+TotalCross
+\backslash
+
+\backslash
+Path
+\backslash
+
+\backslash
+Program.exe", null, 0, false);
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+Here's a sample of how to run the Internet Explorer on Windows CE:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("
+\backslash
+
+\backslash
+windows
+\backslash
+
+\backslash
+iexplore.exe","about:blank",0,false);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+You cannot pass 
+\family typewriter
+null
+\family default
+ nor 
+\family typewriter
+""
+\family default
+ in the args, or you'll get error 87.
+ IExplore requires a page to open; in this case, we open the blank page.
+\begin_inset Newline newline
+\end_inset
+
+To run another TotalCross program on Palm OS devices, use: 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("ProgName", null, 0, false);
+\family default
+  
+\begin_inset Newline newline
+\end_inset
+
+In other words, you must call the program's executable.
+ Note that on Palm OS, the program's name is the name of the 
+\family typewriter
+.prc
+\family default
+ appended by the 
+\family typewriter
+_
+\family default
+ character.
+ For example, to launch UIGadgets, you must pass 
+\family typewriter
+UIGadgets_
+\family default
+ as the command.
+\begin_inset Newline newline
+\end_inset
+
+When calling a TotalCross program, you can pass a command line parameter
+ to the calling application, just placing the parameters in the proper argument.
+ It can be retrieved with 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+getCommandLine()
+\family default
+ method from the 
+\family typewriter
+MainWindow
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+On some platforms, the caller application must be quit by calling 
+\family typewriter
+exit()
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+On Windows 2000 and beyond, if you don't pass the full path to the file,
+ it is searched in the current PATH environment variable.
+ The command must contain only the 
+\family typewriter
+.exe
+\family default
+ name, and all the other arguments must be in the 
+\family typewriter
+args
+\family default
+ parameter.
+ For example, the following code uses the CMD to open a file with the proper
+ editor:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("cmd.exe", "/c start C:
+\backslash
+
+\backslash
+WINNT
+\backslash
+
+\backslash
+DirectX.log", 0, false);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+Important notes about path separators:
+\begin_inset Newline newline
+\end_inset
+
+• We always tell to use / as the path separator.
+ 
+\family typewriter
+Vm.exec()
+\family default
+ must be used differently of the other places, because you don't pass only
+ paths in the 
+\family typewriter
+args
+\family default
+ parameter, pass other things too.
+ So, when you use a path in 
+\family typewriter
+File
+\family default
+, we convert the 
+\family typewriter
+/
+\family default
+ to the target separator (
+\family typewriter
+
+\backslash
+
+\family default
+ or 
+\family typewriter
+/
+\family default
+), but in 
+\family typewriter
+Vm.exec()
+\family default
+ we can't do that, for example, changing 
+\family typewriter
+/c start
+\family default
+ to 
+\family typewriter
+
+\backslash
+c start
+\family default
+ will make the execution fail.
+ So, you'll have to choose the right separator in the parameters.
+ 
+\begin_inset Newline newline
+\end_inset
+
+• Make sure that, on Windows, the paths and parameters use 
+\family typewriter
+
+\backslash
+
+\backslash
+
+\family default
+, not 
+\family typewriter
+/
+\family default
+ as path separator, or the command will not run.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If you're using 
+\family typewriter
+/cmd
+\family default
+ and the command fails, change 
+\family typewriter
+/c
+\family default
+ option to 
+\family typewriter
+/k
+\family default
+, which will keep the open window instead of closing it, so you can see
+ the error cause.
+ 
+\begin_inset Newline newline
+\end_inset
+
+On BlackBerry, the command must be a module name.
+ For instance, you can open TotalCross programs, just providing its module
+ (
+\family typewriter
+.cod
+\family default
+) name.
+ The command below launchs a URL:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("net_rim_bb_browser_daemon",
+\begin_inset Newline newline
+\end_inset
+
+"http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,
+\begin_inset Newline newline
+\end_inset
+
+true);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+On Android, you can launch an application, an URL at the browser, execute
+ a shell command, or install an 
+\family typewriter
+.apk
+\family default
+:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("cmd","logcat -d -f /sdcard/error.log -v time *:I",0,true);
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+creates the adb report.
+ Useful to get errors.
+ Note that you must wait for the file to be created, since the wait parameter
+ does not work, like 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+File f = new File("/sdcard/error.log");
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 
+while (!f.exists())
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+	Vm.sleep(500);
+\end_layout
+
+\end_inset
+
+
+\family typewriter
+Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q
+\begin_inset Newline newline
+\end_inset
+
+=abraham+lincoln",0,true);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+launches a url.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+launches another TotalCross' application.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("com.android.calculator2","Calculator",0,true);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+runs the Calculator program.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+Vm.exec("/sdcard/myapp.apk",null,0,false);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+calls the 
+\family typewriter
+.apk
+\family default
+ installation tool.
+ To access the card on Android devices, prefix the path with 
+\family typewriter
+/sdcard
+\family default
+.
+ Be sure that the sdcard is NOT MOUNTED, otherwise your application will
+ not have access to it.
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0,
+\begin_inset Newline newline
+\end_inset
+
+true);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+uses an internal viewer to show the 
+\family typewriter
+.txt
+\family default
+ file to the user (here, stored in the sdcard, but could be anywhere).
+ Also accepts HTM(L) and JPG files.
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true);
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+opens a 
+\family typewriter
+.pdf
+\family default
+.
+ Note: you must have a 
+\family typewriter
+.pdf
+\family default
+ reader installed; search for the free adobe reader in your favorite store.
+\begin_inset Newline newline
+\end_inset
+
+To be able to find what's the class name of a program you want to launch,
+ install it on the Android Emulator (which is inside the Android SDK) and
+ run the Dev Tools / Package Browser.
+ Then click on the package, and click in the desired Activities button.
+ The command parameter for 
+\family typewriter
+Vm.exec()
+\family default
+ is the process description, and the 
+\family typewriter
+args
+\family default
+ parameter is the activitie's name.
+ Note, however, that there's no guarantee that the program will be available
+ in a real device.
+\begin_inset Newline newline
+\end_inset
+
+On Android, if you're calling a TotalCross program, the wait parameter is
+ ignored (and defaults to false).
+\begin_inset Newline newline
+\end_inset
+
+When calling this method, usually 0 is returned if no error occured, or
+ a system error code.
+ -999 means that the file was not found.
+ On Android, 0 is always returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setAutoOff(boolean
+\begin_inset space ~
+\end_inset
+
+enabled) Enables or disables device automatic turn-off, which happens after
+ a period of inactivity of the device.
+ If you disable the auto-off, the original auto-off time will be restored
+ automatically when the program exits.
+ Keeping the device always on is desired only when you're working with sockets.
+ Use it carefully, because it drains the battery.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sleep(int
+\begin_inset space ~
+\end_inset
+
+millis) Causes the VM (or the current thread, if called from it) to pause
+ execution for the given number of milliseconds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+safeSleep(int
+\begin_inset space ~
+\end_inset
+
+millis) Causes the VM (or the current thread, if called from it) to pause
+ execution for aproximately the given number of milliseconds.
+ This method does not block the user interface engine, as 
+\family typewriter
+Vm.sleep()
+\family default
+ does, since it keeps calling 
+\family typewriter
+Window.pumpEvents()
+\family default
+.
+ So, if you rotate the screen during a 
+\family typewriter
+Vm.sleep()
+\family default
+, the rotation is blocked; but during a 
+\family typewriter
+Vm.safeSleep()
+\family default
+, the rotation occurs normally.
+ Button presses and other user interface operation also occurs normally
+ during this method.
+ Obviously, if you call 
+\family typewriter
+Vm.safeSleep(100)
+\family default
+ and a screen rotation (or any other event) occurs, this method will take
+ to return much more than 100 ms.
+ This method only makes sense for sleeps above 500 ms, unless you're calling
+ it from a loop (which is reasonable to keep calling it), and should not
+ be called from threads.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+vibrate(int
+\begin_inset space ~
+\end_inset
+
+millis) Vibrates the device for the specified number of milliseconds.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFreeMemory() Returns the free memory on the device.
+ Returns a maximum of 2 GB free, even if the device has more than that.
+ On Java and Windows 32, the result might be not reasonable after some operation
+s because of the virtual memory usage.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gc() Calls the Garbage Collector.
+ Usually, this isn't necessary; the 
+\family typewriter
+gc()
+\family default
+ is called everytime there is no more memory to allocate, but you may call
+ it before running a memory-consuming routine.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+interceptSpecialKeys(int[]
+\begin_inset space ~
+\end_inset
+
+keys) Specify which special keys to intercept; use the constants available
+ in 
+\family typewriter
+SpecialKeys
+\family default
+ or pass device-specific constants, which can be retrieved calling 
+\family typewriter
+Vm.showKeyCodes(true)
+\family default
+.
+ Note that the HOME key cannot be intercepted on Android due to OS restrictions.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isKeyDown(int
+\begin_inset space ~
+\end_inset
+
+key) Gets the current keys being pressed.
+ You must set which keys you want to receive notification with the 
+\family typewriter
+interceptSpecialKeys()
+\family default
+ method.
+ Note that you can use this method to verify if more than one key is pressed
+ at once, just keep pooling with this method to see when a state has changed.
+ If you just want to intercept the key with a single press, handle it in
+ the 
+\family typewriter
+onEvent()
+\family default
+ method, with a 
+\family typewriter
+KeyEvent
+\family default
+ event.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+debug(String
+\begin_inset space ~
+\end_inset
+
+s) Sends a text, followed by a line feed, to: 
+\begin_inset Newline newline
+\end_inset
+
+• Palm OS: the 
+\family typewriter
+DebugConsole
+\family default
+ file in the NVFS volume.
+\begin_inset Newline newline
+\end_inset
+
+• Windows CE / 32: the 
+\family typewriter
+DebugConsole.txt
+\family default
+ file at the current application's folder.
+ 
+\begin_inset Newline newline
+\end_inset
+
+• Blackberry: the event logger, which can be accessed using alt+LGLG, and
+ 
+\family typewriter
+DebugConsole.txt
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+• iPhone: the 
+\family typewriter
+DebugConsole.txt
+\family default
+ file in the application's folder.
+ 
+\begin_inset Newline newline
+\end_inset
+
+• Java SE: the 
+\family typewriter
+System.err
+\family default
+ console.
+ All strings are preceeded with the current time stamp.
+\begin_inset Newline newline
+\end_inset
+
+• Android: the 
+\family typewriter
+DebugConsole.txt
+\family default
+ or the logging window throught ADB, which can be viewed by calling 
+\family typewriter
+
+\backslash
+TotalCrossSDK
+\backslash
+etc
+\backslash
+tools
+\backslash
+android
+\backslash
+debug_console.bat
+\family default
+.
+ The last approach will only show something after passing 
+\family typewriter
+ALTERNATIVE_DEBUG
+\family default
+ to this method.
+ Otherwise, all debugged strings will go to the file.
+\begin_inset Newline newline
+\end_inset
+
+You can delete the debug memo/txt file passing the 
+\family typewriter
+ERASE_DEBUG
+\family default
+, a constant string declared in this class.
+ E.g.: 
+\family typewriter
+Vm.debug(Vm.ERASE_DEBUG);
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you're debugging a string that contains 
+\family typewriter
+
+\backslash
+0
+\family default
+ in it, all chars after the first 
+\family typewriter
+
+\backslash
+0
+\family default
+ are ignored.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+alert(String
+\begin_inset space ~
+\end_inset
+
+s) Shows an alert IMMEDIATELY on screen.
+ It uses the sytem message box to show the alert, not the 
+\family typewriter
+MessageBox
+\family default
+ class.
+ Showing an alert from Palm OS threads may reset the device.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note that unicode characters are not displayed on alerts.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+warning(String
+\begin_inset space ~
+\end_inset
+
+s) This function can be used to show permanent warnings.
+ It was created because 
+\family typewriter
+Vm.debug()
+\family default
+ is, in theory, just for debugging.
+ Some TotalCross classes display warnings to the user, and are not debug
+ (i.
+ e., temporary) messages.
+ It just calls 
+\family typewriter
+Vm.debug("Warning! "+s)
+\family default
+, so it differs from it only in a semanthical way.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: you cannot use this function with 
+\family typewriter
+ERASE_DEBUG
+\family default
+; it won't work.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clipboardCopy(String
+\begin_inset space ~
+\end_inset
+
+s) Copies the specific string to the clipboard.
+ Does not work on Android (it has no clipboard).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clipboardPaste() Gets the last string from the clipboard.
+ if none, returns 
+\family typewriter
+""
+\family default
+.
+ Does not work on Android (it has no clipboard).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFile(String
+\begin_inset space ~
+\end_inset
+
+name) Returns a byte array of a file contained in the same 
+\family typewriter
+.tcz
+\family default
+/
+\family typewriter
+.pdb
+\family default
+/
+\family typewriter
+.apk
+\family default
+/
+\family typewriter
+.deb
+\family default
+/
+\family typewriter
+.cod
+\family default
+ where this one resides, or in some attached library (or JAR, if application
+ is running in a browser).
+ The returned array is a fake pointer; does NOT point directly to the file
+ (a new buffer is created to store the contents).
+ In this example the TotalCross deployer will insert the 
+\family typewriter
+.txt
+\family default
+ file into the program's 
+\family typewriter
+.tcz
+\family default
+/
+\family typewriter
+.pdb
+\family default
+/
+\family typewriter
+.apk
+\family default
+/
+\family typewriter
+.deb
+\family default
+/
+\family typewriter
+.cod
+\family default
+: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+byte[] b = Vm.getFile("textfiles/About.txt");
+\end_layout
+
+\begin_layout Plain Layout
+
+if (b != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MessageBox("About", new String(b, 0, b.length)).popup(); 
+\end_layout
+
+\end_inset
+
+The parameter 
+\family typewriter
+name
+\family default
+ is the name of the file, exactly as shown by 
+\family typewriter
+tc.Deploy
+\family default
+ in the output window.
+ On the desktop it is case insensitive, while on the device it is CASE SENSITIVE.
+ The method will return 
+\family typewriter
+null
+\family default
+ if the file is not found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRemainingBattery() Returns the percentage of the remaining battery life
+ of this device.
+ In systems that can have an auxiliary battery, it will return the sum of
+ the main and the auxiliary battery, but this sum will always be limited
+ to 100%.
+ On the desktop, it will always return 100.
+ Note that in some OSes, when on the cradle, the returned value may be 100%
+ even when charging.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+tweak(int
+\begin_inset space ~
+\end_inset
+
+param,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+set) Tweak some parameters of the virtual machine.
+ Note that these parameters are only available on the device, NOT when running
+ as Java.
+ Also, the configuration is not persisted: you must set this every time
+ you run the program.
+ Each tweak must be made separately; they are NOT bit masks.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.tweak(Vm.TWEAK_AUDIBLE_GC,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS,true); 
+\end_layout
+
+\end_inset
+
+The possible parameters are:
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+TWEAK_AUDIBLE_GC
+\family default
+ Each time the garbage collector runs, it will issue a beep.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+TWEAK_DUMP_MEM_STATS 
+\family default
+When the program ends, it will dump the memory status of the program with
+ the following information: 
+\begin_inset Newline newline
+\end_inset
+
+• Times 
+\family typewriter
+gc()
+\family default
+ was called: number of times the garbage collector was called.
+ 
+\begin_inset Newline newline
+\end_inset
+
+• Total GC time: total time in milisseconds that the GC took.
+ 
+\begin_inset Newline newline
+\end_inset
+
+• Chunks created: number of chunks (block of memory used to store objects,
+ each one with 65500 bytes).
+\begin_inset Newline newline
+\end_inset
+
+• Max allocated: maximum memory allocated.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+TWEAK_MEM_PROFILER 
+\family default
+Computes the maximum memory in use between two consecutive calls.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.debug("P Starting profiler for xxxx"); 
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.tweak(Vm.TWEAK_MEM_PROFILER,true); // now run the program during some time
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.tweak(Vm.TWEAK_MEM_PROFILER,false);
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug("P Stopping profiler for xxxx"); 
+\end_layout
+
+\end_inset
+
+When it starts, it prints the currently used memory.
+ When you set it off, it will dump the currently used memory (if different
+ of the maximum), and then the maximum memory used between the two calls.
+ For example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+P Now allocated: 40852408 // printed when turning on
+\end_layout
+
+\begin_layout Plain Layout
+
+P Now allocated: 1137060 // printed when turning off
+\end_layout
+
+\begin_layout Plain Layout
+
+P Max allocated: 40868844 // printed when turning off
+\end_layout
+
+\end_inset
+
+All profiler messages are prefixed with 
+\family typewriter
+P
+\family default
+ in the debug console, because it makes easy to filter them.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+TWEAK_DISABLE_GC
+\family default
+ Disables the Garbage Collector.
+ This can greatly decrease the time to load some things, but note that you
+ must re-enable it later, otherwise, the system will run out of memory quickly.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.tweak(TWEAK_DISABLE_GC,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.tweak(TWEAK_DISABLE_GC,false); // the gc is automatically called here
+ 
+\end_layout
+
+\end_inset
+
+The parameter 
+\family typewriter
+set 
+\family default
+indicates if the passed parameter is to be set (
+\family typewriter
+true
+\family default
+) or unset (
+\family typewriter
+false
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getStackTrace(Throwable
+\begin_inset space ~
+\end_inset
+
+t) Returns the given throwable stack trace as a string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showKeyCodes(boolean
+\begin_inset space ~
+\end_inset
+
+on) Set to 
+\family typewriter
+true
+\family default
+ to popup an alert for each key pressed.
+ This is useful for you to discover key codes that may be intercepted with
+ 
+\family typewriter
+Vm.interceptSpecialKeys()
+\family default
+.
+ Note that this will probably block the application and you will have to
+ provide a button to exit from it or just reset the device.
+ 
+\begin_inset Newline newline
+\end_inset
+
+On Windows CE, the key 91 is always displayed when a hotkey is pressed,
+ so the VM will silently ignore it.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+turnScreenOn(boolean
+\begin_inset space ~
+\end_inset
+
+on) Turns the screen on or off, but keeps the device running.
+ This greatly improves battery performance.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+printStackTrace() Prints the stack trace to the debug console file.
+ Implemented as: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	throw new Exception("Stack trace");
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	e.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+preallocateArray(Object
+\begin_inset space ~
+\end_inset
+
+sample,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) This method pre-allocates space for an array of objects with the
+ given length.
+ It can reduce the number of calls to GC when allocating big arrays.
+ If the total size (
+\family typewriter
+Object size * length
+\family default
+) is small, calling this method is useless and will not result in any performanc
+e gain.
+ You can always measure how the GC affects your program by doing this: 
+\begin_inset Newline newline
+\end_inset
+
+This is a sample that pre-allocates space for a 
+\family typewriter
+ListContainer
+\family default
+, taken from the 
+\family typewriter
+PopupMenu
+\family default
+ class: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.preallocateArray(new ListContainer.Item(layout), itemCount); 
+\end_layout
+
+\end_inset
+
+This method does nothing on BlackBerry and Java SE.
+ 
 \end_layout
 
 \begin_layout Part
