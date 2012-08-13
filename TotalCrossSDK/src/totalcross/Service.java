@@ -9,6 +9,7 @@ public abstract class Service implements MainClass
    protected int loopDelay = 30000;
    private String serviceName;
    private static final String regkey = "\\Services\\TotalCrossSrv";
+   private static boolean ANDROID = Settings.platform.equals(Settings.ANDROID);
    
    public Service()
    {
@@ -24,14 +25,9 @@ public abstract class Service implements MainClass
    
    final public void appStarting(int timeAvail)
    {
-      if (Settings.platform.equals(Settings.ANDROID))
+      totalcross.ui.MainWindow.minimize(); // run on background
+      if (ANDROID || !registerService()) // run the service loop only if it was previously registered
          serviceLoop();
-      else
-      {
-         totalcross.ui.MainWindow.minimize(); // run on background
-         if (!registerService()) // run the service loop only if it was previously registered
-            serviceLoop();
-      }
    }
 
    private void serviceLoop()
@@ -78,7 +74,7 @@ public abstract class Service implements MainClass
    {
       if (Settings.isWindowsDevice())
          return Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey, "running") == 1;
-      return false;
+      return ANDROID;
    }
    
    public boolean registerService()
