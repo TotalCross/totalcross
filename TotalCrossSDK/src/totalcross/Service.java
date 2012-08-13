@@ -24,9 +24,14 @@ public abstract class Service implements MainClass
    
    final public void appStarting(int timeAvail)
    {
-      totalcross.ui.MainWindow.minimize(); // run on background
-      if (!registerService()) // run the service loop only if it was previously registered
+      if (Settings.platform.equals(Settings.ANDROID))
          serviceLoop();
+      else
+      {
+         totalcross.ui.MainWindow.minimize(); // run on background
+         if (!registerService()) // run the service loop only if it was previously registered
+            serviceLoop();
+      }
    }
 
    private void serviceLoop()
@@ -78,7 +83,38 @@ public abstract class Service implements MainClass
    
    public boolean registerService()
    {
+      if (!Settings.isWindowsDevice())
          return true;
+      try
+      {
+         Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey,"Index");
+      }
+      catch (ElementNotFoundException enfe)
+      {
+         try
+         {
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Dll","\\"+serviceName+"\\tcvm.dll");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Context",1);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"FriendlyName","TotalCrossSrv");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Index",0);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Description","TotalCross Service");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Order",8);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Flags",0);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Keep",1);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Prefix","TSV");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"TCZ",serviceName+".tcz");
+         }
+         catch (Exception ee)
+         {
+            MessageBox.showException(ee,true);
+         }
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
+      int ret = Vm.exec("register service",null,0,true); // register the service
+      return ret == 1;
    }
    
    public void unregisterService()
