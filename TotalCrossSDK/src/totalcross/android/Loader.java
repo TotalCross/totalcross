@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.android;
 
 import android.app.*;
@@ -109,6 +107,25 @@ public class Loader extends Activity
       }
    }
    
+   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, boolean sat)
+   {
+      try
+      {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RouteViewer"));
+         intent.putExtra("latI",latI);
+         intent.putExtra("lonI",lonI);
+         intent.putExtra("latF",latF);
+         intent.putExtra("lonF",lonF);
+         intent.putExtra("coord",coord);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
    private void callGoogleMap(double lat, double lon, boolean sat)
    {
       try
@@ -124,7 +141,7 @@ public class Loader extends Activity
          AndroidUtils.handleException(e,false);
       }
    }
-   
+
    private void captureCamera(String s, int quality, int width, int height)
    {
       try
@@ -155,6 +172,7 @@ public class Loader extends Activity
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
    public static final int INVERT_ORIENTATION = 8;
+   public static final int ROUTE = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -222,6 +240,9 @@ public class Loader extends Activity
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
                break;
+            case ROUTE:
+               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getBoolean("sat"));
+               break;
             case INVERT_ORIENTATION:
                if (!b.getBoolean("invert"))
                   setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
@@ -253,7 +274,7 @@ public class Loader extends Activity
          }
       }
    }
-   
+      
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -278,34 +299,23 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            String argl = args.toLowerCase();
-            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
-            {
-               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
-               intent.putExtra("file",args);
-               if (!wait)
-                  startActivityForResult(intent, JUST_QUIT);
-               else
-                  startActivity(intent);
-               return;
-            }
-            if (argl.endsWith(".pdf"))
+            if (args.toLowerCase().endsWith(".pdf"))
             {
                File pdfFile = new File(args);
-               if (pdfFile.exists()) 
+               if(pdfFile.exists()) 
                {
-                  Uri path = Uri.fromFile(pdfFile); 
-                  Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
-                  pdfIntent.setDataAndType(path, "application/pdf");
-                  pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                  try
-                  {
-                     startActivity(pdfIntent);
-                  }
-                  catch (ActivityNotFoundException e)
-                  {
-                     e.printStackTrace(); 
-                  }
+                   Uri path = Uri.fromFile(pdfFile); 
+                   Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+                   pdfIntent.setDataAndType(path, "application/pdf");
+                   pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   try
+                   {
+                       startActivity(pdfIntent);
+                   }
+                   catch (ActivityNotFoundException e)
+                   {
+                       e.printStackTrace(); 
+                   }
                }
             }
             else
@@ -341,7 +351,10 @@ public class Loader extends Activity
          {
             Intent i = new Intent();
             i.setClassName(command,command+"."+args);
-            startActivity(i);
+            if (args.equalsIgnoreCase("TCService"))
+               startService(i);
+            else
+               startActivity(i);
          }
          if (!wait)
             finish();

@@ -59,8 +59,6 @@ import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.StringUtilities;
-import ras.ActivationClient;
-import ras.ui.ActivationWindow;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 import totalcross.io.File;
@@ -146,6 +144,7 @@ public class Launcher4B
    public static String appPath;
    public static String tempPath;
    public static String mainWindowPath;
+   private boolean activated=true;
    
    /**
     * Constructs a new instance of Launcher
@@ -215,22 +214,11 @@ public class Launcher4B
          f.createDir();
       f.close();
 
-      Class clazz = null;
       //$IF,FULLVERSION
-      ActivationClient client = null;
-      boolean activated = false;
-
-      client = ActivationClient.getInstance();
-      if (!(activated = client.isActivatedSilent())) // check activation
-         clazz = ActivationWindow.class;
-      else
-      {
-         //$END
-         clazz = Class.forName(className);
-         logger.info("Class '" + className + "' loaded");
-         //$IF,FULLVERSION
-      }
+      activated = ras.ActivationClient.getInstance().isActivatedSilent();
       //$END
+      Class clazz = Class.forName(className);
+      logger.info("Class '" + className + "' loaded");
       
       String path = clazz.getName().replace('.', '/');
       int idx = path.lastIndexOf('/');
@@ -244,17 +232,8 @@ public class Launcher4B
          screen.setTitle(moduleName);
       stub.pushScreen(screen);
 
-      //$IF,FULLVERSION
-      if (!activated)
-         mainWindow = new ActivationWindow(client);
-      else
-      {
-         //$END
-         mainWindow = (MainWindow)clazz.newInstance(); // instantiate main window class
-         logger.info("Class '" + className + "' instantiated");
-         //$IF,FULLVERSION
-      }
-      //$END
+      mainWindow = (MainWindow)clazz.newInstance(); // instantiate main window class
+      logger.info("Class '" + className + "' instantiated");
 
       logger.exiting("totalcross.Launcher", "init");
    }
@@ -361,19 +340,22 @@ public class Launcher4B
                while (!stub.isHandlingEvents())
                   Thread.yield();
                int demoTime = -1;
-
+               if (!activated)
+                  demoTime = -999999;
                //$IF,DEMOVERSION
-               logger.info("Starting demo controller");
-               DemoController dc = new DemoController(5000); // sleeps 5 seconds before updating demo time
-               long current = dc.getAvailableTime();
-               int hours = (int)(current / 3600);
-               int mins = (int)((current % 3600) / 60);
-               demoTime = hours*100+mins;
-               demoThread = new Thread(dc);
-               demoThread.setPriority(Thread.MIN_PRIORITY);
-               demoThread.start();
+               else
+               {
+                  logger.info("Starting demo controller");
+                  DemoController dc = new DemoController(5000); // sleeps 5 seconds before updating demo time
+                  long current = dc.getAvailableTime();
+                  int hours = (int)(current / 3600);
+                  int mins = (int)((current % 3600) / 60);
+                  demoTime = hours*100+mins;
+                  demoThread = new Thread(dc);
+                  demoThread.setPriority(Thread.MIN_PRIORITY);
+                  demoThread.start();
+               }
                //$END
-
                logger.info("Starting application");
                mainWindow.appStarting(demoTime);
                started = true;

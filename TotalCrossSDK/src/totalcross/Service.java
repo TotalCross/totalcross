@@ -1,5 +1,6 @@
 package totalcross;
 
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.util.*;
@@ -7,14 +8,17 @@ import totalcross.util.*;
 public abstract class Service implements MainClass
 {
    protected int loopDelay = 30000;
-   private String serviceName;
+   private String serviceName, fileName;
    private static final String regkey = "\\Services\\TotalCrossSrv";
+   private static boolean ANDROID = Settings.platform.equals(Settings.ANDROID);
    
    public Service()
    {
       serviceName = getClass().getName().replace('.','/');
       serviceName = serviceName.substring(serviceName.lastIndexOf('/')+1);
       serviceName = serviceName.substring(serviceName.lastIndexOf('$')+1);
+      fileName = ANDROID ? "/sdcard/" : "/";
+      fileName += serviceName+".service.control";
    }
 
    protected abstract void onStart();
@@ -53,68 +57,109 @@ public abstract class Service implements MainClass
 
    public void launchService()
    {
-      String path = "\\"+serviceName+"\\"+serviceName+".exe";
-      Vm.exec(path,null,0,false);
+      if (ANDROID)
+      {
+         String path = Settings.appPath.substring(Settings.appPath.lastIndexOf('/')+1); // /data/data/totalcross.appkfcb
+         Vm.exec(path,"TCService",0,true); // "totalcross.appkfcb"
+      }
+      else
+      {
+         String path = "\\"+serviceName+"\\"+serviceName+".exe";
+         Vm.exec(path,null,0,false);
+      }
    }
    
+   private int rCtrl()
+   {
+      try
+      {
+         byte[] b = new File(fileName,File.READ_ONLY).readAndClose();
+         return b[0];
+      }
+      catch (FileNotFoundException fnfe)
+      {
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      return -1;
+   }
+
+   private void wCtrl(int v)
+   {
+      while (true)
+      try
+      {
+         File f = new File(fileName,File.CREATE_EMPTY);
+         f.writeBytes(new byte[]{(byte)v});
+         f.close();
+         break;
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    public void start() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 1);
+      wCtrl(1);
    }
    
    public void stop() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 0);
+      wCtrl(0);
    }
    
    public boolean isRunning() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         return Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey, "running") == 1;
-      return false;
+      return rCtrl() == 1;
    }
    
    public boolean registerService()
    {
-      if (Settings.isWindowsDevice())
+      if (ANDROID)
+         return false;
+      try
+      {
+         Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey,"Index");
+      }
+      catch (ElementNotFoundException enfe)
+      {
          try
          {
-            Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey,"Index");
-         }
-         catch (ElementNotFoundException enfe)
-         {
-            try
-            {
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Dll","\\"+serviceName+"\\tcvm.dll");
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Context",1);
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"FriendlyName","TotalCrossSrv");
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Index",0);
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Description","TotalCross Service");
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Order",8);
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Flags",0);
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Keep",1);
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Prefix","TSV");
-               Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"TCZ",serviceName+".tcz");
-            }
-            catch (Exception ee)
-            {
-               MessageBox.showException(ee,true);
-            }
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Dll","\\"+serviceName+"\\tcvm.dll");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Context",1);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"FriendlyName","TotalCrossSrv");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Index",0);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Description","TotalCross Service");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Order",8);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Flags",0);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Keep",1);
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"Prefix","TSV");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey,"TCZ",serviceName+".tcz");
          }
          catch (Exception ee)
          {
             MessageBox.showException(ee,true);
          }
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
       int ret = Vm.exec("register service",null,0,true); // register the service
       return ret == 1;
    }
    
    public void unregisterService()
    {
-      Vm.exec("unregister service",null,0,true);
-      Vm.sleep(500);
+      if (!ANDROID)
+      {
+         Vm.exec("unregister service",null,0,true);
+         Vm.sleep(500);
+      }
    }
 
    public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp) {}

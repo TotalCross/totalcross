@@ -231,6 +231,7 @@ public final class Vm
     * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
     * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store. Returns -1 if args is null, -2 if file was not found.
     * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
+    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
     * </ul>
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
@@ -245,7 +246,7 @@ public final class Vm
     * However, trying to update the program itself or the vm will close the program. So, update it at last.
     * 
     * @param command the command to execute
-    * @param args command arguments
+    * @param args command arguments. Does not work on Android.
     * @param launchCode launch code for PalmOS applications.
     * @param wait whether to wait for the command to complete execution before returning. If wait is false,
     * don't forget to call the <code>exit</code> method right after this command is called, otherwise the application may

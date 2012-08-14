@@ -42,3 +42,23 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
    p->retI = false;
 #endif	
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+{
+#ifdef ANDROID
+   JNIEnv* env = getJNIEnv();         
+   Object addrI = p->obj[0];
+   Object addrF = p->obj[1];
+   Object coord = p->obj[2];
+   jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));
+   jstring jaddrF = (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF));
+   jstring jcoord = !coord ? null : (*env)->NewString(env, (jchar*) String_charsStart(coord), String_charsLen(coord));
+   jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowRoute, jaddrI, jaddrF, jcoord, (jboolean) p->i32[0]);
+   (*env)->DeleteLocalRef(env, jaddrI);
+   (*env)->DeleteLocalRef(env, jaddrF);
+   if (jcoord) (*env)->DeleteLocalRef(env, jcoord);
+   p->retI = result != 0;
+#elif defined darwin
+   p->retI = false;
+#endif	
+}
