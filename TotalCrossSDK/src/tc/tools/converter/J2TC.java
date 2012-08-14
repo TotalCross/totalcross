@@ -1160,7 +1160,7 @@ public final class J2TC implements JConstants, TCConstants
                            f.readBytes(bytes,0,bytes.length);
                            f.close();
                            JavaClass jc = new JavaClass(bytes, true);
-                           if (isMain(jc))
+                           if (isMain(jc) && !jc.className.contains("$"))
                            {
                               if (found)
                                  throw new IllegalArgumentException("More than one MainWindow/MainClass found in the given folder: "+fName+" and "+files[i]+". You must use the other options to deploy your application (a jar or specify the main class name)");
