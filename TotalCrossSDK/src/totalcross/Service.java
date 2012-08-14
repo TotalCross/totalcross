@@ -18,7 +18,7 @@ public abstract class Service implements MainClass
       serviceName = serviceName.substring(serviceName.lastIndexOf('/')+1);
       serviceName = serviceName.substring(serviceName.lastIndexOf('$')+1);
       fileName = ANDROID ? "/sdcard/" : "/";
-      fileName += serviceName+".ctrl";
+      fileName += serviceName+".service.control";
    }
 
    protected abstract void onStart();
@@ -57,7 +57,12 @@ public abstract class Service implements MainClass
 
    public void launchService()
    {
-      if (!ANDROID)
+      if (ANDROID)
+      {
+         String path = Settings.appPath.substring("/data/data/".length()); // /data/data/totalcross.appkfcb
+         Vm.exec(path,"Loader",0,true); // "totalcross.appkfcb"
+      }
+      else
       {
          String path = "\\"+serviceName+"\\"+serviceName+".exe";
          Vm.exec(path,null,0,false);
