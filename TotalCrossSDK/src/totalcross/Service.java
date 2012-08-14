@@ -11,6 +11,13 @@ public abstract class Service implements MainClass
    private String serviceName, fileName;
    private static final String regkey = "\\Services\\TotalCrossSrv";
    private static boolean ANDROID = Settings.platform.equals(Settings.ANDROID);
+   private String serviceApplicationId;
+   
+   public Service(String serviceApplicationId)
+   {
+      this();
+      this.serviceApplicationId = serviceApplicationId;
+   }
    
    public Service()
    {
@@ -25,7 +32,6 @@ public abstract class Service implements MainClass
    protected abstract void onService();
    protected abstract void onStop();
 
-   
    final public void appStarting(int timeAvail)
    {
       totalcross.ui.MainWindow.minimize(); // run on background
@@ -59,7 +65,7 @@ public abstract class Service implements MainClass
    {
       if (ANDROID)
       {
-         String path = Settings.appPath.substring(Settings.appPath.lastIndexOf('/')+1); // /data/data/totalcross.appkfcb
+         String path = serviceApplicationId != null ? "totalcross.app"+serviceApplicationId.toLowerCase() : Settings.appPath.substring(Settings.appPath.lastIndexOf('/')+1); // /data/data/totalcross.appkfcb
          Vm.exec(path,"TCService",0,true); // "totalcross.appkfcb"
       }
       else

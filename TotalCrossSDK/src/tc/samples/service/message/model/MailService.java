@@ -1,10 +1,15 @@
-package tc.samples.service.model;
+package tc.samples.service.message.model;
 
 import totalcross.io.*;
 import totalcross.sys.*;
 
 public class MailService extends totalcross.Service
 {
+   static
+   {
+      Settings.applicationId = "TCms";
+   }
+   
    private String inFolder;
 
    public MailService()

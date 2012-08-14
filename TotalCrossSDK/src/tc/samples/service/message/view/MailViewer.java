@@ -1,4 +1,4 @@
-package tc.samples.service.view;
+package tc.samples.service.message.view;
 
 import totalcross.io.*;
 import totalcross.sys.*;

@@ -17,6 +17,7 @@
 package tc.samples.map;
 
 import totalcross.io.device.gps.*;
+import totalcross.net.*;
 import totalcross.phone.*;
 import totalcross.res.*;
 import totalcross.sys.*;
@@ -48,7 +49,7 @@ public class GoogleMaps extends MainWindow
       Settings.uiAdjustmentsBasedOnFontHeight = true;
    }
    
-   Edit edAddr, edLat, edLon;
+   Edit edAddr, edLat, edLon, edTo;
    Button btnShow;
    RadioGroupController rg;
    Check chSat,chGPS;
@@ -74,6 +75,8 @@ public class GoogleMaps extends MainWindow
          sc.add(chGPS = new Check("Use GPS if activated."),LEFT+100,AFTER+50,FILL,PREFERRED);
          sc.add(r = new Radio(" Address",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
          sc.add(edAddr = new Edit(),LEFT+100,AFTER+50,FILL-200,PREFERRED);
+         sc.add(new Label("To (optional): "), LEFT+100,AFTER+50);
+         sc.add(edTo = new Edit(),AFTER+100,SAME,FILL-200,PREFERRED);
          sc.add(r = new Radio(" Coordinates",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
          sc.add(new Label("Lat: "),LEFT+50,AFTER+50);
          sc.add(edLat = new Edit("+99.999999"), AFTER+50,SAME);
@@ -122,6 +125,11 @@ public class GoogleMaps extends MainWindow
                else
                if (e.target == btnShow)
                {
+                  if (!Socket.isInternetAccessible())
+                  {
+                     new MessageBox("Attention","Internet is not available!").popup();
+                     return;
+                  }
                   String addr = null;
                   int sel = rg.getSelectedIndex();
                   switch (sel)
@@ -229,7 +237,11 @@ public class GoogleMaps extends MainWindow
                         mb.popupNonBlocking();
                      try
                      {
-                        ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());
+                        String to = edTo.getText();
+                        if (to.length() > 0)
+                           ok = totalcross.map.GoogleMaps.showRoute(addr,to,null,chSat.isChecked());
+                        else
+                           ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());                        
                      }
                      finally
                      {

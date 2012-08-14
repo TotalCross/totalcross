@@ -1,4 +1,4 @@
-package tc.samples.service.ctrl;
+package tc.samples.service.message.ctrl;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -15,13 +15,14 @@ public class MailController extends MainWindow
    
    class MailService extends totalcross.Service // must have the same name of the real service
    {
+      MailService() {super("TCms");}
       protected void onStart() {}
       protected void onService() {}
       protected void onStop() {}
    }
    
    private ListBox lb;
-   private MailService stub = new MailService();
+   private MailService service = new MailService();
    
    public MailController()
    {
@@ -38,7 +39,7 @@ public class MailController extends MainWindow
       add(lb = new ListBox(),LEFT,AFTER+50,FILL,FILL);
       try 
       {
-         log(stub.isRunning() ? "service already running" : "service stopped or not installed");
+         log(service.isRunning() ? "service already running" : "service stopped or not installed");
       }
       catch (Exception ee)
       {
@@ -66,29 +67,29 @@ public class MailController extends MainWindow
                switch (id)
                {
                   case 1:
-                     if (stub.isRunning())
+                     if (service.isRunning())
                         log("service is already running!");
                      else
                      {
                         log("lauching service");
-                        stub.start();
+                        service.start();
                         if (waitService(true))
                            log("service started!");
                      }
                      break;
                   case 2:
-                     if (!stub.isRunning())
+                     if (!service.isRunning())
                         log("service is not running");
                      else
                      {
                         log("stopping service");
-                        stub.stop();
+                        service.stop();
                         if (waitService(false))
                            log("service stopped!");
                      }
                      break;
                   case 3:
-                     stub.unregisterService();
+                     service.unregisterService();
                      log("service unregistered!");
                      break;
                }
@@ -104,7 +105,7 @@ public class MailController extends MainWindow
    private boolean waitService(boolean status) throws Exception
    {
       boolean ok = false;
-      for (int i = 30; i-- > 0 && !(ok=(stub.isRunning() == status));)
+      for (int i = 30; i-- > 0 && !(ok=(service.isRunning() == status));)
       {
          log("waiting service... "+i);
          Vm.sleep(1000);
