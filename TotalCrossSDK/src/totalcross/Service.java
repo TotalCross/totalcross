@@ -59,8 +59,8 @@ public abstract class Service implements MainClass
    {
       if (ANDROID)
       {
-         String path = Settings.appPath.substring("/data/data/".length()); // /data/data/totalcross.appkfcb
-         Vm.exec(path,"Loader",0,true); // "totalcross.appkfcb"
+         String path = Settings.appPath.substring(Settings.appPath.lastIndexOf('/')+1); // /data/data/totalcross.appkfcb
+         Vm.exec(path,"TCService",0,true); // "totalcross.appkfcb"
       }
       else
       {

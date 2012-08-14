@@ -351,7 +351,10 @@ public class Loader extends Activity
          {
             Intent i = new Intent();
             i.setClassName(command,command+"."+args);
-            startActivity(i);
+            if (args.equalsIgnoreCase("TCService"))
+               startService(i);
+            else
+               startActivity(i);
          }
          if (!wait)
             finish();
