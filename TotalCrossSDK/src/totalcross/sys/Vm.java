@@ -245,7 +245,7 @@ public final class Vm
     * However, trying to update the program itself or the vm will close the program. So, update it at last.
     * 
     * @param command the command to execute
-    * @param args command arguments
+    * @param args command arguments. Does not work on Android.
     * @param launchCode launch code for PalmOS applications.
     * @param wait whether to wait for the command to complete execution before returning. If wait is false,
     * don't forget to call the <code>exit</code> method right after this command is called, otherwise the application may
