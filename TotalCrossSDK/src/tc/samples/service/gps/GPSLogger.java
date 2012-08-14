@@ -7,10 +7,9 @@ import totalcross.util.*;
 
 public class GPSLogger extends totalcross.Service
 {
-
    public GPSLogger()
    {
-      loopDelay = 30*1000; // 30 seconds
+      loopDelay = 5*60*1000; // 5 minutes
    }
    
    protected void onStart()
@@ -26,11 +25,11 @@ public class GPSLogger extends totalcross.Service
    {
       try
       {
-         Vm.debug("GPSLOGGER onService");
          GPS gps = new GPS();
          boolean ok = false;
-         for (int i = 0; i < 20 && !(ok=gps.retrieveGPSData()); i++) // wait 10 seconds
-            Vm.sleep(500);
+         int end = Vm.getTimeStamp() + loopDelay*2/3; // 2/3 of 5 minutes
+         while (Vm.getTimeStamp() < end && !(ok=gps.retrieveGPSData()))
+            Vm.sleep(100);
          Vm.debug("GPSLOGGER GPS: "+ok);
          if (ok)
             try
@@ -54,5 +53,6 @@ public class GPSLogger extends totalcross.Service
 
    protected void onStop()
    {
+      Vm.debug("GPSLOGGER onStart");
    }
 }

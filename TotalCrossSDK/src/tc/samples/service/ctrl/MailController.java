@@ -71,7 +71,7 @@ public class MailController extends MainWindow
                      else
                      {
                         log("lauching service");
-                        stub.launchService();
+                        stub.start();
                         if (waitService(true))
                            log("service started!");
                      }

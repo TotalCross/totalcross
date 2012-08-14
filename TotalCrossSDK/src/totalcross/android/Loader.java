@@ -351,7 +351,9 @@ public class Loader extends Activity
          {
             Intent i = new Intent();
             i.setClassName(command,command+"."+args);
-            if (args.equalsIgnoreCase("TCService"))
+            boolean isService = args.equalsIgnoreCase("TCService");
+            AndroidUtils.debug("*** Vm.exec "+command+" . "+args+": "+isService);
+            if (isService)
                startService(i);
             else
                startActivity(i);

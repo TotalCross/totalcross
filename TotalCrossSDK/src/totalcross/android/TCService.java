@@ -2,7 +2,6 @@ package totalcross.android;
 
 import totalcross.*;
 
-import android.app.*;
 import android.content.*;
 import android.os.*;
 
@@ -10,10 +9,6 @@ import android.os.*;
 
 public class TCService extends android.app.Service
 {
-/*   static final int DELAY = 30000; // 1/2 a min
-   VmRunnable vmRunnable;
-   Handler handler;
-*/   
    public IBinder onBind(Intent intent)
    {
       AndroidUtils.debug("@@@@ Service onBind "+intent);
@@ -33,11 +28,7 @@ public class TCService extends android.app.Service
       Intent myStarterIntent = new Intent(getApplicationContext(), Loader.class);
       myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getApplicationContext().startActivity(myStarterIntent);
-      
-/*      handler = new Handler();
-      vmRunnable = new VmRunnable();
-      handler.post(vmRunnable);
-*/   }
+   }
  
    public int onStartCommand(Intent intent, int flags, int startId) 
    {
@@ -47,26 +38,5 @@ public class TCService extends android.app.Service
    public void onDestroy() 
    {
       super.onDestroy();
-/*      if (handler != null) {
-      handler.removeCallbacks(vmRunnable);
-      vmRunnable = null;
-      handler = null;}
-*/   }
-
-/*   class VmRunnable implements Runnable 
-   {
-      public void run() 
-      {
-         new Thread() 
-         {
-            public void run() 
-            {
-               // run vm.
-              
-               // Do this again
-               handler.postDelayed(vmRunnable, DELAY);
-            }
-         }.start();
-      }
    }
-*/}
+}

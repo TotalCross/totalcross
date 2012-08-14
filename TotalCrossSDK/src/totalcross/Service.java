@@ -38,7 +38,7 @@ public abstract class Service implements MainClass
       onStart();
       try
       {
-         start();
+         new File(fileName,File.CREATE).close(); // start
          while (isRunning())
          {
             onService();
@@ -55,7 +55,7 @@ public abstract class Service implements MainClass
       }
    }
 
-   public void launchService()
+   public void start()
    {
       if (ANDROID)
       {
@@ -69,52 +69,17 @@ public abstract class Service implements MainClass
       }
    }
    
-   private int rCtrl()
-   {
-      try
-      {
-         byte[] b = new File(fileName,File.READ_ONLY).readAndClose();
-         return b[0];
-      }
-      catch (FileNotFoundException fnfe)
-      {
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-      return -1;
-   }
-
-   private void wCtrl(int v)
-   {
-      while (true)
-      try
-      {
-         File f = new File(fileName,File.CREATE_EMPTY);
-         f.writeBytes(new byte[]{(byte)v});
-         f.close();
-         break;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
-   public void start() throws Exception
-   {
-      wCtrl(1);
-   }
-   
    public void stop() throws Exception
    {
-      wCtrl(0);
+      try
+      {
+         new File(fileName).delete();
+      } catch (FileNotFoundException fnfe) {}
    }
    
    public boolean isRunning() throws Exception
    {
-      return rCtrl() == 1;
+      return new File(fileName).exists();
    }
    
    public boolean registerService()
