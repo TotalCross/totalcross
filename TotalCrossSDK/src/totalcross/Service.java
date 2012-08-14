@@ -1,5 +1,6 @@
 package totalcross;
 
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.util.*;
@@ -7,7 +8,7 @@ import totalcross.util.*;
 public abstract class Service implements MainClass
 {
    protected int loopDelay = 30000;
-   private String serviceName;
+   private String serviceName, fileName;
    private static final String regkey = "\\Services\\TotalCrossSrv";
    private static boolean ANDROID = Settings.platform.equals(Settings.ANDROID);
    
@@ -16,6 +17,8 @@ public abstract class Service implements MainClass
       serviceName = getClass().getName().replace('.','/');
       serviceName = serviceName.substring(serviceName.lastIndexOf('/')+1);
       serviceName = serviceName.substring(serviceName.lastIndexOf('$')+1);
+      fileName = ANDROID ? "/sdcard/" : "/";
+      fileName += serviceName+".ctrl";
    }
 
    protected abstract void onStart();
@@ -26,7 +29,7 @@ public abstract class Service implements MainClass
    final public void appStarting(int timeAvail)
    {
       totalcross.ui.MainWindow.minimize(); // run on background
-      if (ANDROID || !registerService()) // run the service loop only if it was previously registered
+      if (!registerService()) // run the service loop only if it was previously registered
          serviceLoop();
    }
 
@@ -54,33 +57,65 @@ public abstract class Service implements MainClass
 
    public void launchService()
    {
-      String path = "\\"+serviceName+"\\"+serviceName+".exe";
-      Vm.exec(path,null,0,false);
+      if (!ANDROID)
+      {
+         String path = "\\"+serviceName+"\\"+serviceName+".exe";
+         Vm.exec(path,null,0,false);
+      }
    }
    
+   private int rCtrl()
+   {
+      try
+      {
+         byte[] b = new File(fileName,File.READ_ONLY).readAndClose();
+         return b[0];
+      }
+      catch (FileNotFoundException fnfe)
+      {
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      return -1;
+   }
+
+   private void wCtrl(int v)
+   {
+      while (true)
+      try
+      {
+         File f = new File(fileName,File.CREATE_EMPTY);
+         f.writeBytes(new byte[]{(byte)v});
+         f.close();
+         break;
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    public void start() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 1);
+      wCtrl(1);
    }
    
    public void stop() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         Registry.set(Registry.HKEY_LOCAL_MACHINE, regkey, "running", 0);
+      wCtrl(0);
    }
    
    public boolean isRunning() throws Exception
    {
-      if (Settings.isWindowsDevice())
-         return Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey, "running") == 1;
-      return ANDROID;
+      return rCtrl() == 1;
    }
    
    public boolean registerService()
    {
-      if (!Settings.isWindowsDevice())
-         return true;
+      if (ANDROID)
+         return false;
       try
       {
          Registry.getInt(Registry.HKEY_LOCAL_MACHINE, regkey,"Index");
@@ -115,7 +150,7 @@ public abstract class Service implements MainClass
    
    public void unregisterService()
    {
-      if (Settings.isWindowsDevice())
+      if (!ANDROID)
       {
          Vm.exec("unregister service",null,0,true);
          Vm.sleep(500);
