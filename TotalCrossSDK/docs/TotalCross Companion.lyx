@@ -36277,6 +36277,574 @@ SSL_OK
  to achieve the reading of a block of decipherable data.
 \end_layout
 
+\begin_layout Chapter
+e-mail
+\end_layout
+
+\begin_layout Standard
+This chapter describes all classes in the 
+\family typewriter
+totalcross.net.mail
+\family default
+ package, which provides support for sending and receiving e-mails.
+ 
+\end_layout
+
+\begin_layout Standard
+First you need to configure the SMTP properties: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MailSession session = MailSession.getDefaultInstance();
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.SMTP_HOST, new Properties.Str("smtp.sample.com")); //
+ SMTP host address
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.SMTP_PORT, new Properties.Int(25)); // unless noticed
+ otherwise by the server, SMTP uses port 25
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.SMTP_USER, new Properties.Str("foo@bar.com")); // usually
+ the full e-mail address
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.SMTP_PASS, new Properties.Str("VerySecurePassword"));
+ // e-mail account password 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Sending a simple e-mail message:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Message myMessage = new Message(); // our new message
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.from = new Address("foo@bar.com", "Mr.
+ Foo"); // the e-mail address I wan't to be visible to the recipient and
+ a personal name.
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.addRecipient(RecipientType.TO, new Address("someone@somewhere.com",
+ null)); // the recipient of the e-mail 
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.subject = "Testing SMTP with authentication"; // e-mail subject
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.setText("This is just a test message"); // simple e-mail with plain
+ text
+\end_layout
+
+\begin_layout Plain Layout
+
+Transport.send(myMessage); // sends our message using the propert Transport
+ for this Message, and the properties defined on the default MailSession.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Sending an e-mail with attachments: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// text part 
+\end_layout
+
+\begin_layout Plain Layout
+
+Part textPart = new Part();
+\end_layout
+
+\begin_layout Plain Layout
+
+textPart.setText("Plain text"); // image part
+\end_layout
+
+\begin_layout Plain Layout
+
+Part imagePart = new Part();
+\end_layout
+
+\begin_layout Plain Layout
+
+File image = new File("/myImage.png", File.READ_WRITE); // keep file open!
+\end_layout
+
+\begin_layout Plain Layout
+
+imagePart.setContent(image, "image/png");
+\end_layout
+
+\begin_layout Plain Layout
+
+imagePart.fileName = "myImage.png"; 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// create the multiparts
+\end_layout
+
+\begin_layout Plain Layout
+
+Multipart multipart = new Multipart();
+\end_layout
+
+\begin_layout Plain Layout
+
+multipart.addPart(textPart);
+\end_layout
+
+\begin_layout Plain Layout
+
+multipart.addPart(imagePart); 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// create the message
+\end_layout
+
+\begin_layout Plain Layout
+
+Message myMessage = new Message();
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.setContent(multipart);
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.subject = "E-mail with attachment";
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.from = new Address("from@someone.com", "Someone name");
+\end_layout
+
+\begin_layout Plain Layout
+
+myMessage.addRecipient(Message.RecipientType.TO, new Address("to@url.com", "ToMe"));
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Transport.send(myMessage); // send the message
+\end_layout
+
+\begin_layout Plain Layout
+
+image.close(); // close the image file AFTER the message is sent
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Receive a message, and open the first one available:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MailSession session = MailSession.getDefaultInstance();
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.POP3_HOST, new Properties.Str("pop3.sample.com"));
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.POP3_PORT, new Properties.Int(110));
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.POP3_USER, new Properties.Str("foo@bar.com"));
+\end_layout
+
+\begin_layout Plain Layout
+
+session.put(MailSession.POP3_PASS, new Properties.Str("VerySecurePassword"));
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Store store = MailSession.getDefaultInstance().getStore("pop3");
+\end_layout
+
+\begin_layout Plain Layout
+
+store.connect();
+\end_layout
+
+\begin_layout Plain Layout
+
+Folder folder = store.getFolder("INBOX");
+\end_layout
+
+\begin_layout Plain Layout
+
+folder.open();
+\end_layout
+
+\begin_layout Plain Layout
+
+int messageCount = folder.getMessageCount();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (messageCount > 0)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Message msg = folder.getMessage(1);
+\end_layout
+
+\begin_layout Plain Layout
+
+	String msgContent = (String) msg.getContent();
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (msgContent != null) 
+\end_layout
+
+\begin_layout Plain Layout
+
+		new MessageBox(msg.from.address, msgContent).popup();
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\begin_layout Plain Layout
+
+folder.close(true);
+\end_layout
+
+\begin_layout Plain Layout
+
+store.close();
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This package has the following classes:
+\end_layout
+
+\begin_layout Section
+Address 
+\end_layout
+
+\begin_layout Standard
+This class represents an Internet e-mail address using the syntax of RFC822.
+ Typical address syntax is of the form 
+\family typewriter
+user@host.domain
+\family default
+ or 
+\family typewriter
+Personal Name
+\family default
+ 
+\family typewriter
+<user@host.domain>
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has two fields:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+address The e-mail address, which must have the form shown above.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+personal The name of the user e-mail address.
+\end_layout
+
+\begin_layout Standard
+This class has just a contructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Address(String
+\begin_inset space ~
+\end_inset
+
+address,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+personal) Creates a new 
+\family typewriter
+Address
+\family default
+ object, which represents an Internet e-mail address.
+ The address must be in RFC822 format.
+ If the given address is 
+\family typewriter
+null
+\family default
+ or does not contain the character 
+\family typewriter
+@
+\family default
+, an 
+\family typewriter
+AddressException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout Standard
+This class has just one method, 
+\family typewriter
+toString()
+\family default
+, which returns a string representation of an 
+\family typewriter
+Address
+\family default
+ object.
+ 
+\end_layout
+
+\begin_layout Section
+BinaryContentHandler 
+\end_layout
+
+\begin_layout Standard
+This class is a implementation of 
+\family typewriter
+DataContentHandler
+\family default
+ that handles MIME types handled as base64 encoded byte arrays.
+ It also handle streams, reading from the input stream on demand to avoid
+ excessive memory load.
+ This will usually be slower than reading the whole content of the stream
+ to a byte array and using it as the 
+\family typewriter
+Part
+\family default
+ content.
+ This class just has the default constructor and one method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTo(Object
+\begin_inset space ~
+\end_inset
+
+obj,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+mimeType,
+\begin_inset space ~
+\end_inset
+
+Stream
+\begin_inset space ~
+\end_inset
+
+stream) Writes a binary object in the given stream.
+ 
+\family typewriter
+obj
+\family default
+ must be an instance of 
+\family typewriter
+Part
+\family default
+.
+ The second parameter is ignored in this method.
+\end_layout
+
+\begin_layout Section
+TextContentHandler
+\end_layout
+
+\begin_layout Standard
+This class is a implementation of 
+\family typewriter
+DataContentHandler
+\family default
+ that handles textual (not encoded) MIME types.
+ This class is similar to the previous one, except for the fact that if
+ 
+\family typewriter
+obj is not a Part
+\family default
+, it will be cast transformed into a 
+\family typewriter
+String
+\family default
+.
+\end_layout
+
+\begin_layout Section
+DataHandler 
+\end_layout
+
+\begin_layout Standard
+This class maps a MIME type into an instance of a 
+\family typewriter
+DataContentHandler
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class only has a default constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addDataContentHandler(DataContentHandler
+\begin_inset space ~
+\end_inset
+
+dataContentHandler,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+mimeType) May be used to add an user-defined 
+\family typewriter
+DataContentHandler
+\family default
+, associated to a specific MIME type.
+ A list of MIME types can be found in 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.webmaster-toolkit.com/mime-types.shtml"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+MailSession
+\end_layout
+
+\begin_layout Standard
+This class is used to store properties used by the messaging API.
+ 
+\end_layout
+
+\begin_layout Standard
+The SMTP protocol provider supports the following properties, which may
+ be set in the MailSession object.
+ The properties are always set as strings; the Type column describes how
+ the string is interpreted.
+ For example, use 
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
 \begin_layout Part
 PHONE
 \end_layout
