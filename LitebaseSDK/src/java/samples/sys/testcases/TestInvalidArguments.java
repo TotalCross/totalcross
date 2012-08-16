@@ -1195,6 +1195,12 @@ public class TestInvalidArguments extends TestCase
          fail("127");
       }
       catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeUpdate("update employee set id = 'lname101', id = 'lname101', id = 'lname101', id = 'lname101', id = 'lname101', id = 'lname101'");
+         fail("128");
+      }
+      catch (SQLParseException exception) {}
    }
    
    /**
@@ -1207,13 +1213,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeUpdate("insert into employee (id, rowid, lastname) values (1, 2, 'imperial')");
-         fail("128");
+         fail("129");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("update employee set id = 1, rowid = 2, lastname = 'imperial'");
-         fail("129");
+         fail("130");
       }
       catch (SQLParseException exception) {}
    }
@@ -1259,7 +1265,7 @@ public class TestInvalidArguments extends TestCase
       try // Too many columns for a select.
       { 
          driver.executeQuery("select * from person1, person2, person3");
-         fail("130");
+         fail("131");
       }
       catch (SQLParseException exception) {}
    }
@@ -1283,7 +1289,7 @@ public class TestInvalidArguments extends TestCase
          try // Path too long.
          {
             LitebaseConnection.getInstance("Test", sBuffer.toString()); 
-            fail("131");
+            fail("132");
          }
          catch (DriverException exception) {}
             
@@ -1293,37 +1299,37 @@ public class TestInvalidArguments extends TestCase
          try
          {
             driver.exists("person");
-            fail("132");
+            fail("133");
          }
          catch (DriverException exception) {}
          try
          {
             driver.executeUpdate("drop table person");
-            fail("133");
-         }
-         catch (DriverException exception) {}
-         try
-         {
-            driver.execute("create table person (id int)");
-            fail("133");
-         }
-         catch (DriverException exception) {}
-         try
-         {
-            driver.executeQuery("select * from person");
             fail("134");
          }
          catch (DriverException exception) {}
          try
          {
-            driver.recoverTable("person");
+            driver.execute("create table person (id int)");
             fail("135");
          }
          catch (DriverException exception) {}
          try
          {
-            driver.convert("person");
+            driver.executeQuery("select * from person");
             fail("136");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.recoverTable("person");
+            fail("137");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.convert("person");
+            fail("138");
          }      
          catch (DriverException exception) {}
          driver.closeAll();
@@ -1335,7 +1341,7 @@ public class TestInvalidArguments extends TestCase
          catch (IOException exception)
          {
             exception.printStackTrace();
-            fail("137");  
+            fail("139");  
          }
          
          // File + table name too long for purge.
@@ -1350,7 +1356,7 @@ public class TestInvalidArguments extends TestCase
          try
          {
             driver.purge("p");
-            fail("138");
+            fail("140");
          }
          catch (DriverException exception) {}
          driver.executeUpdate("drop table p");      
@@ -1366,7 +1372,7 @@ public class TestInvalidArguments extends TestCase
          catch (IOException exception)
          {
             exception.printStackTrace();
-            fail("139");  
+            fail("141");  
          }
       }
    }
