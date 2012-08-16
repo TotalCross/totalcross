@@ -798,7 +798,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       ss = size - ss;
 
       if (J2TC.dump) System.out.println("\nConstant pool size: "+size+" (int="+si+",long="+sl+",double="+sd+",static field="+ssf+",instance field="+sif+",method ref="+sm+",method/field names="+smf+",class names="+sc+",string="+ss+")\n");
-      if (clsCount > 1000 || mtdCount > 1000 || SFCount > 1000 || IFCount > 1000) System.out.println("Classes: "+clsCount+", Methods: "+mtdCount+", instance fields: "+IFCount+" (each one limited to 4095)");
+      if (clsCount > 1000 || mtdCount > 1000 || SFCount > 1000 || IFCount > 1000) System.out.println("Total References - Classes: "+clsCount+", Methods: "+mtdCount+", instance fields: "+IFCount+" (each one limited to 4095)");
    }
 
    public static boolean isEmpty() // guich@tc111_2: returns if it contains at least one user class
