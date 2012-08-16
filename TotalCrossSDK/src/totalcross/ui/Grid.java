@@ -1040,10 +1040,11 @@ public class Grid extends Container implements Scrollable
       int c = linesPerPage >> 1, y, dy;
       // fill the first stripe as the whole grid
       dy = lineH << 1;
-      g.backColor = this.firstStripeColor;
+      boolean first = (Math.max(0, gridOffset) & 1) == 0;
+      g.backColor = first ? this.firstStripeColor : this.secondStripeColor;
       g.fillRect(1, h, w, h * linesPerPage);
       // now fill the second stripe
-      g.backColor = this.secondStripeColor;
+      g.backColor = !first ? this.firstStripeColor : this.secondStripeColor;
       for (y = dy; c > 0; y += dy, c--)
          g.fillRect(1, y, w, h);
    }
@@ -1301,7 +1302,7 @@ public class Grid extends Container implements Scrollable
                   for (int i = i0; i < rows; i++, ty += lineH)
                   {
                      int currentRow = i+row0;
-                     String []line = (String[])items[i];
+                     String []line = (String[])items[currentRow];
                      String columnText = line[j-base];
                      Image columnImg = htImages != null ? (Image)htImages.get(columnText) : null;
                      if (columnText == null) // prevent NPE
