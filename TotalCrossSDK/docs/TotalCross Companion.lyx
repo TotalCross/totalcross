@@ -36649,7 +36649,7 @@ personal The name of the user e-mail address.
 \end_layout
 
 \begin_layout Standard
-This class has just a contructor:
+This class has just a constructor:
 \end_layout
 
 \begin_layout FieldList
@@ -36705,7 +36705,7 @@ BinaryContentHandler
 \end_layout
 
 \begin_layout Standard
-This class is a implementation of 
+This class is an implementation of 
 \family typewriter
 DataContentHandler
 \family default
@@ -36761,7 +36761,7 @@ TextContentHandler
 \end_layout
 
 \begin_layout Standard
-This class is a implementation of 
+This class is an implementation of 
 \family typewriter
 DataContentHandler
 \family default
@@ -36769,9 +36769,13 @@ DataContentHandler
  This class is similar to the previous one, except for the fact that if
  
 \family typewriter
-obj is not a Part
+obj
 \family default
-, it will be cast transformed into a 
+ is not a 
+\family typewriter
+Part
+\family default
+, it will be transformed into a 
 \family typewriter
 String
 \family default
@@ -36839,9 +36843,1151 @@ The SMTP protocol provider supports the following properties, which may
  The properties are always set as strings; the Type column describes how
  the string is interpreted.
  For example, use 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+props.put("mail.smtp.port", "888"); 
+\end_layout
+
+\end_inset
+
+to set the 
+\family typewriter
+mail.smtp.port
+\family default
+ property, which is of type 
+\family typewriter
+int
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="13" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="30text%">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="50text%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.user
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Default user name for SMTP.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.password
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SMTP Password for the default user name.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.host
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The SMTP server to connect to.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.port
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The SMTP server port to connect to, if the 
+\family typewriter
+connect()
+\family default
+ method doesn't explicitly specify one.
+ Defaults to 25.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp .connectiontimeout
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Socket connection timeout value in milliseconds.
+ Default is infinite timeout.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.timeout
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Socket I/O timeout value in milliseconds.
+ Default is infinite timeout.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.from
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Email address to use for SMTP MAIL command.
+ This sets the envelope return address.
+ Defaults to 
+\family typewriter
+msg.getFrom()[0]
+\family default
+ or 
+\family typewriter
+ConnectionManager.getLocalHost()
+\family default
+.
+ NOTE: 
+\family typewriter
+mail.smtp.user
+\family default
+ was previously used for this.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.auth
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+boolean
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+If 
+\family typewriter
+true
+\family default
+, attempt to authenticate the user using the AUTH command.
+ Defaults to 
+\family typewriter
+false
+\family default
+.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.starttls .enable
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+boolean
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+If 
+\family typewriter
+true
+\family default
+, enables the use of the STARTTLS command (if supported by the server) to
+ switch the connection to a TLS-protected connection before issuing any
+ login commands.
+ Note that an appropriate trust store must be configured so that the client
+ will trust the server's certificate.
+ Defaults to 
+\family typewriter
+false
+\family default
+.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.starttls .required
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+boolean
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+If 
+\family typewriter
+true
+\family default
+, requires the use of the STARTTLS command.
+ If the server doesn't support the STARTTLS command, or the command fails,
+ the connect method will fail.
+ Defaults to 
+\family typewriter
+false
+\family default
+.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.ssl.port
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The SMTP server port to connect to when STARTTLS is enabled, if the 
+\family typewriter
+connect()
+\family default
+ method doesn't explicitly specify one.
+ Defaults to 587.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.smtp.ssl .socketFactory.class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+If set, specifies the name of a class that extends the 
+\family typewriter
+totalcross.net.ssl.SSLSocketFactory
+\family default
+ class.
+ This class will be used to create SMTP SSL sockets.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The POP3 protocol provider supports the following properties, which may
+ be set in the 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MailSession
+\family default
+ object.
+ The properties are always set as strings; the Type column describes how
+ the string is interpreted.
+ For example, use 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+props.put("mail.pop3.port", "888");
+\end_layout
+
+\end_inset
+
+to set the 
+\family typewriter
+mail.pop3.port
+\family default
+ property, which is of type 
+\family typewriter
+int
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="30text%">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="50text%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.pop3.user
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Default user name for POP3.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.pop3.host
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+String
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The POP3 server to connect to.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.pop3.port
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The POP3 server port to connect to, if the 
+\family typewriter
+connect()
+\family default
+ method doesn't explicitly specify one.
+ Defaults to 110.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.pop3 .connectiontimeout
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Socket connection timeout value in milliseconds.
+ Default is infinite timeout.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+mail.pop3.timeout
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Socket I/O timeout value in milliseconds.
+ Default is infinite timeout.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class only has the default constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getInstance() Creates a new empty 
+\family typewriter
+MailSession
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultInstance() Returns a static instance of 
+\family typewriter
+MailSession
+\family default
+, which may be initialized during the application startup.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getStore(String
+\begin_inset space ~
+\end_inset
+
+protocol) Get a 
+\family typewriter
+Store
+\family default
+ object that implements the specified protocol.
+ If an appropriate 
+\family typewriter
+Store
+\family default
+ object cannot be obtained, 
+\family typewriter
+null
+\family default
+ is returned (if a provider for the given protocol is not found).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTransport(String
+\begin_inset space ~
+\end_inset
+
+protocol) Get a 
+\family typewriter
+Transport
+\family default
+ object that implements the specified protocol.
+ If an appropriate 
+\family typewriter
+Transport
+\family default
+ object cannot be obtained, 
+\family typewriter
+null
+\family default
+ is returned.
+ 
+\end_layout
+
+\begin_layout Section
+Message 
+\end_layout
+
+\begin_layout Standard
+This class represents a MIME style e-mail message.
+ 
+\end_layout
+
+\begin_layout Standard
+It only has a default constructor, which creates a new empty message.
+ This class has the following fields:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+subject The subject of this message.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+uidl Unique ID Listing.
+ A POP3 mail server function that assigns a unique number to each incoming
+ mail message.
+ This allows mail to be left on the server after it has been downloaded
+ to the user.
+ Both the mail client and the POP server must support this feature.
+\end_layout
+
+\begin_layout Standard
+The methods are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addHeader(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+value) Add this value to the existing values for this header name.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addRecipient(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+Address
+\begin_inset space ~
+\end_inset
+
+address) Add this recipient address to the existing ones of the given type.
+ An 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IllegalArgumentException
+\family default
+ will be thrown if the given recipient type is not valid and a 
+\family typewriter
+NullPointerException
+\family default
+ will be thrown if the given address is 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addRecipients(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+Address[]
+\begin_inset space ~
+\end_inset
+
+addresses) Add these recipient addresses to the existing ones of the given
+ type.
+ This method will also throw the exceptions explained above.
+ Moreover, the array and its elements can't be 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addFrom(Address[]
+\begin_inset space ~
+\end_inset
+
+addresses) Add these addresses to the existing "From" attribute.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setFrom(Address
+\begin_inset space ~
+\end_inset
+
+address) Set the "From" attribute in this Message.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFrom() Returns the "From" attribute.
+ The "From" attribute contains the identity of the person(s) who wished
+ this message to be sent.
+ In certain implementations, this may be different from the entity that
+ actually sent the message.
+ This method returns 
+\family typewriter
+null
+\family default
+ if this attribute is not present in this message.
+ It returns an empty array if this attribute is present, but contains no
+ addresses.
+ In the other cases, it returns an array of addresses.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTo(Stream
+\begin_inset space ~
+\end_inset
+
+stream) Writes this message to the given stream, which is typically used
+ for sending.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+delete() Mark this message as deleted, removing it from the parent folder.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reply(boolean
+\begin_inset space ~
+\end_inset
+
+replyToAll) Get a new 
+\family typewriter
+Message
+\family default
+ suitable for a reply to this message.
+ The new 
+\family typewriter
+Message
+\family default
+ will have its attributes and headers set up appropriately.
+ Note that this new 
+\family typewriter
+Message
+\family default
+ object will be empty, that is, it will not have a "content".
+ These will have to be suitably filled in by the client.
+ If 
+\family typewriter
+replyToAll
+\family default
+ is set, the new 
+\family typewriter
+Message
+\family default
+ will be addressed to all recipients of this message.
+ Otherwise, the reply will be addressed to only the sender of this message.
+ The "Subject" field is filled in with the original subject prefixed with
+ "Re:" (unless it already starts with "Re:").
+ The reply message will use the same session as this message.
+ NOTE: The 
+\family typewriter
+replyToAll
+\family default
+ feature is NOT supported yet, messages returned by this method will contain
+ only the original sender as recipient.
+ 
+\end_layout
+
+\begin_layout Section
+Multipart
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Multipart
+\family default
+ is a container that holds multiple body parts.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has two constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Multipart() Creates a new 
+\family typewriter
+Multipart 
+\family default
+with subtype 
+\family typewriter
+MIXED
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Multipart(String
+\begin_inset space ~
+\end_inset
+
+subType) Creates a new 
+\family typewriter
+Multipart 
+\family default
+with subtype 
+\family typewriter
+MIXED
+\family default
+ (
+\family typewriter
+mixed
+\family default
+) or 
+\family typewriter
+FORM_DATA
+\family default
+ (
+\family typewriter
+form-data
+\family default
+).
+\begin_inset Newline newline
+\end_inset
+
+The "multipart/mixed" (and other similar types) media type was explicitly
+ designed to formalize the transport of related collections of body entities
+ in the same message ...
+ the classic use case being email attachments.
+ These media types were explicitly designed to be more general, so they
+ do not impose any use-case-specific restrictions on things like requiring
+ certain headers with certain parameters.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addPart(Part
+\begin_inset space ~
+\end_inset
+
+part) Adds a MIME body part to this part container.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTo(Stream
+\begin_inset space ~
+\end_inset
+
+stream) Output an appropriately encoded bytestream to the given stream,
+ which is typically used for sending.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 
 \end_layout
 
