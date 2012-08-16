@@ -128,7 +128,7 @@ public class HttpStream extends Stream
    {
       /**
       * Basic support for proxy servers on HttpStream.
-      * You set the variables <var>proxyAddress<var> and <var>proxyPort</var>
+      * You set the variables <var>proxyAddress</var> and <var>proxyPort</var>
       * for this HttpStream instance to get the data thru your proxy.
       *<p>
       * There is yet the SSL part and the "don't use proxy for

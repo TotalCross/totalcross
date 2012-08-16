@@ -325,8 +325,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return true;
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
-{
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
+{								  
    ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
    if (allowMainThread())
       [vw invalidateScreen: screen];

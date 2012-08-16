@@ -922,7 +922,6 @@ public class DataStream extends Stream
    /**
     * Read a Storable object.
     * 
-    * @return
     * @throws ClassNotFoundException
     * @throws InstantiationException
     * @throws IllegalAccessException
@@ -946,7 +945,6 @@ public class DataStream extends Stream
     * <p>
     * The String size is limited to 255 characters.
     * 
-    * @return
     * @throws EOFException
     * @throws totalcross.io.IOException
     * @since TotalCross 1.0
@@ -995,12 +993,7 @@ public class DataStream extends Stream
    
    protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
-      int written = 0;
-      do
-      {
-         written += stream.writeBytes(buf, start + written, count - written);
-      } while (written < count);
-      return written;
+      return stream.writeBytes(buf, start, count);
    }
    
    /**

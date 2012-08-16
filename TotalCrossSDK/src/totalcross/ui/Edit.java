@@ -1194,7 +1194,7 @@ public class Edit extends Control
             break;
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
-            if (editable)
+            if (editable && enabled)
             {
                KeyEvent ke = (KeyEvent)event;
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
@@ -1406,7 +1406,7 @@ public class Edit extends Control
             lastPenDown = -1;
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
-            if (newInsertPos != insertPos)
+            if (newInsertPos != insertPos && enabled)
                extendSelect = true;
             break;
          }
