@@ -216,7 +216,7 @@ static void testText(Context currentContext, Object g)
    {
       for (i=0,y = 10; i++ < 10 && y < (screen.screenH-20); y+=dy) // max 10 lines
          drawText(currentContext, g, text, 7, x, y, p,0);
-      x1 = x; x2 = screen.dirtyX2; y1 = screen.dirtyY1; y2 = screen.dirtyY2; // save dirty area to erase it
+      x1 = x; x2 = currentContext->dirtyX2; y1 = currentContext->dirtyY1; y2 = currentContext->dirtyY2; // save dirty area to erase it
       updateScreen(mainContext);
       fillRect(g, x1,y1,x2-x1,y2-y1, white); // erase dirty area
    }

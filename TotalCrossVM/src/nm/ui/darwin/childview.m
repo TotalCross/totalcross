@@ -85,12 +85,13 @@ extern BOOL callingScreenChange;
    CGLayerRelease(layer);
 }
 
-- (void)invalidateScreen:(void*)vscreen
+- (void)invalidateScreen:(void*)vscreen withContext:(void*)context
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
+   Context currentContext = (Context)context;
    shiftY = screen->shiftY;
    
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   CGRect r = CGRectMake(currentContext->dirtyX1,currentContext->dirtyY1,currentContext->dirtyX2-currentContext->dirtyX1,currentContext->dirtyY2-currentContext->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
                               [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];

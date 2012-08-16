@@ -59,8 +59,6 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    uint8* pixels; // pixels in native format
    __unsafe_unretained Object mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
    int32 pitch; // screen memory pitch size in bytes
-   bool fullDirty;
-   int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
    uint32 bpp;
    int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
    int32 hRes, vRes;

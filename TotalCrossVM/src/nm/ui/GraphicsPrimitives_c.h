@@ -22,7 +22,7 @@
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect);
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect);
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
 #if !defined(NO_GRAPHICS_LOCK_NEEDED)
 bool graphicsLock(ScreenSurface screen, bool on);
