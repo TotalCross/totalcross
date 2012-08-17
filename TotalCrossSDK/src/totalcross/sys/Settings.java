@@ -686,6 +686,9 @@ public final class Settings
     */
    public static boolean moveCursorToEndOnFocus;
    
+   /** No longer used or supported. */
+   public static boolean isMinimized;
+
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
     * the SIP will stay at the bottom of the screen (otherwise, it will be moved to the top).
