@@ -64,6 +64,8 @@ public class Bitmaps
    public Bitmaps(String prefix) throws Exception // guich@330_48: added a prefix
    {
       this.prefix = prefix;
+      if (bytesTemplate == null)
+         bytesTemplate= Utils.findAndLoadFile(prefix+"appicon.gif", prefix.length() > 0);
       int oldW = totalcross.sys.Settings.screenWidth;
       int oldH = totalcross.sys.Settings.screenHeight;
       totalcross.sys.Settings.screenWidth = 1024; totalcross.sys.Settings.screenHeight = 1024; // let Image work correctly
