@@ -15,14 +15,14 @@ extern Object testfont;
 extern Object pngImage, jpegImage;
 
 #define TEST_SLEEP 200
-void blank(Object g)
+void blank(Context currentContext, Object g)
 {
    Sleep(TEST_SLEEP);
    fillRect(g, 0,0,screen.screenW, screen.screenH, makePixel(255,255,255));
    updateScreen(mainContext);
 }
 
-static void testDrawHline(Object g)
+static void testDrawHline(Context currentContext, Object g)
 {
    int32 y;
    for (y = 0; y < screen.screenH; y++)
@@ -33,7 +33,7 @@ static void testDrawHline(Object g)
    }
 }
 
-static void testDrawVline(Object g)
+static void testDrawVline(Context currentContext, Object g)
 {
    int32 x;
    for (x = 0; x < screen.screenW; x++)
@@ -44,7 +44,7 @@ static void testDrawVline(Object g)
    }
 }
 
-static void testFillRect(Object g)
+static void testFillRect(Context currentContext, Object g)
 {
    int32 x,k;
    PixelConv rr,gg,bb;
@@ -61,7 +61,7 @@ static void testFillRect(Object g)
    }
 }
 
-static void testFillCircle(Object g)
+static void testFillCircle(Context currentContext, Object g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -76,7 +76,7 @@ static void testFillCircle(Object g)
    }
 }
 
-static void testDrawCircle(Object g)
+static void testDrawCircle(Context currentContext, Object g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -91,7 +91,7 @@ static void testDrawCircle(Object g)
    }
 }
 
-static void testDrawEllipse(Object g)
+static void testDrawEllipse(Context currentContext, Object g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -106,7 +106,7 @@ static void testDrawEllipse(Object g)
    }
 }
 
-static void testFillEllipse(Object g)
+static void testFillEllipse(Context currentContext, Object g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -139,7 +139,7 @@ static void testPie(Context currentContext, Object g)
    }
 }
 
-static void testFillCursor(Object g)
+static void testFillCursor(Context currentContext, Object g)
 {
    int32 y;
    int32 h = 30;
@@ -180,7 +180,7 @@ static void testPngImage(Context currentContext, Object g)
    drawImage(currentContext, g, pngImage);
 }
 
-static void testPalette(Object g)
+static void testPalette(Context currentContext, Object g)
 {
    int32 x=0,y=0,i,wh;
    uint32 c;
