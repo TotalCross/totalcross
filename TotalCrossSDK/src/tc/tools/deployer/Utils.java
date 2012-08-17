@@ -365,7 +365,7 @@ public class Utils
        return bas.toByteArray();
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   public static byte []loadFile(String path, boolean throwEx) throws Exception
+   public static byte []loadFile(String path, boolean throwEx) throws IOException
    {
       try
       {
@@ -384,7 +384,7 @@ public class Utils
          fis.close();
          return bytes;
       }
-      catch (Exception e) {if (throwEx) throw e; else return null;}
+      catch (IOException e) {if (throwEx) throw e; else return null;}
    }
    /////////////////////////////////////////////////////////////////////////////////////
    /**
