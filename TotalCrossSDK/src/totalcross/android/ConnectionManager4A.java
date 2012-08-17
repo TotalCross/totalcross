@@ -21,6 +21,7 @@ package totalcross.android;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import totalcross.Launcher4A;
+import totalcross.net.Socket;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -207,6 +208,20 @@ public class ConnectionManager4A
             return false;
          default:
             return false;
+      }
+   }
+   
+   public static boolean isInternetAccessible()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
       }
    }
    

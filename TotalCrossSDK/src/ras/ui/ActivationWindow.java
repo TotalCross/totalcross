@@ -118,8 +118,6 @@ public class ActivationWindow extends Window
          else
             try
             {
-               if (!Socket.isInternetAccessible())
-                  throw new ActivationException("", new IOException());
                if (client == null)
                   Vm.sleep(3000);
                else
