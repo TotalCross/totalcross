@@ -18,18 +18,15 @@
 
 package totalcross.android;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import totalcross.Launcher4A;
-import totalcross.net.Socket;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.Uri;
-import android.net.wifi.WifiManager;
-import android.telephony.TelephonyManager;
+import totalcross.*;
+
+import java.net.*;
+
+import android.content.*;
+import android.database.*;
+import android.net.*;
+import android.net.wifi.*;
+import android.telephony.*;
 
 public class ConnectionManager4A
 {
@@ -215,7 +212,9 @@ public class ConnectionManager4A
    {
       try
       {
-         Socket s = new Socket("www.google.com",80,30*1000);
+         InetSocketAddress isa = new InetSocketAddress(InetAddress.getByName("www.google.com"),80);
+         Socket s = new Socket();
+         s.connect(isa,30*1000);
          s.close();
          return true;
       }
