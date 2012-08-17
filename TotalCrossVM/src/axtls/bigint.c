@@ -1055,7 +1055,7 @@ static void more_comps(bigint *bi, int n)
     if (n > bi->max_comps)
     {
         bi->max_comps = max(bi->max_comps * 2, n);
-        bi->comps = (comp*)realloc(bi->comps, bi->max_comps * COMP_BYTE_SIZE);
+        bi->comps = (comp*)realloc((uint8*)bi->comps, bi->max_comps * COMP_BYTE_SIZE);
     }
 
     if (n > bi->size)
