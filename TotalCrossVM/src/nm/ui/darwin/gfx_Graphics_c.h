@@ -31,6 +31,15 @@ bool graphicsLock                  (ScreenSurface screen, bool on);
 
 extern void orientationChanged     (); // called by the UI
 
+void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2, int* dirtyY2)
+{
+   Context c = (Context)context;
+   *dirtyX1 = c->dirtyX1;
+   *dirtyY1 = c->dirtyY1;
+   *dirtyX2 = c->dirtyX2;
+   *dirtyY2 = c->dirtyY2;
+}
+
 #ifdef __cplusplus
 };
 #endif
