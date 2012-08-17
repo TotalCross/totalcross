@@ -57,24 +57,14 @@ public class Bitmaps
       0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x060003  // 248-255
    };
 
-   Image bmpTemplate;
-   byte []bytesTemplate;
    String prefix;
 
    public Bitmaps(String prefix) throws Exception // guich@330_48: added a prefix
    {
       this.prefix = prefix;
-      if (bytesTemplate == null)
-         bytesTemplate= Utils.findAndLoadFile(prefix+"appicon.gif", prefix.length() > 0);
       int oldW = totalcross.sys.Settings.screenWidth;
       int oldH = totalcross.sys.Settings.screenHeight;
       totalcross.sys.Settings.screenWidth = 1024; totalcross.sys.Settings.screenHeight = 1024; // let Image work correctly
-      if (bytesTemplate != null)
-      {
-         bmpTemplate = new Image(bytesTemplate);
-         if (bmpTemplate.getWidth() != bmpTemplate.getHeight())
-            throw new IllegalArgumentException("Error: the appicon.gif file must be square (width = height)!");
-      }
       if (oldW > 0) // restore only if screen had valid dimensions
       {
          totalcross.sys.Settings.screenWidth = oldW;
@@ -89,19 +79,18 @@ public class Bitmaps
       private byte []wholeImage;
       private boolean shouldInvertY;
 
-      public Bmp(int w, int h) throws ImageException
+      public Bmp(int w, int h) throws ImageException, IOException
       {
          shouldInvertY = false;
-         int back = bmpTemplate.getGraphics().getPixel(0,0); // use pixel at 0,0 as the background color
          boolean invertY = h < 0;
          h = Math.abs(h);
          int k = Math.min(w,h);
-         Image sized = bmpTemplate.getSmoothScaledInstance(k, k, back);
+         Image sized = IconStore.getSquareIcon(k);
          if (w > h) // center the icon horizontally
          {
             Image img = new Image(w,h);
             Graphics gg = img.getGraphics();
-            gg.backColor = back;
+            gg.backColor = sized.getGraphics().getPixel(0,0);
             gg.fillRect(0,0,w,h);
             gg.drawImage(sized,(w-k)/2,0);
             sized = img;
@@ -471,13 +460,6 @@ public class Bitmaps
       Image img = IconStore.getSquareIcon(80);
       if (img != null)
          img.createPng(s);
-      else if (bytesTemplate != null) // guich@tc113_35: now try with the template icon
-      {
-         img = new Image(bytesTemplate);
-         if (img.getWidth() > 80)
-            img = img.getSmoothScaledInstance(80, 80, img.transparentColor);
-         img.createPng(s);
-      }
       else
       {
          Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
@@ -667,6 +649,11 @@ class IconStore extends Hashtable
       return instance;
    }
 
+   public static byte[] getImageData(String dimensions) throws IOException
+   {
+      return (byte[]) getInstance().get(dimensions);
+   }
+
    public static Bmp getBmp(int width, int height, int bpp) throws IOException, ImageException
    {
       byte[] b = (byte[]) getInstance().get(width + "x" + Math.abs(height) + "x" + bpp);
@@ -698,33 +685,43 @@ class IconStore extends Hashtable
          {
             for (int i = files.length - 1; i >= 0; i--)
             {
+               String name = null;
                String file = files[i].toLowerCase();
-               if (file.endsWith(".bmp") || file.endsWith(".png"))
+               if (file.endsWith("appicon.gif"))
+                  name = "appicon";
+               else if (file.endsWith(".bmp") || file.endsWith(".png"))
                {
                   int idxLastSlash = file.lastIndexOf('/');
                   int idxIconName = file.indexOf("icon");
                   if (idxLastSlash != -1 && idxIconName != -1)
+                     name = file.substring(idxIconName + 4, file.lastIndexOf('.'));
+               }
+
+               if (name != null)
+               {
+                  try
                   {
-                     try
+                     byte[] b = Utils.loadFile(files[i], false);
+                     Image img = new Image(b);
+                     if (img.getWidth() == img.getHeight())
                      {
-                        byte[] b = Utils.loadFile(files[i], false);
-                        Image img = new Image(b);
-                        if (img.getWidth() == img.getHeight())
+                        int imgSize = img.getWidth() * img.getHeight();
+                        if (imgSize > largestIconSize)
                         {
-                           int imgSize = img.getWidth() * img.getHeight();
-                           if (imgSize > largestIconSize)
-                           {
-                              largestIconSize = imgSize;
-                              largestSquareIcon = img;
-                           }
+                           largestIconSize = imgSize;
+                           largestSquareIcon = img;
                         }
-                        String key = file.substring(idxIconName + 4, file.lastIndexOf('.'));
-                        if (key.length() > 1)
-                           this.put(key, b);
                      }
-                     catch (ImageException e)
-                     {
-                     }
+                     if (name.length() > 1)
+                        this.put(name, b);
+                  }
+                  catch (ImageException e)
+                  {
+                     // ignore and keep searching
+                  }
+                  catch (IOException e)
+                  {
+                     // ignore and keep searching
                   }
                }
             }
