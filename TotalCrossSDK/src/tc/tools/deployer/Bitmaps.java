@@ -11,8 +11,8 @@
 
 package tc.tools.deployer;
 
-import totalcross.io.ByteArrayStream;
-import totalcross.io.Stream;
+import tc.tools.deployer.Bitmaps.Bmp;
+import totalcross.io.*;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
@@ -57,86 +57,14 @@ public class Bitmaps
       0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x000000,0x060003  // 248-255
    };
 
-   // file bytes
-   Bmp bmp15x9x8;
-   Bmp bmp30x18x8;
-   Bmp bmp22x22x8;
-   Bmp bmp44x44x8;
-   Bmp bmp32x32x8;
-   Bmp bmp16x16x8;
-   Bmp bmp48x48x8;
-   byte []bytes15x9x8;
-   byte []bytes30x18x8;
-   byte []bytes22x22x8;
-   byte []bytes44x44x8;
-   byte []bytes32x32x8;
-   byte []bytes16x16x8;
-   byte []bytes48x48x8;
-   byte []bytes20x16x8;
-   byte []bytes1024x1024;
-
-   Image bmpTemplate;
-   byte []bytesTemplate;
    String prefix;
-
-   private int loadBmps(String prefix, boolean showMsg)
-   {
-      if (bytesTemplate == null) bytesTemplate= Utils.findAndLoadFile(prefix+"appicon.gif", showMsg);
-      int lost = 8;
-      // search with the prefix
-      if (bytes15x9x8  == null) bytes15x9x8  = Utils.findAndLoadFile(prefix+"icon15x9x8.bmp", showMsg); if (bytes15x9x8  != null) lost--;
-      if (bytes30x18x8 == null) bytes30x18x8 = Utils.findAndLoadFile(prefix+"icon30x18x8.bmp",showMsg); if (bytes30x18x8 != null) lost--;
-      if (bytes22x22x8 == null) bytes22x22x8 = Utils.findAndLoadFile(prefix+"icon22x22x8.bmp",showMsg); if (bytes22x22x8 != null) lost--;
-      if (bytes44x44x8 == null) bytes44x44x8 = Utils.findAndLoadFile(prefix+"icon44x44x8.bmp",showMsg); if (bytes44x44x8 != null) lost--;
-      if (bytes16x16x8 == null) bytes16x16x8 = Utils.findAndLoadFile(prefix+"icon16x16x8.bmp",showMsg); if (bytes16x16x8 != null) lost--;
-      if (bytes32x32x8 == null) bytes32x32x8 = Utils.findAndLoadFile(prefix+"icon32x32x8.bmp",showMsg); if (bytes32x32x8 != null) lost--;
-      if (bytes48x48x8 == null) bytes48x48x8 = Utils.findAndLoadFile(prefix+"icon48x48x8.bmp",showMsg); if (bytes48x48x8 != null) lost--;
-      if (bytes20x16x8 == null) bytes20x16x8 = Utils.findAndLoadFile(prefix+"icon20x16x8.bmp",showMsg); if (bytes20x16x8 != null) lost--;
-      if (bytes1024x1024 == null) bytes1024x1024 = Utils.findAndLoadFile(prefix+"icon1024x1024.png",showMsg); if (bytes1024x1024 != null) lost--;
-
-      return lost;
-   }
 
    public Bitmaps(String prefix) throws Exception // guich@330_48: added a prefix
    {
       this.prefix = prefix;
-      boolean showMsg=prefix.length() > 0; // guich@503_8: show only if we're giving an icon prefix
-      // first, search with prefix
-      int lost = loadBmps(prefix, showMsg);
-      // if some was lost, search with the prefix_
-      if (prefix.length() > 0 && lost > 0)
-         lost = loadBmps(prefix+"_", showMsg);
-      // if some was lost, search without the prefix
-      if (prefix.length() > 0 && lost > 0)
-         lost = loadBmps("", showMsg);
-      // if still lost, get from the etc/images folder
-      if (lost > 0 && prefix.length() > 0)
-         lost = loadBmps(DeploySettings.etcDir+"images/"+prefix+"_", showMsg);
-      if (bytesTemplate == null) // only if the template was not found
-      {
-         if (lost > 0)
-            lost = loadBmps(DeploySettings.etcDir+"images/", false);
-         if (lost > 0)
-            throw new DeployerException(lost+" icons not found, neither in classpath nor in the working directory. Be sure to put their location in the classpath or copy them to the working directory.");
-      }
-      // now we're sure that everything was found
       int oldW = totalcross.sys.Settings.screenWidth;
       int oldH = totalcross.sys.Settings.screenHeight;
       totalcross.sys.Settings.screenWidth = 1024; totalcross.sys.Settings.screenHeight = 1024; // let Image work correctly
-      if (bytesTemplate != null)
-      {
-         bmpTemplate = new Image(bytesTemplate);
-         if (bmpTemplate.getWidth() != bmpTemplate.getHeight())
-            throw new IllegalArgumentException("Error: the appicon.gif file must be square (width = height)!");
-      }
-      bmp15x9x8   = bytes15x9x8  != null ? new Bmp(bytes15x9x8)  : new Bmp(15,-9);  // palm os
-      bmp30x18x8  = bytes30x18x8 != null ? new Bmp(bytes30x18x8) : new Bmp(30,-18); // palm os
-      bmp22x22x8  = bytes22x22x8 != null ? new Bmp(bytes22x22x8) : new Bmp(22,-22); // palm os
-      bmp44x44x8  = bytes44x44x8 != null ? new Bmp(bytes44x44x8) : new Bmp(44,-44); // palm os
-      bmp32x32x8  = bytes32x32x8 != null ? new Bmp(bytes32x32x8) : new Bmp(32,32);  // windows
-      bmp16x16x8  = bytes16x16x8 != null ? new Bmp(bytes16x16x8) : new Bmp(16,16);  // windows
-      bmp48x48x8  = bytes48x48x8 != null ? new Bmp(bytes48x48x8) : new Bmp(48,48);  // windows
-
       if (oldW > 0) // restore only if screen had valid dimensions
       {
          totalcross.sys.Settings.screenWidth = oldW;
@@ -151,19 +79,18 @@ public class Bitmaps
       private byte []wholeImage;
       private boolean shouldInvertY;
 
-      public Bmp(int w, int h) throws ImageException
+      public Bmp(int w, int h) throws ImageException, IOException
       {
          shouldInvertY = false;
-         int back = bmpTemplate.getGraphics().getPixel(0,0); // use pixel at 0,0 as the background color
          boolean invertY = h < 0;
          h = Math.abs(h);
          int k = Math.min(w,h);
-         Image sized = bmpTemplate.getSmoothScaledInstance(k, k, back);
+         Image sized = IconStore.getSquareIcon(k);
          if (w > h) // center the icon horizontally
          {
             Image img = new Image(w,h);
             Graphics gg = img.getGraphics();
-            gg.backColor = back;
+            gg.backColor = sized.getGraphics().getPixel(0,0);
             gg.fillRect(0,0,w,h);
             gg.drawImage(sized,(w-k)/2,0);
             sized = img;
@@ -230,7 +157,7 @@ public class Bitmaps
          return (r << 16) | (g << 8) | b;
       }
 
-      public Bmp(byte[] bytes) throws Exception
+      public Bmp(byte[] bytes)
       {
          shouldInvertY = true;
          wholeImage = new byte[bytes.length - 14];
@@ -466,36 +393,45 @@ public class Bitmaps
      *   third icon  (1bpp/double density)
 	 *   gap: 2 bytes
 	 *   fourth icon (8bpp/double density)
+    * @throws ImageException 
+    * @throws IOException 
      */
-   public void savePalmOSIcons(byte []bytes, int offset1000, int offset1001)
+   public void savePalmOSIcons(byte[] bytes, int offset1000, int offset1001) throws ImageException, IOException
    {
       int realSize;
 
       // get the 22x22x8
       offset1000 += 16; // skip next header
-      realSize   = 22 * 22; // tc note: pilrc uses 22x22 as the real size, while codewarrior uses 22x32
-      if (bmp22x22x8 != null)
-         copyBits(bmp22x22x8.pixels, bmp22x22x8.palette, palette256, 24, bytes, offset1000, 22, 22, 8, -1,false, bmp22x22x8.shouldInvertY);
-	  // get the 44x44x8
-     offset1000 += realSize; // skip first icon size
-	  offset1000 += 40; // skip next header
-	  if (bmp44x44x8 != null)
-        copyBits(bmp44x44x8.pixels, bmp44x44x8.palette, palette256, 44, bytes, offset1000, 44, 44, 8, -1,false, bmp44x44x8.shouldInvertY);
+      realSize = 22 * 22; // tc note: pilrc uses 22x22 as the real size, while codewarrior uses 22x32
+      Bmp bmp22x22x8 = IconStore.getBmp(22, -22, 8);
+      copyBits(bmp22x22x8.pixels, bmp22x22x8.palette, palette256, 24, bytes, offset1000, 22, 22, 8, -1, false,
+            bmp22x22x8.shouldInvertY);
+      // get the 44x44x8
+      offset1000 += realSize; // skip first icon size
+      offset1000 += 40; // skip next header
+      Bmp bmp44x44x8 = IconStore.getBmp(44, -44, 8);
+      copyBits(bmp44x44x8.pixels, bmp44x44x8.palette, palette256, 44, bytes, offset1000, 44, 44, 8, -1, false,
+            bmp44x44x8.shouldInvertY);
 
-     // get the 15x9x8
-     offset1001 += 16; // skip next header
-     realSize   = 16 * 9;
-     if (bmp15x9x8 != null)
-        copyBits(bmp15x9x8.pixels, bmp15x9x8.palette, palette256, 16, bytes, offset1001, 16, 9, 8, -1,false, bmp15x9x8.shouldInvertY);
-	  // get the 30x18x8
-     offset1001 += realSize; // skip first icon size
-	  offset1001 += 40; // skip next header
-	  if (bmp30x18x8 != null)
-	     copyBits(bmp30x18x8.pixels, bmp30x18x8.palette, palette256, 32, bytes, offset1001, 30, 18, 8, -1,false, bmp30x18x8.shouldInvertY);
+      // get the 15x9x8
+      offset1001 += 16; // skip next header
+      realSize = 16 * 9;
+      Bmp bmp15x9x8 = IconStore.getBmp(15, -9, 8);
+      copyBits(bmp15x9x8.pixels, bmp15x9x8.palette, palette256, 16, bytes, offset1001, 16, 9, 8, -1, false,
+            bmp15x9x8.shouldInvertY);
+      // get the 30x18x8
+      offset1001 += realSize; // skip first icon size
+      offset1001 += 40; // skip next header
+      Bmp bmp30x18x8 = IconStore.getBmp(30, -18, 8);
+      copyBits(bmp30x18x8.pixels, bmp30x18x8.palette, palette256, 32, bytes, offset1001, 30, 18, 8, -1, false,
+            bmp30x18x8.shouldInvertY);
    }
 
-   public void saveWinCEIcons(byte []bytes, int bitmap16x16x8_Offset, int bitmap32x32x8_Offset, int bitmap48x48x8_Offset)
+   public void saveWinCEIcons(byte []bytes, int bitmap16x16x8_Offset, int bitmap32x32x8_Offset, int bitmap48x48x8_Offset) throws ImageException, IOException
    {
+      Bmp bmp16x16x8 = IconStore.getBmp(16, 16, 8);
+      Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
+      Bmp bmp48x48x8 = IconStore.getBmp(48, 48, 8);
       if (bmp16x16x8 != null && bitmap16x16x8_Offset != -1)
          copyBits(bmp16x16x8.pixels, bmp16x16x8.palette, loadPalette(bytes, bitmap16x16x8_Offset+40, 256), 16, bytes, bitmap16x16x8_Offset+40+1024, 16, -16, 8, bitmap16x16x8_Offset+16*16+40+1024, false, bmp16x16x8.shouldInvertY);
       if (bmp32x32x8 != null && bitmap32x32x8_Offset != -1)
@@ -504,80 +440,30 @@ public class Bitmaps
          copyBits(bmp48x48x8.pixels, bmp48x48x8.palette, loadPalette(bytes, bitmap48x48x8_Offset+40, 256), 48, bytes, bitmap48x48x8_Offset+40+1024, 48, -48, 8, bitmap48x48x8_Offset+48*48+40+1024, false, bmp48x48x8.shouldInvertY);
    }
 
-   public void saveWin32Icon(byte[] bytes, int iconOffset)
+   public void saveWin32Icon(byte[] bytes, int iconOffset) throws ImageException, IOException
    {
+      Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
       if (bmp32x32x8 != null && iconOffset != -1)
          copyBits(bmp32x32x8.pixels, bmp32x32x8.palette, loadPalette(bytes, iconOffset+40, 256), 32, bytes, iconOffset+40+1024, 32, -32, 8, iconOffset+32*32+40+1024,false, bmp32x32x8.shouldInvertY);
    }
 
    public void saveAndroidIcon(java.util.zip.ZipOutputStream zos) throws Exception // 72x72 png
    {
-      byte[] imgbytes = findIconFile("icon72x72.png");
-      if (imgbytes != null) // guich@tc126_65
-      {
-         Image img = new Image(imgbytes);
-         if (img.getWidth() != 72 || img.getHeight() != 72)
-            throw new IllegalArgumentException("The Android icon must be 72x72 in size!");
-         zos.write(imgbytes, 0, imgbytes.length);
-      }
-      else
-      {
-         imgbytes = bytesTemplate;
-         if (imgbytes == null) imgbytes = bytes48x48x8;
-         if (imgbytes == null) imgbytes = bytes44x44x8;
-         if (imgbytes == null) imgbytes = bytes32x32x8;
-   
-         if (imgbytes != null)
-         {
-            Image img = new Image(imgbytes);
-            if (img.getWidth() != 72)
-               img = img.getSmoothScaledInstance(72,72,img.transparentColor);
-            ByteArrayStream s = new ByteArrayStream(4096);
-            img.createPng(s);
-            zos.write(s.getBuffer(), 0, s.getPos());
-         }
-      }
-   }
-
-   private byte[] findIconFile(String suffix)
-   {
-      byte[] imgbytes = Utils.findAndLoadFile(prefix+suffix,false);
-      if (imgbytes == null) imgbytes = Utils.findAndLoadFile(prefix+"_"+suffix,false);
-      if (imgbytes == null) imgbytes = Utils.findAndLoadFile(suffix,false);
-      return imgbytes;
+      Image img = IconStore.getSquareIcon(72);
+      ByteArrayStream s = new ByteArrayStream(72 * 72);
+      img.createPng(s);
+      zos.write(s.getBuffer(), 0, s.getPos());
    }
    
    public boolean saveBlackBerryIcon(Stream s) throws Exception
    {
-      // guich@tc113_35: search for the dedicated blackberry icon.
-      byte[] imgbytes = findIconFile("icon80x80.png");
-      if (imgbytes != null)
-      {
-         Image img = new Image(imgbytes);
-         if (img.getWidth() != 80 || img.getHeight() != 80)
-            throw new IllegalArgumentException("The BlackBerry icon must be 80x80 in size!");
-         
-         s.writeBytes(imgbytes,0,imgbytes.length); // already a png file
-         return true;
-      }
-      
-      // guich@tc113_35: now try with the template icon
-      if (bytesTemplate != null)
-      {
-         Image img = new Image(bytesTemplate);
-         if (img.getWidth() > 80)
-            img = img.getSmoothScaledInstance(80,80,img.transparentColor);
+      Image img = IconStore.getSquareIcon(80);
+      if (img != null)
          img.createPng(s);
-         return true;
-      }
-      
-      // else, use the 32x32
-      if (bmp32x32x8 == null)
-         return false;
-
-      try
+      else
       {
-         Image img = new Image(32, 32);
+         Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
+         img = new Image(32, 32);
          byte[] pixels = bmp32x32x8.pixels;
          int[] palette = bmp32x32x8.palette;
          Graphics g = img.getGraphics();
@@ -598,12 +484,8 @@ public class Bitmaps
             }
 
          img.createPng(s);
-         return true;
       }
-      catch (ImageException ex)
-      {
-         return false;
-      }
+      return img != null;
    }
 
    private static final int TOLERANCE = 16;
@@ -724,50 +606,126 @@ public class Bitmaps
       }
    }
 
-   /**
-    * Gets an image of size 60x60. Searches from the available sizes, and does a resize if needed. Creates a png and
-    * returns it.
-    */
    public byte[] getIPhoneIcon(int size)
    {
-      byte[] imgbytes = null;
+      byte[] b = null;
       try
       {
-         // search for the dedicated iphone icon.
-         imgbytes = findIconFile("icon" + size + "x" + size + ".png");
-         if (imgbytes != null)
-         {
-            Image img = new Image(imgbytes);
-            if (img.getWidth() != size || img.getHeight() != size)
-               throw new IllegalArgumentException("The iPhone icon must be " + size + "x" + size + " in size!");
-            return imgbytes; // use this icon as-is
-         }
-
-         // otherwise, use the other ones provided
-         imgbytes = bytesTemplate;
-         if (imgbytes == null) imgbytes = bytes1024x1024;
-         if (imgbytes == null) imgbytes = bytes48x48x8;
-         if (imgbytes == null) imgbytes = bytes44x44x8;
-         if (imgbytes == null) imgbytes = bytes32x32x8;
-         if (imgbytes == null) imgbytes = bytes22x22x8;
-         if (imgbytes == null) imgbytes = bytes16x16x8;
-         if (imgbytes != null)
-         {
-            Image img = new Image(imgbytes);
-            // guich@tc100b5_11: flood fill with tolerance
-            floodFill(img,0);
-            // resize to 60x60
-            ByteArrayStream bas = new ByteArrayStream(8192);
-            img = img.getSmoothScaledInstance(size, size, 0);
-            img.transparentColor = 0; // not really necessary
-            img.createPng(bas);
-            imgbytes = bas.toByteArray();
-         }
+         Image img = IconStore.getSquareIcon(size);
+         // guich@tc100b5_11: flood fill with tolerance
+         floodFill(img, 0);
+         ByteArrayStream bas = new ByteArrayStream(size * size);
+         img.createPng(bas);
+         b = bas.toByteArray();
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
-      return imgbytes;
+      return b;
+   }
+}
+
+class IconStore extends Hashtable
+{
+   private Image largestSquareIcon;
+   private static IconStore instance;
+
+   private IconStore() throws IOException
+   {
+      super(30);
+      addFrom(DeploySettings.mainClassDir);
+      addFrom(DeploySettings.baseDir);
+      addFrom(".");
+      addFrom(DeploySettings.currentDir);
+      if (this.size() == 0)
+         addFrom(DeploySettings.etcDir + "images/");
+   }
+
+   public static IconStore getInstance() throws IOException
+   {
+      if (instance == null)
+         instance = new IconStore();
+      return instance;
+   }
+
+   public static byte[] getImageData(String dimensions) throws IOException
+   {
+      return (byte[]) getInstance().get(dimensions);
+   }
+
+   public static Bmp getBmp(int width, int height, int bpp) throws IOException, ImageException
+   {
+      byte[] b = (byte[]) getInstance().get(width + "x" + Math.abs(height) + "x" + bpp);
+      return b != null ? DeploySettings.bitmaps.new Bmp(b) : DeploySettings.bitmaps.new Bmp(width, height);
+   }
+
+   public static Image getSquareIcon(int size) throws ImageException, IOException
+   {
+      Image img;
+      IconStore store = getInstance();
+      byte[] b = (byte[]) store.get(size + "x" + size);
+      if (b != null)
+         img = new Image(b);
+      else
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, 0);
+      if (img.getHeight() != size || img.getWidth() != size)
+         throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
+      return img;
+   }
+
+   private void addFrom(String path) throws IOException
+   {
+      int largestIconSize = 0;
+
+      if (path != null)
+      {
+         String[] files = File.listFiles(path, false);
+         if (files != null)
+         {
+            for (int i = files.length - 1; i >= 0; i--)
+            {
+               String name = null;
+               String file = files[i].toLowerCase();
+               if (file.endsWith("appicon.gif"))
+                  name = "appicon";
+               else if (file.endsWith(".bmp") || file.endsWith(".png"))
+               {
+                  int idxLastSlash = file.lastIndexOf('/');
+                  int idxIconName = file.indexOf("icon");
+                  if (idxLastSlash != -1 && idxIconName != -1)
+                     name = file.substring(idxIconName + 4, file.lastIndexOf('.'));
+               }
+
+               if (name != null)
+               {
+                  try
+                  {
+                     byte[] b = Utils.loadFile(files[i], false);
+                     Image img = new Image(b);
+                     if (img.getWidth() == img.getHeight())
+                     {
+                        int imgSize = img.getWidth() * img.getHeight();
+                        if (imgSize > largestIconSize)
+                        {
+                           largestIconSize = imgSize;
+                           largestSquareIcon = img;
+                        }
+                     }
+                     if (name.length() > 1)
+                        this.put(name, b);
+                  }
+                  catch (ImageException e)
+                  {
+                     // ignore and keep searching
+                  }
+                  catch (IOException e)
+                  {
+                     // ignore and keep searching
+                  }
+               }
+            }
+         }
+      }
    }
 }

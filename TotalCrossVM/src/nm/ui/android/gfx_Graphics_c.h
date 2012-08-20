@@ -61,11 +61,11 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return screen->pixels != null;
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
 {
    JNIEnv *env = getJNIEnv();
    if (env)
-      (*env)->CallStaticVoidMethod(env, applicationClass, jupdateScreen, screen->dirtyX1,screen->dirtyY1,screen->dirtyX2,screen->dirtyY2,transitionEffect); // will call Java_totalcross_Launcher4A_nativeOnDraw
+      (*env)->CallStaticVoidMethod(env, applicationClass, jupdateScreen, currentContext->dirtyX1,currentContext->dirtyY1,currentContext->dirtyX2,currentContext->dirtyY2,transitionEffect); // will call Java_totalcross_Launcher4A_nativeOnDraw
    else
       debug("thread not attached!");
 }

@@ -217,15 +217,15 @@ inline static void drawImageLine(ScreenSurface screen, HDC targetDC, int32 minx,
    BitBlt(SCREEN_EX(screen)->dc, minx,miny, maxx-minx, maxy-miny, targetDC, minx,miny, SRCCOPY);
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect) // screen's already locked
-{
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect) // screen's already locked
+{                         
    HDC targetDC = CreateCompatibleDC(NULL);
    HBITMAP hOldBitmap = (HBITMAP)SelectObject(targetDC, SCREEN_EX(screen)->hbmp);
    switch (transitionEffect)
    {
       case TRANSITION_NONE:
-         BitBlt(SCREEN_EX(screen)->dc, screen->dirtyX1, screen->dirtyY1, screen->dirtyX2-screen->dirtyX1, screen->dirtyY2-screen->dirtyY1, targetDC, screen->dirtyX1, screen->dirtyY1, SRCCOPY);
-         break;
+         BitBlt(SCREEN_EX(screen)->dc, currentContext->dirtyX1, currentContext->dirtyY1, currentContext->dirtyX2-currentContext->dirtyX1, currentContext->dirtyY2-currentContext->dirtyY1, targetDC, currentContext->dirtyX1, currentContext->dirtyY1, SRCCOPY);
+         break;                                                                                                                                                                                                               
       case TRANSITION_CLOSE:
       case TRANSITION_OPEN:
       {       

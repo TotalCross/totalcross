@@ -360,18 +360,4 @@ public class Socket4B extends Stream
       {
       }
    }
-
-   public static boolean isInternetAccessible()
-   {
-      try
-      {
-         Socket s = new Socket("www.google.com",80,30*1000);
-         s.close();
-         return true;
-      }
-      catch (Exception e)
-      {
-         return false;
-      }
-   }
 }

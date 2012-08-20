@@ -325,11 +325,18 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return true;
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
-{
+BOOL invalidated;
+void Sleep(int ms);
+
+void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
+{								  
    ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
    if (allowMainThread())
-      [vw invalidateScreen: screen];
+   {
+      invalidated = FALSE;
+      [vw invalidateScreen:screen withContext:currentContext];
+      while (!invalidated) Sleep(10);
+   }      
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)

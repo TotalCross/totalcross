@@ -79,16 +79,16 @@ static void drawImageLine(ScreenSurface screen, DFBRegion *bounds, int32 minx, i
    SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, bounds, DSFLIP_ONSYNC);
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect) // screen's already locked
-{
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect) // screen's already locked
+{                         
    DFBRegion bounds;
    switch (transitionEffect)
    {
       case TRANSITION_NONE:
-         bounds.x1 = screen->dirtyX1;
-         bounds.y1 = screen->dirtyY1;
-         bounds.x2 = screen->dirtyX2;
-         bounds.y2 = screen->dirtyY2;
+         bounds.x1 = currentContext->dirtyX1;
+         bounds.y1 = currentContext->dirtyY1;
+         bounds.x2 = currentContext->dirtyX2;
+         bounds.y2 = currentContext->dirtyY2;
          SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, &bounds, DSFLIP_ONSYNC);
          break;
       case TRANSITION_CLOSE:

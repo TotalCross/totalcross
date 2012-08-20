@@ -115,19 +115,19 @@ inline static void drawImageLine(ScreenSurface screen, RectangleType *bounds, in
    WinCopyRectangle(SCREEN_EX(screen)->pixelsWin, WinGetDisplayWindow(), bounds, minx,miny, winPaint);
 }
 
-void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect) // screen's already locked
-{
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect) // screen's already locked
+{                                 
    RectangleType bounds;
 
    WinSetCoordinateSystem(SCREEN_EX(screen)->density);
    switch (transitionEffect)
    {
       case TRANSITION_NONE:
-         bounds.topLeft.x = screen->dirtyX1;
-         bounds.topLeft.y = screen->dirtyY1;
-         bounds.extent.x  = screen->dirtyX2 - screen->dirtyX1;
-         bounds.extent.y  = screen->dirtyY2 - screen->dirtyY1;
-         WinCopyRectangle(SCREEN_EX(screen)->pixelsWin, WinGetDisplayWindow(), &bounds, screen->dirtyX1, screen->dirtyY1, winPaint);
+         bounds.topLeft.x = currentContext->dirtyX1;
+         bounds.topLeft.y = currentContext->dirtyY1;
+         bounds.extent.x  = currentContext->dirtyX2 - currentContext->dirtyX1;
+         bounds.extent.y  = currentContext->dirtyY2 - currentContext->dirtyY1;
+         WinCopyRectangle(SCREEN_EX(screen)->pixelsWin, WinGetDisplayWindow(), &bounds, currentContext->dirtyX1, currentContext->dirtyY1, winPaint);
          break;
       case TRANSITION_CLOSE:
       case TRANSITION_OPEN:
