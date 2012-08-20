@@ -687,7 +687,7 @@ public final class Settings
    public static boolean moveCursorToEndOnFocus;
    
    /** No longer used or supported. */
-   public static boolean isMinimized;
+   public static boolean isMinimized; // used in Blackberry's stub!
 
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
