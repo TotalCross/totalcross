@@ -186,10 +186,14 @@ static Err portConnectorSetFlowControl(PortHandle portConnectorRef, bool flowOn)
    return (SetCommState(portConnectorRef, &dcb) ? NO_ERROR : GetLastError());
 }
 
+typedef BOOL (__stdcall *ReadWriteFileFunc)(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped);
+
 static Err portConnectorReadWriteBytes(PortHandle portConnectorRef, int32 portNumber, bool stopWriteCheckOnTimeout, int32 timeout, uint8 *bytes, int32 start, int32 count, int32 *retCount, bool isRead)
 {
+   ReadWriteFileFunc readWriteFile;
    COMMTIMEOUTS commtimeouts;
-   Err err;
+   int i;
+   Err err = NO_ERROR;
 
    if (!GetCommTimeouts(portConnectorRef, &commtimeouts))
       goto Error;
@@ -201,8 +205,7 @@ static Err portConnectorReadWriteBytes(PortHandle portConnectorRef, int32 portNu
       commtimeouts.ReadTotalTimeoutConstant = timeout; //flsobral@tc122: don't need to set the multiplier, we can just use the constant field.
       if (!SetCommTimeouts(portConnectorRef, &commtimeouts))
          goto Error;
-      if (!ReadFile (portConnectorRef, bytes+start, count, retCount, null))
-         goto Error;
+      readWriteFile = ReadFile;
    }
    else
    {
@@ -211,13 +214,22 @@ static Err portConnectorReadWriteBytes(PortHandle portConnectorRef, int32 portNu
       commtimeouts.WriteTotalTimeoutConstant = 0;
       if (!SetCommTimeouts(portConnectorRef, &commtimeouts))
          goto Error;
-      if (!WriteFile(portConnectorRef, bytes+start, count, retCount, null))
-         goto Error;
+      readWriteFile = WriteFile;
    }
-
-   return NO_ERROR;
+   
+   for (i = 0 ; i < 10 ; i++)
+   {
+      if (readWriteFile(portConnectorRef, bytes+start, count, retCount, null))
+         return NO_ERROR;
+      if ((err = GetLastError()) != 21)
+         break;
+      Sleep(150);
+   }
+   goto Finish;
+   
 Error:
    err = GetLastError();
+Finish:
    return err != 1359 ? err : NO_ERROR;
 }
 
