@@ -1302,7 +1302,7 @@ public class Grid extends Container implements Scrollable
                   for (int i = i0; i < rows; i++, ty += lineH)
                   {
                      int currentRow = i+row0;
-                     String []line = (String[])items[currentRow];
+                     String []line = (String[])items[i]; // don't put i+row0!
                      String columnText = line[j-base];
                      Image columnImg = htImages != null ? (Image)htImages.get(columnText) : null;
                      if (columnText == null) // prevent NPE
@@ -2150,7 +2150,7 @@ public class Grid extends Container implements Scrollable
       int col = getColFromX(px,false);
       if (col < 0) return;
 
-      int newSel = ds != null ? line+lastStartingRow : line+gridOffset; // guich@tc114_55: consider the DataSource's starting row
+      int newSel = line+gridOffset; // guich@tc114_55: consider the DataSource's starting row - guich@tc162: don't consider it
       
       if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel,0))) // only if changed
          setSelectedIndex(newSel);

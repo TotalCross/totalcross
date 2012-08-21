@@ -38682,6 +38682,101 @@ sendMessage(Message
 message) Sends a message.
 \end_layout
 
+\begin_layout Section
+SMTPTransport 
+\end_layout
+
+\begin_layout Standard
+This class implements the 
+\family typewriter
+Transport
+\family default
+ abstract class using SMTP for message submission and transport.
+ It also doesn't have a public constructor.
+ 
+\end_layout
+
+\begin_layout Standard
+It has the same methods of its superclasses (
+\family typewriter
+Service
+\family default
+ and 
+\family typewriter
+Transport
+\family default
+) and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+connect(Socket
+\begin_inset space ~
+\end_inset
+
+connection) Connects to a socket to start a mail session.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readServerResponse() Returns a number representing the server response.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+issueCommand(String
+\begin_inset space ~
+\end_inset
+
+cmd,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+expect) Issues a command to the server and checks if its response is the
+ expected one.
+ If not, a 
+\family typewriter
+MessagingException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+simpleCommand(String
+\begin_inset space ~
+\end_inset
+
+command) Issues a command but doesn't check if the response is as expected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+supportsExtension(String
+\begin_inset space ~
+\end_inset
+
+ext) If 
+\family typewriter
+ext == "STARTTLS"
+\family default
+, it will return if it supports TLS (Transport Layer Security).
+ Otherwise, it will return 
+\family typewriter
+false
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRequireStartTLS() Returns if a TLS is required or not.
+\end_layout
+
 \begin_layout Part
 PHONE
 \end_layout
