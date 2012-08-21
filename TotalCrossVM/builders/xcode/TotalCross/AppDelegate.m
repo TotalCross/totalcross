@@ -20,6 +20,30 @@
 
 -(void) initApp
 {
+   // This is the first launch ever
+   if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"])
+   {
+      NSString *documentsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:  @"Documents"];
+      NSString *pkgDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"pkg"];
+      NSError *error = nil;
+
+      // First check if the pkg directory exists
+      if ([[NSFileManager defaultManager] fileExistsAtPath:pkgDirectory])
+      {
+         NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pkgDirectory error:&error];
+         for (NSString *s in fileList)
+         {
+            NSString *sourceFilePath = [documentsDirectory stringByAppendingPathComponent:s];
+            NSString *targetFilePath = [pkgDirectory stringByAppendingPathComponent:s];
+            if (![[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File does not exist, copy it
+               [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
+         }
+      }
+       
+      [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"HasLaunchedOnce"];
+      [[NSUserDefaults standardUserDefaults] synchronize];
+   }
+   
     // setup for device orientation change events
     [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
