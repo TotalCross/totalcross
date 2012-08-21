@@ -376,8 +376,8 @@ public class Deployer4BB
          if (DeploySettings.bitmaps != null)
          {
             ByteArrayStream bas = new ByteArrayStream(1024);
-            if (DeploySettings.bitmaps.saveBlackBerryIcon(bas))
-               entriesList.addElement(new TCZ.Entry(bas.toByteArray(), "icon.png", bas.getPos()));
+            DeploySettings.bitmaps.saveBlackBerryIcon(bas);
+            entriesList.addElement(new TCZ.Entry(bas.toByteArray(), "icon.png", bas.getPos()));
          }
       }
 
@@ -537,8 +537,8 @@ public class Deployer4BB
        if (DeploySettings.bitmaps != null)
        {
           ByteArrayStream bas = new ByteArrayStream(1024);
-          if (DeploySettings.bitmaps.saveBlackBerryIcon(bas))
-             codFile.icon = bas.toByteArray();
+          DeploySettings.bitmaps.saveBlackBerryIcon(bas);
+          codFile.icon = bas.toByteArray();
        }
 
        addResourcesList(codFile.moduleName, DeploySettings.entriesList);
