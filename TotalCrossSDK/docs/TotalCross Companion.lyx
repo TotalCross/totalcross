@@ -37815,7 +37815,11 @@ setFrom(Address
 \begin_inset space ~
 \end_inset
 
-address) Set the "From" attribute in this Message.
+address) Set the "From" attribute in this 
+\family typewriter
+Message
+\family default
+.
  
 \end_layout
 
@@ -37982,13 +37986,700 @@ writeTo(Stream
 \begin_inset space ~
 \end_inset
 
-stream) Output an appropriately encoded bytestream to the given stream,
+stream) Output an appropriately encoded byte stream to the given stream,
  which is typically used for sending.
+\end_layout
+
+\begin_layout Section
+Part
+\end_layout
+
+\begin_layout Standard
+This class represents a MIME body part, which are contained by 
+\family typewriter
+Multipart
+\family default
+ objects.
+ 
+\end_layout
+
+\begin_layout Standard
+It has the following fields:
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
+disposition Defines if this part's content should be inlined in the body
+ of the message, or attached as a file.
+ Its value MUST be set to either 
+\family typewriter
+INLINE
+\family default
+ (default value) or 
+\family typewriter
+ATTACHMENT
+\family default
+, using the constants defined by this class.
+\end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+fileName File name of the attachment represented by this part (if any).
+ If assigned with a non-null value, the field disposition value is ignored
+ and the part treated as ATTACHMENT.
+ 
+\end_layout
+
+\begin_layout Standard
+This class only has the default constructor and the following methods.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addHeader(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+value) Add this 
+\family typewriter
+value
+\family default
+ to the existing values for this header 
+\family typewriter
+name
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getContentType() Returns the Content-Type of the content of this part.
+ Returns 
+\family typewriter
+null
+\family default
+ if the Content-Type could not be determined.
+ The MIME typing system is used to name Content-types.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setContent(Object
+\begin_inset space ~
+\end_inset
+
+content,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+mimeType) A convenience method for setting this part's content with the
+ given content MIME type.
+ Note that a 
+\family typewriter
+DataContentHandler
+\family default
+ class for the specified type should be available, otherwise the content
+ will be handled by the 
+\family typewriter
+BinaryContentHandler
+\family default
+, which writes the content as a base 64 encoded string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setContent(Multipart
+\begin_inset space ~
+\end_inset
+
+multipart) This method sets the given 
+\family typewriter
+Multipart
+\family default
+ object as this part's content.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setContent(Object
+\begin_inset space ~
+\end_inset
+
+content) A convenience method for setting this part's content based on the
+ type of the passed object.
+\begin_inset Newline newline
+\end_inset
+
+If the given object type is 
+\family typewriter
+Multipart
+\family default
+, it's MIME type is set to "multipart/mixed".
+\begin_inset Newline newline
+\end_inset
+
+If the given object type is 
+\family typewriter
+String
+\family default
+, it's MIME type is set to "text/plain".
+\begin_inset Newline newline
+\end_inset
+
+Otherwise, the given object will be handled as "application/octet-stream"
+ by the
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+BinaryContentHandler
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setText(String
+\begin_inset space ~
+\end_inset
+
+text) A convenience method that sets the given 
+\family typewriter
+totalcross.lang.String
+\family default
+ as this part's content with a MIME type of "text/plain".
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTo(Stream
+\begin_inset space ~
+\end_inset
+
+stream) Writes this part to the given stream.
+ The output is typically an aggregation of the 
+\family typewriter
+Part
+\family default
+ attributes and an appropriately encoded byte stream from its 'content'.
+ Classes that extends the 
+\family typewriter
+Part
+\family default
+ class decide on the appropriate encoding algorithm to be used.
+ The received stream is typically used for sending.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getContent() Returns the content of this part.
+\end_layout
+
+\begin_layout Section
+Folder
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Folder
+\family default
+ is an abstract class that represents a folder for mail messages.
+ Subclasses implement protocol specific 
+\family typewriter
+Folder
+\family default
+s.
+\end_layout
+
+\begin_layout Standard
+This class doesn't have a public constructor and has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+open() Open this 
+\family typewriter
+Folder
+\family default
+.
+ This method is valid only on 
+\family typewriter
+Folder
+\family default
+s that can contain 
+\family typewriter
+Message
+\family default
+s and that are closed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMessageCount() Get total number of messages in this folder.
+ This method can be invoked on a closed folder.
+ However, note that for some folder implementations, getting the total message
+ count can be an expensive operation involving actually opening the folder.
+ In such cases, a provider can choose not to support this functionality
+ in the closed state, in which case this method must return -1.
+ Clients invoking this method on a closed folder must be aware that this
+ is a potentially expensive operation.
+ Clients must also be prepared to handle a return value of -1 in this case.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDeleteMessageCount() Get total number of deleted messages in this folder.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMessages() Get all 
+\family typewriter
+Message
+\family default
+ objects from this folder.
+ Returns an empty array if the folder is empty.
+ Clients can use 
+\family typewriter
+Message
+\family default
+ objects (instead of sequence numbers) as references to the messages within
+ a folder; this method supplies the 
+\family typewriter
+Message
+\family default
+ objects to the client.
+ Folder implementations are expected to provide light-weight 
+\family typewriter
+Message
+\family default
+ objects, which get filled on demand.
+ This implementation uses 
+\family typewriter
+getMessage()
+\family default
+ to get 
+\family typewriter
+Message
+\family default
+ objects from 1 till the message count.
+ It returns an array of 
+\family typewriter
+Message
+\family default
+ objects.
+ If the folder is empty, it returns an empty array.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMessages(int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+end) Get the 
+\family typewriter
+Message
+\family default
+ objects for message numbers ranging from start through end, both start
+ and end inclusive.
+ Note that message numbers start at 1, not 0.
+ This implementation uses
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+getMessage(index)
+\family default
+ to obtain the required 
+\family typewriter
+Message
+\family default
+ objects.
+ Note that the returned array must contain (
+\family typewriter
+end-start+1
+\family default
+) 
+\family typewriter
+Message
+\family default
+ objects.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMessage(int
+\begin_inset space ~
+\end_inset
+
+msgNumber) Get the 
+\family typewriter
+Message
+\family default
+ object corresponding to the given message number.
+ A 
+\family typewriter
+Message
+\family default
+ object's message number is the relative position of this message in its
+ folder.
+ Messages are numbered starting at 1 through the total number of messages
+ in the folder.
+ Note that the message number for a particular message can change during
+ a session if other messages in the folder are deleted and the folder is
+ expunged.
+ Unlike 
+\family typewriter
+Folder
+\family default
+ objects, repeated calls to 
+\family typewriter
+getMessage()
+\family default
+ with the same message number will return the same 
+\family typewriter
+Message
+\family default
+ object, as long as no messages in this folder have been expunged.
+ Since message numbers can change within a session if the folder is expunged,
+ clients are advised not to use message numbers as references to messages.
+ Use 
+\family typewriter
+Message
+\family default
+ objects instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMessage(String
+\begin_inset space ~
+\end_inset
+
+uidl) Returns a 
+\family typewriter
+Message
+\family default
+ using its UIDL.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset() Reset this session, undoing any operations performed over messages
+ on this folder during this session.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close(boolean
+\begin_inset space ~
+\end_inset
+
+b) Close this folder.
+ This method is valid only on open folders.
+ Its parameter is ignored for this class.
+ It might be used by its subclasses.
+\end_layout
+
+\begin_layout Section
+Pop3Folder
+\end_layout
+
+\begin_layout Standard
+A POP3 
+\family typewriter
+Folder
+\family default
+ (can only be "INBOX").
+ 
+\end_layout
+
+\begin_layout Section
+Store
+\end_layout
+
+\begin_layout Standard
+An abstract class that models a message store and its access protocol, for
+ storing and retrieving messages.
+ Subclasses provide actual implementations.
+\end_layout
+
+\begin_layout Standard
+This class doesn't have a public constructor and has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+connect() A generic connect method that takes no parameters.
+ Subclasses can implement the appropriate authentication schemes.
+ Subclasses that need additional information might want to use some properties
+ or might get it interactively.
+ Most clients should just call this method to connect to the store.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Close this 
+\family typewriter
+Store
+\family default
+ and terminate its connection.
+ Any messaging components (
+\family typewriter
+Folder
+\family default
+s, 
+\family typewriter
+Message
+\family default
+s, etc) belonging to this service are invalid after this store is closed.
+ Note that the 
+\family typewriter
+Store
+\family default
+ object is closed even if this method terminates abnormally by throwing
+ a 
+\family typewriter
+MessagingException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFolder(String
+\begin_inset space ~
+\end_inset
+
+name) Return the 
+\family typewriter
+Folder
+\family default
+ object corresponding to the given name.
+ In some 
+\family typewriter
+Store
+\family default
+s, the name can be an absolute path if it starts with the hierarchy delimiter.
+ If not, it is interpreted relative to the 'root' of this namespace.
+ 
+\family typewriter
+Folder
+\family default
+ objects are not cached by the 
+\family typewriter
+Store
+\family default
+ object, so invoking this method on the same name multiple times will return
+ that many distinct 
+\family typewriter
+Folder
+\family default
+ objects.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultFolder() Returns a 
+\family typewriter
+Folder
+\family default
+ object that represents the 'root' of the default namespace presented to
+ the user by the 
+\family typewriter
+Store
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
+POP3Store
+\end_layout
+
+\begin_layout Standard
+A POP3 
+\family typewriter
+Message
+\family default
+ 
+\family typewriter
+Store
+\family default
+.
+ Contains only one folder, "INBOX".
+ This class extends 
+\family typewriter
+Store
+\family default
+ with the given difference:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFolder(String
+\begin_inset space ~
+\end_inset
+
+name) Only the name "INBOX" is supported.
+ If another name is passed, it will return 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout Section
+Service
+\end_layout
+
+\begin_layout Standard
+An abstract class that models a messaging service and its access protocol,
+ for accessing a mail session.
+ Subclasses provide actual implementations.
+\end_layout
+
+\begin_layout Standard
+This class doesn't have a public constructor and has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+connect() A generic connect method that takes no parameters.
+ Subclasses can implement the appropriate authentication schemes.
+ Subclasses that need additional information might want to use some properties
+ or might get it interactively.
+ Most clients should just call this method to connect to the store.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+connect(String
+\begin_inset space ~
+\end_inset
+
+host,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+port,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+user,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+password) A connect method that receives a host, a port, an user name, and
+ its password.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Close this service and terminate its connection.
+\end_layout
+
+\begin_layout Section
+Transport
+\end_layout
+
+\begin_layout Standard
+An abstract class that models a message transport which extends 
+\family typewriter
+Service
+\family default
+.
+ Subclasses provide actual implementations.
+\end_layout
+
+\begin_layout Standard
+This class doesn't have a public constructor and has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+send(Message
+\begin_inset space ~
+\end_inset
+
+message) Send a message.
+ The message will be sent to all recipient addresses specified in the message,
+ using message transports appropriate to each address, as specified on the
+ static instance of 
+\family typewriter
+MailSession
+\family default
+.
+ NOTE: Only SMTP transport is currently supported.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+send(Message
+\begin_inset space ~
+\end_inset
+
+message,
+\begin_inset space ~
+\end_inset
+
+MailSession
+\begin_inset space ~
+\end_inset
+
+session) The same as above except that it uses the given instance of 
+\family typewriter
+MailSession
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sendMessage(Message
+\begin_inset space ~
+\end_inset
+
+message) Sends a message.
 \end_layout
 
 \begin_layout Part
