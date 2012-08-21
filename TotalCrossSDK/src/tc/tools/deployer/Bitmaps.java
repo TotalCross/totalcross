@@ -455,37 +455,15 @@ public class Bitmaps
       zos.write(s.getBuffer(), 0, s.getPos());
    }
    
-   public boolean saveBlackBerryIcon(Stream s) throws Exception
+   public void saveBlackBerryIcon(Stream s) throws Exception
    {
-      Image img = IconStore.getSquareIcon(80);
-      if (img != null)
-         img.createPng(s);
+      Image img;
+      byte[] b = IconStore.getImageData("80x80");
+      if (b != null)
+         img = new Image(b);
       else
-      {
-         Bmp bmp32x32x8 = IconStore.getBmp(32, 32, 8);
-         img = new Image(32, 32);
-         byte[] pixels = bmp32x32x8.pixels;
-         int[] palette = bmp32x32x8.palette;
-         Graphics g = img.getGraphics();
-         int n = pixels.length-1;
-
-         if (bmp32x32x8.shouldInvertY) // are icons upside down?
-            for (int i = 0; i <= n; i++)
-            {
-               int x = i & 31, y = i >> 5; // guich@tc100b4_17: must use x/y so we can turn the icon upside-down
-               g.foreColor = (int)palette[(int)(pixels[(((31-y)<<5)+x)] & 0xFF)];
-               g.setPixel(x,y);
-            }
-         else
-            for (int i = 0; i <= n; i++)
-            {
-               g.foreColor = (int)palette[(int)(pixels[i] & 0xFF)];
-               g.setPixel(i % 32, i / 32);
-            }
-
-         img.createPng(s);
-      }
-      return img != null;
+         img = IconStore.getSquareIcon(60);
+      img.createPng(s);
    }
 
    private static final int TOLERANCE = 16;
