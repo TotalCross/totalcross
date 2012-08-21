@@ -668,7 +668,7 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, 0);
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSquareIcon.transparentColor);
       if (img.getHeight() != size || img.getWidth() != size)
          throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
       return img;
