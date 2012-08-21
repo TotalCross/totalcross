@@ -30,7 +30,7 @@
       // First check if the pkg directory exists
       if ([[NSFileManager defaultManager] fileExistsAtPath:pkgDirectory])
       {
-         NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:sourcePath error:&error];
+         NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pkgDirectory error:&error];
          for (NSString *s in fileList)
          {
             NSString *sourceFilePath = [documentsDirectory stringByAppendingPathComponent:s];
