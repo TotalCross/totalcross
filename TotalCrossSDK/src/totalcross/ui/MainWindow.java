@@ -57,7 +57,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    private TimerEvent startTimer;
    static MainWindow mainWindowInstance;
    private static int lastMinInterval;
-   private boolean restoreRegistry;
+   private boolean restoreRegistry,initUICalled;
    private static int timeAvailable;
 
    static Font defaultFont;
@@ -370,7 +370,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
-      if (timeAvailable > 0) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
+      if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
       if (restoreRegistry) // guich@tc115_90
          try
@@ -476,7 +476,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    
    private void startProgram()
    {
-      Window.needsPaint = true;
+      initUICalled = Window.needsPaint = true;
       initUI();
       Window.needsPaint = Graphics.needsUpdate = true; // required by device
       started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
