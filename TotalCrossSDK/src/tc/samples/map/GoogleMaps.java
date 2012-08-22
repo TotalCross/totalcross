@@ -125,7 +125,7 @@ public class GoogleMaps extends MainWindow
                else
                if (e.target == btnShow)
                {
-                  if (!Socket.isInternetAccessible())
+                  if (!ConnectionManager.isInternetAccessible())
                   {
                      new MessageBox("Attention","Internet is not available!").popup();
                      return;
