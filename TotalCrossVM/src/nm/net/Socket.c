@@ -119,6 +119,7 @@ TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native 
 // Used by axTLS as socket I/O function.
 int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
 {
+   int32 written = 0;
    int32 retCount;
    Object socket;
    int32 timeout;
@@ -136,8 +137,13 @@ int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
    else
       timeout = Socket_writeTimeout(socket);
 
-   err = socketReadWriteBytes(fd, timeout, buf, 0, count, &retCount, isRead);
-   return (err == NO_ERROR) ? retCount : -1;
+   do
+   {
+      err = socketReadWriteBytes(fd, timeout, buf, 0 + written, count - written, &retCount, isRead);
+      written += retCount;
+   }
+   while (written < count && err == NO_ERROR);
+   return (err == NO_ERROR) ? written : -1;
 }
 
 #ifdef ENABLE_TEST_SUITE

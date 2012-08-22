@@ -285,4 +285,25 @@ public class ConnectionManager
          throw new UnknownHostException(e.getMessage());
       }
    }
+   
+   /**
+    * Returns true if we can connect to google.com using port 80, false otherwise. Please notice this is just a quick
+    * check that assumes the device is connected to the Internet without any restrictions. Results are undefined when
+    * used behind proxies or firewalls.
+    * 
+    * @since TotalCross 1.62
+    */
+   public static boolean isInternetAccessible()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
 }

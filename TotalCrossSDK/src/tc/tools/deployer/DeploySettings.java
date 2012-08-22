@@ -15,8 +15,9 @@ package tc.tools.deployer;
 
 import totalcross.io.File;
 import totalcross.sys.*;
-import totalcross.ui.font.*;
-import totalcross.util.*;
+import totalcross.ui.font.Font;
+import totalcross.util.IntVector;
+import totalcross.util.Vector;
 
 public class DeploySettings
 {
@@ -173,10 +174,26 @@ public class DeploySettings
       String f;
       f = System.getenv("TOTALCROSS_DEMO");
       if (f != null)
+      {
          folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
+         if (!new File(folderTotalCrossSDKDistVM).isDir())
+         {
+            folderTotalCrossSDKDistVM = Convert.appendPath(f, "vm/");
+            if (!new File(folderTotalCrossSDKDistVM).isDir())
+               folderTotalCrossSDKDistVM = f;
+         }
+      }
       f = System.getenv("TOTALCROSS_RELEASE");
       if (f != null)
+      {
          folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
+         if (!new File(folderTotalCrossVMSDistVM).isDir())
+         {
+            folderTotalCrossVMSDistVM = Convert.appendPath(f, "vm/");
+            if (!new File(folderTotalCrossVMSDistVM).isDir())
+               folderTotalCrossVMSDistVM = f;
+         }
+      }
       f = System.getenv("LITEBASE_DEMO");
       if (f != null)
          folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");

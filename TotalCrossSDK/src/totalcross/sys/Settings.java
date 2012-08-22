@@ -39,7 +39,7 @@ public final class Settings
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 6;
+   public static int buildNumber = 7;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -687,7 +687,7 @@ public final class Settings
    public static boolean moveCursorToEndOnFocus;
    
    /** No longer used or supported. */
-   public static boolean isMinimized;
+   public static boolean isMinimized; // used in Blackberry's stub!
 
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,

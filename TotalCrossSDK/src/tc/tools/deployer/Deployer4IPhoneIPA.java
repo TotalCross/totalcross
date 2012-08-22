@@ -104,8 +104,13 @@ public class Deployer4IPhoneIPA
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
-      for (int i = 0; i < extras.length; i++)
-         new TFile(extras[i]).cp(new TFile(appFolder, Utils.getFileName(extras[i])));
+      if (extras.length > 0)
+      {
+         TFile pkgFolder = new TFile(appFolder, "pkg");
+         pkgFolder.mkdir();
+         for (int i = 0; i < extras.length; i++)
+            new TFile(extras[i]).cp(new TFile(pkgFolder, Utils.getFileName(extras[i])));
+      }
       
       // get references to the contents of the appFolder
       appFolder.list(new FilenameFilter()

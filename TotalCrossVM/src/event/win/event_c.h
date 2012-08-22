@@ -16,7 +16,7 @@
  #pragma comment( lib, "aygshell" )   // Link Pocket PC lib for menubar
 #endif
 
-void markWholeScreenDirty();
+void markWholeScreenDirty(Context currentContext);
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
 void getScreenSize(int32 *w, int32* h); // ui/win/gfx_Graphics_c.h
 
@@ -112,6 +112,7 @@ static bool minimized;
 #define IM_SPELL                           0
 
 void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
+void applyPalette();
 
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
@@ -250,7 +251,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
                screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
          }
          hDC = BeginPaint(hWnd, &ps);
-         markWholeScreenDirty();
+         markWholeScreenDirty(mainContext);
          updateScreen(mainContext);
          EndPaint(hWnd, &ps);
          break;

@@ -14,7 +14,6 @@ package ras.ui;
 import ras.*;
 
 import totalcross.io.*;
-import totalcross.net.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -83,6 +82,8 @@ public class ActivationWindow extends Window
    {
       alert("Success", "TotalCross is now activated!",0x008800);
       unpop();
+      if (Settings.platform.equals(Settings.BLACKBERRY))
+         MainWindow.exit(0);
    }
 
    public void onEvent(Event e)
@@ -118,8 +119,6 @@ public class ActivationWindow extends Window
          else
             try
             {
-               if (!Socket.isInternetAccessible())
-                  throw new ActivationException("", new IOException());
                if (client == null)
                   Vm.sleep(3000);
                else
@@ -145,7 +144,7 @@ public class ActivationWindow extends Window
    
    private void alert(String tit, String s, int bg)
    {
-      MessageBox mb = new MessageBox(tit, s.replace('\n', ' '), new String[] { "  Exit  " });
+      MessageBox mb = new MessageBox(tit, s.replace('\n', ' '), new String[] { "  Close  " });
       mb.setTextAlignment(LEFT);
       mb.titleColor = Color.WHITE;
       mb.yPosition = BOTTOM;

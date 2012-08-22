@@ -32,7 +32,7 @@ import totalcross.Launcher.UserFont;
  * Font font = Font.getFont("Tiny", true, Font.BIG_SIZE);
  * FontMetrics fm = font.fm;
  * String s = "This is a line of text.";
- * int stringWidth = fm.getTextWidth(s);
+ * int stringWidth = fm.stringWidth(s);
  * ...
  * </pre>
  */

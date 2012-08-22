@@ -955,34 +955,37 @@ public final class J2TC implements JConstants, TCConstants
          if (print && len != 0) System.out.println("... "+(bytes.length*100/len)+"%");
       }
       // now adds the list of classes used in forName
-      n = callForName.size();
-      for (int i = n-1; i >= 0; i--) // first, remove the ones that were already processed
+      if (!DeploySettings.isJarOrZip)
       {
-         String c = (String)callForName.items[i];
-         c = c.replace('.','/') + ".class";
-         if (htAddedClasses.exists(c) || htExcludedClasses.exists(c))
-            callForName.removeElementAt(i);
-      }
-      n = callForName.size();
-      if (n > 0)
-      {
-         System.out.println("Adding "+n+" classes specified with Class.forName");
-         String[] classes = (String[])callForName.toObjectArray();
-
-         Vector temp = new Vector(50); // process callForName on this temporary vector
-         callForName.removeAllElements();
-         for (int i =0; i < n; i++)
+         n = callForName.size();
+         for (int i = n-1; i >= 0; i--) // first, remove the ones that were already processed
          {
-            String name = (String)classes[i];
-            name = name.replace('.','/')+".class";
-            addAndExpand(temp, name);
+            String c = (String)callForName.items[i];
+            c = c.replace('.','/') + ".class";
+            if (htAddedClasses.exists(c) || htExcludedClasses.exists(c))
+               callForName.removeElementAt(i);
          }
-         if (temp.size() > 0)
+         n = callForName.size();
+         if (n > 0)
          {
-            s += processFiles(temp, vout);
-            n = temp.size();
-            for (int i = 0; i < n; i++) // Copy all processed classes to the vin vector
-               vin.addElement(temp.items[i]);
+            System.out.println("Adding "+n+" classes specified with Class.forName");
+            String[] classes = (String[])callForName.toObjectArray();
+   
+            Vector temp = new Vector(50); // process callForName on this temporary vector
+            callForName.removeAllElements();
+            for (int i =0; i < n; i++)
+            {
+               String name = (String)classes[i];
+               name = name.replace('.','/')+".class";
+               addAndExpand(temp, name);
+            }
+            if (temp.size() > 0)
+            {
+               s += processFiles(temp, vout);
+               n = temp.size();
+               for (int i = 0; i < n; i++) // Copy all processed classes to the vin vector
+                  vin.addElement(temp.items[i]);
+            }
          }
       }
       return s;

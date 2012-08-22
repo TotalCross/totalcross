@@ -1093,7 +1093,7 @@ public class File extends RandomAccessStream
       return slot;
    }
 
-   private static void listFiles(String dir, Vector files) throws IOException // guich@tc115_92
+   private static void listFiles(String dir, Vector files, boolean recursive) throws IOException // guich@tc115_92
    {
       String[] list = new File(dir).listFiles();
       if (list != null)
@@ -1102,8 +1102,8 @@ public class File extends RandomAccessStream
             String p = list[i];
             String full = Convert.appendPath(dir, p);
             files.addElement(full);
-            if (p.endsWith("/"))
-               listFiles(full, files);
+            if (recursive && p.endsWith("/"))
+               listFiles(full, files, recursive);
          }
    }
 
@@ -1114,10 +1114,23 @@ public class File extends RandomAccessStream
     */
    public static String[] listFiles(String dir) throws IOException // guich@tc115_92
    {
+      return listFiles(dir, true);
+   }
+
+   /**
+    * Lists all the files in the specified directory, and also the files in the subdirectories recursive is true.
+    * 
+    * @param dir
+    * @param recursive
+    * @return
+    * @throws IOException
+    */
+   public static String[] listFiles(String dir, boolean recursive) throws IOException
+   {
       Vector files = new Vector(50);
       dir = Convert.appendPath(dir, "/");
       files.addElement(dir);
-      listFiles(dir, files);
+      listFiles(dir, files, recursive);
       files.qsort();
       return (String[]) files.toObjectArray();
    }
