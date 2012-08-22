@@ -682,6 +682,9 @@ public class HttpStream extends Stream
 
       // Content-Type
       String aux = headers.getString("Content-Type");
+      if (aux == null)
+         ;
+      else
       if (aux.startsWith("image/"))
          contentType = IMAGE_TYPE;
       else if (aux.startsWith("text/html"))
