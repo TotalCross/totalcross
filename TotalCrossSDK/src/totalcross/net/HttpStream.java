@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import totalcross.io.*;
@@ -64,7 +62,7 @@ public class HttpStream extends Stream
    /** READ-ONLY see the xxx_TYPE enum below. Used in the response. */
    public byte contentType;
    /** READ-ONLY HTTP Version. Used in the response. */
-   public ByteString version;
+   public String version;
    /** READ-ONLY connection status. Used in the response. */
    public String connection; // guich@570_32
    /** READ-ONLY location. Used in the response. */
@@ -280,14 +278,14 @@ public class HttpStream extends Stream
          postHeaders.put("Cookie",cookies.dumpKeysValues(new StringBuffer(512), "=","; ").toString());
       }
 
-      /**
-       * Base64 encodes the username and password given for basic server authentication
-       * 
-       * @param user
-       *           The username for the server. Passing null disables authentication.
-       * @param password
-       *           The password for the username account on the server. Passing null disables authentication.
-       */
+		/**
+		 * Base64 encodes the username and password given for basic server authentication
+		 * 
+		 * @param user
+		 *           The username for the server. Passing null disables authentication.
+		 * @param password
+		 *           The password for the username account on the server. Passing null disables authentication.
+		 */
       public void setBasicAuthentication(String user, String password)
       {
          if (user == null || password == null)
@@ -296,15 +294,15 @@ public class HttpStream extends Stream
             postHeaders.put("Authorization", Base64.encode((user + ":" + password).getBytes()));
       }
       
-      /**
-       * Encodes the given username and password in Base64 for basic proxy authorization
-       * 
-       * @param user
-       *           the username for the proxy. Passing null disables proxy authorization.
-       * @param password
-       *           the password for the proxy. Passing null disables proxy authorization.
-       * @since TotalCross 1.27
-       */
+		/**
+		 * Encodes the given username and password in Base64 for basic proxy authorization
+		 * 
+		 * @param user
+		 *           the username for the proxy. Passing null disables proxy authorization.
+		 * @param password
+		 *           the password for the proxy. Passing null disables proxy authorization.
+		 * @since TotalCross 1.27
+		 */
       public void setBasicProxyAuthorization(String user, String password)
       {
          if (user == null || password == null)
@@ -351,24 +349,12 @@ public class HttpStream extends Stream
     */
    public boolean readTokensDoTrim;
 
-   private static final byte [] contentEncodingFieldName = "Content-Encoding:".getBytes(); // // flsobral@tc110_102: content encoding support.
-   private static final byte [] contentTypeFieldName = "Content-Type:".getBytes();
-   private static final byte [] contentLengthFieldName = "Content-Length:".getBytes();
-   private static final byte [] textType = "text/".getBytes();
-   private static final byte [] htmlType = "html".getBytes();
-   private static final byte [] imageType = "image/".getBytes();
-   private static final byte [] multipartType = "multipart/".getBytes();
-   private static final byte [] boundaryAtt = "boundary=".getBytes();
-   private static final byte [] connectionFieldName = "Connection:".getBytes();
-   private static final byte [] cookiesFieldName = "Set-Cookie:".getBytes();
-   private static final byte [] locationFieldName = "Location:".getBytes();
-
-   private static final ByteString bsContentEncodingFieldName = new ByteString(0, contentEncodingFieldName.length, contentEncodingFieldName); // flsobral@tc110_102: content encoding support.
-   private static final ByteString bsContentTypeFieldName = new ByteString(0, contentTypeFieldName.length, contentTypeFieldName);
-   private static final ByteString bsContentLengthFieldName = new ByteString(0, contentLengthFieldName.length, contentLengthFieldName);
-   private static final ByteString bsConnectionFieldName = new ByteString(0, connectionFieldName.length, connectionFieldName);
-   private static final ByteString bsCookiesFieldName = new ByteString(0, cookiesFieldName.length, cookiesFieldName);
-   private static final ByteString bsLocationFieldName = new ByteString(0, locationFieldName.length, locationFieldName);
+   public static final String HEADER_CONTENT_ENCODING = "Content-Encoding";
+   public static final String HEADER_CONTENT_TYPE = "Content-Type";
+   public static final String HEADER_CONTENT_LENGTH = "Content-Length";
+   public static final String HEADER_CONNECTION = "Connection";
+   public static final String HEADER_SET_COOKIE = "Set-Cookie";
+   public static final String HEADER_LOCATION = "Location";
 
    protected Socket socket;
    protected int ofsStart;
@@ -381,14 +367,19 @@ public class HttpStream extends Stream
    private URI uri;
    private int state;
    private int ofsCur;
-   private byte[] multipartSep;
+   public byte[] multipartSep;
+   
+   /**
+    * A hash table containing the header fields received by this HTTP request.<br>
+    * The keys are Strings that represent the response-header field names and the values are Strings that represent the
+    * corresponding field values.
+    */
+   public Hashtable headers = new Hashtable(16);
 
    // Warning: make it enough big to hold the request!
    private static final int BUFSIZE = 1024;
 
    private int writeBytesSize;
-
-   private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
    /** Can be overloaded by classes to late-init the data. */
    protected HttpStream()
@@ -463,21 +454,21 @@ public class HttpStream extends Stream
 
    public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
-      int startPos = start;
-      int bytesLeft = count;
-      int sentBytes = 0;
+	   int startPos = start;
+	   int bytesLeft = count;
+	   int sentBytes = 0;
 
-      while (bytesLeft > 0)
-      {
-         int ret = socket.writeBytes(buf, startPos, (bytesLeft >= writeBytesSize ? writeBytesSize : bytesLeft));
-         sentBytes += ret;
-         bytesLeft -= ret;
-         startPos += ret;
-         if (sendSleep > 0)
-            Vm.sleep(sendSleep); // this is needed for softick
-      }
+	   while (bytesLeft > 0)
+	   {
+		   int ret = socket.writeBytes(buf, startPos, (bytesLeft >= writeBytesSize ? writeBytesSize : bytesLeft));
+		   sentBytes += ret;
+		   bytesLeft -= ret;
+		   startPos += ret;
+		   if (sendSleep > 0)
+				Vm.sleep(sendSleep); // this is needed for softick
+	   }
 
-      return sentBytes;
+	   return sentBytes;
    }
 
    public void close() throws totalcross.io.IOException
@@ -613,7 +604,7 @@ public class HttpStream extends Stream
       sb.append(Convert.CRLF);
 
       if (options.partContent == null)
-         sb.append(Convert.CRLF); // append the last line separator
+      	sb.append(Convert.CRLF); // append the last line separator
       if (debugHeader)
           Vm.debug(sb.toString());
       
@@ -634,11 +625,125 @@ public class HttpStream extends Stream
          }
       }
 
-      ofsEnd = socket.readBytes(buffer,0,BUFSIZE);
-      state = 0;
-      while ((ofsCur < ofsEnd) && !readHttpHeader() && refill()) {}
+      parseHeader();
       if (state != 6 && Settings.onJavaSE) // flsobral@tc115: some cleaning.
          Vm.debug("HTTP: " + getStatus()); // flsobral@tc110_95: No longer stop reading the header when a bad response code is found, so we can get the error cause.
+   }
+
+   /**
+    * Reads and parses the HTTP header, setting the related fields.
+    * 
+    * @throws IOException
+    */
+   protected void parseHeader() throws IOException
+   {
+      int offsetHeader = 0;
+      boolean finishedHeader = false;
+      responseCode = -1;
+
+      while (!finishedHeader)
+      {
+         int read = socket.readBytes(buffer, 0, BUFSIZE - offsetHeader)-1;
+         for (int i = 2; i < read; i++)
+         {
+            if (buffer[i] == 0x0A && buffer[i - 1] == 0x0D)
+            {
+               String header = new String(buffer, offsetHeader, i - 1 - offsetHeader);
+               offsetHeader = i + 1;
+               if (header.length() == 0)
+               {
+                  finishedHeader = true;
+                  break;
+               }
+               int sep = header.indexOf((byte) ':', 0);
+               if (sep != -1)
+                  headers.put(header.substring(0, sep), header.substring(sep + 2, header.length()));
+               else if (header.indexOf("HTTP") != -1)
+               {
+                  int afterWhitespace = header.indexOf((byte) ' ', 5) + 1;
+                  version = header.substring(5, afterWhitespace - 1);
+                  try
+                  {
+                     int nextWhitespace = header.indexOf((byte) ' ', afterWhitespace);
+                     responseCode = Convert.toInt(header.substring(afterWhitespace, nextWhitespace));
+                  }
+                  catch (InvalidNumberException e)
+                  {
+                     // ignore exception, just leave response code unchanged
+                  }
+               }
+            }
+         }
+         Vm.arrayCopy(buffer, offsetHeader, buffer, 0, BUFSIZE - offsetHeader);
+      }
+      state = ((responseCode < 200) || (responseCode >= 400)) ? 2 : 6;
+      ofsCur = 0;
+      ofsEnd = BUFSIZE - offsetHeader;
+
+      // Content-Type
+      String aux = headers.getString("Content-Type");
+      if (aux == null)
+         ;
+      else
+      if (aux.startsWith("image/"))
+         contentType = IMAGE_TYPE;
+      else if (aux.startsWith("text/html"))
+         contentType = TEXT_HTML_TYPE;
+      else if (aux.startsWith("multipart/"))
+      {
+         contentType = MULTIPART_TYPE;
+         int begBnd = aux.indexOf("boundary=", "multipart/".length());
+         if (begBnd >= 0)
+         {
+            // get the value of this attribute
+            begBnd += "boundary=".length();
+            int endBnd = aux.indexOf((byte) ';', begBnd);
+            if (endBnd == -1)
+               endBnd = aux.length() - 1;
+            multipartSep = ("\n--" + aux.substring(begBnd, endBnd)).getBytes();
+         }
+      }
+
+      // Connection
+      connection = headers.getString(HEADER_CONNECTION);
+
+      // Cookies
+      aux = headers.getString(HEADER_SET_COOKIE);
+      if (aux != null)
+      {
+         cookies = new Hashtable(31);
+         String[] cs = Convert.tokenizeString(aux, ';');
+         for (int i = 0; i < cs.length; i++)
+         {
+            String tok = cs[i].trim();
+            int eq = tok.indexOf('=', 0);
+            if (eq == -1)
+               continue;
+            String key = tok.substring(0, eq);
+            String value = tok.substring(eq + 1);
+            cookies.put(key, value);
+         }
+      }
+
+      try
+      {
+         // Content-Length
+         aux = headers.getString(HEADER_CONTENT_LENGTH);
+         if (aux != null)
+            contentLength = Convert.toInt(aux);
+      }
+      catch (InvalidNumberException e)
+      {
+         // just ignore and leave it with the default value
+      }
+
+      // Content-Encoding
+      contentEncoding = headers.getString(HEADER_CONTENT_ENCODING);
+
+      // Location
+      aux = headers.getString(HEADER_LOCATION);
+      if (aux != null)
+         location = new URI(aux);
    }
 
    protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
@@ -738,31 +843,6 @@ public class HttpStream extends Stream
    }
 
    /**
-    * Refill the buffer, assuming that ofsCur is at ofsEnd.
-    */
-   public final boolean refill() throws totalcross.io.IOException
-   {
-      if (ofsEnd == buffer.length)    // sigh.  no more room
-      {
-         if (ofsStart > 0)            // oh, good! tidy still possible
-         {
-            Vm.arrayCopy(buffer, ofsStart, buffer, 0, ofsEnd-ofsStart);
-            readPos += ofsStart;
-            ofsCur -= ofsStart;
-            ofsStart = 0;
-         }
-         else                        // plenty full: extend!
-         {
-            byte oldBuffer[] = buffer;
-            buffer = new byte[oldBuffer.length << 1];
-            Vm.arrayCopy(buffer, 0, oldBuffer, 0, ofsEnd);
-         }
-      }
-      ofsEnd = ofsCur + socket.readBytes(buffer,ofsCur,buffer.length-ofsCur);
-      return (ofsEnd >= ofsCur);
-   }
-
-   /**
    * Create the image instance from this HttpStream.
    *
    * @return the resulting totalcross.ui.image.Image
@@ -770,286 +850,6 @@ public class HttpStream extends Stream
    public Image makeImage() throws ImageException, IOException // flsobral@tc100: throw the specific exceptions instead of the generic Exception
    {
       return new Image(this);
-   }
-
-   /**
-    * Position the stream until we find the beginning of the message-body.
-    * Fill-up the HTTP version and response code.
-    * <P>
-    * If the message-body was found, state is 6 and the message-body starts at
-    * ofsCur.
-    *
-    * @return true if we are done (either b/c an error occurred, or the
-    *         message-body was found); false if the buffer needs to be refilled;
-    */
-   private final boolean readHttpHeader() throws totalcross.io.IOException
-   {
-      while (ofsCur < ofsEnd)
-      {
-         byte ch = buffer[ofsCur];
-         switch (state)
-         {
-         case 0:      // Status Line - skip leading spaces
-            while (ch == 0x20)
-            {
-               if (++ofsCur >= ofsEnd) return false;
-               ch = buffer[ofsCur];
-            }
-            ofsStart = ofsCur;
-            state = 1;
-            break;
-        case 1:       // Status Line: HTTP-version
-            while (ch != 0x20)
-            {
-               if (++ofsCur >= ofsEnd) return false;
-               ch = buffer[ofsCur];
-            }
-            version = new ByteString(buffer, ofsStart, ofsCur-ofsStart);
-            ofsStart = ++ofsCur;
-            state = 2;
-            break;
-         case 2:     // Status Line: Status-Code
-            while (ch != 0x20)
-            {
-               if (++ofsCur >= ofsEnd) return false;
-               ch = buffer[ofsCur];
-            }
-            responseCode = ByteString.convertToInt(buffer, ofsStart, ofsCur);
-            if ((responseCode < 200) || (responseCode >= 400))
-               badResponseCode = true; // not an HTTP response, or a bad one
-            ofsStart = ++ofsCur;
-            state = 3;
-            break;
-         case 3:  // Looking for (CR)LF, ending non-fields (status line, etc)
-         case 4:  // Looking for (CR)LF, ending a field
-            while (ch != (byte)'\n')
-            {
-               if (++ofsCur >= ofsEnd) return false;
-               ch = buffer[ofsCur];
-            }
-            if (state == 4)
-            {
-               setFields();
-               if (contentType == MULTIPART_TYPE)
-               {
-                  contentType = UNKNOWN_TYPE;
-                  if (!skipToNextMimePart())
-                  {
-                     state = 7;
-                     return true;   // can't get the mime part
-                  }
-                  else
-                  {
-                     state = 3;     // take care of the (CR)LF
-                     continue;
-                  }
-               }
-            }
-            state = 5;
-            ofsStart = ++ofsCur;
-            break;
-         case 5:     // (CR)LF found.  Followed by another (CR)LF?
-            ofsStart = ofsCur++; // empty the buffer
-            switch (ch)
-            {
-               case 0x0d:
-                  break;
-               case 0x0a:
-                  state = 6;        // Yes!  Success!
-                  break;
-               default:
-                  state = 4;
-                  break;
-            }
-            break;
-         case 6:
-            {
-               if (badResponseCode)
-                  state = 2;
-               ofsStart = ofsCur;
-               return true; // Yes!  Success!
-            }
-         }
-      }
-      return false;
-   }
-
-   /**
-   * Analyse and set a few relevant fields from the response,
-   */
-   void setFields()
-   {
-      int type = -1;
-      int start = ofsStart;
-      int end;
-
-      if ((contentType == UNKNOWN_TYPE) && bsContentTypeFieldName.equalsIgnoreCase(buffer, ofsStart, bsContentTypeFieldName.len))
-      {
-         type = 0;
-         start += bsContentTypeFieldName.len;
-      }
-      else
-      if ((connection == null) && bsConnectionFieldName.equalsIgnoreCase(buffer, ofsStart, bsConnectionFieldName.len))
-      {
-         type = 1;
-         start += bsConnectionFieldName.len;
-      }
-      else
-      if ((cookies == null) && bsCookiesFieldName.equalsIgnoreCase(buffer, ofsStart, bsCookiesFieldName.len))
-      {
-         type = 2;
-         start += bsCookiesFieldName.len;
-      }
-      else
-      if ((contentLength == -1) && bsContentLengthFieldName.equalsIgnoreCase(buffer, ofsStart, bsContentLengthFieldName.len))
-      {
-         type = 3;
-         start += bsContentLengthFieldName.len;
-      }
-      else
-      if ((location == null) && bsLocationFieldName.equalsIgnoreCase(buffer, ofsStart, bsLocationFieldName.len))
-      {
-         type = 4;
-         start += bsLocationFieldName.len;
-      }
-      else
-      if ((contentEncoding == null) && bsContentEncodingFieldName.equalsIgnoreCase(buffer, ofsStart, bsContentEncodingFieldName.len))
-      {
-         type = 5; // flsobral@tc110_102: content encoding support.
-         start += bsContentEncodingFieldName.len;
-      }
-      else
-      {
-         return;
-      }
-      // trim the string
-      byte b;
-      end = ofsCur;
-      if (buffer[end-1] == (byte)'\r') --end;
-      while (((b=buffer[start]) == (byte)' ') || (b == (byte)'\t'))
-      {
-         ++start;
-      }
-      while ((end > start) && (((b=buffer[end-1]) == (byte)' ') || (b == (byte)'\t')))
-      {
-         --end;
-      }
-      // now set the properties
-      switch (type)
-      {
-         case 0:
-            contentType = getContentType(start, end-start);
-            break;
-         case 1:
-            connection = new String(buffer,start, end-start);
-            break;
-         case 2:
-            cookies = new Hashtable(31);
-            String s = new String(buffer, start, end-start);
-            String []cs = Convert.tokenizeString(s,';');
-            for (int i =0; i < cs.length; i++)
-            {
-               String tok = cs[i].trim();
-               int eq = tok.indexOf('=',0);
-               if (eq == -1)
-                  continue;
-               String key = tok.substring(0,eq);
-               String value = tok.substring(eq+1);
-               cookies.put(key,value);
-            }
-            break;
-         case 3:
-            contentLength = ByteString.convertToInt(buffer, start, end);
-            break;
-         case 4:
-            location = new URI(new String(buffer, start, end-start));
-            break;
-         case 5:
-            contentEncoding = new String(buffer,start, end-start); // flsobral@tc110_102: content encoding support.
-            break;
-      }
-   }
-
-   /**
-   * Translate the content type into one of the xxx_TYPE values
-   *
-   * @param start start of the content-type value inside this buffer
-   * @param len length of the content-type value inside this buffer
-   * @return one of the corresponding xxx_TYPE values
-   */
-   byte getContentType(int start, int len)
-   {
-      ByteString bsCntType = new ByteString(start, len, buffer);
-      if (bsCntType.equalsAtIgnoreCase(imageType, 0))
-         return IMAGE_TYPE;
-      else
-      if (bsCntType.equalsAtIgnoreCase(textType, 0))
-      {
-         if (bsCntType.equalsAtIgnoreCase(htmlType, imageType.length))
-         {
-            return TEXT_HTML_TYPE;
-         }
-      }
-      else
-      if (bsCntType.equalsAtIgnoreCase(multipartType, 0))
-      {
-         // Look for the "boundary=" attribute
-         int begBnd = bsCntType.indexOf(boundaryAtt, multipartType.length);
-         if (begBnd >= 0)
-         {
-            // get the value of this attribute
-            begBnd += boundaryAtt.length;
-            int endBnd = bsCntType.indexOf((byte) ';', begBnd);
-            if (endBnd == -1)
-               endBnd = len;
-            multipartSep = new byte[3 + endBnd - begBnd];
-            multipartSep[0] = (byte) '\n';
-            multipartSep[1] = (byte) '-';
-            multipartSep[2] = (byte) '-';
-            Vm.arrayCopy(buffer, start + begBnd, multipartSep, 3, endBnd - begBnd);
-         }
-         return MULTIPART_TYPE;
-      }
-      return UNKNOWN_TYPE;
-   }
-
-   /**
-    * Skip to the next mime part.
-    * <ul>
-    * <li>ofsCur points after the '\n' ending the content-type parameter
-    * <li>multipartSep can be null if no mime separator (boundary) was found
-    * </ul>
-    *
-    * @return true if we were able to position the stream on the '\n' that ends
-    *         the mime-separator signaling the beginning of the mime part.
-    * @throws totalcross.io.IOException
-    *
-    * Actually, we only handle the first mime part This code might later be
-    * extended for other parts.
-    */
-   protected boolean skipToNextMimePart() throws totalcross.io.IOException
-   {
-      if (multipartSep == null)
-         return false;
-      while (true)
-      {
-         ByteString bs;
-         int ix;
-         if ((ofsCur + multipartSep.length) > ofsEnd)
-         {
-            ofsStart = ofsCur;  // make room
-            if (!refill()) return false;
-         }
-         bs = new ByteString(ofsCur, ofsEnd-ofsCur, buffer);
-         if ((ix = bs.indexOf(multipartSep, 0)) >= 0)
-         {
-            ofsCur += (ix+multipartSep.length);
-            break;
-         }
-         ofsCur = ofsEnd - multipartSep.length - 1;
-      }
-      ofsStart = ofsCur;  // make room
-      return true;
    }
 
    /**
