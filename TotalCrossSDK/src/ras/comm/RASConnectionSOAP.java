@@ -68,7 +68,7 @@ public class RASConnectionSOAP extends RASConnection
       try
       {
          ByteArrayStream bas = new ByteArrayStream(256);
-         DataStream ds = new DataStream(bas);
+         DataStream ds = new DataStream(bas, true);
 
          // hello
          ds.writeInt(helloHashCode);

@@ -60,6 +60,8 @@ public class DataStream extends Stream
    
    /** Message thrown when an end of stream is reached when reading. */
    public static final String EOSMessage = "End of stream";
+   
+   private final boolean ensureWrite;
 
    /**
     * Constructs a new DataStream which sits upon the given stream using big
@@ -69,10 +71,24 @@ public class DataStream extends Stream
     */
    public DataStream(Stream stream)
    {
+      this(stream, false);
+   }
+   
+   /**
+    * Constructs a new DataStream which sits upon the given stream using big endian notation for multibyte values.
+    * 
+    * @param stream
+    *           the base stream, from where bytes are read and written.
+    * @param ensureWrite
+    *           if true, write operations are blocked until all the requested data is written to the underlying stream.
+    */
+   public DataStream(Stream stream, boolean ensureWrite)
+   {
       if (stream == null)
          throw new NullPointerException("Argument 'stream' cannot be null");
       this.stream = stream;
-   }
+      this.ensureWrite = ensureWrite;
+   } 
 
    /**
     * Closes the stream. This just call the close method of the attached stream,
@@ -993,7 +1009,15 @@ public class DataStream extends Stream
    
    protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
-      return stream.writeBytes(buf, start, count);
+      int written = stream.writeBytes(buf, start, count);
+      if (ensureWrite && written < count)
+      {
+         do
+         {
+            written += stream.writeBytes(buf, start + written, count - written);
+         } while (written < count);
+      }
+      return written;
    }
    
    /**

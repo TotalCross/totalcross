@@ -147,7 +147,7 @@ public class SMTPTransport extends Transport
       boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
 
       this.connection = connection;
-      this.writer = new DataStream(connection);
+      this.writer = new DataStream(connection, true);
       try
       {
          reader = new LineReader(connection);
