@@ -62,7 +62,7 @@ public class HttpStream extends Stream
    /** READ-ONLY see the xxx_TYPE enum below. Used in the response. */
    public byte contentType;
    /** READ-ONLY HTTP Version. Used in the response. */
-   public ByteString version;
+   public String version;
    /** READ-ONLY connection status. Used in the response. */
    public String connection; // guich@570_32
    /** READ-ONLY location. Used in the response. */
@@ -643,29 +643,29 @@ public class HttpStream extends Stream
 
       while (!finishedHeader)
       {
-         int read = socket.readBytes(buffer, 0, BUFSIZE - offsetHeader);
-         for (int i = 2; i < read - 1; i++)
+         int read = socket.readBytes(buffer, 0, BUFSIZE - offsetHeader)-1;
+         for (int i = 2; i < read; i++)
          {
             if (buffer[i] == 0x0A && buffer[i - 1] == 0x0D)
             {
-               ByteString header = new ByteString(buffer, offsetHeader, i - 1 - offsetHeader);
+               String header = new String(buffer, offsetHeader, i - 1 - offsetHeader);
                offsetHeader = i + 1;
-               if (header.len == 0)
+               if (header.length() == 0)
                {
                   finishedHeader = true;
                   break;
                }
                int sep = header.indexOf((byte) ':', 0);
                if (sep != -1)
-                  headers.put(new String(header.base, 0, sep), new String(header.base, sep + 2, header.len - sep - 2));
-               else if (header.indexOf("HTTP".getBytes(), 0) != -1)
+                  headers.put(header.substring(0, sep), header.substring(sep + 2, header.length()));
+               else if (header.indexOf("HTTP") != -1)
                {
                   int afterWhitespace = header.indexOf((byte) ' ', 5) + 1;
                   version = header.substring(5, afterWhitespace - 1);
                   try
                   {
                      int nextWhitespace = header.indexOf((byte) ' ', afterWhitespace);
-                     responseCode = Convert.toInt(new String(header.base, afterWhitespace, nextWhitespace - afterWhitespace));
+                     responseCode = Convert.toInt(header.substring(afterWhitespace, nextWhitespace));
                   }
                   catch (InvalidNumberException e)
                   {
