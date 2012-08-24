@@ -800,11 +800,15 @@ target: IPhone builds
       <param name="copy.from"       value="build/Release-iphoneos/TotalCross.ipa" />
       <param name="copy.to"         value="${source.sdk.path}/dist/vm/ios" />
    </antcall>
+   <antcall target="invalidate-ipas">
+      <param name="ipa.files"      value="${source.sdk.path}/dist/vm/ios/TotalCross.ipa" />
+   </antcall>
 </target>
 
 <target name="invalidate-ipas" >
    <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
    <mkdir dir="${path.to.invalidator}" />
+   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa ${target.vms.path}\dist\vm\ios\TotalCross.ipa ${target.noras.path}\dist\vm\ios\TotalCross.ipa" />
 
    <javac
       srcdir="${source.sdk.path}/src/tc/tools/"
@@ -853,7 +857,7 @@ target: IPhone builds
          <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
          <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
       </classpath>
-      <arg line="${tools} ${target.sdk.path}\dist\vm\ios\TotalCross.ipa ${target.vms.path}\dist\vm\ios\TotalCross.ipa ${target.noras.path}\dist\vm\ios\TotalCross.ipa" />
+      <arg line="${tools} ${ipa.files}" />
    </java>
 </target>
 
