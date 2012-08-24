@@ -38777,6 +38777,31 @@ false
 getRequireStartTLS() Returns if a TLS is required or not.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+startTLS() Issue the STARTTLS command and switch the socket to TLS mode
+ if it succeeds.
+ 
+\end_layout
+
+\begin_layout Section
+SMTPSSLTransport
+\end_layout
+
+\begin_layout Standard
+This class implements the 
+\family typewriter
+Transport
+\family default
+ abstract class using SMTP for message submission and transport over secure
+ sockets.
+ It extends 
+\family typewriter
+SMTPTransport
+\family default
+ 
+\end_layout
+
 \begin_layout Part
 PHONE
 \end_layout

@@ -30,7 +30,7 @@ static void setFullScreen()
 }                     
 
 static char targetPackage[8]; // totalcross.android -> totalcross.appapid
-static char tcabuf[64];
+static char tcabuf[128];
 static bool isSingleAPK;
 static char tczname[32];                                                                                           
 /*
@@ -111,7 +111,8 @@ char* getTotalCrossAndroidClass(CharP className)
 	 	  return className;
 	 xstrcpy(tcabuf, className); // totalcross.android
 	 an = xstrstr(tcabuf,"android");
-	 xmemmove(an, targetPackage, 7);
+	 if (an)
+   	 xmemmove(an, targetPackage, 7);
 	 return tcabuf;
 }
 

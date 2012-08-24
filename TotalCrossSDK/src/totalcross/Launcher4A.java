@@ -1104,6 +1104,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   try {Thread.sleep(400);} catch (Exception e) {}
                return true;
             }
+            else
+               throw new Exception(tryAgainCount+" parse response for address"); // make it try again
          }
          catch (Exception e)
          {
@@ -1146,6 +1148,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   try {Thread.sleep(400);} catch (Exception e) {}
                return true;
             }
+            else throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
          }
          catch (Exception e)
          {
