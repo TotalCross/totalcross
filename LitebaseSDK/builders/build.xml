@@ -61,7 +61,7 @@ target: init
 
   <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
   <!-- IDEs and compilers project files -->
-  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc2008"/>
+  <property name="msvc.project.path"  value="${basedir}/vc2008"/>
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
