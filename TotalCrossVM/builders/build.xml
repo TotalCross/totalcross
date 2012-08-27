@@ -59,7 +59,7 @@ IMPORTANT:
 <elseif>
 	<equals arg1="${msvc.version}" arg2="vc2008" />
 <then>
-	<property name="msvc.executable" value="devenv.exe" />
+	<property name="msvc.executable" value="devenv.com" />
 </then>
 </elseif>
 <else>
