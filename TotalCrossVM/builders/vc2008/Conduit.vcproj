@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -107,7 +107,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossVMS/dist/vm/win32"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -223,7 +223,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -286,7 +286,7 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/win32"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -314,7 +314,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -402,7 +402,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -465,7 +465,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossVMS_NORAS/dist/vm/win32"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
@@ -493,7 +493,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -581,7 +581,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;P:\extlibs\Windows CE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
