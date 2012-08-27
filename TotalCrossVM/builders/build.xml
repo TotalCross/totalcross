@@ -214,8 +214,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <echo message="GENERATING WIN32 FILES - VMS"/>
 
    <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "RAS Release|Win32"'/>
    </exec>
 </target>
 
@@ -225,8 +225,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 
    <exec executable="${msvc.path}" failonerror="yes">
       <env key="CL" value="/DNORASID=${norasid}" />
-      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "NO RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "NO RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "NO RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "NO RAS Release|Win32"'/>
    </exec>
 </target>
 
@@ -234,8 +234,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <echo message="GENERATING WIN32 FILES - SDK"/>
    
    <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "DEMO Release|Win32"'/>
-      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "DEMO Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "DEMO Release|Win32"'/>
    </exec>
 </target>
 
