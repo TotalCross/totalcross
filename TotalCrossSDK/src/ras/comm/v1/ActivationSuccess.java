@@ -43,7 +43,7 @@ public class ActivationSuccess extends ActivationResponse
    public boolean verify(Signature engine) throws CryptoException
    {
       ByteArrayStream bas = new ByteArrayStream(128);
-      DataStream ds = new DataStream(bas);
+      DataStream ds = new DataStream(bas, true);
       
       try
       {

@@ -58,7 +58,7 @@ public class BinaryContentHandler extends DataContentHandler
       }
       else if (input instanceof Stream) //flsobral@tc123_45: now we use ByteArrayStream with fixed length, which should GREATLY reduce the memory usage when processing large files.
       {
-         DataStream inputStream = (input instanceof DataStream) ? ((DataStream) input) : new DataStream((Stream) input);
+         DataStream inputStream = (input instanceof DataStream) ? ((DataStream) input) : new DataStream((Stream) input, true);
          ByteArrayStream inputBAS = new ByteArrayStream(bytesPerLine + 1);
          ByteArrayStream outputBAS = new ByteArrayStream(bytesPerLine * 2);
          inputBytes = inputBAS.getBuffer();

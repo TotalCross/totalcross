@@ -1072,6 +1072,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      latlonOk = true;
                   }
                }
+               if (!latlonOk)
+                  throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
             }
             if (latlonOk)
             {

@@ -33,8 +33,8 @@
          NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pkgDirectory error:&error];
          for (NSString *s in fileList)
          {
-            NSString *sourceFilePath = [documentsDirectory stringByAppendingPathComponent:s];
-            NSString *targetFilePath = [pkgDirectory stringByAppendingPathComponent:s];
+            NSString *targetFilePath = [documentsDirectory stringByAppendingPathComponent:s];
+            NSString *sourceFilePath = [pkgDirectory stringByAppendingPathComponent:s];
             if (![[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File does not exist, copy it
                [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
          }

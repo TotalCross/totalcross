@@ -103,10 +103,15 @@ public class Deploy
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
 
-               if (DeploySettings.mobileProvision != null && DeploySettings.appleCertStore != null)
+               if (DeploySettings.buildIPA)
+               {
+                  if (DeploySettings.appleCertStore == null)
+                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: " + DeploySettings.certStorePath);
+                  if (DeploySettings.mobileProvision == null)
+                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: " + DeploySettings.certStorePath);
                   new Deployer4IPhoneIPA();
-               else
-                  Deployer4IPhone.run();
+               }
+               Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
@@ -285,7 +290,9 @@ public class Deploy
                          }
                          break;
                case 'm':
+                        DeploySettings.buildIPA = true;
                         File folder = new File(args[++i]);
+                        DeploySettings.certStorePath = folder.getPath();
                         folder.list(new FilenameFilter()
                         {
                            public boolean accept(File dir, String fileName)
