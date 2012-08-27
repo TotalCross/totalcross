@@ -243,7 +243,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
       <equals arg1="${msvc.version}" arg2="vc2008" />
       <then>
         <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-    	  <arg line='${msvc.project.path}/TCVM.sln /rebuild "TCVM - Win32 Release" /REBUILD'/>
+        <arg line='${msvc.project.path}/TCVM.sln /rebuild "RAS Release|Win32"'/>
           </exec>
         </then>
       </elseif>
