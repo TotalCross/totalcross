@@ -148,7 +148,7 @@ target: buildPalmOS5
 <target name="buildPalmOS5_launcher" >
     <echo message="GENERATING PALM OS 5 FILES - LAUNCHER"/>
 
-    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\launcher\runmake.sh'/></exec>
+    <exec dir="${cygwin.path}" executable="/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\launcher\runmake.sh'/></exec>
     <copy file="${palm.project.path}\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
 </target>
 
@@ -178,14 +178,14 @@ target: buildPalmOS5
 
    <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
    
-   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
+   <exec dir="${cygwin.path}" executable="/bin/bash.exe" failonerror="yes">
          <arg line='--login -i ${palm.project.path}\tcvm\clean.sh ${palm.project.path}\tcvm'/>
    </exec>
    <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails. Timeouts at 2:30 minutes. -->
    <retry retrycount="5">
       <trycatch>
         <try>
-           <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
+           <exec dir="${cygwin.path}" executable="/bin/bash.exe" failonerror="yes" timeout="150000">
               <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm -${release.type}'/>
            </exec>
         </try>
@@ -254,11 +254,11 @@ target: buildWinCE
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_vms.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
 
@@ -274,27 +274,27 @@ target: buildWinCE
 	<fail unless="norasid" />
 
   <echo message="=> 1 of 5"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC2000"      /CEConfig="HPC 2000" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 2 of 5"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 3 of 5"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 4 of 5"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"    /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 5 of 5"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
@@ -316,16 +316,16 @@ target: buildWinCE
      CHANGING THIS DON'T FORGET TO UPDATE THE TARGET buildWinCE_sdk !
   -->
   <echo message="=> 1 of 6"/>
-	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+	<exec executable="${evc.path}" failonerror="yes">
 		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>	
 
-  <echo message="=> 2 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 6 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 6"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 6"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 6"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 6"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 6 of 6"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.noras.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/noras" excludes="**/Litebase.*" />
@@ -346,18 +346,18 @@ target: buildWinCE
   <echo message="GENERATING WINCE FILES - SDK"/>
 
   <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. -->
-  <echo message="=> 1 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <echo message="=> 6 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 8 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 9 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>10 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>11 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 6 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 7 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 8 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 9 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>10 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>11 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_sdk.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
 
@@ -372,13 +372,13 @@ target: buildWinCE
   <echo message="GENERATING WINCE FILES - SDK"/>
 
   <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. -->
-  <echo message="=> 3 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <echo message="=> 6 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 8 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 9 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>10 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 6 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 7 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 8 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 9 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>10 of 10"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.sdk.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/demo" excludes="**/Litebase.*" />
@@ -1009,7 +1009,7 @@ target: Android builds
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
+  <exec dir="${cygwin.path}" executable="/bin/bash.exe" failonerror="yes">
      <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
      <env key="NDK_HOME" value="${android.ndk.path}"/>
      <env key="TC_HOME" value="${source.vms.path}"/>
