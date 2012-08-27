@@ -50,25 +50,8 @@ IMPORTANT:
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
-<!-- Checks for vc6 and vc2008 -->
-<if>
- 	<equals arg1="${msvc.version}" arg2="vc6" />
-<then>
- 	<property name="msvc.executable" value="msdev.exe" />
-</then>
-<elseif>
-	<equals arg1="${msvc.version}" arg2="vc2008" />
-<then>
-	<property name="msvc.executable" value="devenv.com" />
-</then>
-</elseif>
-<else>
-	<fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
-</else>
-</if>  
-
 <!-- IDEs and compilers project files -->
-<property name="msvc.project.path" value="${basedir}/${msvc.version}"/>
+<property name="msvc.project.path" value="${basedir}/vc2008"/>
 <property name="evc.project.path"  value="${basedir}/evc3"/>
 <property name="gcc.project.path"  value="${basedir}/gcc-posix"/>
 <property name="palm.project.path"  value="${basedir}/gcc-palm"/>
@@ -228,83 +211,32 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildWin32_vms" >
+   <echo message="GENERATING WIN32 FILES - VMS"/>
 
-  <echo message="GENERATING WIN32 FILES - VMS"/>
-
-  <if>
-    <equals arg1="${msvc.version}" arg2="vc6" />
-    <then>
-      <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Release" /REBUILD'/>
-        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
-        </exec>
-      </then>
-    <elseif>
-      <equals arg1="${msvc.version}" arg2="vc2008" />
-      <then>
-        <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-        <arg line='${msvc.project.path}/TCVM.sln /rebuild "RAS Release|Win32"'/>
-          </exec>
-        </then>
-      </elseif>
-    <else>
-      <fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
-      </else>
-    </if>  
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "RAS Release|Win32"'/>
+   </exec>
 </target>
 
 <target name="buildWin32_vms_noras" >
+   <echo message="GENERATING WIN32 FILES - VMS"/>
+   <fail unless="norasid" />
 
-  <echo message="GENERATING WIN32 FILES - VMS"/>
-	<fail unless="norasid" />
-
-   <if>
-     <equals arg1="${msvc.version}" arg2="vc6" />
-     <then>
-       <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-       	<env key="CL" value="/DNORASID=${norasid}" />
-          <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Noras" /REBUILD'/>
-         </exec>
-       </then>
-     <elseif>
-       <equals arg1="${msvc.version}" arg2="vc2008" />
-       <then>
-         <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-         	<env key="CL" value="/DNORASID=${norasid}" />
-         	<arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Win32"'/>
-           </exec>
-         </then>
-       </elseif>
-     <else>
-       <fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
-       </else>
-     </if>   
-
+   <exec executable="${msvc.path}" failonerror="yes">
+      <env key="CL" value="/DNORASID=${norasid}" />
+      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "NO RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "NO RAS Release|Win32"'/>
+   </exec>
 </target>
 
 <target name="buildWin32_sdk" >
-
-  <echo message="GENERATING WIN32 FILES - SDK"/>
-  <if>
-    <equals arg1="${msvc.version}" arg2="vc6" />
-    <then>
-      <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Demo" /REBUILD'/>
-        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
-        </exec>
-      </then>
-    <elseif>
-      <equals arg1="${msvc.version}" arg2="vc2008" />
-      <then>
-        <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-          <arg line='${msvc.project.path}/TCVM.sln /rebuild "DEMO Release|Win32"'/>
-          </exec>
-        </then>
-      </elseif>
-    <else>
-      <fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
-      </else>
-    </if>         
+   <echo message="GENERATING WIN32 FILES - SDK"/>
+   
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.vcproj /project TCVM /rebuild "DEMO Release|Win32"'/>
+      <arg line='${msvc.project.path}/Conduit.vcproj /project Conduit /rebuild "DEMO Release|Win32"'/>
+   </exec>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1218,36 +1150,15 @@ target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="checkVersionOnProjects" >
-  <if>
-    <equals arg1="${msvc.version}" arg2="vc6" />
-  <then>
-    <loadfile srcfile="${msvc.project.path}/TCVM.dsp" property="version.updated">
-      <filterchain>
-        <linecontains>
-          <contains value='/version:${tc.version}'/>
-        </linecontains>
-      </filterchain>
-    </loadfile>
-  </then>
-  <elseif>
-    <equals arg1="${msvc.version}" arg2="vc2008" />
-  <then>
-    <loadfile srcfile="${msvc.project.path}/TCVM.vcproj" property="version.updated">
-      <filterchain>
-        <linecontains>
-          <contains value='Version="${tc.version}"'/>
-        </linecontains>
-      </filterchain>
-    </loadfile>
-  </then>
-  </elseif>
-  <else>
-    <fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
-  </else>
-  </if> 
+ <loadfile srcfile="${msvc.project.path}/TCVM.vcproj" property="version.updated">
+   <filterchain>
+     <linecontains>
+       <contains value='Version="${tc.version}"'/>
+     </linecontains>
+   </filterchain>
+ </loadfile>
 
-  <fail unless="version.updated" message="************************************* Please update the project version information on VC6, EVC, gcc-arm/vm/resources.rcp!!! **********"/>
-
+  <fail unless="version.updated" message="************************************* Please update the project version information on vc2008, EVC, gcc-arm/vm/resources.rcp!!! **********"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
