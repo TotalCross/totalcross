@@ -61,7 +61,7 @@ target: init
 
   <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
   <!-- IDEs and compilers project files -->
-  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc6"/>
+  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc2008"/>
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
@@ -206,23 +206,19 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildWin32_vms" >
+   <echo message="GENERATING WIN32 FILES - VMS"/>
 
-  <echo message="GENERATING WIN32 FILES - VMS"/>
-
-  <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Release" /REBUILD'/>
-  </exec>
-
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/Litebase.vcproj /project Litebase /rebuild "RAS Release|Win32"'/>
+   </exec>
 </target>
 
 <target name="buildWin32_sdk" >
+   <echo message="GENERATING WIN32 FILES - SDK"/>
 
-  <echo message="GENERATING WIN32 FILES - SDK"/>
-
-  <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Demo" /REBUILD'/>
-  </exec>
-
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/Litebase.vcproj /project Litebase /rebuild "DEMO Release|Win32"'/>
+   </exec>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -675,17 +671,15 @@ target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="checkVersionOnProjects">
-
-  <loadfile srcfile="${source.tc.vm.path}/builders/vc6/litebase.dsp" property="version.updated">
+  <loadfile srcfile="${msvc.project.path}/builders/vc2008/Litebase.vcproj" property="version.updated">
     <filterchain>
       <linecontains>
-        <contains value='/version:${lb.version}'/>
+         <contains value='Version="${tc.version}"'/>
       </linecontains>
     </filterchain>
   </loadfile>
 
-  <fail unless="version.updated" message="************************************* Please update the project version information on VC6, EVC, gcc-arm/vm/resources.rcp!!!! **********"/>
-
+  <fail unless="version.updated" message="************************************* Please update the project version information on VC2008, EVC, gcc-arm/vm/resources.rcp!!!! **********"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
