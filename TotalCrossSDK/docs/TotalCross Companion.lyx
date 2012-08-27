@@ -36701,6 +36701,24 @@ Address
 \end_layout
 
 \begin_layout Section
+DataContentHandler 
+\end_layout
+
+\begin_layout Standard
+This is an abstract class that defines the basic interface for implementations
+ of 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataContentHandler
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
 BinaryContentHandler 
 \end_layout
 
@@ -36775,7 +36793,11 @@ obj
 \family typewriter
 Part
 \family default
-, it will be transformed into a 
+ in the 
+\family typewriter
+writeTo()
+\family default
+ method, it will be transformed into a 
 \family typewriter
 String
 \family default
@@ -38779,8 +38801,11 @@ getRequireStartTLS() Returns if a TLS is required or not.
 
 \begin_layout FieldList
 \labelwidthstring 0
-startTLS() Issue the STARTTLS command and switch the socket to TLS mode
- if it succeeds.
+startTLS() Issue the 
+\family typewriter
+STARTTLS
+\family default
+ command and switch the socket to TLS mode if it succeeds.
  
 \end_layout
 
@@ -38799,6 +38824,7 @@ Transport
 \family typewriter
 SMTPTransport
 \family default
+.
  
 \end_layout
 
