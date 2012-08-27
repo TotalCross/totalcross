@@ -61,7 +61,7 @@ target: init
 
   <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
   <!-- IDEs and compilers project files -->
-  <property name="msvc.project.path"  value="${basedir}/vc2008"/>
+  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc2008"/>
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
@@ -209,7 +209,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <echo message="GENERATING WIN32 FILES - VMS"/>
 
    <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/Litebase.vcproj /project Litebase /rebuild "RAS Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "RAS Release|Win32"'/>
    </exec>
 </target>
 
@@ -217,7 +217,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <echo message="GENERATING WIN32 FILES - SDK"/>
 
    <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/Litebase.vcproj /project Litebase /rebuild "DEMO Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "DEMO Release|Win32"'/>
    </exec>
 </target>
 
