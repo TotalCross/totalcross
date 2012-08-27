@@ -34116,6 +34116,223 @@ The classes ZLib and GZip interface is almost identical, the only difference
  ZLib.
 \end_layout
 
+\begin_layout Chapter
+Checksum 
+\end_layout
+
+\begin_layout Standard
+Abstract class to compute a data checksum used by checked input/output streams.
+ A data checksum can be updated by one byte or with a byte array.
+ After each update the value of the current checksum can be returned by
+ calling 
+\family typewriter
+getValue()
+\family default
+.
+ The complete checksum object can also be reset so it can be used again
+ with new data.
+ 
+\end_layout
+
+\begin_layout Standard
+This class only has a public default constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Returns the data checksum computed so far.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset() Resets the data checksum as if no update was ever called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(int
+\begin_inset space ~
+\end_inset
+
+bval) Adds one byte to the data checksum.
+ The higher bytes of the integer are ignored.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+off,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Adds part of the byte array to the data checksum.
+ 
+\end_layout
+
+\begin_layout Chapter
+Adler32 
+\end_layout
+
+\begin_layout Standard
+Computes an Adler-32 checksum for a stream of data.
+ An Adler-32 checksum is not as reliable as a CRC32 checksum, but a lot
+ faster to compute.
+ 
+\end_layout
+
+\begin_layout Standard
+The specification for Adler-32 may be found in RFC 1950 (ZLIB Compressed
+ Data Format Specification version 3.3).
+ 
+\end_layout
+
+\begin_layout Standard
+From that document: 
+\end_layout
+
+\begin_layout Standard
+"ADLER32 (Adler-32 checksum) This contains a checksum value of the uncompressed
+ data (excluding any dictionary data) computed according to Adler-32 algorithm.
+ This algorithm is a 32-bit extension and improvement of the Fletcher algorithm,
+ used in the ITU-T X.224 / ISO 8073 standard.
+ 
+\end_layout
+
+\begin_layout Standard
+Adler-32 is composed of two sums accumulated per byte: 
+\family typewriter
+s1
+\family default
+ is the sum of all bytes, 
+\family typewriter
+s2
+\family default
+ is the sum of all 
+\family typewriter
+s1
+\family default
+ values.
+ Both sums are done modulo 65521.
+ 
+\family typewriter
+s1
+\family default
+ is initialized to 1, 
+\family typewriter
+s2
+\family default
+ to zero.
+ The Adler-32 checksum is stored as 
+\family typewriter
+s2*65536 + s1
+\family default
+ in most-significant-byte first (network) order." 
+\end_layout
+
+\begin_layout Standard
+"8.2.
+ The Adler-32 algorithm 
+\end_layout
+
+\begin_layout Standard
+The Adler-32 algorithm is much faster than the CRC32 algorithm yet still
+ provides an extremely low probability of undetected errors.
+ 
+\end_layout
+
+\begin_layout Standard
+The modulo on unsigned long accumulators can be delayed for 5552 bytes,
+ so the modulo operation time is negligible.
+ If the bytes are 
+\family typewriter
+a
+\family default
+, 
+\family typewriter
+b
+\family default
+, 
+\family typewriter
+c
+\family default
+, the second sum is 
+\family typewriter
+3a + 2b + c + 3
+\family default
+, and so is position and order sensitive, unlike the first sum, which is
+ just a checksum.
+ That 65521 is prime is important to avoid a possible large class of two-byte
+ errors that leave the check unchanged (the Fletcher checksum uses 255,
+ which is not prime and which also makes the Fletcher check insensitive
+ to single byte changes 
+\family typewriter
+0 <-> 255
+\family default
+) .
+\end_layout
+
+\begin_layout Standard
+The sum 
+\family typewriter
+s1
+\family default
+ is initialized to 1 instead of zero to make the length of the sequence
+ part of 
+\family typewriter
+s2
+\family default
+, so that the length does not have to be checked separately (any sequence
+ of zeroes has a Fletcher checksum of zero)."
+\end_layout
+
+\begin_layout Standard
+This class extends the class 
+\family typewriter
+Checksum
+\family default
+.
+ It has a public default constructor, which creates a new instance of the
+ 
+\family typewriter
+Adler32
+\family default
+ class.
+ The checksum starts off with a value of 1.
+\end_layout
+
+\begin_layout Standard
+It has all methods of the 
+\family typewriter
+Checksum
+\family default
+ class and the following one:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+buffer) Updates the checksum with all the bytes taken from the given array.
+ 
+\end_layout
+
 \begin_layout Part
 DESKTOP SYNCHRONIZATION
 \end_layout
@@ -36701,6 +36918,24 @@ Address
 \end_layout
 
 \begin_layout Section
+DataContentHandler 
+\end_layout
+
+\begin_layout Standard
+This is an abstract class that defines the basic interface for implementations
+ of 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataContentHandler
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
 BinaryContentHandler 
 \end_layout
 
@@ -36775,7 +37010,11 @@ obj
 \family typewriter
 Part
 \family default
-, it will be transformed into a 
+ in the 
+\family typewriter
+writeTo()
+\family default
+ method, it will be transformed into a 
 \family typewriter
 String
 \family default
@@ -38779,8 +39018,11 @@ getRequireStartTLS() Returns if a TLS is required or not.
 
 \begin_layout FieldList
 \labelwidthstring 0
-startTLS() Issue the STARTTLS command and switch the socket to TLS mode
- if it succeeds.
+startTLS() Issue the 
+\family typewriter
+STARTTLS
+\family default
+ command and switch the socket to TLS mode if it succeeds.
  
 \end_layout
 
@@ -38799,6 +39041,7 @@ Transport
 \family typewriter
 SMTPTransport
 \family default
+.
  
 \end_layout
 
