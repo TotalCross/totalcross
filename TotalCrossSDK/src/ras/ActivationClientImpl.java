@@ -462,7 +462,7 @@ final class ActivationClientImpl extends ActivationClient
       byte[] out = aesCipher.getOutput();
 
       ByteArrayStream bas = new ByteArrayStream(128);
-      DataStream ds = new DataStream(bas);
+      DataStream ds = new DataStream(bas, true);
 
       ds.writeInt(riv.length);
       ds.writeBytes(riv);

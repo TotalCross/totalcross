@@ -56,7 +56,7 @@ public class RASConnection
    public void send(Packet packet) throws CommException
    {
       int id = packet.getClass().getName().hashCode();
-      DataStream ds = new DataStream(stream);
+      DataStream ds = new DataStream(stream, true);
 
       try
       {
