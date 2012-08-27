@@ -72,7 +72,7 @@
       </trycatch>
 
       <echo file="P:/userpaths.properties"
-         message="msvc.path=${devenv.path}${line.separator}evc.path=${evc.path}${line.separator}winrar.path=${winrar.path}${line.separator}cygwin.path=c:/cygwin"/>
+         message='msvc.path="${devenv.path}"${line.separator}evc.path="${evc.path}"${line.separator}winrar.path="${winrar.path}"${line.separator}cygwin.path=c:/cygwin'/>
    </target>
 
    <target name="install_ivy">
