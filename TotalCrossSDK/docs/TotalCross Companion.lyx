@@ -33725,6 +33725,8 @@ ZLibStream
 GZipStream
 \family default
 .
+ It is the base class for stream filters that perform data compression and
+ decompression.
 \end_layout
 
 \begin_layout Standard
@@ -33741,13 +33743,25 @@ CompressedStream
 \begin_layout FieldList
 \labelwidthstring 0
 DEFLATE Used to create a stream for data compression.
- In this mode, you may ONLY use write operations.
+ In this mode, you may ONLY use write operations, that is, you may NOT use
+ the method 
+\family typewriter
+readBytes()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 INFLATE Used to create a stream for data decompression.
- In this mode, you may ONLY use read operations.
+ In this mode, you may ONLY use read operations, that is, you may NOT use
+ the method 
+\family typewriter
+writeBytes()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -33779,13 +33793,101 @@ CompressedStream
 \end_layout
 
 \begin_layout Standard
-Also notice that closing a compressed stream DOES NOT affect the underlying
- stream (the stream passed to the constructor).
+Also notice that closing a compressed stream (using its 
+\family typewriter
+close()
+\family default
+ method) DOES NOT affect the underlying stream (the stream passed to the
+ constructor).
  To also close the underlying stream, you must call its own 
 \family typewriter
 close()
 \family default
  method after closing the compressed stream.
+\end_layout
+
+\begin_layout Standard
+The methods for reading and writing bytes are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Attempts to read 
+\family typewriter
+count
+\family default
+ bytes to the given byte array 
+\family typewriter
+buf
+\family default
+, starting from offset 
+\family typewriter
+start
+\family default
+.
+ This method should be used only for reading compressed data from the original
+ stream, returning uncompressed data on the give byte array.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Attempts to write 
+\family typewriter
+count
+\family default
+ bytes from the given byte array 
+\family typewriter
+buf
+\family default
+, starting from offset 
+\family typewriter
+start
+\family default
+.
+ This method should be used only for compressing the contents of the given
+ byte array and writing the compressed data to the original stream.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -35813,7 +35915,7 @@ String array
 
 \end_deeper
 \begin_layout Chapter
-HTTPS / LiteSSL
+HTTPS / SSL
 \end_layout
 
 \begin_layout Section
@@ -35821,8 +35923,8 @@ Overview
 \end_layout
 
 \begin_layout Standard
-The TotalCross LiteSSL native library is a wrapper library of the great
- axTLS package.
+The TotalCross SSL native library is a wrapper library of the great axTLS
+ package.
  The axTLS embedded SSL project written by Cameron Rich is a highly configurable
  client/server TLSv1 library designed for platforms with small memory requiremen
 ts (see 
@@ -36138,7 +36240,7 @@ Create a client or server X509 certificate
 
 \begin_layout Standard
 First, you have to generate a new private key.
- LiteSSL supports unencrypted and aes128/256 encrypted private keys.
+ SSL supports unencrypted and aes128/256 encrypted private keys.
 \end_layout
 
 \begin_layout Standard
@@ -36276,11 +36378,11 @@ mycert.pem
 \end_layout
 
 \begin_layout Section
-LiteSSL features
+SSL features
 \end_layout
 
 \begin_layout Standard
-The LiteSSL package supports both PEM and DER encrypted materials.
+The SSL package supports both PEM and DER encrypted materials.
  
 \begin_inset Newline newline
 \end_inset
@@ -36367,7 +36469,7 @@ Restrictions
 \begin_layout Standard
 The Applet version is implemented on top of SUN's JSSE.
  This TLS implementation has some limitations that prevent the use of some
- security material formats supported by LiteSSL on devices.
+ security material formats supported by SSL on devices.
  Thus, private keys have to be in pkcs8 format only.
  Moreover, they can't be password protected.
  You have to add the 
@@ -36379,7 +36481,7 @@ The Applet version is implemented on top of SUN's JSSE.
 \end_layout
 
 \begin_layout Section
-LiteSSL usage
+SSL usage
 \end_layout
 
 \begin_layout Standard
