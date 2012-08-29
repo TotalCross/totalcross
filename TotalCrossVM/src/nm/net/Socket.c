@@ -140,7 +140,10 @@ int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
    do
    {
       err = socketReadWriteBytes(fd, timeout, buf, 0 + written, count - written, &retCount, isRead);
-      written += retCount;
+      if (retCount == 0) // Gracefully closed by the remote, just break the loop.
+         break;
+      if (retCount > 0)
+         written += retCount;
    }
    while (written < count && err == NO_ERROR);
    return (err == NO_ERROR) ? written : -1;
