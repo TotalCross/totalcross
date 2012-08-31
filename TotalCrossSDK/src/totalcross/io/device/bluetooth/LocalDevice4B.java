@@ -83,7 +83,7 @@ public class LocalDevice4B
 
    public static boolean isPowerOn()
    {
-      return false; // not implemented yet.
+      return javax.bluetooth.LocalDevice.isPowerOn();
    }
 
    public boolean setDiscoverable(int mode) throws IOException
