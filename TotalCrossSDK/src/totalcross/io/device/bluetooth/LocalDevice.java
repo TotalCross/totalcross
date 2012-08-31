@@ -20,6 +20,7 @@ package totalcross.io.device.bluetooth;
 
 import totalcross.io.IOException;
 import totalcross.io.StreamConnectionNotifier;
+import totalcross.io.device.RadioDevice;
 import totalcross.sys.Settings;
 
 /**
@@ -140,7 +141,7 @@ public class LocalDevice
     */
    public static boolean isPowerOn()
    {
-      return false; // not supported on JDK, always returns false.
+      return RadioDevice.getState(RadioDevice.BLUETOOTH) != RadioDevice.RADIO_STATE_DISABLED;
    }
 
    /**
