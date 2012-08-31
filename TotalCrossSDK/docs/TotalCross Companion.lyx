@@ -8534,7 +8534,33 @@ Font.NORMAL_SIZE
 \family typewriter
 Font.NORMAL_SIZE+2
 \family default
-, and the font will be correctly scaled among different resolutions.
+ (which is equal to 
+\family typewriter
+Font.BIG_SIZE
+\family default
+), and the font will be correctly scaled among different resolutions.
+ The constants 
+\family typewriter
+Font.MIN_FONT_SIZE
+\family default
+ and 
+\family typewriter
+Font.MAX_FONT_SIZE
+\family default
+ have the minimum and maximum font size, respectively.
+ Their default values are 6 and 22, respectively.
+\end_layout
+
+\begin_layout Standard
+Finally, 
+\family typewriter
+Font.TABSIZE
+\family default
+ is the number of spaces that will drawn when a tab character is found by
+ the VM.
+ You can define the number of spaces that will be drawn setting this field.
+ It defaults to 3, but you can change it at any time.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -8549,6 +8575,7 @@ tc.jar
 ).
  It creates a compressed file with your own set of bitmap fonts, and supports
  anti-aliased fonts, which makes the font appear rounded and improves legibility.
+ The created font must be based on the TrueType fonts.
 \end_layout
 
 \begin_layout Standard
@@ -8602,6 +8629,21 @@ java tc.tools.FontGenerator Arial /aa /sizes:20,24,28 /nobold
 
 \end_deeper
 \begin_layout Standard
+To see if the font you created is installed on the target device, query
+ its name after the creation.
+ If the font is not found, its name is changed to match the default font.
+ When the parameter 
+\family typewriter
+/rename:
+\family default
+ is used with 
+\family typewriter
+TCFont
+\family default
+, the default font is changed to the new created font.
+\end_layout
+
+\begin_layout Standard
 Starting in version 1.3, we changed the font engine to generate better fonts.
  To keep compatibility with old programs, we have two font sets: TCFont
  and TCFontOld.
@@ -8619,6 +8661,11 @@ static {Settings.useNewFont = true;}
 If you don't set this, a warning will be issued in the output window when
  running the application on the desktop.
  Migrate to the new font as soon as possible.
+ The default font name used is stored in 
+\family typewriter
+Font.DEFAULT
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -8649,6 +8696,194 @@ The TotalCross installation packages contains both fonts, thus, increasing
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The class font has just a public default constructor, and the following
+ public fields and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+name Read only field that contains the font's name.
+ Note that changing this directly will have no effect.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+style Read only field that contains the font's style.
+ Note that changing this directly will have no effect.
+ For bold fonts, 
+\family typewriter
+style == 1
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size Read only field that contains the font's size.
+ Note that changing this directly will have no effect.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultFontSize() Returns the default font size, based on the screen's
+ size.
+ If not on Android and 
+\family typewriter
+Settings.
+ fingerTouch
+\family default
+ is 
+\family typewriter
+true
+\family default
+, the default font size will be increased by 15%.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFont(boolean
+\begin_inset space ~
+\end_inset
+
+boldStyle,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+size) Gets the instance of the default font, with the given bold style and
+ size.
+ If 
+\family typewriter
+boldStyle == true
+\family default
+, a bold font is used; otherwise, a plain font is used.
+ If you want a text bigger than the standard size, use 
+\family typewriter
+Font.NORMAL_SIZE+x
+\family default
+; or if you want a text smaller than the standard size, use 
+\family typewriter
+Font.NORMAL_SIZE-x
+\family default
+ in the parameter 
+\family typewriter
+size
+\family default
+.
+ The size is adjusted to be in the range 
+\family typewriter
+Font.MIN_FONT_SIZE
+\family default
+ ...
+ 
+\family typewriter
+Font.MAX_FONT_SIZE
+\family default
+.
+ That is, passing a value out of the bounds won't throw an exception, will
+ only use the minimum default size if the size passed is less than it or
+ use the maximum default size if the size passed is greater than it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFont(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+boldStyle,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+size) Gets the instance of a font of the given name, style and size.
+ BlackBerry supports the use of native system fonts, which are formed by
+ the font family name preceded by a 
+\family typewriter
+$
+\family default
+ (e.g.: 
+\family typewriter
+$BBCasual
+\family default
+).
+ You can also specify only 
+\family typewriter
+$
+\family default
+ for the font name, which means the default system font.
+ 
+\family typewriter
+Font.DEFAULT
+\family default
+ will be used in place of native fonts for all platforms that do not support
+ them.
+ This method can be used to check if the created font is in fact installed
+ on the device.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+asBold() Returns this font as bold.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+adjustedBy(int
+\begin_inset space ~
+\end_inset
+
+delta) Returns a font with the size changed with that delta.
+ The new size is 
+\family typewriter
+this.size+delta
+\family default
+.
+ delta can be positive or negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+adjustedBy(int
+\begin_inset space ~
+\end_inset
+
+delta,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+bold) Returns a font with the size changed with that delta and the given
+ bold style.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isBold() Returns if this font is bold.
+ 
 \end_layout
 
 \begin_layout Chapter
