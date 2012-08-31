@@ -169,27 +169,43 @@ bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType pro
       TCHAR const * name = entry->d_name;
       strcpy(fullPath+len, entry->d_name);
 
-      struct stat statData;
-      if (stat(fullPath, &statData) != 0) continue;  /* error: skip this */
-      #ifdef __ECOS
-      isDir = (statData.st_mode & __stat_mode_DIR);
-      #else
-      isDir = (statData.st_mode & S_IFDIR);
-      #endif
-
-      if (isDir)
-      {
-         if (recursive && ((name[0] != '.') || ((name[1] != '\0') && ((name[1] != '.') || (name[2] != '\0'))))) /* warning: order matters! */
-            stopSearch = PDBListDatabasesIn(fullPath, recursive, proc, userVars);
-      }
-      else
       if (endsWithPDB((TCHAR*)entry->d_name)) // not a dir
       {
-         if (proc)
+         struct stat statData;
+         if (stat(fullPath, &statData) != 0) continue;  /* error: skip this */
+         #ifdef __ECOS
+         isDir = (statData.st_mode & __stat_mode_DIR);
+         #else
+         isDir = (statData.st_mode & S_IFDIR);
+         #endif
+         if (!isDir && proc)
             stopSearch = (*proc)(fullPath, userVars);
       }
    }
    closedir(targetDirectory);
+   
+   if (!stopSearch && recursive)
+   {
+      targetDirectory = opendir(path);
+      while (!stopSearch && (entry = readdir(targetDirectory)))
+      {
+         int isDir;
+         TCHAR const * name = entry->d_name;
+         strcpy(fullPath+len, entry->d_name);
+   
+         struct stat statData;
+         if (stat(fullPath, &statData) != 0) continue;  /* error: skip this */
+         #ifdef __ECOS
+         isDir = (statData.st_mode & __stat_mode_DIR);
+         #else
+         isDir = (statData.st_mode & S_IFDIR);
+         #endif
+   
+         if (isDir && ((name[0] != '.') || ((name[1] != '\0') && ((name[1] != '.') || (name[2] != '\0'))))) /* warning: order matters! */
+            stopSearch = PDBListDatabasesIn(fullPath, recursive, proc, userVars);
+      }
+      closedir(targetDirectory);
+   }
    return stopSearch; // guich@tc110_93: return stopSearch
 }
 
