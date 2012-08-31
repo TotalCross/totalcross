@@ -33902,6 +33902,42 @@ CompressedStream
  that implements data compression using the zlib algorithm.
 \end_layout
 
+\begin_layout Standard
+It uses its super class methods and has the following constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZLibStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+mode) Creates a 
+\family typewriter
+ZLibStream
+\family default
+ object that may be used to read compressed data from the given stream,
+ or to write compressed data to the given stream.
+ The mode must be either 
+\family typewriter
+DEFLATE
+\family default
+ or 
+\family typewriter
+INFLATE
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Quote
 “zlib is designed to be a free, general-purpose, legally unencumbered --
  that is, not covered by any patents - lossless data-compression library
@@ -33932,6 +33968,42 @@ CompressedStream
  that implements data compression using the gzip algorithm.
 \end_layout
 
+\begin_layout Standard
+It uses its super class methods and has the following constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GZipStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+mode) Creates a 
+\family typewriter
+GZipStream
+\family default
+ object that may be used to read compressed data from the given stream,
+ or to write compressed data to the given stream.
+ The mode must be either 
+\family typewriter
+DEFLATE
+\family default
+ or 
+\family typewriter
+INFLATE
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Quote
 “gzip (GNU zip) is a compression utility designed to be a replacement for
  compress.
@@ -33949,6 +34021,429 @@ target "http://www.gzip.org/"
 \end_layout
 
 \begin_layout Chapter
+ZipStream 
+\end_layout
+
+\begin_layout Standard
+This class implements a stream filter for reading and writing files in the
+ ZIP file format.
+ Currently supports only compressed entries.
+\end_layout
+
+\begin_layout Standard
+It has the following constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipStream(RandomAccessStream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+mode) Creates a new ZIP stream that may be used to read compressed data
+ from the given stream, or to write compressed data to the given stream.
+ It's mode is 
+\family typewriter
+DEFLATE
+\family default
+ or 
+\family typewriter
+INFLATE
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+It has the 
+\family typewriter
+CompressedStream
+\family default
+ methods and the following ones:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+available() Returns 0 after EOF has reached for the current entry data,
+ otherwise always return 1.
+ Programs should not count on this method to return the actual number of
+ bytes that could be read without blocking.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getNextEntry() Reads the next ZIP file entry and positions the stream at
+ the beginning of the entry data.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+putNextEntry(ZipEntry
+\begin_inset space ~
+\end_inset
+
+entry) Begins writing a new ZIP file entry and positions the stream to the
+ start of the entry data.
+ Closes the current entry if still active.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+closeEntry() Closes the current ZIP entry and positions the stream for reading
+ (
+\family typewriter
+INFLATE
+\family default
+) or writing (
+\family typewriter
+DEFLATE
+\family default
+) the next entry.
+ 
+\end_layout
+
+\begin_layout Chapter
+ZipEntry
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ZipEntry
+\family default
+ class is used to represent a ZIP file entry.
+ It has two constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipEntry(String
+\begin_inset space ~
+\end_inset
+
+name) Creates a new zip entry with the specified name.
+ It will throw a 
+\family typewriter
+NullPointerException
+\family default
+ if the entry name is 
+\family typewriter
+null
+\family default
+ and an 
+\family typewriter
+IllegalArgumentException
+\family default
+ if the entry name is longer than 
+\family typewriter
+0xFFFF
+\family default
+ bytes.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipEntry(ZipEntry
+\begin_inset space ~
+\end_inset
+
+e) Creates a new zip entry with the fields taken from the specified zip
+ entry.
+ 
+\end_layout
+
+\begin_layout Standard
+The class methods are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getName() Returns the name of the entry.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTime(long
+\begin_inset space ~
+\end_inset
+
+time) Sets the entry modification time in number of milliseconds since the
+ epoch.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTime() Returns the modification time in number of milliseconds since
+ the epoch of the entry, or -1 if not specified.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSize(long
+\begin_inset space ~
+\end_inset
+
+size) Sets the uncompressed size of the entry data.
+ It will throw an 
+\family typewriter
+IllegalArgumentException
+\family default
+ if the specified size is less than 0 or greater than 
+\family typewriter
+0xFFFFFFFF
+\family default
+ bytes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSize() Returns the uncompressed size of the entry data, or -1 if not
+ known.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCompressedSize(long
+\begin_inset space ~
+\end_inset
+
+csize) Sets the size of the compressed entry data.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCompressedSize() Returns the size of the compressed entry data, or -1
+ if not known.
+ In the case of a stored entry, the compressed size will be the same as
+ the uncompressed size of the entry.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCrc(long
+\begin_inset space ~
+\end_inset
+
+crc) Sets the CRC32 checksum of the uncompressed entry data.
+ It will throw an
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+IllegalArgumentException
+\family default
+ if the specified CRC32 value is less than 0 or greater than 
+\family typewriter
+0xFFFFFFFF
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCrc() Returns the CRC32 checksum of the uncompressed entry data, or -1
+ if not known.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMethod(int
+\begin_inset space ~
+\end_inset
+
+method) Sets the compression method for the entry, which must be 
+\family typewriter
+STORED
+\family default
+ or 
+\family typewriter
+DEFLATED
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMethod() Returns the compression method of the entry, or -1 if not specified.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setExtra(byte[]
+\begin_inset space ~
+\end_inset
+
+extra) Sets the optional extra field data for the entry.
+ It will throw an 
+\family typewriter
+IllegalArgumentException
+\family default
+ if the length of the specified extra field data is greater than 
+\family typewriter
+0xFFFF
+\family default
+ bytes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getExtra() Returns the extra field data for the entry, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setComment(String
+\begin_inset space ~
+\end_inset
+
+comment) Sets the optional comment string for the entry.
+ It will throw an 
+\family typewriter
+IllegalArgumentException
+\family default
+ if the length of the specified comment string is greater than 
+\family typewriter
+0xFFFF
+\family default
+ bytes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getComment() Returns the comment string for the entry, or 
+\family typewriter
+null
+\family default
+ if none.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isDirectory() Returns 
+\family typewriter
+true
+\family default
+ if this is a directory entry.
+ A directory entry is defined to be one whose name ends with a 
+\family typewriter
+/
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the ZIP entry.
+ This is just the name as returned by 
+\family typewriter
+getName()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the hash code value for this entry.
+ This is just the hash code of the name returned by 
+\family typewriter
+getName()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Chapter
+ZipFile
+\end_layout
+
+\begin_layout Standard
+This class represents a ZIP file.
+ It has the following constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipFile(String
+\begin_inset space ~
+\end_inset
+
+name) Creates a ZIP file with the given name.
+\end_layout
+
+\begin_layout Standard
+It also has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the ZIP file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+entries() Returns all the ZIP entries as a 
+\family typewriter
+ZipEntry
+\family default
+ array.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getEntry(String
+\begin_inset space ~
+\end_inset
+
+name) Returns the ZIP entry which has the given name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getEntryStream(String
+\begin_inset space ~
+\end_inset
+
+name) Returns a stream to fetch data from the ZIP entry which has the given
+ name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getName() Returns the ZIP file name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the ZIP file size.
+\end_layout
+
+\begin_layout Chapter
 ZLib
 \end_layout
 
@@ -33957,17 +34452,13 @@ Utility class that provides static methods to perform full stream compression
  and decompression using the zlib algorithm.
 \end_layout
 
+\begin_layout Standard
+It has the following methods:
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
-deflate(int
-\begin_inset space ~
-\end_inset
-
-compressionLevel,
-\begin_inset space ~
-\end_inset
-
-Stream
+deflate(Stream
 \begin_inset space ~
 \end_inset
 
@@ -33989,11 +34480,115 @@ in
 out
 \family default
 .
+ Compressed data will be generated in zlib format using the default strategy
+ and the default compression level.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deflate(Stream
+\begin_inset space ~
+\end_inset
+
+in,
+\begin_inset space ~
+\end_inset
+
+Stream
+\begin_inset space ~
+\end_inset
+
+out,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+compressionLevel) Deflates the given stream 
+\family typewriter
+in
+\family default
+ with the specified compression level, writing the result to the given stream
+ 
+\family typewriter
+out
+\family default
+.
+ Compressed data will be generated in zlib format using the default strategy.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deflate(Stream
+\begin_inset space ~
+\end_inset
+
+in,
+\begin_inset space ~
+\end_inset
+
+Stream
+\begin_inset space ~
+\end_inset
+
+out,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+compressionLevel,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+strategy,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+noWrap) Deflates the given stream 
+\family typewriter
+in
+\family default
+ using the specified strategy and compression level, writing the result
+ to the given stream 
+\family typewriter
+out
+\family default
+.
+ If 
+\family typewriter
+nowrap == true
+\family default
+ then the zlib header and checksum fields will not be used in order to support
+ the compression format used in both gzip and pkzip.
+ 
 \end_layout
 
 \begin_deeper
 \begin_layout Standard
-The compressionLevel value must be between -1 and 9, where:
+The
+\family typewriter
+ 
+\family default
+compression Level
+\family typewriter
+ 
+\family default
+value must be between -1 and 9, where:
 \end_layout
 
 \begin_layout Itemize
@@ -34033,6 +34628,40 @@ BEST_COMPRESSION Constant for compression level 9.
 \labelwidthstring 0
 DEFAULT_COMPRESSION Constant for the platform's default compression level
  (usually 5 or 6), same as -1.
+\end_layout
+
+\begin_layout Standard
+The compression strategy value must be one of the following:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\family typewriter
+DEFAULT_STRATEGY
+\family default
+ Default compression strategy.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\family typewriter
+FILTERED
+\family default
+ Compression strategy best used for data consisting mostly of small values
+ with a somewhat random distribution.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\family typewriter
+HUFFMAN_ONLY
+\family default
+ Compression strategy for Huffman coding only.
+ 
 \end_layout
 
 \end_deeper
@@ -34109,6 +34738,75 @@ sizeIn
 .
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+inflate(Stream
+\begin_inset space ~
+\end_inset
+
+in,
+\begin_inset space ~
+\end_inset
+
+Stream
+\begin_inset space ~
+\end_inset
+
+out,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+sizeIn,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+noWrap) Attempts to read the number of bytes specified by 
+\family typewriter
+sizeIn
+\family default
+ from the the given stream 
+\family typewriter
+in
+\family default
+, inflating and writing to the given stream 
+\family typewriter
+out
+\family default
+.
+ If 
+\family typewriter
+sizeIn
+\family default
+ is -1, it will attempt to fully read the stream.
+ If the parameter 
+\family typewriter
+noWrap == true
+\family default
+ then the zlib header and checksum fields will not be used.
+ This provides compatibility with the compression format used by both gzip
+ and pkzip.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: When using the 
+\family typewriter
+noWrap
+\family default
+ option it is also necessary to provide an extra "dummy" byte as input.
+ This is required by the zlib native library in order to support certain
+ optimizations.
+ 
+\end_layout
+
 \begin_layout Chapter
 GZip
 \end_layout
@@ -34116,6 +34814,12 @@ GZip
 \begin_layout Standard
 Utility class that provides static methods to perform full stream compression
  and decompression using the gzip algorithm.
+ The GZip algorithm is provided with the ZLib library.
+ 
+\end_layout
+
+\begin_layout Standard
+It has the following methods:
 \end_layout
 
 \begin_layout FieldList
@@ -34178,7 +34882,11 @@ in
 out
 \family default
 .
- If sizeIn is -1, it will attempt to fully read the stream.
+ If 
+\family typewriter
+sizeIn
+\family default
+ is -1, it will attempt to fully read the stream.
 \end_layout
 
 \begin_layout FieldList
@@ -34433,6 +35141,28 @@ update(byte[]
 
 buffer) Updates the checksum with all the bytes taken from the given array.
  
+\end_layout
+
+\begin_layout Chapter
+CRC232
+\end_layout
+
+\begin_layout Standard
+Computes CRC32 data checksum of a data stream.
+ The actual CRC32 algorithm is described in RFC 1952 (GZIP file format specifica
+tion version 4.3).
+ It can be used to get the CRC32 over a stream if used with checked input/output
+ streams.
+ It extends the abstract class 
+\family typewriter
+Checksum
+\family default
+.
+ All the methods of 
+\family typewriter
+Adler32
+\family default
+ are avaiable for this class, except that they are used for a CRC32.
 \end_layout
 
 \begin_layout Part
@@ -39290,6 +40020,1218 @@ target "http://msdn.microsoft.com/en-us/library/aa455072.aspx"
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Part
+CRYPTOGRAPHY
+\end_layout
+
+\begin_layout Chapterstar
+Overview
+\end_layout
+
+\begin_layout Standard
+TotalCross has support to cryptography in the 
+\family typewriter
+crypto
+\family default
+ package.
+ It has three subpackages:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cipher Contains the cipher classes that will actually encrypt and decrypt
+ data using AES and RSA.
+ It has the classes: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AESCipher
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AESKey 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Cipher 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Key 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+RSACipher 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+RSAPrivateKey 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+RSAPublicKey
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+digest Implements MD5 and SHA digest algorithms.
+ It has the classes: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Digest 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+MD5Digest 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+SHA1Digest 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+SHA256Digest
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+signature Implements PKCS1 signature algorithm.
+ It has the classes: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+PKCS1Signature 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Signature 
+\end_layout
+
+\begin_layout Chapter
+Cipher
+\end_layout
+
+\begin_layout Section
+Cipher 
+\end_layout
+
+\begin_layout Standard
+This class provides the functionality of a cryptographic cipher for encryption
+ and decryption.
+ 
+\end_layout
+
+\begin_layout Standard
+If you get a 
+\family typewriter
+CryptoException: Illegal key size
+\family default
+, you must download strong cryptography files AFTER understanding that you
+ are elligible to do so as stated in 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+target "http://java.sun.com/j2se/1.4.2/jre/README"
+
+\end_inset
+
+ (search for 'Unlimited Strength Java Cryptography Extension' - installation
+ instructions are inside that topic).
+ 
+\end_layout
+
+\begin_layout Standard
+This class has a default public constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() The same as calling 
+\family typewriter
+getAlgorithm()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getIV() Returns the initialization vector (IV) in a new buffer.
+ This is useful in the case where a random IV was created.
+ It returns 
+\family typewriter
+null
+\family default
+ if the underlying algorithm does not use an IV, or if the IV has not been
+ set yet.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset(int
+\begin_inset space ~
+\end_inset
+
+operation,
+\begin_inset space ~
+\end_inset
+
+Key
+\begin_inset space ~
+\end_inset
+
+key) Initializes this cipher in encryption or decryption mode, without chaining
+ or padding.
+ If this algorithm requires an initialization vector, it will be generated
+ using random values.
+ Calling this method will also reset the input data buffer.
+ The operation must be 
+\family typewriter
+OPERATION_ENCRYPT
+\family default
+ or 
+\family typewriter
+OPERATION_DECRYPT
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset(int
+\begin_inset space ~
+\end_inset
+
+operation,
+\begin_inset space ~
+\end_inset
+
+Key
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+chaining) Similar to the above, except that it uses chaining.
+ The chaining mode of this cipher must be 
+\family typewriter
+CHAINING_NONE,
+\family default
+ 
+\family typewriter
+CHAINING_ECB
+\family default
+, or 
+\family typewriter
+CHAINING_CBC
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset(int
+\begin_inset space ~
+\end_inset
+
+operation,
+\begin_inset space ~
+\end_inset
+
+Key
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+chaining,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+iv) Similar to the above, except that it receives an initialization vector.
+ If this algorithm requires an initialization vector and an invalid value
+ was supplied, it will be generated using random values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset(int
+\begin_inset space ~
+\end_inset
+
+operation,
+\begin_inset space ~
+\end_inset
+
+Key
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+chaining,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+iv,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+padding) Similar to the above, except that it uses padding.
+ The padding mode of this cipher must be 
+\family typewriter
+PADDING_NONE
+\family default
+, 
+\family typewriter
+PADDING_PKCS1
+\family default
+, or 
+\family typewriter
+PADDING_PKCS5
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(int
+\begin_inset space ~
+\end_inset
+
+data) Updates the input data that will be processed by this cipher algorithm.
+ The data will be accumulated in an input buffer to be processed when 
+\family typewriter
+getOutput()
+\family default
+ is finally called.
+ This method updates just one byte from the given integer 
+\family typewriter
+data
+\family default
+, which is the least significant byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data) The same as above, but receiving a byte array instead of just one
+ byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) The same as above, but has an offset in 
+\family typewriter
+data
+\family default
+ where the input data starts and the input data length.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getOutput() Finalizes the encryption or decryption operation (depending
+ on how this cipher was initialized) by processing all the accumulated input
+ data and returning the result in a new buffer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAlgorithm() Returns the algorithm name of this cipher.
+ In the subclass 
+\family typewriter
+AESCipher
+\family default
+, returns 
+\family typewriter
+AES
+\family default
+.
+ In the 
+\family typewriter
+RSACipher
+\family default
+, returns 
+\family typewriter
+RSA
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+There is a sample for the class 
+\family typewriter
+Cipher
+\family default
+, its subclasses and auxiliar classes in 
+\family typewriter
+tc.samples.
+ crypto.cipher.CipherTest
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
+AESCipher 
+\end_layout
+
+\begin_layout Standard
+This class implements the AES cryptographic cipher.
+ 
+\end_layout
+
+\begin_layout Standard
+The Advanced Encryption Standard (AES) is a specification for the encryption
+ of electronic data established by the U.S.
+ National Institute of Standards and Technology (NIST) in 2002.
+ The algorithm described by AES is a symmetric-key algorithm, meaning the
+ same key is used for both encrypting and decrypting the data.
+ AES is based on a design principle known as a substitution-permutation
+ network, and is fast in both software and hardware.
+\end_layout
+
+\begin_layout Standard
+It has a public default constructor and the following public method that
+ is not present in its superclass 
+\family typewriter
+Cipher
+\family default
+:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBlockLength() Returns the block length (in bytes), or 0 if the underlying
+ algorithm is not a block cipher.
+\end_layout
+
+\begin_layout Section
+RSACipher 
+\end_layout
+
+\begin_layout Standard
+This class implements the RSA cryptographic cipher.
+ It is similar to 
+\family typewriter
+AESCipher
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+RSA is an algorithm for public-key cryptography that is based on the presumed
+ difficulty of factoring large integers, the factoring problem.
+ RSA stands for Ron Rivest, Adi Shamir and Leonard Adleman, who first publicly
+ described it in 1977.
+ A user of RSA creates and then publishes the product of two large prime
+ numbers, along with an auxiliary value, as their public key.
+ The prime factors must be kept secret.
+ Anyone can use the public key to encrypt a message, but with currently
+ published methods, if the public key is large enough, only someone with
+ knowledge of the prime factors can feasibly decode the message.
+ Whether breaking RSA encryption is as hard as factoring is an open question
+ known as the RSA problem.
+\end_layout
+
+\begin_layout Section
+Key
+\end_layout
+
+\begin_layout Standard
+This class defines a cryptographic cipher key for type safety.
+ 
+\end_layout
+
+\begin_layout Standard
+This class just has a public default constructor.
+\end_layout
+
+\begin_layout Section
+AESKey 
+\end_layout
+
+\begin_layout Standard
+This class implements the AES cryptographic cipher key.
+ It extends 
+\family typewriter
+Key
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+It has the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AESKey(byte[]
+\begin_inset space ~
+\end_inset
+
+data) Creates a new AESKey object with the given data.
+\end_layout
+
+\begin_layout Standard
+It has just one method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getData() Returns a copy of the byte array containing the key data.
+\end_layout
+
+\begin_layout Section
+RSAPrivateKey 
+\end_layout
+
+\begin_layout Standard
+This class implements the RSA cryptographic cipher private key.
+ It extends 
+\family typewriter
+Key
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+RSAPrivateKey(byte[]
+\begin_inset space ~
+\end_inset
+
+e,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+d,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+n) Creates a new 
+\family typewriter
+RSAPublicKey
+\family default
+ object, given the public and private exponents and the modulus.
+ 
+\family typewriter
+e
+\family default
+ is a byte array containing the public exponent, 
+\family typewriter
+d
+\family default
+ is a byte array containing the private exponent, and 
+\family typewriter
+n
+\family default
+ is a byte array containing the modulus.
+\end_layout
+
+\begin_layout Standard
+This class has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getModulus() Returns a copy of the byte array containing the modulus.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPublicExponent() Returns a copy of the byte array containing the public
+ exponent.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPrivateExponent() Returns a copy of the byte array containing the private
+ exponent.
+\end_layout
+
+\begin_layout Section
+RSAPublicKey
+\end_layout
+
+\begin_layout Standard
+This class implements the RSA cryptographic cipher public key.
+ It extends 
+\family typewriter
+Key
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+RSAPublicKey(byte[]
+\begin_inset space ~
+\end_inset
+
+e,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+n) Creates a new 
+\family typewriter
+RSAPublicKey
+\family default
+ object, given the public exponent and the modulus.
+ 
+\family typewriter
+e
+\family default
+ is a byte array containing the public exponent and 
+\family typewriter
+n
+\family default
+ is a byte array containing the modulus.
+\end_layout
+
+\begin_layout Standard
+This class has the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getModulus() Returns a copy of the byte array containing the modulus.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPublicExponent() Returns a copy of the byte array containing the public
+ exponent.
+\end_layout
+
+\begin_layout Chapter
+Digest
+\end_layout
+
+\begin_layout Section
+Digest
+\end_layout
+
+\begin_layout Standard
+This class provides the functionality of a message digest algorithm.
+ 
+\end_layout
+
+\begin_layout Standard
+It has just a public default constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() The same as calling 
+\family typewriter
+getAlgorithm()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAlgorithm() Returns the algorithm name of this message digest.
+ It returns 
+\family typewriter
+MD5
+\family default
+ if it is a 
+\family typewriter
+MD5Digest
+\family default
+, 
+\family typewriter
+SHA-1
+\family default
+ if it is a 
+\family typewriter
+SHA1Digest
+\family default
+, and 
+\family typewriter
+SHA-256
+\family default
+ if it is a 
+\family typewriter
+SHA256Digest
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBlockLength() Returns the block length (in bytes).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDigestLength() Returns the message digest length (in bytes).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset() Initializes this message digest.
+ Calling this method will also reset the input data buffer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(int
+\begin_inset space ~
+\end_inset
+
+data) Similar to 
+\family typewriter
+Cipher.update(int data) 
+\family default
+except that 
+\family typewriter
+getDigest()
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data) Similar to 
+\family typewriter
+Cipher.update(byte[] data) 
+\family default
+except that 
+\family typewriter
+getDigest()
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Similar to 
+\family typewriter
+Cipher.update(byte[] data, int start, int count) 
+\family default
+except that 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+getDigest()
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDigest() Finalizes the message digest operation by processing all the
+ accumulated input data and returning the result in a new buffer.
+\end_layout
+
+\begin_layout Standard
+There is a sample for its subclasses in 
+\family typewriter
+tc.samples.crypto.digest.DigestTest
+\family default
+.
+\end_layout
+
+\begin_layout Section
+MD5Digest 
+\end_layout
+
+\begin_layout Standard
+This class implements the MD5 message digest algorithm.
+ 
+\end_layout
+
+\begin_layout Standard
+It has a public default constructor and extends 
+\family typewriter
+Digest
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+The MD5 Message-Digest Algorithm is a widely used cryptographic hash function
+ that produces a 128-bit (16-byte) hash value.
+ MD5 has been employed in a wide variety of security applications, and is
+ also commonly used to check data integrity.
+ 
+\end_layout
+
+\begin_layout Section
+SHA1Digest 
+\end_layout
+
+\begin_layout Standard
+This class implements the SHA-1 message digest algorithm.
+ It is similar to 
+\family typewriter
+MD5Digest
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+In cryptography, SHA-1 is a cryptographic hash function.
+ SHA stands for "secure hash algorithm".
+ The three SHA algorithms are structured differently and are distinguished
+ as SHA-0, SHA-1, and SHA-2.
+ SHA-1 is very similar to SHA-0, but corrects an error in the original SHA
+ hash specification that led to significant weaknesses.
+ The SHA-0 algorithm was not adopted by many applications.
+ SHA-2 on the other hand significantly differs from the SHA-1 hash function.
+\end_layout
+
+\begin_layout Standard
+SHA-1 is the most widely used of the existing SHA hash functions, and is
+ employed in several widely used applications and protocols, including TLS
+ and SSL, PGP, SSH, S/MIME, and IPsec.
+ 
+\end_layout
+
+\begin_layout Section
+SHA256Digest 
+\end_layout
+
+\begin_layout Standard
+This class implements the SHA-256 message digest algorithm.
+ It is similar to 
+\family typewriter
+MD5Digest
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+SHA-256 is part of a family of two similar hash functions with different
+ block sizes, known as SHA-256 and SHA-512.
+ They differ in the word size; SHA-256 uses 32-bit words where SHA-512 uses
+ 64-bit words.
+ There are also truncated versions of each standardized, known as SHA-224
+ and SHA-384.
+ All of them are part of the SHA-2.
+\end_layout
+
+\begin_layout Chapter
+Signature 
+\end_layout
+
+\begin_layout Section
+Signature
+\end_layout
+
+\begin_layout Standard
+This class provides the functionality of a signature algorithm for signing
+ and verifying.
+\end_layout
+
+\begin_layout Standard
+This abstract class only has a public default constructor and the following
+ methods.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() The same as calling 
+\family typewriter
+getAlgorithm()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset(int
+\begin_inset space ~
+\end_inset
+
+operation,
+\begin_inset space ~
+\end_inset
+
+Key
+\begin_inset space ~
+\end_inset
+
+key) Initializes this message signature algorithm to sign or verify.
+ Calling this method will also reset the input data buffer.
+ The parameter 
+\family typewriter
+operation
+\family default
+ is the mode, which must be either 
+\family typewriter
+OPERATION_ SIGN
+\family default
+ or 
+\family typewriter
+OPERATION_VERIFY
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(int
+\begin_inset space ~
+\end_inset
+
+data) Similar to 
+\family typewriter
+Cipher.update(int data) 
+\family default
+except that 
+\family typewriter
+sign()
+\family default
+ or
+\family typewriter
+ verify(byte[])
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data) Similar to 
+\family typewriter
+Cipher.update(byte[] data) 
+\family default
+except that 
+\family typewriter
+sign()
+\family default
+ or
+\family typewriter
+ verify(byte[])
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+data,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Similar to 
+\family typewriter
+Cipher.update(byte[] data, int start, int count) 
+\family default
+except that 
+\family typewriter
+sign()
+\family default
+ or
+\family typewriter
+ verify(byte[])
+\family default
+ must be called instead of 
+\family typewriter
+getOutput()
+\family default
+ for finalizing the process.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sign() Finalizes the sign operation by processing all the accumulated input
+ data and returning the result in a new buffer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+verify(byte[]
+\begin_inset space ~
+\end_inset
+
+signature) Finalizes the verify operation by processing all the accumulated
+ input data and returning the signature comparison result.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAlgorithm() Returns the algorithm name of this signature algorithm.
+ It returns 
+\family typewriter
+MD5withRSA
+\family default
+ if it is a
+\begin_inset Newline newline
+\end_inset
+
+ 
+\family typewriter
+PKCS1Signature
+\family default
+ initialized with a 
+\family typewriter
+MD5Digest
+\family default
+, 
+\family typewriter
+SHA1withRSA
+\family default
+ if it is a 
+\family typewriter
+PKCS1Signature
+\family default
+ initialized with a 
+\family typewriter
+SHA1Digest
+\family default
+, and 
+\family typewriter
+SHA256withRSA
+\family default
+ if it is a 
+\family typewriter
+PKCS1Signature
+\family default
+ initialized with a 
+\family typewriter
+SHA256Digest
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
+PKCS1Signature 
+\end_layout
+
+\begin_layout Standard
+This class implements the PKCS #1 signature algorithm.
+ 
+\end_layout
+
+\begin_layout Standard
+It extends 
+\family typewriter
+Signature
+\family default
+, has the same public methods and the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PKCS1Signature(Digest
+\begin_inset space ~
+\end_inset
+
+digest) Creates a new 
+\family typewriter
+PKCS1Signature
+\family default
+ algorithm with the given message digest.
+ It will throw a 
+\family typewriter
+CryptoException
+\family default
+ if the message digest algorithm is not supported.
+ Only 
+\family typewriter
+MD5Digest
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+SHA1Digest
+\family default
+, and 
+\family typewriter
+SHA256Digest
+\family default
+ are currently supported.
+\end_layout
+
+\begin_layout Standard
+There is a sample for its use in 
+\family typewriter
+tc.samples.crypto.signature.SignatureTest
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Part
