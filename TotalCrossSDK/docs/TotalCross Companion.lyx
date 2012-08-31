@@ -8705,13 +8705,13 @@ The class font has just a public default constructor, and the following
 
 \begin_layout FieldList
 \labelwidthstring 0
-name Read only field that contains the font's name.
+name Read-only field that contains the font's name.
  Note that changing this directly will have no effect.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-style Read only field that contains the font's style.
+style Read-only field that contains the font's style.
  Note that changing this directly will have no effect.
  For bold fonts, 
 \family typewriter
@@ -8723,7 +8723,7 @@ style == 1
 
 \begin_layout FieldList
 \labelwidthstring 0
-size Read only field that contains the font's size.
+size Read-only field that contains the font's size.
  Note that changing this directly will have no effect.
  
 \end_layout
@@ -8858,7 +8858,12 @@ delta) Returns a font with the size changed with that delta.
 this.size+delta
 \family default
 .
- delta can be positive or negative.
+ 
+\family typewriter
+delta
+\family default
+ can be positive or negative.
+ The new size won't pass the minimum or the maximum sizes.
 \end_layout
 
 \begin_layout FieldList
@@ -8883,6 +8888,314 @@ bold) Returns a font with the size changed with that delta and the given
 \begin_layout FieldList
 \labelwidthstring 0
 isBold() Returns if this font is bold.
+ 
+\end_layout
+
+\begin_layout Standard
+Another very useful class is 
+\family typewriter
+FontMetrics
+\family default
+.
+ 
+\family typewriter
+FontMetrics
+\family default
+ is used to obtain information about the widths and heights of characters
+ and strings when drawing text on a surface.
+\end_layout
+
+\begin_layout Standard
+Here is an example that uses 
+\family typewriter
+FontMetrics
+\family default
+ to get the width of a string: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Font font = Font.getFont("Tiny", true, Font.BIG_SIZE);
+\end_layout
+
+\begin_layout Plain Layout
+
+FontMetrics fm = font.fm;
+\end_layout
+
+\begin_layout Plain Layout
+
+String s = "This is a line of text.";
+\end_layout
+
+\begin_layout Plain Layout
+
+int stringWidth = fm.getTextWidth(s); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class does not have a public constructor and has the following public
+ fields and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ascent Read-only field that indicates the average height of this font from
+ the baseline to up.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+descent Read-only field that indicates the average height of this font from
+ the baseline to down.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+height Read-only field that has the total height of this font (
+\family typewriter
+ascent+descent
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+charWidth(char
+\begin_inset space ~
+\end_inset
+
+c) Returns the width in pixels of the given character.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stringWidth(String
+\begin_inset space ~
+\end_inset
+
+s) Returns the width in pixels of the given text string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stringWidth(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Returns the width in pixels of the given char array range.
+ 
+\family typewriter
+start
+\family default
+ is the first position to be used and 
+\family typewriter
+count
+\family default
+ is the number of character from 
+\family typewriter
+start
+\family default
+ to be used to compute the width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMaxWidth(String[]
+\begin_inset space ~
+\end_inset
+
+names,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Returns the maximum text width from the given list of names.
+ It is useful to compute the best x position to place the controls, in order
+ to align them in a container.
+ 
+\family typewriter
+start
+\family default
+ is the index of the first element of the array to be used and 
+\family typewriter
+count
+\family default
+ is the number of elements from 
+\family typewriter
+start
+\family default
+ to compute the maximum width.
+\begin_inset Newline newline
+\end_inset
+
+For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String[] labels = {"Name","Age","Address"};
+\end_layout
+
+\begin_layout Plain Layout
+
+int xx = fm.getMaxWidth(labels, 0, labels.length);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(new Label(labels[0]), LEFT, AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(edName = new Edit(""),xx, SAME); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sbWidth(StringBuffer
+\begin_inset space ~
+\end_inset
+
+s) Returns the width in pixels of the given 
+\family typewriter
+StringBuffer
+\family default
+.
+ This method is used to preserve memory, since it avoids the creation of
+ a 
+\family typewriter
+String
+\family default
+ object just to get the width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sbWidth(StringBuffer
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Similar to 
+\family typewriter
+stringWidth(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count)
+\family default
+, but without creating a 
+\family typewriter
+String
+\family default
+ or a 
+\family typewriter
+char[]
+\family default
+ object.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+charWidth(StringBuffer
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+i) Returns the width in pixels of the character located at the given index
+ in the 
+\family typewriter
+StringBuffer
+\family default
+.
  
 \end_layout
 
