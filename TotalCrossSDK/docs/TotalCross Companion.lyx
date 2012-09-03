@@ -5120,42 +5120,9 @@ When prompted for a password, just hit enter and leave it empty.
 \end_layout
 
 \begin_layout Standard
-Now you must go back to the iOS Provisioning Portal to create a new mobile
- provision.
-\end_layout
-
-\begin_layout Standard
-From the iOS Provisioning Portal, go to "App IDs" to create an id for your
- application.
- Make sure to double check everything when creating ids because once created
- they cannot be removed! (There's no limit to the number of app ids you
- can have, but you don't want to end up with dozens of unused ids cluttering
- your page.)
-\end_layout
-
-\begin_layout Standard
-For this first time, I suggest you to use the wildcard app id that should
- come configured by default.
- (If you don't have it, just create one using * as Bundle Identifier)
-\end_layout
-
-\begin_layout Standard
-Now move on to Provisioning, switch to the Distribution tab and click on
- "New Profile".
- In "Distribution Method" choose "In House", and use the same distribution
- certificate and app ids you already created.
- Name it and after submitting use the download option in the Distribution
- tab to download it to the same folder where you have your certificate and
- keystore.
-\end_layout
-
-\begin_layout Standard
-The mobile provision allows only the application with the specified id to
- run on the device.
- If you create the mobile provision using the wildcard app id, it will allow
- any application signed by you to work on the device, making it very useful
- for testing your applications without creating additional ids that can't
- be later removed.
+Now go back to the iOS Provisioning Portal to create a new mobile provision,
+ selecting the same distribution certificate created by our request.
+ Download the mobile provision to the same folder.
 \end_layout
 
 \begin_layout Standard
@@ -5232,20 +5199,6 @@ ios_distribution.p12
 \series default
  key store that contains the keys used to generate the certificate.
  Required to deploy the application and must not be password protected.
-\end_layout
-
-\begin_layout Description
-
-\family typewriter
-\series medium
-<user-defined
-\begin_inset space ~
-\end_inset
-
-name>.mobileprovision
-\family default
-\series default
- provisioning file that allows your application to be installed on the device.
 \end_layout
 
 \begin_layout Standard
@@ -6297,7 +6250,7 @@ Follow these steps:
 Download the webservice 
 \begin_inset CommandInset href
 LatexCommand href
-name "sample"
+name "(http://www.totalcross.com/activation/Activation_sample.rar) sample"
 target "http://www.totalcross.com/activation/Activation_sample.rar"
 
 \end_inset
@@ -6366,6 +6319,29 @@ SubmitActivation
 \end_layout
 
 \begin_layout Enumerate
+Besides the 
+\family typewriter
+activation.html
+\family default
+, there are three optional files: 
+\family typewriter
+activation_success.
+ html
+\family default
+ (which is shown if the activation succeeds), 
+\family typewriter
+activation_error.html
+\family default
+ (shown if the server rejects the activation), and 
+\family typewriter
+activation_nointernet.html
+\family default
+ (a test is made before calling the webservice to make sure that there's
+ internet, if there's not, this page is shown).
+ This way you can customize all messages in your own language.
+\end_layout
+
+\begin_layout Enumerate
 From your webservice, you can check the data that was received and you may
  return an error message to interrupt the activation.
 \begin_inset Newline newline
@@ -6382,7 +6358,11 @@ Settings.activationServerURI
 \family default
  (and optionally also the namespace using 
 \family typewriter
-Settings.activationServerNamespace
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+activationServerNamespace
 \family default
 ).
  This must be done inside the static initializer of your main class.
@@ -7491,6 +7471,385 @@ The use of exceptions is one of the most powerful features of Java, and
  can greatly simplify finding errors, if it is used correctly.
 \end_layout
 
+\begin_layout Standard
+TotalCross has checked and unchecked exceptions.
+ The checked exceptions are 
+\family typewriter
+Exception
+\family default
+ subclasses and if they might happen in a code block, it must be surrounded
+ by a try-catch.
+ The unchecked exceptions are 
+\family typewriter
+RuntimeException
+\family default
+ subclasses and do not need to be treated.
+ The first kind of exceptions are usually errors that occur in a program,
+ whereas the second one are usually a programming bug.
+\end_layout
+
+\begin_layout Standard
+Below there are all TotalCross possible exceptions (except for Litebase
+ exceptions) and their description:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Throwable Base class of all Exceptions.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Error General Error class.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+NoClassDefFoundError Thrown when a class was not found during the parse
+ of 
+\family typewriter
+xxx.class
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchFieldError Thrown when a field was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchMethodError Thrown when a method was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+OutOfMemoryError Thrown when no more memory exists to continue the execution
+ of the last requested operation.
+ You should exit the program immediately.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Exception General exception class.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+AddressException Thrown by the 
+\family typewriter
+Address
+\family default
+ constructor if the given string address is invalid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AuthenticationException When an authentication fails.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CryptoException Thrown when something wrong occurs at the cryptographic
+ algorithms.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchAlgorithmException This exception is thrown when a particular cryptographi
+c algorithm is requested but is not available in the environment.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+ElementNotFoundException Thrown when an element of a 
+\family typewriter
+Vector
+\family default
+ or a 
+\family typewriter
+Hashtable
+\family default
+ is not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FTPConnectionClosedException This exception is thrown when a FTP connection
+ is closed, maybe explicitly or by timeout.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageException This class is used to throw an exception when an image could
+ not be loaded for any reason.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InstantiationException Thrown when an abstract class or an interface is
+ trying to be 
+\family typewriter
+Class.newInstance()
+\family default
+'d.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InvalidDateException Represents a date that is invalid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InvalidNumberException Thrown when you try to convert a string that does
+ not represents a valid number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IOException Base class of all input/output exceptions.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+FileNotFoundException Thrown when a file was not found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalArgumentIOException Illegal argument passed to an IO method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SocketTimeoutException Thrown when a socket times out in a connect, read,
+ or write operation.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+UnknownHostException Thrown when you try to connect to a host that was not
+ found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipException Signals that a Zip exception of some sort has occurred.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+MessagingException Thrown when a write operation fails when sending a 
+\family typewriter
+Message
+\family default
+, or when an unexpected code is received from the remote host.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SOAPException Thrown when a problem when using 
+\family typewriter
+SOAP
+\family default
+ occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SyntaxException Exception thrown by the 
+\family typewriter
+XmlTokenizer
+\family default
+ when a syntax error is found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcException Used to alert the user of xml-rpc errors.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZLibException This exception may be dispatched by zlib routines.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+RuntimeException General runtime exception class.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+AppExitException This exception is thrown when 
+\family typewriter
+Event.handleOneEvent()
+\family default
+ encounters an event that requires the application to exit.
+ The main purpose of this event is to unwind the stack all the way back
+ to the main event loop so that the application can properly exit.
+ It is mostly used to exit the VM when a 
+\family typewriter
+Window
+\family default
+ is open with the 
+\family typewriter
+popup()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArithmeticException Thrown when an arithmetic problem occurs, usually a
+ division by zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArrayStoreException Thrown when the source and target arrays are not compatible
+ when using
+\begin_inset Newline newline
+\end_inset
+
+ 
+\family typewriter
+Vm.arrayCopy()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AssertionFailedError Exception dispatched when an assertion fails.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ClassCastException Thrown when a class is casted to an incompatible class.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ClassNotFoundException Thrown when a class is not found.
+ Were all required tcz/pdb files installed?
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GameEngineException An exception related to a game funcionality in the game
+ engine.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalAccessException Thrown when you try to load a private class using
+ 
+\family typewriter
+Class.newInstance()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalArgumentException Thrown when an illegal argument was passed to a
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalStateException Signals that a method has been invoked at an illegal
+ or inappropriate time.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IndexOutOfBoundsException Thrown when an index is used outside of the defined
+ bounds.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+ArrayIndexOutOfBoundsException Thrown when you try to access an array index
+ that is < 0 or >= 
+\family typewriter
+array.length
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+StringIndexOutOfBoundsException Thrown when you try to create a 
+\family typewriter
+String
+\family default
+ using the constructor that receives a byte array, an offset and the length.
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+IntHashtable.DuplicatedKeyException Exception thrown when 
+\family typewriter
+IntHashtable.allowDuplicateKeys
+\family default
+ is set to 
+\family typewriter
+false
+\family default
+ and one tries to insert a duplicated key in the 
+\family typewriter
+IntHashtable
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NullPointerException Thrown when a 
+\family typewriter
+null
+\family default
+ object has being used in the last operation.
+ 
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
 \begin_layout Part
 USER INTERFACE
 \end_layout
