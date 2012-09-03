@@ -5120,42 +5120,9 @@ When prompted for a password, just hit enter and leave it empty.
 \end_layout
 
 \begin_layout Standard
-Now you must go back to the iOS Provisioning Portal to create a new mobile
- provision.
-\end_layout
-
-\begin_layout Standard
-From the iOS Provisioning Portal, go to "App IDs" to create an id for your
- application.
- Make sure to double check everything when creating ids because once created
- they cannot be removed! (There's no limit to the number of app ids you
- can have, but you don't want to end up with dozens of unused ids cluttering
- your page.)
-\end_layout
-
-\begin_layout Standard
-For this first time, I suggest you to use the wildcard app id that should
- come configured by default.
- (If you don't have it, just create one using * as Bundle Identifier)
-\end_layout
-
-\begin_layout Standard
-Now move on to Provisioning, switch to the Distribution tab and click on
- "New Profile".
- In "Distribution Method" choose "In House", and use the same distribution
- certificate and app ids you already created.
- Name it and after submitting use the download option in the Distribution
- tab to download it to the same folder where you have your certificate and
- keystore.
-\end_layout
-
-\begin_layout Standard
-The mobile provision allows only the application with the specified id to
- run on the device.
- If you create the mobile provision using the wildcard app id, it will allow
- any application signed by you to work on the device, making it very useful
- for testing your applications without creating additional ids that can't
- be later removed.
+Now go back to the iOS Provisioning Portal to create a new mobile provision,
+ selecting the same distribution certificate created by our request.
+ Download the mobile provision to the same folder.
 \end_layout
 
 \begin_layout Standard
@@ -5232,20 +5199,6 @@ ios_distribution.p12
 \series default
  key store that contains the keys used to generate the certificate.
  Required to deploy the application and must not be password protected.
-\end_layout
-
-\begin_layout Description
-
-\family typewriter
-\series medium
-<user-defined
-\begin_inset space ~
-\end_inset
-
-name>.mobileprovision
-\family default
-\series default
- provisioning file that allows your application to be installed on the device.
 \end_layout
 
 \begin_layout Standard
@@ -6297,7 +6250,7 @@ Follow these steps:
 Download the webservice 
 \begin_inset CommandInset href
 LatexCommand href
-name "sample"
+name "(http://www.totalcross.com/activation/Activation_sample.rar) sample"
 target "http://www.totalcross.com/activation/Activation_sample.rar"
 
 \end_inset
@@ -6366,6 +6319,29 @@ SubmitActivation
 \end_layout
 
 \begin_layout Enumerate
+Besides the 
+\family typewriter
+activation.html
+\family default
+, there are three optional files: 
+\family typewriter
+activation_success.
+ html
+\family default
+ (which is shown if the activation succeeds), 
+\family typewriter
+activation_error.html
+\family default
+ (shown if the server rejects the activation), and 
+\family typewriter
+activation_nointernet.html
+\family default
+ (a test is made before calling the webservice to make sure that there's
+ internet, if there's not, this page is shown).
+ This way you can customize all messages in your own language.
+\end_layout
+
+\begin_layout Enumerate
 From your webservice, you can check the data that was received and you may
  return an error message to interrupt the activation.
 \begin_inset Newline newline
@@ -6382,7 +6358,11 @@ Settings.activationServerURI
 \family default
  (and optionally also the namespace using 
 \family typewriter
-Settings.activationServerNamespace
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+activationServerNamespace
 \family default
 ).
  This must be done inside the static initializer of your main class.
