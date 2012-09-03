@@ -7444,6 +7444,385 @@ The use of exceptions is one of the most powerful features of Java, and
  can greatly simplify finding errors, if it is used correctly.
 \end_layout
 
+\begin_layout Standard
+TotalCross has checked and unchecked exceptions.
+ The checked exceptions are 
+\family typewriter
+Exception
+\family default
+ subclasses and if they might happen in a code block, it must be surrounded
+ by a try-catch.
+ The unchecked exceptions are 
+\family typewriter
+RuntimeException
+\family default
+ subclasses and do not need to be treated.
+ The first kind of exceptions are usually errors that occur in a program,
+ whereas the second one are usually a programming bug.
+\end_layout
+
+\begin_layout Standard
+Below there are all TotalCross possible exceptions (except for Litebase
+ exceptions) and their description:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Throwable Base class of all Exceptions.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Error General Error class.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+NoClassDefFoundError Thrown when a class was not found during the parse
+ of 
+\family typewriter
+xxx.class
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchFieldError Thrown when a field was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchMethodError Thrown when a method was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+OutOfMemoryError Thrown when no more memory exists to continue the execution
+ of the last requested operation.
+ You should exit the program immediately.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Exception General exception class.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+AddressException Thrown by the 
+\family typewriter
+Address
+\family default
+ constructor if the given string address is invalid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AuthenticationException When an authentication fails.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CryptoException Thrown when something wrong occurs at the cryptographic
+ algorithms.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+NoSuchAlgorithmException This exception is thrown when a particular cryptographi
+c algorithm is requested but is not available in the environment.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+ElementNotFoundException Thrown when an element of a 
+\family typewriter
+Vector
+\family default
+ or a 
+\family typewriter
+Hashtable
+\family default
+ is not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FTPConnectionClosedException This exception is thrown when a FTP connection
+ is closed, maybe explicitly or by timeout.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageException This class is used to throw an exception when an image could
+ not be loaded for any reason.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InstantiationException Thrown when an abstract class or an interface is
+ trying to be 
+\family typewriter
+Class.newInstance()
+\family default
+'d.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InvalidDateException Represents a date that is invalid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InvalidNumberException Thrown when you try to convert a string that does
+ not represents a valid number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IOException Base class of all input/output exceptions.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+FileNotFoundException Thrown when a file was not found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalArgumentIOException Illegal argument passed to an IO method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SocketTimeoutException Thrown when a socket times out in a connect, read,
+ or write operation.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+UnknownHostException Thrown when you try to connect to a host that was not
+ found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZipException Signals that a Zip exception of some sort has occurred.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+MessagingException Thrown when a write operation fails when sending a 
+\family typewriter
+Message
+\family default
+, or when an unexpected code is received from the remote host.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SOAPException Thrown when a problem when using 
+\family typewriter
+SOAP
+\family default
+ occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SyntaxException Exception thrown by the 
+\family typewriter
+XmlTokenizer
+\family default
+ when a syntax error is found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcException Used to alert the user of xml-rpc errors.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZLibException This exception may be dispatched by zlib routines.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+RuntimeException General runtime exception class.
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+AppExitException This exception is thrown when 
+\family typewriter
+Event.handleOneEvent()
+\family default
+ encounters an event that requires the application to exit.
+ The main purpose of this event is to unwind the stack all the way back
+ to the main event loop so that the application can properly exit.
+ It is mostly used to exit the VM when a 
+\family typewriter
+Window
+\family default
+ is open with the 
+\family typewriter
+popup()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArithmeticException Thrown when an arithmetic problem occurs, usually a
+ division by zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArrayStoreException Thrown when the source and target arrays are not compatible
+ when using
+\begin_inset Newline newline
+\end_inset
+
+ 
+\family typewriter
+Vm.arrayCopy()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AssertionFailedError Exception dispatched when an assertion fails.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ClassCastException Thrown when a class is casted to an incompatible class.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ClassNotFoundException Thrown when a class is not found.
+ Were all required tcz/pdb files installed?
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GameEngineException An exception related to a game funcionality in the game
+ engine.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalAccessException Thrown when you try to load a private class using
+ 
+\family typewriter
+Class.newInstance()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalArgumentException Thrown when an illegal argument was passed to a
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IllegalStateException Signals that a method has been invoked at an illegal
+ or inappropriate time.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IndexOutOfBoundsException Thrown when an index is used outside of the defined
+ bounds.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+ArrayIndexOutOfBoundsException Thrown when you try to access an array index
+ that is < 0 or >= 
+\family typewriter
+array.length
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+StringIndexOutOfBoundsException Thrown when you try to create a 
+\family typewriter
+String
+\family default
+ using the constructor that receives a byte array, an offset and the length.
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+IntHashtable.DuplicatedKeyException Exception thrown when 
+\family typewriter
+IntHashtable.allowDuplicateKeys
+\family default
+ is set to 
+\family typewriter
+false
+\family default
+ and one tries to insert a duplicated key in the 
+\family typewriter
+IntHashtable
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+NullPointerException Thrown when a 
+\family typewriter
+null
+\family default
+ object has being used in the last operation.
+ 
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
 \begin_layout Part
 USER INTERFACE
 \end_layout
