@@ -13,21 +13,78 @@
 
 #include "gfx_ex.h"
 
-int realAppH;
+int realAppH,appW,appH;
+
+static char* vertexShaderCode(char *buf, int w, int h)
+{
+   // http://www.songho.ca/opengl/gl_projectionmatrix.html
+   xstrprintf(buf, "attribute vec4 vPosition;" 
+      "mat4 projectionMatrix = mat4( 2.0/%d.0, 0.0, 0.0, -1.0,"
+                           "0.0, -2.0/%d.0, 0.0, 1.0,"
+                           "0.0, 0.0, -1.0, 0.0,"
+                           "0.0, 0.0, 0.0, 1.0);"
+      "void main() {gl_Position = vPosition*projectionMatrix;}", w,h); // the matrix must be included as a modifier of gl_Position
+   return buf;
+}
+
+static char* fragmentShaderCode =
+   "precision mediump float;" 
+   "uniform vec4 vColor;" 
+   "void main() {gl_FragColor = vColor;}";
+
+GLuint loadShader(GLenum shaderType, const char* pSource) 
+{
+   GLuint shader = glCreateShader(shaderType);
+   if (shader) 
+   {
+      glShaderSource(shader, 1, &pSource, NULL);
+      glCompileShader(shader);
+   }
+   alert("shader: %d",shader);
+   return shader;
+}
+
+GLuint gProgram;
+GLuint gPositionHandle;
+GLuint gColorHandle;
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    nativeSetOffcreenBitmap
- * Signature: (Landroid/graphics/Bitmap;)V
+ * Method:    nativeInitSize
+ * Signature: (int,int)V
  */
-void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap(JNIEnv *env, jobject this, jobject mBitmap) // called only once
+void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jint width, jint height) // called only once
 {
-   ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
-   ex->mNativeBitmapID = (*env)->GetFieldID(env, JOBJ_CLASS(mBitmap), "mNativeBitmap", "I");
-   ex->mBitmap = (jobject)(*env)->NewGlobalRef(env, mBitmap);
-   graphicsLock(&screen,true);
-   graphicsLock(&screen,false);
+   char buf[512];
+      ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
+//   glDeleteProgram(program);
+//   glDeleteShader(shader);
+   
+   gProgram = glCreateProgram();
+   glAttachShader(gProgram, loadShader(GL_VERTEX_SHADER, vertexShaderCode(buf, width, height)));
+   glAttachShader(gProgram, loadShader(GL_FRAGMENT_SHADER, fragmentShaderCode));
+   glLinkProgram(gProgram);
+   glUseProgram(gProgram);
+   
+   alert("@@@@@@@@@ gProgram: %d",gProgram);
+
+   gColorHandle = glGetUniformLocation(gProgram, "vColor");
+   alert("@@@@@@@@@ 1");
+   gPositionHandle = glGetAttribLocation(gProgram, "vPosition"); // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   alert("@@@@@@@@@ 2");
+
+   glViewport(0, 0, width, height);
+   alert("@@@@@@@@@ 3");
+   glEnable(GL_BLEND); // enable color alpha channel
+   alert("@@@@@@@@@ 4");
+   glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+   alert("@@@@@@@@@ 5");
+   glEnable(GL_SCISSOR_TEST);
+   alert("@@@@@@@@@ 6");
+
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   alert("@@@@@@@@@ 7: %d",realAppH);
 }
 
 /*
@@ -66,8 +123,6 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 tr
    JNIEnv *env = getJNIEnv();
    if (env)
       (*env)->CallStaticVoidMethod(env, applicationClass, jupdateScreen, currentContext->dirtyX1,currentContext->dirtyY1,currentContext->dirtyX2,currentContext->dirtyY2,transitionEffect); // will call Java_totalcross_Launcher4A_nativeOnDraw
-   else
-      debug("thread not attached!");
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)

@@ -20,6 +20,13 @@
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
 
+#ifdef ANDROID
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+extern int appW,appH;
+#endif
+
+
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect);
@@ -828,8 +835,20 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    if ((y+height) > clipY2)    // line stops after clip y2
       height = clipY2-y;
 
+#ifdef ANDROID   
+   if (x == 0 && y == 0 && width == appW && height == appH)
+   {               
+      PixelConv pc;
+      pc.pixel = pixel;
+      glClearColor(pc.r / (float)255,pc.g/(float)255,pc.b/(float)255,1.0);
+      glClear(GL_COLOR_BUFFER_BIT);
+      return;
+   }            
+#endif
+
    if (height > 0 && width > 0)
    {
+      
       uint32 count;
       int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;

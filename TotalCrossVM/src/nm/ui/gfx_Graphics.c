@@ -31,6 +31,8 @@
 #elif defined(linux) && !defined(darwin)
  #include "linux/gfx_Graphics_c.h"
 #elif defined(ANDROID)
+ #include <GLES2/gl2.h>
+ #include <GLES2/gl2ext.h>
  #include "android/gfx_Graphics_c.h"
 #endif
 

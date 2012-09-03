@@ -89,11 +89,11 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_initializeVM
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    nativeSetOffcreenBitmap
+ * Method:    nativeInitSize
  * Signature: (Landroid/graphics/Bitmap;)V
  */
-JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap
-  (JNIEnv *, jobject, jobject);
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeInitSize
+  (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     totalcross_Launcher4A

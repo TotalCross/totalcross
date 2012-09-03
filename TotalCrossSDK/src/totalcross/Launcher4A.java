@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross;
 
 import totalcross.android.*;
@@ -23,8 +21,9 @@ import totalcross.android.compat.*;
 
 import java.util.*;
 
-import android.view.animation.*;
-import android.view.animation.Animation.AnimationListener;
+import javax.microedition.khronos.egl.*;
+import javax.microedition.khronos.opengles.*;
+
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -32,6 +31,7 @@ import android.graphics.*;
 import android.hardware.Camera;
 import android.location.*;
 import android.media.*;
+import android.opengl.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
@@ -42,13 +42,11 @@ import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
 
-final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
+final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyListener, LocationListener, GLSurfaceView.Renderer
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
-   public static Bitmap sScreenBitmap;
-   static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
@@ -61,6 +59,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   private static boolean initialized;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -88,7 +87,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   }
                   break;
                case CELLFUNC_START:
-                  telephonyManager = (TelephonyManager) instance.getContext().getSystemService(Context.TELEPHONY_SERVICE);
+                  telephonyManager = (TelephonyManager) loader.getSystemService(Context.TELEPHONY_SERVICE);
                   CellLocation.requestLocationUpdate();
                   telephonyManager.listen(phoneListener = new PhoneListener(), PhoneStateListener.LISTEN_CELL_LOCATION | PhoneStateListener.LISTEN_SIGNAL_STRENGTH);
                   break;
@@ -130,10 +129,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
-      surfHolder = getHolder();
-      surfHolder.addCallback(this);
-      setWillNotDraw(true);
-      setWillNotCacheDrawing(true);
+      
+      setEGLContextClientVersion(2); // Create an OpenGL ES 2.0 context.
+      setEGLConfigChooser(8, 8, 8, 8, 0, 0);
+      getHolder().setFormat(PixelFormat.RGBA_8888);
+      setRenderer(this); // Set the Renderer for drawing on the GLSurfaceView
+ //     setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // Render the view only when there is a change in the drawing data (must be after setRenderer!)
+            
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
@@ -143,10 +145,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
-
-   public static Context getAppContext()
+   
+   public void onDrawFrame(GL10 gl) 
    {
-      return instance.getContext();
+   }
+
+   public void onSurfaceCreated(GL10 gl, EGLConfig config) 
+   {
+      // here is where everything starts
+      if (eventThread == null)
+         eventThread = new TCEventThread(this);
    }
 
    static TelephonyManager telephonyManager;
@@ -182,23 +190,28 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private int getOrientation()
    {
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      WindowManager wm = (WindowManager)loader.getSystemService(Context.WINDOW_SERVICE);
       return wm.getDefaultDisplay().getOrientation();
    }
    
    private static int firstOrientationSize;
    
-   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
+   public void onSurfaceChanged(GL10 gl, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% ON SURFACE CHANGED INI");
+      nativeInitSize(w,h);
+      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% ON SURFACE CHANGED FIM");
+      
+      WindowManager wm = (WindowManager)loader.getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
       //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (sScreenBitmap == null) 
+      if (!initialized) 
       {
+         initialized = true;
          int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
@@ -232,9 +245,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             screenSize = screenSize0;
             AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
          }
-         sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
-         sScreenBitmap.eraseColor(0xFFFFFFFF);
-         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
          // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
@@ -271,8 +281,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               surfHolder.unlockCanvasAndPost(canvas);
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             }
@@ -288,17 +296,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("type",Loader.INVERT_ORIENTATION);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
-   }
-
-   public void surfaceCreated(SurfaceHolder holder)
-   {
-      // here is where everything starts
-      if (eventThread == null)
-         eventThread = new TCEventThread(this);
-   }
-
-   public void surfaceDestroyed(SurfaceHolder holder)
-   {
    }
 
    private static final int PEN_DOWN  = 1;
@@ -448,7 +445,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int TRANSITION_OPEN = 1;
    private static final int TRANSITION_CLOSE = 2;
    
-   static class ScreenView extends SurfaceView
+/*   static class ScreenView extends SurfaceView
    {
       public ScreenView(Context context)
       {
@@ -484,8 +481,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (scrView == null)
          {
             ViewGroup vg = (ViewGroup)instance.getParent();
-            scrView = new ScreenView(instance.getContext());
-            newView = new ImageView(instance.getContext());
+            scrView = new ScreenView(loader);
+            newView = new ImageView(loader);
             newView.setWillNotCacheDrawing(true);
             newView.setVisibility(ViewGroup.INVISIBLE);
             scrView.setVisibility(ViewGroup.INVISIBLE);
@@ -536,22 +533,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    static AnimationThread animt = new AnimationThread();
-   
+   */
    static void drawScreen()
    {
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
-      }
+      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% DRAW SCREEN");
+      instance.requestRender();
    }
 
    static void transitionEffectChanged(int type)
    {
-      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
+/*      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
          new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
-   }
+*/   }
    
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
@@ -559,20 +552,20 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       try
       {
          //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
+         if (!initialized || camera != null)
             return;
          
-         switch (transitionEffect)
+/*         switch (transitionEffect)
          {
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
                animt.startTransition(transitionEffect);
                // no break!
-            case TRANSITION_NONE:
+            case TRANSITION_NONE:*/
                rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
                drawScreen();
-               break;
-         }
+/*               break;
+         }*/
          //int ela = (int)(System.currentTimeMillis() - ini);
          //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
       }
@@ -683,7 +676,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeSetOffcreenBitmap(Bitmap bmp);
+   native void nativeInitSize(int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -729,7 +722,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void setSIP(int sipOption)
    {
-      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+      InputMethodManager imm = (InputMethodManager) loader.getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
       {
          case SIP_HIDE:
@@ -815,7 +808,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case VIBRATE:
          {
             if (vibrator == null)
-               vibrator = (Vibrator)instance.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+               vibrator = (Vibrator)loader.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(v);
             break;
          }
@@ -927,7 +920,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static int oldRingerMode = -1;
    public static void soundEnable(boolean enable)
    {
-      AudioManager am = (AudioManager)instance.getContext().getSystemService(Context.AUDIO_SERVICE);
+      AudioManager am = (AudioManager)loader.getSystemService(Context.AUDIO_SERVICE);
       if (oldRingerMode == -1) // save it so it can be recovered when vm quits
          oldRingerMode = am.getRingerMode();
       am.setRingerMode(enable ? AudioManager.RINGER_MODE_NORMAL : AudioManager.RINGER_MODE_SILENT); 
@@ -1060,7 +1053,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             }
             else
             {         
-               Geocoder g = new Geocoder(instance.getContext());
+               Geocoder g = new Geocoder(loader);
                List<Address> al = g.getFromLocationName(address, 1);
                if (al != null && al.size() > 0)
                {
