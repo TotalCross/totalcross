@@ -5120,9 +5120,42 @@ When prompted for a password, just hit enter and leave it empty.
 \end_layout
 
 \begin_layout Standard
-Now go back to the iOS Provisioning Portal to create a new mobile provision,
- selecting the same distribution certificate created by our request.
- Download the mobile provision to the same folder.
+Now you must go back to the iOS Provisioning Portal to create a new mobile
+ provision.
+\end_layout
+
+\begin_layout Standard
+From the iOS Provisioning Portal, go to "App IDs" to create an id for your
+ application.
+ Make sure to double check everything when creating ids because once created
+ they cannot be removed! (There's no limit to the number of app ids you
+ can have, but you don't want to end up with dozens of unused ids cluttering
+ your page.)
+\end_layout
+
+\begin_layout Standard
+For this first time, I suggest you to use the wildcard app id that should
+ come configured by default.
+ (If you don't have it, just create one using * as Bundle Identifier)
+\end_layout
+
+\begin_layout Standard
+Now move on to Provisioning, switch to the Distribution tab and click on
+ "New Profile".
+ In "Distribution Method" choose "In House", and use the same distribution
+ certificate and app ids you already created.
+ Name it and after submitting use the download option in the Distribution
+ tab to download it to the same folder where you have your certificate and
+ keystore.
+\end_layout
+
+\begin_layout Standard
+The mobile provision allows only the application with the specified id to
+ run on the device.
+ If you create the mobile provision using the wildcard app id, it will allow
+ any application signed by you to work on the device, making it very useful
+ for testing your applications without creating additional ids that can't
+ be later removed.
 \end_layout
 
 \begin_layout Standard
@@ -5199,6 +5232,20 @@ ios_distribution.p12
 \series default
  key store that contains the keys used to generate the certificate.
  Required to deploy the application and must not be password protected.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+<user-defined
+\begin_inset space ~
+\end_inset
+
+name>.mobileprovision
+\family default
+\series default
+ provisioning file that allows your application to be installed on the device.
 \end_layout
 
 \begin_layout Standard
