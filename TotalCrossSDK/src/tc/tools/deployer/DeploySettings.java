@@ -87,6 +87,8 @@ public class DeploySettings
    public static String installPlatforms = "";
 
    // iOS IPA required files
+   public static boolean buildIPA = false;
+   public static String certStorePath;
    public static java.io.File mobileProvision;
    public static java.io.File appleCertStore;
 

@@ -2179,7 +2179,7 @@ public final class Graphics4B
    private static void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
    {
       if (x >= w || y >= h || x < 0) return;
-      int i = y*w+x;
+      int i = x;
       int p = pixel[i];
       int r = (p>>16) & 0xFF;
       int g = (p>>8) & 0xFF;

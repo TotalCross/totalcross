@@ -426,9 +426,14 @@ public class GPS
       byte[] buf = this.buf;
       String ret = null;
       int len = 0;
+      int retry = 5;
+      int read;
 
-      while (sp.readBytes(buf, 0, 1) != -1)
+      while ((read = sp.readBytes(buf, 0, 1)) != -1)
       {
+         if (read == 0 && --retry <= 0)
+            throw new IOException("Invalid port: nothing to read.");
+         
          int c = buf[0] & 0xFF;
          if (c == '$')
             sb.setLength(0);

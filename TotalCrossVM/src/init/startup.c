@@ -510,7 +510,7 @@ jumpArgument:
          if (!parseScreenBounds(DEFAULT_BOUNDS, &defScrX, &defScrY, &defScrW, &defScrH))
             return exitProgram(110);
 #endif
-#ifndef PALMOS // we load libraries in the application's path too (guich@tc139: all platforms except palm)
+#if !defined (PALMOS) && !defined (darwin) || defined (THEOS) // we load libraries in the application's path too (guich@tc139: all platforms except palm)
       loadLibraries(currentContext, appPath, false);
 #endif      
       // 0. Initialize tcSettings structure
