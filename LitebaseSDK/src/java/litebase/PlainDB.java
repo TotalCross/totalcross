@@ -81,7 +81,7 @@ class PlainDB
    DataStreamLB basds; // juliana@253_8: now Litebase supports weak cryptography.
 
    /**
-    * The data stream to read from the basbufO.
+    * The data stream to read from the .dbo.
     */
    DataStreamLB dsdbo; // juliana@253_8: now Litebase supports weak cryptography.
 

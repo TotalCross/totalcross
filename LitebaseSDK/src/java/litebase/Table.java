@@ -257,6 +257,11 @@ class Table
    byte[] allRowsBitmap; // juliana@230_14
    
    /**
+    * An array of only one integer to convert to a byte array.
+    */
+   private int[] oneInt = new int[1];
+   
+   /**
     * Verifies if the index already exists.
     *
     * @param columnNumbers The columns that are part of this index.
@@ -2031,7 +2036,7 @@ class Table
                      switch (booleanTreeEvaluateJoin(list, rightTree)) // Verifies the right branch.
                      {
                         case VALIDATION_RECORD_NOT_OK:
-                           return VALIDATION_RECORD_NOT_OK;
+                           return VALIDATION_RECORD_INCOMPLETE_OK; // juliana@263_1: corrected a very old bug in a join with OR.
                         case VALIDATION_RECORD_INCOMPLETE:
                            return VALIDATION_RECORD_INCOMPLETE;
                         case VALIDATION_RECORD_OK:
@@ -2557,7 +2562,7 @@ class Table
       
       if (version == Table.VERSION)
       {
-         int[] intArray = new int[1];
+         int[] intArray = oneInt;
          
          i = n;
          while (--i > 0) 

@@ -2600,7 +2600,7 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                   switch (booleanTreeEvaluateJoin(context, rightTree, rsList, totalRs, heap)) // Verifies the right branch.
                   {
                      case VALIDATION_RECORD_NOT_OK: 
-                        return VALIDATION_RECORD_NOT_OK;
+                        return VALIDATION_RECORD_INCOMPLETE_OK; // juliana@263_1: corrected a very old bug in a join with OR.
                      case VALIDATION_RECORD_INCOMPLETE: 
                         return VALIDATION_RECORD_INCOMPLETE;
                      case VALIDATION_RECORD_OK:
