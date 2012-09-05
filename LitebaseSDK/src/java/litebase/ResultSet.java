@@ -559,7 +559,8 @@ public class ResultSet
    /**
     * Starting from the current cursor position, it reads all result set rows that are being requested. <code>first()</code>, <code>last()</code>, 
     * <code>prev()</code>, or <code>next()</code> must be used to set the current position, but not  <code>beforeFirst()</code> or 
-    * <code>afterLast()</code>. It doesn't return BLOB values. <code>null</code> is returned in their places instead.
+    * <code>afterLast()</code>. It doesn't return BLOB values. <code>null</code> is returned in their places instead. This method moves the cursor 
+    * to the row after the last one fetched.
     *
     * @param count The number of rows to be fetched, or -1 for all. 
     * @return A matrix, where <code>String[0]<code> is the first row, and <code>String[0][0], String[0][1]...</code> are the column elements of the 
@@ -665,7 +666,8 @@ public class ResultSet
    /**
     * Starting from the current cursor position, it reads all result set rows of the result set. <code>first()</code>,  <code>last()</code>, 
     * <code>prev()</code>, or <code>next()</code> must be used to set the current position, but not <code>beforeFirst()</code> or 
-    * <code>afterLast()</code>. It doesn't return BLOB values. <code>null</code> is returned in their places instead. 
+    * <code>afterLast()</code>. It doesn't return BLOB values. <code>null</code> is returned in their places instead. This method moves the cursor 
+    * to the row after the last one fetched.
     *
     * @return A matrix, where <code>String[0]<code> is the first row, and <code>String[0][0], String[0][1]...</code> are the column elements of the 
     * first row. Returns <code>null</code> if there's no more element to be fetched. Double/float values will be formatted using the
