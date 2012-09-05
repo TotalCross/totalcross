@@ -11343,6 +11343,35 @@ true
 
 \begin_layout FieldList
 \labelwidthstring 0
+changeHighlighted(Container
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+p,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+boolean
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+forward) Transfers the focus to the next or previous control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 enableUpdateScreen Set to 
 \family typewriter
 false
@@ -11529,6 +11558,75 @@ relative)
 \family default
  Same as the first one, but coordinates will be relative to the given control
  instead of the last one added.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\family typewriter
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height,
+\begin_inset space ~
+\end_inset
+
+Control
+\begin_inset space ~
+\end_inset
+
+relative,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged)
+\family default
+ Same as above, but with the parameter 
+\family typewriter
+screenChanged
+\family default
+, which indicates that a screen change (resize, collapse) occured and the
+ 
+\family typewriter
+reposition()
+\family default
+ method is calling this method.
+ Set by the system.
+ If you call this method directly, always pass 
+\family typewriter
+false
+\family default
+ to it.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11786,6 +11884,69 @@ millis)
 MainWindow.addTimer()
 \family default
  to add a timer whose target is this control.
+ Each time the timer ticks, a TIMER event will be posted to the control.
+ The timer does not interrupt the program during its execution at the timer
+ interval, it is scheduled along with application events.
+ The 
+\family typewriter
+Timer
+\family default
+ object returned from this method can be passed to 
+\family typewriter
+removeTimer()
+\family default
+ to remove the timer.
+ On Windows, the timer has a minimum resolution of 55 ms due to the native
+ Windows system clock resolution of 55 ms.
+ On Palm OS and other platforms, the minimum timer resolution is 10 ms.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If the control that holds the timer is removed from screen, the timer is
+ also disabled.
+ Consider using the dispatch-listener event model (
+\family typewriter
+addTimerListener()
+\family default
+) instead of creating a control just to catch the event (if this is the
+ case).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addTimer(TimerEvent
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+t,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+millis) Adds a timer to a control.
+ This method allows you to create an instance 
+\family typewriter
+TimerEvent
+\family default
+ (or any descendant) ahead of time and add it to the control.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11803,6 +11964,16 @@ timer)
 MainWindow.removeTimer()
 \family default
  to remove a timer associated with this control.
+ Removes a timer from a control.
+ 
+\family typewriter
+true
+\family default
+ is returned if the timer was found and removed and 
+\family typewriter
+false
+\family default
+ is returned if the timer could not be found (meaning it was not active).
 \end_layout
 
 \begin_layout FieldList
@@ -11828,6 +11999,30 @@ getHeight()
 
 \begin_layout FieldList
 \labelwidthstring 0
+getX2(),
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+getY2()
+\family default
+ Returns 
+\family typewriter
+x+width-1
+\family default
+ and 
+\family typewriter
+y+height-1
+\family default
+, respectively.
+
+\family typewriter
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 getParentWindow()
@@ -11835,6 +12030,31 @@ getParentWindow()
  Returns the parent window of this control.
  This is needed because the control’s parent may be a container, whose parent
  may be another container, and so on.
+ It returns 
+\family typewriter
+null
+\family default
+ if there's no parent (e.
+ g.: control still not added to any container).
+ If this control is a window, will return itself.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getParent() Returns the control's parent container.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getNext() Returns the next child in the parent's list of controls.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPrev() Returns the previous child in the parent's list of controls.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11844,9 +12064,31 @@ getParentWindow()
 repaint()
 \family default
  Marks the control for repaint.
- When you call repaint, the absolute area of the control regarding its parent
- window is invalidated (marked for repaint); then, the next time an event
- (a keypress, a timer, a pen event) occurs, the screen is updated.
+ When you call 
+\family typewriter
+repaint()
+\family default
+, the absolute area of the control regarding its parent window is invalidated
+ (marked for repaint); then, the next time an event (a keypress, a timer,
+ a pen event) occurs, the screen is updated.
+ If you call 
+\family typewriter
+repaint()
+\family default
+ and the control isn't effectively repainted, you can use the 
+\family typewriter
+repaintNow()
+\family default
+ method.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If you want to avoid a method call, you can do 
+\family typewriter
+Window.needsPaint = true;
+\family default
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11876,6 +12118,11 @@ enabled)
 
 \begin_layout FieldList
 \labelwidthstring 0
+isEnabled() Returns if this control can or not accept events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 setFont(Font
@@ -11885,6 +12132,12 @@ setFont(Font
 font)
 \family default
  Sets the font for the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFont() Gets the font of this control.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11910,6 +12163,12 @@ true
 requestFocus()
 \family default
  Sets the focus to this control.
+ Note that in penless devices its also needed to set 
+\family typewriter
+isHighlighting = false;
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11926,7 +12185,122 @@ on)
  controls.
  It makes it very easy to create keypads with push button groups to enter
  characters into edit controls, for example.
- See the PhoneDialog sample to learn how to use it.
+ If this control is a container, sets all its children to be focusless too.
+ A focusless control can receive and dispatch events, but cannot receive
+ focus.
+ Here's an example of how to use it to create a keypad: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// class fields
+\end_layout
+
+\begin_layout Plain Layout
+
+private PushButtonGroup numericPad;
+\end_layout
+
+\begin_layout Plain Layout
+
+private KeyEvent ke = new KeyEvent();
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// in the initUI method:
+\end_layout
+
+\begin_layout Plain Layout
+
+String []numerics = {"1","2","3","4","5","6","7","8","9","0",".","-"};
+\end_layout
+
+\begin_layout Plain Layout
+
+add(numericPad=new PushButtonGroup(numerics, false, -1, -1, 6, 4, true,
+ PushButtonGroup.BUTTON), RIGHT-2, TOP+2);
+\end_layout
+
+\begin_layout Plain Layout
+
+numericPad.setFocusLess(true);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// in the onEvent method
+\end_layout
+
+\begin_layout Plain Layout
+
+Control focus;
+\end_layout
+
+\begin_layout Plain Layout
+
+if (e.target == numericPad && (focus=getParentWindow().getFocus()) instanceof
+ Edit)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String s = numericPad.getSelectedCaption();
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (s != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		ke.key = s.charAt(0);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ke.target = focus;
+\end_layout
+
+\begin_layout Plain Layout
+
+		focus.onEvent(ke);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -11974,6 +12348,16 @@ int
 fore)
 \family default
  Sets background and foreground colors at once.
+ Calling this method is faster than calling 
+\family typewriter
+setBackColor()
+\family default
+ and 
+\family typewriter
+setForeColor()
+\family default
+ separately.
+ 
 \end_layout
 
 \begin_deeper
@@ -12061,6 +12445,142 @@ setTextShadowColor(int
 color)
 \family default
  Sets that the control's text will have a shadow.
+ The shadow is made drawing the button in 
+\family typewriter
+(x-1,y-1)
+\family default
+, 
+\family typewriter
+(x+1,y-1)
+\family default
+, 
+\family typewriter
+(x-1,y+1)
+\family default
+, and 
+\family typewriter
+(x+1,y+1)
+\family default
+ positions.
+ Defaults to -1, which means no shadow.
+ You can set pass 
+\family typewriter
+BRIGHTER_BACKGROUND
+\family default
+ or 
+\family typewriter
+DARKER_BACKGROUND
+\family default
+ as parameter, AFTER calling 
+\family typewriter
+setBackColor()
+\family default
+ or 
+\family typewriter
+setForeColor()
+\family default
+, to compute the color based on the background.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+c = new Label(....);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setBackColor(Color.BLUE);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setTextShadowColor(DARKER_BACKGROUND); // you may also set it directly
+ to a color:
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setTextShadowColor(Color.BLACK); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTextShadowColor() Returns the text shadow color of this control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isInsideOrNear(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+x,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+y) Returns 
+\family typewriter
+true
+\family default
+ if the point lies inside this control.
+ If it doesn't lie, but the device is a finger touch one, checks if the
+ distance is below the touch tolerance.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+postPressedEvent() Posts a 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event whith this control as target.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedEvent(Control
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+target) Creates a 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ if not yet created and returns it.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -12069,9 +12589,15 @@ color)
 \family typewriter
 reposition()
 \family default
- Repositions the control after something was changed.
+ Repositions the control after something has been changed.
  This method is called by the VM to reposition all controls on screen when
  a rotation occurs.
+ It calls again 
+\family typewriter
+setRect()
+\family default
+ with the original parameters.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -12117,6 +12643,13 @@ Graphics
  object to draw what you need on screen.
  The default's control font is already set, and the clipping is also set
  to the control's bounds.
+ When this method is called, the 
+\family typewriter
+Graphics
+\family default
+ object passed has been translated into the coordinate system of the control
+ and the area behind the control has already been painted.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -12210,6 +12743,628 @@ onFontChanged()
 setFont()
 \family default
  method is invoked.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width of this control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the preferred height of this control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resetSetPositions() Resets the original points that are set by the first
+ 
+\family typewriter
+setRect()
+\family default
+, so if you call 
+\family typewriter
+setRect()
+\family default
+ again, the old positions are replaced by the new ones.
+ The set positions are used when a rotation occurs.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSize() Returns the current size 
+\family typewriter
+(width,height)
+\family default
+ of this control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPos() Returns the current position 
+\family typewriter
+(x,y)
+\family default
+ of this control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisible(boolean
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+visible) Shows or "hides" this control.
+ Note that it remains attached to its container.
+ Calls 
+\family typewriter
+repaint()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isVisible() Returns 
+\family typewriter
+true
+\family default
+ if this control is visible; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAbsoluteRect() Returns the absolute coordinates of this control relative
+ to the 
+\family typewriter
+MainWindow
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+contains(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+x,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+y) Returns 
+\family typewriter
+true
+\family default
+ if the given 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ coordinate in the parent's coordinate system is contained within this control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+translateFromOrigin(Coord
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+z) Sets the given point to the absolute coordinate relative to the origin
+ window.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getGraphics() Returns a 
+\family typewriter
+Graphics
+\family default
+ object which can be used to draw in the control.
+ This method updates the single 
+\family typewriter
+Graphics
+\family default
+ object with the current control font and bounds.
+ It sets a clipping rectangle on the graphics, clipping it against all parent
+ areas.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+postEvent(Event
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+event) Posts an event.
+ The event pass will be posted to this control and all the parent controls
+ of this control (all the containers this control is within).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+event) Called to process key, pen, control and other posted events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+_onEvent(Event
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+e) Calls the event listeners and the 
+\family typewriter
+onEvent()
+\family default
+ method for this control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+updateScreen() This method causes the immediate screen update.
+ The screen is saved in a buffer and, when this method is called, the buffer
+ is transfered to the screen, using the 
+\family typewriter
+Container.
+\begin_inset Newline newline
+\end_inset
+
+nextTransitionEffect
+\family default
+ set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addPenListener(PenListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for pen events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addMouseListener(PenListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for mouse events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWindowListener(WindowListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for 
+\family typewriter
+Window
+\family default
+ events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addGridListener(GridListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for 
+\family typewriter
+Grid
+\family default
+ events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addListContainerListener(ListContainerListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for 
+\family typewriter
+ListContainer
+\family default
+ events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addFocusListener(FocusListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for focus events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addPressListener(PressListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for press events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addTimerListener(TimerListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for timer events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addKeyListener(KeyListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for key events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addHighlightListener(HighlightListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Adds a listener for highlight events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removePenListener(PenListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for pen events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeMouseListener(MouseListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for mouse events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeWindowListener(WindowListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for 
+\family typewriter
+Window
+\family default
+ events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeGridListener(GridListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for 
+\family typewriter
+Grid
+\family default
+ events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeListContainerListener(ListContainerListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for 
+\family typewriter
+ListContainer
+\family default
+ events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeFocusListener(FocusListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for focus events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removePressListener(PressListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for press events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeTimerListener(TimerListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for timer events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeKeyListener(KeyListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for key events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeHighlightListener(HighlightListener
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+listener) Removes a listener for highlight events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getEventListeners() Returns the event listeners array.
+ Note that each element is an instance of 
+\family typewriter
+Control.Listener
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isVisibleAndInside(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+x0,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+y0,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+xf,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+yf) Returns 
+\family typewriter
+true
+\family default
+ if this control is visible and inside these bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bringToFront() Send this control to the top of the parent's.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sendToBack() Send this control to the last place of the parent's.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChildOf(Container
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+p) Returns 
+\family typewriter
+true
+\family default
+ if this control is added to the given container at some higher level.
+ 
 \end_layout
 
 \begin_layout Chapter
