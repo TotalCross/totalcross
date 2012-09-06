@@ -207,6 +207,13 @@ public class TestJoin extends TestCase
       assertEquals(40, rs.getInt("age2"));
       rs.close();
       
+      assertNotNull(rs = driver.executeQuery("select name, name2 from person, person2 where person.name = person2.name2 and (person.name = 'RLN' or person2.name2 = 'RLN')"));
+      assertEquals(1, rs.getRowCount());
+      assertTrue(rs.next());
+      assertEquals("RLN", rs.getString("name"));
+      assertEquals("RLN", rs.getString("name2"));
+      rs.close();
+      
        // Tests the boolean operator NOT.
       assertNotNull(rs = driver.executeQuery("select name, name2, age, age2 from person, person2  where not age2 <> 40 or not person.name <> 'RLN'"));
       assertEquals(3, rs.getRowCount());
