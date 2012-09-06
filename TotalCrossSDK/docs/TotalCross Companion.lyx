@@ -13448,6 +13448,21 @@ ControlEvent
 
 \family typewriter
 \series medium
+CURSOR_CHANGED
+\family default
+ 
+\series default
+event sent when user calls 
+\family typewriter
+Edit.setCursorPos()
+\family default
+.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
 PRESSED
 \family default
 \series default
@@ -13537,6 +13552,21 @@ PRESSED
 
 \family typewriter
 \series medium
+SIP_CLOSED
+\family default
+ 
+\series default
+The event type fot the SIP being closed by the system.
+ Works on Android and iOS.
+ The application cannot see this event since it is interpected by the topmost
+ window.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
 HIGHLIGHT_IN
 \family default
 
@@ -13620,8 +13650,199 @@ true
 
 \end_deeper
 \begin_layout Standard
-Unlike the other controls, the grid control has its own set of event types
- defined on the grid event class:
+
+\family typewriter
+ControlEvent
+\family default
+ has the following public constructors and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlEvent() Constructs an empty 
+\family typewriter
+ControlEvent
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlEvent(int
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+type,
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+Control
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+c) Constructs a 
+\family typewriter
+ControlEvent
+\family default
+ of the given type and for the given target control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(Control
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+c) Updates the 
+\family typewriter
+ControlEvent
+\family default
+ setting 
+\family typewriter
+timestamp
+\family default
+, 
+\family typewriter
+consumed
+\family default
+, and 
+\family typewriter
+target
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Some controls have its own event class.
+ They are 
+\family typewriter
+Animation
+\family default
+, 
+\family typewriter
+Grid
+\family default
+, and 
+\family typewriter
+ListContainer
+\family default
+.
+ Their classes, along with their specific events, constructors, methods,
+ and fields are, respectively: 
+\end_layout
+
+\begin_layout Subsection
+AnimationEvent
+\end_layout
+
+\begin_layout Standard
+Events posted by an animation control.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Events
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+LOOP
+\family default
+\series default
+ Event generated when the animation loops.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+FRAME
+\family default
+\series default
+ Event generated when a new frame is displayed.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+FINISH
+\family default
+\series default
+ Event generated when the animation ends.
+\end_layout
+
+\begin_layout Subsubsection
+Constructor
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AnimationEvent(int
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+type,
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+Object
+\series medium
+
+\begin_inset space ~
+\end_inset
+
+
+\series default
+target) Constructs a new 
+\family typewriter
+Animation
+\family default
+ event, setting the type and target to the given parameters.
+ 
+\end_layout
+
+\begin_layout Subsection
+GridEvent
+\end_layout
+
+\begin_layout Standard
+An event generated when the user clicks on a grid or checks it.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Events
 \end_layout
 
 \begin_layout Description
@@ -13631,7 +13852,7 @@ Unlike the other controls, the grid control has its own set of event types
 SELECTED_EVENT
 \family default
 \series default
- generated when a new row is selected.
+ Event generated when a new row is selected.
 \end_layout
 
 \begin_layout Description
@@ -13641,8 +13862,8 @@ SELECTED_EVENT
 CHECK_CHANGED_EVENT
 \family default
 \series default
- if the grid has a check column, this event is generated when a grid row
- is checked or unchecked.
+ Event generated when the grid has a check column; this event is generated
+ when a grid row is checked or unchecked.
 \end_layout
 
 \begin_layout Description
@@ -13652,7 +13873,131 @@ CHECK_CHANGED_EVENT
 TEXT_CHANGED_EVENT
 \family default
 \series default
- generated when a cell of an editable column had its text changed.
+ Event generated when a cell of an editable column had its text changed.
+\end_layout
+
+\begin_layout Subsubsection
+Fields
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+row Stores the target row of this grid event.
+ If the user checked all checks (by clicking in the header check), it is
+ 
+\family typewriter
+Grid.ALL_CHECKED
+\family default
+; otherwise, if the user unchecked all lines, it is 
+\family typewriter
+Grid.
+\begin_inset Newline newline
+\end_inset
+
+ALL_UNCHECKED
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+col Stores the target column of this grid event.
+ On a grid that has a check column, the columns text starts from 1, otherwise,
+ if there is no check, it starts from 0.
+ 
+\end_layout
+
+\begin_layout Subsection
+ListContainerEvent
+\end_layout
+
+\begin_layout Standard
+An event generated when the user clicks on an 
+\family typewriter
+ListContainer
+\family default
+ item.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Events
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+ITEM_SELECTED_EVENT
+\family default
+\series default
+ Event generated when a new item was selected.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+LEFT_IMAGE_CLICKED_EVENT
+\family default
+ 
+\series default
+Event generated when the left image was clicked.
+ Verify the 
+\family typewriter
+isImage2
+\family default
+ member to determine the current image that's displayed.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+RIGHT_IMAGE_CLICKED_EVENT
+\family default
+ 
+\series default
+Event generated when the right image was clicked.
+ Verify the 
+\family typewriter
+isImage2
+\family default
+ member to determine the current image that's displayed.
+\end_layout
+
+\begin_layout Subsubsection
+Fields
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isImage2 
+\family typewriter
+true
+\family default
+ if the new image is the second one.
+ If there are two images, one as an unselected image and a second one as
+ the selected, using this field you can find which one is being displayed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+source The control that originated the event.
+ When the user clicks on an 
+\family typewriter
+Image
+\family default
+, the target is the 
+\family typewriter
+Image
+\family default
+, and the source is the control where the image is.
+ 
 \end_layout
 
 \begin_layout Section
@@ -13995,8 +14340,12 @@ Small programs can handle the events by implementing the
 \family typewriter
 onEvent()
 \family default
- method in the 
+ method in the
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 MainWindow
 \family default
  class, but it can become confusing if the program gets bigger.
@@ -14251,18 +14600,38 @@ The Event class
 \end_layout
 
 \begin_layout Standard
-Let's now look at the details of each 
+Let's now look at the details of each event class.
+ TotalCross has ten event classes in the 
 \family typewriter
-Event
+totalcross.
+\begin_inset Newline newline
+\end_inset
+
+ui
 \family default
- class.
- As already described, TotalCross has four classes in the 
-\family typewriter
-totalcross.ui
-\family default
- package: 
+ package: the already described 
 \family typewriter
 ControlEvent
+\family default
+, 
+\family typewriter
+AnimationEvent
+\family default
+, 
+\family typewriter
+GridEvent
+\family default
+, and
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ListContainerEvent
+\family default
+; and 
+\family typewriter
+MediaClipEvent, KeyEvent
 \family default
 , 
 \family typewriter
@@ -14270,9 +14639,22 @@ PenEvent
 \family default
 , 
 \family typewriter
-KeyEvent
+ScanEvent
 \family default
- and their parent class, 
+,
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+TimerEvent
+\family default
+, and 
+\family typewriter
+UIRobotEvent
+\family default
+.
+ Their parent class is 
 \family typewriter
 Event
 \family default
@@ -14285,7 +14667,7 @@ int
 \begin_inset space ~
 \end_inset
 
-type this is the event number, used to detect which event was posted.
+type This is the event number, used to detect which event was posted.
 \end_layout
 
 \begin_layout FieldList
@@ -14294,7 +14676,7 @@ Object
 \begin_inset space ~
 \end_inset
 
-target this one informs who is receiving the event (E.g.: the VM posts a 
+target This one informs who is receiving the event (E.g.: the VM posts a 
 \family typewriter
 PenEvent.PEN_DOWN
 \family default
@@ -14303,6 +14685,9 @@ PenEvent.PEN_DOWN
 ControlEvent.PRESSED
 \family default
 ).
+ For user-interface events, this is the control the event is associated
+ with.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -14311,7 +14696,7 @@ int
 \begin_inset space ~
 \end_inset
 
-timeStamp contains the time stamp at which the event was created.
+timeStamp Contains the time stamp at which the event was created.
 \end_layout
 
 \begin_deeper
@@ -14354,7 +14739,7 @@ boolean
 \begin_inset space ~
 \end_inset
 
-consumed when set to true during the event propagation, breaks the propagation
+consumed When set to true during the event propagation, breaks the propagation
  chain.
 \end_layout
 
@@ -14393,17 +14778,49 @@ s objects; so, if you just save a reference to the object instead of the
 
 \end_deeper
 \begin_layout Standard
-The 
-\family typewriter
-Event
-\family default
- class also has a static method called 
-\family typewriter
-getNextAvailableEventId()
-\family default
-.
- This method is used to avoid conflicts when your application or library
- creates a new 
+The Event class has two constructors and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Event(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+target,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+timeStamp) Constructs a new event based on the given parameters.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Event() Constructs a new event with the current time stamp.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+touch() Updates the time stamp parameter with the current time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getNextAvailableEventId() This static method is used to avoid conflicts
+ when your application or library creates a new 
 \family typewriter
 Event
 \family default
@@ -14412,38 +14829,138 @@ Event
  
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+isAvailable() Returns 
+\family typewriter
+true
+\family default
+ if there is an event available in the VM event queue.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the target object and the
+ event object.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clearQueue(int
+\begin_inset space ~
+\end_inset
+
+type) Clears the event queue.
+ Some types of events can be ignored.
+ 0 must be passed to ignore all types.
+ 
+\end_layout
+
+\begin_layout Standard
+The event classes that have not been described before are:
+\end_layout
+
+\begin_layout Subsection
+PenEvent
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+PenEvent
+\family default
+ is a pen down, up, move or drag event.
+ A pen drag occurs when the pen moves while the screen is pressed.
+ 
+\end_layout
+
 \begin_layout Standard
 The 
 \family typewriter
 PenEvent
 \family default
- has three members: 
+ class has the following event types, fields, methods, and just a omitted
+ public default constructor:
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-x
+\series medium
+PEN_DOWN
 \family default
-, 
+\series default
+ The event type for a pen or mouse down.
+ 
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-y
+\series medium
+PEN_UP
 \family default
- and 
+\series default
+ The event type for a pen or mouse up.
+ 
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-modifiers
+\series medium
+PEN_DRAG
 \family default
-.
- The coordinates are stored in the 
+\series default
+ The event type for a pen or mouse drag.
+ 
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-x
+\series medium
+PEN_DRAG_START
 \family default
-, 
+\series default
+ The event type for a pen or mouse drag start.
+ 
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-y
+\series medium
+PEN_DRAG_END
 \family default
-; 
-\family typewriter
-modifiers
-\family default
- is not used on the PalmOS platform, only on the other platforms.
- The last member is the state of the modifier keys when the event occured.
+\series default
+ The event type for a pen or mouse drag end.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+x,
+\begin_inset space ~
+\end_inset
+
+y The location of the event.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+absoluteX,
+\begin_inset space ~
+\end_inset
+
+absoluteY The absolute location of the event.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+modifiers This is not used on the Palm OS platform, only on the other platforms,
+ which is the state of the modifier keys when the event occured.
  This is an 
 \family typewriter
 OR
@@ -14455,35 +14972,258 @@ DeviceKeys
  interface.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+update(Control
+\begin_inset space ~
+\end_inset
+
+c,int
+\begin_inset space ~
+\end_inset
+
+absoluteX,int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+absoluteY,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+type,int
+\begin_inset space ~
+\end_inset
+
+modifiers) Updates this event setting also 
+\family typewriter
+timestamp
+\family default
+, 
+\family typewriter
+consumed
+\family default
+ and 
+\family typewriter
+target
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getEventName(int
+\begin_inset space ~
+\end_inset
+
+type) Returns the event name.
+ Used to debugging.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation with the event name, position,
+ and the event object.
+\end_layout
+
+\begin_layout Subsection
+KeyEvent
+\end_layout
+
+\begin_layout Standard
+A 
+\family typewriter
+KeyEvent
+\family default
+ is a key press event.
+ 
+\end_layout
+
 \begin_layout Standard
 The 
 \family typewriter
 KeyEvent
 \family default
- has also two members: 
+ class has the following event types, fields, constructors, and methods:
+\end_layout
+
+\begin_layout Description
+
 \family typewriter
-key
+\series medium
+KEY_PRESS
 \family default
- and 
+ 
+\series default
+The event type for a key press event.
+ Device keys are handled in the
 \family typewriter
-modifiers
+\series medium
+ SPECIAL_KEY _PRESS
+\family default
+\series default
+ event.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+ACTION_KEY_PRESS
+\family default
+ The event type for a focus being transfered to this control with the ENTER
+ or ACTION keys.
+
+\family typewriter
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+SPECIAL_KEY_PRESS
+\family default
+ The event type for a device key press event.
+ Note that some keys are posted only when they are released.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+key The key pressed or entered by other means (grafitti input).
+ This is either a normal character key (if the value is < 70000, values
+ from the ASCII table) or one of the special keys defined in the 
+\family typewriter
+DeviceKeys
+\family default
+ interface.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+modifiers The state of the modifier keys when the event occured.
+ This is a 
+\family typewriter
+OR
+\family default
+'ed combination of the modifiers present in the 
+\family typewriter
+DeviceKeys
+\family default
+ interface.
+ It is used on all platforms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+KeyEvent() Constructs a 
+\family typewriter
+KeyEvent
+\family default
+, assigning the type as 
+\family typewriter
+KEY_PRESS
 \family default
 .
  
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+KeyEvent(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+modifiers) Creates a new instance of a 
 \family typewriter
-key
+KeyEvent
 \family default
- can assume values from the ASCII table and special ones defined in the
- t
+ with the specified type (which must be either 
 \family typewriter
-otalcross.sys.Specialkeys
+KEY_PRESS
 \family default
- interface.
+, 
+\family typewriter
+ACTION_KEY_PRESS
+\family default
+, or 
+\family typewriter
+SPECIAL_KEY_PRESS
+\family default
+), key and modifiers (state of the modifier keys for this event).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isActionKey() Returns 
+\family typewriter
+true
+\family default
+ if the key press is an ACTION or ENTER one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isUpKey() Returns 
+\family typewriter
+true
+\family default
+ if the key press is any kind of the possible ones that means UP.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isDownKey() Returns true if the key press is any kind of the possible ones
+ that means DOWN.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isNextKey() Returns true if the key press is any kind of the possible ones
+ that means forward (TAB, PAGE_DOWN, DOWN, RIGHT, etc).
  
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isPrevKey() Returns 
 \family typewriter
-modifiers
+true
 \family default
- is used on all platforms.
+ if the key press is any kind of the possible ones that means previous (PAGE_UP,
+ UP, LEFT, etc).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation with the event name, the key
+ pressed, and the event object.
 \end_layout
 
 \begin_layout Standard
@@ -14492,7 +15232,7 @@ Some of the keys defined in
 totalcross.sys.SpecialKeys
 \family default
  need a special code to be manipulated: they are not handled by the application
- unless the app requests it.
+ unless the application requests it.
  For example, the 
 \family typewriter
 totalcross.sys.SpecialKeys.UP
@@ -14557,6 +15297,341 @@ Vm.interceptSpecialKeys()
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+MediaClipEvent 
+\end_layout
+
+\begin_layout Standard
+This class represents the events posted by a soundclip control.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+MediaClipEvent
+\family default
+ class has the following event types and, constructors:
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+STARTED
+\family default
+\series default
+ The event type when the play starts.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+STOPPED
+\family default
+ 
+\series default
+The event type when the play ends.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+CLOSED
+\family default
+ The event type when the play pauses.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+ERROR
+\family default
+\series default
+ The event type when an error occurs.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+END_OF_MEDIA
+\family default
+\series default
+ The event type when the end of the media is reached.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MediaClipEvent(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+target) Constructs a 
+\family typewriter
+MediaClipEvent
+\family default
+, setting the type and target to the given parameters.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MediaClipEvent() Constructs an empty 
+\family typewriter
+MediaClipEvent
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+ScanEvent
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+ScanEvent
+\family default
+ is an event thrown by the barcode scanner.
+ Used in the 
+\family typewriter
+Scanner
+\family default
+ class.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ScanEvent
+\family default
+ class has the following event types, one field, one method, and an omitted
+ public default constructor:
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+SCANNED
+\family default
+ The event type for a scanner scanning event.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+BATTERY_ERROR
+\family default
+ The event type for a scanner low battery event.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+TRIGGERED
+\family default
+\series default
+ The event type for a scanner triggered: A scan attempt was initiated -
+ hard or soft trigger.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+data The data resulting from the scan when the event type is 
+\family typewriter
+SCANNED
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(int
+\begin_inset space ~
+\end_inset
+
+type) Updates a scan event with the given type.
+ The target is always 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+TimerEvent
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+TimerEvent
+\family default
+ represents a control's timer.
+ Timers are created and destroyed using the 
+\family typewriter
+addTimer()
+\family default
+ and 
+\family typewriter
+removeTimer()
+\family default
+ methods present in the 
+\family typewriter
+Control
+\family default
+ class.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+TimerEvent
+\family default
+ class has the following event type, fields, one method, and one public
+ default constructor:
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+TRIGGERED 
+\family default
+\series default
+The event type for a triggered timer.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+millis The timer interval in milliseconds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastTick The timestamp of the last tick.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+next The next timer in the linked list.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+triggered A flag set when the timer event is being posted.
+ With it, you can test from various timers to the same target control when
+ one of them is dispatched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TimerEvent() Constructs a new 
+\family typewriter
+TimerEvent
+\family default
+, setting the type to 
+\family typewriter
+TRIGGERED
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation with the 
+\family typewriter
+millis
+\family default
+ field and the event object.
+\end_layout
+
+\begin_layout Section
+UIRobotEvent
+\end_layout
+
+\begin_layout Standard
+Event sent when a robot runs.
+ The target is always the 
+\family typewriter
+MainWindow
+\family default
+'s instance.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+UIRobotEvent
+\family default
+ class has the following events types and fields:
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+ROBOT_FAILED 
+\family default
+\series default
+Event indicating that the robot has failed.
+ Check the 
+\family typewriter
+failureReason
+\family default
+ field for more information.
+ 
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+\series medium
+ROBOT_SUCCEED
+\family default
+ 
+\series default
+Event indicating that the robot has succeed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+robotName The name of the robot that was running.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+failureReason The reason of the failure, if any.
+ 
 \end_layout
 
 \begin_layout Chapter
