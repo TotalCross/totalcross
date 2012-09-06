@@ -697,7 +697,7 @@ true
 
 \end_deeper
 \begin_layout Standard
-The TotalCross vm also has a drawback:
+The TotalCross VM also has a drawback:
 \end_layout
 
 \begin_layout Itemize
@@ -1169,7 +1169,7 @@ In most situations, you will install several programs that will share the
  same TCVM.
  For instance, you can install 10 or more samples and a single virtual machine.
  However, if you're deploying an application to your costumer, you can package
- the vm with your application, using the 
+ the VM with your application, using the 
 \family typewriter
 tc.Deploy
 \family default
@@ -1458,7 +1458,7 @@ linux
 .tcz
 \family default
  file and a binary file.
- They must be copied to where the vm is, or a folder below.
+ They must be copied to where the VM is, or a folder below.
 \end_layout
 
 \begin_layout Itemize
@@ -1992,7 +1992,8 @@ You may also add the path to the TotalCross
 \family default
  file (located in 
 \family typewriter
-TotalCrossSDK/dist/tc.jar
+TotalCrossSDK/dist/tc.
+ jar
 \family default
 ) to your CLASSPATH environment variable (or create one if the variables
  does not exists).
@@ -2123,7 +2124,8 @@ Otherwise, the Java compiler won't be able to find the TotalCross classes
 If successful, the Java compiler should finish silently, creating a new
  file named 
 \family typewriter
-HelloWorld.class
+HelloWorld.
+ class
 \family default
 .
 \end_layout
@@ -2286,7 +2288,7 @@ install
 We should be able now to run the Win32 version of our application, so let's
  move to 
 \family typewriter
-./install/win32
+./install/ win32
 \family default
  and run the executable 
 \family typewriter
@@ -3690,7 +3692,7 @@ path
 
 type
 \family default
- : Packages the vm (and optionally Litebase) with the application, creating
+ : Packages the VM (and optionally Litebase) with the application, creating
  a single installation file.
  The type parameter can be one of the following: 
 \family typewriter
@@ -3742,7 +3744,7 @@ etc
 \end_inset
 
 The files are always installed at the same folder of the application, so
- each application will have its own vm/litebase.
+ each application will have its own VM/litebase.
  You can optionally set four environment variables, pointing to the folder
  of each SDK (these will have priority over the other locations previously
  described): 
@@ -3844,7 +3846,7 @@ key
 \family typewriter
 .tcz
 \family default
- file with the given registration key (used when you purchase a vm license).
+ file with the given registration key (used when you purchase a VM license).
 \end_layout
 
 \begin_layout Itemize
@@ -5035,8 +5037,11 @@ Now run the following command on the shell:
 \begin_layout Standard
 
 \family typewriter
-openssl req -nodes -newkey rsa:2048 -keyout request.key -out request.csr -config
- config
+openssl req -nodes -newkey rsa:2048 -keyout request.key -out 
+\begin_inset Newline newline
+\end_inset
+
+request.csr -config config
 \end_layout
 
 \begin_layout Standard
@@ -5096,8 +5101,11 @@ ios_distribution.cer
 \begin_layout Standard
 
 \family typewriter
-openssl x509 -in ios_distribution.cer -inform DER -out ios_distribution.
- pem -outform PEM
+openssl x509 -in ios_distribution.cer -inform DER -out 
+\begin_inset Newline newline
+\end_inset
+
+ios_distribution.pem -outform PEM
 \end_layout
 
 \begin_layout Standard
@@ -5111,8 +5119,11 @@ ios_distribution.pem
 \begin_layout Standard
 
 \family typewriter
-openssl pkcs12 -export -inkey request.key -in ios_distribution.pem -out ios_distri
-bution.p12
+openssl pkcs12 -export -inkey request.key -in ios_distribution.pem 
+\begin_inset Newline newline
+\end_inset
+
+-out ios_distribution.p12
 \end_layout
 
 \begin_layout Standard
@@ -8048,6 +8059,27 @@ The decision of which user interface to use must be made in the main window's
 RuntimeException
 \family default
  will be thrown.
+ The other possible values to 
+\family typewriter
+type
+\family default
+ are: 
+\family typewriter
+Settings.PalmOS
+\family default
+, 
+\family typewriter
+Settings.WinCE
+\family default
+, 
+\family typewriter
+Settings.Flat
+\family default
+, and 
+\family typewriter
+Settings.Vista
+\family default
+.
 \begin_inset Newpage newpage
 \end_inset
 
@@ -9785,7 +9817,11 @@ public class Foo extends MainWindow
 \end_layout
 
 \begin_layout Standard
-The VM first calls the MainWindow default constructor (in this case, 
+The VM first calls the 
+\family typewriter
+MainWindow
+\family default
+ default constructor (in this case, 
 \family typewriter
 Foo()
 \family default
@@ -9832,15 +9868,17 @@ exit()
 \family default
  or 
 \family typewriter
-exec
+exec()
 \family default
-(), or even when the application is halted by an unhandled exception.
+, or even when the application is halted by an unhandled exception.
  However, under abnormal circumstances where a fatal error occurs, reseting
  the pda, the 
 \family typewriter
 onExit()
 \family default
  method is not called.
+ When this is called, all threads are already killed.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -9925,8 +9963,38 @@ setDefaultFont()
 
 \end_layout
 
+\begin_layout Standard
+The style can be: 
+\family typewriter
+Window.NO_BORDER
+\family default
+, 
+\family typewriter
+Window.RECT_BORDER
+\family default
+, 
+\family typewriter
+Window.ROUND_BORDER
+\family default
+, 
+\family typewriter
+Window.TAB_BORDER
+\family default
+, or 
+\family typewriter
+Window.TAB_ONLY_BORDER
+\family default
+.
+\end_layout
+
 \begin_layout Section
 Useful mehtods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDefaultFont() Returns the default font.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -9939,12 +10007,23 @@ exit(int
 
 exitCode)
 \family default
- exits the program, calling 
+ Exits the program, calling 
 \family typewriter
 onExit()
 \family default
  before.
- In Android, you can exit softly by using 
+ It will exit after executing any pending events.
+ If the underlying system supports it, the 
+\family typewriter
+exitCode
+\family default
+ passed is returned to the program that started the application.
+ Note: on Palm OS and on AppletViewer/Browser the 
+\family typewriter
+exitCode
+\family default
+ is useless.
+ On Android, you can exit softly by using 
 \family typewriter
 SOFT
 \family default
@@ -9953,6 +10032,7 @@ _
 EXIT
 \family default
  as the exit code.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -9973,7 +10053,7 @@ int
 
 millis)
 \family default
- adds a timer.
+ Adds a timer.
  The 
 \family typewriter
 Timer
@@ -9999,7 +10079,7 @@ removeTimer(Timer
 
 timer)
 \family default
- removes the given 
+ Removes the given 
 \family typewriter
 timer
 \family default
@@ -10012,16 +10092,45 @@ timer
 \family typewriter
 getCommandLine()
 \family default
- if this process was executed by another process (e.g.: using the 
+ If this process was executed by another process (e.g.: using the 
 \family typewriter
-totalcross.sys.Vm.exec()
+Vm.exec()
 \family default
  method), this method gets the command line passed.
+\begin_inset Newline newline
+\end_inset
+
+On Android, you can start an application using adb: 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+adb shell am start -a android.intent.action.MAIN -n totalcross.app.
+\begin_inset Newline newline
+\end_inset
+
+uigadgets/.UIGadgets -e cmdline "Hello world"
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+In the sample above, we're starting UIGadgets.
+ Your application should be: 
+\family typewriter
+totalcross.app.
+\begin_inset Newline newline
+\end_inset
+
+yourMainWindowClass/.yourMainWindowClass
+\family default
+.
+ 
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
-\labelwidthstring 0
+\begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -10051,7 +10160,7 @@ When you click on the application's icon, there’s no command line.
 \family typewriter
 getMainWindow()
 \family default
- returns the instance of the current main window.
+ Returns the instance of the current main window.
  You can use it to get access to methods of the 
 \family typewriter
 MainWindow
@@ -10078,7 +10187,110 @@ UIGadgets instance = (UIGadgets)MainWindow.getMainWindow();
 \family typewriter
 getScreenShot()
 \family default
- returns an image with the screenshot of the application.
+ Returns an image with the screenshot of the application.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img = MainWindow.getScreenShot();
+\end_layout
+
+\begin_layout Plain Layout
+
+File f = new File(Settings.onJavaSE? "screen.png" : "/sdcard/screen.png", File.CREAT
+E_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+img.createPng(f);
+\end_layout
+
+\begin_layout Plain Layout
+
+f.close();
+\end_layout
+
+\end_inset
+
+Note that the font varies from device to device and even to desktop.
+ So, if you want to compare a device's screen shot with one taken on the
+ desktop, be sure to set the default font in both to the same, like using
+ 
+\family typewriter
+setDefaultFont(Font.getFont(false,20))
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+minimize() Notifies the application that it should be minimized, that is,
+ transfered to the background.
+ Whenever the application is minimized, the following call back function
+ will be called: 
+\family typewriter
+onMinimize()
+\family default
+.
+ Note: On Android, calling 
+\family typewriter
+minimize()
+\family default
+ will pause the application execution and it can only be restored manually
+ by the user.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+restore() Notifies the application that it should be restored, that is,
+ transfered to the foreground.
+ Whenever the application is restored, the following call back function
+ will be called: 
+\family typewriter
+onRestore()
+\family default
+.
+ Note: This method is supported on Android but the user must restore the
+ application manually.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onMinimize() Called just after the application is minimized.
+ Currently, this is only supported on Java, BlackBerry, Windows CE, Windows
+ 32, and Android.
+ When the 
+\family typewriter
+onMinimize()
+\family default
+ is called, the screen will only be able to be updated after it resumes
+ (in other words, calling 
+\family typewriter
+repaint()
+\family default
+ or 
+\family typewriter
+repaintNow()
+\family default
+ from the 
+\family typewriter
+onMinimize()
+\family default
+ method has no effect).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onRestore() Called just after the application is restored.
+ Currently, this is only supported on Java, BlackBerry, Windows CE, Windows
+ 32, and Android.
 \end_layout
 
 \begin_layout Section
@@ -10144,8 +10356,11 @@ TableNotClosedException
  will be issued).
  So, it's a good thing to call 
 \family typewriter
-LitebaseConnection.
- closeAll()
+
+\begin_inset Newline newline
+\end_inset
+
+LitebaseConnection.closeAll()
 \family default
  in your Litebase instances in the 
 \family typewriter
@@ -10979,12 +11194,17 @@ FontMetrics
 
 fm
 \family default
- The FontMetrics object created from the control’s assigned 
+ The 
+\family typewriter
+FontMetrics
+\family default
+ object created from the control’s assigned 
 \family typewriter
 Font
 \family default
 .
  Always recreated when the font changes.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -11068,9 +11288,145 @@ clearValueStr
 \family typewriter
 isHighlighting
 \family default
- If true, the user is using the arrows to navigate across the controls.
- If false, the currently focused control is using the keys for its own purposes.
- If the device is penless and the control is lost, try setting this to true.
+ If 
+\family typewriter
+true
+\family default
+, the user is using the arrows to navigate across the controls, that is
+ the keyboard arrows will be used to highlight the controls until one is
+ selected.
+ If 
+\family typewriter
+false
+\family default
+, the currently focused control is using the keys for its own purposes.
+ If the device is penless and the control is lost, try setting this to 
+\family typewriter
+true
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+Setting this to 
+\family typewriter
+true
+\family default
+ will cause the 
+\family typewriter
+KeyEvent
+\family default
+ to be intercepted and handled by the method 
+\family typewriter
+changeHighlighted()
+\family default
+.
+ When the user press the ACTION (or ENTER) key to use the control, this
+ flag is set to 
+\family typewriter
+false
+\family default
+ and the focus will be set to the control, so it be able to use the arrows
+ to navigate inside it.
+ The control must then set this to 
+\family typewriter
+true
+\family default
+ when finish using it or press the ACTION button again (which then sets
+ the flag to 
+\family typewriter
+true
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableUpdateScreen Set to 
+\family typewriter
+false
+\family default
+ to disallow the screen update.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusTraversable Defines if this control can receive focus by using the
+ arrow keys.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+textShadowColor The shadow color to be applied to this control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEventFirst Set to 
+\family typewriter
+true
+\family default
+ to call 
+\family typewriter
+onEvent()
+\family default
+ before calling the event listeners.
+ By default, the event listener is called before the 
+\family typewriter
+onEvent()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+transparentBackground Set the background to be transparent, by not filling
+ the control's area with the background color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusOnPenDown 
+\family typewriter
+true
+\family default
+ means this control expects to get focus on a 
+\family typewriter
+PEN_DOWN
+\family default
+ event.
+ If 
+\family typewriter
+focusOnPenDown
+\family default
+ is 
+\family typewriter
+false
+\family default
+, focus will be set on 
+\family typewriter
+PEN_UP
+\family default
+ instead.
+ This can be used for things like drag-scrollable list controls that contain
+ controls as list items, to avoid setting focus to an item (and therefore
+ changing the selection) during a drag-scroll.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+callListenersOnAllTargets 
+\family typewriter
+true
+\family default
+ means that event listeners will be called without verifying that the event
+ target is this.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -13034,7 +13390,7 @@ SpecialKeys
 Vm.showKeyCodes(boolean on)
 \family default
 .
- When this mode is on, each time a key is pressed, the vm shows an alert
+ When this mode is on, each time a key is pressed, the VM shows an alert
  with the code.
  Then use this key code in the 
 \family typewriter
