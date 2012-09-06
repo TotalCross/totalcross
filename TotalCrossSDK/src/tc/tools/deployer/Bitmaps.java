@@ -612,6 +612,11 @@ class IconStore extends Hashtable
    private IconStore() throws IOException
    {
       super(30);
+      if (DeploySettings.classPath != null && DeploySettings.classPath.length > 0)
+      {
+         for (int i = DeploySettings.classPath.length - 1 ; i >= 0 ; i--)
+            addFrom(DeploySettings.classPath[i]);
+      }
       addFrom(DeploySettings.mainClassDir);
       addFrom(DeploySettings.baseDir);
       addFrom(".");
@@ -656,7 +661,7 @@ class IconStore extends Hashtable
    {
       int largestIconSize = 0;
 
-      if (path != null)
+      if (path != null && new File(path).isDir())
       {
          String[] files = File.listFiles(path, false);
          if (files != null)
