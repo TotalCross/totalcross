@@ -125,11 +125,11 @@ public final class Utils
 
       //flsobral@tc125: added more info on v2
       info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
-      info.put("COD_ATIVACAO", Settings.activationId);
+      if (Settings.activationId != null) info.put("COD_ATIVACAO", Settings.activationId);
 
       //flsobral@tc138: v3 info
-      info.put("IMEI", Settings.imei);
-      info.put("SERIAL", Settings.romSerialNumber);
+      if (Settings.imei != null) info.put("IMEI", Settings.imei);
+      if (Settings.romSerialNumber != null) info.put("SERIAL", Settings.romSerialNumber);
       
       return info;
    }

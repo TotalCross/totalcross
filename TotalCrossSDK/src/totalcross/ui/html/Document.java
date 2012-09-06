@@ -97,12 +97,12 @@ public class Document extends ScrollContainer
    public Vector vForms = new Vector(2);
    
    /**
-    * The password mode for the Edits. Defaults to Edit.PASSWORD.
+    * The password mode for the Edits. Defaults to Edit.PASSWORD_ALL.
     * 
     * @see totalcross.ui.Edit#PASSWORD
     * @see totalcross.ui.Edit#PASSWORD_ALL
     */
-   public byte passwordMode = Edit.PASSWORD;
+   public byte passwordMode = Edit.PASSWORD_ALL;
    
    /**
    * Constructor

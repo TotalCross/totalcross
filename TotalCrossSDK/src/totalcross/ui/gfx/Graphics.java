@@ -104,34 +104,40 @@ public final class Graphics
    /** The constant for a draw operation where the destination is replaced with source pixels (copy mode). */
    public static final int DRAW_PAINT         = 0;
 
-   /** The constant for a draw operation where the destination is cleared where source pixels are off (AND mode). */
+   /** The constant for a draw operation where the destination is cleared where source pixels are off (AND mode). 
+    * @deprecated */
    public static final int DRAW_ERASE         = 1;
 
-   /** The constant for a draw operation where the destination is cleared where source pixels are on (AND NOT mode). */
+   /** The constant for a draw operation where the destination is cleared where source pixels are on (AND NOT mode). 
+   * @deprecated */
    public static final int DRAW_MASK          = 2;
 
-   /** The constant for a draw operation where the destination is inverted where source pixels are on (XOR mode). */
+   /** The constant for a draw operation where the destination is inverted where source pixels are on (XOR mode). 
+    * @deprecated */
    public static final int DRAW_INVERT        = 3;
 
-   /** The constant for a draw operation where the destination set only where source pixels are on (OR mode). */
+   /** The constant for a draw operation where the destination set only where source pixels are on (OR mode). 
+    * @deprecated */
    public static final int DRAW_OVERLAY       = 4;
 
-   /** The constant for a draw operation where the destination is replaced with inverted source (copy NOT mode). */
+   /** The constant for a draw operation where the destination is replaced with inverted source (copy NOT mode). 
+    * @deprecated */
    public static final int DRAW_PAINT_INVERSE = 5;
 
-   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). */
+   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). 
+    * @deprecated */
    public static final int DRAW_SPRITE        = 6;
 
    /**
    * The constant for a draw operation where the destination is replaced with <i>foreground color</i> if source pixels different of <i>background color</i>.
    * Note that this is rather slow on blackberry devices.
-   */
+    * @deprecated */
    public static final int DRAW_REPLACE_COLOR = 7;
 
 
    /** The constant for a draw operation where the <i>foreground color</i> is swaped with the <i>background color</i>.
    * Note that this is rather slow on blackberry devices.
-   */
+    * @deprecated */
    public static final int DRAW_SWAP_COLORS   = 8;
 
    private int transX, transY;
@@ -280,6 +286,7 @@ public final class Graphics
     * You can view the palette online <a href='http://www.superwaba.org/tc/pal685_values.png' target=_blank>here</a>.
     * There's no need to convert your colors to these ones; this will be done on-the-fly by the vm.
     * @since TotalCross 1.0
+    * @deprecated 
     */
    public static int[] getPalette()
    {
@@ -521,6 +528,7 @@ public final class Graphics
    /** Changes all the pixels with the current foreground color to the current background color.
     * This method does NOT correctly handle antialiased fonts.
     * @see #eraseRect(int,int,int,int,int,int,int)
+    * @deprecated 
     */
    public void eraseRect(int x, int y, int w, int h)
    {
@@ -569,6 +577,7 @@ public final class Graphics
    /** Changes all the pixels with the current foreground color to the current background color.
     * This method correctly handles antialiased fonts, but it is a bit slower.
     * @see #eraseRect(int,int,int,int)
+    * @deprecated 
     */
    public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor)
    {
@@ -660,6 +669,7 @@ public final class Graphics
     * @param y top coordinate of the rectangle
     * @param w width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param h height of the rectangle. the rectangle is drawn from y to y+h-1.
+    * @deprecated 
     */
    public void fillCursor(int x, int y, int w, int h)
    {
@@ -680,6 +690,7 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @since SuperWaba 2.0 beta 4
+    * @deprecated 
     */
    public void drawCursor(int x, int y, int width, int height)
    {
@@ -718,6 +729,7 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @since SuperWaba 5.5
+    * @deprecated 
     */
    public void drawDottedCursor(int x, int y, int width, int height) // guich@550_32
    {
@@ -1159,6 +1171,7 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
+    * @deprecated 
     */
    public void drawRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1197,6 +1210,7 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is filled from x to x+w-1.
     * @param height height of the rectangle. the rectangle is filled from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
+    * @deprecated 
     */
    public void fillRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1380,6 +1394,7 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
+    * @deprecated 
     */
    public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1426,6 +1441,7 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
+    * @deprecated 
     */
    public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1457,6 +1473,7 @@ public final class Graphics
 
    /** Used to draw the topleft lines of a rect with one color and the bottomright with another color.
     * if yMirror, draws the borders mirrowed. Pass -1 to the colors to not draw that side.
+    * @deprecated 
     */
    public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
    {
@@ -1676,6 +1693,7 @@ public final class Graphics
      * everytime you change the enabled state or the fore/back colors. This can
      * be easily achieved if you extend the onColorsChanged method
      * (but don't forget to call super.onColorsChanged).
+     * @deprecated 
      */
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
@@ -1704,7 +1722,9 @@ public final class Graphics
       Vm.arrayCopy(four, 0, fourColors, 0, 4);
    }
 
-   /** Draws a shaded rectangle. */
+   /** Draws a shaded rectangle. 
+    * @deprecated 
+    */
    public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor) // guich@573_6
    {
       int x1 = x+1;
@@ -1721,7 +1741,9 @@ public final class Graphics
    private static int[] lastVistaColors; // speedup
    private static int lastVistaColor=-1;
 
-   /** Gets a 11-level gradient color array used to draw the Vista user interface style. */
+   /** Gets a 11-level gradient color array used to draw the Vista user interface style. 
+    * @deprecated 
+    */
    public static int[] getVistaColors(int c) // guich@573_6
    {
       int []vistaColors = (int[])htVistaColors.get(c);
@@ -1740,7 +1762,9 @@ public final class Graphics
       return vistaColors;
    }
 
-   /** Fills a shaded rectangle. Used to draw many Vista user interface style controls */
+   /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
+    * @deprecated 
+    */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
       int []vistaColors = (back == lastVistaColor && back != -1) ? lastVistaColors : (lastVistaColors = getVistaColors(lastVistaColor=back));
@@ -1806,6 +1830,7 @@ public final class Graphics
     * @see #R3D_RAISED
     * @see #R3D_CHECK
     * @see #R3D_SHADED
+    * @deprecated 
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {

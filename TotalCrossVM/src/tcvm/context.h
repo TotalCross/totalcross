@@ -67,6 +67,10 @@ struct TContext
    ThreadHandle usageOwner;
    int32 usageCount;
 
+   // graphics
+   bool fullDirty;
+   int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
+
    // IMPORTANT: ALL IFDEFS MUST BE PLACED AT THE END, otherwise, other native libraries that 
    // use this header that do not define the same #defines, will have problems.
    #ifdef ENABLE_TEST_SUITE

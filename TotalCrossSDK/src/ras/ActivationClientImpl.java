@@ -148,6 +148,7 @@ final class ActivationClientImpl extends ActivationClient
             throw new Exception("This application was not signed with a registration key");
          if (!isValidKey(key))
             throw new Exception("The registration key is not valid");
+         litebaseAllowed = key[2] == 'L' && key[3] == 'B';
          Settings.activationId = Convert.bytesToHexString(generateActivationCode(key, Convert.hexStringToBytes((String) deviceInfo.get("HASH"))));
 
          ActivationSuccess success = (ActivationSuccess) readPacket(PDBFILE_TCRAS_SUCCESS);
@@ -461,7 +462,7 @@ final class ActivationClientImpl extends ActivationClient
       byte[] out = aesCipher.getOutput();
 
       ByteArrayStream bas = new ByteArrayStream(128);
-      DataStream ds = new DataStream(bas);
+      DataStream ds = new DataStream(bas, true);
 
       ds.writeInt(riv.length);
       ds.writeBytes(riv);

@@ -31,15 +31,15 @@ public final class Settings
    * version value of 400. A beta 0.81 VM will have version 81.
    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */
-   public static int version = 161;
+   public static int version = 162;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.61";
+   public static String versionStr = "1.62";
     
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 1;
+   public static int buildNumber = 8;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -208,10 +208,12 @@ public final class Settings
    
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use Flat or Android 
     */
    public static final byte WinCE = 0;
    /** Defines a PalmOS user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use Flat or Android
     */
    public static final byte PalmOS = 1;
    /** Defines a FLAT user interface style, like the ones used in Pocket PC 2003. Used in the uiStyle member.
@@ -220,6 +222,7 @@ public final class Settings
    public static final byte Flat = 2;
    /** Defines a Windows Vista user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use Flat or Android
     */
    public static final byte Vista = 3; // guich@573_6
    /** Defines an Android user interface style. Used in the uiStyle member.
@@ -687,7 +690,7 @@ public final class Settings
    public static boolean moveCursorToEndOnFocus;
    
    /** No longer used or supported. */
-   public static boolean isMinimized;
+   public static boolean isMinimized; // used in Blackberry's stub!
 
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,

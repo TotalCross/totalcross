@@ -194,6 +194,20 @@ public class ConnectionManager4B
    {
       throw new UnknownHostException("Unsupported operation");
    }
+   
+   public static boolean isInternetAccessible()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
 
    static String parseParameters(String params)
    {

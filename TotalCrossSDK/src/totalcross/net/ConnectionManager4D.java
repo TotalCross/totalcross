@@ -108,4 +108,18 @@ public class ConnectionManager4D
    native public static String getHostName(String host) throws UnknownHostException;
 
    native public static String getLocalHost() throws UnknownHostException;
+   
+   public static boolean isInternetAccessible()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
 }

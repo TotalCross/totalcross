@@ -500,11 +500,14 @@ TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream nat
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    uint8* bufP = ARRAYOBJ_START(buf);
+   int32 ret;
 
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
+   else if ((ret = unzReadCurrentFile(zipNativeP->zipFile, bufP + start, count)) < 0)
+      throwException(p->currentContext, IOException, "Internal zip error: %d", ret);
    else
-      p->retI = unzReadCurrentFile(zipNativeP->zipFile, bufP + start, count);
+      p->retI = ret == 0 ? -1 : ret;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
@@ -517,11 +520,14 @@ TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream na
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    uint8* bufP = ARRAYOBJ_START(buf);
+   Err err;
 
    if (mode != 1) // DEFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in DEFLATE mode.");
+   else if ((err = zipWriteInFileInZip(zipNativeP->zipFile, bufP + start, count)) != ZIP_OK)
+      throwException(p->currentContext, IOException, "Internal zip error: %d", err);
    else
-      p->retI = zipWriteInFileInZip(zipNativeP->zipFile, bufP + start, count);  
+      p->retI = count;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_close(NMParams p) // totalcross/util/zip/ZipStream native public void close() throws IOException;

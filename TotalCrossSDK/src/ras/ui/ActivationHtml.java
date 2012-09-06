@@ -10,42 +10,53 @@ import totalcross.ui.html.*;
 import totalcross.util.*;
 import totalcross.xml.*;
 
-public class ActivationHtml extends Window
+public class ActivationHtml extends Container
 {
-   private static ActivationHtml instance;
-
+   public static final int ACTIVATION_START = 0;
+   public static final int ACTIVATION_SUCCESS = 1;
+   public static final int ACTIVATION_ERROR = 2;
+   public static final int ACTIVATION_NOINTERNET = 3;
+   
+   private static String[] activationHtmls = 
+   {
+      "activation.html",
+      "activation_success.html",
+      "activation_error.html",
+      "activation_nointernet.html"
+   };
+   
    private HtmlContainer htmlCnr;
    private Document doc;
+   
+   public int type;
 
-   private Hashtable userDefinedParams;
+   private static Hashtable userDefinedParams;
 
    private ActivationHtml(byte[] source) throws IOException, SyntaxException
    {
-      super("",NO_BORDER);
       doc = new Document(new XmlReadableByteArray(source));
       userDefinedParams = new Hashtable(30);
    }
 
-   public static ActivationHtml getInstance()
+   public static ActivationHtml getInstance(int type)
    {
-      if (instance == null)
-      {
-         byte[] source = Vm.getFile("activation.html");
-         if (source != null)
-            try
-            {
-               instance = new ActivationHtml(source);
-            }
-            catch (Exception e)
-            {
-               Vm.debug("Failed to load activation.html!");
-               MessageBox.showException(e, true);
-            }
-      }
-      return instance;
+      byte[] source = Vm.getFile(activationHtmls[type]);
+      if (source != null)
+         try
+         {
+            ActivationHtml instance = new ActivationHtml(source);
+            instance.type = type;
+            return instance;
+         }
+         catch (Exception e)
+         {
+            Vm.debug("Failed to load HTML!");
+            MessageBox.showException(e, true);
+         }
+      return null;
    }
 
-   protected void onPopup()
+   public void initUI()
    {
       int scrollBarExtraSize = ScrollBar.extraSize;
       int buttonCommonGap = Button.commonGap;
@@ -57,9 +68,10 @@ public class ActivationHtml extends Window
       htmlCnr.focusTraversable = false;
       ScrollBar.extraSize = scrollBarExtraSize;
       Button.commonGap = buttonCommonGap;
+      setFocus();
    }
    
-   protected void postPopup()
+   protected void setFocus()
    {
       // search for the topmost edit
       int minY = 100000;
@@ -86,8 +98,9 @@ public class ActivationHtml extends Window
       if (event.type == ControlEvent.PRESSED && event.target == htmlCnr)
       {
          String link = htmlCnr.pressedLink;
-         saveUserParams(link.substring(link.indexOf('?') + 1));
-         this.unpop();
+         if (type == ACTIVATION_START)
+            saveUserParams(link.substring(link.indexOf('?') + 1));
+         postPressedEvent();
       }
    }
 
@@ -102,7 +115,7 @@ public class ActivationHtml extends Window
       }
    }
 
-   public Hashtable getUserDefinedParams()
+   public static Hashtable getUserDefinedParams()
    {
       return userDefinedParams;
    }

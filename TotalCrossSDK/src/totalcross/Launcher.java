@@ -1759,7 +1759,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       {
          return new UserFont(fontName, suffix);
       }
-      catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
+      catch (Exception e) 
+      {
+         String msg = ""+e.getMessage();
+         if (!msg.startsWith("name") || !msg.endsWith("not found"))
+            if (Settings.onJavaSE) e.printStackTrace();
+      }
       return null;
    }
 

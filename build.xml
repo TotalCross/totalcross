@@ -28,6 +28,66 @@
    </target>
 
    <target name="install" depends="install_ivy, install_dependencies">
+      <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+      <taskdef resource="com/orangevolt/tools/ant/taskdefs.properties" />
+
+      <!-- Get the Visual Studio path -->
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\devenv.exe">
+              <get property="devenv.path" entry="" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="devenv.path"
+                          input="${devenv.path}"
+                          regexp="([^\.]*)\.exe"
+                          replace="\1.com" />
+           <propertyregex override="yes"
+                          property="devenv.path"
+                          input="${devenv.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="devenv.path" value="" />
+        </catch>
+      </trycatch>
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\evc.exe">
+              <get property="evc.path" entry="" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="evc.path"
+                          input="${evc.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="evc.path" value="" />
+        </catch>
+      </trycatch>
+      <trycatch>
+        <try>
+           <win32.registry root="HKEY_LOCAL_MACHINE"
+                           key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\WinRAR.exe">
+              <get property="winrar.path" entry="Path" />
+           </win32.registry>
+           <propertyregex override="yes"
+                          property="winrar.path"
+                          input="${winrar.path}"
+                          regexp="\\"
+                          replace="/" />
+        </try>
+        <catch>
+          <property  name="winrar.path" value="" />
+        </catch>
+      </trycatch>
+
+      <echo file="P:/userpaths.properties"
+         message="msvc.path=${devenv.path}${line.separator}evc.path=${evc.path}${line.separator}winrar.path=${winrar.path}${line.separator}cygwin.path=c:/cygwin"/>
    </target>
 
    <target name="install_ivy">
@@ -50,9 +110,11 @@
       <!-- force ivy resolution -->
       <ivy:resolve file="${basedir}/ivy_ant-jars.xml" />
       <ivy:resolve file="${basedir}/ivy_extlibs.xml" />
-      
+
       <!-- retrieve jars used by ant -->
-      <ivy:retrieve file="${basedir}/ivy_ant-jars.xml" module="ant-jars" pattern="${ant.lib.dir}/[artifact]-[revision].[ext]" />
+      <ivy:retrieve file="${basedir}/ivy_ant-jars.xml"
+                    module="ant-jars"
+                    pattern="${ant.lib.dir}/[artifact]-[revision].[ext]" />
 
       <!-- import antcontrib so we can use it below -->
       <taskdef resource="net/sf/antcontrib/antlib.xml">
@@ -62,16 +124,18 @@
             </fileset>
          </classpath>
       </taskdef>
-      
+
       <!-- retrieve extlibs -->
-      <ivy:retrieve file="${basedir}/ivy_extlibs.xml" module="extlibs" pattern="${env.EXTLIBS_HOME}/[artifact]-[revision].[ext]" />
+      <ivy:retrieve file="${basedir}/ivy_extlibs.xml"
+                    module="extlibs"
+                    pattern="${env.EXTLIBS_HOME}/[artifact]-[revision].[ext]" />
 
       <!-- remove the suffix "-noversion" -->
       <move todir="${env.EXTLIBS_HOME}">
          <fileset dir="${env.EXTLIBS_HOME}" />
          <mapper type="regexp" from="(.*)-noversion(.*)" to="\1\2" />
       </move>
-      
+
       <!-- for each zip file, delete the local folder and unzip it again -->
       <for param="file">
          <path>

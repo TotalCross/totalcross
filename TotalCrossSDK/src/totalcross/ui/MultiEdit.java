@@ -605,6 +605,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             case KeyEvent.KEY_PRESS:
             case KeyEvent.SPECIAL_KEY_PRESS:
+               if (editable && enabled)
             {
                KeyEvent ke = (KeyEvent) event;
                if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
@@ -965,7 +966,7 @@ public class MultiEdit extends Container implements Scrollable
                   z1.x = pe.x;
                   z1.y = pe.y;
                   newInsertPos = zToCharPos(z1);
-                  if (newInsertPos != insertPos)
+                  if (newInsertPos != insertPos && enabled)
                      extendSelect = true;
                   else
                      return; // guich@320_28: avoid unnecessary repaints

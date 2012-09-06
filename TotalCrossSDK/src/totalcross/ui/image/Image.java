@@ -225,7 +225,7 @@ public class Image extends GfxSurface
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
 
-      if (n > 1 && frameCount <= 1)
+      if (n != frameCount && n > 1 && frameCount <= 1)
          try
          {
             frameCount = n;

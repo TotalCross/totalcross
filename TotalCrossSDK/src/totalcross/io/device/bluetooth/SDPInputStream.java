@@ -35,7 +35,7 @@ class SDPInputStream extends DataStream
 
    public SDPInputStream(byte[] input)
    {
-      super(new ByteArrayStream(input));
+      super(new ByteArrayStream(input), true);
    }
 
    private byte[] readBytes(int size) throws IOException

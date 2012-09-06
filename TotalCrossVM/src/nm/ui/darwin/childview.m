@@ -40,6 +40,8 @@ int realAppH;
 }
 
 void Sleep(int ms);
+BOOL invalidated;
+
 extern BOOL callingScreenChange;
 
 - (void)drawRect:(CGRect)frame
@@ -68,7 +70,7 @@ extern BOOL callingScreenChange;
          [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
            @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
          while (callingScreenChange)
-            Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 250, not 1.
+            Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
       }
    }
    clientW = w;
@@ -83,14 +85,20 @@ extern BOOL callingScreenChange;
    CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
    CGContextDrawLayerAtPoint(context, CGPointZero, layer);
    CGLayerRelease(layer);
+   invalidated = TRUE;
 }
 
-- (void)invalidateScreen:(void*)vscreen
+void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2, int* dirtyY2);
+
+- (void)invalidateScreen:(void*)vscreen withContext:(void*)context
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
+   int dirtyX1,dirtyY1,dirtyX2,dirtyY2;
+   getDirtyFromContext(context, &dirtyX1,&dirtyY1,&dirtyX2,&dirtyY2);
+   
    shiftY = screen->shiftY;
    
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   CGRect r = CGRectMake(dirtyX1,dirtyY1,dirtyX2-dirtyX1,dirtyY2-dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
                               [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
