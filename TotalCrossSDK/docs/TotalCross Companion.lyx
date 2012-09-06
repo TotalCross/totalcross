@@ -7689,6 +7689,15 @@ IOException Base class of all input/output exceptions.
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
+EOFException Signals that an end of file or end of stream has been reached
+ unexpectedly during input.
+ This exception is mainly used by data input streams to signal end of stream.
+ Note that many other input operations return a special value on end of
+ stream rather than throwing an exception.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 FileNotFoundException Thrown when a file was not found.
 \end_layout
 
