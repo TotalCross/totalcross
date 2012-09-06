@@ -417,8 +417,16 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
-      getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+      if (Graphics_useOpenGL(g))
+      {
+         glSetColor(currentContext->glcolors,pixel);
+         glDrawPixel(currentContext->glcoords,x,y);
+      }                            
+      else
+      {
+         getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+      }
    }
 }
 
@@ -457,32 +465,40 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
          width = Graphics_clipX2(g)-x;
 
       if (width <= 0)
-         return;
-      pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
-      if (pixel1 == pixel2) // same color?
+         return;                                              
+      if (Graphics_useOpenGL(g))
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         if ((width&1) == 0) // filling with even width?
+         glSetColor(currentContext->glcolors,pixel1);
+         glDrawLine(currentContext->glcoords,x,y,x+width,y);
+      }                            
+      else
+      {         
+         pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
+         if (pixel1 == pixel2) // same color?
          {
-            int64* t = (int64*)pTgt;
-            int64 p2 = (((int64)pixel1) << 32) | pixel1;
-            width /= 2;
-            while (width-- > 0)
-               *t++ = p2;          // plot the pixel
+   #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
+            if ((width&1) == 0) // filling with even width?
+            {
+               int64* t = (int64*)pTgt;
+               int64 p2 = (((int64)pixel1) << 32) | pixel1;
+               width /= 2;
+               while (width-- > 0)
+                  *t++ = p2;          // plot the pixel
+            }
+            else
+   #endif
+            {
+               while (width-- > 0)
+                  *pTgt++ = pixel1;          // plot the pixel
+            }
          }
          else
-#endif
          {
+            int32 i=0;
             while (width-- > 0)
-               *pTgt++ = pixel1;          // plot the pixel
+               *pTgt++ = (i++ & 1) ? pixel1 : pixel2;
          }
-      }
-      else
-      {
-         int32 i=0;
-         while (width-- > 0)
-            *pTgt++ = (i++ & 1) ? pixel1 : pixel2;
       }
    }
 }
@@ -498,7 +514,7 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
    | and must not start after clip y2
    */
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
-   {
+   {   
       Pixel * pTgt;
       int32 pitch = Graphics_pitch(g);
       uint32 n;
@@ -512,20 +528,28 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
       if (height <= 0)
          return;
-      pTgt = getGraphicsPixels(g) + y * pitch + x;
-      n = (uint32)height;
-      if (pixel1 == pixel2) // same color?
+      if (Graphics_useOpenGL(g))
       {
-         for (; n != 0; pTgt += pitch, n--)
-            *pTgt = pixel1;          // plot the pixel
+         glSetColor(currentContext->glcolors,pixel1);
+         glDrawLine(currentContext->glcoords,x,y,x,y+height);
       }
       else
       {
-         uint32 i=0;
-         for (; n != 0; pTgt += pitch, n--)
-            *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
+         pTgt = getGraphicsPixels(g) + y * pitch + x;
+         n = (uint32)height;
+         if (pixel1 == pixel2) // same color?
+         {
+            for (; n != 0; pTgt += pitch, n--)
+               *pTgt = pixel1;          // plot the pixel
+         }
+         else
+         {
+            uint32 i=0;
+            for (; n != 0; pTgt += pitch, n--)
+               *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
+         }
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
       }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
    }
 }
 
@@ -575,6 +599,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2); else
     if (dX == 0) // vertical line?
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
+    else
+    if (Graphics_useOpenGL(g))
+    {
+       glSetColor(currentContext->glcolors,pixel1);
+       glDrawLine(currentContext->glcoords,x1,y1,x2,y2);
+    }
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
     {
        int32 currentX,currentY;  // saved for later markScreenDirty
@@ -800,12 +830,14 @@ inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1
 
 //   Draws a rectangle with the given color
 static void drawRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
-{
+{    
    drawHLine(currentContext, g, x, y, width, pixel, pixel);
    drawHLine(currentContext, g, x, y+height-1, width, pixel, pixel);
    drawVLine(currentContext, g, x, y, height, pixel, pixel);
    drawVLine(currentContext, g, x+width-1, y, height, pixel, pixel);
 }            
+
+void checkGlError(const char* op);
 
 // Description:
 //   Device specific routine.
@@ -836,11 +868,11 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       height = clipY2-y;
 
 #ifdef ANDROID   
-   if (x == 0 && y == 0 && width == appW && height == appH)
+   if (x == 0 && y == 0 && width == appW && height == appH && !Surface_isImage(Graphics_surface(g)))
    {               
-      PixelConv pc;
+      PixelConv pc; 
       pc.pixel = pixel;
-      glClearColor(pc.r / (float)255,pc.g/(float)255,pc.b/(float)255,1.0);
+      glClearColor((float)pc.r/(float)255,(float)pc.g/(float)255,(float)pc.b/(float)255,0);
       glClear(GL_COLOR_BUFFER_BIT);
       return;
    }            
@@ -848,46 +880,53 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 
    if (height > 0 && width > 0)
    {
-      
-      uint32 count;
-      int32 pitch = Graphics_pitch(g);
-      Pixel* to = getGraphicsPixels(g) + y * pitch + x;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-      if (x == 0 && width == pitch) // filling with full width?
+      if (Graphics_useOpenGL(g))
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         int64* t = (int64*)to;
-         int64 p2 = (((int64)pixel) << 32) | pixel;
-         count = width*height >> 1;
-#else
-         int32* t = (int32*)to;
-         int32 p2 = pixel;
-         count = width*height;
-#endif
-         for (; count != 0; count--)
-            *t++ = p2;
+         glSetColor(currentContext->glcolors,pixel);
+         glFillRect(currentContext->glcoords,x,y,width,height);
       }
       else
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         if ((width&1) == 0) // filling with even width?
+         uint32 count;
+         int32 pitch = Graphics_pitch(g);
+         Pixel* to = getGraphicsPixels(g) + y * pitch + x;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+         if (x == 0 && width == pitch) // filling with full width?
          {
-            uint32 i,j;
+   #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
-            pitch = (pitch-width)>>1;
-            width >>= 1;
-            for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
-               for (; i != 0; i--)
-                  *t++ = p2;
+            count = width*height >> 1;
+   #else
+            int32* t = (int32*)to;
+            int32 p2 = pixel;
+            count = width*height;
+   #endif
+            for (; count != 0; count--)
+               *t++ = p2;
          }
          else
-#endif
          {
-            uint32 i = width, j = height;
-            for (pitch -= width; j != 0;  to += pitch, i=width, j--)
-               for (; i != 0; i--)
-                  *to++ = pixel;
+   #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
+            if ((width&1) == 0) // filling with even width?
+            {
+               uint32 i,j;
+               int64* t = (int64*)to;
+               int64 p2 = (((int64)pixel) << 32) | pixel;
+               pitch = (pitch-width)>>1;
+               width >>= 1;
+               for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
+                  for (; i != 0; i--)
+                     *t++ = p2;
+            }
+            else
+   #endif
+            {
+               uint32 i = width, j = height;
+               for (pitch -= width; j != 0;  to += pitch, i=width, j--)
+                  for (; i != 0; i--)
+                     *to++ = pixel;
+            }
          }
       }
    }
@@ -1032,6 +1071,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                isLowNibble = !isLowNibble;
                if (transparency == 0 || x < xMin)
                   continue;
+               if (Graphics_useOpenGL(g))
+               {
+                  glSetColorA(currentContext->glcolors,foreColor,(transparency<<4)|0xF);
+                  glDrawPixel(currentContext->glcoords,x,y);
+               }
+               else                            
                if (transparency == 0xF)
                   i->pixel = foreColor;
                else

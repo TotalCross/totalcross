@@ -122,39 +122,60 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
          }
       }
    };
-   
+
+   private static final boolean CONTINUOUS = false;
+   String tczname, appPath, cmdline;
    public Launcher4A(Loader context, String tczname, String appPath, String cmdline)
    {
       super(context);
+      
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
+      this.tczname = tczname;
+      this.appPath = appPath;
+      this.cmdline = cmdline;
       
       setEGLContextClientVersion(2); // Create an OpenGL ES 2.0 context.
       setEGLConfigChooser(8, 8, 8, 8, 0, 0);
       getHolder().setFormat(PixelFormat.RGBA_8888);
       setRenderer(this); // Set the Renderer for drawing on the GLSurfaceView
- //     setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // Render the view only when there is a change in the drawing data (must be after setRenderer!)
+      if (!CONTINUOUS)
+         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // Render the view only when there is a change in the drawing data (must be after setRenderer!)
             
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       lastOrientation = getOrientation();
-      
-      String vmPath = context.getApplicationInfo().dataDir;
-      initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
    
+   double yy; int cc,fc; long t0;
    public void onDrawFrame(GL10 gl) 
    {
+      if (CONTINUOUS)
+      {
+         long t1 = System.currentTimeMillis();
+         if (t1 - t0 >= 1000)
+         {
+            AndroidUtils.debug("FPS: "+fc);
+            t0 = t1; fc= 0;
+         }
+         fc++;
+      }
+      eventThread.privatePumpEvents();      
    }
 
    public void onSurfaceCreated(GL10 gl, EGLConfig config) 
    {
       // here is where everything starts
       if (eventThread == null)
+      {
+         String vmPath = loader.getApplicationInfo().dataDir;
+         initializeVM(loader, tczname, appPath, vmPath, cmdline);
          eventThread = new TCEventThread(this);
+         eventThread.popTime = 0;
+      }
    }
 
    static TelephonyManager telephonyManager;
@@ -199,9 +220,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    public void onSurfaceChanged(GL10 gl, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% ON SURFACE CHANGED INI");
       nativeInitSize(w,h);
-      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% ON SURFACE CHANGED FIM");
       
       WindowManager wm = (WindowManager)loader.getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
@@ -241,10 +260,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
             }
          }
          if (screenSize == 0)
-         {
             screenSize = screenSize0;
-            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
-         }
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
          // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
@@ -283,6 +299,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
                rDirty.bottom = lastScreenH;
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+               new Thread() {public void run() {while (true) if (eventThread.eventAvailable()) instance.requestRender();}}.start();
             }
          });
       }
@@ -536,7 +553,6 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    */
    static void drawScreen()
    {
-      AndroidUtils.debug("%%%%%%%%%%%%%%%%%%%%% DRAW SCREEN");
       instance.requestRender();
    }
 
@@ -626,7 +642,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    
    public static void pumpEvents()
    {
-      eventThread.pumpEvents();
+      instance.requestRender(); // pump events on the gl thread
    }
    
    public static void alert(String msg) // if called from android package classes, must pass FALSE

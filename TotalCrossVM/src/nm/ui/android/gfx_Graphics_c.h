@@ -13,6 +13,15 @@
 
 #include "gfx_ex.h"
 
+void checkGlError(const char* op) 
+{        
+   GLint error;
+   for (error = glGetError(); error; error = glGetError()) 
+      debug("after %s() glError (0x%x)\n", op, error);
+}
+
+#define COORDS_PER_VERTEX 3
+
 int realAppH,appW,appH;
 
 static char* vertexShaderCode(char *buf, int w, int h)
@@ -40,13 +49,13 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
       glShaderSource(shader, 1, &pSource, NULL);
       glCompileShader(shader);
    }
-   alert("shader: %d",shader);
    return shader;
 }
 
 GLuint gProgram;
 GLuint gPositionHandle;
 GLuint gColorHandle;
+static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 /*
  * Class:     totalcross_Launcher4A
@@ -56,7 +65,9 @@ GLuint gColorHandle;
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jint width, jint height) // called only once
 {
    char buf[512];
-      ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
+   ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
+   appW = width;
+   appH = height;
 //   glDeleteProgram(program);
 //   glDeleteShader(shader);
    
@@ -66,25 +77,16 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    glLinkProgram(gProgram);
    glUseProgram(gProgram);
    
-   alert("@@@@@@@@@ gProgram: %d",gProgram);
-
    gColorHandle = glGetUniformLocation(gProgram, "vColor");
-   alert("@@@@@@@@@ 1");
    gPositionHandle = glGetAttribLocation(gProgram, "vPosition"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   alert("@@@@@@@@@ 2");
 
    glViewport(0, 0, width, height);
-   alert("@@@@@@@@@ 3");
    glEnable(GL_BLEND); // enable color alpha channel
-   alert("@@@@@@@@@ 4");
-   glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-   alert("@@@@@@@@@ 5");
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    glEnable(GL_SCISSOR_TEST);
-   alert("@@@@@@@@@ 6");
-
+   
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
-   alert("@@@@@@@@@ 7: %d",realAppH);
 }
 
 /*
@@ -93,7 +95,6 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
  * Signature: (II)V
  */
 
-void callExecuteProgram(); // on android/startup_c.h
 
 void privateScreenChange(int32 w, int32 h)
 {
@@ -115,6 +116,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
    screen->pitch = screen->screenW * screen->bpp / 8;
+   screen->pixels = xmalloc(screen->screenW * screen->screenH * 4);
    return screen->pixels != null;
 }
 
@@ -131,3 +133,66 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       xfree(screen->extension);
 }
 
+void glSetColor(GLfloat* color, int32 rgb)
+{
+   PixelConv pc;
+   pc.pixel = rgb;
+   color[0] = (GLfloat)pc.r / (GLfloat)255;
+   color[1] = (GLfloat)pc.g / (GLfloat)255;
+   color[2] = (GLfloat)pc.b / (GLfloat)255;
+   color[3] = 1.0;
+   glUniform4fv(gColorHandle, 1, color); // Set color for drawing the line
+}
+
+void glSetColorA(GLfloat* color, int32 rgb, int32 a)
+{
+   PixelConv pc;
+   pc.pixel = rgb;
+   color[0] = (GLfloat)pc.r / (GLfloat)255;
+   color[1] = (GLfloat)pc.g / (GLfloat)255;
+   color[2] = (GLfloat)pc.b / (GLfloat)255;
+   color[3] = (GLfloat)a / (GLfloat)255;   
+   glUniform4fv(gColorHandle, 1, color); // Set color for drawing the line
+}
+
+void glDrawPixel(GLfloat* coords, int32 x, int32 y)
+{
+   coords[0] = x;
+   coords[1] = y;
+   coords[2] = 0;
+
+   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+   glDrawArrays(GL_POINTS, 0,1);
+}
+
+void glDrawLine(GLfloat* coords, int32 x1, int32 y1, int32 x2, int32 y2)
+{
+   coords[0] = x1;
+   coords[1] = y1;   
+   coords[3] = x2;
+   coords[4] = y2;
+   coords[2] = coords[5] = 0;
+
+   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+   glDrawArrays(GL_LINES, 0,2);
+}
+
+void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h)
+{                       
+   w--; h--;
+   coords[0] = x;
+   coords[1] = y;
+   coords[2] = 0;
+   coords[3] = x;
+   coords[4] = y+h;
+   coords[5] = 0;
+   coords[6] = x+w;
+   coords[7] = y+h;
+   coords[8] = 0;
+   coords[9] = x+w;
+   coords[10] = y;
+   coords[11] = 0;
+
+   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); // GL_LINES, GL_TRIANGLES, GL_POINTS
+}

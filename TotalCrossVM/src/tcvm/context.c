@@ -16,7 +16,8 @@
 Context initContexts()
 {
    gcContext = newContext(null, null, false);
-   if (gcContext == null)
+   eventContext = newContext(null,null,false);
+   if (gcContext == null || eventContext == null)
       return null;                           
    lifeContext = newContext(null,null,false);
    return mainContext = newContext(null,null,true);

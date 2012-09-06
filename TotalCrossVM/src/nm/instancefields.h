@@ -145,6 +145,11 @@
 
 // generic surface - for Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
+#ifdef __gl2_h_
+#define Graphics_useOpenGL(o)             (!Surface_isImage(Graphics_surface(g)))
+#else
+#define Graphics_useOpenGL(o)             (false)
+#endif
 
 // totalcross.io.ByteArrayStream
 #define ByteArrayStream_pos(o)       FIELD_I32(o, 0)

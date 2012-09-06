@@ -9,13 +9,17 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #include "tcvm.h"
 
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
 #define Image_transparentPixel(o)  makePixelRGB(Image_transparentColor(o))
+
+void glSetColor(GLfloat* colors, int32 rgb);
+void glSetColorA(GLfloat* colors, int32 rgb, int32 a);
+void glDrawPixel(GLfloat* coords, int32 x, int32 y);
+void glDrawLine(GLfloat* coords, int32 x1, int32 y1, int32 x2, int32 y2);
+void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h);
 
 #if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"
@@ -31,8 +35,6 @@
 #elif defined(linux) && !defined(darwin)
  #include "linux/gfx_Graphics_c.h"
 #elif defined(ANDROID)
- #include <GLES2/gl2.h>
- #include <GLES2/gl2ext.h>
  #include "android/gfx_Graphics_c.h"
 #endif
 
