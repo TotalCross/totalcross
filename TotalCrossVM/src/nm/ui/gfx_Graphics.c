@@ -32,10 +32,10 @@ void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h);
  #include "palm/gfx_Graphics_c.h"
 #elif defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
-#elif defined(linux) && !defined(darwin)
- #include "linux/gfx_Graphics_c.h"
 #elif defined(ANDROID)
  #include "android/gfx_Graphics_c.h"
+#elif defined(linux) && !defined(darwin)
+ #include "linux/gfx_Graphics_c.h"
 #endif
 
 #define R3D_EDIT     1
