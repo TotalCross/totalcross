@@ -8,18 +8,18 @@ ifeq ($(TYPE), noras)
 	ifeq ($(origin NORASID), undefined)
 		abort "Must provide a NORASID for noras build"
 	endif
-	include apps/options_noras.mk
+	include $(LOCAL_PATH)/options_noras.mk
 	EXTRA_DEFINES += -DNORASID=$(NORASID)
 endif
 ifeq ($(TYPE), release)
-	include apps/options_nodemo.mk
+	include $(LOCAL_PATH)/options_nodemo.mk
 endif
 ifeq ($(TYPE), demo)
-	include apps/options_demo.mk
+	include $(LOCAL_PATH)/options_demo.mk
 endif
 
-TC_SRCDIR := TotalCrossVM/src
-TC_INCLUDEDIR := TotalCrossVM/src
+TC_SRCDIR := ..
+TC_INCLUDEDIR := $(TC_SRCDIR)/src
 
 _TEST_SUITE ?= DISABLE
 
@@ -273,6 +273,6 @@ LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io
 LOCAL_LDLIBS     := -llog -ldl
 LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
-LOCAL_LDFLAGS    := -Wl,-Map=$(TC_SRCDIR)/../builders/android/apps/tcvm/tcvm.map
+LOCAL_LDFLAGS    := -Wl
 
 include $(BUILD_SHARED_LIBRARY)
