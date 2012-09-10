@@ -173,7 +173,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
       {
          String vmPath = loader.getApplicationInfo().dataDir;
          initializeVM(loader, tczname, appPath, vmPath, cmdline);
-         eventThread = new TCEventThread(this);
+         eventThread = new TCEventThread(this,false);
          eventThread.popTime = 0;
       }
    }

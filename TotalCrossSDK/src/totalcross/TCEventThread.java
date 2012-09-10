@@ -29,17 +29,23 @@ class TCEventThread extends Thread
 
    public TCEventThread(MainClass win)
    {
+      this(win, true);
+   }
+   
+   public TCEventThread(MainClass win, boolean startThread)
+   {
       super("TC Event Thread");
       this.win = win;
       eventQueue = new Queue();
-      nativeCreate();
+      if (startThread)
+         nativeCreate();
    }
    
    void nativeCreate()
    {
       setPriority(Thread.MAX_PRIORITY); // event thread should have maximum priority
       setDaemon(true);
-//      start();
+      start();
    }
    void nativeCreate4B()
    {
@@ -85,8 +91,6 @@ class TCEventThread extends Thread
       {
          if (event.type == INVOKE_IN_EVENT_THREAD)
          {
-//            new Thread() {public void run() {
-               
             event.r.run();
             // If they are waiting for this, then notify.
             if (event.synch != null)
@@ -94,7 +98,6 @@ class TCEventThread extends Thread
                {
                   event.synch.notify();
                }
-  //          }}.start();
          }
          else
             win._postEvent(event.type, event.key, event.x, event.y, event.modifiers, event.timestamp);
