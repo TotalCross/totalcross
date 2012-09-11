@@ -400,7 +400,7 @@ public class Button extends Control
       }
    }
    
-   /** Returns true if the button is pressed or not. Only makes sense if fixedButton is true.
+   /** Returns true if the button is pressed or not. Only makes sense if <code>isSticky</code> is true.
     * You can change the button state programatically using simulatePress.
     * @see #simulatePress()
     * @see #isSticky 
