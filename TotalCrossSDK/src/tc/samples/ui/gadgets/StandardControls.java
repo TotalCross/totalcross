@@ -4,6 +4,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.unit.*;
@@ -46,6 +47,7 @@ public class StandardControls extends Container
          //Button.commonGap = 0;
          add(lStatus = new Label("",CENTER), LEFT,AFTER);
          lStatus.setHighlighted(true);
+         lStatus.setText("Font: "+Font.NORMAL_SIZE+", scr: "+Settings.screenWidth+"x"+Settings.screenHeight);
          add(new Ruler(),LEFT,AFTER+2, FILL, PREFERRED+4);
          add(ch = new Check("Enable:"),LEFT,AFTER+1); if (uiAndroid) ch.checkColor = Color.CYAN;     ch.setChecked(true);
          RadioGroupController rg = new RadioGroupController();
