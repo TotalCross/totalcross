@@ -27,19 +27,19 @@ int realAppH,appW,appH;
 static char* vertexShaderCode(char *buf, int w, int h)
 {
    // http://www.songho.ca/opengl/gl_projectionmatrix.html
-   xstrprintf(buf, "attribute vec4 vPosition;" 
+   xstrprintf(buf, "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;" 
       "mat4 projectionMatrix = mat4( 2.0/%d.0, 0.0, 0.0, -1.0,"
                            "0.0, -2.0/%d.0, 0.0, 1.0,"
                            "0.0, 0.0, -1.0, 0.0,"
                            "0.0, 0.0, 0.0, 1.0);"
-      "void main() {gl_Position = vPosition*projectionMatrix;}", w,h); // the matrix must be included as a modifier of gl_Position
+      "void main() {v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}", w,h); // the matrix must be included as a modifier of gl_Position
    return buf;
 }
 
 static char* fragmentShaderCode =
    "precision mediump float;" 
-   "uniform vec4 vColor;" 
-   "void main() {gl_FragColor = vColor;}";
+   "varying vec4 v_Color;" 
+   "void main() {gl_FragColor = v_Color;}";
 
 GLuint loadShader(GLenum shaderType, const char* pSource) 
 {
@@ -68,7 +68,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
    appW = width;
    appH = height;
-//   glDeleteProgram(program);
+   if (gProgram != 0)
+      glDeleteProgram(gProgram);
 //   glDeleteShader(shader);
    
    gProgram = glCreateProgram();
@@ -77,14 +78,17 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    glLinkProgram(gProgram);
    glUseProgram(gProgram);
    
-   gColorHandle = glGetUniformLocation(gProgram, "vColor");
-   gPositionHandle = glGetAttribLocation(gProgram, "vPosition"); // get handle to vertex shader's vPosition member
+   gColorHandle = glGetAttribLocation(gProgram, "a_Color");
+   gPositionHandle = glGetAttribLocation(gProgram, "a_Position"); // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 
    glViewport(0, 0, width, height);
+   glEnable(GL_SCISSOR_TEST);
+   glDisable(GL_CULL_FACE);
+   glDisable(GL_DEPTH_TEST);
    glEnable(GL_BLEND); // enable color alpha channel
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glEnable(GL_SCISSOR_TEST);
    
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
@@ -133,52 +137,61 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       xfree(screen->extension);
 }
 
-void glSetColor(GLfloat* color, int32 rgb)
+////////////////////////////// OPEN GL 2 //////////////////////////////////
+
+void glDrawPixels(Context c, int32 n)
 {
-   PixelConv pc;
-   pc.pixel = rgb;
-   color[0] = (GLfloat)pc.r / (GLfloat)255;
-   color[1] = (GLfloat)pc.g / (GLfloat)255;
-   color[2] = (GLfloat)pc.b / (GLfloat)255;
-   color[3] = 1.0;
-   glUniform4fv(gColorHandle, 1, color); // Set color for drawing the line
+   glVertexAttribPointer(gColorHandle, 4 * n, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
+   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX * n, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), c->glcoords);
+   glDrawArrays(GL_POINTS, 0,n);
 }
 
-void glSetColorA(GLfloat* color, int32 rgb, int32 a)
+void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
 {
+   GLfloat* coords = c->glcoords;
+   GLfloat* colors = c->glcolors;
    PixelConv pc;
    pc.pixel = rgb;
-   color[0] = (GLfloat)pc.r / (GLfloat)255;
-   color[1] = (GLfloat)pc.g / (GLfloat)255;
-   color[2] = (GLfloat)pc.b / (GLfloat)255;
-   color[3] = (GLfloat)a / (GLfloat)255;   
-   glUniform4fv(gColorHandle, 1, color); // Set color for drawing the line
-}
-
-void glDrawPixel(GLfloat* coords, int32 x, int32 y)
-{
    coords[0] = x;
    coords[1] = y;
    coords[2] = 0;
 
+   colors[0] = (GLfloat)pc.r / (GLfloat)255;
+   colors[1] = (GLfloat)pc.g / (GLfloat)255;
+   colors[2] = (GLfloat)pc.b / (GLfloat)255;
+   colors[3] = 1;
+   glVertexAttribPointer(gColorHandle, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_POINTS, 0,1);
 }
 
-void glDrawLine(GLfloat* coords, int32 x1, int32 y1, int32 x2, int32 y2)
-{
+void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
+{  
+   GLfloat* coords = c->glcoords;
+   GLfloat* colors = c->glcolors;
+   PixelConv pc;
+   pc.pixel = rgb;
    coords[0] = x1;
    coords[1] = y1;   
    coords[3] = x2;
    coords[4] = y2;
    coords[2] = coords[5] = 0;
 
+   colors[0] = colors[4] = (GLfloat)pc.r / (GLfloat)255;
+   colors[1] = colors[5] = (GLfloat)pc.g / (GLfloat)255;
+   colors[2] = colors[6] = (GLfloat)pc.b / (GLfloat)255;
+   colors[3] = colors[7] = 1;
+   glVertexAttribPointer(gColorHandle, 4*2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_LINES, 0,2);
 }
 
-void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h)
+void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
 {                       
+   GLfloat* coords = c->glcoords;
+   GLfloat* colors = c->glcolors;
+   PixelConv pc;
+   pc.pixel = rgb;
    w--; h--;
    coords[0] = x;
    coords[1] = y;
@@ -193,6 +206,11 @@ void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h)
    coords[10] = y;
    coords[11] = 0;
 
+   colors[0] = colors[4] = colors[8]  = colors[12] = colors[16] = colors[20] = (GLfloat)pc.r / (GLfloat)255;
+   colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = (GLfloat)pc.g / (GLfloat)255;
+   colors[2] = colors[6] = colors[10] = colors[14] = colors[18] = colors[22] = (GLfloat)pc.b / (GLfloat)255;
+   colors[3] = colors[7] = colors[11] = colors[15] = colors[19] = colors[23] = 1;
+   glVertexAttribPointer(gColorHandle, 4*6, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); // GL_LINES, GL_TRIANGLES, GL_POINTS
 }

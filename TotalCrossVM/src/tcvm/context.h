@@ -84,8 +84,9 @@ struct TContext
    int8 usedOpcodes[256];
    #endif
    #ifdef ANDROID
-   GLfloat glcoords[12];
-   GLfloat glcolors[4];
+   #define GL_COORD_COUNT 10000
+   GLfloat glcoords[GL_COORD_COUNT*3];
+   GLfloat glcolors[GL_COORD_COUNT*4];
    #endif
 };
 

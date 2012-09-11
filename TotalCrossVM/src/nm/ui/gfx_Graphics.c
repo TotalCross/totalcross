@@ -15,11 +15,10 @@
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
 #define Image_transparentPixel(o)  makePixelRGB(Image_transparentColor(o))
 
-void glSetColor(GLfloat* colors, int32 rgb);
-void glSetColorA(GLfloat* colors, int32 rgb, int32 a);
-void glDrawPixel(GLfloat* coords, int32 x, int32 y);
-void glDrawLine(GLfloat* coords, int32 x1, int32 y1, int32 x2, int32 y2);
-void glFillRect(GLfloat* coords, int32 x, int32 y, int32 w, int32 h);
+void glDrawPixel(Context c, int32 x, int32 y, int32 rgb);
+void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
+void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb);
+void glDrawPixels(Context c, int32 n);
 
 #if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"

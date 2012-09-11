@@ -418,10 +418,7 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
       if (Graphics_useOpenGL(g))
-      {
-         glSetColor(currentContext->glcolors,pixel);
-         glDrawPixel(currentContext->glcoords,x,y);
-      }                            
+         glDrawPixel(currentContext,x,y,pixel);
       else
       {
          getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
@@ -467,10 +464,7 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
       if (width <= 0)
          return;                                              
       if (Graphics_useOpenGL(g))
-      {
-         glSetColor(currentContext->glcolors,pixel1);
-         glDrawLine(currentContext->glcoords,x,y,x+width,y);
-      }                            
+         glDrawLine(currentContext,x,y,x+width,y,pixel1);
       else
       {         
          pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
@@ -529,10 +523,7 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
       if (height <= 0)
          return;
       if (Graphics_useOpenGL(g))
-      {
-         glSetColor(currentContext->glcolors,pixel1);
-         glDrawLine(currentContext->glcoords,x,y,x,y+height);
-      }
+         glDrawLine(currentContext,x,y,x,y+height,pixel1);
       else
       {
          pTgt = getGraphicsPixels(g) + y * pitch + x;
@@ -601,10 +592,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
     else
     if (Graphics_useOpenGL(g))
-    {
-       glSetColor(currentContext->glcolors,pixel1);
-       glDrawLine(currentContext->glcoords,x1,y1,x2,y2);
-    }
+       glDrawLine(currentContext,x1,y1,x2,y2,pixel1);
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
     {
        int32 currentX,currentY;  // saved for later markScreenDirty
@@ -881,10 +869,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    if (height > 0 && width > 0)
    {
       if (Graphics_useOpenGL(g))
-      {
-         glSetColor(currentContext->glcolors,pixel);
-         glFillRect(currentContext->glcoords,x,y,width,height);
-      }
+         glFillRect(currentContext,x,y,width,height,pixel);
       else
       {
          uint32 count;
@@ -952,13 +937,25 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
+#ifdef ANDROID
+   GLfloat fR,fG,fB;
+   GLfloat *glC, *glV;
+   int32 ncoords;
+#endif   
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
    fc.pixel = foreColor;
    fcR = fc.r;
    fcG = fc.g;
-   fcB = fc.b;
+   fcB = fc.b;    
+
+#ifdef ANDROID
+   fR = (GLfloat)fcR / (GLfloat)255;
+   fG = (GLfloat)fcG / (GLfloat)255;
+   fB = (GLfloat)fcB / (GLfloat)255;
+#endif   
+   
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
    if (uf == null) return;
    rowWIB = uf->rowWidthInBytes;
@@ -996,6 +993,11 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 
    pitch = Graphics_pitch(g);
    clipX2 = Graphics_clipX2(g);
+#ifdef ANDROID   
+   glC = currentContext->glcolors;
+   glV = currentContext->glcoords;
+   ncoords = 0;           
+#endif   
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
@@ -1058,35 +1060,65 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       {
          start = bitmapTable + (offset >> 1) + rowWIB * yDif;
          isNibbleStartingLow = (offset & 1) == 1;
-
+#ifdef ANDROID
          // draws the char, a row at a time
-         for (y=yMin, row=row0; y < yMax; start+=rowWIB, x -= width, y++, row += pitch)
-         {
-            current = start;
-            isLowNibble = isNibbleStartingLow;
-            i = (PixelConv*)&row[x0];
-            for (x=x0; x < xMax; x++,i++)
+         if (Graphics_useOpenGL(g)) 
+         {                         
+            for (y=yMin, row=row0; y < yMax; start+=rowWIB, x -= width, y++, row += pitch)
             {
-               transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-               isLowNibble = !isLowNibble;
-               if (transparency == 0 || x < xMin)
-                  continue;
-               if (Graphics_useOpenGL(g))
+               current = start;
+               isLowNibble = isNibbleStartingLow;
+               i = (PixelConv*)&row[x0];
+               for (x=x0; x < xMax; x++,i++)
                {
-                  glSetColorA(currentContext->glcolors,foreColor,(transparency<<4)|0xF);
-                  glDrawPixel(currentContext->glcoords,x,y);
+                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                  isLowNibble = !isLowNibble;
+                  if (transparency == 0 || x < xMin)
+                     continue;
+                  
+                  ncoords++;
+                  // color
+                  *glC++ = fR;
+                  *glC++ = fG;
+                  *glC++ = fB;
+                  *glC++ = (GLfloat)((transparency<<4)|0xF) / (GLfloat)255;
+                  // vertices
+                  *glV++ = x;
+                  *glV++ = y;
+                  *glV++ = 0;
+                  if (ncoords == GL_COORD_COUNT) // reached limit?
+                  {
+                     glDrawPixels(currentContext, ncoords);
+                     glC = currentContext->glcolors;
+                     glV = currentContext->glcoords;
+                     ncoords = 0;
+                  }                     
                }
-               else                            
-               if (transparency == 0xF)
-                  i->pixel = foreColor;
-               else
+            }                 
+         }
+         else 
+#endif            
+            for (y=yMin, row=row0; y < yMax; start+=rowWIB, x -= width, y++, row += pitch)
+            {
+               current = start;
+               isLowNibble = isNibbleStartingLow;
+               i = (PixelConv*)&row[x0];
+               for (x=x0; x < xMax; x++,i++)
                {
-                  i->r = INTERP(i->r, fcR);
-                  i->g = INTERP(i->g, fcG);
-                  i->b = INTERP(i->b, fcB);
+                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                  isLowNibble = !isLowNibble;
+                  if (transparency == 0 || x < xMin)
+                     continue;
+                  if (transparency == 0xF)
+                     i->pixel = foreColor;
+                  else
+                  {
+                     i->r = INTERP(i->r, fcR);
+                     i->g = INTERP(i->g, fcG);
+                     i->b = INTERP(i->b, fcB);
+                  }
                }
             }
-         }
       }
       if (xMax >= clipX2)
       {
@@ -1098,6 +1130,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       if (k <= extraPixelsRemaining)
          x0++;
    }
+#ifdef ANDROID   
+   if (ncoords > 0) // flush vertices buffer
+      glDrawPixels(currentContext, ncoords);
+#endif              
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 }
 
