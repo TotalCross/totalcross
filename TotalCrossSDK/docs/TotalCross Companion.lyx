@@ -19211,14 +19211,68 @@ radioGroup) Creates a radio control displaying the given text and attached
 radioGroupController
 \family default
  is not a control, therefore you cannot add it to a container and it does
- not post events.
+ not post events since it does not extend 
+\family typewriter
+Control
+\family default
+.
  It just provides useful methods to handle groups of radio controls, like:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedIndex() returns the index of the selected radio.
+add(Radio
+\begin_inset space ~
+\end_inset
+
+newMember) Adds a new 
+\family typewriter
+Radio
+\family default
+ to the list of 
+\family typewriter
+Radio
+\family default
+s this controller handles.
+ This method is called by the 
+\family typewriter
+Radio
+\family default
+'s constructor.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Radio
+\begin_inset space ~
+\end_inset
+
+oldMember) Removes the given 
+\family typewriter
+Radio
+\family default
+ from the list of 
+\family typewriter
+Radio
+\family default
+s this controller handles.
+ You must explicitly call this method, if needed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the index of the selected 
+\family typewriter
+Radio
+\family default
+ (in the order that the 
+\family typewriter
+Radio
+\family default
+s were added to the container), or -1 if none.
 \end_layout
 
 \begin_layout FieldList
@@ -19227,21 +19281,76 @@ setSelectedIndex(int
 \begin_inset space ~
 \end_inset
 
-index) to select a radio by its index.
+index) Used to select a 
+\family typewriter
+Radio
+\family default
+ by its index and deselects the other one.
+ The parameter 
+\family typewriter
+index
+\family default
+ is a zero-based index of the 
+\family typewriter
+Radio
+\family default
+ to be set.
+ -1 must be passed to disable all of them.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedItem() returns the radio selected.
+getSelectedItem() Returns the 
+\family typewriter
+Radio
+\family default
+ selected, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-setSelectedItem(int
+setSelectedItem(Radio
 \begin_inset space ~
 \end_inset
 
-index) selects a given radio group controller.
+who) Selects a given radio group controller.
+ It is called by the 
+\family typewriter
+Radio
+\family default
+ when a click was made.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(String
+\begin_inset space ~
+\end_inset
+
+text) Selects a 
+\family typewriter
+Radio
+\family default
+ whose text matches the given caption.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRadio(int
+\begin_inset space ~
+\end_inset
+
+idx) Returns the 
+\family typewriter
+Radio
+\family default
+ at the given index.
+ 
 \end_layout
 
 \end_deeper
@@ -19255,6 +19364,16 @@ You may use the
 getRadioGroupController()
 \family default
  method to make it easier to parse the events.
+ It returns the 
+\family typewriter
+RadioGroupController
+\family default
+ that this radio belongs to, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -19619,6 +19738,65 @@ public void onEvent(Event event)
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+Radio
+\family default
+ class has other useful methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setText(String
+\begin_inset space ~
+\end_inset
+
+text) Sets the text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Gets the text displayed in the radio.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked() Returns the checked state of the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(boolean
+\begin_inset space ~
+\end_inset
+
+checked) Sets the checked state of the control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(boolean
+\begin_inset space ~
+\end_inset
+
+checked,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+sendPress) Sets the checked state of the control, and send the press event
+ if desired.
 \end_layout
 
 \begin_layout Section
