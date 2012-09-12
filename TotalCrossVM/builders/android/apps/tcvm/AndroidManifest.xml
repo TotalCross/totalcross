@@ -7,7 +7,7 @@
     >
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
-        <activity android:name=".Loader" android:label="Loading application..." 
+        <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
         />
@@ -15,8 +15,14 @@
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
+        
+        
+        
+        
+        
+        
     </application>
-    <uses-sdk android:minSdkVersion="8" />
+    <uses-sdk android:minSdkVersion="9" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
