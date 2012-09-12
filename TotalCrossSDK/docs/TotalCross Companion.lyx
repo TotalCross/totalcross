@@ -19806,15 +19806,17 @@ ComboBox and ComboBoxDropDown
 \begin_layout Standard
 The combo box is a very useful control to display a list of items where
  only one can be selected.
- It consists of a text with a button and a combo box drop down control that
- is popped up when the button is pressed.
+ It consists of a text with a button and a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ control that is popped up when the button is pressed.
  The popped up list is closed when one of its items is selected or the control
  loses the focus.
 \end_layout
 
 \begin_layout Itemize
-It has four constructors, but we'll only detail the three more interesting
- ones:
+It has four constructors:
 \end_layout
 
 \begin_deeper
@@ -19834,6 +19836,28 @@ userListBox) Creates a combo box with a
 ComboBoxDropDown
 \family default
  containing the given list box.
+ You can extend 
+\family typewriter
+ListBox
+\family default
+ to draw the items by yourself and use this constructor so the pop list
+ will use your class and not the default 
+\family typewriter
+ListBox
+\family default
+ one.
+ This constructor forces 
+\family typewriter
+ListBox.
+ simpleBorder
+\family default
+ to 
+\family typewriter
+true
+\family default
+.
+ Note: the list box items must be already set.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -19842,7 +19866,7 @@ ComboBox(Object[]
 \begin_inset space ~
 \end_inset
 
-items) creates a combo box with the given items.
+items) Creates a combo box with the given items.
 \end_layout
 
 \begin_layout FieldList
@@ -19869,7 +19893,7 @@ Using the Palm OS UI style, the combo box drop down control covers the combo
 \begin_layout Itemize
 The 
 \family typewriter
-comboBoxDropDown
+ComboBoxDropDown
 \family default
  height depends on the control's position: it will open in the direction
  that has the most space left (above or below).
@@ -19899,7 +19923,7 @@ clear()
 \family typewriter
 clearValueInt
 \family default
- value.
+ value, which is 0 by default.
 \end_layout
 
 \begin_layout Itemize
@@ -19908,8 +19932,11 @@ The color used in the
 setBackground()
 \family default
  method will be used in the arrow button only.
- The background color of the combo box text and combo box drop down will
- be a lighter version of the given color.
+ The background color of the combo box text and 
+\family typewriter
+ComboBoxDropDown
+\family default
+ will be a lighter version of the given color.
 \end_layout
 
 \begin_layout Itemize
@@ -20079,6 +20106,10 @@ setSelectedIndex(int i)
 setSelectedItem(Object name)
 \family default
 .
+ In the first, -1 must be used to blank the combo box view box.
+ In the last one, if the name is not found, the currently selected item
+ is not changed.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20088,6 +20119,12 @@ selectLast()
 \family default
  method selects the last item added to the combo box, doing a scroll if
  needed.
+ It calls 
+\family typewriter
+repaintNow()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20121,21 +20158,29 @@ removeAll() Empties the combo box.
 
 \end_deeper
 \begin_layout Itemize
-The combo box items can be sorted using the method 
+The combo box items can be sorted using the methods 
 \family typewriter
 qsort()
 \family default
 .
+ One of them receives a parameter indicating if the sorting is caseless
+ or not in case the elements are strings.
+ In both of them, the current selection is cleared.
+ 
 \end_layout
 
 \begin_layout Itemize
 It is possible to make a list box scroll horizontally (see 
+\family typewriter
+
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "sec:ListBox"
 
 \end_inset
 
+
+\family default
 ).
  To be able to scroll the list box associated with this combo box, just
  call the method 
@@ -20143,6 +20188,10 @@ reference "sec:ListBox"
 enableHorizontalScroll()
 \family default
 .
+ Two buttons will appear below the vertical scrollbar.
+ The add, replace, and remove operations will be a bit slower because the
+ string's width will have to be computed in order to correctly set the maximum
+ horizontal scroll.
 \end_layout
 
 \begin_layout Standard
@@ -20350,8 +20399,8 @@ clearValueInt
 ComboBox
 \family default
 es.
- Usually this value is 0, but sometimes you may wish set it to -1, to unselect
- the 
+ Usually this value is 0, but sometimes you may wish to set it to -1, to
+ unselect the 
 \family typewriter
 ComboBox
 \family default
@@ -20476,8 +20525,279 @@ n
 .
  It returns the number of lines.
  Note that each part of the text is considered a new item.
- This method is slower than the other add methods.
+ This method is slower than the other 
+\family typewriter
+add()
+\family default
+ methods.
  
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Returns all items in the combo box.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+color) Sets the cursor color for the combo box.
+ The default is equal to the background slightly darker.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onFontChanged() Passes the font to the pop list.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackForeItemColors(IntHashtable
+\begin_inset space ~
+\end_inset
+
+ihtFore,
+\begin_inset space ~
+\end_inset
+
+IntHashtable
+\begin_inset space ~
+\end_inset
+
+ihtBack) Sets the fore colors and back colors for the list box used with
+ this combo box.
+ Note that 
+\family typewriter
+null
+\family default
+ is a valid value, used when you always want to use the default color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+popup() Pops up the 
+\family typewriter
+ComboBoxDropDown
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unpop() Unpops the 
+\family typewriter
+ComboBoxDropDown
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onPaint(Graphics
+\begin_inset space ~
+\end_inset
+
+g) Paints the combo's border and the current selected item.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getListBox() Returns the list box used when the combo box is opened.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItemStartingWith(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Selects the item that starts with the given text.
+ If the second parameter is 
+\family typewriter
+true
+\family default
+, the text and all searched strings are first converted to lowercase.
+ This method returns 
+\family typewriter
+true
+\family default
+ if an item was found and selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPop(ComboBoxDropDown
+\begin_inset space ~
+\end_inset
+
+lb) Replaces the original 
+\family typewriter
+ComboBoxDropDown
+\family default
+ by the given one.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ComboBoxDropDown
+\family default
+ class is a simple implementation of a popup list box.
+ It has the following fields, constructors and methods (some methods heired
+ from 
+\family typewriter
+Control
+\family default
+ are ommited):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lb The assigned 
+\family typewriter
+ListBox
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontHideParent Set it to 
+\family typewriter
+true
+\family default
+ if you want to make the control popup below or above always, and not only
+ if on Windows CE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fullHeight Set to 
+\family typewriter
+true
+\family default
+ to make this popup have the screen height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fullWidth Set to 
+\family typewriter
+true
+\family default
+ to make this popup have the screen width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxDropDown() Creates a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ with coordinates that will be set later via the 
+\family typewriter
+setRect()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxDropDown(ListBox
+\begin_inset space ~
+\end_inset
+
+lb) Creates a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ with the given 
+\family typewriter
+ListBox
+\family default
+.
+ You can extend the 
+\family typewriter
+ListBox
+\family default
+ to draw the items by yourself and use this constructor so the 
+\family typewriter
+ComboBoxDropDown
+\family default
+ will use your class and not the default 
+\family typewriter
+ListBox
+\family default
+ one.
+ Note that this constructor forces the 
+\family typewriter
+ListBox.simpleBorder
+\family default
+ to 
+\family typewriter
+true
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+width,int
+\begin_inset space ~
+\end_inset
+
+height,Control
+\begin_inset space ~
+\end_inset
+
+relative,boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Sets the absolute rect of the parent's control.
+ The 
+\family typewriter
+ComboBoxDropDown
+\family default
+ rect will be computed based on that rectangle.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onClickedOutside(PenEvent
+\begin_inset space ~
+\end_inset
+
+event) Closes the popup list with a click outside its bounds.
 \end_layout
 
 \begin_layout Section
@@ -20517,8 +20837,11 @@ status open
 \begin_layout Plain Layout
 Please notice that TotalCross' list box does not allow the selection of
  multiple items like one would expect.
- If you need this feature, use the multi list box control (refer to the
- advanced controls section).
+ If you need this feature, use the 
+\family typewriter
+MultiListBox
+\family default
+ control (refer to the advanced controls section).
 \end_layout
 
 \end_inset
@@ -20781,6 +21104,7 @@ The selection color can be changed with
 setCursorColor(int color)
 \family default
 .
+ 
 \end_layout
 
 \begin_layout Itemize
