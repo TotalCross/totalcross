@@ -48,8 +48,8 @@
 		</dependency>
 
 		<!-- required for android build -->
-		<dependency org="superwaba" name="android-ndk-tcextra" rev="r4b">
-			<artifact name="android-ndk-tcextra" m:classifier="windows" ext="tgz" />
+		<dependency org="android" name="android-ndk" rev="r8b">
+			<artifact name="android-ndk" ext="zip" />
 		</dependency>
 	</dependencies>
 </ivy-module>
