@@ -19800,7 +19800,7 @@ sendPress) Sets the checked state of the control, and send the press event
 \end_layout
 
 \begin_layout Section
-ComboBox
+ComboBox and ComboBoxDropDown
 \end_layout
 
 \begin_layout Standard
@@ -19829,8 +19829,11 @@ ComboBox(ListBox
 \begin_inset space ~
 \end_inset
 
-userListBox) Creates a combo box with a combo box drop down containing the
- given list box.
+userListBox) Creates a combo box with a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ containing the given list box.
 \end_layout
 
 \begin_layout FieldList
@@ -19842,6 +19845,20 @@ ComboBox(Object[]
 items) creates a combo box with the given items.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBox(ComboBoxDropDown
+\begin_inset space ~
+\end_inset
+
+userPopList) Constructs a combo box with the given 
+\family typewriter
+ComboBoxDropDown
+\family default
+ already filled.
+ 
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
 Using the Palm OS UI style, the combo box drop down control covers the combo
@@ -19850,14 +19867,22 @@ Using the Palm OS UI style, the combo box drop down control covers the combo
 \end_layout
 
 \begin_layout Itemize
-The combo box drop down height depends on the control's position: it will
- open in the direction that has the most space left (above or below).
+The 
+\family typewriter
+comboBoxDropDown
+\family default
+ height depends on the control's position: it will open in the direction
+ that has the most space left (above or below).
  If you set the public member 
 \family typewriter
 fullHeight
 \family default
- to true, then it will have the same height as the screen, maximizing the
- number of items displayed.
+ to 
+\family typewriter
+true
+\family default
+, then it will have the same height as the screen, maximizing the number
+ of items displayed.
  In the same way, the 
 \family typewriter
 fullWidth
@@ -19919,7 +19944,12 @@ add(Object
 \begin_inset space ~
 \end_inset
 
-item) Adds an object to the ComboBox.
+item) Adds an object to the combo box.
+ This method is very slow if used in loop; use the 
+\family typewriter
+add(Object[] items)
+\family default
+ to add a bunch of objects instead.
  
 \end_layout
 
@@ -20002,7 +20032,8 @@ The method
 \family typewriter
 setItemAt(int i, Object s)
 \family default
- replaces the object at the given index by the given object.
+ replaces the object at the given index starting from zero by the given
+ object.
 \end_layout
 
 \begin_layout Itemize
@@ -20293,6 +20324,160 @@ public void onEvent(Event event)
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ComboBox
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultClearValueInt A static field that defines the default value that
+ is set to the 
+\family typewriter
+clearValueInt
+\family default
+ of all 
+\family typewriter
+ComboBox
+\family default
+es.
+ Usually this value is 0, but sometimes you may wish set it to -1, to unselect
+ the 
+\family typewriter
+ComboBox
+\family default
+ when 
+\family typewriter
+clear()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor The check color used to fill the 
+\family typewriter
+ComboBox
+\family default
+ used in Android.
+ Defaults to the fore color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+popupTitle The title of the 
+\family typewriter
+PopupMenu
+\family default
+ when in Android user interface style.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+usePopupMenu Set to 
+\family typewriter
+false
+\family default
+ to don't use the 
+\family typewriter
+PopupMenu
+\family default
+ when the user interface style is Android.
+ This affects all 
+\family typewriter
+ComboBox
+\family default
+es.
+ If you want to change a particular 
+\family typewriter
+ComboBox
+\family default
+ to use the standard popup list, but keep others with the 
+\family typewriter
+PopupMenu
+\family default
+, you can do something like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyListBox extends ListBox
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public MyListBox(totalcross.lang.String[] items)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super(items);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ ComboBox cb = new ComboBox(new MyListBox(items)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWrapping(String
+\begin_inset space ~
+\end_inset
+
+text) Adds the given text to the 
+\family typewriter
+ComboBox
+\family default
+, breaking the text if it goes beyond its limits, and also breaking if it
+ contains 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ It returns the number of lines.
+ Note that each part of the text is considered a new item.
+ This method is slower than the other add methods.
+ 
 \end_layout
 
 \begin_layout Section
