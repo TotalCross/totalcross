@@ -22,12 +22,12 @@
  #include "darwin/gfx_ex.h"
 #elif defined(__SYMBIAN32__)
  #include "symbian/gfx_ex.h"
+#elif defined(ANDROID)
+ #include "android/gfx_ex.h"
 #elif defined(linux)
  #ifdef TOTALCROSS
   #include "linux/gfx_ex.h"
  #endif
-#elif defined(ANDROID)
- #include "android/gfx_ex.h"
 #endif
 #include "xtypes.h"
 

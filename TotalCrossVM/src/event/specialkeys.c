@@ -20,12 +20,12 @@
  #include "win/specialkeys_c.h"
 #elif defined(darwin)
  #include "darwin/specialkeys_c.h"
+#elif defined(ANDROID)
+ #include "android/specialkeys_c.h"
 #elif defined(linux)
  #include "linux/specialkeys_c.h"
 #elif defined(__SYMBIAN32__)
  #include "symbian/specialkeys_c.h"
-#elif defined(ANDROID)
- #include "android/specialkeys_c.h"
 #endif
 //
 

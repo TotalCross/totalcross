@@ -43,6 +43,11 @@
                           input="${devenv.path}"
                           regexp="([^\.]*)\.exe"
                           replace="\1.com" />
+           <propertyregex override="yes"
+                          property="devenv.path"
+                          input="${devenv.path}"
+                          regexp="\\"
+                          replace="/" />
         </try>
         <catch>
           <property  name="devenv.path" value="" />
@@ -54,6 +59,11 @@
                            key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\evc.exe">
               <get property="evc.path" entry="" />
            </win32.registry>
+           <propertyregex override="yes"
+                          property="evc.path"
+                          input="${evc.path}"
+                          regexp="\\"
+                          replace="/" />
         </try>
         <catch>
           <property  name="evc.path" value="" />
@@ -63,8 +73,13 @@
         <try>
            <win32.registry root="HKEY_LOCAL_MACHINE"
                            key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\WinRAR.exe">
-              <get property="winrar.path" entry="" />
+              <get property="winrar.path" entry="Path" />
            </win32.registry>
+           <propertyregex override="yes"
+                          property="winrar.path"
+                          input="${winrar.path}"
+                          regexp="\\"
+                          replace="/" />
         </try>
         <catch>
           <property  name="winrar.path" value="" />
@@ -72,7 +87,7 @@
       </trycatch>
 
       <echo file="P:/userpaths.properties"
-         message='msvc.path="${devenv.path}"${line.separator}evc.path="${evc.path}"${line.separator}winrar.path="${winrar.path}"${line.separator}cygwin.path=c:/cygwin'/>
+         message="msvc.path=${devenv.path}${line.separator}evc.path=${evc.path}${line.separator}winrar.path=${winrar.path}${line.separator}cygwin.path=c:/cygwin"/>
    </target>
 
    <target name="install_ivy">

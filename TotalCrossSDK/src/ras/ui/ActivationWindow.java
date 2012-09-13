@@ -132,8 +132,11 @@ public class ActivationWindow extends Window
             catch (ActivationException ex)
             {
                Throwable cause = ex.getCause();
-               cause.printStackTrace();
-               html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
+               if (cause != null)
+               {
+                  cause.printStackTrace();
+                  html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
+               }   
                if (html != null)
                   swap(html);
                else
