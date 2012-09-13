@@ -1066,10 +1066,14 @@ Sample bug.
 \end_layout
 
 \begin_layout Standard
-You should first take a look at the 
+You should first take a look at the TotalCross changelog
+\begin_inset Newline newline
+\end_inset
+
+
 \begin_inset CommandInset href
 LatexCommand href
-name "TotalCross changelog"
+name "(http://www.superwaba.com.br/en/changelogs.asp)"
 target "http://www.superwaba.com.br/en/changelogs.asp"
 
 \end_inset
@@ -1082,10 +1086,10 @@ target "http://www.superwaba.com.br/en/changelogs.asp"
 You may then use the forum to report the bug, however, its not guaranteed
  that we will fix the bug.
  If you want the bug fixed in a few days and receive a fixed virtual machine,
- you must purchase a 
+ you must purchase a support plan
 \begin_inset CommandInset href
 LatexCommand href
-name "support plan"
+name " (http://www.superwaba.com.br/en/suporte.asp)"
 target "http://www.superwaba.com.br/en/suporte.asp"
 
 \end_inset
@@ -5649,7 +5653,7 @@ Starting in version 1.15, on Windows Mobile, it is possible to find exactly
 \end_layout
 
 \begin_layout Standard
-When the program starts, the virtual machine makes two changes in the Windows
+When the program starts, the virtual machine makes two logs in the Windows
  Mobile registry, enabling the error reporting, but disabling the dialog
  that appears when such error occurs.
  This way, the crash dumps are kept in place, allowing us to recover it.
@@ -16929,6 +16933,11 @@ getTextWithoutMask()
 setText()
 \family default
 .
+ One of the setText() methods has a flag to indicate whether to post a 
+\family typewriter
+PRESSED
+\family default
+ event.
 \end_layout
 
 \begin_layout Itemize
@@ -22020,17 +22029,123 @@ MultiEdit
 \end_layout
 
 \begin_layout Standard
-The multi edit is basically an edit with support for multiple lines, so
- their usage is pretty similar and, unless noted otherwise, the same methods
- listed for edit are available for multi edit.
+
+\family typewriter
+MultiEdit
+\family default
+ is basically an edit with support for multiple lines, so their usage is
+ pretty similar and, unless noted otherwise, the same methods listed for
+ edit are available for 
+\family typewriter
+MultiEdit
+\family default
+.
  A static vertical scrollbar is added, but it is disabled/enabled as needed.
 \end_layout
 
+\begin_layout Standard
+Here is an example showing a 
+\family typewriter
+MultiEdit
+\family default
+ control being used: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MultiEdit mEdit;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		// the constructor method is called with the mask, the number of lines
+ and the vertical interval in pixel between two lines
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit = new MultiEdit("",3,1);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(mEdit,LEFT,TOP); // add/setRect must precede setText()
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit.setText("What text you want"); // eventually
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
-Multi edit has two constructors:
+
+\family typewriter
+MultiEdit
+\family default
+ has three constructors:
 \end_layout
 
 \begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+MultiEdit() Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with 1 pixel as space between lines and with no lines.
+ You must set the bounds using 
+\family typewriter
+FILL
+\family default
+ or 
+\family typewriter
+FIT
+\family default
+.
+ 
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 MultiEdit(int
@@ -22045,12 +22160,24 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and the default width 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and the default width
+ 
 \family typewriter
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be specified with
+ a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -22075,8 +22202,12 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and uses the given mask to compute the 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and uses the given
+ mask to compute the 
 \family typewriter
 PREFERRED
 \family default
@@ -22086,6 +22217,19 @@ PREFERRED
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be given with a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ Note that the mask does not masks the input.
+ If the mask is "", the 
+\family typewriter
+FILL
+\family default
+ width is choosen.
+ 
 \end_layout
 
 \end_deeper
@@ -22102,7 +22246,23 @@ With
 \family typewriter
 setScrollbarsAlwaysVisible(boolean asNeeded)
 \family default
- you can change the multi edit's scrollbar behavior.
+ you can change the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MultiEdit
+\family default
+'s scrollbar behavior.
+ Set to 
+\family typewriter
+true
+\family default
+ to hide the vertical scrollbar when it isn't needed (instead of disabling
+ it).
+ This must be done right after the constructor.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -22124,7 +22284,21 @@ gap
 \end_layout
 
 \begin_layout Itemize
-The following methods allow you to manipulate the multi edit scrollbar:
+If the 
+\family typewriter
+MultiEdit
+\family default
+ object is not editable, the user can scroll the edit a page at a time just
+ by clicking in the middle upper or middle lower.
+ 
+\end_layout
+
+\begin_layout Itemize
+The following methods allow you to manipulate the 
+\family typewriter
+MultiEdit
+\family default
+ scrollbar:
 \end_layout
 
 \begin_deeper
@@ -22243,6 +22417,160 @@ public void initUI()
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+MultiEdit
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+, defined in the 
+\family typewriter
+Scrollable
+\family default
+ interface, or the fields and methods whose name and behavior are identical
+ to the ones from 
+\family typewriter
+Edit
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mask The mask used to infer the preferred width.
+ Unlike the 
+\family typewriter
+Edit
+\family default
+ class, 
+\family typewriter
+MultiEdit
+\family default
+ does not support real masking.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rowCount Used to set the number of rows of the 
+\family typewriter
+MultiEdit
+\family default
+ object; used as parameter to compute the preferred height.
+ You must call 
+\family typewriter
+setRect()
+\family default
+ after changing this to resize the control in height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+justify Set to 
+\family typewriter
+true
+\family default
+ to justify the text when the 
+\family typewriter
+MultiEdit
+\family default
+ is NOT editable.
+ Note that this makes the text drawing a bit slower.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaxLength(int
+\begin_inset space ~
+\end_inset
+
+length) Sets the desired maximum length for text entered in the 
+\family typewriter
+MultiEdit
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValidChars(String
+\begin_inset space ~
+\end_inset
+
+validCharsString) Sets the valid chars that can be entered in the control.
+ If 
+\family typewriter
+null
+\family default
+ is passed, any character can be entered.
+ (case insensitive).
+ Unlike the same method in the 
+\family typewriter
+Edit
+\family default
+, setting it to an empty string won't forbid you to copy, cut, delete, or
+ paste a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the text displayed in the 
+\family typewriter
+MultiEdit
+\family default
+ control.
+ In this class it is not needed to deal with masking when fetching the component
+ text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+width,int
+\begin_inset space ~
+\end_inset
+
+height,Control
+\begin_inset space ~
+\end_inset
+
+relative,boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Sets the rect for 
+\family typewriter
+MultiEdit
+\family default
+.
+ Note that height is recomputed based in the value for 
+\family typewriter
+rowCount
+\family default
+ given in the constructor if the given height is 
+\family typewriter
+PREFERRED
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Section
