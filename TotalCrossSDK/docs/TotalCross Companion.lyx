@@ -20821,6 +20821,133 @@ The list box is a control that allows the user to select one item from a
 \end_layout
 
 \begin_layout Standard
+Here is an example showing how it can be used:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ListBox lb;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb = new ListBox();
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lb);
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add(new String[]{"Daniel","Jenny","Helge","Sandra"});
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add("Marc"); // you may set the rect by using PREFERRED only after the
+ items were added.
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.setRect(LEFT, TOP, PREFERRED, PREFERRED); // use control's preferred
+ width based on the size of the elements
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		switch (event.type)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			case ControlEvent.PRESSED:
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (event.target == lb)
+\end_layout
+
+\begin_layout Plain Layout
+
+					Object element = lb.getSelectedItem(); // in most cases, this is just
+ a String and may be casted to such
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -20916,6 +21043,7 @@ int
 \end_inset
 
 size) Adds a subarray of objects to the list box.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -20956,6 +21084,8 @@ You may insert an object at a desired position with
 insert(Object item, int index)
 \family default
 .
+ The first item has index 0.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20964,6 +21094,7 @@ The method
 setItemAt(int i, Object s)
 \family default
  replaces the object at the given index by the given object.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20979,12 +21110,14 @@ The method
 \family typewriter
 getItemAt(int i)
 \family default
- returns the object at the selected index; the reverse operation can be
- done with 
+ returns the object at the selected index.
+ It returns an empty string if the index is outside the range.
+ The reverse operation can be done with 
 \family typewriter
 indexOf(Object name)
 \family default
 , which retrieves the index of a specific object.
+ It returns -1 if the object is not found.
 \end_layout
 
 \begin_layout Itemize
@@ -20997,6 +21130,13 @@ getSelectedIndex()
 getSelectedItem()
 \family default
  to retrieve the selected object directly.
+ The first returns -1 if the list box has no selected index yet and the
+ last one returns an empty 
+\family typewriter
+String
+\family default
+ object if none is selected.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21009,6 +21149,9 @@ setSelectedIndex(int i)
 setSelectedItem(Object name)
 \family default
 .
+ If the object or is not found, the current selected item is not changed.
+ However, if the index is not found, the current selected item is cleared
+ and no item becomes selected.
 \end_layout
 
 \begin_layout Itemize
@@ -21017,6 +21160,12 @@ The
 selectLast()
 \family default
  method selects the last item added to the list box, doing a scroll if needed.
+ It calls 
+\family typewriter
+repaintNow()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21045,7 +21194,26 @@ item) Removes the given object from the list box.
 
 \begin_layout FieldList
 \labelwidthstring 0
-removeAll() Empties the list box.
+removeAll() Empties the list box, setting all elements of the array to 
+\family typewriter
+null
+\family default
+ so they can be garbage collected.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Attention! If you used the same object array to initialize two list boxes
+ (or combo boxes), this method will 
+\family typewriter
+null
+\family default
+ both list boxes (because they use the same array reference), and you might
+ get a 
+\family typewriter
+NullPointerException
+\family default
+! 
 \end_layout
 
 \end_deeper
@@ -21055,6 +21223,10 @@ The list box items can be sorted using the method
 qsort()
 \family default
 .
+ One of them receives a parameter indicating if the sorting is caseless
+ or not in case the elements are strings.
+ In both of them, the current selection is cleared.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21078,6 +21250,8 @@ To increase the default height of the horizontal scroll buttons, change
 extraHorizScrollButtonHeight
 \family default
  static member.
+ Its default value is 2 in 160x160 or a multiple of it in other resolutions.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21085,7 +21259,12 @@ The
 \family typewriter
 setSimpleBorder(boolean simpleBorder)
 \family default
- method is used to change the border style from 3d to simple.
+ method is used to change the border style from 3d to simple if the flag
+ passed is 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -21104,12 +21283,19 @@ The selection color can be changed with
 setCursorColor(int color)
 \family default
 .
+ The color used in the 
+\family typewriter
+setBackColor()
+\family default
+ method will be used in the scrollbar only.
+ The background color of the control will be a lighter version of the given
+ color.
  
 \end_layout
 
 \begin_layout Itemize
 By default, the selection is drawn using the current item's width.
- This behavior can be changed by setting 
+ This behavior can be changed by setting the static field 
 \family typewriter
 useFullWidthOnSelection
 \family default
@@ -21118,11 +21304,15 @@ useFullWidthOnSelection
 true
 \family default
 .
+ If so, all list boxes will have the selection bar drawn in the full width.
 \end_layout
 
 \begin_layout Itemize
-You can extend list box to implement a customized type, like a color-chooser
- list box (see 
+You can extend 
+\family typewriter
+ListBox
+\family default
+ to implement a customized type, like a color-chooser list box (see 
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "chap:Advanced-Controls"
@@ -21239,6 +21429,19 @@ clear()
 clearValueInt
 \family default
  as the selected index.
+\end_layout
+
+\begin_layout Itemize
+The methods 
+\family typewriter
+add()
+\family default
+ and 
+\family typewriter
+remove()
+\family default
+ to add and remove a control, respectively, do nothing, because it does
+ not make sense to add controls to or remove controls from a list box.
 \end_layout
 
 \begin_layout Standard
@@ -21454,6 +21657,362 @@ public void onEvent(Event event)
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+iconGap The gap between the icon and the text.
+ Used in the internal class 
+\family typewriter
+IconItem
+\family default
+.
+ Defaults to 
+\family typewriter
+fmH*4/3
+\family default
+.
+ If you plan to change this value, do it after calling 
+\family typewriter
+setFont()
+\family default
+ (if you call it).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ihtBackColors,
+\begin_inset space ~
+\end_inset
+
+ihtForeColors 
+\family typewriter
+IntHashtable
+\family default
+ used to specify different background and foreground colors for some items.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+list.ihtBackColor = new IntHashtable(10);
+\end_layout
+
+\begin_layout Plain Layout
+
+ihtBackColors.put(10,0xAABBCC); // will make line number 10 with back color
+ 0xAABBCC.
+\end_layout
+
+\end_inset
+
+Specify a 
+\family typewriter
+null
+\family default
+ value if you want to use the default color (this also makes drawing faster).
+ Note that its up to you to update the hash table if an item is inserted
+ or removed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flick The 
+\family typewriter
+Flick
+\family default
+ object that listens and performs flick animations on pen up events when
+ appropriate.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+visibleLines Sets the number of visible lines, used to make 
+\family typewriter
+PREFERRED
+\family default
+ height return the given number of lines as the list box height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemHeightFactor In finger touch devices, sets a factor by which the font
+ height will be multiplied to increase the item's height.
+ Defaults to 1.5 when 
+\family typewriter
+Settings.fingerTouch
+\family default
+ is 
+\family typewriter
+true
+\family default
+, and 1 when its 
+\family typewriter
+false
+\family default
+.
+ You can change this value before the constructor and restore it after the
+ constructor to change the height of a single list box.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = 1;
+\end_layout
+
+\begin_layout Plain Layout
+
+// ...
+ create listbox
+\end_layout
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR; 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dataCol Used by the 
+\family typewriter
+DBListBox
+\family default
+ (Database 
+\family typewriter
+ListBox
+\family default
+) to store the data column that is displayed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWrapping(String
+\begin_inset space ~
+\end_inset
+
+text) Adds the given text to this list box, breaking the text if it goes
+ beyond the list box' limits, and also breaking if it contains 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ It returns the number of lines.
+ Note that each part of the text is considered a new item.
+ This method is slower than the other 
+\family typewriter
+add()
+\family default
+ methods.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Returns all items in this list box.
+ If the elements are strings, the array can be casted to 
+\family typewriter
+String[]
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width, i.
+ e., the size of the largest item plus the size of the scroll bar.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the number of items multiplied by the font
+ metrics height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onBoundsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) This is needed to recalculate the box size for the selected
+ item if the control is resized by the main application.
+ The parameter indicates whether the bounds were changed due to a screen
+ change (rotation, collapse).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+find(char
+\begin_inset space ~
+\end_inset
+
+c) Searches the list box for an item with the first letter matching the
+ given character.
+ The search is made case insensitive.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you override this class you must implement this method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the string of the selected item or "" if none is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItemStartingWith(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Selects the item that starts with the given text.
+ If the second parameter is 
+\family typewriter
+true
+\family default
+, the text and all searched strings are first converted to lowercase.
+ The method returns 
+\family typewriter
+true
+\family default
+ if an item was found and selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hideScrollBarIfNotNeeded() This method hides the scrollbar if its not needed,
+ i.
+ e., if horizontal scroll is disabled and the preferred height is smaller
+ than the actual height.
+ You may have to call 
+\family typewriter
+reposition()
+\family default
+ if this method returns 
+\family typewriter
+true
+\family default
+.
+ You can call this method after all items were added.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has an internal class called 
+\family typewriter
+IconItem
+\family default
+ used to show an icon and a text.
+ You can mix 
+\family typewriter
+IconItem
+\family default
+ with other item types in the list box.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+lb.add("this is a simple text");
+\end_layout
+
+\begin_layout Plain Layout
+
+lb.add(new IconItem("this is a text with icon", iconImage)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The icon should have the same size of the font's height, which can be set
+ with: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iconImage = originalImage.smoothScaledFixedAspectRatio(fmH,true,-1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class only has a public constructor and a public method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IconItem(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+icon) Constructs a new 
+\family typewriter
+IconItem
+\family default
+ with the given text and icon.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the object text.
 \end_layout
 
 \begin_layout Section
