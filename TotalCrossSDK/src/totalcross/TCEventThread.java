@@ -29,16 +29,10 @@ class TCEventThread extends Thread
 
    public TCEventThread(MainClass win)
    {
-      this(win, true);
-   }
-   
-   public TCEventThread(MainClass win, boolean startThread)
-   {
       super("TC Event Thread");
       this.win = win;
       eventQueue = new Queue();
-      if (startThread)
-         nativeCreate();
+      nativeCreate();
    }
    
    void nativeCreate()

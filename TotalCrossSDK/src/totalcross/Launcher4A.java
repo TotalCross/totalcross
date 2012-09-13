@@ -14,15 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
+
+
 package totalcross;
 
 import totalcross.android.*;
 import totalcross.android.compat.*;
 
 import java.util.*;
-
-import javax.microedition.khronos.egl.*;
-import javax.microedition.khronos.opengles.*;
 
 import android.app.*;
 import android.content.*;
@@ -31,7 +30,6 @@ import android.graphics.*;
 import android.hardware.Camera;
 import android.location.*;
 import android.media.*;
-import android.opengl.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
@@ -42,11 +40,12 @@ import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
 
-final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyListener, LocationListener, GLSurfaceView.Renderer
+final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
+   static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
@@ -59,7 +58,6 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
-   private static boolean initialized;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -87,7 +85,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
                   }
                   break;
                case CELLFUNC_START:
-                  telephonyManager = (TelephonyManager) loader.getSystemService(Context.TELEPHONY_SERVICE);
+                  telephonyManager = (TelephonyManager) instance.getContext().getSystemService(Context.TELEPHONY_SERVICE);
                   CellLocation.requestLocationUpdate();
                   telephonyManager.listen(phoneListener = new PhoneListener(), PhoneStateListener.LISTEN_CELL_LOCATION | PhoneStateListener.LISTEN_SIGNAL_STRENGTH);
                   break;
@@ -122,60 +120,31 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
          }
       }
    };
-
-   private static final boolean CONTINUOUS = false;
-   String tczname, appPath, cmdline;
+   
    public Launcher4A(Loader context, String tczname, String appPath, String cmdline)
    {
       super(context);
-      
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
-      this.tczname = tczname;
-      this.appPath = appPath;
-      this.cmdline = cmdline;
-      
-      setEGLContextClientVersion(2); // Create an OpenGL ES 2.0 context.
-      setEGLConfigChooser(8, 8, 8, 8, 0, 0);
-      getHolder().setFormat(PixelFormat.RGBA_8888);
-      setRenderer(this); // Set the Renderer for drawing on the GLSurfaceView
-      if (!CONTINUOUS)
-         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY); // Render the view only when there is a change in the drawing data (must be after setRenderer!)
-            
+      surfHolder = getHolder();
+      surfHolder.setFormat(PixelFormat.RGBA_8888);
+      surfHolder.addCallback(this);
+      //setWillNotDraw(true);
+      //setWillNotCacheDrawing(true);
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       lastOrientation = getOrientation();
-   }
-   
-   double yy; int cc,fc; long t0;
-   public void onDrawFrame(GL10 gl) 
-   {
-      if (CONTINUOUS)
-      {
-         long t1 = System.currentTimeMillis();
-         if (t1 - t0 >= 1000)
-         {
-            AndroidUtils.debug("FPS: "+fc);
-            t0 = t1; fc= 0;
-         }
-         fc++;
-      }
-      eventThread.privatePumpEvents();      
+      
+      String vmPath = context.getApplicationInfo().dataDir;
+      initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
 
-   public void onSurfaceCreated(GL10 gl, EGLConfig config) 
+   public static Context getAppContext()
    {
-      // here is where everything starts
-      if (eventThread == null)
-      {
-         String vmPath = loader.getApplicationInfo().dataDir;
-         initializeVM(loader, tczname, appPath, vmPath, cmdline);
-         eventThread = new TCEventThread(this,false);
-         eventThread.popTime = 0;
-      }
+      return instance.getContext();
    }
 
    static TelephonyManager telephonyManager;
@@ -211,26 +180,26 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    
    private int getOrientation()
    {
-      WindowManager wm = (WindowManager)loader.getSystemService(Context.WINDOW_SERVICE);
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       return wm.getDefaultDisplay().getOrientation();
    }
    
    private static int firstOrientationSize;
+   static boolean surfaceChangedCalled;
    
-   public void onSurfaceChanged(GL10 gl, int w, int h) 
+   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      nativeInitSize(w,h);
-      
-      WindowManager wm = (WindowManager)loader.getSystemService(Context.WINDOW_SERVICE);
+      nativeInitSize(holder.getSurface(),w,h);
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
       //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (!initialized) 
+      if (!surfaceChangedCalled) 
       {
-         initialized = true;
+         surfaceChangedCalled = true;
          int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
@@ -260,7 +229,11 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
             }
          }
          if (screenSize == 0)
+         {
             screenSize = screenSize0;
+            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
+         }
+         //nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
          // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
@@ -299,7 +272,6 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
                rDirty.bottom = lastScreenH;
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-               new Thread() {public void run() {while (true) if (eventThread.eventAvailable()) instance.requestRender();}}.start();
             }
          });
       }
@@ -313,6 +285,20 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
       b.putInt("type",Loader.INVERT_ORIENTATION);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
+   }
+
+   public void surfaceCreated(SurfaceHolder holder)
+   {
+      // here is where everything starts
+      if (eventThread == null)
+      {
+         eventThread = new TCEventThread(this);
+         eventThread.popTime = 20;
+      }
+   }
+
+   public void surfaceDestroyed(SurfaceHolder holder)
+   {
    }
 
    private static final int PEN_DOWN  = 1;
@@ -362,9 +348,9 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-      if (oldh < h)
+/*      if (oldh < h)
          updateScreen(0,0,w,h,TRANSITION_NONE);
-   }
+*/   }
 
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
@@ -458,130 +444,34 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
       return true;
    }
 
-   private static final int TRANSITION_NONE = 0;
-   private static final int TRANSITION_OPEN = 1;
-   private static final int TRANSITION_CLOSE = 2;
-   
-/*   static class ScreenView extends SurfaceView
-   {
-      public ScreenView(Context context)
-      {
-         super(context);
-         setWillNotDraw(false);
-         setWillNotCacheDrawing(true);
-      }
-      
-      public void draw(Canvas c)
-      {
-         c.drawBitmap(sScreenBitmap,0,0,null);
-      }
-   }
-   
-   static class AnimationThread implements Runnable,AnimationListener
-   {
-      Bitmap bm;
-      java.util.concurrent.CountDownLatch latch;
-      int trans;
-      ImageView newView;
-      ScreenView scrView;
-      
-      void startTransition(int trans)
-      {
-         this.trans = trans;
-         latch = new java.util.concurrent.CountDownLatch(1);
-         loader.runOnUiThread(this);
-         try {animt.latch.await();} catch (InterruptedException ie) {}
-      }
-      
-      public void run()
-      {
-         if (scrView == null)
-         {
-            ViewGroup vg = (ViewGroup)instance.getParent();
-            scrView = new ScreenView(loader);
-            newView = new ImageView(loader);
-            newView.setWillNotCacheDrawing(true);
-            newView.setVisibility(ViewGroup.INVISIBLE);
-            scrView.setVisibility(ViewGroup.INVISIBLE);
-            vg.addView(scrView);
-            vg.addView(newView);
-         }
-         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
-         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
-         {
-            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
-            bm.eraseColor(0xFFFFFFFF);
-            newView.setImageBitmap(bm);
-         }
-         Animation anim;
-         if (trans == TRANSITION_OPEN)
-         {
-            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-            newView.setImageBitmap(bm);
-            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-         else // TRANSITION_CLOSE
-         {
-            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-
-            newView.setImageBitmap(bm);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            scrView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-      }
-      
-      public void onAnimationEnd(Animation animation)
-      {
-         drawScreen();
-         newView.setVisibility(ViewGroup.INVISIBLE);
-         scrView.setVisibility(ViewGroup.INVISIBLE);
-         latch.countDown();
-      }
-
-      public void onAnimationRepeat(Animation animation) {}
-      public void onAnimationStart(Animation animation) {}
-   }
-   
-   static AnimationThread animt = new AnimationThread();
-   */
    static void drawScreen()
    {
-      instance.requestRender();
    }
 
    static void transitionEffectChanged(int type)
    {
-/*      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
-         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
-*/   }
+   }
    
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
-      if (!appPaused)
+/*      if (!appPaused)
       try
       {
          //long ini = System.currentTimeMillis();
-         if (!initialized || camera != null)
+         if (sScreenBitmap == null || camera != null)
             return;
          
-/*         switch (transitionEffect)
+         switch (transitionEffect)
          {
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
                animt.startTransition(transitionEffect);
                // no break!
-            case TRANSITION_NONE:*/
+            case TRANSITION_NONE:
                rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
                drawScreen();
-/*               break;
-         }*/
+               break;
+         }
          //int ela = (int)(System.currentTimeMillis() - ini);
          //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
       }
@@ -589,7 +479,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
       {
          AndroidUtils.debug(Log.getStackTraceString(t));
       }
-   }
+*/   }
 
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
@@ -642,7 +532,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    
    public static void pumpEvents()
    {
-      instance.requestRender(); // pump events on the gl thread
+      eventThread.pumpEvents();
    }
    
    public static void alert(String msg) // if called from android package classes, must pass FALSE
@@ -659,7 +549,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
          {
             public void onClick(DialogInterface dialoginterface, int i) 
             {
-               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
+//               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
                showingAlert = false;
             }
          })
@@ -692,7 +582,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeInitSize(int w, int h);
+   native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -738,7 +628,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    
    public static void setSIP(int sipOption)
    {
-      InputMethodManager imm = (InputMethodManager) loader.getSystemService(Context.INPUT_METHOD_SERVICE);
+      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
       switch (sipOption)
       {
          case SIP_HIDE:
@@ -824,7 +714,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
          case VIBRATE:
          {
             if (vibrator == null)
-               vibrator = (Vibrator)loader.getSystemService(Context.VIBRATOR_SERVICE);
+               vibrator = (Vibrator)instance.getContext().getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(v);
             break;
          }
@@ -936,7 +826,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
    static int oldRingerMode = -1;
    public static void soundEnable(boolean enable)
    {
-      AudioManager am = (AudioManager)loader.getSystemService(Context.AUDIO_SERVICE);
+      AudioManager am = (AudioManager)instance.getContext().getSystemService(Context.AUDIO_SERVICE);
       if (oldRingerMode == -1) // save it so it can be recovered when vm quits
          oldRingerMode = am.getRingerMode();
       am.setRingerMode(enable ? AudioManager.RINGER_MODE_NORMAL : AudioManager.RINGER_MODE_SILENT); 
@@ -1069,7 +959,7 @@ final public class Launcher4A extends GLSurfaceView implements MainClass, OnKeyL
             }
             else
             {         
-               Geocoder g = new Geocoder(loader);
+               Geocoder g = new Geocoder(instance.getContext());
                List<Address> al = g.getFromLocationName(address, 1);
                if (al != null && al.size() > 0)
                {

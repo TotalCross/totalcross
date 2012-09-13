@@ -307,26 +307,13 @@ TC_API int32 startProgram(Context currentContext)
 #endif
       executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, mustActivate ? -999999 : checkDemo());
       // 7. call the main event loop
-      if (isMainWindow) mainEventLoop(currentContext); // in the future, MainClass apps will also receive events.
+      if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding
-#ifdef ANDROID      
-   }
-   return 0;
-#else
       executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appEnding", 0), mainClass);
    }
-   return exitProgram(exitCode);
-#endif
-}
 
-#ifdef ANDROID
-void endApp()
-{
-   if (mainClass != null)
-      executeMethod(lifeContext, getMethod(OBJ_CLASS(mainClass), true, "appEnding", 0), mainClass);
-   exitProgram(exitCode);
-}             
-#endif
+   return exitProgram(exitCode);
+}
 
 // copy next arg that is a path
 static CharP nextArgPath(CharP buffer, CharP path)
@@ -499,7 +486,6 @@ jumpArgument:
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
-   eventContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    loadExceptionClasses(currentContext); // guich@tc112_18
 
    // Create a Java thread for the main context and call it "TC Event Thread"

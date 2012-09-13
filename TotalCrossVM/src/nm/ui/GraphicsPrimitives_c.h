@@ -855,7 +855,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    if ((y+height) > clipY2)    // line stops after clip y2
       height = clipY2-y;
 
-#ifdef ANDROID   
+#ifdef ANDROID
    if (x == 0 && y == 0 && width == appW && height == appH && !Surface_isImage(Graphics_surface(g)))
    {               
       PixelConv pc; 

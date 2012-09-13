@@ -15,7 +15,6 @@
 
 void updateScreen(Context currentContext);
 void vmSetAutoOff(bool enable); // vm_c.h
-static void pumpEvent(Context currentContext);
 
 // Platform-specific code
 #if defined(PALMOS)
@@ -67,7 +66,7 @@ static int32 nextAutoOffTick;
 static void pumpEvent(Context currentContext)
 {
    if (currentContext != mainContext) // only pump events on the mainContext
-      goto sleep;                     
+      goto sleep;
 #ifdef WINCE 
    {
     int32 ts;
@@ -105,7 +104,7 @@ void pumpEvents(Context currentContext)
 {
    if (keepRunning)
       do
-      {            
+      {
          pumpEvent(currentContext);
       } while (isEventAvailable() && keepRunning);
 
@@ -126,21 +125,17 @@ void mainEventLoop(Context currentContext)
 
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");
-#ifndef ANDROID      
    else
       while (keepRunning)
          pumpEvent(currentContext);
-#endif         
 }
 
 void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 x, int32 y, int32 mods)
 {
    if (mainClass != null && _postEvent != null)
-   {                       
+   {                
       executeMethod(currentContext, _postEvent, mainClass, (int32)type, key, x, y, keyGetPortableModifiers(mods), getTimeStamp()); // events are always posted to the main execution line
-#ifndef ANDROID      
       updateScreen(currentContext); // update the screen after the event was called, otherwise ListBox selection will not work
-#endif      
    }
 }
 

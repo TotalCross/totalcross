@@ -18,22 +18,23 @@
 
 package totalcross.android;
 
+import totalcross.*;
+import totalcross.android.compat.*;
+
+import java.io.*;
+import java.util.*;
+
 import android.app.*;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
-import java.io.*;
-import java.util.*;
-import android.content.pm.ActivityInfo;
 
-import totalcross.*;
-import totalcross.android.compat.*;
-
-public class Loader extends Activity
+public class Loader extends Activity 
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;

@@ -13,9 +13,6 @@
 
 #include "../init/android/totalcross_Launcher4A.h"
 
- #include <GLES2/gl2.h>
- #include <GLES2/gl2ext.h>
-
 static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key matches the system key
 {
    // map the TotalCross keys into the device-specific keys
@@ -25,8 +22,6 @@ static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key m
 }
 
 extern int32 *shiftYfield;
-void endApp(); // startup.c
-
 /*
  * The argument 'x' is actually the keyCode when the pressed key cannot be translated to an unicode char.
  *
@@ -39,17 +34,16 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
    switch (type)
    {
       case totalcross_Launcher4A_SIP_CLOSED:
-         postEvent(eventContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
+         postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
          break;
       case totalcross_Launcher4A_STOPVM_EVENT:
          keepRunning = false;
-         endApp();
          break;
       case totalcross_Launcher4A_KEY_PRESS:
       {
          int32 key2 = privateKeyDevice2Portable(x);
          if (key2 == x) // no change?                  
-            postEvent(eventContext, key == 0 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key == 0 ? key2 : key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
+            postEvent(mainContext, key == 0 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key == 0 ? key2 : key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
          else
          {
             bool post = isEssentialKey(key2);
@@ -62,18 +56,18 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
                      post = true;
             }
             if (post)
-               postEvent(eventContext, KEYEVENT_SPECIALKEY_PRESS, key2, 0,0, modifiers);
+               postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key2, 0,0, modifiers);
          }
          break;
       }
       case totalcross_Launcher4A_PEN_DOWN:
-         postEvent(eventContext, PENEVENT_PEN_DOWN, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_DOWN, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_PEN_UP:
-         postEvent(eventContext, PENEVENT_PEN_UP, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_UP, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_PEN_DRAG:
-         postEvent(eventContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
+         postEvent(mainContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
          break;
       case totalcross_Launcher4A_APP_PAUSED:
          postOnMinimizeOrRestore(true);
@@ -114,9 +108,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
             screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
          break;
       }
-   }                    
-   if (keepRunning)
-      pumpEvent(mainContext);
+   }
 }
 
 bool privateIsEventAvailable()
