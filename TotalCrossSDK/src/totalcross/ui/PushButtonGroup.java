@@ -56,7 +56,7 @@ public class PushButtonGroup extends Control
    private int cellH,rowH;
    private int lastSel=-1;
    private int maxWidth=-1;
-   private boolean simpleBorder = uiPalm || uiFlat; // guich@552_22: added uiFlat
+   private boolean simpleBorder = uiFlat; // guich@552_22: added uiFlat
    /** The bounds of each of the buttons. Never change this directly. */
    public Rect rects[];
    private int count;
@@ -218,7 +218,7 @@ public class PushButtonGroup extends Control
    /** Uses a border with a single line (not 3d and not Android's) */
    public void setSimpleBorder(boolean simple)
    {
-      this.simpleBorder = simple || uiPalm || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
+      this.simpleBorder = simple || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
    }
    /** Returns the index of the selected button, or -1 if none is selected. */
    public int getSelectedIndex()
@@ -358,7 +358,7 @@ public class PushButtonGroup extends Control
       boolean uiAndroid = Control.uiAndroid && !simpleBorder;
 
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack || uiAndroid)
       {
          if (!uiAndroid)
@@ -406,7 +406,7 @@ public class PushButtonGroup extends Control
             if (simpleBorder)
                g.drawRect(r.x,r.y,r.width,r.height);
             else
-               g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?((uiCE || uiVista) && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:((uiCE || uiVista) && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
+               g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?(uiVista && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:(uiVista && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
          }
       g.foreColor = fColor;
       for (i=0; i < n; i++)
@@ -416,17 +416,17 @@ public class PushButtonGroup extends Control
             boolean useCustomColor = btnFColors != null && btnFColors[i] >= 0; // guich@573_37
             g.setClip(r.x+1,r.y+1,r.width-2,r.height-2);
             if (useCustomColor) g.foreColor = btnFColors[i];
-            if (uiPalm || uiFlat || i != sel)
+            if (uiFlat || i != sel)
                g.drawText(names[i], tX[i], r.y+ty, textShadowColor != -1, textShadowColor); // tX[i]: if allSameWidth, center the label in the button
             else
             {
-               int shift = uiAndroid ? 0 : (uiCE&&actLikeCheck && !checkAppearsRaised?-1:1);
+               int shift = uiAndroid ? 0 : 1;
                g.drawText(names[i], tX[i]+shift, r.y+ty+shift, textShadowColor != -1, textShadowColor);
             }
             if (useCustomColor) g.foreColor = fColor;
          }
       g.clearClip();
-      if ((uiFlat || uiPalm) && selectedIndex != -1 && (r = rects[selectedIndex]) != null && !hidden[selectedIndex])
+      if (uiFlat && selectedIndex != -1 && (r = rects[selectedIndex]) != null && !hidden[selectedIndex])
       {
          int k = simpleBorder?1:2;
          g.eraseRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k,backColor,dColor,foreColor);

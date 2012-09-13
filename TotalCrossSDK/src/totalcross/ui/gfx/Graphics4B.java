@@ -48,14 +48,7 @@ public final class Graphics4B
    static public final byte ARROW_RIGHT = 4;
 
    public static final int DRAW_PAINT         = 0;
-   public static final int DRAW_ERASE         = 1;
-   public static final int DRAW_MASK          = 2;
-   public static final int DRAW_INVERT        = 3;
-   public static final int DRAW_OVERLAY       = 4;
-   public static final int DRAW_PAINT_INVERSE = 5;
    public static final int DRAW_SPRITE        = 6;
-   public static final int DRAW_REPLACE_COLOR = 7;
-   public static final int DRAW_SWAP_COLORS   = 8;
 
    private int TRANSX, TRANSY;
    private int minX, minY, maxX, maxY;
@@ -1723,11 +1716,6 @@ public final class Graphics4B
       copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
    }
 
-   public void setDrawOp(int drawOp)
-   {
-      this.drawOp = drawOp;
-   }
-
    private static Hashtable ht3dColors = new Hashtable(83);
    private static StringBuffer sbc = new StringBuffer(30);
 
@@ -1874,56 +1862,6 @@ public final class Graphics4B
          int fC = foreColor, bC = backColor;
          switch (Settings.uiStyle)
          {
-            case Settings.WinCE:
-               switch (type)
-               {
-                  case R3D_EDIT:
-                     drawHighLightFrame(x, y, width, height, fourColors[2], fourColors[1], yMirror);
-                     if (!simple)
-                        drawHighLightFrame(x + 1, y + 1, width - 2, height - 2, fourColors[3], fourColors[0], yMirror);
-                     break;
-                  case R3D_LOWERED:
-                     drawHighLightFrame(x, y, width, height, fourColors[3], fourColors[0], yMirror);
-                     if (!simple)
-                        drawHighLightFrame(x + 1, y + 1, width - 2, height - 2, fourColors[2], fourColors[1], yMirror);
-                     break;
-                  case R3D_RAISED:
-                     drawHighLightFrame(x, y, width, height, fourColors[0], fourColors[3], yMirror);
-                     if (!simple)
-                        drawHighLightFrame(x + 1, y + 1, width - 2, height - 2, fourColors[1], fourColors[2], yMirror);
-                     break;
-                  case R3D_CHECK:
-                     drawHighLightFrame(x, y, width, height, fourColors[2], fourColors[1], yMirror);
-                     if (!simple)
-                        drawHighLightFrame(x + 1, y + 1, width - 2, height - 2, fourColors[3], fourColors[0], yMirror);
-                     break;
-               }
-               break;
-            case Settings.PalmOS:
-               foreColor = fourColors[2];
-               switch (type)
-               {
-                  case R3D_CHECK:
-                     drawRect(x, y, width, height);
-                     break;
-                  case R3D_EDIT:
-                     int h = height - 1;
-                     drawDots(x, y + h, x + width, y + h);
-                     break;
-                  case R3D_LOWERED:
-                     backColor = fourColors[1]; // dont move it from here!
-                     if (simple)
-                        fillRect(x, y, width, height);
-                     else
-                        fillHatchedRect(x, y, width, height, true, true); // no break; here!
-                  case R3D_RAISED:
-                     if (simple)
-                        drawRect(x, y, width, height);
-                     else
-                        drawHatchedRect(x, y, width, height, true, true);
-                     break;
-               }
-               break;
             case Settings.Flat:
                foreColor = fourColors[2];
                switch (type)
@@ -2291,11 +2229,6 @@ public final class Graphics4B
       switch (drawOp)
       {
          case DRAW_PAINT:           op = net.rim.device.api.ui.Graphics.ROP2_S; break;
-         case DRAW_ERASE:           op = net.rim.device.api.ui.Graphics.ROP2_DSa; break;
-         case DRAW_MASK:            op = net.rim.device.api.ui.Graphics.ROP2_DSna; break;
-         case DRAW_INVERT:          op = net.rim.device.api.ui.Graphics.ROP2_DSo; break;
-         case DRAW_OVERLAY:         op = net.rim.device.api.ui.Graphics.ROP2_DSx; break;
-         case DRAW_PAINT_INVERSE:   op = net.rim.device.api.ui.Graphics.ROP2_Sn; break;
       }
 
       if (!useAlpha && op != -1)
@@ -2336,26 +2269,11 @@ public final class Graphics4B
                   }
                }
             else
-               switch (drawOp)
-               {
-                  case DRAW_SPRITE:
-                     for (i = width; --i >= 0;)
-                        if (buf2[i] != backColor)
-                           buf1[i] = buf2[i];
-                     break;
-                  case DRAW_REPLACE_COLOR:
-                     for (i = width; --i >= 0;)
-                        if (buf2[i] != backColor)
-                           buf1[i] = foreColor;
-                     break;
-                  case DRAW_SWAP_COLORS:
-                     for (i = width; --i >= 0;)
-                        if (buf2[i] == backColor)
-                           buf1[i] = foreColor;
-                        else if (buf2[i] == foreColor)
-                           buf1[i] = backColor;
-                     break;
-               }
+            {
+               for (i = width; --i >= 0;) // DRAW_SPRITE
+                  if (buf2[i] != backColor)
+                     buf1[i] = buf2[i];
+            }
 
             g.drawRGB(buf1, 0, width, dstX, dstY + j, width, 1);
          }

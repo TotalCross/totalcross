@@ -171,7 +171,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
+   protected static boolean uiFlat,uiVista=true,uiAndroid;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -824,6 +824,12 @@ public class Control extends GfxSurface
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
+         if (Settings.platform.equals(Settings.ANDROID))
+         {
+            Window.needsPaint = true; // make sure the whole area is marked to be repainted
+            w._doPaint(); // doPaint already calls updateScreen
+         }
+         else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
@@ -1152,8 +1158,6 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm    = Settings.uiStyle == Settings.PalmOS;
-         uiCE      = Settings.uiStyle == Settings.WinCE;
          uiFlat    = Settings.uiStyle == Settings.Flat;
          uiAndroid = Settings.uiStyle == Settings.Android;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;

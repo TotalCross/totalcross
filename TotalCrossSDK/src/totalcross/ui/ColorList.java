@@ -120,7 +120,7 @@ public class ColorList extends ListBox
       {
          int dx = 3;
          int dy = 4;
-         if (uiPalm || uiFlat) dy--;
+         if (uiFlat) dy--;
          if (simpleBorder) {dx--; dy--;}
          int ih = getItemHeight(sel);
          dy += (sel-offset) * ih;

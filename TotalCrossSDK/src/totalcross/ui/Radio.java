@@ -183,7 +183,7 @@ public class Radio extends Control
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH+Edit.prefH : Math.max(12,uiPalm ? fm.ascent+1 : fm.ascent); // guich@tc110_18: min size is 12
+      return Settings.useNewFont ? fmH+Edit.prefH : Math.max(12,fm.ascent); // guich@tc110_18: min size is 12
    }
 
    /** Called by the system to pass events to the radio control. */
@@ -296,14 +296,9 @@ public class Radio extends Control
    {
       cColor = getForeColor();
       bColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
-      if (uiPalm)
-         colors[1] = colors[2] = cColor;
-      else
-      {
-         colors[0] = colors[2] = Color.brighter(cColor);
-         colors[3] = bColor;
-         colors[1] = cColor;
-      }
+      colors[0] = colors[2] = Color.brighter(cColor);
+      colors[3] = bColor;
+      colors[1] = cColor;
       if (uiVista)
          try
          {
@@ -351,7 +346,6 @@ public class Radio extends Control
          int kk = big?8:6; // number of elements per arc
          xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
          yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
-         if (uiPalm && Settings.screenWidth < 200) yy--;
          g.translate(xx,yy);
 
          int []coords = big?coords2:coords1;
@@ -432,7 +426,7 @@ public class Radio extends Control
 
       // draw label
       yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? (Settings.useNewFont && (uiPalm || uiCE || uiFlat) ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+      xx = leftJustify ? (Settings.useNewFont && uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
       g.foreColor = cColor; // guich@tc120_55: use the foreground color
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }

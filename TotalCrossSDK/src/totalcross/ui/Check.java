@@ -238,7 +238,7 @@ public class Check extends Control
          int wh = height;
          int m = 2*wh/5;
          int yy = m;
-         int xx = uiPalm ? 2 : 3;
+         int xx = 3;
          wh -= xx;
          if (fmH <= 10) // guich@tc110_18
          {

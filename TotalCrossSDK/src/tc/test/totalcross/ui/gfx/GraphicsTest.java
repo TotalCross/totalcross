@@ -594,18 +594,8 @@ public class GraphicsTest extends ImageComparisionTest
    {
       resetImage();
       Image ball = createBall();
-      g.drawOp = Graphics.DRAW_MASK;
-      g.drawImage(ball,-5,-5);
-      g.drawOp = Graphics.DRAW_INVERT;
-      g.drawImage(ball,0,0);
-      g.drawOp = Graphics.DRAW_OVERLAY;
-      g.drawImage(ball,5,5);
-      g.drawOp = Graphics.DRAW_PAINT_INVERSE;
-      g.drawImage(ball,10,10);
       g.drawOp = Graphics.DRAW_SPRITE;
       g.drawImage(ball,15,15);
-      g.drawOp = Graphics.DRAW_ERASE;
-      g.drawImage(ball,5,5);
       // reset the drawop
       g.drawOp = Graphics.DRAW_PAINT;
    }

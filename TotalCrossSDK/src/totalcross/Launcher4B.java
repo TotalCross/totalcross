@@ -948,7 +948,7 @@ public class Launcher4B
       Settings.decimalSeparator = '.';
 
       // Device settings
-      Settings.uiStyle = Settings.WinCE;
+      Settings.uiStyle = Settings.Vista;
       Settings.screenWidth = Display.getWidth();
       Settings.screenHeight = Display.getHeight();
       

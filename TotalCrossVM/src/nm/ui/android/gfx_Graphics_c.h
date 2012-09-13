@@ -79,8 +79,10 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
 
+GLfloat ftransp[16];
 static bool initGLES()
-{
+{                
+   int32 i;
    char buf[512];
    const EGLint attribs[] =
    {
@@ -91,6 +93,7 @@ static bool initGLES()
        EGL_ALPHA_SIZE, 8,
        EGL_NONE
    };
+   EGLint context_attribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
    EGLDisplay display;
    EGLConfig config;
    EGLint numConfigs;
@@ -109,7 +112,7 @@ static bool initGLES()
    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
 
    if (!(surface = eglCreateWindowSurface(display, config, window, 0)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
-   if (!(context = eglCreateContext(display, config, 0, 0)))                {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
+   if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attribs))) {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglMakeCurrent(display, surface, surface, context))                 {debug("eglMakeCurrent() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) || !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {debug("eglQuerySurface() returned error %d", eglGetError()); destroyEGL(); return false;}
 
@@ -131,11 +134,14 @@ static bool initGLES()
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 
    glViewport(0, 0, width, height);
-   glEnable(GL_SCISSOR_TEST);
+   /*glEnable*/glDisable(GL_SCISSOR_TEST);
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glEnable(GL_BLEND); // enable color alpha channel
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   for (i = 0; i <= 15; i++)
+      ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
 
    return true;
 }
@@ -189,9 +195,6 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
 {
    eglSwapBuffers(_display, _surface);
-/*   JNIEnv *env = getJNIEnv();
-   if (env)
-      (*env)->CallStaticVoidMethod(env, applicationClass, jupdateScreen, currentContext->dirtyX1,currentContext->dirtyY1,currentContext->dirtyX2,currentContext->dirtyY2,transitionEffect); // will call Java_totalcross_Launcher4A_nativeOnDraw*/
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
@@ -220,7 +223,6 @@ void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
    pc.pixel = rgb;
    coords[0] = x;
    coords[1] = y;
-   coords[2] = 0;
 
    colors[0] = (GLfloat)pc.r / (GLfloat)255;
    colors[1] = (GLfloat)pc.g / (GLfloat)255;
@@ -241,7 +243,6 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
    coords[1] = y1;
    coords[3] = x2;
    coords[4] = y2;
-   coords[2] = coords[5] = 0;
 
    colors[0] = colors[4] = (GLfloat)pc.r / (GLfloat)255;
    colors[1] = colors[5] = (GLfloat)pc.g / (GLfloat)255;
@@ -258,19 +259,14 @@ void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
    GLfloat* colors = c->glcolors;
    PixelConv pc;
    pc.pixel = rgb;
-   w--; h--;
    coords[0] = x;
    coords[1] = y;
-   coords[2] = 0;
    coords[3] = x;
    coords[4] = y+h;
-   coords[5] = 0;
    coords[6] = x+w;
    coords[7] = y+h;
-   coords[8] = 0;
    coords[9] = x+w;
    coords[10] = y;
-   coords[11] = 0;
 
    colors[0] = colors[4] = colors[8]  = colors[12] = colors[16] = colors[20] = (GLfloat)pc.r / (GLfloat)255;
    colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = (GLfloat)pc.g / (GLfloat)255;

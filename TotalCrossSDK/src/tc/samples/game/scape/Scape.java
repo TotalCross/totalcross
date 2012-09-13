@@ -99,7 +99,7 @@ public class Scape extends GameEngine implements ProdConfig
 
    public Scape()
    {
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
 
       // adjust attributes
       gameName = "Scape";

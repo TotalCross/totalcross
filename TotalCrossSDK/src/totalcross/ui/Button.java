@@ -504,7 +504,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && !isAndroidStyle && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -611,7 +611,7 @@ public class Button extends Control
       if (!isAndroidStyle)
          Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
-      if (!uiCE && !isAndroidStyle)
+      if (!isAndroidStyle)
          fourColors[1] = pressColor;
       if (!enabled && fadedColor != backColor) // guich@tc110_50
       {
@@ -649,18 +649,6 @@ public class Button extends Control
          }
          switch (Settings.uiStyle)
          {
-            case Settings.WinCE:
-               g.backColor = backColor;
-               g.fillRect(0,0,width,height);
-               break;
-            case Settings.PalmOS:
-               g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
-               if (border == BORDER_NONE)
-                  g.fillRect(0,0,width,height);
-               else
-               if (!armed) // guich@450_35: little optimization
-                  g.fillHatchedRect(0,0,width,height,true,true);
-               break;
             case Settings.Flat:
                g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
                g.fillRect(0,0,width,height);

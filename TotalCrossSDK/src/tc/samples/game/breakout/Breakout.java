@@ -72,7 +72,7 @@ public class Breakout extends GameEngine
 
    public Breakout()
   	{
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
    	gameName = "Breakout";
       gameCreatorID = "tCbA";
       gameVersion = 140;

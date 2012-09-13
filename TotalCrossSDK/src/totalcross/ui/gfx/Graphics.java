@@ -64,14 +64,7 @@ public final class Graphics
     * Sets the drawing operation when dealing with images.
     *
     * @see #DRAW_PAINT
-    * @see #DRAW_ERASE
-    * @see #DRAW_MASK
-    * @see #DRAW_INVERT
-    * @see #DRAW_OVERLAY
-    * @see #DRAW_PAINT_INVERSE
     * @see #DRAW_SPRITE
-    * @see #DRAW_REPLACE_COLOR
-    * @see #DRAW_SWAP_COLORS
     */
    public int drawOp;
 
@@ -104,41 +97,8 @@ public final class Graphics
    /** The constant for a draw operation where the destination is replaced with source pixels (copy mode). */
    public static final int DRAW_PAINT         = 0;
 
-   /** The constant for a draw operation where the destination is cleared where source pixels are off (AND mode). 
-    * @deprecated */
-   public static final int DRAW_ERASE         = 1;
-
-   /** The constant for a draw operation where the destination is cleared where source pixels are on (AND NOT mode). 
-   * @deprecated */
-   public static final int DRAW_MASK          = 2;
-
-   /** The constant for a draw operation where the destination is inverted where source pixels are on (XOR mode). 
-    * @deprecated */
-   public static final int DRAW_INVERT        = 3;
-
-   /** The constant for a draw operation where the destination set only where source pixels are on (OR mode). 
-    * @deprecated */
-   public static final int DRAW_OVERLAY       = 4;
-
-   /** The constant for a draw operation where the destination is replaced with inverted source (copy NOT mode). 
-    * @deprecated */
-   public static final int DRAW_PAINT_INVERSE = 5;
-
-   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). 
-    * @deprecated */
+   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). */
    public static final int DRAW_SPRITE        = 6;
-
-   /**
-   * The constant for a draw operation where the destination is replaced with <i>foreground color</i> if source pixels different of <i>background color</i>.
-   * Note that this is rather slow on blackberry devices.
-    * @deprecated */
-   public static final int DRAW_REPLACE_COLOR = 7;
-
-
-   /** The constant for a draw operation where the <i>foreground color</i> is swaped with the <i>background color</i>.
-   * Note that this is rather slow on blackberry devices.
-    * @deprecated */
-   public static final int DRAW_SWAP_COLORS   = 8;
 
    private int transX, transY;
    private int clipX1, clipY1, clipX2, clipY2;
@@ -1693,7 +1653,6 @@ public final class Graphics
      * everytime you change the enabled state or the fore/back colors. This can
      * be easily achieved if you extend the onColorsChanged method
      * (but don't forget to call super.onColorsChanged).
-     * @deprecated 
      */
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
@@ -1719,11 +1678,13 @@ public final class Graphics
          }
          ht3dColors.put(key, four);
       }
-      Vm.arrayCopy(four, 0, fourColors, 0, 4);
+      four[0] = fourColors[0];
+      four[1] = fourColors[1];
+      four[2] = fourColors[2];
+      four[3] = fourColors[3];
    }
 
    /** Draws a shaded rectangle. 
-    * @deprecated 
     */
    public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor) // guich@573_6
    {
@@ -1763,7 +1724,6 @@ public final class Graphics
    }
 
    /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
-    * @deprecated 
     */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
@@ -1830,7 +1790,6 @@ public final class Graphics
     * @see #R3D_RAISED
     * @see #R3D_CHECK
     * @see #R3D_SHADED
-    * @deprecated 
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {
@@ -1846,52 +1805,6 @@ public final class Graphics
       } else
       switch (Settings.uiStyle)
       {
-         case Settings.WinCE:
-            switch (type)
-            {
-               case R3D_EDIT:
-                  drawHighLightFrame(x,y,width,height,fourColors[2],fourColors[1],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-                  break;
-               case R3D_LOWERED:
-                  drawHighLightFrame(x,y,width,height,fourColors[3],fourColors[0],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[2],fourColors[1],yMirror);
-                  break;
-               case R3D_RAISED:
-                  drawHighLightFrame(x,y,width,height,fourColors[0],fourColors[3],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[1],fourColors[2],yMirror);
-                  break;
-               case R3D_CHECK:
-                  drawHighLightFrame(x,y,width,height,fourColors[2],fourColors[1],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-                  break;
-            }
-            break;
-         case Settings.PalmOS:
-            foreColor = fourColors[2];
-            switch (type)
-            {
-               case R3D_CHECK:
-                  drawRect(x,y,width,height);
-                  break;
-               case R3D_EDIT:
-                  int h = height-1;
-                  drawDots(x,y+h,x+width,y+h);
-                  break;
-               case R3D_LOWERED:
-                  backColor = fourColors[1]; // dont move it from here!
-                  if (simple)
-                     fillRect(x,y,width,height);
-                  else
-                     fillHatchedRect(x,y,width,height,true,true); // no break; here!
-               case R3D_RAISED:
-                  if (simple)
-                     drawRect(x,y,width,height);
-                  else
-                     drawHatchedRect(x,y,width,height,true,true);
-                  break;
-            }
-            break;
          case Settings.Flat:
             foreColor = fourColors[2];
             switch (type)
@@ -2220,7 +2133,7 @@ public final class Graphics
                for (j=height; j > 0; j--,psrc += scrPitch, pdst += pitch)
                   Vm.arrayCopy(pixels, psrc, dst, pdst, width);
          }
-         else
+         else // DRAW_SPRITE
          {
             for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
             {
@@ -2230,19 +2143,7 @@ public final class Graphics
                {
                   screenPt = dst[dstIdx];
                   bmpPt = pixels[srcIdx++];
-                  switch (drawOp)
-                  {
-                     case DRAW_ERASE:         screenPt &=  bmpPt; break;
-                     case DRAW_MASK:          screenPt &= ~bmpPt; break;
-                     case DRAW_INVERT:        screenPt ^=  bmpPt; break;
-                     case DRAW_OVERLAY:       screenPt |=  bmpPt; break;
-                     case DRAW_PAINT_INVERSE: screenPt  = ~bmpPt; break;
-                     case DRAW_SPRITE:        if (bmpPt != backColor) screenPt = bmpPt;     break;
-                     case DRAW_REPLACE_COLOR: if (bmpPt != backColor) screenPt = foreColor; break;
-                     case DRAW_SWAP_COLORS:   if (bmpPt == backColor) screenPt = foreColor;
-                                              else
-                                              if (bmpPt == foreColor) screenPt = backColor; break;
-                  }
+                  if (bmpPt != backColor) screenPt = bmpPt;     
                   dst[dstIdx++] = screenPt; // note: there is no performance gain by storing the results in an array and calling draw ScanLine instead.
                }
             }

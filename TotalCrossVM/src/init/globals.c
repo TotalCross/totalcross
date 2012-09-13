@@ -72,9 +72,6 @@ uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
 int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-#ifdef ANDROID
-jmethodID jupdateScreen;
-#endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
 bool callingScreenChange;

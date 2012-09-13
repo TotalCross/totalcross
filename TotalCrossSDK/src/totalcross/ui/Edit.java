@@ -86,7 +86,7 @@ public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
    private static int xMins[] = {4,1,3,3,4};
-   public static final int prefH = uiCE || uiAndroid ? 4 : uiPalm ? 1 : 2;
+   public static final int prefH = uiAndroid ? 4 : 2;
 
    private boolean hasFocus;
    private boolean cursorShowing;
@@ -718,7 +718,7 @@ public class Edit extends Control
 
    public int getPreferredWidth()
    {
-      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiCE||uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
+      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
    }
 
    public int getPreferredHeight()

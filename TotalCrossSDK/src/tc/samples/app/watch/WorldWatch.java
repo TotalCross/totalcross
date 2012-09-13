@@ -44,7 +44,7 @@ public class WorldWatch extends MainWindow
 
    public WorldWatch()
    {
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
    }
 
    private void addWatch(int x, int y, int city)

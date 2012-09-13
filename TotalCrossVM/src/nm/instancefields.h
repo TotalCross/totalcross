@@ -146,9 +146,9 @@
 // generic surface - for Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
 #ifdef __gl2_h_
-#define Graphics_useOpenGL(o)             (!Surface_isImage(Graphics_surface(g)))
+#define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
 #else
-#define Graphics_useOpenGL(o)             (false)
+#define Graphics_useOpenGL(g)             (false)
 #endif
 
 // totalcross.io.ByteArrayStream

@@ -130,8 +130,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       surfHolder = getHolder();
       surfHolder.setFormat(PixelFormat.RGBA_8888);
       surfHolder.addCallback(this);
-      //setWillNotDraw(true);
-      //setWillNotCacheDrawing(true);
+      setWillNotDraw(true);
+      setWillNotCacheDrawing(true);
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);

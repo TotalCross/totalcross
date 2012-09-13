@@ -447,7 +447,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    
    private int getExtraSize()
    {
-      return 2+(uiCE?1:0) + insets.left+insets.right;
+      return 2 + insets.left+insets.right;
    }
 
    /** Returns the index of the next/prev enabled tab, or the current tab if there's none. */
@@ -523,7 +523,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             btnRight.autoRepeat = btnLeft.autoRepeat = true; // guich@tc122_46
             btnRight.AUTO_DELAY = btnLeft.AUTO_DELAY = 500;
          }
-         btnX = btnLeft.x-(uiCE?3:2);
+         btnX = btnLeft.x-2;
       }
       else btnX = this.width;
       if (btnLeft != null)
@@ -710,7 +710,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       int back = backColor;
       g.backColor = backColor;
       if (btnLeft != null && mustScroll()) // if we have scroll, don't let the title be drawn over the arrow buttons
-         g.setClip(1,0,btnX+(uiCE?1:0),height);
+         g.setClip(1,0,btnX,height);
       
       // draw the tabs
       
@@ -815,16 +815,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             g.drawRect(r.x,r.y,r.width,r.height);
          else
          if (!uiAndroid)
-         {
             g.drawHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // guich@400_40: moved from (*) to here
-            if (uiCE && i+1 != activeIndex) // guich@100b4_9
-            {
-               int nextColor = getTabColor(i);
-               g.foreColor = Color.interpolate(cColor,nextColor);
-               g.drawLine(r.x+r.width,r.y+(atTop?2:1),r.x+r.width,r.y+r.height+(atTop?-1:-3));
-               g.foreColor = cColor;
-            }
-         }
       }
       if (!isText && transpColor >= 0)
       {

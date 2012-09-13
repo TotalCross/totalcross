@@ -279,12 +279,12 @@ public class MultiEdit extends Container implements Scrollable
    {
       if (rowCount0 == -1)
          rowCount0 = rowCount;
-      return (hLine*rowCount0+ ((uiPalm || uiFlat)?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
+      return (hLine*rowCount0+ (uiFlat?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
    }
 
    public int getPreferredWidth()
    {
-      return (mask==null?(totalcross.sys.Settings.screenWidth>>2):(mask.length()==0)?FILL:(fm.stringWidth(mask) + (uiPalm?4:10))) + insets.left+insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
+      return (mask==null?(totalcross.sys.Settings.screenWidth>>2):(mask.length()==0)?FILL:(fm.stringWidth(mask) + 10)) + insets.left+insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
    }
 
    /** Sets the desired maximum length for text entered in the Edit.
@@ -452,7 +452,7 @@ public class MultiEdit extends Container implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       drawg = null;
-      int zOffset = (uiPalm || uiFlat)?0:2; // size of borders
+      int zOffset = uiFlat?0:2; // size of borders
       boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-(Settings.fingerTouch?0:sb.getPreferredWidth()),this.height-2*zOffset);    //JR @0.5
       textRect = boardRect.modifiedBy(gap,gap,-2*gap,-2*gap);
       rowCount = textRect.height / this.hLine; // kambiz@350_5: update rowCount according to the new size of the text area
@@ -1174,7 +1174,7 @@ public class MultiEdit extends Container implements Scrollable
             g.drawImage(npback, 0,0);
          }
          else
-         if (!uiPalm) g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
+            g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
       }
       g.setClip(boardRect);
       // draw the text and/or the selection --original
@@ -1285,7 +1285,7 @@ public class MultiEdit extends Container implements Scrollable
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = back0 != Color.WHITE?backColor:Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid && !uiPalm) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       sb.setBackForeColors(backColor, foreColor);
       npback = null;
    }

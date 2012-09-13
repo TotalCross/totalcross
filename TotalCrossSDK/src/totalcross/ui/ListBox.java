@@ -681,8 +681,6 @@ public class ListBox extends Container implements Scrollable
       int m = uiFlat?0:simpleBorder?1:2,n=0;
       visibleItems = (height-m-2) / getItemHeight(0);
       btnX = width - m - btnW;
-      if (uiPalm)
-         {btnX--; m++;}
       btnX0 = btnX;
       if (!sbar.isVisible())
          btnX = width-1;
@@ -697,11 +695,6 @@ public class ListBox extends Container implements Scrollable
             btnRight.focusTraversable = btnLeft.focusTraversable = false;
             tabOrder.removeElement(btnRight); // guich@572_6: remove them from the tabOrder, otherwise it will block the control navigation in some situations (AllTests)
             tabOrder.removeElement(btnLeft);
-            if (uiPalm) // guich@554_31
-            {
-               btnRight.setBorder(Button.BORDER_NONE);
-               btnLeft.setBorder(Button.BORDER_NONE);
-            }
             onColorsChanged(true); // guich@tc111_6
          }
          n = (btnRight.getPreferredHeight() + extraHorizScrollButtonHeight + extraHB) << 1;
@@ -952,15 +945,12 @@ public class ListBox extends Container implements Scrollable
       }
       g.foreColor = foreColor;
       if (!uiAndroid)
-         if (simpleBorder && uiCE)
-            g.drawRect(0,0,width,height);
-         else
-            g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
+         g.draw3dRect(0,0,width,height,Graphics.R3D_CHECK,false,false,fourColors);
       g.foreColor = fColor;
 
       int dx = 2; // guich@580_41: changed from 3 to 2
       int dy = 3;
-      if (uiPalm || uiFlat) dy--;
+      if (uiFlat) dy--;
       if (simpleBorder) {dx--; dy--;}
 
       setTextAreaClip(g,dx,dy); // guich@tc100b4_5
@@ -979,8 +969,8 @@ public class ListBox extends Container implements Scrollable
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
    {
-      int yy = dy-(uiCE?1:0);
-      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm||uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm||uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
+      int yy = dy;
+      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
    }
    
    protected void drawSelectedItem(Graphics g, int from, int to)
@@ -1033,7 +1023,7 @@ public class ListBox extends Container implements Scrollable
    int getIndexY(int sel)
    {
       int dy = 3;
-      if (uiPalm || uiFlat) dy--;
+      if (uiFlat) dy--;
       if (simpleBorder) dy--;
       int ih = getItemHeight(sel);
       dy += (sel-offset) * ih;
@@ -1050,7 +1040,7 @@ public class ListBox extends Container implements Scrollable
 
          int dx = 3; // guich@580_41: cursor must be drawn at 3 or will overwrite the border on a combobox with PalmOS style
          int dy = 3;
-         if (uiPalm || uiFlat) dy--;
+         if (uiFlat) dy--;
          if (simpleBorder) {dx--; dy--;}
 
          setTextAreaClip(g,dx-1,dy); // guich@tc100b4_5

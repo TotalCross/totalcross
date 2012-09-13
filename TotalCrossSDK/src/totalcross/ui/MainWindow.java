@@ -176,8 +176,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    public void setUIStyle(byte style)
    {
-      if (style == Settings.PalmOS)
-         setBackColor(Color.WHITE);
       Settings.uiStyle = style;
       if (style == Settings.Android)
          Settings.fingerTouch = true;
