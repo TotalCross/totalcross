@@ -28,13 +28,14 @@ import totalcross.ui.gfx.*;
 * Displays a tooltip when user holds the pen in the control.
 * On Windows and Linux desktop, the tooltip is also shown when the mouse stays over a control.
 * <br><br>
-* The default popup delay is 1000ms and the amount of time it will be displayed is
-* computed based in the number of lines the tooltip has; a pen up also hides the tip.
+* The default popup delay is 1000ms and the amount of time it will be displayed is 2000 ms; 
+* a pen up also hides the tip.
 * <p>
 * You can change some properties of the tooltip: borderColor, insideGap, distX, distY, 
 * millisDelay, millisDisplay. See their javadocs for details.
+* <p>
+* Example:<br>
 * <pre>
-* Example :<br>
 * ToolTip.distX = 10; // 0 by default
 * ToolTip.distY = 4;  // 0 by default
 * ToolTip.insideGap = 8; // 4 by default
@@ -82,9 +83,9 @@ public class ToolTip extends Label implements PenListener, MouseListener
 
    /** The amount of time that the pen must be down until the tip pops up (by default, 1000ms) */
    public int millisDelay = 1000;
-   /** The mount of time that the tip will be shown (by default, 2000ms) */
+   /** The amount of time that the tip will be shown (by default, 2000ms) */
    public int millisDisplay = 2000;
-   /** The border color. By default, it is null and no border is shown */
+   /** The border color. By default, it is -1 and no border is shown */
    public int borderColor = -1; // the color around the rect
 
    /**
