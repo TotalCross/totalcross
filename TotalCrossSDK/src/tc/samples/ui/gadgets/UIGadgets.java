@@ -155,7 +155,7 @@ public class UIGadgets extends MainWindow
                case 101: 
                case 102: 
                case 103: 
-                  Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101);
+                  Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101+2);
                   new MessageBox("User Interface changed","Press close to quit the\nprogram, then call it again.").popup();
                   exit(0);
                   break;
