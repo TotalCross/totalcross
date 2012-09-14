@@ -1066,10 +1066,14 @@ Sample bug.
 \end_layout
 
 \begin_layout Standard
-You should first take a look at the 
+You should first take a look at the TotalCross changelog
+\begin_inset Newline newline
+\end_inset
+
+
 \begin_inset CommandInset href
 LatexCommand href
-name "TotalCross changelog"
+name "(http://www.superwaba.com.br/en/changelogs.asp)"
 target "http://www.superwaba.com.br/en/changelogs.asp"
 
 \end_inset
@@ -1082,10 +1086,10 @@ target "http://www.superwaba.com.br/en/changelogs.asp"
 You may then use the forum to report the bug, however, its not guaranteed
  that we will fix the bug.
  If you want the bug fixed in a few days and receive a fixed virtual machine,
- you must purchase a 
+ you must purchase a support plan
 \begin_inset CommandInset href
 LatexCommand href
-name "support plan"
+name " (http://www.superwaba.com.br/en/suporte.asp)"
 target "http://www.superwaba.com.br/en/suporte.asp"
 
 \end_inset
@@ -5649,7 +5653,7 @@ Starting in version 1.15, on Windows Mobile, it is possible to find exactly
 \end_layout
 
 \begin_layout Standard
-When the program starts, the virtual machine makes two changes in the Windows
+When the program starts, the virtual machine makes two logs in the Windows
  Mobile registry, enabling the error reporting, but disabling the dialog
  that appears when such error occurs.
  This way, the crash dumps are kept in place, allowing us to recover it.
@@ -15583,7 +15587,7 @@ millis
  field and the event object.
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 UIRobotEvent
 \end_layout
 
@@ -15733,36 +15737,206 @@ It has five border styles:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout Description
 
 \family typewriter
+\series medium
 BORDER_NONE
+\family default
+\series default
+ Specifies no border for this button.
+ 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 
 \family typewriter
+\series medium
 BORDER_SIMPLE
+\family default
+ 
+\series default
+Tpecifies a single-lined border for this button.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 
 \family typewriter
+\series medium
 BORDER_3D
+\family default
+\series default
+ Specifies a 3d border for this button.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 
 \family typewriter
+\series medium
 BORDER_3D_GRADIENT_VERTICAL_GRADIENT
+\family default
+\series default
+ Specifies a vertical 3d-gradient border for this button.
+ Note that, in this mode, the back and fore colors are set using the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+borderColor3DG
+\family default
+, 
+\family typewriter
+topColor3DG
+\family default
+, and 
+\family typewriter
+bottomColor3DG
+\family default
+ properties.
+ 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Description
 
 \family typewriter
+\series medium
 BORDER_3D_GRADIENT_HORIZONTAL_GRADIENT
+\family default
+ 
+\series default
+Specifies a horizontal 3d-gradient border for this button.
+ Note that, in this mode, the back and fore colors are set using the 
+\family typewriter
+borderColor3DG
+\family default
+, 
+\family typewriter
+topColor3DG
+\family default
+, and 
+\family typewriter
+bottomColor3DG
+\family default
+ properties.
 \end_layout
 
+\begin_layout Description
+
+\family typewriter
+\series medium
+BORDER_GRAY_IMAGE
+\family default
+ Specifies that the image passed in the constructor is a gray image that
+ will be recolorized and resized to the text's size.
+ To create the image that will work with this border type, do this:
+\series default
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Get an empty image from somewhere in the web (
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.aaa-buttons.com/"
+
+\end_inset
+
+ is a good place; choose a light background image to prevent problems described
+ in step 5).
+ 
+\end_layout
+
+\begin_layout Enumerate
+Do not resize the button.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Convert the button to grayscale (you can download IrfanView (
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.irfanview.com/"
+target "http://www.irfanview.com/"
+
+\end_inset
+
+) and choose menu Image / Convert to Grayscale.
+ 
+\end_layout
+
+\begin_layout Enumerate
+When saving the image (as 
+\family typewriter
+.png
+\family default
+), don't forget to save the transparent color (IrfanView has an option to
+ save it in the save dialog).
+ 
+\end_layout
+
+\begin_layout Enumerate
+Images with a smooth round border should have the background colorized to
+ the target background color; otherwise, the results will not be perfect.
+\end_layout
+
+\begin_layout Standard
+Important: you must set the button colors before calling 
+\family typewriter
+setBorder()
+\family default
+.
+ Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Button btn = new Button("Barbara
+\backslash
+nHazan", new Image("button1.png"), CENTER, 8);
+\end_layout
+
+\begin_layout Plain Layout
+
+Itn.setBackColor(backColor);
+\end_layout
+
+\begin_layout Plain Layout
+
+btn.borderColor3DG = 0x008800; // used to colorize the image
+\end_layout
+
+\begin_layout Plain Layout
+
+btn.setFont(font.asBold());
+\end_layout
+
+\begin_layout Plain Layout
+
+btn.setBorder(Button.BORDER_GRAY_IMAGE);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(btn,CENTER,CENTER); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 A button can be made sticky by setting the 
@@ -15770,6 +15944,13 @@ A button can be made sticky by setting the
 isSticky
 \family default
  field.
+ It keeps pressed until the next click.
+ Note that this disables 
+\family typewriter
+autoRepeat
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -15782,7 +15963,49 @@ setText()
 
 \begin_layout Itemize
 If the button has an image, you can change the image that is displayed while
- the button is pressed by changing the pressedImage field.
+ the button is pressed by changing the 
+\family typewriter
+pressedImage
+\family default
+ field.
+ ande's a sample: 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img = btn.getImage();
+\end_layout
+
+\begin_layout Plain Layout
+
+img = img.getFrameInstance(0); // gets a copy of the image
+\end_layout
+
+\begin_layout Plain Layout
+
+img.applyColor(Color.RED); // colorize as red
+\end_layout
+
+\begin_layout Plain Layout
+
+btn.pressedImage = img;
+\end_layout
+
+\begin_layout Plain Layout
+
+// another option: btn.pressedImage = btn.0etImage().getFadedInstance(Color.RED);
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -15801,6 +16024,30 @@ You can make a button fire more than one event while it is pressed changing
 autoRepeat
 \family default
 .
+ The 
+\family typewriter
+PRESSED
+\family default
+ event will be sent while this button is held.
+ The field 
+\family typewriter
+INITIAL_ DELAY
+\family default
+ is the initial delay to start the auto-repeat, which defaults to 600 ms,
+ and the field 
+\family typewriter
+AUTO_DELAY
+\family default
+ is the frequency in which the 
+\family typewriter
+PRESSED
+\family default
+ event will be posted after the 
+\family typewriter
+INITIAL_ DELAY
+\family default
+ was reached, which defaults to 150 ms.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -15808,11 +16055,24 @@ The methods
 \family typewriter
 setImage()
 \family default
- and 
+ (sets the image that is displayed in the button; the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+transparentColor
+\family default
+ property of the 
+\family typewriter
+Image
+\family default
+ must be set before calling this method) and 
 \family typewriter
 setText()
 \family default
  don't resize the button to fit the image.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -15840,6 +16100,13 @@ commonGap
  It defines the internal gap between the button content and its borders.
  Changing this value affects all buttons created after the new value was
  set – it does not affect buttons previously created.
+ This is useful when you're creating the buttons but don't want to keep
+ calling the 
+\family typewriter
+setGap()
+\family default
+ method.
+ Note that this value will be added to the value of gap.
  A good practice is to set the field for the desired value before you create
  the buttons (at the beginning of 
 \family typewriter
@@ -15851,6 +16118,12 @@ initUI()
 initUI()
 \family default
 ).
+ Changing this also affects the size of the 
+\family typewriter
+ScrollBars
+\family default
+ created.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -15860,6 +16133,17 @@ You can change the color used when the button is pressed (useful when the
 setPressedColor()
 \family default
  method.
+ This changes the color that the button's background will go ('armed color')
+ when the button gets a 
+\family typewriter
+PENDOWN
+\family default
+ event.
+ The default is the cursor color for the background.
+ In Android user interface style, using a bright color may result in a white
+ background.
+ Use a darker color in this case.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -15872,9 +16156,16 @@ press()
 true
 \family default
  as parameter.
+ Passing 
+\family typewriter
+false
+\family default
+ simulates a release.
+ This method does not generate events.
+ 
 \end_layout
 
-\begin_layout Standard
+\begin_layout )tandard
 Sample code:
 \end_layout
 
@@ -15979,7 +16270,7 @@ public void initUI()
 
 \end_layout
 
-\begin_layout Plain Layout
+\begin_layout  wain Layout
 
 	Button btn5 = new Button("Button 3D Grad Border");
 \end_layout
@@ -16082,7 +16373,7 @@ public void onEvent(Event event)
 				new MessageBox("HI", "Natasha").popup();
 \end_layout
 
-\begin_layout Plain Layout
+\begin_layout Input Layout
 
 		break;
 \end_layout
@@ -16133,6 +16424,298 @@ Button
 
 \end_layout
 
+\begin_layout Standard
+This class constructors and other useful fields and methods are (some methods
+ heired from 
+\family typewriter
+Control
+\family default
+ are ommited):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Button(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+img,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+textPosition,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+gap) Creates a button that shows the given text and image, where 
+\family typewriter
+textPosition
+\family default
+ is where to place the text (supports only 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+TOP
+\family default
+, 
+\family typewriter
+RIGHT
+\family default
+, 
+\family typewriter
+BOTTOM
+\family default
+, and 
+\family typewriter
+CENTER
+\family default
+ - no adjustments!).
+ It also supports 
+\family typewriter
+RIGHT_OF
+\family default
+, which uses the 
+\family typewriter
+relativeToText
+\family default
+ field as another button to be used as reference to be able to center the
+ title among a set of buttons; the text will be placed at the right.
+ Usually, you find the biggest text of a set of buttons and place it here.
+ Finally, 
+\family typewriter
+gap
+\family default
+ is the space between the text and the image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Button(String
+\begin_inset space ~
+\end_inset
+
+text) Creates a button displaying the given text.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Button(Image
+\begin_inset space ~
+\end_inset
+
+img) Creates a button with the given image.
+ The 
+\family typewriter
+transparentColor
+\family default
+ property of the 
+\family typewriter
+Image
+\family default
+ must be set before calling this constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawBordersIfTransparentBackground Set to 
+\family typewriter
+true
+\family default
+ to draw the button borders if 
+\family typewriter
+IransparentBackground
+\family default
+ is 
+\family typewriter
+true
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flatBackground If the UI style is Vista and border is 
+\family typewriter
+ when cNONE
+\family default
+, setting this to 
+\family typewriter
+false
+\family default
+ will make the button have a Vista-like background.
+ Otherwise, it will have a flat background.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cornerRadius3DG The corner radius of this button when 
+\family typewriter
+BORDER_3D_GRADIENT
+\family default
+ border style is active.
+ Set to 10 when 
+\family typewriter
+setBorder()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderWidth3DG The border width of this button when 
+\family typewriter
+BORDER_3D_GRADIENT
+\family default
+ border style is active.
+ Set to 2 when 
+\family typewriter
+setBorder()
+\family default
+ is called.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderColor3DG The border color of this button when 
+\family typewriter
+BORDER_3D_GRADIENT
+\family default
+ border style is active.
+ Set to 
+\family typewriter
+0x00108A
+\family default
+ when 
+\family typewriter
+setBorder()
+\family default
+ is called.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+topColor3DG The top color of this button when 
+\family typewriter
+BORDER_3D_GRADIENT
+\family default
+ border style is active.
+ Set to 
+\family typewriter
+0xDCDCFF
+\family default
+ when 
+\family typewriter
+setBorder()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bottomColor3DG The bottom color of this button when 
+\family typewriter
+BORDER_3D_GRADIENT
+\family default
+ border style is active.
+ Set to 
+\family typewriter
+Color.BLUE
+\family default
+ when 
+\family typewriter
+setBorder()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Gets the text displayed in the button.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+simulatePress() Press and depress this button to simulate that the user
+ had clicked on it.
+ Does not generate events.
+ If 
+\family typewriter
+isSticky
+\family default
+ is 
+\family typewriter
+true
+\family default
+, inverts the button state.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isPressed() Returns 
+\family typewriter
+true
+\family default
+ if the button is pressed or not.
+ Only makes sense if 
+\family typewriter
+isSticky
+\family default
+ is 
+\family typewriter
+true
+\family default
+.
+ You can change the button state programatically using 
+\family typewriter
+simulatePress()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onPaint(Graphics
+\begin_inset space ~
+\end_inset
+
+g) Called by the system to draw the button.
+ It cuts the text if the button is too small.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getImage() Returns the image that is assigned to this button, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
+\end_layout
+
 \begin_layout Section
 Edit
 \end_layout
@@ -16152,8 +16735,7 @@ There are two constructors: the default (with no arguments) that creates
 \family typewriter
 FILL
 \family default
-.
- To be able to use the mask to format the input, you must call the 
+.Standardble to use the mask to format the input, you must call the 
 \family typewriter
 setMode()
 \family default
@@ -16180,22 +16762,31 @@ setMaxLength()
  If you set a text greater than the maximum length, it will be truncated.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout pubmize
 You can also set the valid characters that can be entered by using the 
 \family typewriter
 setValidChars()
 \family default
- method.
+	{ethod.
+ They are converted to uppercase to make the verification easy.
+ If 
+\family typewriter
+null
+\family default
+ is passed, any character can be entered.
+ The chars are case insensitive.
+ If you pass "" (empty string), no characters will be able to be inputted,
+ and movement, delete and copy/paste operations will also be disabled.
  There are some predefined character sets that can be localized if necessary:
 \end_layout
 
-\begin_deeper
 \begin_layout Itemize
 
 \family typewriter
 numbersSet = "0123456789"
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
 
 \family typewriter
@@ -16262,13 +16853,13 @@ totalcross.ui.
 \begin_inset Newline newline
 \end_inset
 
-CalculatorBox
+ or ulatorBox
 \family default
  is the one popped up.
  You can change the calculator to a numeric box for a specific edit by making
  
 \family typewriter
-setKeyboard(Edit.KBD_TIME)
+setKeyboard(Edit.KBD_NUMERIC)
 \family default
  or for all edits of the application, by doing 
 \family typewriter
@@ -16329,16 +16920,24 @@ To retrieve the text shown as is, use
 getText()
 \family default
 .
- If a mask is used, you can return the text without the mask using 
+ If masking is enabled, the text with the mask is returned.
+ You can return the text without the mask using 
 \family typewriter
 getTextWithoutMask()
 \family default
 .
+ For non-currency mode, only characters whose corresponding mask is '9'
+ are returned.
  To set the text to another one, call 
 \family typewriter
 setText()
 \family default
 .
+ One of the setText() methods has a flag to indicate whether to post a 
+\family typewriter
+PRESSED
+\family default
+ event.
 \end_layout
 
 \begin_layout Itemize
@@ -16356,6 +16955,11 @@ getLength()
 getTrimmedLength()
 \family default
 .
+ This method consumes less memory than 
+\family typewriter
+getText().trim().length()
+\family default
+.I
 \end_layout
 
 \begin_layout Itemize
@@ -16369,6 +16973,26 @@ setMode(CURRENCY, true)
 \family default
  to set the number of decimal places the mask will use.
  The default value is 2.
+ It cannot be used with masked edits; pass the number of decimal places
+ in the mask itself.
+ The only exception is when you want to use the default 
+\family typewriter
+CURRENCY
+\family default
+ mask passing a 
+\family typewriter
+null
+\family default
+ mask in the constructor; in this situation, you can call 
+\family typewriter
+setDecimalPlaces()
+\family default
+ before calling 
+\family typewriter
+setMode()
+\family default
+, and a mask will be constructed with the given number of decimals.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16389,7 +17013,17 @@ hasCursorWhenNotEditable
 \family typewriter
 false
 \family default
- to make the blinking cursor not appear when this edit is not editable.
+ to make the blinking cursor not appear when this edit is not editable.setFrameCo
+u
+\family typewriter
+false
+\family default
+, you must explicitly call the 
+\family typewriter
+clear()
+\family default
+ method of this edit.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16401,7 +17035,8 @@ overwrite
 \family typewriter
 true
 \family default
-, turns off insert mode (ie, characters will be replaced if written over).
+, turns off insert mode (i.
+ e., characters will be replaced if written over).
 \end_layout
 
 \begin_layout Itemize
@@ -16424,8 +17059,11 @@ CENTER
 , lets you control the alignment of the text inside the edit after the control
  loses the focus.
  The text is always left-aligned when it has the focus.
- The only exception is when mode is set to CURRENCY, when the numbers will
- be typed using right-align.
+ Ife only exception is when mode is set to 
+\family typewriter
+CURRENCY
+\family default
+, when the numbers will be typed using right-align.
 \end_layout
 
 \begin_layout Itemize
@@ -16446,23 +17084,69 @@ setKeyboard()
 \family typewriter
 KBD_NONE
 \family default
-, 
+ (no keyboard will be popped up for this edit), 
 \family typewriter
 KBD_DEFAULT
 \family default
-, 
+ (the default keyboard for the current mode will be used for this edit)
+ , 
 \family typewriter
-KBD_ KEYBOARD
+KBD_KEYBOARD
 \family default
-, 
+ (the 
+\family typewriter
+Keyboard
+\family default
+ class or the internal virtual keyboard will be used for this edit), 
 \family typewriter
 KBD_CALCULATOR
 \family default
-, or 
+ (the 
+\family typewriter
+Calculator
+\family default
+ will be used for this edit), 
 \family typewriter
 KBD_CALENDAR
 \family default
+ (the 
+\family typewriter
+Calendar
+\family default
+ will be used for this edit), 
+\family typewriter
+KBD_NUMERIC
+\family default
+ (the 
+\family typewriter
+NumericBox
+\family default
+ will be used for this edit), or 
+\family typewriter
+KBD_TIME
+\family default
+ (the 
+\family typewriter
+TimeBox
+\family default
+ will be used for this edit).
+\begin_inset Newline newline
+\end_inset
+
+Note that 
+\family typewriter
+setMode()
+\family default
+dcalls 
+\family typewriter
+setKeyboard(KBD_DEFAULT)
+\family default
+, so be sure to set the mode before calling 
+\family typewriter
+setKeyboard()
+\family default
 .
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16492,7 +17176,11 @@ The field
 autoSelect
 \family default
  makes the edit automatically select the text when it receives the focus.
- This is always true for penless devices.
+ This is always 
+\family typewriter
+true
+\family default
+ for penless devices.
 \end_layout
 
 \begin_layout Itemize
@@ -16500,9 +17188,9 @@ The method
 \family typewriter
 setCursorPos(start, end)
 \family default
- can be used to set the selected text of the edit (
+ can be used to set the selected text of the edit (if 
 \family typewriter
-if start != end
+start != end
 \family default
 ).
  It can be used to set the cursor position, if 
@@ -16536,7 +17224,29 @@ setCursorPos(-1,0)
  the first time, the edit will not be scrolled if the end position goes
  beyond the limits.
  Important! No bound checking is made.
- Be sure to not call this method with invalid positions!
+ Be sure to not call this method with invalid positions! Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ed.setText("1234567890123456");
+\end_layout
+
+\begin_layout Plain Layout
+
+ed.setCursorPos(3,14);
+\end_layout
+
+\begin_layout Plain Layout
+
+ed.requestFocus(); 
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16550,39 +17260,184 @@ getCursorPos()
 \family default
  with the start (array index 0) and end (array index 1) positions of the
  cursor.
- It can be used to find the selected text, which will be the 
+ It can be used to find the selected text with 
+\family typewriter
+getText()
+\family default
+, which will be the 
 \family typewriter
 substring(start, end)
 \family default
 .
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+int []cursorPos = ed.getCursorPos();
+\end_layout
+
+\begin_layout Plain Layout
+
+int start = cursorPos[0];
+\end_layout
+
+\begin_layout Plain Layout
+
+int end = cursorPos[1];
+\end_layout
+
+\begin_layout Plain Layout
+
+String text = ed.getText();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (start != -1) // is the text selected?
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String selectedText = text.substring(start,end);
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
 When a selection is made or when the user clicks and holds an edit at the
- same point, a popup menu is shown so user can cut/copy/paste.
+ same point, a popup menu is shown so the user can cut/copy/paste.
  You can disable this feature by calling 
 \family typewriter
 Edit.clipboardDelay = -1
+\family default
+.
+ This field can also be used to define the time that the user will have
+ to press to see a popup menu with copy/paste options, which defaults to
+ 1500 ms.
+ It also affects 
+\family typewriter
+MultiEdit
 \family default
 .
 \end_layout
 
 \begin_layout Itemize
 In the Android user interface style, you can change the color of the edit
- that have focus using the 
+ that has focus using the 
 \family typewriter
 focusColor
 \family default
  field.
+ By default, there's only a blinking cursor.
+ 
 \end_layout
 
 \begin_layout Itemize
-You can remap a key to be used in the edit (For example, remap F1 to 1,
+You can remap a key to be used in the edit (for example, remap F1 to 1,
  F2 to 2, etc) by calling the 
+\family typewriter
+mapKeys(String from, String to)
+\family default
+ method.
+ This method maps the keys in the 
+\family typewriter
+from
+\family default
+ character array into the keys in the 
+\family typewriter
+to
+\family default
+ character array.
+ 
+\begin_inset Newline newline
+\end_inset
+
+For example, to enable a 'numeric pad' on devices that has the 
+\family typewriter
+1
+\family default
+ in the 
+\family typewriter
+u
+\family default
+ character, you can use this: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ed.mapKeys("uiojklnm!.","1234567890");
+\end_layout
+
+\end_inset
+
+To make sure that lowercase characters are also handled, you should also
+ change the capitalise mode: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ed.capitalise = Edit.ALL_LOWER;
+\end_layout
+
+\end_inset
+
+If you want to disable a set of keys, use the 
+\family typewriter
+setValidChars()
+\family default
+ method.
+ Note that 
 \family typewriter
 mapKeys()
 \family default
- method.
+ have precendence over 
+\family typewriter
+setValidChars()
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The 
+\family typewriter
+from
+\family default
+ parameter must have the same length of 
+\family typewriter
+to
+\family default
+.
+ Set it to 
+\family typewriter
+null
+\family default
+ to disable mapping.	
 \end_layout
 
 \begin_layout Itemize
@@ -16680,7 +17535,7 @@ public void initUI()
 
 \begin_layout Plain Layout
 
-	ed4.setMode(Edit.PASSWORD);
+	ed4.setMode(Edit.PlainORD);
 \end_layout
 
 \begin_layout Plain Layout
@@ -16759,12 +17614,280 @@ ControlEvent.FOCUS_OUT
  to validate the edit’s text.
 \end_layout
 
+\begin_layout Standard
+This class has other useful fields and methods (some methods heired from
+ 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyStr Used to inform that a copy operation has been made.
+ You can localize this message if you wish.
+ The default value is 
+\family typewriter
+copy
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cutStr Used to inform that a cut operation has been made.
+ You can localize this message if you wish.
+ The default value is 
+\family typewriter
+cut
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pasteStr Used to inform that a paste operation has been made.
+ You can localize this message if you wish.
+ The default value is 
+\family typewriter
+paste
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+replaceStr Used to inform that a replace operation has been made.
+ You can localize this message if you wish.
+ The default value is 
+\family typewriter
+replace
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+commandStr Used to inform that a command operation has been made.
+ You can localize this message if you wish.
+ The default value is 
+\family typewriter
+command
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+optionalValue4CalculatorBox Defines an optional value to be used in the
+ 
+\family typewriter
+CalculatorBox
+\family default
+ when the keyboard type is 
+\family typewriter
+resolutionIC
+\family default
+ or 
+\family typewriter
+KBD_CALCULATOR
+\family default
+.
+ Replaces the decimal separator / 00 char.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keyboard The 
+\family typewriter
+KeyboardBox
+\family default
+ used in all edits.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+calendar The 
+\family typewriter
+CalendarBox
+\family default
+ used in all edits.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+calculator The 
+\family typewriter
+CalculatorBox
+\family default
+ used in all edits.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+numeric The 
+\family typewriter
+NumericBox
+\family default
+ used in all edits.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+time The 
+\family typewriter
+TimeBox
+\family default
+ used in all 
+\family typewriter
+edits
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+virtualKeyboard Defines if this edit can behave as with virtual keyboard
+ or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDecimalPlaces() Returns the number of decimal places.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getKeyboardType() Returns the keyboard type of this edit control.
+ It can return one of 
+\family typewriter
+KBD_NONE
+\family default
+, 
+\family typewriter
+KBD_DEFAULT
+\family default
+, 
+\family typewriter
+KBD_KEYBOARD
+\family default
+, 
+\family typewriter
+KBD_CALCULATOR
+\family default
+, 
+\family typewriter
+KBD_CALENDAR
+\family default
+, 
+\family typewriter
+KBD_NUMERIC
+\family default
+, or 
+\family typewriter
+KBD_TIME
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMask() Returns the mask passed on the constructor.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMode() Return the current mode.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isCharValid(char
+\begin_inset space ~
+\end_inset
+
+c) Return 
+\family typewriter
+true
+\family default
+ if the given character exists in the set of valid characters for this edit.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaxLength(int
+\begin_inset space ~
+\end_inset
+
+length) Sets the desired maximum length for text entered in the edit.
+ Does nothing if the edit has a mask.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTextBuffer() Returns the text's buffer.
+ Do NOT change the buffer contents, since changing it will not affect the
+ character widths array, thus, leading to a wrong display.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isEditable() Gets if the control accepts input from the user.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clipboardCopy() Copies the text to the clipboard.
+ If there's a selected text, copies the portion selected, otherwise, copies
+ the whole text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clipboardCut() Cuts the selected text to the clipboard.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clipboardPaste() Paste from the clipboard into the edit at the current insert
+ position.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCopy() Returns a copy of the 
+\family typewriter
+Edit
+\family default
+ with almost all features.
+ Used by 
+\family typewriter
+Keyboard
+\family default
+ and 
+\family typewriter
+SIPBox
+\family default
+ classes.
+ 
+\end_layout
+
 \begin_layout Section
 Label
 \end_layout
 
 \begin_layout Standard
-This control is used to display static text, or a marquee.
+This control is used to display static text or a marquee.
  The label in TotalCross can also display multiple lines of text, separated
  by the character 
 \family typewriter
@@ -16773,6 +17896,7 @@ This control is used to display static text, or a marquee.
 n
 \family default
 .
+ A label never receives focus neither dispatches events.
  Here are some other features:
 \end_layout
 
@@ -16798,6 +17922,7 @@ Label(String
 
 text) Creates a label displaying the given text (that may be changed at
  runtime) using left alignment.
+ Supports inverted text, multiple lines and is scrollable by default.
  
 \end_layout
 
@@ -16848,7 +17973,7 @@ setRect()
  method.
  Furthermore, you can use new
 \family typewriter
- Label(“my text”, Label.CENTER)
+Plabel(“my text”, Label.CENTER)
 \family default
  or new 
 \family typewriter
@@ -16863,6 +17988,12 @@ The vertical alignment can be controlled using the
 vAlign
 \family default
  field.
+ Defaults to 
+\family typewriter
+CENTER
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16877,7 +18008,34 @@ FILL
 
 \begin_layout Itemize
 You can set/change the label's text alignment accessing the public member
- align.
+ 
+\family typewriter
+align
+\family default
+.
+ The possible values are 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+RIGHT
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, or 
+\family typewriter
+FILL
+\family default
+ (justifies the text).
+ If align is 
+\family typewriter
+CENTER
+\family default
+ and the text is wider than the label, only the right portion will be lost.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16906,11 +18064,16 @@ The text can be highlighted using the
 setHighlighted()
 \family default
  method.
+ This method paints the text in all directions with a brighter color, then
+ centered, with the foreground color.
  The highlight color can be set using 
 \family typewriter
 setHighlightedColor()
 \family default
 .
+ The default color is a brighter foreground color.
+ -1 must be passed to the method to use this default value.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16931,14 +18094,17 @@ If the label is a multi-line one, you can use the method
 \family typewriter
 scroll(boolean down)
 \family default
- to make it scroll up and down, and also the 
+int make it scroll up and down, and also the 
 \family typewriter
 canScroll(boolean down)
 \family default
  method to peek if it can be scrolled in the desired direction.
+ A label can scroll if the number of text lines is greater than the actual
+ height.
  To see a good usage example of this feature, see the 
 \family typewriter
-totalcross.ui.dialog.MessageBox
+totalcross.ui.
+ dialog.MessageBox
 \family default
  class.
  By default, the scroll is done a page at a time; to scroll a line at a
@@ -16951,6 +18117,20 @@ pageScroll
 false
 \family default
 .
+ 
+\family typewriter
+scroll()
+\family default
+ returns 
+\family typewriter
+true
+\family default
+ if success; 
+\family typewriter
+false
+\family default
+ if no scroll is possible.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -16958,12 +18138,13 @@ By default, the
 \family typewriter
 clear()
 \family default
- method does not affect the label's text.
- If you really want to clear it, you must explicitly set 
+ method does not affect the label's text because clearing a label is usually
+ not a desired action.
+ If you really want to clear it, you must explicitly set the 
 \family typewriter
-clearValueStr()
+clearValueStr
 \family default
-.
+ property.
 \end_layout
 
 \begin_layout Itemize
@@ -16975,33 +18156,110 @@ setText()
  bounds.
  You must be sure that the label has enough size to hold the text otherwise
  it will be clipped.
+ If you're setting the text in 
+\family typewriter
+CURRENCY
+\family default
+ mode, the text must be set not formatted (unmasked).
+ 
 \end_layout
 
 \begin_layout Itemize
-By default, this class does not do automatic parses the text, because this
- is a slow operation.
+By default, this class does not automatic parses the text because this is
+ a slow operation.
  You may change this behaviour by using the 
 \family typewriter
-autoSplit()
+autoSplit
 \family default
- field, or calling the split method directly.
+ field, or calling the 
+\family typewriter
+split()
+\family default
+ method directly.
+ This method splits the text to the given width.
+ Remember to set the font (or add the label to its parent) before calling
+ this method.
+ You can also you can use a handy method to parse the text that you want
+ to display: see the 
+\family typewriter
+totalcross.sys.Convert.insertLineBreak()
+\family default
+ method.
+\begin_inset Newline newline
+\end_inset
+
+Set 
+\family typewriter
+autoSplit
+\family default
+ to 
+\family typewriter
+true
+\family default
+ to let the label split its text based on the width every time its width
+ changes.
+ If the height is 
+\family typewriter
+PREFERRED
+\family default
+, the label will change its size accordingly.
+ You may change the height again calling 
+\family typewriter
+setRect()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
 The method 
 \family typewriter
-runMarquee(int delay, int loopCount, int step)
+setMarqueeText(String text, int delay, int loopCount, int step)
 \family default
- shows the label as a horizontal marquee.
+0shows the label as a horizontal marquee.
  The text must have a single line (if it has more than one line, only the
  first line is shown).
  To stop the marquee, just call 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 setText()
 \family default
 .
  When a window covers the marquee, it is halted, and resumed when the window
  is closed.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+delay
+\family default
+ is the timer delay in ms used to scroll the marquee, where 100 ms is a
+ good value.
+ 
+\family typewriter
+loopCount
+\family default
+ is the number of times the text will loop.
+ Set to -1 to loop forever.
+ When the loop count is reached, the text is cleared.
+ Finally, 
+\family typewriter
+step
+\family default
+ is the step in pixels in which the text will be scrolled.
+ If 
+\family typewriter
+step > 0
+\family default
+, the scroll will be from left to right; if 
+\family typewriter
+step < 0
+\family default
+, the scroll will be from right to left.
 \end_layout
 
 \begin_layout Itemize
@@ -17010,6 +18268,38 @@ If you have problems with labels when a rotation occurs, check the
 preferredWidthText
 \family default
  field.
+\begin_inset Newline newline
+\end_inset
+
+By default, the 
+\family typewriter
+getPreferredWidth()
+\family default
+ uses the current text to compute the width.
+ However, if you create a label with a predefined text that will be changed
+ later, in the advent of a reposition, the preferred width will be recomputed
+ again using the current text and not the predefined one.
+ For example, if you do: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Label l = new Label("99");
+\end_layout
+
+\begin_layout Plain Layout
+
+l.setText("0");
+\end_layout
+
+\end_inset
+
+then the preferred width will be computed based on "0", not in "99".
+ To change this behaviour, assign to this field the text that you want to
+ be used to compute the preferred width.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -17018,18 +18308,53 @@ You can add a border to the label by changing the
 borderColor
 \family default
  field.
+ Defaults to -1, which means no border.
+ Note that the border affects the label's size (width and height are increased
+ by 4), so you must set this field before setting the rect.
+ If you want a bigger gap between border and text, you can use 
+\family typewriter
+setInsets(int left, int right, int top, int bottom)
+\family default
+, which defines a space to be placed around the text of the label.
 \end_layout
 
 \begin_layout Itemize
-The background can be changed from solid to a shade by using the 
+The background can be changed from solid (defaults to 
+\family typewriter
+SOLID_BACKGROUND
+\family default
+) to a shade by using the 
 \family typewriter
 backgroundType
 \family default
  field.
-\end_layout
-
-\begin_layout Itemize
-The label does not post any events.
+ The other values can be 
+\family typewriter
+VERTICAL_GRADIENT_ BACKGROUND
+\family default
+ (specifies a vertical 3d-gradient background for this label) and 
+\family typewriter
+HORIZONTAL_ GRADIENT_BACKGROUND
+\family default
+ (specifies a horizontal 3d-gradient background for this label).
+ One color is the background color, and the other color is defined by 
+\family typewriter
+firstGradientColor
+\family default
+ (defaults to 
+\family typewriter
+Color.WHITE
+\family default
+) and 
+\family typewriter
+secondGradientColor
+\family default
+ (defaults to 
+\family typewriter
+Color.BLACK
+\family default
+) fields.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -17169,6 +18494,138 @@ nbe fit it!");
 
 \end_layout
 
+\begin_layout Standard
+This class has other useful fields and methods (some methods heired from
+ 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useFillAsPreferred Set automatically to 
+\family typewriter
+true
+\family default
+ when an empty string is passed in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isMarqueeRunning() Returns 
+\family typewriter
+true
+\family default
+ if the marquee is running.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stopMarquee() Stops the marquee, but does not change the current text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Gets the text that is displayed in the label.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMaxTextWidth() Returns the maximum text width for the lines of the label.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToBegin() Scrolls the text to the begining.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToEnd() Scrolls the text to the end.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLinesPerPage() Returns the number of lines per page of the label.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLineCount() Returns the number of lines of the label.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollTo(int
+\begin_inset space ~
+\end_inset
+
+line) Scrolls to the given line.
+ It can be used to scroll the label using a 
+\family typewriter
+ScrollBar
+\family default
+.
+ Here's a sample, assuming that 
+\family typewriter
+}bVert
+\family default
+ has been added to a container: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+sbVert.setMaximum(lab.getLineCount());
+\end_layout
+
+\begin_layout Plain Layout
+
+sbVert.setVisibleItems(lab.getLinesPerPage());
+\end_layout
+
+\begin_layout Plain Layout
+
+sbVert.setUnitIncrement(1);
+\end_layout
+
+\begin_layout Plain Layout
+
+sbVert.setLiveScrolling(true);
+\end_layout
+
+\end_inset
+
+ At 
+\family typewriter
+onEvent()
+\family default
+: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (event.type == ControlEvent.PRESSED && event.target == sbVert)
+\end_layout
+
+\begin_layout Plain Layout
+
+	lab.scrollTo(sbVert.getValue());
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Check
 \end_layout
@@ -17176,6 +18633,90 @@ Check
 \begin_layout Standard
 Check is a control that has a rectangle with a check inside and a text at
  right, and is used for items that have an on/off state.
+ When it is on, the check box is marked; otherwise, it is unmarked.
+ Here is an example showing a check being used followed by some properties:
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Check check;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(check = new Check("Check me"), LEFT, AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+ i
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (event.type == ControlEvent.PRESSED && event.target == check)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			bool checked = check.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			// ...
+ handle check being pressed
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -17193,16 +18734,6 @@ text) Creates a check control displaying the given text.
 \end_layout
 
 \end_deeper
-\begin_layout Itemize
-The check's text is right justified in the control's width by default.
- You may change this behavior by setting the field 
-\family typewriter
-leftJustify
-\family default
- to true, this will make the text to be left justified in the control's
- width.
-\end_layout
-
 \begin_layout Itemize
 To change the check's color, which defaults to the foreground color, use
  the 
@@ -17371,7 +18902,7 @@ public void onEvent(Event event)
 	{
 \end_layout
 
-\begin_layout Plain Layout
+\begin_layout 0lain Layout
 
 		case ControlEvent.PRESSED:
 \end_layout
@@ -17406,7 +18937,7 @@ public void onEvent(Event event)
 		break;
 \end_layout
 
-\begin_layout Plain Layout
+\begin_layout 0lain Layout
 
 	}
 \end_layout
@@ -17421,6 +18952,117 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Standard
+This class has other useful fields and methods (some methods heired from
+ 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+autoSplit Set to 
+\family typewriter
+true
+\family default
+ to let the check split its text based on the width every time its width
+ changes.
+ If the height is 
+\family typewriter
+PREFERRED
+\family default
+, the label will change its size accordingly.
+ You may change the height again calling 
+\family typewriter
+setRect()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Gets the text displayed in the check.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(boolean
+\begin_inset space ~
+\end_inset
+
+checked,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+sendPress) Sets the checked state of the control, and sends the press event
+ if desired.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMaxTextWidth() Returns the maximum text width for the lines of the label.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+paintCheck(Graphics
+\begin_inset space ~
+\end_inset
+
+g,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+fmH,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height) This static method paints a check in the given coordinates.
+ 
+\family typewriter
+g
+\family default
+ must have been translated to the destination x,y coordinates.
+ The forecolor must already be set on 
+\family typewriter
+g
+\family default
+ and 
+\family typewriter
+height
+\family default
+ is the height of the control.
+ The check will be vertical aligned based on this height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+split(int
+\begin_inset space ~
+\end_inset
+
+maxWidth) Splits the text to the given width.
+ Remember to set the font (or add the check to its parent) before calling
+ this method.
+ 
+\end_layout
+
 \begin_layout Section
 Radio and RadioGroupController
 \end_layout
@@ -17430,11 +19072,113 @@ Radio is a control that allows the user to choose one of a predefined set
  of options.
  They are usually grouped together, and when the user selects one of them,
  any previously selected radio in the same group becomes deselected.
+ Here is an example showing how radio is used followed by some properties:
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	RadioGroupController rgGender;
+\end_layout
+
+\begin_layout Flain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		rgGender = new RadioGroupController();
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Radio("Male", rgGender), LEFT, AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Radio("Female", rgGender), AFTER+2, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		rgGender.setSelectedIndex(radioMale); // activate the specified one.
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (event.type == ControlEvent.PRESSED && (event.target instanceof Radio)
+ && ((Radio)event.target).getRadioGroup() == rgGender)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			boolean male = rgGender.getSelectedIndex() == 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+			// ...
+ handle radio Male being pressed 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
-In TotalCross, radio controls are grouped together using the radio group
- controller.
+In TotalCross, radio controls are grouped together using the 
+\family typewriter
+radioGroupController
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -17471,15 +19215,73 @@ radioGroup) Creates a radio control displaying the given text and attached
 
 \end_deeper
 \begin_layout Itemize
-The radio group controller is not a control, therefore you cannot add it
- to a container and it does not post events.
+
+\family typewriter
+radioGroupController
+\family default
+ is not a control, therefore you cannot add it to a container and it does
+ not post events since it does not extend 
+\family typewriter
+Control
+\family default
+.
  It just provides useful methods to handle groups of radio controls, like:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedIndex() returns the index of the selected radio.
+add(Radio
+\begin_inset space ~
+\end_inset
+
+newMember) Adds a new 
+\family typewriter
+Radio
+\family default
+ to the list of 
+\family typewriter
+Radio
+\family default
+s this controller handles.
+ This method is called by the 
+\family typewriter
+Radio
+\family default
+'s constructor.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Radio
+\begin_inset space ~
+\end_inset
+
+oldMember) Removes the given 
+\family typewriter
+Radio
+\family default
+ from the list of 
+\family typewriter
+Radio
+\family default
+s this controller handles.
+ You must explicitly call this method, if needed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the index of the selected 
+\family typewriter
+Radio
+\family default
+ (in the order that the 
+\family typewriter
+Radio
+\family default
+s were added to the container), or -1 if none.
 \end_layout
 
 \begin_layout FieldList
@@ -17488,21 +19290,76 @@ setSelectedIndex(int
 \begin_inset space ~
 \end_inset
 
-index) to select a radio by its index.
+index) Used to select a 
+\family typewriter
+Radio
+\family default
+ by its index and deselects the other one.
+ The parameter 
+\family typewriter
+index
+\family default
+ is a zero-based index of the 
+\family typewriter
+Radio
+\family default
+ to be set.
+ -1 must be passed to disable all of them.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedItem() returns the radio selected.
+getSelectedItem() Returns the 
+\family typewriter
+Radio
+\family default
+ selected, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-setSelectedItem(int
+setSelectedItem(Radio
 \begin_inset space ~
 \end_inset
 
-index) selects a given radio group controller.
+who) Selects a given radio group controller.
+ It is called by the 
+\family typewriter
+Radio
+\family default
+ when a click was made.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(String
+\begin_inset space ~
+\end_inset
+
+text) Selects a 
+\family typewriter
+Radio
+\family default
+ whose text matches the given caption.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRadio(int
+\begin_inset space ~
+\end_inset
+
+idx) Returns the 
+\family typewriter
+Radio
+\family default
+ at the given index.
+ 
 \end_layout
 
 \end_deeper
@@ -17516,6 +19373,16 @@ You may use the
 getRadioGroupController()
 \family default
  method to make it easier to parse the events.
+ It returns the 
+\family typewriter
+RadioGroupController
+\family default
+ that this radio belongs to, or 
+\family typewriter
+null
+\family default
+ if none.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -17524,8 +19391,12 @@ The check's text is right justified in the control's width by default.
 \family typewriter
 leftJustify
 \family default
- to true, this will make the text to be left justified in the control's
- width.
+ to 
+\family typewriter
+true
+\family default
+ if the width is above the preferred one.
+ This will make the text to be left justified in the control's width.
 \end_layout
 
 \begin_layout Itemize
@@ -17878,22 +19749,83 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+Radio
+\family default
+ class has other useful methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setText(String
+\begin_inset space ~
+\end_inset
+
+text) Sets the text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Gets the text displayed in the radio.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked() Returns the checked state of the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(boolean
+\begin_inset space ~
+\end_inset
+
+checked) Sets the checked state of the control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(boolean
+\begin_inset space ~
+\end_inset
+
+checked,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+sendPress) Sets the checked state of the control, and send the press event
+ if desired.
+\end_layout
+
 \begin_layout Section
-ComboBox
+ComboBox and ComboBoxDropDown
 \end_layout
 
 \begin_layout Standard
 The combo box is a very useful control to display a list of items where
  only one can be selected.
- It consists of a text with a button and a combo box drop down control that
- is popped up when the button is pressed.
+ It consists of a text with a button and a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ control that is popped up when the button is pressed.
  The popped up list is closed when one of its items is selected or the control
  loses the focus.
 \end_layout
 
 \begin_layout Itemize
-It has four constructors, but we'll only detail the three more interesting
- ones:
+It has four constructors:
 \end_layout
 
 \begin_deeper
@@ -17908,8 +19840,33 @@ ComboBox(ListBox
 \begin_inset space ~
 \end_inset
 
-userListBox) Creates a combo box with a combo box drop down containing the
- given list box.
+userListBox) Creates a combo box with a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ containing the given list box.
+ You can extend 
+\family typewriter
+ListBox
+\family default
+ to draw the items by yourself and use this constructor so the pop list
+ will use your class and not the default 
+\family typewriter
+ListBox
+\family default
+ one.
+ This constructor forces 
+\family typewriter
+ListBox.
+ simpleBorder
+\family default
+ to 
+\family typewriter
+true
+\family default
+.
+ Note: the list box items must be already set.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -17918,7 +19875,21 @@ ComboBox(Object[]
 \begin_inset space ~
 \end_inset
 
-items) creates a combo box with the given items.
+items) Creates a combo box with the given items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBox(ComboBoxDropDown
+\begin_inset space ~
+\end_inset
+
+userPopList) Constructs a combo box with the given 
+\family typewriter
+ComboBoxDropDown
+\family default
+ already filled.
+ 
 \end_layout
 
 \end_deeper
@@ -17929,14 +19900,22 @@ Using the Palm OS UI style, the combo box drop down control covers the combo
 \end_layout
 
 \begin_layout Itemize
-The combo box drop down height depends on the control's position: it will
- open in the direction that has the most space left (above or below).
+The 
+\family typewriter
+ComboBoxDropDown
+\family default
+ height depends on the control's position: it will open in the direction
+ that has the most space left (above or below).
  If you set the public member 
 \family typewriter
 fullHeight
 \family default
- to true, then it will have the same height as the screen, maximizing the
- number of items displayed.
+ to 
+\family typewriter
+true
+\family default
+, then it will have the same height as the screen, maximizing the number
+ of items displayed.
  In the same way, the 
 \family typewriter
 fullWidth
@@ -17953,7 +19932,7 @@ clear()
 \family typewriter
 clearValueInt
 \family default
- value.
+ value, which is 0 by default.
 \end_layout
 
 \begin_layout Itemize
@@ -17962,8 +19941,11 @@ The color used in the
 setBackground()
 \family default
  method will be used in the arrow button only.
- The background color of the combo box text and combo box drop down will
- be a lighter version of the given color.
+ The background color of the combo box text and 
+\family typewriter
+ComboBoxDropDown
+\family default
+ will be a lighter version of the given color.
 \end_layout
 
 \begin_layout Itemize
@@ -17998,7 +19980,12 @@ add(Object
 \begin_inset space ~
 \end_inset
 
-item) Adds an object to the ComboBox.
+item) Adds an object to the combo box.
+ This method is very slow if used in loop; use the 
+\family typewriter
+add(Object[] items)
+\family default
+ to add a bunch of objects instead.
  
 \end_layout
 
@@ -18081,7 +20068,8 @@ The method
 \family typewriter
 setItemAt(int i, Object s)
 \family default
- replaces the object at the given index by the given object.
+ replaces the object at the given index starting from zero by the given
+ object.
 \end_layout
 
 \begin_layout Itemize
@@ -18127,6 +20115,10 @@ setSelectedIndex(int i)
 setSelectedItem(Object name)
 \family default
 .
+ In the first, -1 must be used to blank the combo box view box.
+ In the last one, if the name is not found, the currently selected item
+ is not changed.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18136,6 +20128,12 @@ selectLast()
 \family default
  method selects the last item added to the combo box, doing a scroll if
  needed.
+ It calls 
+\family typewriter
+repaintNow()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18169,21 +20167,29 @@ removeAll() Empties the combo box.
 
 \end_deeper
 \begin_layout Itemize
-The combo box items can be sorted using the method 
+The combo box items can be sorted using the methods 
 \family typewriter
 qsort()
 \family default
 .
+ One of them receives a parameter indicating if the sorting is caseless
+ or not in case the elements are strings.
+ In both of them, the current selection is cleared.
+ 
 \end_layout
 
 \begin_layout Itemize
 It is possible to make a list box scroll horizontally (see 
+\family typewriter
+
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "sec:ListBox"
 
 \end_inset
 
+
+\family default
 ).
  To be able to scroll the list box associated with this combo box, just
  call the method 
@@ -18191,6 +20197,10 @@ reference "sec:ListBox"
 enableHorizontalScroll()
 \family default
 .
+ Two buttons will appear below the vertical scrollbar.
+ The add, replace, and remove operations will be a bit slower because the
+ string's width will have to be computed in order to correctly set the maximum
+ horizontal scroll.
 \end_layout
 
 \begin_layout Standard
@@ -18374,6 +20384,431 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+ComboBox
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultClearValueInt A static field that defines the default value that
+ is set to the 
+\family typewriter
+clearValueInt
+\family default
+ of all 
+\family typewriter
+ComboBox
+\family default
+es.
+ Usually this value is 0, but sometimes you may wish to set it to -1, to
+ unselect the 
+\family typewriter
+ComboBox
+\family default
+ when 
+\family typewriter
+clear()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor The check color used to fill the 
+\family typewriter
+ComboBox
+\family default
+ used in Android.
+ Defaults to the fore color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+popupTitle The title of the 
+\family typewriter
+PopupMenu
+\family default
+ when in Android user interface style.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+usePopupMenu Set to 
+\family typewriter
+false
+\family default
+ to don't use the 
+\family typewriter
+PopupMenu
+\family default
+ when the user interface style is Android.
+ This affects all 
+\family typewriter
+ComboBox
+\family default
+es.
+ If you want to change a particular 
+\family typewriter
+ComboBox
+\family default
+ to use the standard popup list, but keep others with the 
+\family typewriter
+PopupMenu
+\family default
+, you can do something like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyListBox extends ListBox
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public MyListBox(totalcross.lang.String[] items)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super(items);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ ComboBox cb = new ComboBox(new MyListBox(items)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWrapping(String
+\begin_inset space ~
+\end_inset
+
+text) Adds the given text to the 
+\family typewriter
+ComboBox
+\family default
+, breaking the text if it goes beyond its limits, and also breaking if it
+ contains 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ It returns the number of lines.
+ Note that each part of the text is considered a new item.
+ This method is slower than the other 
+\family typewriter
+add()
+\family default
+ methods.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Returns all items in the combo box.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+color) Sets the cursor color for the combo box.
+ The default is equal to the background slightly darker.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onFontChanged() Passes the font to the pop list.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackForeItemColors(IntHashtable
+\begin_inset space ~
+\end_inset
+
+ihtFore,
+\begin_inset space ~
+\end_inset
+
+IntHashtable
+\begin_inset space ~
+\end_inset
+
+ihtBack) Sets the fore colors and back colors for the list box used with
+ this combo box.
+ Note that 
+\family typewriter
+null
+\family default
+ is a valid value, used when you always want to use the default color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+popup() Pops up the 
+\family typewriter
+ComboBoxDropDown
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unpop() Unpops the 
+\family typewriter
+ComboBoxDropDown
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onPaint(Graphics
+\begin_inset space ~
+\end_inset
+
+g) Paints the combo's border and the current selected item.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getListBox() Returns the list box used when the combo box is opened.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItemStartingWith(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Selects the item that starts with the given text.
+ If the second parameter is 
+\family typewriter
+true
+\family default
+, the text and all searched strings are first converted to lowercase.
+ This method returns 
+\family typewriter
+true
+\family default
+ if an item was found and selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPop(ComboBoxDropDown
+\begin_inset space ~
+\end_inset
+
+lb) Replaces the original 
+\family typewriter
+ComboBoxDropDown
+\family default
+ by the given one.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ComboBoxDropDown
+\family default
+ class is a simple implementation of a popup list box.
+ It has the following fields, constructors and methods (some methods heired
+ from 
+\family typewriter
+Control
+\family default
+ are ommited):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lb The assigned 
+\family typewriter
+ListBox
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontHideParent Set it to 
+\family typewriter
+true
+\family default
+ if you want to make the control popup below or above always, and not only
+ if on Windows CE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fullHeight Set to 
+\family typewriter
+true
+\family default
+ to make this popup have the screen height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fullWidth Set to 
+\family typewriter
+true
+\family default
+ to make this popup have the screen width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxDropDown() Creates a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ with coordinates that will be set later via the 
+\family typewriter
+setRect()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxDropDown(ListBox
+\begin_inset space ~
+\end_inset
+
+lb) Creates a 
+\family typewriter
+ComboBoxDropDown
+\family default
+ with the given 
+\family typewriter
+ListBox
+\family default
+.
+ You can extend the 
+\family typewriter
+ListBox
+\family default
+ to draw the items by yourself and use this constructor so the 
+\family typewriter
+ComboBoxDropDown
+\family default
+ will use your class and not the default 
+\family typewriter
+ListBox
+\family default
+ one.
+ Note that this constructor forces the 
+\family typewriter
+ListBox.simpleBorder
+\family default
+ to 
+\family typewriter
+true
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+width,int
+\begin_inset space ~
+\end_inset
+
+height,Control
+\begin_inset space ~
+\end_inset
+
+relative,boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Sets the absolute rect of the parent's control.
+ The 
+\family typewriter
+ComboBoxDropDown
+\family default
+ rect will be computed based on that rectangle.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onClickedOutside(PenEvent
+\begin_inset space ~
+\end_inset
+
+event) Closes the popup list with a click outside its bounds.
+\end_layout
+
 \begin_layout Section
 ListBox
 \begin_inset CommandInset label
@@ -18395,6 +20830,133 @@ The list box is a control that allows the user to select one item from a
 \end_layout
 
 \begin_layout Standard
+Here is an example showing how it can be used:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ListBox lb;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb = new ListBox();
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lb);
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add(new String[]{"Daniel","Jenny","Helge","Sandra"});
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add("Marc"); // you may set the rect by using PREFERRED only after the
+ items were added.
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.setRect(LEFT, TOP, PREFERRED, PREFERRED); // use control's preferred
+ width based on the size of the elements
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		switch (event.type)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			case ControlEvent.PRESSED:
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (event.target == lb)
+\end_layout
+
+\begin_layout Plain Layout
+
+					Object element = lb.getSelectedItem(); // in most cases, this is just
+ a String and may be casted to such
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -18411,8 +20973,11 @@ status open
 \begin_layout Plain Layout
 Please notice that TotalCross' list box does not allow the selection of
  multiple items like one would expect.
- If you need this feature, use the multi list box control (refer to the
- advanced controls section).
+ If you need this feature, use the 
+\family typewriter
+MultiListBox
+\family default
+ control (refer to the advanced controls section).
 \end_layout
 
 \end_inset
@@ -18487,6 +21052,7 @@ int
 \end_inset
 
 size) Adds a subarray of objects to the list box.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -18527,6 +21093,8 @@ You may insert an object at a desired position with
 insert(Object item, int index)
 \family default
 .
+ The first item has index 0.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18535,6 +21103,7 @@ The method
 setItemAt(int i, Object s)
 \family default
  replaces the object at the given index by the given object.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18550,12 +21119,14 @@ The method
 \family typewriter
 getItemAt(int i)
 \family default
- returns the object at the selected index; the reverse operation can be
- done with 
+ returns the object at the selected index.
+ It returns an empty string if the index is outside the range.
+ The reverse operation can be done with 
 \family typewriter
 indexOf(Object name)
 \family default
 , which retrieves the index of a specific object.
+ It returns -1 if the object is not found.
 \end_layout
 
 \begin_layout Itemize
@@ -18568,6 +21139,13 @@ getSelectedIndex()
 getSelectedItem()
 \family default
  to retrieve the selected object directly.
+ The first returns -1 if the list box has no selected index yet and the
+ last one returns an empty 
+\family typewriter
+String
+\family default
+ object if none is selected.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18580,6 +21158,9 @@ setSelectedIndex(int i)
 setSelectedItem(Object name)
 \family default
 .
+ If the object or is not found, the current selected item is not changed.
+ However, if the index is not found, the current selected item is cleared
+ and no item becomes selected.
 \end_layout
 
 \begin_layout Itemize
@@ -18588,6 +21169,12 @@ The
 selectLast()
 \family default
  method selects the last item added to the list box, doing a scroll if needed.
+ It calls 
+\family typewriter
+repaintNow()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18616,7 +21203,26 @@ item) Removes the given object from the list box.
 
 \begin_layout FieldList
 \labelwidthstring 0
-removeAll() Empties the list box.
+removeAll() Empties the list box, setting all elements of the array to 
+\family typewriter
+null
+\family default
+ so they can be garbage collected.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Attention! If you used the same object array to initialize two list boxes
+ (or combo boxes), this method will 
+\family typewriter
+null
+\family default
+ both list boxes (because they use the same array reference), and you might
+ get a 
+\family typewriter
+NullPointerException
+\family default
+! 
 \end_layout
 
 \end_deeper
@@ -18626,6 +21232,10 @@ The list box items can be sorted using the method
 qsort()
 \family default
 .
+ One of them receives a parameter indicating if the sorting is caseless
+ or not in case the elements are strings.
+ In both of them, the current selection is cleared.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18649,6 +21259,8 @@ To increase the default height of the horizontal scroll buttons, change
 extraHorizScrollButtonHeight
 \family default
  static member.
+ Its default value is 2 in 160x160 or a multiple of it in other resolutions.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -18656,7 +21268,12 @@ The
 \family typewriter
 setSimpleBorder(boolean simpleBorder)
 \family default
- method is used to change the border style from 3d to simple.
+ method is used to change the border style from 3d to simple if the flag
+ passed is 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -18675,11 +21292,19 @@ The selection color can be changed with
 setCursorColor(int color)
 \family default
 .
+ The color used in the 
+\family typewriter
+setBackColor()
+\family default
+ method will be used in the scrollbar only.
+ The background color of the control will be a lighter version of the given
+ color.
+ 
 \end_layout
 
 \begin_layout Itemize
 By default, the selection is drawn using the current item's width.
- This behavior can be changed by setting 
+ This behavior can be changed by setting the static field 
 \family typewriter
 useFullWidthOnSelection
 \family default
@@ -18688,11 +21313,15 @@ useFullWidthOnSelection
 true
 \family default
 .
+ If so, all list boxes will have the selection bar drawn in the full width.
 \end_layout
 
 \begin_layout Itemize
-You can extend list box to implement a customized type, like a color-chooser
- list box (see 
+You can extend 
+\family typewriter
+ListBox
+\family default
+ to implement a customized type, like a color-chooser list box (see 
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "chap:Advanced-Controls"
@@ -18809,6 +21438,19 @@ clear()
 clearValueInt
 \family default
  as the selected index.
+\end_layout
+
+\begin_layout Itemize
+The methods 
+\family typewriter
+add()
+\family default
+ and 
+\family typewriter
+remove()
+\family default
+ to add and remove a control, respectively, do nothing, because it does
+ not make sense to add controls to or remove controls from a list box.
 \end_layout
 
 \begin_layout Standard
@@ -19026,22 +21668,484 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+iconGap The gap between the icon and the text.
+ Used in the internal class 
+\family typewriter
+IconItem
+\family default
+.
+ Defaults to 
+\family typewriter
+fmH*4/3
+\family default
+.
+ If you plan to change this value, do it after calling 
+\family typewriter
+setFont()
+\family default
+ (if you call it).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ihtBackColors,
+\begin_inset space ~
+\end_inset
+
+ihtForeColors 
+\family typewriter
+IntHashtable
+\family default
+ used to specify different background and foreground colors for some items.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+list.ihtBackColor = new IntHashtable(10);
+\end_layout
+
+\begin_layout Plain Layout
+
+ihtBackColors.put(10,0xAABBCC); // will make line number 10 with back color
+ 0xAABBCC.
+\end_layout
+
+\end_inset
+
+Specify a 
+\family typewriter
+null
+\family default
+ value if you want to use the default color (this also makes drawing faster).
+ Note that its up to you to update the hash table if an item is inserted
+ or removed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flick The 
+\family typewriter
+Flick
+\family default
+ object that listens and performs flick animations on pen up events when
+ appropriate.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+visibleLines Sets the number of visible lines, used to make 
+\family typewriter
+PREFERRED
+\family default
+ height return the given number of lines as the list box height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemHeightFactor In finger touch devices, sets a factor by which the font
+ height will be multiplied to increase the item's height.
+ Defaults to 1.5 when 
+\family typewriter
+Settings.fingerTouch
+\family default
+ is 
+\family typewriter
+true
+\family default
+, and 1 when its 
+\family typewriter
+false
+\family default
+.
+ You can change this value before the constructor and restore it after the
+ constructor to change the height of a single list box.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = 1;
+\end_layout
+
+\begin_layout Plain Layout
+
+// ...
+ create listbox
+\end_layout
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR; 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dataCol Used by the 
+\family typewriter
+DBListBox
+\family default
+ (Database 
+\family typewriter
+ListBox
+\family default
+) to store the data column that is displayed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWrapping(String
+\begin_inset space ~
+\end_inset
+
+text) Adds the given text to this list box, breaking the text if it goes
+ beyond the list box' limits, and also breaking if it contains 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ It returns the number of lines.
+ Note that each part of the text is considered a new item.
+ This method is slower than the other 
+\family typewriter
+add()
+\family default
+ methods.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Returns all items in this list box.
+ If the elements are strings, the array can be casted to 
+\family typewriter
+String[]
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width, i.
+ e., the size of the largest item plus the size of the scroll bar.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the number of items multiplied by the font
+ metrics height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onBoundsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) This is needed to recalculate the box size for the selected
+ item if the control is resized by the main application.
+ The parameter indicates whether the bounds were changed due to a screen
+ change (rotation, collapse).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+find(char
+\begin_inset space ~
+\end_inset
+
+c) Searches the list box for an item with the first letter matching the
+ given character.
+ The search is made case insensitive.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you override this class you must implement this method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the string of the selected item or "" if none is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItemStartingWith(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Selects the item that starts with the given text.
+ If the second parameter is 
+\family typewriter
+true
+\family default
+, the text and all searched strings are first converted to lowercase.
+ The method returns 
+\family typewriter
+true
+\family default
+ if an item was found and selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hideScrollBarIfNotNeeded() This method hides the scrollbar if its not needed,
+ i.
+ e., if horizontal scroll is disabled and the preferred height is smaller
+ than the actual height.
+ You may have to call 
+\family typewriter
+reposition()
+\family default
+ if this method returns 
+\family typewriter
+true
+\family default
+.
+ You can call this method after all items were added.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has an internal class called 
+\family typewriter
+IconItem
+\family default
+ used to show an icon and a text.
+ You can mix 
+\family typewriter
+IconItem
+\family default
+ with other item types in the list box.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+lb.add("this is a simple text");
+\end_layout
+
+\begin_layout Plain Layout
+
+lb.add(new IconItem("this is a text with icon", iconImage)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The icon should have the same size of the font's height, which can be set
+ with: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iconImage = originalImage.smoothScaledFixedAspectRatio(fmH,true,-1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class only has a public constructor and a public method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IconItem(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+icon) Constructs a new 
+\family typewriter
+IconItem
+\family default
+ with the given text and icon.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the object text.
+\end_layout
+
 \begin_layout Section
 MultiEdit
 \end_layout
 
 \begin_layout Standard
-The multi edit is basically an edit with support for multiple lines, so
- their usage is pretty similar and, unless noted otherwise, the same methods
- listed for edit are available for multi edit.
+
+\family typewriter
+MultiEdit
+\family default
+ is basically an edit with support for multiple lines, so their usage is
+ pretty similar and, unless noted otherwise, the same methods listed for
+ edit are available for 
+\family typewriter
+MultiEdit
+\family default
+.
  A static vertical scrollbar is added, but it is disabled/enabled as needed.
 \end_layout
 
+\begin_layout Standard
+Here is an example showing a 
+\family typewriter
+MultiEdit
+\family default
+ control being used: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MultiEdit mEdit;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		// the constructor method is called with the mask, the number of lines
+ and the vertical interval in pixel between two lines
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit = new MultiEdit("",3,1);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(mEdit,LEFT,TOP); // add/setRect must precede setText()
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit.setText("What text you want"); // eventually
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
-Multi edit has two constructors:
+
+\family typewriter
+MultiEdit
+\family default
+ has three constructors:
 \end_layout
 
 \begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+MultiEdit() Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with 1 pixel as space between lines and with no lines.
+ You must set the bounds using 
+\family typewriter
+FILL
+\family default
+ or 
+\family typewriter
+FIT
+\family default
+.
+ 
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 MultiEdit(int
@@ -19056,12 +22160,24 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and the default width 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and the default width
+ 
 \family typewriter
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be specified with
+ a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -19086,8 +22202,12 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and uses the given mask to compute the 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and uses the given
+ mask to compute the 
 \family typewriter
 PREFERRED
 \family default
@@ -19097,6 +22217,19 @@ PREFERRED
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be given with a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ Note that the mask does not masks the input.
+ If the mask is "", the 
+\family typewriter
+FILL
+\family default
+ width is choosen.
+ 
 \end_layout
 
 \end_deeper
@@ -19113,7 +22246,23 @@ With
 \family typewriter
 setScrollbarsAlwaysVisible(boolean asNeeded)
 \family default
- you can change the multi edit's scrollbar behavior.
+ you can change the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MultiEdit
+\family default
+'s scrollbar behavior.
+ Set to 
+\family typewriter
+true
+\family default
+ to hide the vertical scrollbar when it isn't needed (instead of disabling
+ it).
+ This must be done right after the constructor.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -19135,7 +22284,21 @@ gap
 \end_layout
 
 \begin_layout Itemize
-The following methods allow you to manipulate the multi edit scrollbar:
+If the 
+\family typewriter
+MultiEdit
+\family default
+ object is not editable, the user can scroll the edit a page at a time just
+ by clicking in the middle upper or middle lower.
+ 
+\end_layout
+
+\begin_layout Itemize
+The following methods allow you to manipulate the 
+\family typewriter
+MultiEdit
+\family default
+ scrollbar:
 \end_layout
 
 \begin_deeper
@@ -19254,6 +22417,160 @@ public void initUI()
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+MultiEdit
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+, defined in the 
+\family typewriter
+Scrollable
+\family default
+ interface, or the fields and methods whose name and behavior are identical
+ to the ones from 
+\family typewriter
+Edit
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mask The mask used to infer the preferred width.
+ Unlike the 
+\family typewriter
+Edit
+\family default
+ class, 
+\family typewriter
+MultiEdit
+\family default
+ does not support real masking.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rowCount Used to set the number of rows of the 
+\family typewriter
+MultiEdit
+\family default
+ object; used as parameter to compute the preferred height.
+ You must call 
+\family typewriter
+setRect()
+\family default
+ after changing this to resize the control in height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+justify Set to 
+\family typewriter
+true
+\family default
+ to justify the text when the 
+\family typewriter
+MultiEdit
+\family default
+ is NOT editable.
+ Note that this makes the text drawing a bit slower.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaxLength(int
+\begin_inset space ~
+\end_inset
+
+length) Sets the desired maximum length for text entered in the 
+\family typewriter
+MultiEdit
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValidChars(String
+\begin_inset space ~
+\end_inset
+
+validCharsString) Sets the valid chars that can be entered in the control.
+ If 
+\family typewriter
+null
+\family default
+ is passed, any character can be entered.
+ (case insensitive).
+ Unlike the same method in the 
+\family typewriter
+Edit
+\family default
+, setting it to an empty string won't forbid you to copy, cut, delete, or
+ paste a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the text displayed in the 
+\family typewriter
+MultiEdit
+\family default
+ control.
+ In this class it is not needed to deal with masking when fetching the component
+ text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+width,int
+\begin_inset space ~
+\end_inset
+
+height,Control
+\begin_inset space ~
+\end_inset
+
+relative,boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Sets the rect for 
+\family typewriter
+MultiEdit
+\family default
+.
+ Note that height is recomputed based in the value for 
+\family typewriter
+rowCount
+\family default
+ given in the constructor if the given height is 
+\family typewriter
+PREFERRED
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Section
