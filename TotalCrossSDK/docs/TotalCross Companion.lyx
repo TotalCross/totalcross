@@ -23489,8 +23489,17 @@ ToolTip
 
 \begin_layout Standard
 It allows the display of a tooltip when user keeps the pen in the control.
- The default popup delay is 1000 ms and the amount of time it will be displayed
- is 2000 ms (a pen up also hides the control).
+ On Windows and Linux desktop, the tooltip is also shown when the mouse
+ stays over a control.
+ The default popup delay (
+\family typewriter
+millisDelay
+\family default
+) is 1000 ms and the amount of time it will be displayed (
+\family typewriter
+millisDisplay
+\family default
+) is 2000 ms (a pen up also hides the control).
  The tooltip must always be added after the control is added and had its
  bounds set; otherwise, you must call the added method to initialize the
  tip's bounds.
@@ -23501,11 +23510,13 @@ You can set the border color by changing the
 \family typewriter
 borderColor
 \family default
- field (no border by default) and also the internal gap (see field 
+ field (no border by default) and also the internal gap (the field 
 \family typewriter
 insideGap
 \family default
 ).
+ By default, it is -1 and no border is shown.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -23518,7 +23529,7 @@ distX
 distY
 \family default
  lets you set the default distance from the control for all tooltips.
- They must be set before the tooltip is created.
+ They must be set before the tooltip is created and are 0 by default.
  
 \end_layout
 
@@ -23532,6 +23543,45 @@ The constructor receives the control which the tooptip refers to and the
 n
 \family default
  like a label control.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ToolTip t = new ToolTip(control, "Hi!
+\backslash
+nIt's Me"); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event will be dispatched to the attached control right before the text
+ is shown.
+ You can then set the tip to a new value using 
+\family typewriter
+setText()
+\family default
+; setting to an empty string will disable the tooltip at that moment.
+ Calling 
+\family typewriter
+setControlRect()
+\family default
+ also changes the rectangle around which the tooltip will be displayed.
+ By default, it's used the absolute rectangle of the control passed in the
+ constructor.
+ The placement of the tooltip will be defined based on it, in a way that
+ the control is not obscured.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -23566,7 +23616,68 @@ PenListener
 \end_layout
 
 \begin_layout Standard
-Sample code:
+Examples:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ToolTip.distX = 10; // 0 by default
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip.distY = 4; // 0 by default
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip.insideGap = 8; // 4 by default 
+\end_layout
+
+\begin_layout Plain Layout
+
+Button b; 
+\end_layout
+
+\begin_layout Plain Layout
+
+add(b = new Button("Hello Tooltip!"),CENTER,BOTTOM); 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip t = new ToolTip(b, "Hi, this is a button");
+\end_layout
+
+\begin_layout Plain Layout
+
+t.borderColor = 0x00FF00; // -1 (none) by default 
+\end_layout
+
+\begin_layout Plain Layout
+
+t.millisDelay = 500; // 1000 by default t.millisDisplay = 4000; // 2000 by
+ default
+\end_layout
+
+\begin_layout Plain Layout
+
+t.setBackColor(Color.getRGB(250,0,0)); // same as control's container by default
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -23671,6 +23782,135 @@ nyou can choose a back new color");
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ToolTip
+\family default
+ class has one public constructor and other methods (some methods heired
+ from 
+\family typewriter
+Control
+\family default
+ are ommited):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ToolTip(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+message) Constructs a tooltip.
+ 
+\family typewriter
+control
+\family default
+ is the control which supports the tip.
+ If 
+\family typewriter
+null
+\family default
+, you must call 
+\family typewriter
+setControlRect()
+\family default
+ and show it by your own.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontShowTipOnMouseEvents() Stop using mouse events to show the tooltip.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+split(String
+\begin_inset space ~
+\end_inset
+
+msg,
+\begin_inset space ~
+\end_inset
+
+FontMetrics
+\begin_inset space ~
+\end_inset
+
+fm) Use this handy method to split the text in order to correctly fit the
+ window.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String msg = "a very long text that will be split to fit in the window";
+\end_layout
+
+\begin_layout Plain Layout
+
+new ToolTip(control, ToolTip.split(msg, fm));
+\end_layout
+
+\end_inset
+
+ Make sure that 
+\family typewriter
+fm
+\family default
+ will be the font's 
+\family typewriter
+FontMetrics
+\family default
+ (if you plan to change the font after calling the constructor).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+show() Shows the tooltip.
+ If you want to show the tooltip programatically, you must do something
+ like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+toolTip.setText(msg);
+\end_layout
+
+\begin_layout Plain Layout
+
+toolTip.setControlRect(lbCompany.getAbsoluteRect());
+\end_layout
+
+\begin_layout Plain Layout
+
+toolTip.show(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hide() Hides the tooltip.
+ 
 \end_layout
 
 \begin_layout Chapter
