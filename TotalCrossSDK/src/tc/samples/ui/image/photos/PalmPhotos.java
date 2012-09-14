@@ -102,7 +102,6 @@ public class PalmPhotos extends MainWindow
          int elapsed = Vm.getTimeStamp()-ini;
          if (img.getWidth() > 0)
          {
-            img.transparentColor = Image.NO_TRANSPARENT_COLOR;
             display.setImage(img);
             repaint();
          }

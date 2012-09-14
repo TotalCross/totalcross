@@ -12,7 +12,6 @@ public class ImageButtonResolutionsScale extends Container
       String[] imageNames = {"cancel.png", "ok.png"}; // images are 300x300
       int imgRes = 2048;
       int targetRes[] = {480,320,240};
-      int backColor = getBackColor();
       int k=0;
       final Button []btns = new Button[imageNames.length * targetRes.length];
 
@@ -25,7 +24,7 @@ public class ImageButtonResolutionsScale extends Container
             for (int j = 0; j < targetRes.length; j++)
             {
                double factor = (double) targetRes[j] / (double) imgRes;
-               Image img2 = original.smoothScaledBy(factor, factor, backColor);
+               Image img2 = original.smoothScaledBy(factor, factor);
                Button btn = btns[k++] = new Button(img2);
                if (j == 0) // just a demo for the user
                   btn.pressedImage = img2.getTouchedUpInstance((byte)64,(byte)0);

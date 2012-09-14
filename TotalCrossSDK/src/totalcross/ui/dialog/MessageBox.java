@@ -282,7 +282,7 @@ public class MessageBox extends Window
     */
    public void setIcon(Image icon) throws ImageException
    {
-      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent,-1);
+      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent);
    }
    
    /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */

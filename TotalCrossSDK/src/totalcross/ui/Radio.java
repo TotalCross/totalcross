@@ -116,19 +116,19 @@ public class Radio extends Control
       if (Settings.useNewFont)
       {
          int h = height == 0 ? getPreferredHeight() : height;
-         img = img.getSmoothScaledInstance(h,h, backColor);
+         img = img.getSmoothScaledInstance(h,h);
       }
       else
       if (fmH >= 24)
-         img = img.getSmoothScaledInstance(fmH-8,fmH-8, backColor);
+         img = img.getSmoothScaledInstance(fmH-8,fmH-8);
       else
       if (fmH >= 20)
          ;
       else
       if (fmH >= 15)
-         img = img.getSmoothScaledInstance(fmH-3,fmH-3, backColor);
+         img = img.getSmoothScaledInstance(fmH-3,fmH-3);
       else
-         img = img.getSmoothScaledInstance(16*(fmH+3)/22,16*(fmH+3)/22, backColor);
+         img = img.getSmoothScaledInstance(16*(fmH+3)/22,16*(fmH+3)/22);
       
       img.applyColor(foreColor);
       if (!enabled)

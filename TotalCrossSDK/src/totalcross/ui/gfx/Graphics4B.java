@@ -1460,7 +1460,7 @@ public final class Graphics4B
    {
       Bitmap b = (Bitmap)((surface instanceof Image) ? ((Image)surface).getPixels() : mainWindowPixels);
       if (b != null)
-         drawSurface(b, x,y,width,height, dstX,dstY, drawOp, backColor, foreColor, true, surface.getWidth(), surface.getHeight(), surface instanceof Image ? ((Image)surface).useAlpha : false);
+         drawSurface(b, x,y,width,height, dstX,dstY, true, surface.getWidth(), surface.getHeight());
    }
 
    public void free()
@@ -1582,38 +1582,6 @@ public final class Graphics4B
          needsUpdate = true;
    }
 
-   public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
-   {
-      x += TRANSX;
-      y += TRANSY;
-
-      int x2 = x + w - 1;
-      int y2 = y + h - 1;
-
-      if (topLeftColor >= 0)
-      {
-         g.setColor(topLeftColor);
-         g.drawLine(x, y, x, y2);
-         if (!yMirror)
-            g.drawLine(x, y, x2, y);
-         else
-            g.drawLine(x, y2, x2, y2);
-      }
-
-      if (bottomRightColor >= 0)
-      {
-         g.setColor(bottomRightColor);
-         g.drawLine(x2, y2, x2, y);
-         if (!yMirror)
-            g.drawLine(x2, y2, x, y2);
-         else
-            g.drawLine(x2, y, x, y);
-      }
-      
-      if (isControlSurface)
-         needsUpdate = true;
-   }
-
    public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical)
    {
       if (startX > endX)
@@ -1689,26 +1657,18 @@ public final class Graphics4B
       return radius - (int)Math.sqrt(radius * radius - y * y);
    }
 
-   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip)
    {
-      int transpPixel = image.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT)
-         transpPixel = backColor;
-
       Bitmap b = (Bitmap) image.getPixels();
       if (b != null)
-         drawSurface(b, 0,0, image.getWidth(), image.getHeight(), x,y, drawOp, transpPixel, this.foreColor, doClip, image.getWidth(), image.getHeight(), image.useAlpha);
+         drawSurface(b, 0,0, image.getWidth(), image.getHeight(), x,y, doClip, image.getWidth(), image.getHeight());
    }
 
-   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip)
    {
-      int transpPixel = src.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT) // this same cache is used in the pda
-         transpPixel = backColor;
-
       Bitmap b = (Bitmap) src.getPixels();
       if (b != null)
-         drawSurface(b, x,y, width, height, 0,0, drawOp, transpPixel, this.foreColor, doClip, src.getWidth(), src.getHeight(), src.useAlpha);
+         drawSurface(b, x,y, width, height, 0,0, doClip, src.getWidth(), src.getHeight());
    }
 
    public void drawImage(totalcross.ui.image.Image4B image, int x, int y)
@@ -2050,15 +2010,14 @@ public final class Graphics4B
          sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
       }
-      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY, -1);
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
    }
 
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
-    * @param ignoreColor Pass a color that should not be changed, like the transparent color of an Image, or -1 to dither all colors
     * @since TotalCross 1.53
     */
-   public void dither(int x0, int y0, int w, int h, int ignoreColor)
+   public void dither(int x0, int y0, int w, int h)
    {
       x0 += TRANSX;
       y0 += TRANSY;
@@ -2087,7 +2046,6 @@ public final class Graphics4B
          for (int x = x0; x < xf; x++)
          {
             int p = buff1[x];
-            if (p == ignoreColor) continue;
             // get current pixel values
             oldR = (p>>16) & 0xFF;
             oldG = (p>>8) & 0xFF;
@@ -2168,7 +2126,7 @@ public final class Graphics4B
 
    ////////////////////   METHODS TAKED FROM THE TOTALCROSS VIRTUAL MACHINE //////////
    // copy the area x,y,width,height of the bitmap bmp with dimensions bmpW,bmpH to the (current active) screen location dstX,dstY
-   private void drawSurface(Bitmap b, int x, int y, int width, int height, int dstX, int dstY, int drawOp, int backColor, int foreColor, boolean doClip, int bmpW, int bmpH, boolean useAlpha)
+   private void drawSurface(Bitmap b, int x, int y, int width, int height, int dstX, int dstY, boolean doClip, int bmpW, int bmpH)
    {
       // petrus@450_7: revamp of the drawBitmap clipping algorithm
       int i, j;
@@ -2225,58 +2183,39 @@ public final class Graphics4B
             return;
       }
 
-      int op = -1;
-      switch (drawOp)
+      int[] buf1 = tempRowBuf1;
+      int[] buf2 = tempRowBuf2;
+      // color manipulation
+      for (j = 0; j < height; j++)
       {
-         case DRAW_PAINT:           op = net.rim.device.api.ui.Graphics.ROP2_S; break;
-      }
+         getRGB(b, buf2, 0, width, x, y + j, width, 1, true);
+         getRGB(bitmap, buf1, 0, width, dstX, dstY + j, width, 1, false);
 
-      if (!useAlpha && op != -1)
-         g.rop(op, dstX, dstY, width, height, b, x, y);
-      else
-      {
-         int[] buf1 = tempRowBuf1;
-         int[] buf2 = tempRowBuf2;
-         // color manipulation
-         for (j = 0; j < height; j++)
+         for (i = width; --i >= 0;)
          {
-            getRGB(b, buf2, 0, width, x, y + j, width, 1, useAlpha);
-            getRGB(bitmap, buf1, 0, width, dstX, dstY + j, width, 1, false);
-
-            if (useAlpha)
-               for (i = width; --i >= 0;)
-               {
-                  int bmpPt = buf2[i];
-                  int a = (bmpPt >>> 24) & 0xFF;
-                  if (a == 0xFF)
-                     buf1[i] = bmpPt;
-                  else
-                  if (a != 0)
-                  {
-                     int screenPt = buf1[i];
-                     int br = (bmpPt >> 16) & 0xFF;
-                     int bg = (bmpPt >> 8) & 0xFF;
-                     int bb = (bmpPt     ) & 0xFF;
-                     int sr = (screenPt >> 16) & 0xFF;
-                     int sg = (screenPt >> 8 ) & 0xFF;
-                     int sb = (screenPt      ) & 0xFF;
-                     
-                     int ma = 0xFF-a;
-                     int cr = (a * br + ma * sr); cr = (cr+1 + (cr >> 8)) >> 8; // fast way to divide by 255
-                     int cg = (a * bg + ma * sg); cg = (cg+1 + (cg >> 8)) >> 8;
-                     int cb = (a * bb + ma * sb); cb = (cb+1 + (cb >> 8)) >> 8;
-                     buf1[i] = (screenPt & 0xFF000000) | (cr << 16) | (cg << 8) | cb;
-                  }
-               }
+            int bmpPt = buf2[i];
+            int a = (bmpPt >>> 24) & 0xFF;
+            if (a == 0xFF)
+               buf1[i] = bmpPt;
             else
+            if (a != 0)
             {
-               for (i = width; --i >= 0;) // DRAW_SPRITE
-                  if (buf2[i] != backColor)
-                     buf1[i] = buf2[i];
+               int screenPt = buf1[i];
+               int br = (bmpPt >> 16) & 0xFF;
+               int bg = (bmpPt >> 8) & 0xFF;
+               int bb = (bmpPt     ) & 0xFF;
+               int sr = (screenPt >> 16) & 0xFF;
+               int sg = (screenPt >> 8 ) & 0xFF;
+               int sb = (screenPt      ) & 0xFF;
+               
+               int ma = 0xFF-a;
+               int cr = (a * br + ma * sr); cr = (cr+1 + (cr >> 8)) >> 8; // fast way to divide by 255
+               int cg = (a * bg + ma * sg); cg = (cg+1 + (cg >> 8)) >> 8;
+               int cb = (a * bb + ma * sb); cb = (cb+1 + (cb >> 8)) >> 8;
+               buf1[i] = (screenPt & 0xFF000000) | (cr << 16) | (cg << 8) | cb;
             }
-
-            g.drawRGB(buf1, 0, width, dstX, dstY + j, width, 1);
          }
+         g.drawRGB(buf1, 0, width, dstX, dstY + j, width, 1);
       }
       
       if (isControlSurface)

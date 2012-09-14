@@ -466,7 +466,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public void setIcon(int iconType, Image img) throws ImageException
    {
       if (iconType > 1)
-         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d, Color.WHITE); // guich@tc110_19
+         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d); // guich@tc110_19
       switch (iconType)
       {
          case ICON_PLUS:

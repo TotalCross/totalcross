@@ -118,7 +118,7 @@ public class Button extends Control
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
-   protected int fColor,imgColor=-1,pressColor=-1,fadedColor=-1;
+   protected int fColor,pressColor=-1,fadedColor=-1;
    protected int fourColors[] = new int[4];
    private int txtPos,tiGap,maxTW;
    private boolean fixPressColor;
@@ -211,7 +211,6 @@ public class Button extends Control
    {
       if (text != null) setText(text);
       this.img = img;
-      if (img != null) imgColor = img.transparentColor;
       this.tiGap = gap;
       txtPos = textPosition;
    }
@@ -247,7 +246,6 @@ public class Button extends Control
    public void setImage(Image img)
    {
       this.img = img;
-      imgColor = img.transparentColor;
       if (txtPos == 0)
          text = null;
       onBoundsChanged(false);
@@ -558,7 +556,7 @@ public class Button extends Control
          if (colorized != null) //flsobral@tc150: colorized may now be null if there was not enough memory to create it at setBorder
             try
             {
-               img = colorized.getSmoothScaledInstance(width,height,backColor);
+               img = colorized.getSmoothScaledInstance(width,height);
             }
             catch (ImageException e)
             {
@@ -690,12 +688,6 @@ public class Button extends Control
 
    protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
-      if (imgColor >= 0 && !img.useAlpha) // guich@310_26: allow imgColor be null - guich@tc126_12: not when using alpha
-      {
-         g.backColor = imgColor; // the transparent color is our background color
-         g.drawOp = Graphics.DRAW_SPRITE;  // draw the image transparent _OR_ draw the image making all pixels != background equal to our disabled color
-      }
-      else g.drawOp = Graphics.DRAW_PAINT;
       if (bkg) // only in uiAndroid
          try
          {

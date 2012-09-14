@@ -521,7 +521,7 @@ public class Bitmaps
       fillW = img.getWidth();
       fillH = img.getHeight();
       fillPixels = (int[])img.getPixels();
-      fillOldColor = img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : fillPixels[0];
+      fillOldColor = /*img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : */fillPixels[0];
       fillNewColor = 0;
       fillVisited = new boolean[fillW*fillH];
 
@@ -651,7 +651,7 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSquareIcon.transparentColor);
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size);
       if (img.getHeight() != size || img.getWidth() != size)
          throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
       return img;

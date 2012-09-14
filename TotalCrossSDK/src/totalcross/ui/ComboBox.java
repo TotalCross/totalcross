@@ -317,7 +317,7 @@ public class ComboBox extends Container
       int s = fmH;
       try
       {
-         img = Resources.comboArrow.getSmoothScaledInstance(s,s,backColor);
+         img = Resources.comboArrow.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
       }
       catch (ImageException e)

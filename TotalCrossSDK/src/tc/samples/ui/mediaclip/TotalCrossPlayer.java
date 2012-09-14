@@ -236,7 +236,6 @@ public class TotalCrossPlayer extends MainWindow
    {
       // stop: a blue rectangle
       imgStop = new Image(wh, wh);
-      imgStop.transparentColor = 0;
       Graphics g = imgStop.getGraphics();
       g.backColor = Color.RED;
       g.foreColor = 1;
@@ -244,12 +243,10 @@ public class TotalCrossPlayer extends MainWindow
       g.drawRect(0, 0, wh, wh);
       // play: a green right triangle
       imgPlay = new Image(wh, wh);
-      imgPlay.transparentColor = 0;
       g = imgPlay.getGraphics();
       g.drawArrow(wh / 3, 0, wh / 2, Graphics.ARROW_RIGHT, false, 0x00AA00);
       // pause: two vertical yellow rectangles
       imgPause = new Image(wh, wh);
-      imgPause.transparentColor = 0;
       g = imgPause.getGraphics();
       g.backColor = Color.YELLOW;
       g.foreColor = 1;

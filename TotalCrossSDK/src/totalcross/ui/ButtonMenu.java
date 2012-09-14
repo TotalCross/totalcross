@@ -216,8 +216,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             {
                img = img.getSmoothScaledInstance(
                      img.getWidth() * imageS / img.getHeight(),
-                     imageS,
-                     img.transparentColor);
+                     imageS);
             }
             catch (ImageException ie)
             {

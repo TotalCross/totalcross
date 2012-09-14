@@ -167,8 +167,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     * Changing to Android style will also set Settings.fingerTouch to true.
     * If you don't like such behaviour in non finger devices, set this property to false after calling setUIStyle.
     *  
-    * @see totalcross.sys.Settings#PalmOS
-    * @see totalcross.sys.Settings#WinCE
     * @see totalcross.sys.Settings#Flat
     * @see totalcross.sys.Settings#Vista
     * @see totalcross.sys.Settings#Android
@@ -627,7 +625,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
       Image img = new Image(w,h);
-      img.transparentColor = -1;
       Graphics gimg = img.getGraphics();
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)

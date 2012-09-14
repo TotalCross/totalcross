@@ -110,7 +110,7 @@ public class PopupMenu extends Window
       // "off" image is a composite of two images: on + selection
       Image on = off.getFrameInstance(0);
       ball.applyColor2(color); // paint it
-      on.getGraphics().drawImage(ball,0,0,Graphics.DRAW_PAINT,Color.WHITE,true);
+      on.getGraphics().drawImage(ball,0,0,true);
       return on;
    }
 

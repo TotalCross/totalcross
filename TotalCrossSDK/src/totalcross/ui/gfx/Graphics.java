@@ -60,14 +60,6 @@ public final class Graphics
    /** The background color, in 0xRRGGBB format. */
    public int backColor = Color.BRIGHT;
 
-   /**
-    * Sets the drawing operation when dealing with images.
-    *
-    * @see #DRAW_PAINT
-    * @see #DRAW_SPRITE
-    */
-   public int drawOp;
-
    /** Set to true to use antialiase in all drawing operations that draw a diagonal line,
     * such as drawPoligon and drawLine. */
    public boolean useAA;
@@ -93,12 +85,6 @@ public final class Graphics
    static public final byte ARROW_LEFT = 3;
    /** used in the drawArrow method */
    static public final byte ARROW_RIGHT = 4;
-
-   /** The constant for a draw operation where the destination is replaced with source pixels (copy mode). */
-   public static final int DRAW_PAINT         = 0;
-
-   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). */
-   public static final int DRAW_SPRITE        = 6;
 
    private int transX, transY;
    private int clipX1, clipY1, clipX2, clipY2;
@@ -246,7 +232,6 @@ public final class Graphics
     * You can view the palette online <a href='http://www.superwaba.org/tc/pal685_values.png' target=_blank>here</a>.
     * There's no need to convert your colors to these ones; this will be done on-the-fly by the vm.
     * @since TotalCross 1.0
-    * @deprecated 
     */
    public static int[] getPalette()
    {
@@ -1131,7 +1116,6 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void drawRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1170,7 +1154,6 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is filled from x to x+w-1.
     * @param height height of the rectangle. the rectangle is filled from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void fillRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1311,22 +1294,12 @@ public final class Graphics
    * @param height the height of the area on the source surface
    * @param dstX the destination x location on the current surface
    * @param dstY the destination y location on the current surface
-   * @see #drawOp
-   * @see #DRAW_PAINT
-   * @see #DRAW_ERASE
-   * @see #DRAW_MASK
-   * @see #DRAW_INVERT
-   * @see #DRAW_OVERLAY
-   * @see #DRAW_PAINT_INVERSE
-   * @see #DRAW_SPRITE
-   * @see #DRAW_REPLACE_COLOR
-   * @see #DRAW_SWAP_COLORS
    */
    public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY)
    {
       int []srcPixels = (int[]) getSurfacePixels(surface);
       if (srcPixels != null)
-         drawSurface(srcPixels, x,y,width,height, dstX,dstY, drawOp, backColor, foreColor, true, surface.getX(), surface.getY(), surface.getWidth(), surface.getHeight(), surface instanceof Image ? ((Image)surface).useAlpha : false);
+         drawSurface(srcPixels, surface, x,y,width,height, dstX,dstY, true, surface.getX(), surface.getY(), surface.getWidth(), surface.getHeight());
    }
 
    /** Sets the current font for operations that draw text. */
@@ -1354,7 +1327,6 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1401,7 +1373,6 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1428,32 +1399,6 @@ public final class Graphics
          fillRect(x,y,width,height-2); // middle
          drawLine(x+1,y2-1,x2-1,y2-1,backColor); // last-1 line
          drawLine(x+2,y2,x2-2,y2,backColor); // last line
-      }
-   }
-
-   /** Used to draw the topleft lines of a rect with one color and the bottomright with another color.
-    * if yMirror, draws the borders mirrowed. Pass -1 to the colors to not draw that side.
-    * @deprecated 
-    */
-   public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
-   {
-      int x2 = x+w-1;
-      int y2 = y+h-1;
-      if (topLeftColor >= 0)
-      {
-         drawLine(x,y,x,y2,topLeftColor);
-         if (!yMirror)
-            drawLine(x,y,x2,y,topLeftColor);
-         else
-            drawLine(x,y2,x2,y2,topLeftColor);
-      }
-      if (bottomRightColor >= 0)
-      {
-         drawLine(x2,y2,x2,y,bottomRightColor);
-         if (!yMirror)
-            drawLine(x2,y2,x,y2,bottomRightColor);
-         else
-            drawLine(x2,y,x,y,bottomRightColor);
       }
    }
 
@@ -1574,25 +1519,12 @@ public final class Graphics
      * only when you're sure that the image will not pass the current surface
      * bounds. Otherwise, be prepared to even <b>hard-reset</b> your device!
      * @since SuperWaba 3.3
-     * @see #drawOp
-     * @see #DRAW_PAINT
-     * @see #DRAW_ERASE
-     * @see #DRAW_MASK
-     * @see #DRAW_INVERT
-     * @see #DRAW_OVERLAY
-     * @see #DRAW_PAINT_INVERSE
-     * @see #DRAW_SPRITE
-     * @see #DRAW_REPLACE_COLOR
-     * @see #DRAW_SWAP_COLORS
      */
-   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip)
    {
-      int transpPixel = image.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT)
-         transpPixel = backColor;
       int []srcPixels = (int[]) image.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, 0,0, image.getWidth(), image.getHeight(), x,y, drawOp, transpPixel, this.foreColor, doClip, 0,0, image.getWidth(), image.getHeight(), image.useAlpha);
+         drawSurface(srcPixels, image, 0,0, image.getWidth(), image.getHeight(), x,y, doClip, 0,0, image.getWidth(), image.getHeight());
    }
 
     /** Copies a part of the given source image to here at the given position with the given draw operation
@@ -1613,25 +1545,12 @@ public final class Graphics
     * only when you're sure that the image will not pass the current surface
     * bounds. Otherwise, be prepared to even <b>hard-reset</b> your device!
     * @since SuperWaba 3.3
-    * @see #drawOp
-    * @see #DRAW_PAINT
-    * @see #DRAW_ERASE
-    * @see #DRAW_MASK
-    * @see #DRAW_INVERT
-    * @see #DRAW_OVERLAY
-    * @see #DRAW_PAINT_INVERSE
-    * @see #DRAW_SPRITE
-    * @see #DRAW_REPLACE_COLOR
-    * @see #DRAW_SWAP_COLORS
     */
-   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip)
    {
-      int transpPixel = src.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT) // this same cache is used in the pda
-         transpPixel = backColor;
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, x,y, width, height, 0,0, drawOp, transpPixel, this.foreColor, doClip, 0,0, src.getWidth(), src.getHeight(), src.useAlpha);
+         drawSurface(srcPixels,src, x,y, width, height, 0,0, doClip, 0,0, src.getWidth(), src.getHeight());
    }
 
    /** Draws an image at the given absolute x and y coordinates.
@@ -1643,7 +1562,7 @@ public final class Graphics
       // guich@tc100b5_5: refactored to use the transparent color
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, 0,0, src.getWidth(), src.getHeight(), x,y, drawOp, src.transparentColor, this.foreColor, true, 0,0, src.getWidth(), src.getHeight(), src.useAlpha);
+         drawSurface(srcPixels, src, 0,0, src.getWidth(), src.getHeight(), x,y, true, 0,0, src.getWidth(), src.getHeight());
    }
 
 
@@ -1703,7 +1622,6 @@ public final class Graphics
    private static int lastVistaColor=-1;
 
    /** Gets a 11-level gradient color array used to draw the Vista user interface style. 
-    * @deprecated 
     */
    public static int[] getVistaColors(int c) // guich@573_6
    {
@@ -2022,7 +1940,7 @@ public final class Graphics
 
    ////////////////////   METHODS TAKED FROM THE TOTALCROSS VIRTUAL MACHINE //////////
    // copy the area x,y,width,height of the bitmap bmp with dimensions bmpW,bmpH to the (current active) screen location dstX,dstY
-   private void drawSurface(int []pixels, int x, int y, int width, int height, int dstX, int dstY, int drawOp, int backColor, int foreColor, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH, boolean useAlpha)
+   private void drawSurface(int []pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH)
    {
       try // guich@200b4_63
       {
@@ -2093,59 +2011,41 @@ public final class Graphics
          }
 
          int [] dst = getSurfacePixels(surface);
+         boolean isImage = srcSurface instanceof Image;
          int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY+y)*scrPitch+bmpX+x;
          int pdst = dstY*pitch+dstX;
-         if (drawOp == DRAW_PAINT)
+         for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
          {
-            if (useAlpha) // guich@tc126_12
-               for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
-               {
-                  int srcIdx = psrc; // guich@450_1
-                  int dstIdx = pdst;
-                  for (i=width; --i >= 0;)
-                  {
-                     bmpPt = pixels[srcIdx++];
-                     int a = (bmpPt >> 24) & 0xFF;
-                     if (a == 0xFF)
-                        dst[dstIdx] = bmpPt;
-                     else
-                     if (a != 0)
-                     {
-                        screenPt = dst[dstIdx];
-                        int br = (bmpPt >> 16) & 0xFF;
-                        int bg = (bmpPt >> 8) & 0xFF;
-                        int bb = (bmpPt     ) & 0xFF;
-                        int sr = (screenPt >> 16) & 0xFF;
-                        int sg = (screenPt >> 8 ) & 0xFF;
-                        int sb = (screenPt      ) & 0xFF;
-                        
-                        int ma = 0xFF-a;
-                        int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                        int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
-                        int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
-                        dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
-                     }
-                     dstIdx++;
-                  }
-               }
-            else
-               for (j=height; j > 0; j--,psrc += scrPitch, pdst += pitch)
-                  Vm.arrayCopy(pixels, psrc, dst, pdst, width);
-         }
-         else // DRAW_SPRITE
-         {
-            for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
+            int srcIdx = psrc; // guich@450_1
+            int dstIdx = pdst;
+            for (i=width; --i >= 0;)
             {
-               int srcIdx = psrc; // guich@450_1
-               int dstIdx = pdst;
-               for (i=width; --i >= 0;)
+               bmpPt = pixels[srcIdx++];
+               int a = (bmpPt >>> 24) & 0xFF;
+               if (a == 0xFF)
+                  dst[dstIdx] = bmpPt;
+               else
+               if (a != 0)
                {
                   screenPt = dst[dstIdx];
-                  bmpPt = pixels[srcIdx++];
-                  if (bmpPt != backColor) screenPt = bmpPt;     
-                  dst[dstIdx++] = screenPt; // note: there is no performance gain by storing the results in an array and calling draw ScanLine instead.
+                  int br = (bmpPt >> 16) & 0xFF;
+                  int bg = (bmpPt >> 8) & 0xFF;
+                  int bb = (bmpPt     ) & 0xFF;
+                  int sr = (screenPt >> 16) & 0xFF;
+                  int sg = (screenPt >> 8 ) & 0xFF;
+                  int sb = (screenPt      ) & 0xFF;
+                  
+                  int ma = 0xFF-a;
+                  int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+                  int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
+                  int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
+                  dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
                }
+               else
+               if (!isImage)
+                  dst[dstIdx] = bmpPt | 0xFF000000;
+               dstIdx++;
             }
          }
          if (isControlSurface) needsUpdate = true;
@@ -3241,15 +3141,14 @@ public final class Graphics
          sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
       }
-      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY, -1);
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
    }
 
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
-    * @param ignoreColor Pass a color that should not be changed, like the transparent color of an Image, or -1 to dither all colors
     * @since TotalCross 1.53
     */
-   public void dither(int x, int y, int w, int h, int ignoreColor)
+   public void dither(int x, int y, int w, int h)
    {
       if (!translateAndClip(x, y, w, h))
          return;
@@ -3265,7 +3164,6 @@ public final class Graphics
          for (int xx=x; xx < w; xx++)
          {
             p = pixels[yy*w+xx];
-            if (p == ignoreColor) continue;
             // get current pixel values
             oldR = (p>>16) & 0xFF;
             oldG = (p>>8) & 0xFF;

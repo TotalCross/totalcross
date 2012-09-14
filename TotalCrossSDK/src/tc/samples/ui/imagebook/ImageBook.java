@@ -98,7 +98,7 @@ public class ImageBook extends MainWindow
             f.readBytes(buf,0,s);
             f.close();
             img = new Image(buf);
-            img = FAST ? img.getScaledInstance(imgW,imgH) : img.getSmoothScaledInstance(imgW,imgH,Color.WHITE);
+            img = FAST ? img.getScaledInstance(imgW,imgH) : img.getSmoothScaledInstance(imgW,imgH);
          }
          catch (IOException ioe)
          {
@@ -166,7 +166,7 @@ public class ImageBook extends MainWindow
                   File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
                   imgq = new Image(f);
                   f.close();
-                  imgq = imgq.getSmoothScaledInstance(s,s,Color.WHITE);
+                  imgq = imgq.getSmoothScaledInstance(s,s);
                }
                img = imgq;
             }

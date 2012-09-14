@@ -537,37 +537,12 @@ public class GraphicsTest extends ImageComparisionTest
       // TODO TAKE THE PROBLEMS OUT OF GFORGE AND TEST HERE
    }
 
-   // void drawHighLightFrame(int x, int y, int w, int h, Color topLeft, Color bottomRight, boolean yMirror);
-   private void testDrawHighLightFrame()
-   {
-      resetImage();
-      int w = Color.WHITE;
-      int b = Color.BLACK;
-      g.drawHighLightFrame(0,0,30,30,w,b,true);
-      g.drawHighLightFrame(0,0,0,0,w,b,false);
-      g.drawHighLightFrame(5,5,5,5,w,b,true);
-      g.drawHighLightFrame(10,10,11,11,w,b,false);
-      g.drawHighLightFrame(40,40,10,10,w,b,true);
-      g.drawHighLightFrame(-1,10,4,3,w,b,false);
-      g.drawHighLightFrame(-8,-8,10,10,w,b,true);
-   }
-
-   // void drawImage(waba.fx.Image image, int x, int y, int drawOp, waba.fx.Color backColor, boolean doClip);
-   private void testDrawImageSprite()
-   {
-      resetImage();
-      Image ball = createBall();
-      g.drawImage(ball, 10,10, Graphics.DRAW_SPRITE, back, true);
-      g.drawImage(ball, 20,20, Graphics.DRAW_SPRITE, Color.BLACK, true);
-      g.drawOp = Graphics.DRAW_PAINT;
-   }
-
    // void copyImageRect(waba.fx.Image image, int x, int y, int width, int height, int drawOp, waba.fx.Color backColor, boolean doClip);
    private void testCopyImageRect()
    {
       resetImage();
       ImageTester ball = createBall();
-      g.copyImageRect(ball, 0,0,10,10, Graphics.DRAW_PAINT, Color.WHITE, false);
+      g.copyImageRect(ball, 0,0,10,10, false);
    }
 
    // void setClip(Rect r)
@@ -587,17 +562,6 @@ public class GraphicsTest extends ImageComparisionTest
       Image ball = createBall();
       g.drawImage(ball, 10,10);
       g.drawImage(ball, 20,20);
-   }
-
-   // void setDrawOp(int drawOp)
-   private void testSetDrawOp()
-   {
-      resetImage();
-      Image ball = createBall();
-      g.drawOp = Graphics.DRAW_SPRITE;
-      g.drawImage(ball,15,15);
-      // reset the drawop
-      g.drawOp = Graphics.DRAW_PAINT;
    }
 
    // void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, Color []fourColors)
@@ -670,8 +634,6 @@ public class GraphicsTest extends ImageComparisionTest
 
       // trouble
       if (Settings.onJavaSE) // TODO fix this test on device
-      {  testSetDrawOp();       assert(setDrawOp_256,setDrawOp_65536,                    "setDrawOp");}
-
       testSetPixel();           assert(setPixel_256,setPixel_65536,                      "setPixel");
       testDrawLine();           assert(drawLine_256,drawLine_65536,                      "drawLine");
       testDrawRect();           assert(drawRect_256,drawRect_65536,                      "drawRect");
@@ -708,8 +670,6 @@ public class GraphicsTest extends ImageComparisionTest
       testDrawHatchedRect();    assert(drawHatchedRect_256,drawHatchedRect_65536,        "drawHatchedRect");
       testFillHatchedRect();    assert(fillHatchedRect_256,fillHatchedRect_65536,        "fillHatchedRect");
       testCopyRect();           assert(copyRect_256,copyRect_65536,                      "copyRect");
-      testDrawHighLightFrame(); assert(drawHighLightFrame_256,drawHighLightFrame_65536,  "drawHighLightFrame");
-      testDrawImageSprite();    assert(drawImageSprite_256,drawImageSprite_65536,        "drawImageSprite");
       testCopyImageRect();      assert(copyImageRect_256,copyImageRect_65536,            "copyImageRect");
       testSetClipR();           assert(setClipR_256,setClipR_65536,                      "setClipR");
       testDrawImage();          assert(drawImage_256,drawImage_65536,                    "drawImage");

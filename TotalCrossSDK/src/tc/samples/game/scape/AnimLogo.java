@@ -32,6 +32,6 @@ public final class AnimLogo extends Animation
 {
    public AnimLogo() throws ImageException, IOException
    {
-      super(new Image("tc/samples/game/scape/hockey.png"), 8, Color.WHITE, 75);
+      super(new Image("tc/samples/game/scape/hockey.png"), 8, 75);
    }
 }

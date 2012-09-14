@@ -111,7 +111,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public int arrowsColor = Color.BLACK;
    private Font bold;
    private int btnX;
-   private int transpColor=-1;
    private int style = Window.RECT_BORDER;
    private boolean []disabled; // guich@tc110_58
    // flick support
@@ -275,16 +274,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    /** Constructs a tab bar control with images as captions, using the given color as transparent color.
     * If you don't want to use transparent colors, just pass -1 to the color. */
-   public TabbedContainer(Image []imgCaptions, int transparentColor) // guich@564_13
+   public TabbedContainer(Image []imgCaptions) // guich@564_13
    {
       this(imgCaptions.length);
       this.imgCaptions = imgCaptions;
-      if (transparentColor >= 0)
-      {
-         this.transpColor = transparentColor;
-         for (int i = count-1; i >= 0; i--)
-            imgCaptions[i].transparentColor = transparentColor;
-      }
       setupImageProps();
       isTextCaption = false;
       onFontChanged();
@@ -647,7 +640,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          try
          {
             for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
-               imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size,-1);
+               imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size);
          }
          catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
@@ -777,12 +770,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       // draw text
       
       boolean isText = isTextCaption;
-      if (!isText && transpColor >= 0) // guich@564_13
-      {
-         g.drawOp = Graphics.DRAW_SPRITE;
-         g.backColor = transpColor;
-      }
-
       for (int i =0; i < n; i++)
       {
          r = rects[i];
@@ -816,11 +803,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          else
          if (!uiAndroid)
             g.drawHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // guich@400_40: moved from (*) to here
-      }
-      if (!isText && transpColor >= 0)
-      {
-         g.backColor = backColor;
-         g.drawOp = Graphics.DRAW_PAINT;
       }
       
       // guich@200b4: remove the underlaying line of the active tab.
