@@ -232,7 +232,9 @@ public class J2BB
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
-         name = name.substring(0, name.lastIndexOf('.'));
+         int dotIdx = name.lastIndexOf('.');
+         if (dotIdx >= 0)
+            name = name.substring(0, dotIdx);
          name = utf8Replaces.containsKey(name) ? ((UTF8ReplaceEntry)utf8Replaces.get(name)).replacedValue + ".class" : ze.getName();
          zos.putNextEntry(new ZipEntry(name));
 
