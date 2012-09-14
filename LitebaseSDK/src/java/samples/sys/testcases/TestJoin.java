@@ -37,6 +37,7 @@ public class TestJoin extends TestCase
       testJoinWithIndex(); // Tests join with index.
       testComparisonsWithIndices(); // Tests comparison between fields, using index.
       testPrimaryKeyAndOrdering(); // Tests join with primary key, clause and table orders.
+      testComparisonInTheSameTable(); // Tests comparison of columns of the same table.
       driver.closeAll();
    }
 
@@ -1237,5 +1238,39 @@ public class TestJoin extends TestCase
       assertEquals(50, rs.getLong(1));
       assertEquals(150, rs.getLong(2));
       rs.close();
+   }
+   
+   /**
+    * Tests comparison of columns of the same table.
+    */
+   void testComparisonInTheSameTable()
+   {
+      LitebaseConnection driverAux = driver;
+      
+      if (driverAux.exists("M_META_GRUPO_MATERIAL"))
+         driverAux.executeUpdate("drop table M_META_GRUPO_MATERIAL");
+      driverAux.execute("create table M_META_GRUPO_MATERIAL (GMF_CODIGO long NOT NULL, QTD_META double, QTD_CONSUMIDA double)");
+      driverAux.executeUpdate("insert into M_META_GRUPO_MATERIAL values (1, 500.6578844, 0)");
+      driverAux.executeUpdate("insert into M_META_GRUPO_MATERIAL values (1, 350.50, 350.50)");
+      
+      ResultSet resultSet = driver.executeQuery("select * from M_META_GRUPO_MATERIAL MGM where MGM.QTD_CONSUMIDA = MGM.QTD_META");
+      assertEquals(1, resultSet.getRowCount());
+      resultSet.close();
+      
+      if (driverAux.exists("M_MATERIAL"))
+         driverAux.executeUpdate("drop table M_MATERIAL");
+      driverAux.execute("create table M_MATERIAL (CODIGO_MATERIAL int NOT NULL, GMF_CODIGO long, primary key(CODIGO_MATERIAL))");
+      
+      driverAux.executeUpdate("insert into M_MATERIAL values (1, 1)");
+      driverAux.executeUpdate("insert into M_MATERIAL values (2, 1)");
+      
+      assertEquals(2, (resultSet = driverAux.executeQuery("select * from M_MATERIAL MM, M_META_GRUPO_MATERIAL MGM where MM.GMF_CODIGO=MGM.GMF_CODIGO and MM.CODIGO_MATERIAL=1")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driverAux.executeQuery("select * from M_MATERIAL MM, M_META_GRUPO_MATERIAL MGM where MM.GMF_CODIGO=MGM.GMF_CODIGO and MM.CODIGO_MATERIAL=1 and MGM.QTD_CONSUMIDA = MGM.QTD_META")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driverAux.executeQuery("select * from M_MATERIAL MM, M_META_GRUPO_MATERIAL MGM where MM.GMF_CODIGO=MGM.GMF_CODIGO and MM.CODIGO_MATERIAL=1 and MGM.QTD_CONSUMIDA = 350.5")).getRowCount());
+      resultSet.close();
    }
 }
