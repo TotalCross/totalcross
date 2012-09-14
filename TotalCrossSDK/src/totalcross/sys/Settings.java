@@ -31,10 +31,10 @@ public final class Settings
    * version value of 400. A beta 0.81 VM will have version 81.
    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */
-   public static int version = 162;
+   public static int version = 163;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.62";
+   public static String versionStr = "1.63";
     
    /** Current build number.
     * @since TotalCross 1.53 
