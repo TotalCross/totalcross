@@ -22591,7 +22591,7 @@ Although the TotalCross' grid control usage is pretty simple and straightforward
 \family typewriter
 GridEvent
 \family default
-s (unlike the other controls that use only 
+s (unlike the almost all the other controls that use only 
 \family typewriter
 ControlEvent
 \family default
@@ -22615,8 +22615,8 @@ An easy to use interface for adding/removing information to the grid.
 
 \begin_layout Itemize
 Optional check column which is a column that is clickable, marking an specific
- line as checked/ unchecked; this is usefull if you want the user to be
- able to select multiple lines displayed on the grid.
+ row as checked/ unchecked; this is usefull if you want the user to be able
+ to select multiple rows displayed on the grid.
 \end_layout
 
 \begin_layout Itemize
@@ -22671,7 +22671,7 @@ CellController
 
 \begin_layout Itemize
 Clicking in the column's caption will sort in ascending order; clicking
- on it again sorts on descending order.
+ on it again sorts in descending order.
  
 \end_layout
 
@@ -22832,7 +22832,7 @@ boolean
 \end_inset
 
 checkEnabled) Creates a grid with the given captions and, optionally, a
- multi-selection check column so that the user can select multiple lines
+ multi-selection check column so that the user can select multiple rows
  of the grid.
  The captions can't be 
 \family typewriter
@@ -23003,9 +23003,22 @@ String[][] data = new totalcross.lang.String[][]
 
 \begin_layout Plain Layout
 
-	{"0AAAA","000","000.0","00:00","00.0"},  	{"1BBBB","111","111.1","11:11","11.1"},
-         	{"2CCCC","222","222.2","22:22","22.2"},         	{"3DDDD","333","333.3","
-33:33","33.3"},         	{"4EEEE","444","444.4","44:44","44.4"},        
+	{"0AAAA","000","000.0","00:00","00.0"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"1BBBB","111","111.1","11:11","11.1"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"3DDDD","333","333.3","33:33","33.3"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"4EEEE","444","444.4","44:44","44.4"},
 \end_layout
 
 \begin_layout Plain Layout
@@ -23104,23 +23117,23 @@ add(String[][]
 \begin_inset space ~
 \end_inset
 
-items) Appends the give lines at the end of the grid.
- It is similar to the first add method except that it appends more than
- one line.
+items) Appends the given rows at the end of the grid.
+ It is similar to the first 
+\family typewriter
+add()
+\family default
+ method except that it appends more than one row.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-clear() Removes all items from the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-del(int
-\begin_inset space ~
-\end_inset
-
-row) Removes the given index from the grid.
+clear() Selects the 
+\family typewriter
+clearValueInt
+\family default
+ row, which defaults to -1.
+ That is, by default, this method deselects all rows.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23138,6 +23151,12 @@ int
 \end_inset
 
 col) Returns the text of the given cell.
+ If the grid has a check column, 
+\family typewriter
+col
+\family default
+ must start from 1.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23163,6 +23182,11 @@ Strint
 \end_inset
 
 text) Sets the text of the given cell.
+ If the grid has a check column, 
+\family typewriter
+col
+\family default
+ must start from 1.
 \end_layout
 
 \begin_layout FieldList
@@ -23171,7 +23195,13 @@ getItem(int
 \begin_inset space ~
 \end_inset
 
-index) Returns the line from the given index.
+index) Returns the row from the given index.
+ This method works with or without a 
+\family typewriter
+DataSource
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23183,6 +23213,16 @@ getItemsVector() Returns a vector containing all information inside the
 getItem()
 \family default
 , the returned data does not contain information about the selected item's.
+ Note that if a 
+\family typewriter
+DataSource
+\family default
+ is assigned, this method returns 
+\family typewriter
+null
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23191,19 +23231,23 @@ getCheckedRows() Returns an
 \family typewriter
 IntVector
 \family default
- containing the indexes of the lines that have been marked with a check.
+ containing the indexes of the rows that have been marked with a check.
  
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedIndex() Gets the number of the currently selected line.
+getSelectedIndex() Gets the number of the currently selected row, or -1
+ if none is selected.
  
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSelectedItem() Gets the string array for the currently selected line.
+getSelectedItem() Gets the string array for the currently selected row.
+ Any changes made into the returned array is applied back to the grid automatica
+lly (because it holds the grid's data).
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23213,7 +23257,7 @@ horizontalScroll(boolean
 \end_inset
 
 toLeft) Scrolls the grid to left or right.
- Returns 
+ It returns 
 \family typewriter
 true
 \family default
@@ -23230,7 +23274,7 @@ isChecked(int
 \begin_inset space ~
 \end_inset
 
-lineIndex) Returns if the given line is checked.
+lineIndex) Returns if the given row is checked.
 \end_layout
 
 \begin_layout FieldList
@@ -23248,6 +23292,12 @@ boolean
 \end_inset
 
 check) Checks or unchecks a given row.
+ This method only works with a grid that has checks and 
+\family typewriter
+repaint()
+\family default
+ must be called.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -23265,6 +23315,85 @@ int
 \end_inset
 
 row) Replaces the given row by the text.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+move(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+up) Moves the items at given indexes one row up or down depending on the
+ given second parameter.
+ If it is 
+\family typewriter
+true
+\family default
+, the items at index 
+\family typewriter
+row
+\family default
+ will be shown in 
+\family typewriter
+row-1
+\family default
+ and the items at index 
+\family typewriter
+row-1
+\family default
+ will be shown at index 
+\family typewriter
+row
+\family default
+.
+ If it is 
+\family typewriter
+false
+\family default
+, the items at index 
+\family typewriter
+row
+\family default
+ will be shown in 
+\family typewriter
+row+1
+\family default
+ and the items at index 
+\family typewriter
+row+1
+\family default
+ will be shoen at index 
+\family typewriter
+row
+\family default
+.
+ It does not make sense to use this method if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+del(int
+\begin_inset space ~
+\end_inset
+
+row) Removes the given row from the grid.
  This method does not work if there's a 
 \family typewriter
 DataSource
@@ -23313,7 +23442,7 @@ items == null
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of lines in this grid.
+size() Returns the number of rows in this grid.
 \end_layout
 
 \begin_layout FieldList
@@ -23332,7 +23461,7 @@ int
 
 newWidth) Sets the column width of the given column.
  Positive values are used as pixels, negative values represent percentage
- of the grid's width and 0 hides the column.
+ of the grid's width, and 0 hides the column.
 \end_layout
 
 \begin_layout FieldList
@@ -23407,6 +23536,294 @@ CellController
 null
 \family default
  value removes any combo box assigned to the column.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollTo(int
+\begin_inset space ~
+\end_inset
+
+row) Scrolls the grid to the given row.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() If all widths (passed in constructor) are positive (i.
+ e., not a percentage), then it will use their sum as the preferred width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+markAll(boolean
+\begin_inset space ~
+\end_inset
+
+check) Checks or unchecks all rows in this grid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+ascending) Performs a quicksort in the items of the given column in the
+ given order.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(int
+\begin_inset space ~
+\end_inset
+
+col) Performs an ascending quicksort in the items of the given column.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+row) Sets the selected row index to the given one.
+ Note: if this grid has checks, the selected row is used to scroll to mark
+ the row that may be checked; if the grid does not have checks, then it
+ acts like a normal selected row.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisibleLines(int
+\begin_inset space ~
+\end_inset
+
+visibleLines) Sets the number of visible lines (excluding the caption),
+ used to make the 
+\family typewriter
+PREFERRED
+\family default
+ height return the given number of rows as the grid height.
+ This method must be called before 
+\family typewriter
+setRect()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCheckCount() Returns the number of items checked.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(String
+\begin_inset space ~
+\end_inset
+
+tag,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+image) Sets an image to be used in the grid.
+ You must use the same tag in the grid's item.
+ The image will be resized to the current font's height, so be sure to call
+ this method AFTER the font is set (or after the grid is added to the container).
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] gridCaptions = {"Image", "Name", "Details" };
+\end_layout
+
+\begin_layout Plain Layout
+
+	int[] gridWidths = {-25, -50, -25};
+\end_layout
+
+\begin_layout Plain Layout
+
+	int[] gridAligns = {CENTER,LEFT,LEFT};
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[][] items =
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		{"@foto1", "Car number one", "good car"},
+\end_layout
+
+\begin_layout Plain Layout
+
+		{"@foto2", "Car number two", "great car"}
+\end_layout
+
+\begin_layout Plain Layout
+
+	};
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	Grid grid = new Grid(gridCaptions, gridWidths, gridAligns, false); 
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(grid, LEFT+5, AFTER+2, FILL-10, PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setImage("@foto1",new Image("foto1.jpg"));
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setImage("@foto2",new Image("foto2.jpg"));
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setItems(items);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (Exception ee)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MessageBox.showException(ee,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveFocusToNextControl(Control
+\begin_inset space ~
+\end_inset
+
+c,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+forward) Traverses throught the edits of the grid.
+ It returns the selected control or 
+\family typewriter
+null
+\family default
+ if none was found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() This method does nothing.
+ To remove all elements, 
+\family typewriter
+removeAllElements()
+\family default
+ should be used instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllElements() Remove all elements from the grid, leaving it blank.
+ Removes any assigned 
+\family typewriter
+DataSource
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+refreshDataSource() Causes a refresh to be made in the items of the 
+\family typewriter
+DataSource
+\family default
+.
  
 \end_layout
 
@@ -23442,7 +23859,11 @@ String[][] getItems(int startingRow, int count)
 \begin_inset Newline newline
 \end_inset
 
-Note that when using data sources, the 
+Note that when using 
+\family typewriter
+DataSource
+\family default
+s, the 
 \family typewriter
 add()
 \family default
@@ -23455,7 +23876,11 @@ remove()
 insert()
 \family default
 , etc methods CANNOT BE USED.
- A data source is mostly used to assign a 
+ A 
+\family typewriter
+DataSource
+\family default
+ is mostly used to assign a 
 \family typewriter
 ResultSet
 \family default
@@ -23469,10 +23894,6 @@ Here's a sample of a
 getItems()
 \family default
  implementation: 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
 \begin_inset listings
 inline false
 status open
@@ -23504,7 +23925,7 @@ public String[][] getItems(int startIndex, int count)
 
 \begin_layout Plain Layout
 
-		return activeRS.getStrings(count);
+		activeRS.getStrings(count);
 \end_layout
 
 \begin_layout Plain Layout
@@ -23524,6 +23945,20 @@ public String[][] getItems(int startIndex, int count)
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDataSource() Returns the 
+\family typewriter
+DataSource
+\family default
+ assigned for this grid, or 
+\family typewriter
+null
+\family default
+ if there is none.
  
 \end_layout
 
@@ -23906,7 +24341,7 @@ false
 
 \begin_layout FieldList
 \labelwidthstring 0
-selectedLine The current selected line, or -1 if none.
+selectedLine The current selected row, or -1 if none.
 \end_layout
 
 \begin_layout FieldList
@@ -23924,10 +24359,9 @@ tip The tooltip used to display a column's text when it exceeds the column
 
 \begin_layout FieldList
 \labelwidthstring 0
-lastStartingRow Stores the last line that was requested from the current
+lastStartingRow Stores the last row that was requested from the current
  data source.
- The last lines retrieved will be cached to prevent requesting the same
- data.
+ The last rows retrieved will be cached to prevent requesting the same data.
  If you want to ensure that the data will be fetched again, set this member
  to -1 in 
 \family typewriter
@@ -23979,7 +24413,11 @@ Convert.SORT_DATE
 \family default
 , 
 \family typewriter
-Convert.SORT_COMPARABLE
+Convert.
+\begin_inset Newline newline
+\end_inset
+
+SORT_COMPARABLE
 \family default
 , and 
 \family typewriter
@@ -24015,8 +24453,12 @@ true
 \family typewriter
 setDataSource()
 \family default
- to enable live scrolling when using a 
+ to enable live scrolling when using a
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 DataSource
 \family default
 .
@@ -24060,7 +24502,10 @@ enableSelectDisabledCell Set to
 false
 \family default
  to disallow the selection of a row if the selected cell is disabled (via
- 
+\begin_inset Newline newline
+\end_inset
+
+
 \family typewriter
 CellController
 \family default
