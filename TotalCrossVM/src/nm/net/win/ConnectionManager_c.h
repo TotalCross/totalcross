@@ -132,7 +132,8 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
 
       // search registry for preferred connection
       if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Comm\\ConnMgr\\Providers\\{7C4B7A38-5FF7-4bc1-80F6-5DA7870BB1AA}\\Connections"), 0, 0, &regKey)) != NO_ERROR)
-         goto regError;
+         if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\ConnMgr\\Providers\\{7C4B7A38-5FF7-4bc1-80F6-5DA7870BB1AA}\\Connections"), 0, 0, &regKey)) != NO_ERROR)
+            goto regError;
 
       for (i = 0 ; err == NO_ERROR ; i++)
       {

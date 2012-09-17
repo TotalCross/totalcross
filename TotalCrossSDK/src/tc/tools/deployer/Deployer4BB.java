@@ -499,14 +499,13 @@ public class Deployer4BB
              System.err.println("Blackberry packager: file "+filename+" not found!");
           jos.putNextEntry(new JarEntry(filename + ".res"));
           
-          OutputStream os = new DeflaterOutputStream(jos, new Deflater(Deflater.BEST_COMPRESSION, true));
+          DeflaterOutputStream os = new DeflaterOutputStream(jos, new Deflater(Deflater.BEST_COMPRESSION, true));
           FileInputStream fis = new FileInputStream(fullpath);
           while ((r = fis.read(buf)) > 0)
              os.write(buf, 0, r);
           
-          ((DeflaterOutputStream) os).finish();
+          os.finish();
           fis.close();
-          os.close();
           jos.closeEntry();
        }
        
