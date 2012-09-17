@@ -22589,13 +22589,13 @@ Although the TotalCross' grid control usage is pretty simple and straightforward
 , it is the most customizable control and it uses its own set of events
  defined in 
 \family typewriter
-GridEvents
+GridEvent
 \family default
- (unlike the other controls that use only 
+s (unlike the other controls that use only 
 \family typewriter
-ControlEvents
+ControlEvent
 \family default
-).
+s).
  That means you'll be able to start using grids within a couple of minutes,
  but it will take some time to learn to use all its features:
 \end_layout
@@ -22640,7 +22640,11 @@ GridEvent
 \begin_layout Itemize
 A column may be marked as editable.
  In this case, an edit will be placed in the currently focused cell.
- A column can also have choices (combo box).
+ 
+\end_layout
+
+\begin_layout Itemize
+A column can also have choices (combo box).
 \end_layout
 
 \begin_layout Itemize
@@ -22662,602 +22666,38 @@ You can customize cell back and fore colors, enabled state and choices by
 
 CellController
 \family default
- class
+ class.
 \end_layout
 
 \begin_layout Itemize
-Grid has two constructors:
-\end_layout
-
-\begin_deeper
-\begin_layout FieldList
-\labelwidthstring 0
-Grid(String[]
-\begin_inset space ~
-\end_inset
-
-captions,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-checkEnabled) Creates a grid with the given captions and, optionally, a
- multi-selection check column.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-Grid(String[]
-\begin_inset space ~
-\end_inset
-
-captions,
-\begin_inset space ~
-\end_inset
-
-int[]
-\begin_inset space ~
-\end_inset
-
-widths,
-\begin_inset space ~
-\end_inset
-
-int[]
-\begin_inset space ~
-\end_inset
-
-aligns,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-checkEnabled) Creates a grid with the given captions, column width, column
- text alignment and, optionally, a multi-selection check column.
-\end_layout
-
-\end_deeper
-\begin_layout Subsection
-Useful methods
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-add(String[]
-\begin_inset space ~
-\end_inset
-
-item) adds a new item to the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-add(String[]
-\begin_inset space ~
-\end_inset
-
-item,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-row) adds a new item to the grid at the given position.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-clear() removes all items from the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-del(int
-\begin_inset space ~
-\end_inset
-
-row) removes the given index from the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getCellText(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) returns the text of the given cell.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setCellText(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-Strint
-\begin_inset space ~
-\end_inset
-
-text) sets the text of the given cell.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getItem(int
-\begin_inset space ~
-\end_inset
-
-index) returns the line from the given index.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getItemsVector() returns a vector containing all information inside the
- grid.
- As with 
-\family typewriter
-getItem()
-\family default
-, the returned data does not contain information about the selected item's.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getCheckedRows() returns an 
-\family typewriter
-IntVector
-\family default
- containing the indexes of the lines that have been marked with a check.
+Clicking in the column's caption will sort in ascending order; clicking
+ on it again sorts on descending order.
  
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-getSelectedIndex() gets the number of the currently selected line.
+\begin_layout Itemize
+It is possible to assign a 
+\family typewriter
+DataSource
+\family default
+ to a 
+\family typewriter
+Grid
+\family default
+, making the elements be fetched on demand.
  
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-getSelectedItem() gets the string array for the currently selected line.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-horizontalScroll(boolean
-\begin_inset space ~
-\end_inset
-
-toLeft) scrolls the grid to left or right.
- Returns 
+\begin_layout Itemize
+A column with size 0 is not displayed, so you can use it to store in the
+ grid important information, for example the 
 \family typewriter
-true
+rowid
 \family default
- if the grid was scrolled; 
-\family typewriter
-false
-\family default
- if it's impossible to scroll in that direction.
+ of a table.
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-isChecked(int
-\begin_inset space ~
-\end_inset
-
-lineIndex) returns if the given line is checked.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setChecked(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-check) checks or unchecks a given row.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-replace(String[]
-\begin_inset space ~
-\end_inset
-
-item,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-row) replaces the given row by the text.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setSelectedRow(int
-\begin_inset space ~
-\end_inset
-
-line) selects the given row number.
- If -1, unselects the grid.
- 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setItems(String[][]
-\begin_inset space ~
-\end_inset
-
-items) sets the grid items to be displayed, notice that it needs to conform
- to the numbers of columns that the grid currently have.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-size() returns the number of lines in this grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setColumnEditable(int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-editable) enables/disables the edition for all cells of a grid's column.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setColumnChoices(int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-String[]
-\begin_inset space ~
-\end_inset
-
-choices) enables a combo box with choices for all cells of a grid's column.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100line%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-Note that the 
-\family typewriter
-setColumnEditable()
-\family default
- and 
-\family typewriter
-setColumnChoices()
-\family default
- methods are mutually exclusive: calling one cancels the effects of the
- other.
- The 
-\family typewriter
-setDataSource()
-\family default
- and 
-\family typewriter
-setItems()
-\family default
- methods are also mutually exclusive.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setDataSource(DataSource
-\begin_inset space ~
-\end_inset
-
-ds,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-nrItems) passing the class that implements the 
-\family typewriter
-Grid.DataSource
-\family default
- interface and the total number of items allows the grid to request data
- on demand.
- This greatly reduces the memory usage, because only the number of visible
- items may be loaded at each time, but makes the grid navigation slower.
- Note that in this mode the grid scroll will not be realtime: the data will
- be requested only when the user releases the scroll bar.
- The data source has a single method: 
-\family typewriter
-String[][] getItems(int startingRow, int count)
-\family default
-, that must return the given number of items or less.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setCellController(Grid.CellController
-\begin_inset space ~
-\end_inset
-
-cc) passing the class that extends Grid.CellController will allow you to
- have a fine control of each cell of the grid.
- Note that using a cell controller will make the drawings slower.
- The class has the following methods:
-\end_layout
-
-\begin_deeper
-\begin_layout FieldList
-\labelwidthstring 0
-getBackColor(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return the background color for the given cell, or 
-\family typewriter
-null
-\family default
- if you want to use the default one.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getForeColor(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return the foreground color for the given cell, or 
-\family typewriter
-null
-\family default
- if you want to use the default one.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-isEnabled(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return if the given cell is enabled, i.
- e., can have input and can be selected.
- Regarding the input, it will only work if the 
-\family typewriter
-setColumnChoices()
-\family default
- or 
-\family typewriter
-setEditable()
-\family default
- was called to the given column.
- Regarding the selection, it may also disable column's check state change.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-String[]
-\begin_inset space ~
-\end_inset
-
-getChoices(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) returns a customized set of choices for the given cell.
- Must return 
-\family typewriter
-null
-\family default
- if you want to use the default set.
- Only works if 
-\family typewriter
-setColumnChoices()
-\family default
- was called to the given column.
-\end_layout
-
-\end_deeper
-\begin_layout Subsection
-Useful attributes
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-boldCheck draws a bold check instead of the tiny one.
- Useful for high resolution devices.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-canClickSelectAll sets to false to disable the click on the check column
- of the captions to select and unselect all checks.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-disableSort disables the sort when clicking in the column's caption.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-drawCheckBox boolean that defines if the box around the check will or not
- be drawn.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-enableColumnResize must be set to false to disable the column resize by
- dragging the column separator line.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-extraHorizScrollButtonHeight a value that can increase the horizontal buttons
- height.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-oldCellText the text that was in the cell before the user had editted it.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-checkColor the color used to draw the check.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-captionsBackColor the color used to fill the captions area.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-firstStripeColor color of the first stripe.
- 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-secondStripeColor color of the second stripe.
- 
-\family typewriter
-drawStripes
-\family default
- must also be set to true.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-verticalLineStyle defines the vertical line style of the grid.
- Possible values are 
-\family typewriter
-VERT_DOT
-\family default
- (default), 
-\family typewriter
-VERT_LINE
-\family default
- and 
-\family typewriter
-VERT_NONE
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-String[]
-\begin_inset space ~
-\end_inset
-
-captions these are the column captions.
- Can be directly assigned, but always make sure it has the same number of
- columns of the grid.
-\end_layout
-
-\begin_layout Standard
+\begin_layout Itemize
 A 
 \family typewriter
 GridEvent
@@ -23265,6 +22705,7 @@ GridEvent
  is dispatched in the following situations:
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
 When the user selects a row:
 \begin_inset Newline newline
@@ -23370,8 +22811,1309 @@ Grid.oldCellText()
  contains the old text.
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+Grid has two constructors:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions and, optionally, a
+ multi-selection check column so that the user can select multiple lines
+ of the grid.
+ The captions can't be 
+\family typewriter
+null
+\family default
+.
+ The widths will be computed as the width of the grid captions and the alignment
+ will be all 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+widths,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+aligns,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions, column width, column
+ text alignment and, optionally, a multi-selection check column.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If the total width is less than the grid's width, the last column will fill
+ until the grid width.
+ If 
+\family typewriter
+null
+\family default
+, the caption widths will be computed and used as the row width.
+ If a negative value is passed, it will be computed as a percentage against
+ the grid's width.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+aligns
+\family default
+ is the alignment of information on the given column.
+ If 
+\family typewriter
+null
+\family default
+, all aligns will be 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Standard
-Sample code:
+Here´s an example which will create a grid with the given captions, column
+ widths, information alignment, and a check column:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Rect r = getClientRect();
+\end_layout
+
+\begin_layout Plain Layout
+
+String []gridCaptions = {" WPT "," HDG "," DST "," ETE "," FUEL "};
+\end_layout
+
+\begin_layout Plain Layout
+
+int gridWidths[] = 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	-25, // negative numbers are percentage of width
+\end_layout
+
+\begin_layout Plain Layout
+
+	fm.stringWidth(" 000 "),
+\end_layout
+
+\begin_layout Plain Layout
+
+	-25,
+\end_layout
+
+\begin_layout Plain Layout
+
+	-20,
+\end_layout
+
+\begin_layout Plain Layout
+
+	-20
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+int gridAligns[] = { LEFT, CENTER, RIGHT, CENTER, RIGHT };
+\end_layout
+
+\begin_layout Plain Layout
+
+grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(grid, LEFT+3,TOP+3,r.width/2,r.height/2);
+\end_layout
+
+\begin_layout Plain Layout
+
+grid.secondStripeColor = Color.getRGB(235,235,235);
+\end_layout
+
+\begin_layout Plain Layout
+
+String[][] data = new totalcross.lang.String[][]
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"0AAAA","000","000.0","00:00","00.0"},  	{"1BBBB","111","111.1","11:11","11.1"},
+         	{"2CCCC","222","222.2","22:22","22.2"},         	{"3DDDD","333","333.3","
+33:33","33.3"},         	{"4EEEE","444","444.4","44:44","44.4"},        
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"5FFFF","555","555.5","55:55","55.5"}
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+grid.setItems(data);  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Also consider using 
+\family typewriter
+ListContainer
+\family default
+ instead of 
+\family typewriter
+Grid
+\family default
+ if you're using devices with big screens.
+ 
+\end_layout
+
+\begin_layout Subsection
+Useful methods
+\end_layout
+
+\begin_layout Standard
+Some methods heired from 
+\family typewriter
+Control
+\family default
+, 
+\family typewriter
+Container
+\family default
+, and 
+\family typewriter
+Scrollable
+\family default
+ are ommited.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item) Adds a new item to the grid.
+ Its up to the user to call 
+\family typewriter
+Window.needsPaint = true
+\family default
+ afterwards.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) The same as above but adds a new item to the grid at the given position.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[][]
+\begin_inset space ~
+\end_inset
+
+items) Appends the give lines at the end of the grid.
+ It is similar to the first add method except that it appends more than
+ one line.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Removes all items from the grid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+del(int
+\begin_inset space ~
+\end_inset
+
+row) Removes the given index from the grid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Returns the text of the given cell.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+Strint
+\begin_inset space ~
+\end_inset
+
+text) Sets the text of the given cell.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItem(int
+\begin_inset space ~
+\end_inset
+
+index) Returns the line from the given index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItemsVector() Returns a vector containing all information inside the
+ grid.
+ As with 
+\family typewriter
+getItem()
+\family default
+, the returned data does not contain information about the selected item's.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCheckedRows() Returns an 
+\family typewriter
+IntVector
+\family default
+ containing the indexes of the lines that have been marked with a check.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Gets the number of the currently selected line.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Gets the string array for the currently selected line.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+horizontalScroll(boolean
+\begin_inset space ~
+\end_inset
+
+toLeft) Scrolls the grid to left or right.
+ Returns 
+\family typewriter
+true
+\family default
+ if the grid was scrolled; 
+\family typewriter
+false
+\family default
+ if it's impossible to scroll in that direction.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked(int
+\begin_inset space ~
+\end_inset
+
+lineIndex) Returns if the given line is checked.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+check) Checks or unchecks a given row.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+replace(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) Replaces the given row by the text.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedRow(int
+\begin_inset space ~
+\end_inset
+
+line) Selects the given row number.
+ If -1, unselects the grid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setItems(String[][]
+\begin_inset space ~
+\end_inset
+
+items) Sets the grid items to be displayed.
+ Notice that it needs to conform to the numbers of columns that the grid
+ currently have.
+ This method removes any assigned 
+\family typewriter
+DataSource
+\family default
+.
+ The strings inside the matrix cannot be 
+\family typewriter
+null
+\family default
+.
+ If 
+\family typewriter
+items == null
+\family default
+, the grid will remain empty.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of lines in this grid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnWidth(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newWidth) Sets the column width of the given column.
+ Positive values are used as pixels, negative values represent percentage
+ of the grid's width and 0 hides the column.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getColumnWidths() Returns an array with the current column widths, not the
+ original ones passed in the constructor.
+ Changing these values will NOT change the column's width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnEditable(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+editable) Enables/disables the edition for all cells of a grid's column.
+ Note that setting an editable column as not editable will remove all its
+ formats.
+ Returns the previous edit or the new one, so you can easily change its
+ formats.
+ Important: this must be called AFTER the grid has set its bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isColumnEditable(int
+\begin_inset space ~
+\end_inset
+
+col) Returns 
+\family typewriter
+true
+\family default
+ if the given column is editable.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnChoices(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+choices) Enables a combo box with choices for all cells of a grid's column.
+ The given choice array is used to create a pop list that is shown when
+ the user clicks on the column.
+ Note that calling this method removes any edit assigned to this column.
+ You can change dynamically the choices by extending the 
+\family typewriter
+CellController
+\family default
+ class.
+ Passing a 
+\family typewriter
+null
+\family default
+ value removes any combo box assigned to the column.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDataSource(DataSource
+\begin_inset space ~
+\end_inset
+
+ds,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+nrItems) Passing the class that implements the 
+\family typewriter
+Grid.DataSource
+\family default
+ interface and the total number of items allows the grid to request data
+ on demand.
+ This greatly reduces the memory usage, because only the number of visible
+ items may be loaded at each time, but makes the grid navigation slower.
+ Note that in this mode the grid scroll will not be realtime: the data will
+ be requested only when the user releases the scroll bar.
+ The data source has a single method: 
+\family typewriter
+String[][] getItems(int startingRow, int count)
+\family default
+, that must return the given number of items or less.
+\begin_inset Newline newline
+\end_inset
+
+Note that when using data sources, the 
+\family typewriter
+add()
+\family default
+, 
+\family typewriter
+remove()
+\family default
+, 
+\family typewriter
+insert()
+\family default
+, etc methods CANNOT BE USED.
+ A data source is mostly used to assign a 
+\family typewriter
+ResultSet
+\family default
+ to it, so it's nonsense any data modification.
+ Note that the scroll is made not live scrolling to speedup data retrieval.
+\begin_inset Newline newline
+\end_inset
+
+Here's a sample of a 
+\family typewriter
+getItems()
+\family default
+ implementation: 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public String[][] getItems(int startIndex, int count)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (activeRS != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		activeRS.absolute(startIndex);
+\end_layout
+
+\begin_layout Plain Layout
+
+		return activeRS.getStrings(count);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	return null;
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCellController(Grid.CellController
+\begin_inset space ~
+\end_inset
+
+cc) Passing the class that extends 
+\family typewriter
+Grid.CellController
+\family default
+ will allow you to have a fine control of each cell of the grid.
+ Note that using a cell controller will make the drawings slower.
+ The class has the following methods:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+getBackColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the background color for the given cell, or
+\family typewriter
+ 
+\family default
+-1 if you want to use the default one.
+ Note that if the grid has a check, the back color of the check cell will
+ be requested passing 
+\family typewriter
+col
+\family default
+ value as -1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getForeColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the foreground color for the given cell, or -1 if you want
+ to use the default one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFont(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the font to be used in this cell, or 
+\family typewriter
+null
+\family default
+ to use the default control's font.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you plan to use a font bigger than in the rest of the grid, be
+ sure to follow the steps below (following this guide, the grid will have
+ a height of the biggest font):
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Construct the grid and set the grid's font to be the one with bigger size.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Call 
+\family typewriter
+add()
+\family default
+/
+\family typewriter
+setRect()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Restore the grid's default font.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+isEnabled(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return if the given cell is enabled, i.
+ e., can have input and can be selected.
+ Regarding the input, it will only work if the 
+\family typewriter
+setColumnChoices()
+\family default
+ or 
+\family typewriter
+setEditable()
+\family default
+ was called to the given column.
+ Regarding the selection, it may also disable column's check state change.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+getChoices(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Returns a customized set of choices for the given cell.
+ Must return 
+\family typewriter
+null
+\family default
+ if you want to use the default set.
+ Only works if 
+\family typewriter
+setColumnChoices()
+\family default
+ was called to the given column.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note that the 
+\family typewriter
+setColumnEditable()
+\family default
+ and 
+\family typewriter
+setColumnChoices()
+\family default
+ methods are mutually exclusive: calling one cancels the effects of the
+ other.
+ The 
+\family typewriter
+setDataSource()
+\family default
+ and 
+\family typewriter
+setItems()
+\family default
+ methods are also mutually exclusive.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Useful attributes
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+boldCheck Draws a bold check instead of the tiny one.
+ Useful for high resolution devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+canClickSelectAll Sets to 
+\family typewriter
+false
+\family default
+ to disable the click on the check column of the captions to select and
+ unselect all checks.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableSort Disables the sort when clicking in the column's caption.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawCheckBox Boolean that defines if the box around the check will or not
+ be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableColumnResize Must be set to 
+\family typewriter
+false
+\family default
+ to disable the column resize by dragging the column separator line.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+extraHorizScrollButtonHeight A value that can increase the horizontal scroll
+ buttons height.
+ Defaults 2 in 160x160 or a multiple of it in other resolutions.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+oldCellText The text that was in the cell before the user had editted it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor The color used to draw the check.
+ Defaults to black.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+captionsBackColor The color used to fill the captions area.
+ 
+\family typewriter
+BRIGHT
+\family default
+ by default.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightColorThe Color of the selected (highlighted) row.
+ 
+\family typewriter
+DARK
+\family default
+ by default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+firstStripeColor Color of the first stripe.
+ 
+\family typewriter
+WHITE
+\family default
+ by default.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+secondStripeColor Color of the second stripe.
+ 
+\family typewriter
+drawStripes
+\family default
+ must also be set to 
+\family typewriter
+true
+\family default
+.
+ 
+\family typewriter
+BRIGHT
+\family default
+ by default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+verticalLineStyle Defines the vertical line style of the grid.
+ Possible values are 
+\family typewriter
+VERT_DOT
+\family default
+ (default), 
+\family typewriter
+VERT_LINE
+\family default
+, and 
+\family typewriter
+VERT_NONE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+captions These are the column captions.
+ Can be directly assigned, but always make sure it has the same number of
+ columns of the grid, or the widths array, set with the 
+\family typewriter
+setWidths()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+columnResizeMargin A static field that defines how many pixels are used
+ to define the place where the column will be resized.
+ Defaults to 3 on pen devices and 5 on touch devices (must be ODD!).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawHighlight Set to 
+\family typewriter
+false
+\family default
+ to don't let the highlighted (selected) row be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+selectedLine The current selected line, or -1 if none.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+linesPerPage How many lines fits in a page.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+tip The tooltip used to display a column's text when it exceeds the column
+ width.
+ You can directly customize the tooltip.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastStartingRow Stores the last line that was requested from the current
+ data source.
+ The last lines retrieved will be cached to prevent requesting the same
+ data.
+ If you want to ensure that the data will be fetched again, set this member
+ to -1 in 
+\family typewriter
+getItems()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sortTypes Defines the sort type for each column of the grid.
+ Specify -2 to disable sort for that column.
+ The array is created in the constructor setting all columns to 
+\family typewriter
+Convert.SORT_AUTODETECT
+\family default
+; so you can just change a specific column with the sort type you want.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The column index always excludes the check column.
+ So a grid with 3 columns and a check, the 
+\family typewriter
+sortTypes
+\family default
+ length will be 3, which will be the same length of a grid with 3 columns
+ without a check.
+ The other sort types are: 
+\family typewriter
+Convert.SORT_OBJECT
+\family default
+, 
+\family typewriter
+Convert.SORT_STRING
+\family default
+, 
+\family typewriter
+Convert.SORT_INT
+\family default
+, 
+\family typewriter
+Convert.SORT_DOUBLE
+\family default
+, 
+\family typewriter
+Convert.SORT_DATE
+\family default
+, 
+\family typewriter
+Convert.SORT_COMPARABLE
+\family default
+, and 
+\family typewriter
+Convert.SORT_STRING_NOCASE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useHorizontalScrollBar Set to 
+\family typewriter
+true
+\family default
+ before constructing the grids to use an horizontal scrollbar instead of
+ the two left/right buttons.
+ Note that this member is static so it will affect all grids created afterwards,
+ unless you reset it to 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+liveScrolling Set to 
+\family typewriter
+true
+\family default
+ before calling 
+\family typewriter
+setDataSource()
+\family default
+ to enable live scrolling when using a 
+\family typewriter
+DataSource
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+currencyDecimalPlaces Used to show a given (set of) column(s) formatted
+ as currency.
+ You must assign this with an array with the column count, and place the
+ wanted number of decimal places, or -1 if you don't want to format it.
+ Note that the original value must be already formatted with the wanted
+ number of decimal places, and also that only the displayed value is changed;
+ the internal value will remain without formatting.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Grid g = new Grid(new String[]{"Name","Age","Salary"},false);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.currencyDecimalPlaces = new int[]{-1,-1,2}; // ignore name and age, and
+ format salary with 2 decimal places.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableSelectDisabledCell Set to 
+\family typewriter
+false
+\family default
+ to disallow the selection of a row if the selected cell is disabled (via
+ 
+\family typewriter
+CellController
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lineScroll Set to 
+\family typewriter
+true
+\family default
+ to enable navigation per line instead of per page when in non-penless mode.
+ By default, in pen mode (devices with touch-screen), when the user press
+ up/down, the grid is scrolled one page at a time.
+ Setting this flag to 
+\family typewriter
+true
+\family default
+ makes it scroll a line at a time.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderGap Defines the border gap when using 
+\family typewriter
+CellController.getBackColor()
+\family default
+.
+ Setting it to something bigger than 0 will make a space between the cells.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+aligns The aligns that are used in the constructor.
+ You may change them after the constructor is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleMayBeClipped When the width of a title is greater than the width you
+ specified for a the column, the title's width is used instead.
+ Set this flag to 
+\family typewriter
+true
+\family default
+ to disable this behaviour.
+ 
+\end_layout
+
+\begin_layout Standard
+Another sample:
 \end_layout
 
 \begin_layout Standard
