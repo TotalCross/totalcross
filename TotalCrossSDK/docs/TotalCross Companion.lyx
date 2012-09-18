@@ -26389,7 +26389,366 @@ hide() Hides the tooltip.
 \end_layout
 
 \begin_layout Chapter
-Advanced Controls
+Some Advanced Controls
+\end_layout
+
+\begin_layout Standard
+In this chapter, some advanced controls will be described in detail.
+\end_layout
+
+\begin_layout Section
+AlignedLabelsContainer
+\end_layout
+
+\begin_layout Standard
+This class is a 
+\family typewriter
+Container
+\family default
+ used to align all controls to the maximum width of a set of labels.
+ You can define the label alignment.
+ The controls that you add to this container are placed at the right of
+ the labels.
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String[] labels =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Name",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Born date",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Telephone",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Address",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"City",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Country", 
+\end_layout
+
+\begin_layout Plain Layout
+
+	""
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+AlignedLabelsContainer c = new AlignedLabelsContainer(labels);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setBorderStyle(BORDER_LOWERED);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.labelAlign = RIGHT;
+\end_layout
+
+\begin_layout Plain Layout
+
+c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Col
+or.BLACK,Color.BLACK,};
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setInsets(2,2,2,2);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setFont(font.asBold()); // labels are bold
+\end_layout
+
+\begin_layout Plain Layout
+
+c.childrenFont = font; // but controls are normal
+\end_layout
+
+\begin_layout Plain Layout
+
+add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i =0; i < labels.length-2; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	c.add(new Edit(),LEFT+2,AFTER+(i==0?2:0));
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new ComboBox(new String[]{"Brazil","France"}),LEFT+2,AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new Button("Insert data"),RIGHT,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new Button("Clear data"),RIGHT,AFTER,SAME,PREFERRED); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The code above generates a screen similar to the shown below taken from
+ UIGadgets using Android style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/align_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is possible to do this alignment by hand.
+ However, it is much easier using this control.
+\end_layout
+
+\begin_layout Standard
+This class has the following public fields, constructors and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+childrenFont Set this member to the font you want to set to the controls
+ that are added to this container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foreColors Set an array with the same number of labels and the colors you
+ want to show for each label.
+ If the number of labels differ, you will get an exception.
+ It can be used to hide a label: just set its foreground color to the background
+ color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+labelAlign The alignment of the labels.
+ Defaults to 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer() Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ without labels.
+ You may call 
+\family typewriter
+setLabels()
+\family default
+ to set the labels.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer(String[]
+\begin_inset space ~
+\end_inset
+
+labels) Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ with the given labels.
+ You may pass 
+\family typewriter
+null
+\family default
+, but be sure to call 
+\family typewriter
+setLabels()
+\family default
+ to set the labels.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer(String[]
+\begin_inset space ~
+\end_inset
+
+labels,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ with the given labels.
+ 
+\family typewriter
+vgap
+\family default
+ is an extra gap between rows, which may be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setLabels(String[]
+\begin_inset space ~
+\end_inset
+
+labels,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Sets the labels and the vertical extra gap, which may be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLineY(int
+\begin_inset space ~
+\end_inset
+
+line) Given a line (staring from 0), returns the y position.
+ Can be used to easily align the controls.
+ Note that the line number may be greater than the number of assigned labels.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add(chCasado = new Check("Married"),LEFT,getLineY(4)+2); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLineHeight() Returns the height of a line.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLeftInset() Returns the left inset.
+ To be able to center a control, you have to do something like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+control.setRect(CENTER-getLeftInset()/2,...); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+ArrowButton
+\end_layout
+
+\begin_layout Standard
+A class used to display a Button with an arrow inside.
+ 
+\end_layout
+
+\begin_layout Chapter
+Additional Advanced Controls
 \begin_inset CommandInset label
 LatexCommand label
 name "chap:Advanced-Controls"
@@ -26464,43 +26823,6 @@ Clicking on leaf node will swap leaf icon (like hyperlink).
 
 \begin_layout Itemize
 Allows the creation of tree to show or hide root node.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-AlignedLabelsContainer
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is a 
-\family typewriter
-Container
-\family default
- used to align all controls to the maximum width of a set of labels.
- You can define the label alignment.
- The controls that you add to this container are placed at the right of
- the labels.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ArrowButton
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A class used to display a button with an arrow inside.
- 
 \end_layout
 
 \end_deeper
