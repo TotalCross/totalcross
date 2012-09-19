@@ -338,46 +338,52 @@ public class J2BB
                      }
                      else if (op == 182 || (op == 183 && newPc != -1)) // invokevirtual OR invokespecial
                      {
-                        MethodRef ref = (MethodRef)jclass.getConstant(b[pc + 1], b[pc + 2], null).info;
-                        Class c = ref.getValue1AsClass();
-                        NameAndType nt = ref.getValue2AsNameAndType();
-                        
-                        if (c.getValueAsName().value.equals(methodReplace.className) && nt.getValue1AsName().value.equals(methodReplace.name) && (nt.getValue2AsDescriptor().value.equals(methodReplace.descriptor)))
+                        Object o = jclass.getConstant(b[pc + 1], b[pc + 2], null).info;
+                        if (o instanceof MethodRef)
                         {
-                           Utils.println("Replacing method call at " + jclass.toString() + "." + methods[i].toString() + " (PC " + pc + ")...");
-                           int methodRefIndex;
-                           
-                           if (classLauncher4B == null)
+                           MethodRef ref = (MethodRef) o;
+                           Class c = ref.getValue1AsClass();
+                           NameAndType nt = ref.getValue2AsNameAndType();
+                        
+                           if (c.getValueAsName().value.equals(methodReplace.className) && nt.getValue1AsName().value.equals(methodReplace.name) && (nt.getValue2AsDescriptor().value.equals(methodReplace.descriptor)))
                            {
-                              utf8Launcher4BName = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, "totalcross/Launcher", null);
-                              classLauncher4B = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_CLASS, utf8Launcher4BName, null);
+                              Utils.println("Replacing method call at " + jclass.toString() + "." + methods[i].toString() + " (PC " + pc + ")...");
+                              int methodRefIndex;
+                              
+                              if (classLauncher4B == null)
+                              {
+                                 utf8Launcher4BName = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, "totalcross/Launcher", null);
+                                 classLauncher4B = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_CLASS, utf8Launcher4BName, null);
+                              }
+                              if (utf8MethodName[j] == null)
+                                 utf8MethodName[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, methodReplace.targetName, null);
+                              
+                              if (mrMethod[j] == null)
+                              {
+                                 String desc = isInit ? methodReplace.descriptor.substring(0, methodReplace.descriptor.indexOf(')') + 1) + "L" + methodReplace.className + ";" : "(L" + methodReplace.className + ";" + methodReplace.descriptor.substring(1);
+                                 utf8MethodDescriptor[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, desc, null);
+                                 ntMethod[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_NAME_AND_TYPE, utf8MethodName[j], utf8MethodDescriptor[j]);
+                                 mrMethod[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_METHOD_REF, classLauncher4B, ntMethod[j]);
+                              }
+                              methodRefIndex = jclass.getConstantIndex(mrMethod[j], null);
+                              
+                              if (op == 183) // invokespecial
+                              {
+                                 // First of all, clear instructions that were allocating the new object
+                                 b[newPc++] = (byte)0; // nop (clear new op)
+                                 b[newPc++] = (byte)0; // nop (clear new index1)
+                                 b[newPc++] = (byte)0; // nop (clear new index2)
+                                 if ((b[newPc] & 0xFF) == 89) // dup
+                                    b[newPc++] = (byte)0; // nop (clear dup op)
+                              }
+                              
+                              // Then, replace "invokevirtual/invokespecial <source>" with "invokestatic <target>"
+                              b[pc++] = (byte)184; // invokestatic
+                              b[pc++] = (byte)((methodRefIndex >> 8) & 0xFF);
+                              b[pc++] = (byte)(methodRefIndex & 0xFF);
                            }
-                           if (utf8MethodName[j] == null)
-                              utf8MethodName[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, methodReplace.targetName, null);
-                           
-                           if (mrMethod[j] == null)
-                           {
-                              String desc = isInit ? methodReplace.descriptor.substring(0, methodReplace.descriptor.indexOf(')') + 1) + "L" + methodReplace.className + ";" : "(L" + methodReplace.className + ";" + methodReplace.descriptor.substring(1);
-                              utf8MethodDescriptor[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_UTF8, desc, null);
-                              ntMethod[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_NAME_AND_TYPE, utf8MethodName[j], utf8MethodDescriptor[j]);
-                              mrMethod[j] = JavaConstant.createConstant(jclass, JavaConstant.CONSTANT_METHOD_REF, classLauncher4B, ntMethod[j]);
-                           }
-                           methodRefIndex = jclass.getConstantIndex(mrMethod[j], null);
-                           
-                           if (op == 183) // invokespecial
-                           {
-                              // First of all, clear instructions that were allocating the new object
-                              b[newPc++] = (byte)0; // nop (clear new op)
-                              b[newPc++] = (byte)0; // nop (clear new index1)
-                              b[newPc++] = (byte)0; // nop (clear new index2)
-                              if ((b[newPc] & 0xFF) == 89) // dup
-                                 b[newPc++] = (byte)0; // nop (clear dup op)
-                           }
-                           
-                           // Then, replace "invokevirtual/invokespecial <source>" with "invokestatic <target>"
-                           b[pc++] = (byte)184; // invokestatic
-                           b[pc++] = (byte)((methodRefIndex >> 8) & 0xFF);
-                           b[pc++] = (byte)(methodRefIndex & 0xFF);
+                           else
+                              pc += 3;
                         }
                         else
                            pc += 3;
