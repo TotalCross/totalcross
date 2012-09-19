@@ -26743,8 +26743,865 @@ ArrowButton
 \end_layout
 
 \begin_layout Standard
-A class used to display a Button with an arrow inside.
+A class used to display a 
+\family typewriter
+Button
+\family default
+ with an arrow inside.
+ The following code shows the window below it:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.gfx.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b1 = new ArrowButton(Graphics.ARROW_UP, 10, Color.BLACK);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b1, LEFT, TOP);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b2 = new ArrowButton(Graphics.ARROW_DOWN, 20, Color.BLUE);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b2, AFTER, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b3 = new ArrowButton(Graphics.ARROW_LEFT, 30, Color.CYAN);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b3, LEFT, AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b4 = new ArrowButton(Graphics.ARROW_RIGHT, 40, Color.GREEN);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b4, AFTER, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, constructor, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+arrowColor The arrow's color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArrowButton(byte
+\begin_inset space ~
+\end_inset
+
+direction,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+prefWH,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+arrowColor) Constructs an 
+\family typewriter
+ArrowButton
+\family default
+, where 
+\family typewriter
+direction
+\family default
+ must be one out of 
+\family typewriter
+Graphics.ARROW_UP
+\family default
+, 
+\family typewriter
+Graphics.ARROW_DOWN
+\family default
+, 
+\family typewriter
+Graphics.ARROW_LEFT
+\family default
+, or 
+\family typewriter
+Graphics.ARROW_RIGHT
+\family default
+; 
+\family typewriter
+prefWH
+\family default
+ is the desired arrow width/height (the effective arrow's size will be computed
+ based in the current width/height), and 
+\family typewriter
+arrowColor
+\family default
+ is the arrow color, which can be changed by setting the 
+\family typewriter
+arrowColor
+\family default
+ field.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setArrowSize(int
+\begin_inset space ~
+\end_inset
+
+kk) Changes the arrow size of the button.
+ Note that the button size won't be changed.
+ Some examples using 
+\family typewriter
+b4
+\family default
+ of the above picture:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+b4.setArrowSize(20);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+b4.setArrowSize(80);
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Shows a string representation of the object and its direction.
+ For example, the code below
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.debug(b1.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b2.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b3.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b4.toString());
+\end_layout
+
+\end_inset
+
+prints the following on the console:
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@131f71a, dir: 1 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@15601ea, dir: 2 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@197d257, dir: 3 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@7259da, dir: 4
+\end_layout
+
+\begin_layout Section
+Bar
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Bar
+\family default
+ is a class that provides a title area and a button area (at right).
+ The title and the button are optional, although it doesn't make sense to
+ have a bar without title and buttons.
+ You can add or remove buttons, and change the title text; the title text
+ can have an icon at left.
  
+\end_layout
+
+\begin_layout Standard
+When a button is pressed, a 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ is sent to the caller, and the button index can be retrieved using the
+ 
+\family typewriter
+getSelectedIndex()
+\family default
+ method.
+ By default, the background is shaded (
+\family typewriter
+BACKGROUND_SHADED
+\family default
+).
+ You can change it to plain using 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+backgroundStyle = BACKGROUND_SOLID;
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Here's an example of how to use it: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Font f = Font.getFont(true,Font.NORMAL_SIZE+2);
+\end_layout
+
+\begin_layout Plain Layout
+
+Bar h1 = new Bar("fakeboot");
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.canSelectTitle = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.setFont(f);
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.setBackForeColors(0x0A246A,Color.WHITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.addButton(new Image("ic_dialog_alert.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.addButton(new Image("ic_dialog_info.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the
+ default menu area 
+\end_layout
+
+\end_inset
+
+which results in the following images, where the bottom images show the
+ title and one of the buttons being pressed:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/bar_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/bar_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/bar_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that the top and bottom components of the sample AndroidUI are bars.
+\end_layout
+
+\begin_layout Standard
+This class has just two public attributes, two constructors, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+canSelectTitle Set to 
+\family typewriter
+true
+\family default
+ to allow the title to be selected and send events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleAlign The title horizontal alignment (
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, or 
+\family typewriter
+RIGHT
+\family default
+).
+ Defaults to 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Bar() Constructs a 
+\family typewriter
+Bar
+\family default
+ object without a title.
+ Note that if you call the 
+\family typewriter
+setTitle()
+\family default
+ method, a
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+RuntimeException
+\family default
+ will be thrown.
+ If you want to change the title later, use the other constructor and pass
+ an empty 
+\family typewriter
+String
+\family default
+ (
+\family typewriter
+""
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Bar(String
+\begin_inset space ~
+\end_inset
+
+title) Constructs a 
+\family typewriter
+Bar
+\family default
+ object with the given title.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setIcon(Image
+\begin_inset space ~
+\end_inset
+
+icon) An image icon that can be placed at the left of the title (before
+ it).
+ It is only shown if there's a title set.
+ Pass 
+\family typewriter
+null
+\family default
+ to remove the icon if it was previously set.
+ This can be used before or after adding the bar to a container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTitle(String
+\begin_inset space ~
+\end_inset
+
+newTitle) Changes the title to the given one.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTitle() Retrieves the current title.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addButton(Image
+\begin_inset space ~
+\end_inset
+
+icon) Adds an image button.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setButtonRepeatRate(int
+\begin_inset space ~
+\end_inset
+
+idx,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+ms) Sets the button with the given index with an auto-repeat interval of
+ the given ms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addControl(Control
+\begin_inset space ~
+\end_inset
+
+c) Adds a 
+\family typewriter
+Control
+\family default
+.
+ Not all types of controls are supported.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeButton(int
+\begin_inset space ~
+\end_inset
+
+index) Removes a button at the given index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the selected button, or -1 if none was selected.
+ The title is always index 0 (even if there's no title), and the buttons
+ start at index 1.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+assignBackKeyToButton(int
+\begin_inset space ~
+\end_inset
+
+idx) Assigns the BACK key on Android (mapped to 
+\family typewriter
+SpecialKeys.ESCAPE
+\family default
+) to the given button.
+ This can only be called after the bar has been added to a container.
+ For example, if button 1 is to be assigned with 
+\family typewriter
+totalcross.res.Resources.back
+\family default
+, call 
+\family typewriter
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+assignBackKeyToButton(1);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+createSpinner(int
+\begin_inset space ~
+\end_inset
+
+color) Creates a spinner with the given color.
+ The spinner will be placed at the right of the title (only works if there's
+ a title).
+ It must be created before the bar is added to a container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+startSpinner() Shows and starts the spinner (if one has been assigned to
+ the spinner field).
+ If there is no spinner, a 
+\family typewriter
+NullPointerException
+\family default
+ will be thrown.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Changing the code of the example given above after line 7 results in:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+h1.createSpinner(Color.WHITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the
+ default menu area
+\end_layout
+
+\begin_layout Plain Layout
+
+h1.startSpinner();
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/bar_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stopSpinner() Stops and hides the spinner (if one has been assigned to the
+ spinner field).
+ If there is no spinner, a 
+\family typewriter
+NullPointerException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout Chapter
@@ -26823,27 +27680,6 @@ Clicking on leaf node will swap leaf icon (like hyperlink).
 
 \begin_layout Itemize
 Allows the creation of tree to show or hide root node.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Bar 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Bar
-\family default
- is a class that provides a title area and a button area (at right).
- The title and the button are optional, although it doesn't make sense to
- have a bar without title and buttons.
- You can add or remove buttons, and change the title text; the title text
- can have an icon at left.
- 
 \end_layout
 
 \end_deeper
