@@ -137,7 +137,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
-      hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+      Configuration config = getResources().getConfiguration();
+      hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       
       String vmPath = context.getApplicationInfo().dataDir;
