@@ -342,11 +342,11 @@ public class Loader extends Activity
       }
    }
    
-   public void onConfigurationChanged(Configuration newConfig)
+   public void onConfigurationChanged(Configuration config)
    {
       // TODO change the Settings.virtualKeyboard to true when newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
-      super.onConfigurationChanged(newConfig);
-      Launcher4A.hardwareKeyboardIsVisible = newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+      super.onConfigurationChanged(config);
+      Launcher4A.hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
    }
 
    protected void onSaveInstanceState(Bundle outState) 
