@@ -43,7 +43,7 @@ public class LitebaseConnection4D
    /** 
     * Current build number.
     */
-   public static int buildNumber = 2;
+   public static int buildNumber = 3;
    
    /**
     * Indicates if the tables of this connection use ascii or unicode strings.

@@ -44,7 +44,7 @@ public class LitebaseConnection
    /** 
     * Current build number.
     */
-   public static int buildNumber = 2;
+   public static int buildNumber = 3;
    
    /**
     * The key which identifies one Litebase connection instance.
