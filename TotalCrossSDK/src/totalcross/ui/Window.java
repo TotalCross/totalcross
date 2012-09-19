@@ -121,10 +121,6 @@ public class Window extends Container
    protected Control menubar; // guich@200
    /** If true (default), the user can drag this window around */
    protected boolean canDrag = true;
-   /** Must set to true if your Window is prepared for 320x320 resolutions.
-    *  If false (default), the Window is doubled size (and centered) to make controls fit.
-    */
-   protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
    /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
     * @since TotalCross 1.53
     */
@@ -766,15 +762,6 @@ public class Window extends Container
                   topMost._doPaint();
                return;
             }
-         }
-         else
-         if (Settings.keypadOnly) // guich@580_42: only if keypadOnly is true, otherwise it will have problems with a Edit + ToolTip
-         {
-            if (_focus != highlighted && highlighted != null) // guich@573_47: something different of the movement commands was typed, so redirect the key directly to the control.
-               highlighted.requestFocus();
-
-            if (Keypad.getInstance().handleKey(key)) // fdie@570_107 use a keypad on "keypadOnly" devices
-               return; // otherwise, an Edit will receive two events
          }
          else
          if (_focus != highlighted && highlighted != null) // guich@tc100: without this, if an Edit is highlighted and the user press a key, the key is not sent to the control bypassing the need for the ACTION key
@@ -1689,14 +1676,6 @@ public class Window extends Container
    public static int getDefaultDragThreshold()
    {
       double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
-      return (int)Math.round(threshold);
-   }
-   public static int getDefaultDragThreshold4B()
-   {
-      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
-      if (Settings.deviceId.startsWith("95")) // 95xx series have SurePress screen, so increase threshold
-         threshold *= 1.5;
-      
       return (int)Math.round(threshold);
    }
    

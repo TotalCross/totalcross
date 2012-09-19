@@ -156,8 +156,6 @@ public class Image extends GfxSurface
       return this;
    }
    
-   /** 
-
    /** Parses an image from the given byte array. Note that the byte array must
      * specify the full JPEG/PNG image, with headers (Gif/Bmp are supported at desktop only).
      * Here is a code example: <pre>
@@ -1732,16 +1730,14 @@ public class Image extends GfxSurface
                {
                   if ((colorModel instanceof java.awt.image.IndexColorModel) && (-1 != (index = ((java.awt.image.IndexColorModel) colorModel).getTransparentPixel())))
                      transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
-                  //else
-                  // transparentColor = Color.WHITE; // guich@tc120_65
                }
-/*               if (transparentColor >= 0)
+               if (transparentColor >= 0)
                {
                   // fill all pixels with the transparent color
                   int[] p = (int[])imageCur.pixels;
                   Convert.fill(p, 0, p.length, transparentColor | 0xFF000000);
                }
-*/            }
+            }
          }
          return true;
       }
@@ -2004,4 +2000,33 @@ public class Image extends GfxSurface
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
    }
+
+   ////////////////////// TOTALCROSS 2 ////////////////////
+   
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
+   {
+      return getSmoothScaledInstance(newWidth, newHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledBy(scaleX, scaleY);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledFixedAspectRatio(newSize, isHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
+   {
+      return smoothScaledFromResolution(originalRes);
+   }
+
+   /* @deprecated TotalCross 2 no longer uses this field. */
+   public int transparentColor = Color.WHITE;
+   /* @deprecated TotalCross 2 no longer uses this field. */
+   public boolean useAlpha; // guich@tc126_12
+
 }

@@ -41,11 +41,6 @@ class TCEventThread extends Thread
       setDaemon(true);
       start();
    }
-   void nativeCreate4B()
-   {
-      setPriority(Thread.MAX_PRIORITY); // event thread should have maximum priority
-      start();
-   }
 
    public void run()
    {

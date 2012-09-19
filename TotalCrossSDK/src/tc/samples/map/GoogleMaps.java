@@ -28,11 +28,6 @@ import totalcross.ui.gfx.*;
 
 public class GoogleMaps extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    public static final int BKGCOLOR = 0x0A246A;
    public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
 

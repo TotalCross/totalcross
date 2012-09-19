@@ -1527,6 +1527,12 @@ public final class Graphics
          drawSurface(srcPixels, image, 0,0, image.getWidth(), image.getHeight(), x,y, doClip, 0,0, image.getWidth(), image.getHeight());
    }
 
+   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   {
+      drawImage(image, x,y,doClip);
+   }
+
     /** Copies a part of the given source image to here at the given position with the given draw operation
     * and back color. Note that the current draw operation is not changed,
     * neither the current back color.
@@ -1551,6 +1557,11 @@ public final class Graphics
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
          drawSurface(srcPixels,src, x,y, width, height, 0,0, doClip, 0,0, src.getWidth(), src.getHeight());
+   }
+
+   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
+   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   {
    }
 
    /** Draws an image at the given absolute x and y coordinates.
@@ -2011,7 +2022,7 @@ public final class Graphics
          }
 
          int [] dst = getSurfacePixels(surface);
-         boolean isImage = srcSurface instanceof Image;
+         boolean isSrcScreen = !(srcSurface instanceof Image);
          int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY+y)*scrPitch+bmpX+x;
          int pdst = dstY*pitch+dstX;
@@ -2019,34 +2030,34 @@ public final class Graphics
          {
             int srcIdx = psrc; // guich@450_1
             int dstIdx = pdst;
-            for (i=width; --i >= 0;)
-            {
-               bmpPt = pixels[srcIdx++];
-               int a = (bmpPt >>> 24) & 0xFF;
-               if (a == 0xFF)
-                  dst[dstIdx] = bmpPt;
-               else
-               if (a != 0)
+            if (isSrcScreen)
+               for (i=width; --i >= 0;)
+                  dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
+            else
+               for (i=width; --i >= 0; dstIdx++)
                {
-                  screenPt = dst[dstIdx];
-                  int br = (bmpPt >> 16) & 0xFF;
-                  int bg = (bmpPt >> 8) & 0xFF;
-                  int bb = (bmpPt     ) & 0xFF;
-                  int sr = (screenPt >> 16) & 0xFF;
-                  int sg = (screenPt >> 8 ) & 0xFF;
-                  int sb = (screenPt      ) & 0xFF;
-                  
-                  int ma = 0xFF-a;
-                  int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                  int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
-                  int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
-                  dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
+                  bmpPt = pixels[srcIdx++];
+                  int a = (bmpPt >>> 24) & 0xFF;
+                  if (a == 0xFF)
+                     dst[dstIdx] = bmpPt;
+                  else
+                  if (a != 0)
+                  {
+                     screenPt = dst[dstIdx];
+                     int br = (bmpPt >> 16) & 0xFF;
+                     int bg = (bmpPt >> 8) & 0xFF;
+                     int bb = (bmpPt     ) & 0xFF;
+                     int sr = (screenPt >> 16) & 0xFF;
+                     int sg = (screenPt >> 8 ) & 0xFF;
+                     int sb = (screenPt      ) & 0xFF;
+                     
+                     int ma = 0xFF-a;
+                     int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+                     int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
+                     int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
+                     dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
+                  }
                }
-               else
-               if (!isImage)
-                  dst[dstIdx] = bmpPt | 0xFF000000;
-               dstIdx++;
-            }
          }
          if (isControlSurface) needsUpdate = true;
       }
@@ -3144,6 +3155,12 @@ public final class Graphics
       if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
    }
 
+   /** @deprecated TotalCross 2 no longer uses parameter ignoreColor. */
+   public void dither(int x, int y, int w, int h, int ignoreColor)
+   {
+      dither(x,y,w,h);
+   }
+   
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
     * @since TotalCross 1.53

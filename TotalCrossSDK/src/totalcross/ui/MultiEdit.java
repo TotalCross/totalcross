@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -97,7 +97,6 @@ public class MultiEdit extends Container implements Scrollable
    private byte lastKbdType=Edit.KBD_KEYBOARD; //vik@421_24
    private String validChars;
    private int maxLength; // guich@200b4
-   private int lastCommand;
    private int dragDistance;
    private boolean isScrolling;
    private boolean popupVKbd;
@@ -639,21 +638,6 @@ public class MultiEdit extends Container implements Scrollable
                      // if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && (ke.key == SpecialKeys.ESCAPE || ke.key == SpecialKeys.MENU))
    
                      boolean isControl = (ke.modifiers & SpecialKeys.CONTROL) != 0; // guich@320_46 - guich@tc100b4_25: also check for the type of event, otherwise the arrow keys won't work
-                     if (Settings.platform.equals(Settings.PALMOS)) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
-                     {
-                        if (lastCommand > 0 && (Vm.getTimeStamp() - lastCommand) < 2500)
-                        {
-                           ke.modifiers |= SpecialKeys.CONTROL;
-                           isControl = true;
-                           lastCommand = 0;
-                        }
-                        else if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
-                        {
-                           lastCommand = Vm.getTimeStamp();
-                           showTip(this, Edit.commandStr, 2500, -1);
-                           break;
-                        }
-                     }
                      boolean isPrintable = ke.key > 0 && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0
                            && event.type == KeyEvent.KEY_PRESS;
                      boolean isDelete = (ke.key == SpecialKeys.DELETE);

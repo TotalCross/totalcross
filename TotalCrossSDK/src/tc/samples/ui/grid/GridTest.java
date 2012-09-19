@@ -27,11 +27,6 @@ import totalcross.util.*;
 
 public class GridTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    TabbedContainer tp;
    MenuBar mbar;
 

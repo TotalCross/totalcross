@@ -113,23 +113,8 @@ public class Radio extends Control
       if ((img=(Image)imgs.get(key)) != null)
          return img;
       img = isSelected ? vistaSelected.getFrameInstance(0) : vistaUnselected.getFrameInstance(0);
-      if (Settings.useNewFont)
-      {
-         int h = height == 0 ? getPreferredHeight() : height;
-         img = img.getSmoothScaledInstance(h,h);
-      }
-      else
-      if (fmH >= 24)
-         img = img.getSmoothScaledInstance(fmH-8,fmH-8);
-      else
-      if (fmH >= 20)
-         ;
-      else
-      if (fmH >= 15)
-         img = img.getSmoothScaledInstance(fmH-3,fmH-3);
-      else
-         img = img.getSmoothScaledInstance(16*(fmH+3)/22,16*(fmH+3)/22);
-      
+      int h = height == 0 ? getPreferredHeight() : height;
+      img = img.getSmoothScaledInstance(h,h);
       img.applyColor(foreColor);
       if (!enabled)
          img = img.getFadedInstance(backColor);
@@ -177,13 +162,13 @@ public class Radio extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return Settings.useNewFont ? (uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1) : textW+getPreferredHeight() + (fmH>=22 ? 0 : 1);
+      return uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH+Edit.prefH : Math.max(12,fm.ascent); // guich@tc110_18: min size is 12
+      return fmH+Edit.prefH; // guich@tc110_18: min size is 12
    }
 
    /** Called by the system to pass events to the radio control. */
@@ -426,7 +411,7 @@ public class Radio extends Control
 
       // draw label
       yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? (Settings.useNewFont && uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+      xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
       g.foreColor = cColor; // guich@tc120_55: use the foreground color
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }

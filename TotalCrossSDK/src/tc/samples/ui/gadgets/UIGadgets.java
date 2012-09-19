@@ -34,7 +34,6 @@ public class UIGadgets extends MainWindow
       Settings.applicationId = "UiGd";
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
       Settings.resizableWindow = true;
-      Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private MenuBar mbar;
@@ -82,7 +81,7 @@ public class UIGadgets extends MainWindow
          miShowKeys = new MenuItem("Show key codes", false),
       };
       String p = Settings.platform;
-      col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) || p.equals(Settings.BLACKBERRY) || Settings.isWindowsDevice() || p.equals(Settings.WIN32);
+      col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) || Settings.isWindowsDevice() || p.equals(Settings.WIN32);
          
       MenuItem col1[] =
       {

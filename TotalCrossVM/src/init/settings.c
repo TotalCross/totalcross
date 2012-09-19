@@ -22,8 +22,6 @@ static char deviceId[128];
 
 #if defined (WINCE) || defined (WIN32)
  #include "win/settings_c.h"
-#elif defined(PALMOS)
- #include "palm/settings_c.h"
 #else
  #include "posix/settings_c.h"
 #endif
@@ -62,7 +60,6 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
    tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
    tcSettings.closeButtonTypePtr          = getStaticFieldInt(settingsClass, "closeButtonType");
@@ -84,13 +81,11 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
-   tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
-      *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
    }
 }
 
@@ -175,9 +170,6 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    // sets the default creator id - it may be changed in the application's static initializer
    getDefaultCrid(mainClassName, applicationIdStr);
    applicationId = *((int32*)applicationIdStr);
-#ifdef PALMOS
-   applicationId = SWAP32_FORCED(applicationId);
-#endif
 
    setObjectLock(*getStaticFieldObject(settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
 #if !defined darwin
@@ -233,7 +225,7 @@ void storeSettings(bool quittingApp) // guich@230_22
    if (quittingApp)
    {
    restoreSoundSettings();
-#if defined(PALMOS) || defined(WINCE)
+#if defined(WINCE)
    restoreVKSettings();
 #endif
    }

@@ -638,19 +638,9 @@ public class Control extends GfxSurface
 	            else
                   throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control "+toString());
 	         }
-	         else
-	         if (asWindow != null && !asWindow.highResPrepared)
-               throw new RuntimeException("The window '"+asWindow.title+"' is not prepared for high resolution devices! Set highResPrepared to true and test it in 320x320 resolution!");
             if (height < 0 || width < 0)
                throw new RuntimeException("Invalid resulting values in width,height for control "+toString()+": "+width+","+height); 
          }
-      }
-      if (asWindow != null && fmH > 11 && !asWindow.highResPrepared && width <= 160 && height <= 160) // guich@240_20 - guich@450_19: now we check if w/h are also lower than 160 (if it is, the user probably took care of this problem)
-      {
-         width  = width  * fmH / 11;
-         height = height * fmH / 11;
-         x = (Settings.screenWidth-width) >> 1;
-         y = (Settings.screenHeight-height) >> 1;
       }
 
       this.x = x;

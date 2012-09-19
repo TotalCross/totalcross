@@ -32,7 +32,6 @@ public class Bench extends MainWindow
    static
    {
       totalcross.sys.Settings.applicationId = "TCBe";
-      Settings.useNewFont = true;
    }
 
    class TestClass

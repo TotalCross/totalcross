@@ -388,9 +388,6 @@
 #ifndef PNG_H
 #define PNG_H
 
-#if defined(PALMOS)
-#include "time.h"
-#endif
 #include "tcvm.h"  // guich
 
 /* This is not the place to learn how to use libpng.  The file libpng.txt

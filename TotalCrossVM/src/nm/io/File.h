@@ -21,8 +21,6 @@ typedef struct _NATIVE_FILE
    #if defined (WIN32) || defined (WINCE)
       HANDLE handle;
       TCHAR path[MAX_PATH+1];
-   #elif defined (PALMOS) 
-      FileRef handle;
    #else
       FILE* handle;
    #endif

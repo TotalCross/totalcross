@@ -290,12 +290,6 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
    volatile TCZFile t=null,t2=null;
    char fullpath[MAX_PATHNAME];
 
-#ifdef PALMOS
-   CharP dot;
-   if ((dot=xstrstr(tczName, ".tcz")) != null) // in Palm OS, we must cut off the extension
-      *dot = 0;
-#endif
-
    f = findFile(tczName,fullpath);
    if (f != null && (t = tczOpen(f, fullpath, tczName)) != null)
    {

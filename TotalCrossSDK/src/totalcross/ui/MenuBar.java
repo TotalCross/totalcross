@@ -133,7 +133,6 @@ public class MenuBar extends Window
    /** Create a MenuBar with the given menu items. */
    public MenuBar(MenuItem [][]items)
    {
-      highResPrepared = true;
       started = true; // avoid calling the initUI method
       canDrag = false;
       setBackColor(Color.WHITE);

@@ -32,7 +32,6 @@ public final class Graphics4D
    // instance ints
    public int foreColor;
    public int backColor;
-   public int drawOp;
    public boolean useAA;
    protected int width,height;
    protected int transX, transY;
@@ -48,7 +47,7 @@ public final class Graphics4D
    protected int xPoints[], yPoints[]; // used by arcPiePointDrawAndFill
    protected int[]ints; // used by fillPolygon
    // static objects
-   public static boolean needsUpdate; // IMPORTANT: NOT IMPLEMENTED
+   public static boolean needsUpdate; // IMPORTANT: NOT USED IN DEVICE
    private static int[] pal685;
    static int[] mainWindowPixels; // create the pixels
    private static int[]acos,asin;
@@ -170,10 +169,9 @@ public final class Graphics4D
    native public void setClip(int x, int y, int w, int h);
    native public boolean clip(totalcross.ui.gfx.Rect r);
    native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
-   native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
    native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
-   native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
-   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+   native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
    native public void setPixels(int []xPoints, int []yPoints, int nPoints);
    native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
    native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
@@ -320,6 +318,6 @@ public final class Graphics4D
    // guich@tc130: now stuff for Android ui style
    
    native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
-   native public void dither(int x, int y, int w, int h, int ignoreColor);
+   native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 }

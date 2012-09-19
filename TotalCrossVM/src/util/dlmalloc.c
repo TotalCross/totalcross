@@ -499,24 +499,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 void debug(char *s, ...);
 #define ABORT do {debug("DLMALLOC ABORT");} while (0)
 
-#if defined PALMOS
-#define LACKS_UNISTD_H
-#define LACKS_SYS_PARAM_H
-#define LACKS_FCNTL_H
-#define LACKS_SYS_MMAN_H
-#define HAVE_MMAP 0
-#define MORECORE palmOS_sbrk
-#define MORECORE_CONTIGUOUS 0
-#define MORECORE_CANNOT_TRIM
-#define MALLOC_FAILURE_ACTION
-#define INTERNAL_SIZE_T UInt32
-static void * palmOS_sbrk(long size);
-
-#elif defined (darwin)
+#if defined (darwin)
 
 #define HAVE_MREMAP 0
 
-#endif // defined defined PALMOS
+#endif
 
 //////// TOTALCROSS CHANGES FINISH /////////
 
@@ -5453,30 +5440,6 @@ int mspace_mallopt(int param_number, int value) {
 }
 
 #endif /* MSPACES */
-
-#ifdef PALMOS // TOTALCROSS
-
-/* sbrk for palm OS */
-static void * psb_sbrkTop = CMFAIL;
-#define CHUNK_SIZE_T unsigned long
-
-static void * palmOS_sbrk (long size)
-{  
-   if (size > 0)
-   {                                    
-      void* ptr = malloc(size);
-      if (!ptr) 
-         return CMFAIL;
-      psb_sbrkTop = (char *)ptr + size;
-      // round, as required by the specs
-      return ptr;// guich: not a good idea wasting 4k on each alloc! (void *)((((CHUNK_SIZE_T) ptr) + malloc_getpagesize-1) & ~(malloc_getpagesize-1));
-   }
-   if (size < 0) 
-      return CMFAIL; // no trim support   
-   return psb_sbrkTop;
-}
-
-#endif
 
 
 /* -------------------- Alternative MORECORE functions ------------------- */

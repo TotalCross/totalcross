@@ -18,31 +18,18 @@
 
 package tc.samples.ui.mediaclip;
 
-import totalcross.io.File;
-import totalcross.io.FileNotFoundException;
-import totalcross.io.IOException;
-import totalcross.sys.*;
+import totalcross.io.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.FileChooserBox;
-import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.gfx.Graphics;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.ui.media.MediaClip;
-import totalcross.ui.media.MediaClipEvent;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.ui.media.*;
 
 /** A sample showing how to play audio. */
 
 public class TotalCrossPlayer extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    MenuBar playerMenuBar;
 
    Edit edFilePathPlay;

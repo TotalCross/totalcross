@@ -976,7 +976,7 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
+         if(Settings.fingerTouch && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
@@ -1029,7 +1029,7 @@ public class Edit extends Control
             break;
 
          default:
-            if (virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
+            if (virtualKeyboard)
             {
                if (editable && !"".equals(validChars))
                {
@@ -1083,12 +1083,6 @@ public class Edit extends Control
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
          blinkTimer = null;
-      if (Settings.keypadOnly && (mode == CURRENCY || mode == DATE))
-      {
-         Keypad keypad = Keypad.getInstance();
-         keypad.setKeys(null);
-         keypad.setSymbolKeys(null);
-      }
    }
 
    /** Called by the system to pass events to the edit control. */
@@ -1163,33 +1157,12 @@ public class Edit extends Control
                if (Settings.moveCursorToEndOnFocus) 
                   newInsertPos = len; 
             }
-            //guich@570_112: moved to Keyboard.KEYBOARD_ON_UNPOP - ignoreSelect = false;
-
-            // We only want [0-9] to be displayed on the keypad
-            // if edit is in mode currency
-            if (Settings.keypadOnly && (mode == CURRENCY || mode == DATE)) // fdie@570_107 use a keypad on "keypadOnly" devices - guich@573_30: change the default letters if CURRENCY or DATE
-            {
-               Keypad keypad = Keypad.getInstance();
-               keypad.setSymbolKeys(mode == CURRENCY ? ".-" : Convert.toString(Settings.dateSeparator));
-               keypad.setKeys(Keypad.numberKeyset);
-            }
-            else
-            if (mode == CURRENCY && !Settings.fingerTouch && Settings.platform.equals(Settings.PALMOS)) // guich@tc110_55 - guich@tc114_90: not on finger devices
-            {
-               Window.isSipShown = true;
-               Window.setSIP(Window.SIP_ENABLE_NUMERICPAD,null,false);
-            }
             break;
          case ControlEvent.FOCUS_OUT:
             if (cursorShowing)
                draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
             redraw = true;
-            if (mode == CURRENCY && !Settings.fingerTouch && Settings.platform.equals(Settings.PALMOS)) // guich@tc110_55 - guich@tc114_90: not on finger devices
-            {
-               Window.isSipShown = false;
-               Window.setSIP(Window.SIP_DISABLE_NUMERICPAD,null,false);
-            }
             focusOut();
             break;
          case KeyEvent.KEY_PRESS:
@@ -1232,7 +1205,7 @@ public class Edit extends Control
                   break;
                }
                boolean isControl = (ke.modifiers & SpecialKeys.CONTROL) != 0; // guich@320_46
-               if (Settings.onJavaSE || Settings.platform.equals(Settings.PALMOS)) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
+               if (Settings.onJavaSE) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
                {
                   if (lastCommand > 0 && (Vm.getTimeStamp() - lastCommand) < 2500)
                   {

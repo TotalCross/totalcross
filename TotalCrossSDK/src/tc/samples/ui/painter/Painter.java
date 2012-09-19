@@ -29,11 +29,6 @@ import totalcross.ui.image.ImageException;
 
 public class Painter extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Button save;
    Button clear;
    Button load;
@@ -41,7 +36,7 @@ public class Painter extends MainWindow
    Label status;
    ComboBox cbColors;
    String catalogName = "BMP.PAin.BITM";
-   String fileName = Settings.platform.equals(Settings.PALMOS) ? "/image.png" : Settings.appPath + "/image.png";
+   String fileName = Settings.appPath + "/image.png";
 
    static
    {

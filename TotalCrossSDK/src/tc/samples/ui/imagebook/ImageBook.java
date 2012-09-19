@@ -7,7 +7,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.util.concurrent.*;
 
 public class ImageBook extends MainWindow
 {
@@ -15,7 +14,7 @@ public class ImageBook extends MainWindow
    
    static
    {
-      Settings.useNewFont = Settings.fingerTouch = true;
+      Settings.fingerTouch = true;
    }
    
    // saves the files that contains the images
@@ -50,7 +49,6 @@ public class ImageBook extends MainWindow
       int imgW,imgH;
       int lastIni,lastEnd;
       IOException ex;
-      Lock lock = new Lock();
       
       public ImageLoader(int max, int perpage, String[] arqs)
       {

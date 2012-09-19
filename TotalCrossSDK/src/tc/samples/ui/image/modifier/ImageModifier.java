@@ -29,11 +29,6 @@ import totalcross.ui.image.ImageException;
 
 public class ImageModifier extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    String mainPath;
    MenuBar mbar;
    MenuItem miLiveChanges;
@@ -55,8 +50,6 @@ public class ImageModifier extends MainWindow
    int scaleLevel; // 1 .. infinity
    byte contrastLevel; // -128 .. 127
    byte brightnessLevel; // -128 .. 127
-   boolean isPalmOS = Settings.platform.equals(Settings.PALMOS);
-   String palmTestFileName = "tc/samples/ui/image/modifier/cat.jpeg";
 
    public ImageModifier()
    {
@@ -98,7 +91,8 @@ public class ImageModifier extends MainWindow
       cbFiles = new ComboBox();
       try
       {
-         cbFiles.add(palmTestFileName);
+         cbFiles.add("tc/samples/ui/image/modifier/cat.jpeg");
+
          listAllImages(mainPath, cbFiles);
       }
       catch (IOException e)
@@ -126,7 +120,7 @@ public class ImageModifier extends MainWindow
       sbRotate.setRect(x, SAME + 2, FILL, dy, lbRotate);
 
       add(sbScale = new ScrollBar(ScrollBar.HORIZONTAL));
-      sbScale.setValues(100, 1, 0, isPalmOS ? 200 : 400); // palm os has very limited memory
+      sbScale.setValues(100, 1, 0, 400); // palm os has very limited memory
       sbScale.setUnitIncrement(5);
       sbScale.setBlockIncrement(20);
       sbScale.setRect(x, SAME + 2, FILL, dy, lbScale);
@@ -163,23 +157,20 @@ public class ImageModifier extends MainWindow
 
    private void listAllImages(String path, ComboBox lb) throws totalcross.io.IOException
    {
-      if (!isPalmOS)
+      File file = new File(path);
+      String names[] = file.listFiles(), name;
+      if (names != null)
       {
-         File file = new File(path);
-         String names[] = file.listFiles(), name;
-         if (names != null)
+         int n = names.length;
+         for (int i = 0; i < n; ++i)
          {
-            int n = names.length;
-            for (int i = 0; i < n; ++i)
+            if ((name=names[i]) != null)
             {
-               if ((name=names[i]) != null)
-               {
-                  if (name.endsWith("/"))
-                     listAllImages(path + name, lb);
-                  else
-                  if (Image.isSupported(names[i]))
-                     lb.add(path + names[i]);
-               }
+               if (name.endsWith("/"))
+                  listAllImages(path + name, lb);
+               else
+               if (Image.isSupported(names[i]))
+                  lb.add(path + names[i]);
             }
          }
       }
@@ -205,7 +196,7 @@ public class ImageModifier extends MainWindow
       }
       catch (ImageException ie)
       {
-         tellUser("Error", "Cannot decode " + (isPalmOS ? palmTestFileName : dsc));
+         tellUser("Error", "Cannot decode " + dsc);
       }
       catch (totalcross.io.IOException ioe)
       {

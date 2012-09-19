@@ -33,7 +33,8 @@ TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
-TC_API void tugG_dither_iiiii(NMParams p);
+TC_API void tuiI_setTransparentColor_i(NMParams p);
+TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
@@ -73,10 +74,9 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_setClip_iiii(NMParams p);
 TC_API void tugG_clip_r(NMParams p);
 TC_API void tugG_copyRect_giiiiii(NMParams p);
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
-TC_API void tugG_drawImage_iiiiib(NMParams p);
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p);
+TC_API void tugG_drawImage_iiib(NMParams p);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
@@ -563,7 +563,11 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -723,19 +727,15 @@ TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics nati
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2301,7 +2301,12 @@ TESTCASE(tuiI_applyColor2_i) // totalcross/ui/image/Image native public void app
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_dither_iiiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+TESTCASE(tuiI_setTransparentColor_i) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tugG_dither_iiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2501,22 +2506,17 @@ TESTCASE(tugG_copyRect_giiiiii) // totalcross/ui/gfx/Graphics native public void
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawHighLightFrame_iiiiiib) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawRoundGradient_iiiiiiiii) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawImage_iiiiib) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TESTCASE(tugG_drawImage_iiib) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_copyImageRect_iiiiiiib) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TESTCASE(tugG_copyImageRect_iiiiib) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
    TEST_SKIP;
    finish: ;

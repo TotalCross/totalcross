@@ -36,11 +36,9 @@ public class Deploy
       new Deploy(args);
    }
 
-   public static final int BUILD_PALM    = 1;
    public static final int BUILD_WINCE   = 2;
    public static final int BUILD_WIN32   = 4;
    public static final int BUILD_LINUX   = 8;
-   public static final int BUILD_BB      = 32;
    public static final int BUILD_APPLET  = 64;
    public static final int BUILD_IPHONE  = 128;
    public static final int BUILD_ANDROID = 256;
@@ -62,7 +60,7 @@ public class Deploy
 
          checkClasspath();
 
-         // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
+         // tc.tools.Deploy <arquivo zip/jar> wince win32 linux
          String fileName = args[0];
          int options = parseOptions(args);
 
@@ -79,13 +77,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
@@ -117,8 +113,6 @@ public class Deploy
             
             if (!DeploySettings.testClass && (options & BUILD_APPLET)  != 0 && DeploySettings.isJarOrZip)
                System.out.println("\nAttention: Deployer for Applet was not able to process the dependencies to create a single jar file because you passed a jar or zip as input file. In this situation, the applet will require the tc.jar file to run.");
-            if (!DeploySettings.testClass && DeploySettings.showBBPKGName != null)
-               System.out.println("\nThe BlackBerry's "+DeploySettings.showBBPKGName+".cod package was created. The files will be copied to the folder \""+DeploySettings.showBBPKGRoot+"\". Remember that the files are not uninstalled when your application is removed, and, if they are Litebase tables, be sure to DONT CHANGE the default database path, or the installed files will not be found.");
             if (DeploySettings.mainClassName == null && DeploySettings.isJarOrZip)
             {
                String fn = Utils.getFileName(fileName);
@@ -223,15 +217,11 @@ public class Deploy
    {
       int options = 0;
       IntHashtable iht = new IntHashtable(17);
-      iht.put("palm"   .hashCode(), BUILD_PALM);
-      iht.put("palmos" .hashCode(), BUILD_PALM);
       iht.put("ce"     .hashCode(), BUILD_WINCE);
       iht.put("wince"  .hashCode(), BUILD_WINCE);
       iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
-      iht.put("bb"     .hashCode(), BUILD_BB);
-      iht.put("blackberry".hashCode(), BUILD_BB);
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("ios"    .hashCode(), BUILD_IPHONE);
@@ -383,7 +373,7 @@ public class Deploy
             "You can also specify a .tcz that will be converted to the target platforms.\n"+
             "Library files must be specified in a jar, and the file's name must end with 'Lib', or it will not be loaded by the VM.\n"+
             "A package file, if present in the current folder, will be used to specify additional files that will " +
-            "be included in the installations (palm.pkg, wince.pkg, bb.pkg, iphone.pkg, android.pkg, win32.pkg, linux.pkg; or all.pkg for all platforms, " +
+            "be included in the installations (wince.pkg, iphone.pkg, android.pkg, win32.pkg, linux.pkg; or all.pkg for all platforms, " +
             "used if the platform's pkg was not found). Inside these files, [G] states that the " +
             "file will be placed in the same folder of the TCVM, and [L] states that the file will be placed in the program's folder " +
             "(this rule applies only for wince; in all other platforms, [G] and [L] are placed in the same folder). If the file ends with a slash '/', " +
@@ -392,12 +382,10 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
-            "   -palm or -palmos : create the prc and installation files for Palm OS\n" +
             "   -ce or -wince : create the cab files for Windows CE\n" +
             "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
-            "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
             "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n" +
@@ -447,8 +435,8 @@ public class Deploy
             "\n" +
             "   The easiest way to create an icon is to provide an 'appicon.gif' file of any SQUARE size (80x80 preferable) " +
             "and any palette, which will be automatically converted to the target icon sizes. Put the file in the src folder." +
-            "If you need better icons, you can create some bmp and png files with these sizes: icon15x9x8.bmp icon30x18x8.bmp icon22x22x8.bmp icon44x44x8.bmp (Palm OS), " +
-            "icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp (Windows CE/Windows 32), icon60x60.png (iPhone), icon80x80.png (BlackBerry), icon72x72.png (Android - use alpha channel on PNG for better appearance). " +
+            "If you need better icons, you can create some bmp and png files with these sizes: " +
+            "icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp (Windows CE/Windows 32), icon60x60.png (iPhone), icon72x72.png (Android - use alpha channel on PNG for better appearance). " +
             "Be careful with the palette of the bmp files, never use the MSPaint program; instead, get the bmp files that are in the etc/images folder and edit " +
             "them in a software that keeps the original palette, like Photoshop and PaintShopPro." +
             "");

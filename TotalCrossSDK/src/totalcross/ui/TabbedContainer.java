@@ -272,6 +272,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       onFontChanged();
    }
 
+   /** @deprecated TotalCross 2 no longer uses transparentColor */
+   public TabbedContainer(Image []imgCaptions, int transparentColor) // guich@564_13
+   {
+      this(imgCaptions);
+   }
+
    /** Constructs a tab bar control with images as captions, using the given color as transparent color.
     * If you don't want to use transparent colors, just pass -1 to the color. */
    public TabbedContainer(Image []imgCaptions) // guich@564_13

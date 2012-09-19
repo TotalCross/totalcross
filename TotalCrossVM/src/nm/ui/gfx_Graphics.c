@@ -22,14 +22,10 @@ void glDrawPixels(Context c, int32 n);
 
 #if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"
-#elif defined(__SYMBIAN32__)
- #include "symbian/gfx_Graphics_c.h"
 #endif
 #include "GraphicsPrimitives_c.h"
 
-#if defined(PALMOS)
- #include "palm/gfx_Graphics_c.h"
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
 #elif defined(ANDROID)
  #include "android/gfx_Graphics_c.h"
@@ -46,8 +42,6 @@ void glDrawPixels(Context c, int32 n);
 #define ARROW_DOWN   2
 #define ARROW_LEFT   3
 #define ARROW_RIGHT  4
-#define WinCE        0
-#define PalmOS       1
 #define Flat         2
 #define Vista        3
 #define Android      4
@@ -493,13 +487,7 @@ TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics nati
    Object hDest = p->obj[0];
    Object hOrig = p->obj[1];
    if (hOrig)
-      drawSurface(p->currentContext, hDest, hOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], Graphics_drawOp(hDest), Graphics_backPixel(hDest), Graphics_forePixel(hDest), true);
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-   Object g = p->obj[0];
-   drawHighLightFrame(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],makePixelRGB(p->i32[4]),makePixelRGB(p->i32[5]), (bool)p->i32[6]);
+      drawSurface(p->currentContext, hDest, hOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor);
@@ -508,20 +496,18 @@ TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
    drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],p->i32[8],p->i32[9], p->i32[10]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
    Object surfDest = p->obj[0];
    Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], p->i32[2],
-                             p->i32[3] >= 0 ? makePixelRGB(p->i32[3]) : Image_transparentPixel(surfOrig), Graphics_forePixel(surfDest), (bool)p->i32[4]);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
    Object surfDest = p->obj[0];
    Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], 0,0, p->i32[4],
-                             p->i32[5] >= 0 ? makePixelRGB(p->i32[5]) : Image_transparentPixel(surfOrig), Graphics_forePixel(surfDest), (bool)p->i32[6]);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], 0,0, (bool)p->i32[4]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_setPixels_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void setPixels(int []xPoints, int []yPoints, int nPoints);
@@ -604,49 +590,6 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    else
    switch (*tcSettings.uiStylePtr)
    {
-      case WinCE:
-         switch (type)
-         {
-            case R3D_EDIT:
-               drawHighLightFrame(p->currentContext, g,x,y,width,height,fourColors[2],fourColors[1],yMirror);
-               if (!simple) drawHighLightFrame(p->currentContext, g,x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-               break;                          
-            case R3D_LOWERED:
-               drawHighLightFrame(p->currentContext, g,x,y,width,height,fourColors[3],fourColors[0],yMirror);
-               if (!simple) drawHighLightFrame(p->currentContext, g,x+1,y+1,width-2,height-2,fourColors[2],fourColors[1],yMirror);
-               break;                          
-            case R3D_RAISED:
-               drawHighLightFrame(p->currentContext, g,x,y,width,height,fourColors[0],fourColors[3],yMirror);
-               if (!simple) drawHighLightFrame(p->currentContext, g,x+1,y+1,width-2,height-2,fourColors[1],fourColors[2],yMirror);
-               break;                          
-            case R3D_CHECK:
-               drawHighLightFrame(p->currentContext, g,x,y,width,height,fourColors[2],fourColors[1],yMirror);
-               if (!simple) drawHighLightFrame(p->currentContext, g,x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-               break;                          
-         }
-         break;
-      case PalmOS:
-         switch (type)
-         {
-            case R3D_CHECK:
-               drawRect(p->currentContext, g,x,y,width,height,fourColors[2]);
-               break;   
-            case R3D_EDIT:
-               drawDottedLine(p->currentContext, g,x,y+height-1,x+width,y+height-1,fourColors[2],backColor);
-               break;         
-            case R3D_LOWERED:
-               if (simple)
-                  fillRect(p->currentContext, g,x,y,width,height,fourColors[1]);
-               else        
-                  fillHatchedRect(p->currentContext, g,x,y,width,height,true,true,fourColors[1]); // no break; here!
-            case R3D_RAISED:      
-               if (simple)
-                  drawRect(p->currentContext, g,x,y,width,height,foreColor);
-               else        
-                  drawHatchedRect(p->currentContext, g,x,y,width,height,true,true,foreColor);
-               break;             
-         }
-         break;
       case Flat:
          switch (type)
          {
@@ -738,8 +681,7 @@ TC_API void tugG_drawImage_iii(NMParams p) // totalcross/ui/gfx/Graphics native 
    //copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
    Object surfDest = p->obj[0];
    Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], Graphics_drawOp(surfDest),
-                             Image_transparentPixel(surfOrig), Graphics_forePixel(surfDest), true);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int getRGB(int []data, int offset, int x, int y, int w, int h);
@@ -815,10 +757,10 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
    drawWindowBorder(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], borderColor, titleColor, bodyColor, footerColor, thickness, p->i32[11]);
 }                   
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor)
+TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    Object g = p->obj[0];
-   dither(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4]);
+   dither(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
 }         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);

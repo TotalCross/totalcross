@@ -67,10 +67,6 @@
  #endif
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
-#elif defined PALMOS
- #include <string.h>  // for memmove
-// #include <PalmOSARM.h>
- #include <PalmCompatibility.h>
 #endif
 
 #include <stdarg.h>

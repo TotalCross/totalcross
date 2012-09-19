@@ -378,7 +378,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
       System.out.println("   /geofocus        : enables geographical focus.");
-      System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
       System.out.println("   /showmousepos    : shows the mouse position.");
       System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256 colors)");
@@ -518,12 +517,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                Settings.geographicalFocus = Settings.keyboardFocusTraversable = true;
                System.out.println("Geographical focus is on");
-            }
-            else
-            if (args[i].equalsIgnoreCase("/keypadOnly")) // guich@573_20
-            {
-               Settings.keypadOnly = true;
-               System.out.println("Keypad only is on");
             }
             else
             if (args[i].equalsIgnoreCase("/virtualKeyboard")) // bruno@tc110

@@ -217,6 +217,7 @@ public class File extends RandomAccessStream
     * @see #CREATE
     * @see #CREATE_EMPTY
     * @see totalcross.sys.Settings#nvfsVolume
+    * @deprecated TotalCross 2 no longer uses slot
     */
    public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {

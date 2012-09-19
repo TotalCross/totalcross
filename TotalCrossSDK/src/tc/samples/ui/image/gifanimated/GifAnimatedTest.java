@@ -28,11 +28,6 @@ import totalcross.ui.image.*;
 
 public class GifAnimatedTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private boolean no;
    private Button btnStartStop;
    private Button btnNext;

@@ -19,8 +19,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/debug_c.h"
-#elif defined(PALMOS)
- #include "palm/debug_c.h"
 #elif defined(ANDROID)
  #include "android/debug_c.h"
 #else
@@ -38,11 +36,7 @@ static char debugstrSmall[64]; // used during startup and exit, when debugstr is
 
 bool initDebug()
 {
-#ifndef PALMOS
    debugstr = malloc(16384); // don't use xmalloc!
-#else
-   debugstr = malloc(4096);
-#endif
    return debugstr != null && privateInitDebug();
 }
 

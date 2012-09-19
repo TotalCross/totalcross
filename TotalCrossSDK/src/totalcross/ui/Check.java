@@ -160,13 +160,13 @@ public class Check extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return getMaxTextWidth() + (Settings.useNewFont ? fmH+Edit.prefH+2 : fm.ascent + 2);
+      return getMaxTextWidth() + fmH+Edit.prefH+2;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH*lines.length+Edit.prefH : fm.ascent*lines.length;
+      return fmH*lines.length+Edit.prefH;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -179,7 +179,7 @@ public class Check extends Control
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
-      int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+      int wh = lines.length == 1 ? height : fmH+Edit.prefH;
       int xx,yy;
 
       // guich@200b4_126: repaint the background of the whole control
@@ -290,7 +290,7 @@ public class Check extends Control
       if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
-         int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+         int wh = lines.length == 1 ? height : fmH+Edit.prefH;
          split(this.width-wh-2);
          if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
             setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);

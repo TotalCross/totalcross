@@ -36,11 +36,6 @@ import totalcross.util.Properties;
  */
 public class Scape extends GameEngine implements ProdConfig
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    protected final static boolean ARCADE_GAME = true;
 
    protected final static boolean CLEAR_SCREEN = true;

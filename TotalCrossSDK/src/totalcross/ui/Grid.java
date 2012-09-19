@@ -1838,16 +1838,10 @@ public class Grid extends Container implements Scrollable
                lastShownControl = (Edit)e.target;
                this.requestFocus(); // will issue a FOCUS_OUT event
             }
-            else
-            if (e.target == this && Settings.keypadOnly) // guich@573_45: if keypad only, set only numbers as input.
-               Keypad.getInstance().setKeys(Keypad.numberKeyset);
             break;
          case ControlEvent.FOCUS_OUT:
             if (e.target instanceof Edit && itemsCount > 0) // hide the edit
                hideControl(/*(Edit)e.target*/);
-            else
-            if (e.target == this && Settings.keypadOnly) // guich@573_45
-               Keypad.getInstance().setKeys(null);
             break;
          case ControlEvent.PRESSED:
             if (e.target instanceof ComboBoxDropDown && Settings.keyboardFocusTraversable) // guich@582_15: keep highlighting off

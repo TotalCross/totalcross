@@ -134,21 +134,7 @@ TC_API void tsC_toString_si(NMParams p) // totalcross/sys/Convert native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_doubleToLongBits_d(NMParams p) // totalcross/sys/Convert native public static long doubleToLongBits(double value);
 {
-#ifdef PALMOS
-   union
-   {
-      struct {uint32 n1,n2;};
-      uint64 l;
-   } c;
-   int32 i;
-   c.l = p->i64[0];
-   i = c.n1;
-   c.n1 = c.n2;
-   c.n2 = i;
-   p->retL = c.l;
-#else
    p->retL = p->i64[0];
-#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_longBitsToDouble_l(NMParams p) // totalcross/sys/Convert native public static double longBitsToDouble(long bits);

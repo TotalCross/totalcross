@@ -597,15 +597,6 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
-#ifdef PALMOS
-               if (newMethod->ref) // external library?
-               {
-                  EnterLibrary(newMethod->ref)
-                  newMethod->boundNM(nmp); // call the method
-                  ExitLibrary()
-               }
-               else
-#endif
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here

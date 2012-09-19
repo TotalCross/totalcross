@@ -65,7 +65,7 @@ TC_API void tuiI_getPixelRow_Bi(NMParams p) // totalcross/ui/image/Image native 
    Object thisObj = p->obj[0];
    Object fillIn = p->obj[1];
    int32 y = p->i32[0];
-   getPixelRow(thisObj, fillIn, y);
+   getPixelRow(p->currentContext,thisObj, fillIn, y);
 }
 //////////////////////////////////////////////////////////////////////////
 typedef enum
@@ -90,8 +90,7 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          getScaledInstance(thisObj, newObj);
          break;
       case SMOOTH_SCALED_INSTANCE:
-         Image_transparentColor(newObj) = p->i32[2]; // replace transparent color
-         if (!getSmoothScaledInstance(thisObj, newObj, color))
+         if (!getSmoothScaledInstance(thisObj, newObj))
             throwException(p->currentContext, OutOfMemoryError, null);
          break;
       case ROTATED_SCALED_INSTANCE:
@@ -131,6 +130,13 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
    Object thisObj = p->obj[0];
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor2(thisObj, color);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+   Object thisObj = p->obj[0];
+   Pixel color = makePixelRGB(p->i32[0]);
+   setTransparentColor(thisObj, color);
 }
 
 #ifdef ENABLE_TEST_SUITE
