@@ -1066,10 +1066,14 @@ Sample bug.
 \end_layout
 
 \begin_layout Standard
-You should first take a look at the 
+You should first take a look at the TotalCross changelog
+\begin_inset Newline newline
+\end_inset
+
+
 \begin_inset CommandInset href
 LatexCommand href
-name "TotalCross changelog"
+name "(http://www.superwaba.com.br/en/changelogs.asp)"
 target "http://www.superwaba.com.br/en/changelogs.asp"
 
 \end_inset
@@ -1082,10 +1086,10 @@ target "http://www.superwaba.com.br/en/changelogs.asp"
 You may then use the forum to report the bug, however, its not guaranteed
  that we will fix the bug.
  If you want the bug fixed in a few days and receive a fixed virtual machine,
- you must purchase a 
+ you must purchase a support plan
 \begin_inset CommandInset href
 LatexCommand href
-name "support plan"
+name " (http://www.superwaba.com.br/en/suporte.asp)"
 target "http://www.superwaba.com.br/en/suporte.asp"
 
 \end_inset
@@ -5649,7 +5653,7 @@ Starting in version 1.15, on Windows Mobile, it is possible to find exactly
 \end_layout
 
 \begin_layout Standard
-When the program starts, the virtual machine makes two changes in the Windows
+When the program starts, the virtual machine makes two logs in the Windows
  Mobile registry, enabling the error reporting, but disabling the dialog
  that appears when such error occurs.
  This way, the crash dumps are kept in place, allowing us to recover it.
@@ -15721,7 +15725,115 @@ Button
 Buttons are the most used types of controls.
  They are used to invoke an action or to confirm something, like [ok] or
  [cancel].
- Here are some characteristics of TotalCross buttons:
+ Here are some screenshots from some buttons using the Android style from
+ UIGadgets and AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/button_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Some characteristics of TotalCross buttons are:
 \end_layout
 
 \begin_layout Itemize
@@ -16720,7 +16832,145 @@ Edit
 Edit is a control used to get text input when the user types using the keyboard
  or the grafitti area.
  It allows you to select text and cut/copy/paste it.
- Here are some other features:
+ Here are some screenshots from some edits using the Android style from
+ UIGadgets and AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/edit_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here are some other features:
 \end_layout
 
 \begin_layout Itemize
@@ -16929,6 +17179,11 @@ getTextWithoutMask()
 setText()
 \family default
 .
+ One of the setText() methods has a flag to indicate whether to post a 
+\family typewriter
+PRESSED
+\family default
+ event.
 \end_layout
 
 \begin_layout Itemize
@@ -17888,7 +18143,40 @@ n
 \family default
 .
  A label never receives focus neither dispatches events.
- Here are some other features:
+ Here is a screenshot from a multi-lined label using the Android style from
+ UIGadgets:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/label_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here are some other features:
 \end_layout
 
 \begin_layout Itemize
@@ -18625,7 +18913,87 @@ Check
 Check is a control that has a rectangle with a check inside and a text at
  right, and is used for items that have an on/off state.
  When it is on, the check box is marked; otherwise, it is unmarked.
- Here is an example showing a check being used followed by some properties:
+ 
+\end_layout
+
+\begin_layout Standard
+Here are some screenshots from some checks using the Android style from
+ AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/check_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/check_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/check_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here is an example showing a check being used followed by some properties:
  
 \begin_inset listings
 inline false
@@ -19063,7 +19431,87 @@ Radio is a control that allows the user to choose one of a predefined set
  of options.
  They are usually grouped together, and when the user selects one of them,
  any previously selected radio in the same group becomes deselected.
- Here is an example showing how radio is used followed by some properties:
+ 
+\end_layout
+
+\begin_layout Standard
+Here are some screenshots from some checks using the Android style from
+ AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/radio_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/radio_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/radio_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here is an example showing how radio is used followed by some properties:
  
 \begin_inset listings
 inline false
@@ -19815,8 +20263,217 @@ ComboBoxDropDown
  loses the focus.
 \end_layout
 
+\begin_layout Standard
+Here are some screenshots from a simple combo box using the Android style
+ from AndroidUI (below the combo box component, there is a list box):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Another combo box from UIGadgets, also using Android style, can be seen
+ here, where the left combo box has a attached 
+\family typewriter
+MultiListBox
+\family default
+, which extends 
+\family typewriter
+ListBox
+\family default
+ and lets the user select more than one item:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/combo_009.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
-It has four constructors:
+The 
+\family typewriter
+ComboBox
+\family default
+ class has four constructors:
 \end_layout
 
 \begin_deeper
@@ -20821,6 +21478,209 @@ The list box is a control that allows the user to select one item from a
 \end_layout
 
 \begin_layout Standard
+Here are some screenshots from a simple list box using the Android style
+ from AndroidUI (above the list box component, there is a combo box):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/list_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/list_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/list_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here is an example showing how it can be used:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ListBox lb;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb = new ListBox();
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lb);
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add(new String[]{"Daniel","Jenny","Helge","Sandra"});
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.add("Marc"); // you may set the rect by using PREFERRED only after the
+ items were added.
+\end_layout
+
+\begin_layout Plain Layout
+
+		lb.setRect(LEFT, TOP, PREFERRED, PREFERRED); // use control's preferred
+ width based on the size of the elements
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		switch (event.type)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			case ControlEvent.PRESSED:
+\end_layout
+
+\begin_layout Plain Layout
+
+				if (event.target == lb)
+\end_layout
+
+\begin_layout Plain Layout
+
+					Object element = lb.getSelectedItem(); // in most cases, this is just
+ a String and may be casted to such
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
@@ -20916,6 +21776,7 @@ int
 \end_inset
 
 size) Adds a subarray of objects to the list box.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -20956,6 +21817,8 @@ You may insert an object at a desired position with
 insert(Object item, int index)
 \family default
 .
+ The first item has index 0.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20964,6 +21827,7 @@ The method
 setItemAt(int i, Object s)
 \family default
  replaces the object at the given index by the given object.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -20979,12 +21843,14 @@ The method
 \family typewriter
 getItemAt(int i)
 \family default
- returns the object at the selected index; the reverse operation can be
- done with 
+ returns the object at the selected index.
+ It returns an empty string if the index is outside the range.
+ The reverse operation can be done with 
 \family typewriter
 indexOf(Object name)
 \family default
 , which retrieves the index of a specific object.
+ It returns -1 if the object is not found.
 \end_layout
 
 \begin_layout Itemize
@@ -20997,6 +21863,13 @@ getSelectedIndex()
 getSelectedItem()
 \family default
  to retrieve the selected object directly.
+ The first returns -1 if the list box has no selected index yet and the
+ last one returns an empty 
+\family typewriter
+String
+\family default
+ object if none is selected.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21009,6 +21882,9 @@ setSelectedIndex(int i)
 setSelectedItem(Object name)
 \family default
 .
+ If the object or is not found, the current selected item is not changed.
+ However, if the index is not found, the current selected item is cleared
+ and no item becomes selected.
 \end_layout
 
 \begin_layout Itemize
@@ -21017,6 +21893,12 @@ The
 selectLast()
 \family default
  method selects the last item added to the list box, doing a scroll if needed.
+ It calls 
+\family typewriter
+repaintNow()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21045,7 +21927,26 @@ item) Removes the given object from the list box.
 
 \begin_layout FieldList
 \labelwidthstring 0
-removeAll() Empties the list box.
+removeAll() Empties the list box, setting all elements of the array to 
+\family typewriter
+null
+\family default
+ so they can be garbage collected.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Attention! If you used the same object array to initialize two list boxes
+ (or combo boxes), this method will 
+\family typewriter
+null
+\family default
+ both list boxes (because they use the same array reference), and you might
+ get a 
+\family typewriter
+NullPointerException
+\family default
+! 
 \end_layout
 
 \end_deeper
@@ -21055,6 +21956,10 @@ The list box items can be sorted using the method
 qsort()
 \family default
 .
+ One of them receives a parameter indicating if the sorting is caseless
+ or not in case the elements are strings.
+ In both of them, the current selection is cleared.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21078,6 +21983,8 @@ To increase the default height of the horizontal scroll buttons, change
 extraHorizScrollButtonHeight
 \family default
  static member.
+ Its default value is 2 in 160x160 or a multiple of it in other resolutions.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21085,7 +21992,12 @@ The
 \family typewriter
 setSimpleBorder(boolean simpleBorder)
 \family default
- method is used to change the border style from 3d to simple.
+ method is used to change the border style from 3d to simple if the flag
+ passed is 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -21104,12 +22016,19 @@ The selection color can be changed with
 setCursorColor(int color)
 \family default
 .
+ The color used in the 
+\family typewriter
+setBackColor()
+\family default
+ method will be used in the scrollbar only.
+ The background color of the control will be a lighter version of the given
+ color.
  
 \end_layout
 
 \begin_layout Itemize
 By default, the selection is drawn using the current item's width.
- This behavior can be changed by setting 
+ This behavior can be changed by setting the static field 
 \family typewriter
 useFullWidthOnSelection
 \family default
@@ -21118,11 +22037,15 @@ useFullWidthOnSelection
 true
 \family default
 .
+ If so, all list boxes will have the selection bar drawn in the full width.
 \end_layout
 
 \begin_layout Itemize
-You can extend list box to implement a customized type, like a color-chooser
- list box (see 
+You can extend 
+\family typewriter
+ListBox
+\family default
+ to implement a customized type, like a color-chooser list box (see 
 \begin_inset CommandInset ref
 LatexCommand nameref
 reference "chap:Advanced-Controls"
@@ -21239,6 +22162,19 @@ clear()
 clearValueInt
 \family default
  as the selected index.
+\end_layout
+
+\begin_layout Itemize
+The methods 
+\family typewriter
+add()
+\family default
+ and 
+\family typewriter
+remove()
+\family default
+ to add and remove a control, respectively, do nothing, because it does
+ not make sense to add controls to or remove controls from a list box.
 \end_layout
 
 \begin_layout Standard
@@ -21456,22 +22392,645 @@ public void onEvent(Event event)
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+iconGap The gap between the icon and the text.
+ Used in the internal class 
+\family typewriter
+IconItem
+\family default
+.
+ Defaults to 
+\family typewriter
+fmH*4/3
+\family default
+.
+ If you plan to change this value, do it after calling 
+\family typewriter
+setFont()
+\family default
+ (if you call it).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ihtBackColors,
+\begin_inset space ~
+\end_inset
+
+ihtForeColors 
+\family typewriter
+IntHashtable
+\family default
+ used to specify different background and foreground colors for some items.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+list.ihtBackColor = new IntHashtable(10);
+\end_layout
+
+\begin_layout Plain Layout
+
+ihtBackColors.put(10,0xAABBCC); // will make line number 10 with back color
+ 0xAABBCC.
+\end_layout
+
+\end_inset
+
+Specify a 
+\family typewriter
+null
+\family default
+ value if you want to use the default color (this also makes drawing faster).
+ Note that its up to you to update the hash table if an item is inserted
+ or removed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flick The 
+\family typewriter
+Flick
+\family default
+ object that listens and performs flick animations on pen up events when
+ appropriate.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+visibleLines Sets the number of visible lines, used to make 
+\family typewriter
+PREFERRED
+\family default
+ height return the given number of lines as the list box height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemHeightFactor In finger touch devices, sets a factor by which the font
+ height will be multiplied to increase the item's height.
+ Defaults to 1.5 when 
+\family typewriter
+Settings.fingerTouch
+\family default
+ is 
+\family typewriter
+true
+\family default
+, and 1 when its 
+\family typewriter
+false
+\family default
+.
+ You can change this value before the constructor and restore it after the
+ constructor to change the height of a single list box.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = 1;
+\end_layout
+
+\begin_layout Plain Layout
+
+// ...
+ create listbox
+\end_layout
+
+\begin_layout Plain Layout
+
+ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR; 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dataCol Used by the 
+\family typewriter
+DBListBox
+\family default
+ (Database 
+\family typewriter
+ListBox
+\family default
+) to store the data column that is displayed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addWrapping(String
+\begin_inset space ~
+\end_inset
+
+text) Adds the given text to this list box, breaking the text if it goes
+ beyond the list box' limits, and also breaking if it contains 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ It returns the number of lines.
+ Note that each part of the text is considered a new item.
+ This method is slower than the other 
+\family typewriter
+add()
+\family default
+ methods.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Returns all items in this list box.
+ If the elements are strings, the array can be casted to 
+\family typewriter
+String[]
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width, i.
+ e., the size of the largest item plus the size of the scroll bar.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the number of items multiplied by the font
+ metrics height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onBoundsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) This is needed to recalculate the box size for the selected
+ item if the control is resized by the main application.
+ The parameter indicates whether the bounds were changed due to a screen
+ change (rotation, collapse).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+find(char
+\begin_inset space ~
+\end_inset
+
+c) Searches the list box for an item with the first letter matching the
+ given character.
+ The search is made case insensitive.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you override this class you must implement this method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the string of the selected item or "" if none is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItemStartingWith(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Selects the item that starts with the given text.
+ If the second parameter is 
+\family typewriter
+true
+\family default
+, the text and all searched strings are first converted to lowercase.
+ The method returns 
+\family typewriter
+true
+\family default
+ if an item was found and selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hideScrollBarIfNotNeeded() This method hides the scrollbar if its not needed,
+ i.
+ e., if horizontal scroll is disabled and the preferred height is smaller
+ than the actual height.
+ You may have to call 
+\family typewriter
+reposition()
+\family default
+ if this method returns 
+\family typewriter
+true
+\family default
+.
+ You can call this method after all items were added.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ListBox
+\family default
+ class has an internal class called 
+\family typewriter
+IconItem
+\family default
+ used to show an icon and a text.
+ You can mix 
+\family typewriter
+IconItem
+\family default
+ with other item types in the list box.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+lb.add("this is a simple text");
+\end_layout
+
+\begin_layout Plain Layout
+
+lb.add(new IconItem("this is a text with icon", iconImage)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The icon should have the same size of the font's height, which can be set
+ with: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+iconImage = originalImage.smoothScaledFixedAspectRatio(fmH,true,-1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class only has a public constructor and a public method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IconItem(String
+\begin_inset space ~
+\end_inset
+
+text,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+icon) Constructs a new 
+\family typewriter
+IconItem
+\family default
+ with the given text and icon.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the object text.
+\end_layout
+
 \begin_layout Section
 MultiEdit
 \end_layout
 
 \begin_layout Standard
-The multi edit is basically an edit with support for multiple lines, so
- their usage is pretty similar and, unless noted otherwise, the same methods
- listed for edit are available for multi edit.
+
+\family typewriter
+MultiEdit
+\family default
+ is basically an edit with support for multiple lines, so their usage is
+ pretty similar and, unless noted otherwise, the same methods listed for
+ edit are available for 
+\family typewriter
+MultiEdit
+\family default
+.
  A static vertical scrollbar is added, but it is disabled/enabled as needed.
 \end_layout
 
+\begin_layout Standard
+Here are some screenshots from a non-editable 
+\family typewriter
+MultiEdit
+\family default
+ using the Android style from UIGadgets being scrolled (below it there is
+ a multi-lined label):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+An editable 
+\family typewriter
+MultiEdit
+\family default
+ from AndroidUI, also using Android style, can be seen below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multi_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here is an example showing a 
+\family typewriter
+MultiEdit
+\family default
+ control being used: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class MyProgram extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MultiEdit mEdit;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		// the constructor method is called with the mask, the number of lines
+ and the vertical interval in pixel between two lines
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit = new MultiEdit("",3,1);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(mEdit,LEFT,TOP); // add/setRect must precede setText()
+\end_layout
+
+\begin_layout Plain Layout
+
+		mEdit.setText("What text you want"); // eventually
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
-Multi edit has two constructors:
+
+\family typewriter
+MultiEdit
+\family default
+ has three constructors:
 \end_layout
 
 \begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+MultiEdit() Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with 1 pixel as space between lines and with no lines.
+ You must set the bounds using 
+\family typewriter
+FILL
+\family default
+ or 
+\family typewriter
+FIT
+\family default
+.
+ 
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 MultiEdit(int
@@ -21486,12 +23045,24 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and the default width 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and the default width
+ 
 \family typewriter
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be specified with
+ a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -21516,8 +23087,12 @@ int
 \begin_inset space ~
 \end_inset
 
-spaceBetweenLines) Creates a multi edit with a vertical scrollbar, the given
- number of rows and uses the given mask to compute the 
+spaceBetweenLines) Creates a 
+\family typewriter
+MultiEdit
+\family default
+ with a vertical scrollbar, the given number of rows and uses the given
+ mask to compute the 
 \family typewriter
 PREFERRED
 \family default
@@ -21527,6 +23102,19 @@ PREFERRED
 FILL
 \family default
 .
+ The gap is 1 by default and the control's bounds must be given with a 
+\family typewriter
+setRect()
+\family default
+.
+ The space between lines may be 0.
+ Note that the mask does not masks the input.
+ If the mask is "", the 
+\family typewriter
+FILL
+\family default
+ width is choosen.
+ 
 \end_layout
 
 \end_deeper
@@ -21543,7 +23131,23 @@ With
 \family typewriter
 setScrollbarsAlwaysVisible(boolean asNeeded)
 \family default
- you can change the multi edit's scrollbar behavior.
+ you can change the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+MultiEdit
+\family default
+'s scrollbar behavior.
+ Set to 
+\family typewriter
+true
+\family default
+ to hide the vertical scrollbar when it isn't needed (instead of disabling
+ it).
+ This must be done right after the constructor.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -21565,7 +23169,21 @@ gap
 \end_layout
 
 \begin_layout Itemize
-The following methods allow you to manipulate the multi edit scrollbar:
+If the 
+\family typewriter
+MultiEdit
+\family default
+ object is not editable, the user can scroll the edit a page at a time just
+ by clicking in the middle upper or middle lower.
+ 
+\end_layout
+
+\begin_layout Itemize
+The following methods allow you to manipulate the 
+\family typewriter
+MultiEdit
+\family default
+ scrollbar:
 \end_layout
 
 \begin_deeper
@@ -21686,6 +23304,160 @@ public void initUI()
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+MultiEdit
+\family default
+ class has other useful fields and methods (some methods heired from 
+\family typewriter
+Control
+\family default
+, defined in the 
+\family typewriter
+Scrollable
+\family default
+ interface, or the fields and methods whose name and behavior are identical
+ to the ones from 
+\family typewriter
+Edit
+\family default
+ are ommited), which are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mask The mask used to infer the preferred width.
+ Unlike the 
+\family typewriter
+Edit
+\family default
+ class, 
+\family typewriter
+MultiEdit
+\family default
+ does not support real masking.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rowCount Used to set the number of rows of the 
+\family typewriter
+MultiEdit
+\family default
+ object; used as parameter to compute the preferred height.
+ You must call 
+\family typewriter
+setRect()
+\family default
+ after changing this to resize the control in height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+justify Set to 
+\family typewriter
+true
+\family default
+ to justify the text when the 
+\family typewriter
+MultiEdit
+\family default
+ is NOT editable.
+ Note that this makes the text drawing a bit slower.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaxLength(int
+\begin_inset space ~
+\end_inset
+
+length) Sets the desired maximum length for text entered in the 
+\family typewriter
+MultiEdit
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValidChars(String
+\begin_inset space ~
+\end_inset
+
+validCharsString) Sets the valid chars that can be entered in the control.
+ If 
+\family typewriter
+null
+\family default
+ is passed, any character can be entered.
+ (case insensitive).
+ Unlike the same method in the 
+\family typewriter
+Edit
+\family default
+, setting it to an empty string won't forbid you to copy, cut, delete, or
+ paste a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the text displayed in the 
+\family typewriter
+MultiEdit
+\family default
+ control.
+ In this class it is not needed to deal with masking when fetching the component
+ text.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRect(int
+\begin_inset space ~
+\end_inset
+
+x,int
+\begin_inset space ~
+\end_inset
+
+y,int
+\begin_inset space ~
+\end_inset
+
+width,int
+\begin_inset space ~
+\end_inset
+
+height,Control
+\begin_inset space ~
+\end_inset
+
+relative,boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Sets the rect for 
+\family typewriter
+MultiEdit
+\family default
+.
+ Note that height is recomputed based in the value for 
+\family typewriter
+rowCount
+\family default
+ given in the constructor if the given height is 
+\family typewriter
+PREFERRED
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Section
 Grid
 \end_layout
@@ -21698,17 +23470,420 @@ The grid control is used to display tabulated data, which is represented
 \end_layout
 
 \begin_layout Standard
+Below are some examples of grid taken from GridTest using Android style.
+\end_layout
+
+\begin_layout Standard
+The first two images are from a simple grid being selected:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next samples show a grid with a check in the first column.
+ Note that it is possible to know which ones are checked:
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next sample shows a grid with a combo box in the first column and an
+ edit in the second one:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_009.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next case shows the columns being sorted one at a time:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_011.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_012.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_013.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_014.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next sample shows a grid with also a check and a combo box, but this
+ time, it can be seen that the combo box and check can't be manipulated
+ by the user in all rows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_015.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_016.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_017.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, there is a grid whose first column has an image:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/grid_010.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 Although the TotalCross' grid control usage is pretty simple and straightforward
 , it is the most customizable control and it uses its own set of events
  defined in 
 \family typewriter
-GridEvents
+GridEvent
 \family default
- (unlike the other controls that use only 
+s (unlike the almost all the other controls that use only 
 \family typewriter
-ControlEvents
+ControlEvent
 \family default
-).
+s).
  That means you'll be able to start using grids within a couple of minutes,
  but it will take some time to learn to use all its features:
 \end_layout
@@ -21728,8 +23903,8 @@ An easy to use interface for adding/removing information to the grid.
 
 \begin_layout Itemize
 Optional check column which is a column that is clickable, marking an specific
- line as checked/ unchecked; this is usefull if you want the user to be
- able to select multiple lines displayed on the grid.
+ row as checked/ unchecked; this is usefull if you want the user to be able
+ to select multiple rows displayed on the grid.
 \end_layout
 
 \begin_layout Itemize
@@ -21753,7 +23928,11 @@ GridEvent
 \begin_layout Itemize
 A column may be marked as editable.
  In this case, an edit will be placed in the currently focused cell.
- A column can also have choices (combo box).
+ 
+\end_layout
+
+\begin_layout Itemize
+A column can also have choices (combo box).
 \end_layout
 
 \begin_layout Itemize
@@ -21775,602 +23954,38 @@ You can customize cell back and fore colors, enabled state and choices by
 
 CellController
 \family default
- class
+ class.
 \end_layout
 
 \begin_layout Itemize
-Grid has two constructors:
-\end_layout
-
-\begin_deeper
-\begin_layout FieldList
-\labelwidthstring 0
-Grid(String[]
-\begin_inset space ~
-\end_inset
-
-captions,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-checkEnabled) Creates a grid with the given captions and, optionally, a
- multi-selection check column.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-Grid(String[]
-\begin_inset space ~
-\end_inset
-
-captions,
-\begin_inset space ~
-\end_inset
-
-int[]
-\begin_inset space ~
-\end_inset
-
-widths,
-\begin_inset space ~
-\end_inset
-
-int[]
-\begin_inset space ~
-\end_inset
-
-aligns,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-checkEnabled) Creates a grid with the given captions, column width, column
- text alignment and, optionally, a multi-selection check column.
-\end_layout
-
-\end_deeper
-\begin_layout Subsection
-Useful methods
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-add(String[]
-\begin_inset space ~
-\end_inset
-
-item) adds a new item to the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-add(String[]
-\begin_inset space ~
-\end_inset
-
-item,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-row) adds a new item to the grid at the given position.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-clear() removes all items from the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-del(int
-\begin_inset space ~
-\end_inset
-
-row) removes the given index from the grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getCellText(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) returns the text of the given cell.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setCellText(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-Strint
-\begin_inset space ~
-\end_inset
-
-text) sets the text of the given cell.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getItem(int
-\begin_inset space ~
-\end_inset
-
-index) returns the line from the given index.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getItemsVector() returns a vector containing all information inside the
- grid.
- As with 
-\family typewriter
-getItem()
-\family default
-, the returned data does not contain information about the selected item's.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getCheckedRows() returns an 
-\family typewriter
-IntVector
-\family default
- containing the indexes of the lines that have been marked with a check.
+Clicking in the column's caption will sort in ascending order; clicking
+ on it again sorts in descending order.
  
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-getSelectedIndex() gets the number of the currently selected line.
+\begin_layout Itemize
+It is possible to assign a 
+\family typewriter
+DataSource
+\family default
+ to a 
+\family typewriter
+Grid
+\family default
+, making the elements be fetched on demand.
  
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-getSelectedItem() gets the string array for the currently selected line.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-horizontalScroll(boolean
-\begin_inset space ~
-\end_inset
-
-toLeft) scrolls the grid to left or right.
- Returns 
+\begin_layout Itemize
+A column with size 0 is not displayed, so you can use it to store in the
+ grid important information, for example the 
 \family typewriter
-true
+rowid
 \family default
- if the grid was scrolled; 
-\family typewriter
-false
-\family default
- if it's impossible to scroll in that direction.
+ of a table.
 \end_layout
 
-\begin_layout FieldList
-\labelwidthstring 0
-isChecked(int
-\begin_inset space ~
-\end_inset
-
-lineIndex) returns if the given line is checked.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setChecked(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-check) checks or unchecks a given row.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-replace(String[]
-\begin_inset space ~
-\end_inset
-
-item,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-row) replaces the given row by the text.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setSelectedRow(int
-\begin_inset space ~
-\end_inset
-
-line) selects the given row number.
- If -1, unselects the grid.
- 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setItems(String[][]
-\begin_inset space ~
-\end_inset
-
-items) sets the grid items to be displayed, notice that it needs to conform
- to the numbers of columns that the grid currently have.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-size() returns the number of lines in this grid.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setColumnEditable(int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-boolean
-\begin_inset space ~
-\end_inset
-
-editable) enables/disables the edition for all cells of a grid's column.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setColumnChoices(int
-\begin_inset space ~
-\end_inset
-
-col,
-\begin_inset space ~
-\end_inset
-
-String[]
-\begin_inset space ~
-\end_inset
-
-choices) enables a combo box with choices for all cells of a grid's column.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100line%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-Note that the 
-\family typewriter
-setColumnEditable()
-\family default
- and 
-\family typewriter
-setColumnChoices()
-\family default
- methods are mutually exclusive: calling one cancels the effects of the
- other.
- The 
-\family typewriter
-setDataSource()
-\family default
- and 
-\family typewriter
-setItems()
-\family default
- methods are also mutually exclusive.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setDataSource(DataSource
-\begin_inset space ~
-\end_inset
-
-ds,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-nrItems) passing the class that implements the 
-\family typewriter
-Grid.DataSource
-\family default
- interface and the total number of items allows the grid to request data
- on demand.
- This greatly reduces the memory usage, because only the number of visible
- items may be loaded at each time, but makes the grid navigation slower.
- Note that in this mode the grid scroll will not be realtime: the data will
- be requested only when the user releases the scroll bar.
- The data source has a single method: 
-\family typewriter
-String[][] getItems(int startingRow, int count)
-\family default
-, that must return the given number of items or less.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-setCellController(Grid.CellController
-\begin_inset space ~
-\end_inset
-
-cc) passing the class that extends Grid.CellController will allow you to
- have a fine control of each cell of the grid.
- Note that using a cell controller will make the drawings slower.
- The class has the following methods:
-\end_layout
-
-\begin_deeper
-\begin_layout FieldList
-\labelwidthstring 0
-getBackColor(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return the background color for the given cell, or 
-\family typewriter
-null
-\family default
- if you want to use the default one.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-getForeColor(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return the foreground color for the given cell, or 
-\family typewriter
-null
-\family default
- if you want to use the default one.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-isEnabled(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) must return if the given cell is enabled, i.
- e., can have input and can be selected.
- Regarding the input, it will only work if the 
-\family typewriter
-setColumnChoices()
-\family default
- or 
-\family typewriter
-setEditable()
-\family default
- was called to the given column.
- Regarding the selection, it may also disable column's check state change.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-String[]
-\begin_inset space ~
-\end_inset
-
-getChoices(int
-\begin_inset space ~
-\end_inset
-
-row,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-col) returns a customized set of choices for the given cell.
- Must return 
-\family typewriter
-null
-\family default
- if you want to use the default set.
- Only works if 
-\family typewriter
-setColumnChoices()
-\family default
- was called to the given column.
-\end_layout
-
-\end_deeper
-\begin_layout Subsection
-Useful attributes
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-boldCheck draws a bold check instead of the tiny one.
- Useful for high resolution devices.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-canClickSelectAll sets to false to disable the click on the check column
- of the captions to select and unselect all checks.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-disableSort disables the sort when clicking in the column's caption.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-drawCheckBox boolean that defines if the box around the check will or not
- be drawn.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-enableColumnResize must be set to false to disable the column resize by
- dragging the column separator line.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-extraHorizScrollButtonHeight a value that can increase the horizontal buttons
- height.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-oldCellText the text that was in the cell before the user had editted it.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-checkColor the color used to draw the check.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-captionsBackColor the color used to fill the captions area.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-firstStripeColor color of the first stripe.
- 
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-secondStripeColor color of the second stripe.
- 
-\family typewriter
-drawStripes
-\family default
- must also be set to true.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-verticalLineStyle defines the vertical line style of the grid.
- Possible values are 
-\family typewriter
-VERT_DOT
-\family default
- (default), 
-\family typewriter
-VERT_LINE
-\family default
- and 
-\family typewriter
-VERT_NONE
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-String[]
-\begin_inset space ~
-\end_inset
-
-captions these are the column captions.
- Can be directly assigned, but always make sure it has the same number of
- columns of the grid.
-\end_layout
-
-\begin_layout Standard
+\begin_layout Itemize
 A 
 \family typewriter
 GridEvent
@@ -22378,6 +23993,7 @@ GridEvent
  is dispatched in the following situations:
 \end_layout
 
+\begin_deeper
 \begin_layout Itemize
 When the user selects a row:
 \begin_inset Newline newline
@@ -22483,8 +24099,1754 @@ Grid.oldCellText()
  contains the old text.
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+Grid has two constructors:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions and, optionally, a
+ multi-selection check column so that the user can select multiple rows
+ of the grid.
+ The captions can't be 
+\family typewriter
+null
+\family default
+.
+ The widths will be computed as the width of the grid captions and the alignment
+ will be all 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Grid(String[]
+\begin_inset space ~
+\end_inset
+
+captions,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+widths,
+\begin_inset space ~
+\end_inset
+
+int[]
+\begin_inset space ~
+\end_inset
+
+aligns,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+checkEnabled) Creates a grid with the given captions, column width, column
+ text alignment and, optionally, a multi-selection check column.
+ 
+\begin_inset Newline newline
+\end_inset
+
+If the total width is less than the grid's width, the last column will fill
+ until the grid width.
+ If 
+\family typewriter
+null
+\family default
+, the caption widths will be computed and used as the row width.
+ If a negative value is passed, it will be computed as a percentage against
+ the grid's width.
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+aligns
+\family default
+ is the alignment of information on the given column.
+ If 
+\family typewriter
+null
+\family default
+, all aligns will be 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Standard
-Sample code:
+Here´s an example which will create a grid with the given captions, column
+ widths, information alignment, and a check column:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Rect r = getClientRect();
+\end_layout
+
+\begin_layout Plain Layout
+
+String []gridCaptions = {" WPT "," HDG "," DST "," ETE "," FUEL "};
+\end_layout
+
+\begin_layout Plain Layout
+
+int gridWidths[] = 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	-25, // negative numbers are percentage of width
+\end_layout
+
+\begin_layout Plain Layout
+
+	fm.stringWidth(" 000 "),
+\end_layout
+
+\begin_layout Plain Layout
+
+	-25,
+\end_layout
+
+\begin_layout Plain Layout
+
+	-20,
+\end_layout
+
+\begin_layout Plain Layout
+
+	-20
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+int gridAligns[] = { LEFT, CENTER, RIGHT, CENTER, RIGHT };
+\end_layout
+
+\begin_layout Plain Layout
+
+grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(grid, LEFT+3,TOP+3,r.width/2,r.height/2);
+\end_layout
+
+\begin_layout Plain Layout
+
+grid.secondStripeColor = Color.getRGB(235,235,235);
+\end_layout
+
+\begin_layout Plain Layout
+
+String[][] data = new totalcross.lang.String[][]
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"0AAAA","000","000.0","00:00","00.0"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"1BBBB","111","111.1","11:11","11.1"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"3DDDD","333","333.3","33:33","33.3"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"4EEEE","444","444.4","44:44","44.4"},
+\end_layout
+
+\begin_layout Plain Layout
+
+	{"5FFFF","555","555.5","55:55","55.5"}
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+grid.setItems(data);  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Also consider using 
+\family typewriter
+ListContainer
+\family default
+ instead of 
+\family typewriter
+Grid
+\family default
+ if you're using devices with big screens.
+ 
+\end_layout
+
+\begin_layout Subsection
+Useful methods
+\end_layout
+
+\begin_layout Standard
+Some methods heired from 
+\family typewriter
+Control
+\family default
+, 
+\family typewriter
+Container
+\family default
+, and 
+\family typewriter
+Scrollable
+\family default
+ are ommited.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item) Adds a new item to the grid.
+ Its up to the user to call 
+\family typewriter
+Window.needsPaint = true
+\family default
+ afterwards.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) The same as above but adds a new item to the grid at the given position.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(String[][]
+\begin_inset space ~
+\end_inset
+
+items) Appends the given rows at the end of the grid.
+ It is similar to the first 
+\family typewriter
+add()
+\family default
+ method except that it appends more than one row.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Selects the 
+\family typewriter
+clearValueInt
+\family default
+ row, which defaults to -1.
+ That is, by default, this method deselects all rows.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Returns the text of the given cell.
+ If the grid has a check column, 
+\family typewriter
+col
+\family default
+ must start from 1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCellText(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+Strint
+\begin_inset space ~
+\end_inset
+
+text) Sets the text of the given cell.
+ If the grid has a check column, 
+\family typewriter
+col
+\family default
+ must start from 1.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItem(int
+\begin_inset space ~
+\end_inset
+
+index) Returns the row from the given index.
+ This method works with or without a 
+\family typewriter
+DataSource
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItemsVector() Returns a vector containing all information inside the
+ grid.
+ As with 
+\family typewriter
+getItem()
+\family default
+, the returned data does not contain information about the selected item's.
+ Note that if a 
+\family typewriter
+DataSource
+\family default
+ is assigned, this method returns 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCheckedRows() Returns an 
+\family typewriter
+IntVector
+\family default
+ containing the indexes of the rows that have been marked with a check.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Gets the number of the currently selected row, or -1
+ if none is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Gets the string array for the currently selected row.
+ Any changes made into the returned array is applied back to the grid automatica
+lly (because it holds the grid's data).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+horizontalScroll(boolean
+\begin_inset space ~
+\end_inset
+
+toLeft) Scrolls the grid to left or right.
+ It returns 
+\family typewriter
+true
+\family default
+ if the grid was scrolled; 
+\family typewriter
+false
+\family default
+ if it's impossible to scroll in that direction.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked(int
+\begin_inset space ~
+\end_inset
+
+lineIndex) Returns if the given row is checked.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChecked(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+check) Checks or unchecks a given row.
+ This method only works with a grid that has checks and 
+\family typewriter
+repaint()
+\family default
+ must be called.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+replace(String[]
+\begin_inset space ~
+\end_inset
+
+item,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+row) Replaces the given row by the text.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+move(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+up) Moves the items at given indexes one row up or down depending on the
+ given second parameter.
+ If it is 
+\family typewriter
+true
+\family default
+, the items at index 
+\family typewriter
+row
+\family default
+ will be shown in 
+\family typewriter
+row-1
+\family default
+ and the items at index 
+\family typewriter
+row-1
+\family default
+ will be shown at index 
+\family typewriter
+row
+\family default
+.
+ If it is 
+\family typewriter
+false
+\family default
+, the items at index 
+\family typewriter
+row
+\family default
+ will be shown in 
+\family typewriter
+row+1
+\family default
+ and the items at index 
+\family typewriter
+row+1
+\family default
+ will be shoen at index 
+\family typewriter
+row
+\family default
+.
+ It does not make sense to use this method if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+del(int
+\begin_inset space ~
+\end_inset
+
+row) Removes the given row from the grid.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedRow(int
+\begin_inset space ~
+\end_inset
+
+line) Selects the given row number.
+ If -1, unselects the grid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setItems(String[][]
+\begin_inset space ~
+\end_inset
+
+items) Sets the grid items to be displayed.
+ Notice that it needs to conform to the numbers of columns that the grid
+ currently have.
+ This method removes any assigned 
+\family typewriter
+DataSource
+\family default
+.
+ The strings inside the matrix cannot be 
+\family typewriter
+null
+\family default
+.
+ If 
+\family typewriter
+items == null
+\family default
+, the grid will remain empty.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of rows in this grid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnWidth(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newWidth) Sets the column width of the given column.
+ Positive values are used as pixels, negative values represent percentage
+ of the grid's width, and 0 hides the column.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getColumnWidths() Returns an array with the current column widths, not the
+ original ones passed in the constructor.
+ Changing these values will NOT change the column's width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnEditable(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+editable) Enables/disables the edition for all cells of a grid's column.
+ Note that setting an editable column as not editable will remove all its
+ formats.
+ Returns the previous edit or the new one, so you can easily change its
+ formats.
+ Important: this must be called AFTER the grid has set its bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isColumnEditable(int
+\begin_inset space ~
+\end_inset
+
+col) Returns 
+\family typewriter
+true
+\family default
+ if the given column is editable.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColumnChoices(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+choices) Enables a combo box with choices for all cells of a grid's column.
+ The given choice array is used to create a pop list that is shown when
+ the user clicks on the column.
+ Note that calling this method removes any edit assigned to this column.
+ You can change dynamically the choices by extending the 
+\family typewriter
+CellController
+\family default
+ class.
+ Passing a 
+\family typewriter
+null
+\family default
+ value removes any combo box assigned to the column.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollTo(int
+\begin_inset space ~
+\end_inset
+
+row) Scrolls the grid to the given row.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() If all widths (passed in constructor) are positive (i.
+ e., not a percentage), then it will use their sum as the preferred width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+markAll(boolean
+\begin_inset space ~
+\end_inset
+
+check) Checks or unchecks all rows in this grid.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(int
+\begin_inset space ~
+\end_inset
+
+col,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+ascending) Performs a quicksort in the items of the given column in the
+ given order.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+qsort(int
+\begin_inset space ~
+\end_inset
+
+col) Performs an ascending quicksort in the items of the given column.
+ This method does not work if there's a 
+\family typewriter
+DataSource
+\family default
+ assigned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+row) Sets the selected row index to the given one.
+ Note: if this grid has checks, the selected row is used to scroll to mark
+ the row that may be checked; if the grid does not have checks, then it
+ acts like a normal selected row.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisibleLines(int
+\begin_inset space ~
+\end_inset
+
+visibleLines) Sets the number of visible lines (excluding the caption),
+ used to make the 
+\family typewriter
+PREFERRED
+\family default
+ height return the given number of rows as the grid height.
+ This method must be called before 
+\family typewriter
+setRect()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCheckCount() Returns the number of items checked.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(String
+\begin_inset space ~
+\end_inset
+
+tag,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+image) Sets an image to be used in the grid.
+ You must use the same tag in the grid's item.
+ The image will be resized to the current font's height, so be sure to call
+ this method AFTER the font is set (or after the grid is added to the container).
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] gridCaptions = {"Image", "Name", "Details" };
+\end_layout
+
+\begin_layout Plain Layout
+
+	int[] gridWidths = {-25, -50, -25};
+\end_layout
+
+\begin_layout Plain Layout
+
+	int[] gridAligns = {CENTER,LEFT,LEFT};
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[][] items =
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		{"@foto1", "Car number one", "good car"},
+\end_layout
+
+\begin_layout Plain Layout
+
+		{"@foto2", "Car number two", "great car"}
+\end_layout
+
+\begin_layout Plain Layout
+
+	};
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	Grid grid = new Grid(gridCaptions, gridWidths, gridAligns, false); 
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(grid, LEFT+5, AFTER+2, FILL-10, PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setImage("@foto1",new Image("foto1.jpg"));
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setImage("@foto2",new Image("foto2.jpg"));
+\end_layout
+
+\begin_layout Plain Layout
+
+	grid.setItems(items);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (Exception ee)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MessageBox.showException(ee,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveFocusToNextControl(Control
+\begin_inset space ~
+\end_inset
+
+c,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+forward) Traverses throught the edits of the grid.
+ It returns the selected control or 
+\family typewriter
+null
+\family default
+ if none was found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() This method does nothing.
+ To remove all elements, 
+\family typewriter
+removeAllElements()
+\family default
+ should be used instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllElements() Remove all elements from the grid, leaving it blank.
+ Removes any assigned 
+\family typewriter
+DataSource
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+refreshDataSource() Causes a refresh to be made in the items of the 
+\family typewriter
+DataSource
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDataSource(DataSource
+\begin_inset space ~
+\end_inset
+
+ds,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+nrItems) Passing the class that implements the 
+\family typewriter
+Grid.DataSource
+\family default
+ interface and the total number of items allows the grid to request data
+ on demand.
+ This greatly reduces the memory usage, because only the number of visible
+ items may be loaded at each time, but makes the grid navigation slower.
+ Note that in this mode the grid scroll will not be realtime: the data will
+ be requested only when the user releases the scroll bar.
+ The data source has a single method: 
+\family typewriter
+String[][] getItems(int startingRow, int count)
+\family default
+, that must return the given number of items or less.
+\begin_inset Newline newline
+\end_inset
+
+Note that when using 
+\family typewriter
+DataSource
+\family default
+s, the 
+\family typewriter
+add()
+\family default
+, 
+\family typewriter
+remove()
+\family default
+, 
+\family typewriter
+insert()
+\family default
+, etc methods CANNOT BE USED.
+ A 
+\family typewriter
+DataSource
+\family default
+ is mostly used to assign a 
+\family typewriter
+ResultSet
+\family default
+ to it, so it's nonsense any data modification.
+ Note that the scroll is made not live scrolling to speedup data retrieval.
+\begin_inset Newline newline
+\end_inset
+
+Here's a sample of a 
+\family typewriter
+getItems()
+\family default
+ implementation: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public String[][] getItems(int startIndex, int count)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (activeRS != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		activeRS.absolute(startIndex);
+\end_layout
+
+\begin_layout Plain Layout
+
+		activeRS.getStrings(count);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	return null;
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDataSource() Returns the 
+\family typewriter
+DataSource
+\family default
+ assigned for this grid, or 
+\family typewriter
+null
+\family default
+ if there is none.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCellController(Grid.CellController
+\begin_inset space ~
+\end_inset
+
+cc) Passing the class that extends 
+\family typewriter
+Grid.CellController
+\family default
+ will allow you to have a fine control of each cell of the grid.
+ Note that using a cell controller will make the drawings slower.
+ The class has the following methods:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+getBackColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the background color for the given cell, or
+\family typewriter
+ 
+\family default
+-1 if you want to use the default one.
+ Note that if the grid has a check, the back color of the check cell will
+ be requested passing 
+\family typewriter
+col
+\family default
+ value as -1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getForeColor(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the foreground color for the given cell, or -1 if you want
+ to use the default one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFont(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return the font to be used in this cell, or 
+\family typewriter
+null
+\family default
+ to use the default control's font.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: if you plan to use a font bigger than in the rest of the grid, be
+ sure to follow the steps below (following this guide, the grid will have
+ a height of the biggest font):
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Construct the grid and set the grid's font to be the one with bigger size.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Call 
+\family typewriter
+add()
+\family default
+/
+\family typewriter
+setRect()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Restore the grid's default font.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+isEnabled(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Must return if the given cell is enabled, i.
+ e., can have input and can be selected.
+ Regarding the input, it will only work if the 
+\family typewriter
+setColumnChoices()
+\family default
+ or 
+\family typewriter
+setEditable()
+\family default
+ was called to the given column.
+ Regarding the selection, it may also disable column's check state change.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+getChoices(int
+\begin_inset space ~
+\end_inset
+
+row,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+col) Returns a customized set of choices for the given cell.
+ Must return 
+\family typewriter
+null
+\family default
+ if you want to use the default set.
+ Only works if 
+\family typewriter
+setColumnChoices()
+\family default
+ was called to the given column.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note that the 
+\family typewriter
+setColumnEditable()
+\family default
+ and 
+\family typewriter
+setColumnChoices()
+\family default
+ methods are mutually exclusive: calling one cancels the effects of the
+ other.
+ The 
+\family typewriter
+setDataSource()
+\family default
+ and 
+\family typewriter
+setItems()
+\family default
+ methods are also mutually exclusive.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Useful attributes
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+boldCheck Draws a bold check instead of the tiny one.
+ Useful for high resolution devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+canClickSelectAll Sets to 
+\family typewriter
+false
+\family default
+ to disable the click on the check column of the captions to select and
+ unselect all checks.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableSort Disables the sort when clicking in the column's caption.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawCheckBox Boolean that defines if the box around the check will or not
+ be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableColumnResize Must be set to 
+\family typewriter
+false
+\family default
+ to disable the column resize by dragging the column separator line.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+extraHorizScrollButtonHeight A value that can increase the horizontal scroll
+ buttons height.
+ Defaults 2 in 160x160 or a multiple of it in other resolutions.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+oldCellText The text that was in the cell before the user had editted it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor The color used to draw the check.
+ Defaults to black.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+captionsBackColor The color used to fill the captions area.
+ 
+\family typewriter
+BRIGHT
+\family default
+ by default.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightColorThe Color of the selected (highlighted) row.
+ 
+\family typewriter
+DARK
+\family default
+ by default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+firstStripeColor Color of the first stripe.
+ 
+\family typewriter
+WHITE
+\family default
+ by default.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+secondStripeColor Color of the second stripe.
+ 
+\family typewriter
+drawStripes
+\family default
+ must also be set to 
+\family typewriter
+true
+\family default
+.
+ 
+\family typewriter
+BRIGHT
+\family default
+ by default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+verticalLineStyle Defines the vertical line style of the grid.
+ Possible values are 
+\family typewriter
+VERT_DOT
+\family default
+ (default), 
+\family typewriter
+VERT_LINE
+\family default
+, and 
+\family typewriter
+VERT_NONE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+String[]
+\begin_inset space ~
+\end_inset
+
+captions These are the column captions.
+ Can be directly assigned, but always make sure it has the same number of
+ columns of the grid, or the widths array, set with the 
+\family typewriter
+setWidths()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+columnResizeMargin A static field that defines how many pixels are used
+ to define the place where the column will be resized.
+ Defaults to 3 on pen devices and 5 on touch devices (must be ODD!).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawHighlight Set to 
+\family typewriter
+false
+\family default
+ to don't let the highlighted (selected) row be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+selectedLine The current selected row, or -1 if none.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+linesPerPage How many lines fits in a page.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+tip The tooltip used to display a column's text when it exceeds the column
+ width.
+ You can directly customize the tooltip.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastStartingRow Stores the last row that was requested from the current
+ data source.
+ The last rows retrieved will be cached to prevent requesting the same data.
+ If you want to ensure that the data will be fetched again, set this member
+ to -1 in 
+\family typewriter
+getItems()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sortTypes Defines the sort type for each column of the grid.
+ Specify -2 to disable sort for that column.
+ The array is created in the constructor setting all columns to 
+\family typewriter
+Convert.SORT_AUTODETECT
+\family default
+; so you can just change a specific column with the sort type you want.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The column index always excludes the check column.
+ So a grid with 3 columns and a check, the 
+\family typewriter
+sortTypes
+\family default
+ length will be 3, which will be the same length of a grid with 3 columns
+ without a check.
+ The other sort types are: 
+\family typewriter
+Convert.SORT_OBJECT
+\family default
+, 
+\family typewriter
+Convert.SORT_STRING
+\family default
+, 
+\family typewriter
+Convert.SORT_INT
+\family default
+, 
+\family typewriter
+Convert.SORT_DOUBLE
+\family default
+, 
+\family typewriter
+Convert.SORT_DATE
+\family default
+, 
+\family typewriter
+Convert.
+\begin_inset Newline newline
+\end_inset
+
+SORT_COMPARABLE
+\family default
+, and 
+\family typewriter
+Convert.SORT_STRING_NOCASE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useHorizontalScrollBar Set to 
+\family typewriter
+true
+\family default
+ before constructing the grids to use an horizontal scrollbar instead of
+ the two left/right buttons.
+ Note that this member is static so it will affect all grids created afterwards,
+ unless you reset it to 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+liveScrolling Set to 
+\family typewriter
+true
+\family default
+ before calling 
+\family typewriter
+setDataSource()
+\family default
+ to enable live scrolling when using a
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataSource
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+currencyDecimalPlaces Used to show a given (set of) column(s) formatted
+ as currency.
+ You must assign this with an array with the column count, and place the
+ wanted number of decimal places, or -1 if you don't want to format it.
+ Note that the original value must be already formatted with the wanted
+ number of decimal places, and also that only the displayed value is changed;
+ the internal value will remain without formatting.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Grid g = new Grid(new String[]{"Name","Age","Salary"},false);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.currencyDecimalPlaces = new int[]{-1,-1,2}; // ignore name and age, and
+ format salary with 2 decimal places.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableSelectDisabledCell Set to 
+\family typewriter
+false
+\family default
+ to disallow the selection of a row if the selected cell is disabled (via
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CellController
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lineScroll Set to 
+\family typewriter
+true
+\family default
+ to enable navigation per line instead of per page when in non-penless mode.
+ By default, in pen mode (devices with touch-screen), when the user press
+ up/down, the grid is scrolled one page at a time.
+ Setting this flag to 
+\family typewriter
+true
+\family default
+ makes it scroll a line at a time.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderGap Defines the border gap when using 
+\family typewriter
+CellController.getBackColor()
+\family default
+.
+ Setting it to something bigger than 0 will make a space between the cells.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+aligns The aligns that are used in the constructor.
+ You may change them after the constructor is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleMayBeClipped When the width of a title is greater than the width you
+ specified for a the column, the title's width is used instead.
+ Set this flag to 
+\family typewriter
+true
+\family default
+ to disable this behaviour.
+ 
+\end_layout
+
+\begin_layout Standard
+Another sample:
 \end_layout
 
 \begin_layout Standard
@@ -22602,8 +25964,17 @@ ToolTip
 
 \begin_layout Standard
 It allows the display of a tooltip when user keeps the pen in the control.
- The default popup delay is 1000 ms and the amount of time it will be displayed
- is 2000 ms (a pen up also hides the control).
+ On Windows and Linux desktop, the tooltip is also shown when the mouse
+ stays over a control.
+ The default popup delay (
+\family typewriter
+millisDelay
+\family default
+) is 1000 ms and the amount of time it will be displayed (
+\family typewriter
+millisDisplay
+\family default
+) is 2000 ms (a pen up also hides the control).
  The tooltip must always be added after the control is added and had its
  bounds set; otherwise, you must call the added method to initialize the
  tip's bounds.
@@ -22614,11 +25985,13 @@ You can set the border color by changing the
 \family typewriter
 borderColor
 \family default
- field (no border by default) and also the internal gap (see field 
+ field (no border by default) and also the internal gap (the field 
 \family typewriter
 insideGap
 \family default
 ).
+ By default, it is -1 and no border is shown.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -22631,7 +26004,7 @@ distX
 distY
 \family default
  lets you set the default distance from the control for all tooltips.
- They must be set before the tooltip is created.
+ They must be set before the tooltip is created and are 0 by default.
  
 \end_layout
 
@@ -22645,6 +26018,45 @@ The constructor receives the control which the tooptip refers to and the
 n
 \family default
  like a label control.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ToolTip t = new ToolTip(control, "Hi!
+\backslash
+nIt's Me"); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event will be dispatched to the attached control right before the text
+ is shown.
+ You can then set the tip to a new value using 
+\family typewriter
+setText()
+\family default
+; setting to an empty string will disable the tooltip at that moment.
+ Calling 
+\family typewriter
+setControlRect()
+\family default
+ also changes the rectangle around which the tooltip will be displayed.
+ By default, it's used the absolute rectangle of the control passed in the
+ constructor.
+ The placement of the tooltip will be defined based on it, in a way that
+ the control is not obscured.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -22679,7 +26091,68 @@ PenListener
 \end_layout
 
 \begin_layout Standard
-Sample code:
+Examples:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ToolTip.distX = 10; // 0 by default
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip.distY = 4; // 0 by default
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip.insideGap = 8; // 4 by default 
+\end_layout
+
+\begin_layout Plain Layout
+
+Button b; 
+\end_layout
+
+\begin_layout Plain Layout
+
+add(b = new Button("Hello Tooltip!"),CENTER,BOTTOM); 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ToolTip t = new ToolTip(b, "Hi, this is a button");
+\end_layout
+
+\begin_layout Plain Layout
+
+t.borderColor = 0x00FF00; // -1 (none) by default 
+\end_layout
+
+\begin_layout Plain Layout
+
+t.millisDelay = 500; // 1000 by default t.millisDisplay = 4000; // 2000 by
+ default
+\end_layout
+
+\begin_layout Plain Layout
+
+t.setBackColor(Color.getRGB(250,0,0)); // same as control's container by default
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -22786,8 +26259,881 @@ nyou can choose a back new color");
 
 \end_layout
 
+\begin_layout Standard
+The 
+\family typewriter
+ToolTip
+\family default
+ class has one public constructor and other methods (some methods heired
+ from 
+\family typewriter
+Control
+\family default
+ are ommited):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ToolTip(Control
+\begin_inset space ~
+\end_inset
+
+control,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+message) Constructs a tooltip.
+ 
+\family typewriter
+control
+\family default
+ is the control which supports the tip.
+ If 
+\family typewriter
+null
+\family default
+, you must call 
+\family typewriter
+setControlRect()
+\family default
+ and show it by your own.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontShowTipOnMouseEvents() Stop using mouse events to show the tooltip.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+split(String
+\begin_inset space ~
+\end_inset
+
+msg,
+\begin_inset space ~
+\end_inset
+
+FontMetrics
+\begin_inset space ~
+\end_inset
+
+fm) Use this handy method to split the text in order to correctly fit the
+ window.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String msg = "a very long text that will be split to fit in the window";
+\end_layout
+
+\begin_layout Plain Layout
+
+new ToolTip(control, ToolTip.split(msg, fm));
+\end_layout
+
+\end_inset
+
+ Make sure that 
+\family typewriter
+fm
+\family default
+ will be the font's 
+\family typewriter
+FontMetrics
+\family default
+ (if you plan to change the font after calling the constructor).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+show() Shows the tooltip.
+ If you want to show the tooltip programatically, you must do something
+ like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+toolTip.setText(msg);
+\end_layout
+
+\begin_layout Plain Layout
+
+toolTip.setControlRect(lbCompany.getAbsoluteRect());
+\end_layout
+
+\begin_layout Plain Layout
+
+toolTip.show(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hide() Hides the tooltip.
+ 
+\end_layout
+
 \begin_layout Chapter
-Advanced Controls
+Some Advanced Controls
+\end_layout
+
+\begin_layout Standard
+In this chapter, some advanced controls will be described in detail.
+\end_layout
+
+\begin_layout Section
+AlignedLabelsContainer
+\end_layout
+
+\begin_layout Standard
+This class is a 
+\family typewriter
+Container
+\family default
+ used to align all controls to the maximum width of a set of labels.
+ You can define the label alignment.
+ The controls that you add to this container are placed at the right of
+ the labels.
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String[] labels =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Name",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Born date",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Telephone",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Address",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"City",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Country", 
+\end_layout
+
+\begin_layout Plain Layout
+
+	""
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+AlignedLabelsContainer c = new AlignedLabelsContainer(labels);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setBorderStyle(BORDER_LOWERED);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.labelAlign = RIGHT;
+\end_layout
+
+\begin_layout Plain Layout
+
+c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Col
+or.BLACK,Color.BLACK,};
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setInsets(2,2,2,2);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.setFont(font.asBold()); // labels are bold
+\end_layout
+
+\begin_layout Plain Layout
+
+c.childrenFont = font; // but controls are normal
+\end_layout
+
+\begin_layout Plain Layout
+
+add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i =0; i < labels.length-2; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	c.add(new Edit(),LEFT+2,AFTER+(i==0?2:0));
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new ComboBox(new String[]{"Brazil","France"}),LEFT+2,AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new Button("Insert data"),RIGHT,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+c.add(new Button("Clear data"),RIGHT,AFTER,SAME,PREFERRED); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The code above generates a screen similar to the shown below taken from
+ UIGadgets using Android style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/align_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is possible to do this alignment by hand.
+ However, it is much easier using this control.
+\end_layout
+
+\begin_layout Standard
+This class has the following public fields, constructors and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+childrenFont Set this member to the font you want to set to the controls
+ that are added to this container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foreColors Set an array with the same number of labels and the colors you
+ want to show for each label.
+ If the number of labels differ, you will get an exception.
+ It can be used to hide a label: just set its foreground color to the background
+ color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+labelAlign The alignment of the labels.
+ Defaults to 
+\family typewriter
+LEFT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer() Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ without labels.
+ You may call 
+\family typewriter
+setLabels()
+\family default
+ to set the labels.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer(String[]
+\begin_inset space ~
+\end_inset
+
+labels) Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ with the given labels.
+ You may pass 
+\family typewriter
+null
+\family default
+, but be sure to call 
+\family typewriter
+setLabels()
+\family default
+ to set the labels.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AlignedLabelsContainer(String[]
+\begin_inset space ~
+\end_inset
+
+labels,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Creates a new 
+\family typewriter
+AlignedLabelsContainer
+\family default
+ with the given labels.
+ 
+\family typewriter
+vgap
+\family default
+ is an extra gap between rows, which may be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setLabels(String[]
+\begin_inset space ~
+\end_inset
+
+labels,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Sets the labels and the vertical extra gap, which may be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLineY(int
+\begin_inset space ~
+\end_inset
+
+line) Given a line (staring from 0), returns the y position.
+ Can be used to easily align the controls.
+ Note that the line number may be greater than the number of assigned labels.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add(chCasado = new Check("Married"),LEFT,getLineY(4)+2); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLineHeight() Returns the height of a line.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLeftInset() Returns the left inset.
+ To be able to center a control, you have to do something like: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+control.setRect(CENTER-getLeftInset()/2,...); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+ArrowButton
+\end_layout
+
+\begin_layout Standard
+A class used to display a 
+\family typewriter
+Button
+\family default
+ with an arrow inside.
+ The following code shows the window below it:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.gfx.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b1 = new ArrowButton(Graphics.ARROW_UP, 10, Color.BLACK);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b1, LEFT, TOP);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b2 = new ArrowButton(Graphics.ARROW_DOWN, 20, Color.BLUE);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b2, AFTER, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b3 = new ArrowButton(Graphics.ARROW_LEFT, 30, Color.CYAN);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b3, LEFT, AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+		ArrowButton b4 = new ArrowButton(Graphics.ARROW_RIGHT, 40, Color.GREEN);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b4, AFTER, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, constructor, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+arrowColor The arrow's color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ArrowButton(byte
+\begin_inset space ~
+\end_inset
+
+direction,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+prefWH,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+arrowColor) Constructs an 
+\family typewriter
+ArrowButton
+\family default
+, where 
+\family typewriter
+direction
+\family default
+ must be one out of 
+\family typewriter
+Graphics.ARROW_UP
+\family default
+, 
+\family typewriter
+Graphics.ARROW_DOWN
+\family default
+, 
+\family typewriter
+Graphics.ARROW_LEFT
+\family default
+, or 
+\family typewriter
+Graphics.ARROW_RIGHT
+\family default
+; 
+\family typewriter
+prefWH
+\family default
+ is the desired arrow width/height (the effective arrow's size will be computed
+ based in the current width/height), and 
+\family typewriter
+arrowColor
+\family default
+ is the arrow color, which can be changed by setting the 
+\family typewriter
+arrowColor
+\family default
+ field.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setArrowSize(int
+\begin_inset space ~
+\end_inset
+
+kk) Changes the arrow size of the button.
+ Note that the button size won't be changed.
+ Some examples using 
+\family typewriter
+b4
+\family default
+ of the above picture:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+b4.setArrowSize(20);
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+b4.setArrowSize(80);
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/arrowbutton_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Shows a string representation of the object and its direction.
+ For example, the code below
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.debug(b1.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b2.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b3.toString());
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug(b4.toString());
+\end_layout
+
+\end_inset
+
+prints the following on the console:
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@131f71a, dir: 1 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@15601ea, dir: 2 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@197d257, dir: 3 
+\begin_inset Newline newline
+\end_inset
+
+totalcross.ui.ArrowButton@7259da, dir: 4
+\end_layout
+
+\begin_layout Chapter
+Additional Advanced Controls
 \begin_inset CommandInset label
 LatexCommand label
 name "chap:Advanced-Controls"
@@ -22862,43 +27208,6 @@ Clicking on leaf node will swap leaf icon (like hyperlink).
 
 \begin_layout Itemize
 Allows the creation of tree to show or hide root node.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-AlignedLabelsContainer
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is a 
-\family typewriter
-Container
-\family default
- used to align all controls to the maximum width of a set of labels.
- You can define the label alignment.
- The controls that you add to this container are placed at the right of
- the labels.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ArrowButton
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A class used to display a button with an arrow inside.
- 
 \end_layout
 
 \end_deeper

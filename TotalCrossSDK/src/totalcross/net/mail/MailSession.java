@@ -16,7 +16,10 @@
 
 package totalcross.net.mail;
 
+import totalcross.io.DataStream;
+import totalcross.io.IOException;
 import totalcross.util.Properties;
+import totalcross.util.Properties.Value;
 
 /**
  * Used to store properties used by the messaging API.
@@ -290,5 +293,29 @@ public class MailSession extends Properties
       if (protocol.equals("smtps"))
          return new SMTPSSLTransport(this);
       return null;
+   }
+
+   /**
+    * Load properties from the given DataStream, but unlike Properties, the contents of the MailSession are not cleared
+    * before reading from the DataStream.
+    */
+   public void load(DataStream ds) throws IOException
+   {
+      super.load(ds, false);
+   }
+
+   /**
+    * Retrieves the value of the property mapped to the given key, throwing a NullPointerException if the key is not
+    * mapped to any value.
+    * 
+    * @param key 
+    * @return
+    */
+   Value getNotNull(String key)
+   {
+      Value v = this.get(key);
+      if (v == null)
+         throw new NullPointerException("Property '" + key + "' is null");
+      return v;
    }
 }

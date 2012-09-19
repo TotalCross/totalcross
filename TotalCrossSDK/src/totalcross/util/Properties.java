@@ -374,7 +374,7 @@ public class Properties
    {
       return (Value) props.get(key);
    }
-
+   
    /** Returns the number of properties */
    public int size()
    {
@@ -445,7 +445,21 @@ public class Properties
     */
    public void load(DataStream ds) throws totalcross.io.IOException
    {
-      props.clear();
+      load(ds, true);
+   }
+
+   /**
+    * Load properties from the given DataStream. If cleanBeforeLoad is true, the contents of this object will be cleared
+    * before reading from the DataStream.
+    * 
+    * @param ds
+    * @param cleanBeforeLoad
+    * @throws totalcross.io.IOException
+    */
+   public void load(DataStream ds, boolean cleanBeforeLoad) throws totalcross.io.IOException
+   {
+      if (cleanBeforeLoad)
+         props.clear();
       // read and populate the options hashtable from pdb
       try
       {
@@ -458,28 +472,27 @@ public class Properties
             {
                case Str.TYPE:
                   v = new Str(ds.readString());
-                  break;
+               break;
                case Int.TYPE:
                   v = new Int(ds.readInt());
-                  break;
+               break;
                case Double.TYPE:
                   v = new Double(ds.readDouble());
-                  break;
+               break;
                case Boolean.TYPE:
                   v = new Boolean(ds.readBoolean());
-                  break;
+               break;
                case Long.TYPE:
                   v = new Long(ds.readLong());
-                  break;
+               break;
             }
             if (v != null)
                props.put(key, v);
          }
       }
-      catch (IOException e)
+      catch (EOFException e)
       {
-         if (!DataStream.EOSMessage.equals(e.getMessage()))
-            throw e;
+         // Don't throw EOF.
       }
    }
 
