@@ -128,6 +128,11 @@ public class SSLSocket extends Socket
       }
       return sslConnection.write(buf, count);
    }
+   
+   public int superWriteBytes4B(byte[] buf, int start, int count) throws IOException
+   {
+      return super.writeBytes(buf, start, count);
+   }
 
    public void close() throws IOException
    {

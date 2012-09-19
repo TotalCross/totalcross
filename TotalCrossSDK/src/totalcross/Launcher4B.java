@@ -66,6 +66,7 @@ import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 import totalcross.net.SocketTimeoutException;
+import totalcross.net.ssl.SSLSocket;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
@@ -2199,7 +2200,7 @@ public class Launcher4B
          {
             oneByte[0] = (byte)(b & 0xFF);
 
-            int w = s.writeBytes(oneByte, 0, 1);
+            int w = s instanceof SSLSocket ? ((SSLSocket) s).superWriteBytes4B(oneByte, 0, 1) : s.writeBytes(oneByte, 0, 1);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 
@@ -2215,7 +2216,7 @@ public class Launcher4B
       {
          try
          {
-            int w = s.writeBytes(buf, off, len);
+            int w = s instanceof SSLSocket ? ((SSLSocket) s).superWriteBytes4B(buf, off, len) : s.writeBytes(buf, off, len);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 
