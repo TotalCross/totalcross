@@ -67,6 +67,7 @@ import totalcross.io.IOException;
 import totalcross.io.Stream;
 import totalcross.net.SocketTimeoutException;
 import totalcross.net.ssl.SSLSocket;
+import totalcross.net.ssl.SSLSocket4B;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
@@ -2119,7 +2120,7 @@ public class Launcher4B
 
          try
          {
-            int r = s.readBytes(oneByte, 0, 1);
+            int r = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superReadBytes(oneByte, 0, 1) : s.readBytes(oneByte, 0, 1);
 
             if (left != -1 && r == 1)
                left--;
@@ -2142,7 +2143,7 @@ public class Launcher4B
             if (left != -1 && len > left)
                len = left;
 
-            int r = s.readBytes(buf, off, len);
+            int r = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superReadBytes(buf, off, len) : s.readBytes(buf, off, len);
 
             if (left != -1 && r > 0)
                left -= r;
@@ -2200,7 +2201,7 @@ public class Launcher4B
          {
             oneByte[0] = (byte)(b & 0xFF);
 
-            int w = s instanceof SSLSocket ? ((SSLSocket) s).superWriteBytes4B(oneByte, 0, 1) : s.writeBytes(oneByte, 0, 1);
+            int w = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superWriteBytes(oneByte, 0, 1) : s.writeBytes(oneByte, 0, 1);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 
@@ -2216,7 +2217,7 @@ public class Launcher4B
       {
          try
          {
-            int w = s instanceof SSLSocket ? ((SSLSocket) s).superWriteBytes4B(buf, off, len) : s.writeBytes(buf, off, len);
+            int w = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superWriteBytes(buf, off, len) : s.writeBytes(buf, off, len);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 
