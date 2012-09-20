@@ -335,8 +335,13 @@ static int32 getPixel(Object g, int32 x, int32 y)
    x += Graphics_transX(g);
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
-   {
+   {              
       PixelConv p;
+#ifdef ANDROID
+      if (Graphics_useOpenGL(g))
+         return glGetPixel(x,y);
+      else
+#endif      
       p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
       ret = (p.r << 16) | (p.g << 8) | p.b;
    }

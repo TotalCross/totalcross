@@ -132,6 +132,9 @@ static bool initGLES()
    gPositionHandle = glGetAttribLocation(gProgram, "a_Position"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   glPixelStorei(GL_PACK_ALIGNMENT, 1); // for glReadPixels
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+
 
    glViewport(0, 0, width, height);
    /*glEnable*/glDisable(GL_SCISSOR_TEST);
@@ -207,7 +210,13 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 }
 
 ////////////////////////////// OPEN GL 2 //////////////////////////////////
+struct{ GLubyte r, g, b, a; } glpixel;
 
+int32 glGetPixel(int32 x, int32 y)
+{  
+   glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
+   return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
+}
 void glDrawPixels(Context c, int32 n)
 {
    glVertexAttribPointer(gColorHandle, 4 * n, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);

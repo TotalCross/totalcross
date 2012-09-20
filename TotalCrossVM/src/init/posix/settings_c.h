@@ -376,9 +376,6 @@ bool fillSettings(Context currentContext)
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "virtualKeyboard", "Z");
    *tcSettings.virtualKeyboardPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
 
-   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "keypadOnly", "Z");
-   *tcSettings.keypadOnlyPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
-   
    // rom serial number
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "serialNumber", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);

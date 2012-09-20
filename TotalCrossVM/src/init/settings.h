@@ -54,7 +54,6 @@ typedef struct
    int32* daylightSavingsPtr;            // boolean
    int32* timeZonePtr;                   // int
    int32* showSecretsPtr;                // boolean
-   int32* keypadOnlyPtr;                 // boolean
    int32* keyboardFocusTraversablePtr;   // boolean
    int32* closeButtonTypePtr;            // int
    int32* isFullScreenPtr;               // boolean

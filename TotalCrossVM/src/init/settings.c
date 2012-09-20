@@ -60,7 +60,6 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
    tcSettings.closeButtonTypePtr          = getStaticFieldInt(settingsClass, "closeButtonType");
    tcSettings.isFullScreenPtr             = getStaticFieldInt(settingsClass, "isFullScreen");

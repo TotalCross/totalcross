@@ -429,7 +429,8 @@ public class Button extends Control
             postPressedEvent();
             break;
          case PenEvent.PEN_DOWN:
-            press(isSticky ? armed = !armed: (armed = true));
+            armed = isSticky ? !armed: true;
+            repaintNow();
             if (!isSticky && autoRepeat) 
                autoRepeatTimer = addTimer(INITIAL_DELAY);
             break;
