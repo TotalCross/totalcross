@@ -615,7 +615,7 @@ target: Android builds
   <antcall target="build_android" >
    <param name="type" value="release" />
    </antcall>
-  <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
+  <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
