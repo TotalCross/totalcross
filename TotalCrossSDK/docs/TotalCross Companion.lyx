@@ -27768,7 +27768,11 @@ ColorList.Item
 \family typewriter
 ColorList.Item
 \family default
- you can retrieve the color as int.
+ you can retrieve the color as 
+\family typewriter
+int
+\family default
+.
  Use the 
 \family typewriter
 getSelectedColor()
@@ -27872,6 +27876,177 @@ toString() Returns the hexadecimal string representation of the
 Item
 \family default
  color.
+\end_layout
+
+\begin_layout Section
+FlowContainer
+\end_layout
+
+\begin_layout Standard
+This class is a container that will place controls one after another and,
+ once the width has been reached, it wraps to the next line.
+ All controls must be added before calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ When calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+ for this control, the height must be 
+\family typewriter
+PREFERRED
+\family default
+ (with adjustments, if needed).
+ Also, if 
+\family typewriter
+initUI()
+\family default
+ is overriden, be sure to call 
+\family typewriter
+super.initUI()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Code example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Settings.uiAdjustmentsBasedOnFontHeight = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+Label l = new Label("Do you agree that TotalCross is a great development
+ platform?");
+\end_layout
+
+\begin_layout Plain Layout
+
+l.autoSplit = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(l, LEFT,AFTER,FILL,PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+FlowContainer fc = new FlowContainer(50,25);
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably Yes"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably No"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Maybe"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("I don't know"));
+\end_layout
+
+\begin_layout Plain Layout
+
+add(fc, LEFT,AFTER,FILL,PREFERRED); 
+\end_layout
+
+\end_inset
+
+which results in:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/flow_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public constructor, and the following methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FlowContainer(int
+\begin_inset space ~
+\end_inset
+
+hgap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Constructs a 
+\family typewriter
+FlowContainer
+\family default
+ with the given horizontal and vertical gaps.
+ You must add all children controls before calling 
+\family typewriter
+setRect()
+\family default
+ for this container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initUI() Places the controls on screen.
+ 
 \end_layout
 
 \begin_layout Section
@@ -28631,42 +28806,6 @@ ComboBoxEditable
 \begin_layout Standard
 This control is usually used as an edit that holds old typed values.
  When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-FlowContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is a container that will place controls one after the other and,
- once the width has been reached, it wraps to the next line.
- All controls must be added before calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
-.
- When calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
- for this control, the height must be 
-\family typewriter
-PREFERRED
-\family default
- (with adjustments, if needed).
  
 \end_layout
 
