@@ -79,7 +79,7 @@ target: init
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
-  <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r4b" else=""><os family="windows" /></condition>
+  <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
   <property name="apk" value="${android.temp}/Litebase.apk" />
 
   <!-- installshield paths -->
@@ -546,16 +546,15 @@ target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="clean_android_native" description="Cleans the native files for Android" >
-  <delete dir="${android.project.path}/out/apps/litebase" failonerror="false" />
+  <delete dir="${base.temp.path}/android/litebase" failonerror="false" />
 </target>
 
 <target name="build_android_native" description="Compiles liblitebase.so for Android">
-   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
-      <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
-      <env key="NDK_HOME" value="${android.ndk.path}"/>
-      <env key="TC_HOME" value="${source.tc.vm.path}"/>
-      <env key="LB_HOME" value="${source.lb.path}"/>
-      <arg line='--login -i ${android.project.path}\apps\litebase\runmake.sh'/>
+   <property name="type" value="demo" />
+   <exec dir="${source.lb.path}/src/native" executable="cmd.exe" failonerror="true">
+      <env key="TYPE" value="${type}" />
+      <env key="NDK_OUT" value="${base.temp.path}/android/Litebase/${TYPE}" />
+      <arg line="/c ${android.ndk.path}/ndk-build"/>
    </exec>
   <sleep seconds="3"/>
 </target>
@@ -583,29 +582,40 @@ target: Android builds
 
 </target>
 
-<target name="build_android" depends="build_android_native,build_android_java" description="Compiles liblitebase.so and builds the Litebase.apk for Android"/>
+<target name="build_android"  depends="build_android_native" description="Compiles liblitebase.so and builds the Litebase.apk for Android" >
+   <copy todir="${android.project.path}/apps/litebase/libs" overwrite="true" >
+      <fileset dir="${source.lb.path}/src/native/jni/libs" />
+   </copy>
+  <retry retrycount="3">
+    <antcall target="build_android_java" />
+  </retry>
+</target>
 
-<target name="adb_android" description="Just installs Litebase on Android (no build is performed)." >
+<target name="adb" description="Just installs Litebase on Android (no build is performed)." >
   <property name="apk" value="${apk}" />
   <exec executable="adb${exe}" >
    <arg line="install -r ${apk}" />
   </exec>
 </target>
 
-<target name="install_android" depends="build_android,adb_android" description="Builds and installs Litebase on Android." />
+<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs Litebase on Android." />
 
-<target name="buildAndroid_sdk" >
+<target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
-  <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
-  <antcall target="build_android" />
-  <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />	
+  <antcall target="build_android" >
+   <param name="type" value="demo" />
+   </antcall>
+  <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />
 </target>
 
-<target name="buildAndroid_vms" >
+<target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
+
+<target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
-  <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
-  <antcall target="build_android" />
-  <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
+  <antcall target="build_android" >
+   <param name="type" value="release" />
+   </antcall>
+  <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
