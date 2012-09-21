@@ -196,7 +196,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 }
 
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
-{
+{                         
    eglSwapBuffers(_display, _surface);
 }
 
@@ -214,7 +214,7 @@ struct{ GLubyte r, g, b, a; } glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
 {  
-   glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
+   glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
 void glDrawPixels(Context c, int32 n)

@@ -220,6 +220,25 @@ public final class Color
       return (r << 16) | (g << 8) | b;
    }
 
+   /** Interpolates the given colors by the given factor, ranging from 0 to 255.
+    *  @since TotalCross 1.23
+    */
+   public static int interpolateA(int color1, int color2, int factor)
+   {
+      int m = 255-factor;
+      int r1 = (color1 >> 16) & 0xFF;
+      int g1 = (color1 >>  8) & 0xFF;
+      int b1 = (color1      ) & 0xFF;
+      int r2 = (color2 >> 16) & 0xFF;
+      int g2 = (color2 >>  8) & 0xFF;
+      int b2 = (color2      ) & 0xFF;
+      int r = (r1*factor+r2*m)/255;
+      int g = (g1*factor+g2*m)/255;
+      int b = (b1*factor+b2*m)/255;
+      
+      return (r << 16) | (g << 8) | b;
+   }
+
    /** Returns a color that better contrasts with the given original color.
     * @since TotalCross 1.23 
     */

@@ -366,7 +366,7 @@ public class PushButtonGroup extends Control
          else
          {
             g.getClip(clip);
-            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+            g.backColor = parent.backColor;//g.getPixel(clip.x,clip.y); // use color painted by the parent
          }
          g.fillRect(0,0,width,height);
       }

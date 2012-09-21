@@ -60,7 +60,7 @@ public class Image extends GfxSurface
    protected int height;
 
    /** Contains the pixels of this image. */
-   Object pixels;
+   int[] pixels;
 
    /** The number of frames of this image, if derived from a multi-frame gif. */
    private int frameCount=1;
@@ -99,8 +99,8 @@ public class Image extends GfxSurface
       init();
    }
 
-   /** Used only at desktop to get the image's pixels; <b>NOT AVAILABLE</b> at the device (will throw a NoSuchMethodError). */
-   public Object getPixels()
+   /** Used only at desktop to get the image's pixels. */
+   public int[] getPixels()
    {
       return pixels;
    }
