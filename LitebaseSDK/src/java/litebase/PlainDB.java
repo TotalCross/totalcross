@@ -80,7 +80,7 @@ class PlainDB
    DataStreamLE basds;
 
    /**
-    * The data stream to read from the basbufO.
+    * The data stream to read from the .dbo.
     */
    DataStreamLE dsdbo;
 
