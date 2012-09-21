@@ -7,59 +7,23 @@ import totalcross.net.Socket;
 import totalcross.net.UnknownHostException;
 import totalcross.sys.Vm;
 
-/**
- * This class extends Sockets and provides secure socket using protocols such as the "Secure Sockets Layer" (SSL) or
- * IETF "Transport Layer Security" (TLS) protocols.<br>
- * 
- * The initial handshake on this connection is initiated by calling startHandshake which explicitly begins handshakes.
- * If handshaking fails for any reason, the SSLSocket is closed, and no further communications can be done.
- */
-public class SSLSocket extends Socket
+public class SSLSocket4B extends Socket
 {
    private SSLClient sslClient;
    private SSL sslConnection;
    private SSLReadHolder sslReader;
    private ByteArrayStream buffer = null;
 
-   /**
-    * Constructs an SSL connection to a named host at a specified port, with the specified connection timeout, binding
-    * the client side of the connection a given address and port. This acts as the SSL client.
-    * 
-    * @param host
-    *           the server's host
-    * @param port
-    *           its port
-    * @param timeout
-    *           the timeout for this operation
-    * @throws UnknownHostException
-    *            if the host is not known
-    * @throws IOException
-    *            if an I/O error occurs when creating the socket
-    */
-   public SSLSocket(String host, int port, int timeout) throws UnknownHostException, IOException
+   public SSLSocket4B(String host, int port, int timeout) throws UnknownHostException, IOException
    {
       super(host, port, timeout);
    }
 
-   /**
-    * Creates a new SSLClient to be used by this instance of SSLSocket during the handshake. The default implementation
-    * does not perform any kind of validation. Subclasses may override this method to use their own implementation of
-    * SSLClient.
-    * 
-    * @return a SSLClient initialized with the objects required to perform the validation for this socket.
-    * @throws CryptoException
-    */
    protected SSLClient prepareContext() throws CryptoException
    {
       return new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
    }
 
-   /**
-    * Starts an SSL handshake on this connection.
-    * 
-    * @throws IOException
-    *            on a network level error
-    */
    public void startHandshake() throws IOException
    {
       try
@@ -129,6 +93,16 @@ public class SSLSocket extends Socket
       return sslConnection.write(buf, count);
    }
    
+   public int superWriteBytes(byte[] buf, int start, int count) throws IOException
+   {
+      return super.writeBytes(buf, start, count);
+   }
+   
+   public int superReadBytes(byte[] buf, int start, int count) throws IOException
+   {
+      return super.readBytes(buf, start, count);
+   }
+
    public void close() throws IOException
    {
       if (buffer != null)
