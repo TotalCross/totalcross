@@ -28050,6 +28050,199 @@ initUI() Places the controls on screen.
 \end_layout
 
 \begin_layout Section
+ImageControl
+\end_layout
+
+\begin_layout Standard
+A control that can show an image bigger than its area and that can be dragged
+ using a pen to show the hidden parts.
+ Note that, by default, events (and dragging) are disabled.
+ You must call 
+\family typewriter
+setEventsEnabled()
+\family default
+ to allow dragging.
+ 
+\end_layout
+
+\begin_layout Standard
+This is used in the Litebase sample PhotoDB, where it is possible to drag
+ the picture to show other parts of it.
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollValue The amount to scroll when in penless mode.
+ It defaults to 10.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawOp Defines the drawing operation used to draw the image that is being
+ panned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+centerImage Set to 
+\family typewriter
+true
+\family default
+ to center the image in the control when it is loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastX,lastY The last position used for X and Y.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderColor Change this member to set the border color.
+ You may also set it to 
+\family typewriter
+null
+\family default
+ if you don't want a border color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowBeyondLimits Set to 
+\family typewriter
+true
+\family default
+ to let the image be dragged beyond container limits.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl(Image
+\begin_inset space ~
+\end_inset
+
+img) Constructs an 
+\family typewriter
+ImageControl
+\family default
+ using the given image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl() Constructs an 
+\family typewriter
+ImageControl
+\family default
+ with no initial image.
+ You must set the image with the 
+\family typewriter
+setImage()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEventsEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enabled) Changes this to 
+\family typewriter
+true
+\family default
+ to enable dragging and events on the image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the image to the given one.
+ If the image size is different, you must explicitly call 
+\family typewriter
+setRect()
+\family default
+ again if you want to resize the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveTo(int
+\begin_inset space ~
+\end_inset
+
+newX,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newY) Moves to the given coordinates, respecting the current moving policy
+ regarding
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+allowBeyondLimits
+\family default
+.
+ It returns 
+\family typewriter
+true
+\family default
+ if the image's position was changed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getImage() Returns the current image assigned to this 
+\family typewriter
+ImageControl
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackground(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the given image as a freezed background of this image control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getVisibleImage(boolean
+\begin_inset space ~
+\end_inset
+
+includeBackground) Gets an image representing the portion being shown.
+ If all image is being shown, returns the currently assigned image.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
 Ruler
 \begin_inset CommandInset label
 LatexCommand label
@@ -28806,28 +28999,6 @@ ComboBoxEditable
 \begin_layout Standard
 This control is usually used as an edit that holds old typed values.
  When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ImageControl
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A control that can show an image bigger than its area and that can be dragged
- using a pen to show the hidden parts.
- Note that, by default, events (and dragging) are disabled.
- You must call 
-\family typewriter
-setEventsEnabled()
-\family default
- to allow dragging.
  
 \end_layout
 
