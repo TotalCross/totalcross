@@ -6129,7 +6129,7 @@ There's a special contract that can be made with us that will allow you
 \begin_layout Standard
 Some devices may not have an IMEI nor a serial number accessible by software.
  On these devices, a hard-reset will result in the consumption of one more
- key.
+ lisence if there is no backup of the activation file.
 \end_layout
 
 \begin_layout Standard
@@ -26394,6 +26394,7 @@ Some Advanced Controls
 
 \begin_layout Standard
 In this chapter, some advanced controls will be described in detail.
+ They are organized in alphabetical order.
 \end_layout
 
 \begin_layout Section
@@ -27229,8 +27230,8 @@ add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the
 
 \end_inset
 
-which results in the following images, where the bottom images show the
- title and one of the buttons being pressed:
+which results in the following images using Android style, where the bottom
+ images show the title and one of the buttons being pressed:
 \end_layout
 
 \begin_layout Standard
@@ -27604,6 +27605,1289 @@ NullPointerException
  will be thrown.
 \end_layout
 
+\begin_layout Section
+ColorList
+\end_layout
+
+\begin_layout Standard
+Implements a 
+\family typewriter
+ListBox
+\family default
+ where colors can be choosen from.
+ The only functional methods are 
+\family typewriter
+setColors()
+\family default
+, 
+\family typewriter
+getSelectedItem()
+\family default
+ and 
+\family typewriter
+getSelectedColor()
+\family default
+.
+ Next an example of how to use this class as a combo box color chooser:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add(foreCombo = new ComboBox(new ColorList()), CENTER, BOTTOM); 
+\end_layout
+
+\end_inset
+
+which results in the following windows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This special 
+\family typewriter
+ListBox
+\family default
+ by default contains the 256 colors of an 8 bpp screen.
+ Each item has a color with its hexadecimal number representation.
+ 
+\end_layout
+
+\begin_layout Standard
+Consider using 
+\family typewriter
+ColorChooserBox
+\family default
+ instead.
+\end_layout
+
+\begin_layout Standard
+This class has just one ommited public default constructor, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColors(int[]
+\begin_inset space ~
+\end_inset
+
+newColors) Sets the colors that will be displayed.
+ That is, it changes the default set of colors used by the default constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Returns the selected 
+\family typewriter
+ColorList.Item
+\family default
+ object, or a black 
+\family typewriter
+ColorList.Item
+\family default
+ representing the black color if none was selected.
+ From the 
+\family typewriter
+ColorList.Item
+\family default
+ you can retrieve the color as 
+\family typewriter
+int
+\family default
+.
+ Use the 
+\family typewriter
+getSelectedColor()
+\family default
+ method to retrieve the color directly.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedColor() Returns the selected color or black if no one is selected.
+\end_layout
+
+\begin_layout Standard
+This class has a nested class called 
+\family typewriter
+Item
+\family default
+.
+ This is the item added to the 
+\family typewriter
+ColorList
+\family default
+, containing the color as 
+\family typewriter
+String
+\family default
+ (hexadecimal representation) and as 
+\family typewriter
+int
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ColorList.Item
+\family default
+ class has just one attribute, one constructor, and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The integer color code.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColorList.Item(int
+\begin_inset space ~
+\end_inset
+
+value) Constructs a new 
+\family typewriter
+Item
+\family default
+ with the given color integer value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(int
+\begin_inset space ~
+\end_inset
+
+value) Sets an 
+\family typewriter
+Item
+\family default
+ with the given color integer value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+other) Checks if two 
+\family typewriter
+Item
+\family default
+s have the same integer color value or if the parameter is a 
+\family typewriter
+String
+\family default
+, checks if its value is equal to the string hexadecimal representation
+ of the 
+\family typewriter
+Item
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the hexadecimal string representation of the 
+\family typewriter
+Item
+\family default
+ color.
+\end_layout
+
+\begin_layout Section
+FlowContainer
+\end_layout
+
+\begin_layout Standard
+This class is a container that will place controls one after another and,
+ once the width has been reached, it wraps to the next line.
+ All controls must be added before calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ When calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+ for this control, the height must be 
+\family typewriter
+PREFERRED
+\family default
+ (with adjustments, if needed).
+ Also, if 
+\family typewriter
+initUI()
+\family default
+ is overriden, be sure to call 
+\family typewriter
+super.initUI()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Code example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Settings.uiAdjustmentsBasedOnFontHeight = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+Label l = new Label("Do you agree that TotalCross is a great development
+ platform?");
+\end_layout
+
+\begin_layout Plain Layout
+
+l.autoSplit = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(l, LEFT,AFTER,FILL,PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+FlowContainer fc = new FlowContainer(50,25);
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably Yes"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably No"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Maybe"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("I don't know"));
+\end_layout
+
+\begin_layout Plain Layout
+
+add(fc, LEFT,AFTER,FILL,PREFERRED); 
+\end_layout
+
+\end_inset
+
+which results in:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/flow_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public constructor, and the following methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FlowContainer(int
+\begin_inset space ~
+\end_inset
+
+hgap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Constructs a 
+\family typewriter
+FlowContainer
+\family default
+ with the given horizontal and vertical gaps.
+ You must add all children controls before calling 
+\family typewriter
+setRect()
+\family default
+ for this container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initUI() Places the controls on screen.
+ 
+\end_layout
+
+\begin_layout Section
+ImageControl
+\end_layout
+
+\begin_layout Standard
+A control that can show an image bigger than its area and that can be dragged
+ using a pen to show the hidden parts.
+ Note that, by default, events (and dragging) are disabled.
+ You must call 
+\family typewriter
+setEventsEnabled()
+\family default
+ to allow dragging.
+ 
+\end_layout
+
+\begin_layout Standard
+This is used in the Litebase sample PhotoDB, where it is possible to drag
+ the picture to show other parts of it.
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollValue The amount to scroll when in penless mode.
+ It defaults to 10.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawOp Defines the drawing operation used to draw the image that is being
+ panned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+centerImage Set to 
+\family typewriter
+true
+\family default
+ to center the image in the control when it is loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastX,lastY The last position used for X and Y.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderColor Change this member to set the border color.
+ You may also set it to 
+\family typewriter
+null
+\family default
+ if you don't want a border color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowBeyondLimits Set to 
+\family typewriter
+true
+\family default
+ to let the image be dragged beyond container limits.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl(Image
+\begin_inset space ~
+\end_inset
+
+img) Constructs an 
+\family typewriter
+ImageControl
+\family default
+ using the given image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl() Constructs an 
+\family typewriter
+ImageControl
+\family default
+ with no initial image.
+ You must set the image with the 
+\family typewriter
+setImage()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEventsEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enabled) Changes this to 
+\family typewriter
+true
+\family default
+ to enable dragging and events on the image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the image to the given one.
+ If the image size is different, you must explicitly call 
+\family typewriter
+setRect()
+\family default
+ again if you want to resize the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveTo(int
+\begin_inset space ~
+\end_inset
+
+newX,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newY) Moves to the given coordinates, respecting the current moving policy
+ regarding
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+allowBeyondLimits
+\family default
+.
+ It returns 
+\family typewriter
+true
+\family default
+ if the image's position was changed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getImage() Returns the current image assigned to this 
+\family typewriter
+ImageControl
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackground(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the given image as a freezed background of this image control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getVisibleImage(boolean
+\begin_inset space ~
+\end_inset
+
+includeBackground) Gets an image representing the portion being shown.
+ If all image is being shown, returns the currently assigned image.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+Ruler
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Ruler"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Ruler
+\family default
+ is a horizontal or vertical ruler.
+ Here's an example: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Ruler r = new Ruler();
+\end_layout
+
+\begin_layout Plain Layout
+
+r.invert = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(r, LEFT,AFTER+2);  
+\end_layout
+
+\end_inset
+
+which results in the following using Android style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/ruler_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+UIGadgets also uses a default ruler shown near the mouse arrow:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/ruler_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, two constructors, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+invert Set to 
+\family typewriter
+true
+\family default
+ to invert the color of the first and second lines.
+ Only makes sense if 3d is 
+\family typewriter
+true
+\family default
+ in the most sofisticated constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Ruler() Constructs a 3d horizonal ruler.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Ruler(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+is3d) Constructs a ruler of the given type, which can be horizontal (
+\family typewriter
+Ruler.HORIZONTAL
+\family default
+) or vertical (
+\family typewriter
+Ruler.VERTICAL
+\family default
+).
+ The second parameter indicates if the ruler is to be 3d or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() For horizontal rulers, it returns 
+\family typewriter
+FILL
+\family default
+.
+ Otherwise, it returns 2 if it's 3d or 1 if it's not 3d.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() For vertical rulers, it returns 
+\family typewriter
+FILL
+\family default
+.
+ Otherwise, it returns 2 if's 3d or 1 if it's not 3d.
+\end_layout
+
+\begin_layout Section
+Slider
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Slider
+\family default
+ is a simple slider.
+ You can set some properties of the slider, like 
+\family typewriter
+drawTicks
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+invertDirection
+\family default
+ and 
+\family typewriter
+drawFilledArea
+\family default
+.
+ You can change the thumb size by setting the 
+\family typewriter
+minDragBarSize
+\family default
+ public field and then call 
+\family typewriter
+setValues()
+\family default
+, 
+\family typewriter
+setMaximum()
+\family default
+, or 
+\family typewriter
+setMinimum()
+\family default
+ method (the value must always be ODD!).
+ The slider is the component pointed by the mouse arrow in the UIGadgets
+ sample using Android style below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/slider_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+invertDirection Inverts the direction of the marker.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawTicks Set to 
+\family typewriter
+true
+\family default
+ to draw the ticks.
+ Should be set only when maximum-minimum is much smaller than the width.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+ setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawFilledArea Set to 
+\family typewriter
+false
+\family default
+ to don't draw the filled area.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Slider() Constructs a horizontal slider.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Slider(byte
+\begin_inset space ~
+\end_inset
+
+orientation) Constructs a slider with the given orientation, which can be
+ horizontal (
+\family typewriter
+ScrollBar.
+\begin_inset Newline newline
+\end_inset
+
+HORIZONTAL
+\family default
+) or vertical (
+\family typewriter
+ScrollBar.VERTICAL
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDragBarPos(int
+\begin_inset space ~
+\end_inset
+
+value) Returns the drag bar position.
+ 
+\end_layout
+
+\begin_layout Section
+Spacer
+\end_layout
+
+\begin_layout Standard
+Control used to add a space between controls.
+ It shows nothing on screen.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use it:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Spacer s = new Spacer("  ");
+\end_layout
+
+\begin_layout Plain Layout
+
+Button btnClear = new Button("Clear");
+\end_layout
+
+\begin_layout Plain Layout
+
+Button btnOK = new Button("OK");
+\end_layout
+
+\begin_layout Plain Layout
+
+add(s, CENTER,AFTER+2);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(btnClear, AFTER,SAME, s);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(btnOK, BEFORE, SAME, SAME, SAME, s); 
+\end_layout
+
+\end_inset
+
+which results in the following using Android style, which places two buttons
+ centered on screen, like this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The spacer is also used to separate the spinners in the Spiner Samples of
+ AndroidUI and the back and next buttons from the Litebase sample PhotoDB
+ (which uses the old Windows CE style):
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just three constructors (the other fields from its superclasses
+ are excluded):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer() Constructs a new spacer, using a single space 
+\family typewriter
+" "
+\family default
+ to compute the width and height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y) Constructs a new spacer using the given 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer(String
+\begin_inset space ~
+\end_inset
+
+s) Constructs a new spacer using the given string, whose width will be the
+ horizontal spacement.
+ The vertical spacement will be the font's height.
+ 
+\end_layout
+
+\begin_layout Section
+Spinner
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Spinner
+\family default
+ is a control that shows an image indicating that something is running in
+ the background.
+ It has two styles: 
+\family typewriter
+IPHONE
+\family default
+ and 
+\family typewriter
+ANDROID
+\family default
+.
+ It's used in the 
+\family typewriter
+ProgressBox
+\family default
+ and can be used in the 
+\family typewriter
+Bar
+\family default
+.
+ To start the spin call the 
+\family typewriter
+start()
+\family default
+ method, and to stop it call the 
+\family typewriter
+stop()
+\family default
+ method.
+ An image of it has already been shown in section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Ruler"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, an omitted default constructor,
+ and the following methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+spinnerType Defines the type of spinner for all instances.
+ Defaults for 
+\family typewriter
+Spinner.IPHONE
+\family default
+ when running on iPhone and 
+\family typewriter
+Spinner.ANDROID
+\family default
+ for all other platforms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+start() Starts the spinning thread.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stop() Stops the spinning thread.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isRunning() Returns if the spinner is running.
+ 
+\end_layout
+
 \begin_layout Chapter
 Additional Advanced Controls
 \begin_inset CommandInset label
@@ -27706,37 +28990,6 @@ Button
 \begin_layout Itemize
 
 \family typewriter
-ColorList
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Implements a list box where colors can be choosen from.
- The only functional methods are 
-\family typewriter
-setColors()
-\family default
-, 
-\family typewriter
-getSelectedItem()
-\family default
- and 
-\family typewriter
-getSelectedColor()
-\family default
-.
- Consider using 
-\family typewriter
-ColorChooserBox
-\family default
- instead.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 ComboBoxEditable
 \family default
  
@@ -27746,64 +28999,6 @@ ComboBoxEditable
 \begin_layout Standard
 This control is usually used as an edit that holds old typed values.
  When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-FlowContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is a container that will place controls one after the other and,
- once the width has been reached, it wraps to the next line.
- All controls must be added before calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
-.
- When calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
- for this control, the height must be 
-\family typewriter
-PREFERRED
-\family default
- (with adjustments, if needed).
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ImageControl
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A control that can show an image bigger than its area and that can be dragged
- using a pen to show the hidden parts.
- Note that, by default, events (and dragging) are disabled.
- You must call 
-\family typewriter
-setEventsEnabled()
-\family default
- to allow dragging.
  
 \end_layout
 
@@ -28248,24 +29443,6 @@ FIT
 \begin_layout Itemize
 
 \family typewriter
-Ruler
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Ruler
-\family default
- is a horizontal or vertical ruler.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 ScrollBar
 \end_layout
 
@@ -28374,71 +29551,6 @@ ButtonMenu
 \begin_layout Itemize
 
 \family typewriter
-Slider
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Slider
-\family default
- is a simple slider.
- You can set some properties of the slider, like 
-\family typewriter
-drawTicks
-\family default
-, 
-\family typewriter
-invertDirection
-\family default
- and 
-\family typewriter
-drawFilledArea
-\family default
-.
- You can change the thumb size by setting the 
-\family typewriter
-minDragBarSize
-\family default
- public field and then call 
-\family typewriter
-setValues()
-\family default
-, 
-\family typewriter
-setMaximum()
-\family default
-, or 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-setMinimum()
-\family default
- method (the value must always be ODD!).
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Spacer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Control used to add a space between controls.
- It shows nothing on the screen.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 SpinList
 \end_layout
 
@@ -28455,47 +29567,6 @@ Creates a control with two arrows, so that you can scroll values and show
 \begin_layout Standard
 In finger-touch devices, it will use the horizontal appearance, which is
  easier to deal with on such devices.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Spinner
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Spinner
-\family default
- is a control that shows an image indicating that something is running in
- the background.
- It has two styles: 
-\family typewriter
-IPHONE
-\family default
- and 
-\family typewriter
-ANDROID
-\family default
-.
- It's used in the 
-\family typewriter
-ProgressBox
-\family default
-.
- To start the spin call the 
-\family typewriter
-start()
-\family default
- method, and to stop it call the 
-\family typewriter
-stop()
-\family default
- method.
  
 \end_layout
 
@@ -28779,7 +29850,19 @@ This class implements a message box that shows a spinner at the left of
 \begin_layout Itemize
 
 \family typewriter
-TimeBox
+TimeBox 
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+colocar na sessão de Interface Dialogs
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
