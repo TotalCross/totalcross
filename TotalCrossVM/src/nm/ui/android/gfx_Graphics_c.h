@@ -132,8 +132,8 @@ static bool initGLES()
    gPositionHandle = glGetAttribLocation(gProgram, "a_Position"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   glPixelStorei(GL_PACK_ALIGNMENT, 1); // for glReadPixels
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+   //glPixelStorei(GL_PACK_ALIGNMENT, 1); // for glReadPixels
+   //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
 
    glViewport(0, 0, width, height);
