@@ -132,7 +132,6 @@ public class Slider extends ScrollBar
 
    public void onPaint(Graphics g)
    {
-      //g.backColor=Color.RED; g.fillRect(0,0,width,height);
       g.backColor = sbColor;
       int bc = getBackColor(),p,s;
       s = Math.max(4, verticalBar ? (width/2) : (height/2));
