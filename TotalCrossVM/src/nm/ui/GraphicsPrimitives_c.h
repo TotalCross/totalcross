@@ -19,8 +19,6 @@
 #define TRANSITION_CLOSE 2
 
 #ifdef ANDROID
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 extern int appW,appH;
 #endif
 
