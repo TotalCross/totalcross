@@ -1608,10 +1608,10 @@ public final class Graphics
          }
          ht3dColors.put(key, four);
       }
-      four[0] = fourColors[0];
-      four[1] = fourColors[1];
-      four[2] = fourColors[2];
-      four[3] = fourColors[3];
+      fourColors[0] = four[0];
+      fourColors[1] = four[1];
+      fourColors[2] = four[2];
+      fourColors[3] = four[3];
    }
 
    /** Draws a shaded rectangle. 

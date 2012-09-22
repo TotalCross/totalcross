@@ -474,8 +474,7 @@ public class Button extends Control
          Window.enableUpdateScreen = eus;
       }
       armed = pressed; // some drawing routines does not receive the armed parameter, so we must set it here.
-      onPaint(getGraphics());
-      if (getParentWindow() != null) updateScreen(); // important
+      repaintNow();
    }
 
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
@@ -484,10 +483,10 @@ public class Button extends Control
       if (skipPaint) return;
       if (isAndroidStyle)
       {
-         g.getClip(clip);
+/*         g.getClip(clip);
          g.backColor = parent.backColor;//g.getPixel(clip.x,clip.y); // use color painted by the parent
          g.fillRect(0,0,width,height);
-      }
+*/      }
       else
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);

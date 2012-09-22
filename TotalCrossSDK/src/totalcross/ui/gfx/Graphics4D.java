@@ -226,7 +226,10 @@ public final class Graphics4D
          }
          ht3dColors.put(key, four);
       }
-      Vm.arrayCopy(four, 0, fourColors, 0, 4);
+      fourColors[0] = four[0];
+      fourColors[1] = four[1];
+      fourColors[2] = four[2];
+      fourColors[3] = four[3];
    }
 
    private static Hashtable htVistaColors = new Hashtable(83);
