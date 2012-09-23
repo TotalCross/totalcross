@@ -573,7 +573,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (minInterval > 0 || lastMinInterval > 0) // guich@tc100: call only if there's a timer to run
          setTimerInterval(lastMinInterval = minInterval);
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
-         topMost._doPaint();
+         repaintActiveWindows();
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
          updateScreen();
    }

@@ -885,11 +885,12 @@ public class ListBox extends Container implements Scrollable
          }
          else
          {
-            Graphics g = getGraphics();
-            if (selectedIndex >= 0)
-               drawCursor(g,selectedIndex,false);
+            //Graphics g = getGraphics();
+            //if (selectedIndex >= 0)
+            //   drawCursor(g,selectedIndex,false);
             selectedIndex = newSelection;
-            drawCursor(g,selectedIndex,true);
+            Window.needsPaint = true;
+            //drawCursor(g,selectedIndex,true);
          }
       }
    }
@@ -1052,7 +1053,7 @@ public class ListBox extends Container implements Scrollable
             sw = btnX-4;
          g.fillRect(dx-1, dy-1, sw+2, ih+fm.descent); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
          drawItem(g, sel, dx, dy); // pgr@520_4
-         if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
+         //if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
       }
    }
    

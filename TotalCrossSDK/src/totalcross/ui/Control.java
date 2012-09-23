@@ -817,7 +817,7 @@ public class Control extends GfxSurface
          if (Settings.platform.equals(Settings.ANDROID))
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
-            w._doPaint(); // doPaint already calls updateScreen
+            Window.repaintActiveWindows();
          }
          else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything

@@ -86,7 +86,7 @@ static bool initGLES()
    char buf[512];
    const EGLint attribs[] =
    {
-       EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+       EGL_SURFACE_TYPE, EGL_WINDOW_BIT, 
        EGL_BLUE_SIZE, 8,
        EGL_GREEN_SIZE, 8,
        EGL_RED_SIZE, 8,        
@@ -94,6 +94,7 @@ static bool initGLES()
        EGL_NONE
    };
    EGLint context_attribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+//   EGLint window_attribs[] = {EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER, EGL_NONE };
    EGLDisplay display;
    EGLConfig config;
    EGLint numConfigs;
@@ -111,7 +112,7 @@ static bool initGLES()
 
    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
 
-   if (!(surface = eglCreateWindowSurface(display, config, window, 0)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
+   if (!(surface = eglCreateWindowSurface(display, config, window, 0/*window_attribs*/)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attribs))) {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglMakeCurrent(display, surface, surface, context))                 {debug("eglMakeCurrent() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) || !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {debug("eglQuerySurface() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -132,9 +133,9 @@ static bool initGLES()
    gPositionHandle = glGetAttribLocation(gProgram, "a_Position"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   //glPixelStorei(GL_PACK_ALIGNMENT, 1); // for glReadPixels
-   //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
+   glPixelStorei(GL_PACK_ALIGNMENT, 1);
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
    glViewport(0, 0, width, height);
    /*glEnable*/glDisable(GL_SCISSOR_TEST);

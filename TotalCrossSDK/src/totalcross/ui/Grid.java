@@ -640,7 +640,6 @@ public class Grid extends Container implements Scrollable
       {
          controls[col] = new Edit();
          ed = (Edit)controls[col];
-         ed.alwaysDrawAll = true;
          ed.hasBorder = false;
          ed.autoSelect = true;
          add(ed);
@@ -2029,7 +2028,7 @@ public class Grid extends Container implements Scrollable
                            {
                               g.drawCursor(rTemp.x,rTemp.y,rTemp.width,rTemp.height);
                               Vm.sleep(50);
-                              Window.updateScreen();
+                              repaintNow();//Window.updateScreen();
                            }
                         }
                         postGridEvent(col,selectedLine,false); // guich@580_51

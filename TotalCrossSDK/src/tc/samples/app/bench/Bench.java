@@ -130,7 +130,6 @@ public class Bench extends MainWindow
          }
       }
       end = Vm.getTimeStamp();
-      updateScreen();
       add(new Label(s = ("native meth./graph: " + (end - start) + " ms")), LEFT, AFTER);
       Vm.debug(s);
 

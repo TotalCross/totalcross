@@ -476,7 +476,7 @@ public class Window extends Container
    public void validate() // guich@400_44
    {
       if (needsPaint)
-         _doPaint();
+         repaintActiveWindows();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
@@ -711,7 +711,7 @@ public class Window extends Container
             if (isHighlighting && handleFocusChangeKeys(_keyEvent))
             {
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
          }
@@ -724,7 +724,7 @@ public class Window extends Container
             {
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
             else
@@ -759,7 +759,7 @@ public class Window extends Container
 
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint();
+                  repaintActiveWindows();
                return;
             }
          }
@@ -960,7 +960,7 @@ public class Window extends Container
          ((Control)event.target).postEvent(event);
       
       if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
-         topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+         repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
    }
 
    private int getDirection(int originX, int originY, int x, int y) // guich@tc122_11
@@ -1385,6 +1385,7 @@ public class Window extends Container
       int i,j,n;
       boolean eas = enableUpdateScreen;
       enableUpdateScreen = false;
+      needsPaint = false; // prevent from updating the screen
       // guich@400_73 guich@400_76
       Object[] items = zStack.items;
       Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
@@ -1400,7 +1401,7 @@ public class Window extends Container
       {
          if (i == lastFade)
             Graphics.fadeScreen(fadeValue);
-         ((Window)items[i]).repaintNow();
+         ((Window)items[i])._doPaint();
       }
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.

@@ -260,6 +260,17 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
+/*   if (Graphics_useOpenGL(dstSurf))
+   {
+      GLuint texName;
+      glGenTextures(1, &texName);
+      glBindTexture(GL_TEXTURE_2D, texName);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcWidth, srcHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, srcPixels);
+ 
+      glBindTexture(GL_TEXTURE_2D, 0);
+   }
+   else   */
    for (i=0; i < (uint32)height; i++)
    {
       PixelConv *ps = (PixelConv*)srcPixels;
@@ -267,7 +278,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       uint32 count = width;
 #ifdef ANDROID
       if (Graphics_useOpenGL(dstSurf))
-      {             
+      {
          int32 x = dstX;
          int32 y = i + dstY;
          GLfloat *coords = currentContext->glcoords;
@@ -319,6 +330,8 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    }
 #ifndef ANDROID
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
+#else
+   if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) currentContext->fullDirty = true;
 #endif
 end:
    ;
@@ -372,6 +385,8 @@ static void eraseRect(Context currentContext, Object g, int32 x, int32 y, int32 
                *p = to;
 #ifndef ANDROID
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+#else         
+      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
 #endif
    }
 }
@@ -386,7 +401,10 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
    {
 #ifdef ANDROID
       if (Graphics_useOpenGL(g))
+      {
          glDrawPixel(currentContext,x,y,pixel);
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      }
       else
 #endif
       {
@@ -434,7 +452,10 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
          return;
 #ifdef ANDROID
       if (Graphics_useOpenGL(g))
+      {   
          glDrawLine(currentContext,x,y,x+width,y,pixel1);
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      }
       else
 #endif
       {
@@ -482,7 +503,10 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
          return;
 #ifdef ANDROID
       if (Graphics_useOpenGL(g))
+      {
          glDrawLine(currentContext,x,y,x,y+height,pixel1);
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      }
       else
 #endif
       {
@@ -553,7 +577,10 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     else
 #ifdef ANDROID
     if (Graphics_useOpenGL(g))
+    {
        glDrawLine(currentContext,x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),pixel1);
+       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+    }
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
 #endif
     {
@@ -830,7 +857,10 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    {
 #ifdef ANDROID
       if (Graphics_useOpenGL(g))
+      {
          glFillRect(currentContext,x,y,width,height,pixel);
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      }
       else
 #endif
       {
@@ -1065,6 +1095,8 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    }
 #ifndef ANDROID
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
+#else
+   if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
 #endif
 }
 
@@ -2559,6 +2591,9 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
       bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
+#ifdef ANDROID
+      currentContext->fullDirty |= markDirty;
+#endif      
 
       if (isGet)
          for (; h-- > 0; pixels += inc, data += w)
@@ -2773,6 +2808,8 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
       }
 #ifndef ANDROID
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
+#else
+      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
 #endif
    }
 }
@@ -2902,7 +2939,6 @@ void updateScreen(Context currentContext)
 #endif
 #ifdef ANDROID
    if (appPaused) return;
-   currentContext->fullDirty = true;
 #endif
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
