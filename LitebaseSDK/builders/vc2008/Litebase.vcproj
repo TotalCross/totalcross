@@ -53,7 +53,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
@@ -691,7 +691,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS;ENABLE_DEMO"
 				StringPooling="true"
@@ -1116,7 +1116,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
+				InlineFunctionExpansion="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS;DISABLE_RAS"
 				StringPooling="true"
