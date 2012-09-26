@@ -57,13 +57,11 @@ FILE* findFile(CharP name, CharP pathOut);
 
 #define LF_NONE      0
 #define LF_RECURSIVE 1
-#define LF_FILE_TYPE 2
-#define LF_FILE_APPID 4
 /// List all files on the given folder. In Palm OS, if slot is 0, searches in main memory, otherwise NVFS is used.
 /// If (options & LF_RECURSIVE) is true, all folders from the given one are searched, and the path is stored with the file's name; otherwise, only the
 /// file name is stored in the list.
 /// <b>Important: count and list must be initialized to 0 before this function is called!</b>
-/// options can be a combination of LF_RECURSIVE, LF_FILE_TYPE and LF_FILE_APPID (and the last two are only for PALMOS with slot 0)
+/// options can be a combination of LF_RECURSIVE
 TC_API Err listFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
 typedef Err (*listFilesFunc)(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
 
@@ -105,12 +103,6 @@ typedef CharP (*double2strFunc)(double val, int32 places, DoubleBuf buf);
 typedef char LongBuf[24];
 TC_API CharP long2str(int64 i, LongBuf buf);
 typedef CharP (*long2strFunc)(int64 i, LongBuf buf);
-
-#ifdef PALMOS
-int32 millisToTicks(int32 millis);
-TC_API int32 getLastVolume();
-typedef int32 (*getLastVolumeFunc)();
-#endif
 
 /// Pauses the program for the given number of milliseconds
 #ifndef WIN32

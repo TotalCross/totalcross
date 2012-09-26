@@ -104,7 +104,6 @@ public class ControlBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       if (buttonCaptions != null) // guich@tc114_7 
          btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
       msg = new Label(text,Label.CENTER);

@@ -86,8 +86,6 @@ public class AnimatedButton extends Animation
     *           number of frames for each state.
     * @param layoutType
     *           FADE_OUT_LAYOUT, FADE_IN_LAYOUT or FADE_OUT_IN_LAYOUT.
-    * @param transColor
-    *           the transparency color
     * @param framePeriod
     *           delay in milliseconds between two frames
     * @throws ImageException
@@ -95,9 +93,9 @@ public class AnimatedButton extends Animation
     * @see #FADE_IN_LAYOUT
     * @see #FADE_OUT_IN_LAYOUT
     */
-  public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int transColor,int framePeriod) throws ImageException // fdie@341_2
+  public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int framePeriod) throws ImageException // fdie@341_2
   {
-    super(frames,states * framesPerState,transColor,framePeriod);
+    super(frames,states * framesPerState,framePeriod);
 
     this.framesPerState = framesPerState;
     this.layoutType = layoutType;

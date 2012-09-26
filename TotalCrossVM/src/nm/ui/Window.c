@@ -17,8 +17,6 @@
  #include "win/Window_c.h"
 #elif defined (darwin)
  #include "darwin/Window_c.h"
-#elif defined(PALMOS)
- #include "palm/Window_c.h"
 #elif defined(ANDROID)
  #include "android/Window_c.h"
 #else
@@ -47,7 +45,7 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
       windowSetSIP(sipOption);
 #elif defined(darwin)
    windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*secret*/);
-#elif defined(PALMOS) || defined (ANDROID)
+#elif defined (ANDROID)
    windowSetSIP(sipOption);
 #else
    ;
@@ -62,9 +60,7 @@ TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public sta
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
 {
    UNUSED(p);
-#ifndef PALMOS
    windowSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
-#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

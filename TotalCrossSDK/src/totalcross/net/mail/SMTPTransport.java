@@ -54,7 +54,8 @@ public class SMTPTransport extends Transport
    protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException,
          MessagingException
    {
-      startTLS();
+      if (supportsTLS)
+         startTLS();
       ehlo();
 
       switch (authSupported)

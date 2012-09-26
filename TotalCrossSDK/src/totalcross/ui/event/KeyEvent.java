@@ -26,7 +26,7 @@ import totalcross.sys.*;
  */
 public class KeyEvent extends Event
 {
-	/** The event type for a key press event. Device keys are handled in the DEVICEKEY_PRESS event. */
+	/** The event type for a key press event. Device keys are handled in the SPECIAL_KEY_PRESS event. */
 	public static final int KEY_PRESS = 100;
    /** The event type for a focus being transfered to this control
     * with the ENTER or ACTION keys. */

@@ -92,7 +92,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.virtualKeyboard = false;
 
       // update some settings
-      highResPrepared = true; // main window is always prepared
       setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
@@ -167,8 +166,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     * Changing to Android style will also set Settings.fingerTouch to true.
     * If you don't like such behaviour in non finger devices, set this property to false after calling setUIStyle.
     *  
-    * @see totalcross.sys.Settings#PalmOS
-    * @see totalcross.sys.Settings#WinCE
     * @see totalcross.sys.Settings#Flat
     * @see totalcross.sys.Settings#Vista
     * @see totalcross.sys.Settings#Android
@@ -176,8 +173,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    public void setUIStyle(byte style)
    {
-      if (style == Settings.PalmOS)
-         setBackColor(Color.WHITE);
       Settings.uiStyle = style;
       if (style == Settings.Android)
          Settings.fingerTouch = true;
@@ -505,6 +500,9 @@ public class MainWindow extends Window implements totalcross.MainClass
          TimerEvent t = startTimer;
          startTimer = null; // removeTimer calls again onTimerTick, so we have to null out this before calling it
          removeTimer(t);
+         if (true)
+            Vm.debug("********************************* DEMOBOX REMOVED ***********************************");
+         else
          if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
             new DemoBox().popup();
@@ -575,7 +573,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (minInterval > 0 || lastMinInterval > 0) // guich@tc100: call only if there's a timer to run
          setTimerInterval(lastMinInterval = minInterval);
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
-         topMost._doPaint();
+         repaintActiveWindows();
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
          updateScreen();
    }
@@ -626,7 +624,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
       Image img = new Image(w,h);
-      img.transparentColor = -1;
       Graphics gimg = img.getGraphics();
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)

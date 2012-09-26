@@ -111,7 +111,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public int arrowsColor = Color.BLACK;
    private Font bold;
    private int btnX;
-   private int transpColor=-1;
    private int style = Window.RECT_BORDER;
    private boolean []disabled; // guich@tc110_58
    // flick support
@@ -273,18 +272,18 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       onFontChanged();
    }
 
+   /** @deprecated TotalCross 2 no longer uses transparentColor */
+   public TabbedContainer(Image []imgCaptions, int transparentColor) // guich@564_13
+   {
+      this(imgCaptions);
+   }
+
    /** Constructs a tab bar control with images as captions, using the given color as transparent color.
     * If you don't want to use transparent colors, just pass -1 to the color. */
-   public TabbedContainer(Image []imgCaptions, int transparentColor) // guich@564_13
+   public TabbedContainer(Image []imgCaptions) // guich@564_13
    {
       this(imgCaptions.length);
       this.imgCaptions = imgCaptions;
-      if (transparentColor >= 0)
-      {
-         this.transpColor = transparentColor;
-         for (int i = count-1; i >= 0; i--)
-            imgCaptions[i].transparentColor = transparentColor;
-      }
       setupImageProps();
       isTextCaption = false;
       onFontChanged();
@@ -447,7 +446,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    
    private int getExtraSize()
    {
-      return 2+(uiCE?1:0) + insets.left+insets.right;
+      return 2 + insets.left+insets.right;
    }
 
    /** Returns the index of the next/prev enabled tab, or the current tab if there's none. */
@@ -523,7 +522,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             btnRight.autoRepeat = btnLeft.autoRepeat = true; // guich@tc122_46
             btnRight.AUTO_DELAY = btnLeft.AUTO_DELAY = 500;
          }
-         btnX = btnLeft.x-(uiCE?3:2);
+         btnX = btnLeft.x-2;
       }
       else btnX = this.width;
       if (btnLeft != null)
@@ -647,7 +646,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          try
          {
             for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
-               imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size,-1);
+               imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size);
          }
          catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
@@ -710,7 +709,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       int back = backColor;
       g.backColor = backColor;
       if (btnLeft != null && mustScroll()) // if we have scroll, don't let the title be drawn over the arrow buttons
-         g.setClip(1,0,btnX+(uiCE?1:0),height);
+         g.setClip(1,0,btnX,height);
       
       // draw the tabs
       
@@ -752,18 +751,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (uiAndroid)
             try
             {
-               g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true), r.x,r.y);
-               // extend the bottom of the selected tab over the other tabs
-               int rx2 = r.x2();
-               int y2 = atTop ? r.y2() : r.y + 5;
-               int y1 = y2-5;
-               for (int yy = y1; yy <= y2; yy++)
-               {
-                  g.foreColor = g.getPixel(r.x+2,yy);
-                  g.drawLine(0,yy,r.x,yy);
-                  g.foreColor = g.getPixel(r.x+r.width-2-1,yy);
-                  g.drawLine(rx2,yy,width,yy);
-               }
+               Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true);
+               g.drawImage(img, r.x,r.y);
             }
             catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
          else
@@ -777,12 +766,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       // draw text
       
       boolean isText = isTextCaption;
-      if (!isText && transpColor >= 0) // guich@564_13
-      {
-         g.drawOp = Graphics.DRAW_SPRITE;
-         g.backColor = transpColor;
-      }
-
       for (int i =0; i < n; i++)
       {
          r = rects[i];
@@ -815,21 +798,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             g.drawRect(r.x,r.y,r.width,r.height);
          else
          if (!uiAndroid)
-         {
             g.drawHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // guich@400_40: moved from (*) to here
-            if (uiCE && i+1 != activeIndex) // guich@100b4_9
-            {
-               int nextColor = getTabColor(i);
-               g.foreColor = Color.interpolate(cColor,nextColor);
-               g.drawLine(r.x+r.width,r.y+(atTop?2:1),r.x+r.width,r.y+r.height+(atTop?-1:-3));
-               g.foreColor = cColor;
-            }
-         }
-      }
-      if (!isText && transpColor >= 0)
-      {
-         g.backColor = backColor;
-         g.drawOp = Graphics.DRAW_PAINT;
       }
       
       // guich@200b4: remove the underlaying line of the active tab.
@@ -841,13 +810,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          g.drawLine(r.x+1,yl,r.x2()-1,yl);
       }
 
-      if (Settings.keyboardFocusTraversable && focusMode == FOCUSMODE_CHANGING_TABS) // draw the focus around the current tab - guich@580_52: draw the cursor only when changing tabs
+/*      if (Settings.keyboardFocusTraversable && focusMode == FOCUSMODE_CHANGING_TABS) // draw the focus around the current tab - guich@580_52: draw the cursor only when changing tabs
       {
          g.drawDottedCursor(r.x+1,r.y+1,r.width-2,r.height-2);
          if (Settings.screenWidth == 320)
             g.drawDottedCursor(r.x+2,r.y+2,r.width-4,r.height-4);
       }
-   }
+*/   }
 
    /** Returns the color of the given tab.
     * @since TotalCross 1.52

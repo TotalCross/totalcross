@@ -13,9 +13,7 @@
 
 #include "device_PortConnector.h"
 
-#if defined PALMOS
- #include "palm/device_PortConnector_c.h"
-#elif defined (WINCE) || defined (WIN32)
+#if defined (WINCE) || defined (WIN32)
  #include "win/device_PortConnector_c.h"
 #elif defined SYMBIAN
  #include "symbian/device_PortConnector_c.h"
@@ -56,11 +54,7 @@ TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector
    VoidP* receiveBuffer;
    Err err;
 
-#ifdef PALMOS
-   int32 timeout = 2 * sysTicksPerSecond;
-#else
    int32 timeout = 200;
-#endif
 
    portConnectorRef = createByteArray(p->currentContext, sizeof(PortHandle));
    receiveBufferObj = createByteArray(p->currentContext, sizeof(VoidP));
@@ -72,9 +66,6 @@ TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector
       receiveBuffer = (VoidP*) ARRAYOBJ_START(receiveBufferObj);
       if ((err = portConnectorCreate(portConnectorHandle, *receiveBuffer, number, baudRate, bits, parity, stopBits, timeout)) != NO_ERROR)
       {
-#if defined (PALMOS)
-         if (*receiveBuffer != null)
-#endif
          throwExceptionWithCode(p->currentContext, IOException, err);
          invalidate(portConnector);
       }

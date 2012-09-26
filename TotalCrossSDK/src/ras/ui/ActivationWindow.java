@@ -82,8 +82,6 @@ public class ActivationWindow extends Window
    {
       alert("Success", "TotalCross is now activated!",0x008800);
       unpop();
-      if (Settings.platform.equals(Settings.BLACKBERRY))
-         MainWindow.exit(0);
    }
 
    public void onEvent(Event e)
@@ -132,8 +130,11 @@ public class ActivationWindow extends Window
             catch (ActivationException ex)
             {
                Throwable cause = ex.getCause();
-               cause.printStackTrace();
-               html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
+               if (cause != null)
+               {
+                  cause.printStackTrace();
+                  html = ActivationHtml.getInstance(cause instanceof SOAPException || cause instanceof IOException ? ActivationHtml.ACTIVATION_NOINTERNET : ActivationHtml.ACTIVATION_ERROR);
+               }   
                if (html != null)
                   swap(html);
                else

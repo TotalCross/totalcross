@@ -17,14 +17,10 @@ void updateScreen(Context currentContext);
 void vmSetAutoOff(bool enable); // vm_c.h
 
 // Platform-specific code
-#if defined(PALMOS)
- #include "palm/event_c.h"
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/event_c.h"
 #elif defined(darwin)
  #include "darwin/event_c.h"
-#elif defined(__SYMBIAN32__)
- #include "symbian/event_c.h"
 #elif defined(ANDROID)
  #include "android/event_c.h"
 #else
@@ -49,11 +45,7 @@ static void checkTimer(Context currentContext)
    }
 }
 
-#ifdef PALMOS
-#define INITIAL_TICK 500
-#else
 #define INITIAL_TICK 5000
-#endif
 
 #ifdef ENABLE_DEMO
 static int32 demoTick = INITIAL_TICK;
@@ -79,13 +71,11 @@ static void pumpEvent(Context currentContext)
 	}
    }
 #endif
-#if defined(PALMOS) || (defined(WINCE) && _WIN32_WCE >= 300)
+#if (defined(WINCE) && _WIN32_WCE >= 300)
    if (wokeUp())
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_POWER_ON, 0,0,-1);
 #endif
-#ifndef PALMOS // guich@tc100b4: Palm OS requires SysEventGet to be called always, otherwise incoming phone calls will not work
    if (privateIsEventAvailable())
-#endif
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
 #ifdef ENABLE_DEMO

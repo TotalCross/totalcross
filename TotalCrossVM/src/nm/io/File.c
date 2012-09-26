@@ -13,9 +13,7 @@
 
 #include "File.h"
 
-#if defined PALMOS
- #include "palm/File_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/File_c.h"
 #else
  #include "posix/File_c.h"
@@ -123,13 +121,6 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
    File_slot(file) = slot;
    File_path(file) = path;
    File_mode(file) = mode;
-#endif
-#if defined (PALMOS)
-   if (slot == lastVolume && (File_slot(file) = getLastVolume()) == lastVolume) // no card inserted
-   {
-      throwExceptionWithCode(p->currentContext, IOException, vfsErrVolumeBadRef);
-      return;
-   }
 #endif
 
    if (mode != DONT_OPEN)

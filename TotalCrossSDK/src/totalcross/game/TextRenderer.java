@@ -203,7 +203,7 @@ public class TextRenderer
   public void display(int x, int y, boolean transparent)
   {
     if (textImg!=null)
-       gfx.drawImage(textImg,x,y,transparent?Graphics.DRAW_SPRITE:Graphics.DRAW_PAINT,backColor,false);
+       gfx.drawImage(textImg,x,y,false);
   }
 
   /**
@@ -214,15 +214,14 @@ public class TextRenderer
    * @param x position.
    * @param y position.
    * @param value positive integer value to draw next to the text.
-   * @param transparent should the background be preserved.
    */
 
-  public void display(int x,int y,int value,boolean transparent)
+  public void display(int x,int y,int value)
   {
     if (maxDigits < 1) return;
 
     if (textImg != null)
-       gfx.drawImage(textImg,x,y,transparent?Graphics.DRAW_SPRITE:Graphics.DRAW_PAINT,backColor,false);
+       gfx.drawImage(textImg,x,y,false);
 
     if (value < 0) value = 0;
     int numDigits = 0;
@@ -245,14 +244,12 @@ public class TextRenderer
 
     x += textWidth + numDigits * w0;
 
-    int drawOp = transparent?Graphics.DRAW_SPRITE:Graphics.DRAW_PAINT;
-
     // scan from least to most significant digit
     while (numDigits-- > 0)
     {
        x -= w0;
        int d = value % 10;
-       gfx.drawImage(digits[d],x,y,drawOp,backColor,false);
+       gfx.drawImage(digits[d],x,y,false);
        value /= 10;
        if (value == 0 && !zeroPadding)
           break;

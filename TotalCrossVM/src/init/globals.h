@@ -28,9 +28,6 @@ extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
-#elif defined(PALMOS)
-extern bool isGETreo650;
-extern bool supportsDIA;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
@@ -50,9 +47,7 @@ extern bool rebootOnExit;
 extern bool destroyingApplication;
 extern Object mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
-#if defined PALMOS
-extern void *pealLoadLibrary68K, *pealUnloadLibrary68K, *pealGetProcAddress68K;
-#elif defined(ANDROID)
+#if defined(ANDROID)
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
@@ -60,7 +55,7 @@ extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 extern jfieldID jsipVisible,jappTitleH;
 extern jmethodID jgetHeight;
-#elif defined WIN32 || defined linux || defined __SYMBIAN32__
+#elif defined WIN32 || defined linux
 extern TCHAR exeName[MAX_PATHNAME];
 #endif
 
@@ -74,9 +69,6 @@ extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
 extern int32* containerNextTransitionEffectPtr;
 extern TScreenSurface screen;
-#ifdef ANDROID
-extern jmethodID jupdateScreen;
-#endif
 extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 extern bool callingScreenChange;
@@ -149,7 +141,7 @@ extern int32 profilerMaxMem;
 extern TCClass lockClass;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
-#if !defined(PALMOS) && !defined(WIN32)
+#if !defined(WIN32)
 extern void *deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
 
@@ -218,18 +210,7 @@ extern bool xmlInitialized;
 extern Hashtable htSSLSocket;
 extern Heap heapSSLSocket;
 
-#ifdef PALMOS
-// palm/Socket_c.h, ServerSocket_c.h
-extern VoidP gNETLink;
-// palm/media_Camera_c.h
-extern VoidP gpalmOneCameraLink;
-
-// palm/debug_c.h
-extern void *pealAlert68K;
-
-extern const void *gEmulStateP;
-extern Call68KFuncType *gCall68KFuncP;
-#elif defined ANDROID
+#ifdef ANDROID
 extern jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h

@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -74,7 +74,6 @@ public class MultiEdit extends Container implements Scrollable
    protected boolean improvedGeographicalFocus;
 
    protected IntVector first = new IntVector(5); //JR@0.4.  indices of first character of each line. the value of last is len(text)+1
-   private boolean forceDrawAll;
    private int firstToDraw; //JR@0.4
    private int numberTextLines; // JR@0.4
    private int hLine; // JR@0.4. height of a line
@@ -97,7 +96,6 @@ public class MultiEdit extends Container implements Scrollable
    private byte lastKbdType=Edit.KBD_KEYBOARD; //vik@421_24
    private String validChars;
    private int maxLength; // guich@200b4
-   private int lastCommand;
    private int dragDistance;
    private boolean isScrolling;
    private boolean popupVKbd;
@@ -235,7 +233,6 @@ public class MultiEdit extends Container implements Scrollable
          firstToDraw = lastFirstToDrawLine;
       
       sb.setValue(firstToDraw);
-      forceDrawAll = true;
       newInsertPos = zToCharPos(z1);
       
       Window.needsPaint = true;
@@ -279,12 +276,12 @@ public class MultiEdit extends Container implements Scrollable
    {
       if (rowCount0 == -1)
          rowCount0 = rowCount;
-      return (hLine*rowCount0+ ((uiPalm || uiFlat)?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
+      return (hLine*rowCount0+ (uiFlat?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
    }
 
    public int getPreferredWidth()
    {
-      return (mask==null?(totalcross.sys.Settings.screenWidth>>2):(mask.length()==0)?FILL:(fm.stringWidth(mask) + (uiPalm?4:10))) + insets.left+insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
+      return (mask==null?(totalcross.sys.Settings.screenWidth>>2):(mask.length()==0)?FILL:(fm.stringWidth(mask) + 10)) + insets.left+insets.right; // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL
    }
 
    /** Sets the desired maximum length for text entered in the Edit.
@@ -347,7 +344,6 @@ public class MultiEdit extends Container implements Scrollable
       newInsertPos = numberTextLines = 0;
       if (textRect != null)
          calculateFirst();
-      forceDrawAll=true;
       clearPosState();
       if (postPressed)
          postPressedEvent();
@@ -452,7 +448,7 @@ public class MultiEdit extends Container implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       drawg = null;
-      int zOffset = (uiPalm || uiFlat)?0:2; // size of borders
+      int zOffset = uiFlat?0:2; // size of borders
       boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-(Settings.fingerTouch?0:sb.getPreferredWidth()),this.height-2*zOffset);    //JR @0.5
       textRect = boardRect.modifiedBy(gap,gap,-2*gap,-2*gap);
       rowCount = textRect.height / this.hLine; // kambiz@350_5: update rowCount according to the new size of the text area
@@ -460,7 +456,6 @@ public class MultiEdit extends Container implements Scrollable
       sb.setValues(0, rowCount, 0, rowCount);
       numberTextLines = 0;
       firstToDraw = 0;
-      forceDrawAll = true;
       if (chars.length() > 0)
          calculateFirst();
       npback = null;
@@ -485,7 +480,6 @@ public class MultiEdit extends Container implements Scrollable
       // has the number of lines changed? enable/disable scrollbar
       if (numberTextLines != originalLineCount)
       {
-         forceDrawAll = true;
          boolean needScroll = numberTextLines > rowCount;
          if (!Settings.fingerTouch)
          {
@@ -522,10 +516,7 @@ public class MultiEdit extends Container implements Scrollable
 
       // need to change scrollbar position?
       if (sb.getValue() != firstToDraw)
-      {
-         forceDrawAll=true;
          sb.setValue(firstToDraw+1);
-      }
    }
 
    private void focusOut()
@@ -540,7 +531,7 @@ public class MultiEdit extends Container implements Scrollable
       if (removeTimer(blinkTimer))
          blinkTimer = null;
       if (cursorShowing) // kambisDarabi@310_7 : remove the cursor, if it is currently shown
-         draw(drawg, true);
+         draw(drawg);
       hasFocus = false;
       Window w = getParentWindow();
       if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && w != null && w == Window.getTopMost()) // guich@tc110_81: remove highlight from us. - guich@tc120_39: only if we're in the topmost window
@@ -575,7 +566,7 @@ public class MultiEdit extends Container implements Scrollable
                   return;
                }
                if (parent != null && (editMode || Settings.fingerTouch)) 
-                  draw(drawg, true);
+                  draw(drawg);
                // guich@tc130: show the copy/paste menu
                if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
@@ -606,281 +597,258 @@ public class MultiEdit extends Container implements Scrollable
             case KeyEvent.KEY_PRESS:
             case KeyEvent.SPECIAL_KEY_PRESS:
                if (editable && enabled)
-            {
-               KeyEvent ke = (KeyEvent) event;
-               if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
-                  ke.key = SpecialKeys.ENTER;
-               if ((ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ESCAPE) && !improvedGeographicalFocus)
                {
-                  //isHighlighting = true; // kmeehl@tc100: set isHighlighting first, so that Window.removeFocus() wont trample Window.highlighted - guich@tc110_81: commented out. this will be done in focusOut().
-                  focusOut(); // remove the cursor
-                  return;
-               }
-               if (!editMode) 
-                  break; // kmeehl@tc100
-               int len = chars.length();
-               if (editable)
-               {
-                  forceDrawAll = false;
-                  if (ke.key == 0) return; // guich@402_41: sometimes, the left key causes a zero key being entered, crashing everything
-                  if (ke.key == LINEFEED) // guich@tc100: ignore \r\n, so we don't have to keep checking for both.
-                     break;
-                  if ((ke.key == SpecialKeys.KEYBOARD_ABC || ke.key == SpecialKeys.KEYBOARD_123) && (Edit.keyboard == null || !Edit.keyboard.isVisible()))
+                  KeyEvent ke = (KeyEvent) event;
+                  if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
+                     ke.key = SpecialKeys.ENTER;
+                  if ((ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ESCAPE) && !improvedGeographicalFocus)
                   {
-                     popupKCC();
+                     //isHighlighting = true; // kmeehl@tc100: set isHighlighting first, so that Window.removeFocus() wont trample Window.highlighted - guich@tc110_81: commented out. this will be done in focusOut().
+                     focusOut(); // remove the cursor
                      return;
                   }
-                  boolean moveFocus = !Settings.geographicalFocus && ke.key == SpecialKeys.TAB;
-                  if (event.target == this && moveFocus) // guich@tc125_26
+                  if (!editMode) 
+                     break; // kmeehl@tc100
+                  int len = chars.length();
+                  if (editable)
                   {
-                     if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
-                        return;
-                  }
-                  // if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && (ke.key == SpecialKeys.ESCAPE || ke.key == SpecialKeys.MENU))
-
-                  boolean isControl = (ke.modifiers & SpecialKeys.CONTROL) != 0; // guich@320_46 - guich@tc100b4_25: also check for the type of event, otherwise the arrow keys won't work
-                  if (Settings.platform.equals(Settings.PALMOS)) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
-                  {
-                     if (lastCommand > 0 && (Vm.getTimeStamp() - lastCommand) < 2500)
-                     {
-                        ke.modifiers |= SpecialKeys.CONTROL;
-                        isControl = true;
-                        lastCommand = 0;
-                     }
-                     else if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
-                     {
-                        lastCommand = Vm.getTimeStamp();
-                        showTip(this, Edit.commandStr, 2500, -1);
+                     if (ke.key == 0) return; // guich@402_41: sometimes, the left key causes a zero key being entered, crashing everything
+                     if (ke.key == LINEFEED) // guich@tc100: ignore \r\n, so we don't have to keep checking for both.
                         break;
+                     if ((ke.key == SpecialKeys.KEYBOARD_ABC || ke.key == SpecialKeys.KEYBOARD_123) && (Edit.keyboard == null || !Edit.keyboard.isVisible()))
+                     {
+                        popupKCC();
+                        return;
                      }
-                  }
-                  boolean isPrintable = ke.key > 0 && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0
-                        && event.type == KeyEvent.KEY_PRESS;
-                  boolean isDelete = (ke.key == SpecialKeys.DELETE);
-                  boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
-                  boolean isEnter = (ke.key == SpecialKeys.ENTER);
-                  int del1 = -1;
-                  int del2 = -1;
-                  int sel1 = startSelectPos;
-                  int sel2 = insertPos;
-                  if (sel1 > sel2)
-                  {
-                     int temp = sel1;
-                     sel1 = sel2;
-                     sel2 = temp;
-                  }
-                  // clipboard -- original
-                  if (isControl)
-                  {
+                     boolean moveFocus = !Settings.geographicalFocus && ke.key == SpecialKeys.TAB;
+                     if (event.target == this && moveFocus) // guich@tc125_26
+                     {
+                        if (parent != null && parent.moveFocusToNextEditable(this, ke.modifiers == 0) != null)
+                           return;
+                     }
+                     // if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && (ke.key == SpecialKeys.ESCAPE || ke.key == SpecialKeys.MENU))
+   
+                     boolean isControl = (ke.modifiers & SpecialKeys.CONTROL) != 0; // guich@320_46 - guich@tc100b4_25: also check for the type of event, otherwise the arrow keys won't work
+                     boolean isPrintable = ke.key > 0 && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0
+                           && event.type == KeyEvent.KEY_PRESS;
+                     boolean isDelete = (ke.key == SpecialKeys.DELETE);
+                     boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
+                     boolean isEnter = (ke.key == SpecialKeys.ENTER);
+                     int del1 = -1;
+                     int del2 = -1;
+                     int sel1 = startSelectPos;
+                     int sel2 = insertPos;
+                     if (sel1 > sel2)
+                     {
+                        int temp = sel1;
+                        sel1 = sel2;
+                        sel2 = temp;
+                     }
+                     // clipboard -- original
                      if (isControl)
                      {
-                        if (0 < ke.key && ke.key < 32) ke.key += 64;
-                        ke.modifiers &= ~SpecialKeys.CONTROL; // remove control
+                        if (isControl)
+                        {
+                           if (0 < ke.key && ke.key < 32) ke.key += 64;
+                           ke.modifiers &= ~SpecialKeys.CONTROL; // remove control
+                        }
+                        char key = Convert.toUpperCase((char) ke.key);
+                        switch (key)
+                        {
+                           case 'X':
+                              clipboardCut();
+                              return;
+                           case 'C':
+                              clipboardCopy();
+                              return;
+                           case ' ':
+                              setText("");
+                              return;
+                           case 'P':
+                           case 'V':
+                              clipboardPaste();
+                              break;
+                        }
+                        clearSelect = true;
+                        // break;
                      }
-                     char key = Convert.toUpperCase((char) ke.key);
-                     switch (key)
+                     if (mapFrom != null) // guich@tc110_56
                      {
-                        case 'X':
-                           clipboardCut();
-                           return;
-                        case 'C':
-                           clipboardCopy();
-                           return;
-                        case ' ':
-                           setText("");
-                           return;
-                        case 'P':
-                        case 'V':
-                           clipboardPaste();
+                        int idx = mapFrom.indexOf(Convert.toLowerCase((char)ke.key));
+                        if (idx != -1)
+                           ke.key = mapTo.charAt(idx);
+                     }
+                     if (isPrintable)
+                     {
+                        if (capitalise == Edit.ALL_NORMAL)
+                           ;
+                        else if (capitalise == Edit.ALL_UPPER)
+                           ke.key = Convert.toUpperCase((char) ke.key);
+                        else if (capitalise == Edit.ALL_LOWER) ke.key = Convert.toLowerCase((char) ke.key);
+   
+                        if (!isCharValid((char) ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
+                        {
+                           Sound.beep();
                            break;
+                        }
                      }
-                     clearSelect = true;
-                     // break;
-                  }
-                  if (mapFrom != null) // guich@tc110_56
-                  {
-                     int idx = mapFrom.indexOf(Convert.toLowerCase((char)ke.key));
-                     if (idx != -1)
-                        ke.key = mapTo.charAt(idx);
-                  }
-                  if (isPrintable)
-                  {
-                     if (capitalise == Edit.ALL_NORMAL)
-                        ;
-                     else if (capitalise == Edit.ALL_UPPER)
-                        ke.key = Convert.toUpperCase((char) ke.key);
-                     else if (capitalise == Edit.ALL_LOWER) ke.key = Convert.toLowerCase((char) ke.key);
-
-                     if (!isCharValid((char) ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
+                     if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                      {
-                        Sound.beep();
-                        break;
+                        del1 = sel1;
+                        del2 = sel2 - 1;
+                     }
+                     else if (isDelete)
+                     {
+                        del1 = insertPos;
+                        del2 = insertPos;
+                     }
+                     else if (isBackspace)
+                     {
+                        del1 = insertPos - 1;
+                        del2 = insertPos - 1;
+                     }
+                     if (isEnter)
+                     {
+                        ke.key = ENTER;
+                        isPrintable = true;
+                     }
+                     if (del1 >= 0 && del2 < len)
+                     {
+                        if (len > del2 - 1) chars.delete(del1, del2 + 1); // Vm.arrayCopy(chars, del2 + 1, chars, del1, numOnRight);
+                        newInsertPos = del1;
+                        clearSelect = true;
+                     }
+                     if (isPrintable && (maxLength == 0 || len < maxLength))
+                     {
+                        // grow the array if required (grows by charsStep) -- original
+                        Convert.insertAt(chars, newInsertPos, (char) ke.key);
+                        newInsertPos++;
+                        redraw = true;
+                        clearSelect = true;
                      }
                   }
-                  if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
+                  boolean isMove = true;
+                  try
                   {
-                     del1 = sel1;
-                     del2 = sel2 - 1;
-                  }
-                  else if (isDelete)
-                  {
-                     del1 = insertPos;
-                     del2 = insertPos;
-                  }
-                  else if (isBackspace)
-                  {
-                     del1 = insertPos - 1;
-                     del2 = insertPos - 1;
-                  }
-                  if (isEnter)
-                  {
-                     ke.key = ENTER;
-                     isPrintable = true;
-                  }
-                  if (del1 >= 0 && del2 < len)
-                  {
-                     if (len > del2 - 1) chars.delete(del1, del2 + 1); // Vm.arrayCopy(chars, del2 + 1, chars, del1, numOnRight);
-                     newInsertPos = del1;
-                     forceDrawAll = true;
-                     clearSelect = true;
-                  }
-                  if (isPrintable && (maxLength == 0 || len < maxLength))
-                  {
-                     // grow the array if required (grows by charsStep) -- original
-                     Convert.insertAt(chars, newInsertPos, (char) ke.key);
-                     newInsertPos++;
-                     redraw = true;
-                     clearSelect = true;
-                  }
-               }
-               boolean isMove = true;
-               try
-               {
-                  switch (ke.key)
-                  {
-                     case SpecialKeys.HOME:
-                        newInsertPos = 0;
-                        if (firstToDraw != 0)
-                        {
-                           firstToDraw = 0;
-                           forceDrawAll = true;
-                           sb.setValue(0);
-                        }
-                        break;
-                     case SpecialKeys.END:
-                        newInsertPos = len;
-                        if (numberTextLines > rowCount)
-                        {
-                           firstToDraw = numberTextLines - rowCount;
-                           forceDrawAll = true;
-                           sb.setValue(firstToDraw);
-                        }
-                        break;
-                     case SpecialKeys.UP:
-                     case SpecialKeys.PAGE_UP:
-                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
-                           sb.onEvent(event);
-                        else
-                        if (newInsertPos >= first.items[1])
-                        {
-                           charPosToZ(newInsertPos, z1);
-                           z1.x = z3.x; // kmeehl@tc100: remember the previous horizontal position
-                           if (z1.y <= textRect.y && firstToDraw > 0) // guich@550_22: check firstToDraw, otherwise it will insert blanks at the top
+                     switch (ke.key)
+                     {
+                        case SpecialKeys.HOME:
+                           newInsertPos = 0;
+                           if (firstToDraw != 0)
                            {
-                              int ii = sb.getValue();
-                              if (ii > sb.getMinimum()) firstToDraw--;
-                              sb.setValue(--ii);
+                              firstToDraw = 0;
+                              sb.setValue(0);
                            }
-                           else
-                              z1.y -= hLine;
-
-                           int line = firstToDraw + (z1.y - textRect.y) / hLine;
-                           if (line >= 0)
+                           break;
+                        case SpecialKeys.END:
+                           newInsertPos = len;
+                           if (numberTextLines > rowCount)
                            {
-                              if (chars.charAt(first.items[line]) == ENTER && first.items[line + 1] - first.items[line] == 1)
-                                 newInsertPos = first.items[line + 1];
+                              firstToDraw = numberTextLines - rowCount;
+                              sb.setValue(firstToDraw);
+                           }
+                           break;
+                        case SpecialKeys.UP:
+                        case SpecialKeys.PAGE_UP:
+                           if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
+                              sb.onEvent(event);
+                           else
+                           if (newInsertPos >= first.items[1])
+                           {
+                              charPosToZ(newInsertPos, z1);
+                              z1.x = z3.x; // kmeehl@tc100: remember the previous horizontal position
+                              if (z1.y <= textRect.y && firstToDraw > 0) // guich@550_22: check firstToDraw, otherwise it will insert blanks at the top
+                              {
+                                 int ii = sb.getValue();
+                                 if (ii > sb.getMinimum()) firstToDraw--;
+                                 sb.setValue(--ii);
+                              }
+                              else
+                                 z1.y -= hLine;
+   
+                              int line = firstToDraw + (z1.y - textRect.y) / hLine;
+                              if (line >= 0)
+                              {
+                                 if (chars.charAt(first.items[line]) == ENTER && first.items[line + 1] - first.items[line] == 1)
+                                    newInsertPos = first.items[line + 1];
+                                 else
+                                    newInsertPos = zToCharPos(z1);
+                                 charPosToZ(newInsertPos, z1);
+                              }
+                           }
+                           break;
+                        case SpecialKeys.LEFT:
+                           newInsertPos--;
+                           if (newInsertPos < 0) newInsertPos = 0;
+                           while (newInsertPos < first.items[firstToDraw])
+                           {
+                              firstToDraw--;
+                              sb.setValue(sb.getValue() - 1);
+                           }
+                           charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
+                           break;
+                        case SpecialKeys.RIGHT:
+                           newInsertPos++;
+                           if (newInsertPos > len) newInsertPos = len;
+                           if (numberTextLines > rowCount)
+                           {
+                              if ((firstToDraw + rowCount) < (first.size() - 1)) // guich@550_5: avoid AAOBE
+                                 while (newInsertPos >= first.items[firstToDraw + rowCount])
+                                 {
+                                    firstToDraw++;
+                                    sb.setValue(sb.getValue() + 1);
+                                 }
+                           }
+                           charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
+                           break;
+                        case SpecialKeys.DOWN:
+                        case SpecialKeys.PAGE_DOWN:
+                           if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
+                              sb.onEvent(event);
+                           else
+                           if (numberTextLines > 0 && newInsertPos <= first.items[numberTextLines - 1]) // -1 guich@573_44: check if > 0
+                           {
+                              charPosToZ(newInsertPos, z1);
+                              z1.x = z3.x; // kmeehl@tc100: remember the previous horizontal position
+                              if (z1.y >= textRect.height - hLine)
+                              {
+                                 int ii = sb.getValue();
+                                 if (ii < sb.getMaximum()) firstToDraw++;
+                                 sb.setValue(++ii);
+                              }
+                              else
+                                 z1.y += hLine;
+                              int line = firstToDraw + (z1.y - textRect.y) / hLine;
+                              if (chars.charAt(newInsertPos) == ENTER && first.items[line + 1] - first.items[line] == 1)
+                                 newInsertPos++;
                               else
                                  newInsertPos = zToCharPos(z1);
+   
+                              if (line > firstToDraw + (z1.y - textRect.y) / hLine) // zToCharPos failed...
+                                 newInsertPos++;
+   
                               charPosToZ(newInsertPos, z1);
-                              forceDrawAll = true;
                            }
-                        }
-                        break;
-                     case SpecialKeys.LEFT:
-                        newInsertPos--;
-                        if (newInsertPos < 0) newInsertPos = 0;
-                        while (newInsertPos < first.items[firstToDraw])
-                        {
-                           firstToDraw--;
-                           forceDrawAll = true;
-                           sb.setValue(sb.getValue() - 1);
-                        }
-                        charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
-                        break;
-                     case SpecialKeys.RIGHT:
-                        newInsertPos++;
-                        if (newInsertPos > len) newInsertPos = len;
-                        if (numberTextLines > rowCount)
-                        {
-                           if ((firstToDraw + rowCount) < (first.size() - 1)) // guich@550_5: avoid AAOBE
-                              while (newInsertPos >= first.items[firstToDraw + rowCount])
-                              {
-                                 firstToDraw++;
-                                 forceDrawAll = true;
-                                 sb.setValue(sb.getValue() + 1);
-                              }
-                        }
-                        charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
-                        break;
-                     case SpecialKeys.DOWN:
-                     case SpecialKeys.PAGE_DOWN:
-                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
-                           sb.onEvent(event);
-                        else
-                        if (numberTextLines > 0 && newInsertPos <= first.items[numberTextLines - 1]) // -1 guich@573_44: check if > 0
-                        {
-                           charPosToZ(newInsertPos, z1);
-                           z1.x = z3.x; // kmeehl@tc100: remember the previous horizontal position
-                           if (z1.y >= textRect.height - hLine)
-                           {
-                              int ii = sb.getValue();
-                              if (ii < sb.getMaximum()) firstToDraw++;
-                              sb.setValue(++ii);
-                           }
-                           else
-                              z1.y += hLine;
-                           forceDrawAll = true;
-                           int line = firstToDraw + (z1.y - textRect.y) / hLine;
-                           if (chars.charAt(newInsertPos) == ENTER && first.items[line + 1] - first.items[line] == 1)
-                              newInsertPos++;
-                           else
-                              newInsertPos = zToCharPos(z1);
-
-                           if (line > firstToDraw + (z1.y - textRect.y) / hLine) // zToCharPos failed...
-                              newInsertPos++;
-
-                           charPosToZ(newInsertPos, z1);
-                        }
-                        break;
-                     default:
-                        isMove = false;
+                           break;
+                        default:
+                           isMove = false;
+                     }
                   }
+                  catch (Exception e)
+                  {
+                     if (Settings.onJavaSE)
+                        e.printStackTrace();
+                  }
+                  if (isMove && newInsertPos != insertPos)
+                  {
+                     if ((ke.modifiers & SpecialKeys.SHIFT) > 0)
+                        extendSelect = true;
+                     else
+                        clearSelect = true;
+                  }
+                  if (!isMove) calculateFirst();
                }
-               catch (Exception e)
-               {
-                  if (Settings.onJavaSE)
-                     e.printStackTrace();
-               }
-               if (isMove && newInsertPos != insertPos)
-               {
-                  if ((ke.modifiers & SpecialKeys.SHIFT) > 0)
-                     extendSelect = true;
-                  else
-                     clearSelect = true;
-               }
-               if (!isMove) calculateFirst();
                break;
-            }
             case PenEvent.PEN_UP: // kmeehl@tc100
                lastPenDown = -1;
                firstPenDown = false;
@@ -1036,7 +1004,8 @@ public class MultiEdit extends Container implements Scrollable
          newInsertPos = Math.min(chars.length(), newInsertPos);
          if (newInsertPos < 0) newInsertPos = 0;
          boolean insertChanged = (newInsertPos != startSelectPos);
-         if (insertChanged && cursorShowing) draw(drawg, true); // erase cursor at old insert position
+         if (insertChanged && cursorShowing) 
+            draw(drawg); // erase cursor at old insert position
          insertPos = newInsertPos;
          if (redraw || insertChanged)
             Window.needsPaint = true;
@@ -1132,7 +1101,6 @@ public class MultiEdit extends Container implements Scrollable
             for (int i = 0; i < n; i++)
                Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
          calculateFirst();
-         forceDrawAll = true;
       }
    }
 
@@ -1154,10 +1122,10 @@ public class MultiEdit extends Container implements Scrollable
       }
    }
 
-   protected void draw(Graphics g, boolean cursorOnly)
+   protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed() || boardRect == null) return; // guich@tc114_65: check if its displayed
-      if (forceDrawAll && !transparentBackground)
+      if (!transparentBackground)
       {
          g.backColor = uiAndroid ? parent.backColor : back0;
          g.clearClip();
@@ -1174,66 +1142,66 @@ public class MultiEdit extends Container implements Scrollable
             g.drawImage(npback, 0,0);
          }
          else
-         if (!uiPalm) g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
+            g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
       }
       g.setClip(boardRect);
       // draw the text and/or the selection --original
-      if (!cursorOnly || forceDrawAll)
+      if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
       {
-         if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
+         // character regions are: -- original
+         // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
+         int sel1 = Math.min(startSelectPos, insertPos);
+         int sel2 = Math.max(startSelectPos, insertPos);
+         charPosToZ(sel1, z1);
+         charPosToZ(sel2, z2);
+         g.backColor = back1;
+         if (z1.y == z2.y)
+            g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
+         else
          {
-            // character regions are: -- original
-            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
-            int sel1 = Math.min(startSelectPos, insertPos);
-            int sel2 = Math.max(startSelectPos, insertPos);
-            charPosToZ(sel1, z1);
-            charPosToZ(sel2, z2);
-            g.backColor = back1;
-            if (z1.y == z2.y)
-               g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
-            else
-            {
-               g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
-               if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
-               g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
-            }
+            g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
+            if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
+            g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
          }
-         int i;
-         int h = textRect.y;
-         int dh = textRect.y + fm.ascent;
-         int maxh = h + textRect.height;
-         g.foreColor = fColor;
-         g.backColor = back0;
-         int last = numberTextLines - 1;
-         int len = chars.length();
-         for (i = firstToDraw; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      }
+      int i;
+      int h = textRect.y;
+      int dh = textRect.y + fm.ascent;
+      int maxh = h + textRect.height;
+      g.foreColor = fColor;
+      g.backColor = back0;
+      int last = numberTextLines - 1;
+      int len = chars.length();
+      for (i = firstToDraw; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      {
+         //if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
+         int k = first.items[i];
+         int k2 = first.items[i + 1];
+         g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+         if (drawDots)
          {
-            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-            int k = first.items[i];
-            int k2 = first.items[i + 1];
-            g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
-            if (drawDots)
-            {
-               g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
-               g.backColor = back0;
-            }
-         }
-
-         // guich@320_28: draw the dotted lines
-         if (!forceDrawAll || drawDots) for (; i < firstToDraw + rowCount; i++, h += hLine, dh += hLine)
-         {
-            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-            if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
+            g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
             g.backColor = back0;
          }
       }
-      forceDrawAll = false;
-      if (hasFocus && (editable || hasCursorWhenNotEditable))
+
+      // guich@320_28: draw the dotted lines
+      if (drawDots) 
+         for (; i < firstToDraw + rowCount; i++, h += hLine, dh += hLine)
+         {
+            if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
+            g.backColor = back0;
+         }
+    if (hasFocus && (editable || hasCursorWhenNotEditable))
       {
          // draw cursor
-         charPosToZ(insertPos, z1);
-         g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
-         cursorShowing = cursorOnly ? !cursorShowing : true;
+         if (cursorShowing)
+         {
+            charPosToZ(insertPos, z1);
+            g.foreColor = Color.interpolate(backColor,foreColor);
+            g.drawRect(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
+         }
+         cursorShowing = !cursorShowing;
          if (Window.isScreenShifted() && lastZ1y != z1.y)
             getParentWindow().shiftScreen(this, lastZ1y = z1.y);
       }
@@ -1248,8 +1216,7 @@ public class MultiEdit extends Container implements Scrollable
 
    public void onPaint(Graphics g)
    {
-      forceDrawAll=true;
-      draw(g, false);
+      draw(g);
    }
 
    private void clearPosState()
@@ -1267,7 +1234,7 @@ public class MultiEdit extends Container implements Scrollable
    protected void popPosState()
    {
       if (cursorShowing)
-         draw(drawg,true);
+         draw(drawg);
       insertPos = pushedInsertPos;
       startSelectPos = pushedStartSelectPos;
    }
@@ -1285,7 +1252,7 @@ public class MultiEdit extends Container implements Scrollable
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = back0 != Color.WHITE?backColor:Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid && !uiPalm) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       sb.setBackForeColors(backColor, foreColor);
       npback = null;
    }
@@ -1367,7 +1334,6 @@ public class MultiEdit extends Container implements Scrollable
 
          sb.setValue(val + inc);
          firstToDraw += inc;
-         forceDrawAll=true;
          Window.needsPaint = true;
          return this;
       }
@@ -1383,7 +1349,6 @@ public class MultiEdit extends Container implements Scrollable
       if (numberTextLines>rowCount)
       {
          firstToDraw=numberTextLines-rowCount;
-         forceDrawAll=true;
          sb.setValue(firstToDraw);
       }
    }
@@ -1395,7 +1360,6 @@ public class MultiEdit extends Container implements Scrollable
       if (firstToDraw!=0)
       {
          firstToDraw=0;
-         forceDrawAll=true;
          sb.setValue(0);
       }
    }

@@ -21,84 +21,6 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#if (defined __SYMBIAN32__ && !defined __WINS__)  // ARMI
-
-#define LONG_BITS       (sizeof(long) << 3)
-#define LONGLONG_BITS   (sizeof(long long) << 3)
-
-#define UL_HIGH   1
-#define UL_LOW    0
-
-union uu
-{
-   long long ll;           /* as a signed int64 */
-   unsigned long ul[2];    /* as two unsigned int32 */
-};
-
-static long long my_fixunsdfdi(double a)   // unsigned dbl float to dbl int
-{
-   unsigned long hi, lo;
-
-   hi = a / (((unsigned long long)1) << LONG_BITS);
-   lo = (a - ((double)hi) * (((unsigned long long)1) << LONG_BITS));
-   return ((unsigned long long)hi << LONG_BITS) | lo;
-}
-
-static long long my_fixunssfdi(float a0)   // unsigned single float to dbl int
-{
-   double a = a0;
-   unsigned long hi, lo;
-
-   hi = a / (((unsigned long long)1) << LONG_BITS);
-   lo = (a - ((double)hi) * (((unsigned long long)1) << LONG_BITS));
-   return ((unsigned long long)hi << LONG_BITS) | lo;
-}
-
-long long __fixdfdi(double a)              // dbl float to dbl int
-{
-   return (a < 0) ? -my_fixunsdfdi(-a) : my_fixunsdfdi(a);
-}
-
-long long __fixsfdi(float a)              // single float to dbl int
-{
-   return (a < 0) ? -my_fixunssfdi(-a) : my_fixunssfdi(a);
-}
-
-double __floatdidf(long long u)
-{
-   double d;
-   union uu m;
-   m.ll = (u < 0) ? -u : u; //fdie@560_27 fix neg values issue on Symbian
-   d = (4.0 * m.ul[UL_HIGH]) * (1L << (LONG_BITS - 2));
-   d += (2.0 * (m.ul[UL_LOW] >> 1)) + (m.ul[UL_LOW] & 1); // fdie@ grant that the long isn't signed before the double conversion
-   return u < 0 ? -d : d;
-}
-
-float __floatdisf(long long u)
-{
-#if 1
-   double f;
-
-   if (
-      ((53 < LONGLONG_BITS) && (53 > (LONGLONG_BITS-53+24))) &&
-      ((-((long long)1 << 53) >= u) || (u >= ((long long)1 << 53))) &&
-      ((unsigned long long)u & (((unsigned long long)1 << (LONGLONG_BITS-53))-1))
-   ) {
-      u &= ~ (((unsigned long long)1 << (LONGLONG_BITS-53))-1);
-      u |= ((unsigned long long)1 << (LONGLONG_BITS-53));
-   }
-   f = (long)(u >> LONG_BITS);
-   f *= 2.0 * (((unsigned long long)1) << (LONG_BITS - 1));
-   f += (unsigned long)(u & ((((unsigned long long)1) << LONG_BITS) - 1));
-   return (float)f;
-#else
-   // or even simpler
-   return __floatdidf(u);
-#endif
-}
-#endif // (defined __SYMBIAN32__ && !defined __WINS__)  // ARMI
-
-
 #if defined(darwin)
 
 #include <mach/mach.h>
@@ -184,9 +106,7 @@ static int32 privateGetFreeMemory(bool maxblock)
 
 static void privateSleep(uint32 millis)
 {
-#if !defined(__SYMBIAN32__)
    usleep(1000UL * millis);
-#endif
 }
 
 static int32 privateGetTimeStamp()

@@ -60,21 +60,6 @@ public final class Graphics
    /** The background color, in 0xRRGGBB format. */
    public int backColor = Color.BRIGHT;
 
-   /**
-    * Sets the drawing operation when dealing with images.
-    *
-    * @see #DRAW_PAINT
-    * @see #DRAW_ERASE
-    * @see #DRAW_MASK
-    * @see #DRAW_INVERT
-    * @see #DRAW_OVERLAY
-    * @see #DRAW_PAINT_INVERSE
-    * @see #DRAW_SPRITE
-    * @see #DRAW_REPLACE_COLOR
-    * @see #DRAW_SWAP_COLORS
-    */
-   public int drawOp;
-
    /** Set to true to use antialiase in all drawing operations that draw a diagonal line,
     * such as drawPoligon and drawLine. */
    public boolean useAA;
@@ -101,45 +86,6 @@ public final class Graphics
    /** used in the drawArrow method */
    static public final byte ARROW_RIGHT = 4;
 
-   /** The constant for a draw operation where the destination is replaced with source pixels (copy mode). */
-   public static final int DRAW_PAINT         = 0;
-
-   /** The constant for a draw operation where the destination is cleared where source pixels are off (AND mode). 
-    * @deprecated */
-   public static final int DRAW_ERASE         = 1;
-
-   /** The constant for a draw operation where the destination is cleared where source pixels are on (AND NOT mode). 
-   * @deprecated */
-   public static final int DRAW_MASK          = 2;
-
-   /** The constant for a draw operation where the destination is inverted where source pixels are on (XOR mode). 
-    * @deprecated */
-   public static final int DRAW_INVERT        = 3;
-
-   /** The constant for a draw operation where the destination set only where source pixels are on (OR mode). 
-    * @deprecated */
-   public static final int DRAW_OVERLAY       = 4;
-
-   /** The constant for a draw operation where the destination is replaced with inverted source (copy NOT mode). 
-    * @deprecated */
-   public static final int DRAW_PAINT_INVERSE = 5;
-
-   /** The constant for a draw operation where the destination is replaced if source pixels != <i>background color</i> (simulating transparent color). 
-    * @deprecated */
-   public static final int DRAW_SPRITE        = 6;
-
-   /**
-   * The constant for a draw operation where the destination is replaced with <i>foreground color</i> if source pixels different of <i>background color</i>.
-   * Note that this is rather slow on blackberry devices.
-    * @deprecated */
-   public static final int DRAW_REPLACE_COLOR = 7;
-
-
-   /** The constant for a draw operation where the <i>foreground color</i> is swaped with the <i>background color</i>.
-   * Note that this is rather slow on blackberry devices.
-    * @deprecated */
-   public static final int DRAW_SWAP_COLORS   = 8;
-
    private int transX, transY;
    private int clipX1, clipY1, clipX2, clipY2;
    private int minX, minY, maxX, maxY;
@@ -148,13 +94,14 @@ public final class Graphics
    private static int ands8Mask[] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
    private int pitch;
    private static int[] pal685;
-   private boolean isControlSurface,fontIsAA;
+   private boolean isControlSurface;
    private int lastXC, lastYC, lastRX, lastRY, lastSize, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
    private double lastPPD;
    private int[] translateAndClipResults = new int[4];
    /** Defines if the screen has been changed. */
    public static boolean needsUpdate;
    private static int[]acos,asin;
+   private int alpha;
 
    /**
     * Constructs a graphics object which can be used to draw on the given
@@ -170,7 +117,10 @@ public final class Graphics
    public Graphics(GfxSurface surface)
    {
       if (surface instanceof Image) // guich@200b4_37
+      {
          pitch = ((Image)surface).getWidth();
+         alpha = 0xFF000000;
+      }
       else
       if (surface instanceof Control)
       {
@@ -286,7 +236,6 @@ public final class Graphics
     * You can view the palette online <a href='http://www.superwaba.org/tc/pal685_values.png' target=_blank>here</a>.
     * There's no need to convert your colors to these ones; this will be done on-the-fly by the vm.
     * @since TotalCross 1.0
-    * @deprecated 
     */
    public static int[] getPalette()
    {
@@ -322,7 +271,7 @@ public final class Graphics
     */
    public void drawEllipse(int xc, int yc, int rx, int ry)
    {
-      ellipseDrawAndFill(xc,yc,rx,ry,foreColor,foreColor,false,false);
+      ellipseDrawAndFill(xc,yc,rx,ry,foreColor|alpha,foreColor|alpha,false,false);
    }
 
    /** Fills an Ellipse, using the current background color as the fill color.
@@ -333,7 +282,7 @@ public final class Graphics
     */
    public void fillEllipse(int xc, int yc, int rx, int ry)
    {
-      ellipseDrawAndFill(xc,yc,rx,ry,backColor,backColor,true,false);
+      ellipseDrawAndFill(xc,yc,rx,ry,backColor|alpha,backColor|alpha,true,false);
    }
 
    /** Fills a gradient Ellipse, using a gradient from the foreground color to the background color.
@@ -344,7 +293,7 @@ public final class Graphics
     */
    public void fillEllipseGradient(int xc, int yc, int rx, int ry)
    {
-      ellipseDrawAndFill(xc,yc,rx,ry,foreColor,backColor,true,true);
+      ellipseDrawAndFill(xc,yc,rx,ry,foreColor|alpha,backColor|alpha,true,true);
    }
 
    /**
@@ -358,7 +307,7 @@ public final class Graphics
     */
    public void drawArc(int xc, int yc, int r, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor,foreColor,false,false,false);
+      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor|alpha,foreColor|alpha,false,false,false);
    }
 
    /**
@@ -372,7 +321,7 @@ public final class Graphics
     */
    public void drawPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor,foreColor,false,true,false);
+      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor|alpha,foreColor|alpha,false,true,false);
    }
 
    /**
@@ -387,7 +336,7 @@ public final class Graphics
     */
    public void fillPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor,backColor,true,true,false);
+      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor|alpha,backColor|alpha,true,true,false);
    }
 
    /**
@@ -402,7 +351,7 @@ public final class Graphics
     */
    public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor,backColor,true,true,true);
+      arcPiePointDrawAndFill(xc,yc,r,r,startAngle,endAngle,foreColor|alpha,backColor|alpha,true,true,true);
    }
 
    /**
@@ -418,7 +367,7 @@ public final class Graphics
     */
    public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor,foreColor,false,false,false);
+      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor|alpha,foreColor|alpha,false,false,false);
    }
 
    /**
@@ -434,7 +383,7 @@ public final class Graphics
     */
    public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor,foreColor,false,true,false); // guich@402_57: was true,false
+      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor|alpha,foreColor|alpha,false,true,false); // guich@402_57: was true,false
    }
 
    /**
@@ -450,7 +399,7 @@ public final class Graphics
     */
    public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor,backColor,true,true,false); // guich@402_57: was true,false
+      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor|alpha,backColor|alpha,true,true,false); // guich@402_57: was true,false
    }
 
    /**
@@ -466,7 +415,7 @@ public final class Graphics
     */
    public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
-      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor,backColor,true,true,true); // guich@402_57: was true,false
+      arcPiePointDrawAndFill(xc,yc,rx,ry,startAngle,endAngle,foreColor|alpha,backColor|alpha,true,true,true); // guich@402_57: was true,false
    }
 
    /** Draws a circle, using the current foreground color as the outline color.
@@ -476,7 +425,7 @@ public final class Graphics
     */
    public void drawCircle(int xc, int yc, int r)
    {
-      ellipseDrawAndFill(xc,yc,r,r,foreColor, foreColor,false,false);
+      ellipseDrawAndFill(xc,yc,r,r,foreColor|alpha, foreColor|alpha,false,false);
    }
 
    /** Fills a circle, using the current background color as the fill color.
@@ -486,7 +435,7 @@ public final class Graphics
     */
    public void fillCircle(int xc, int yc, int r)
    {
-      ellipseDrawAndFill(xc,yc,r,r,backColor, backColor,true,false);
+      ellipseDrawAndFill(xc,yc,r,r,backColor|alpha, backColor|alpha,true,false);
    }
 
    /** Fills a circle, using a gradient from the foreground color to the background color.
@@ -497,7 +446,7 @@ public final class Graphics
     */
    public void fillCircleGradient(int xc, int yc, int r)
    {
-      ellipseDrawAndFill(xc,yc,r,r,foreColor, backColor,true, true);
+      ellipseDrawAndFill(xc,yc,r,r,foreColor|alpha, backColor|alpha,true, true);
    }
 
    /** Gets the pixel color at given position in the 0x00RRGGBB format.
@@ -512,7 +461,7 @@ public final class Graphics
       x += transX;
       y += transY;
       if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2)
-         return getSurfacePixels(surface)[y*pitch+x];
+         return getSurfacePixels(surface)[y*pitch+x] & 0xFFFFFF;
       return -1;
    }
 
@@ -522,108 +471,7 @@ public final class Graphics
     */
    public void setPixel(int x, int y)
    {
-      setPixel(x,y,foreColor);
-   }
-
-   /** Changes all the pixels with the current foreground color to the current background color.
-    * This method does NOT correctly handle antialiased fonts.
-    * @see #eraseRect(int,int,int,int,int,int,int)
-    * @deprecated 
-    */
-   public void eraseRect(int x, int y, int w, int h)
-   {
-      int xx,yy;
-      if (w > 0 && h > 0 && translateAndClip(x,y,w,h))
-      {
-         x = translateAndClipResults[0]; y = translateAndClipResults[1]; w = translateAndClipResults[2]; h = translateAndClipResults[3];
-         int x2 = x + w;
-         int y2 = y + h;
-         int f = foreColor;
-         int t = backColor;
-         int []row = getSurfacePixels(surface);
-         int inc = pitch-(x2-x);
-
-         int idx = y * pitch + x;
-         for (yy = y; yy < y2; yy++, idx += inc)
-            for (xx = x; xx < x2; xx++,idx++)
-               if (row[idx] == f)
-                  row[idx] = t;
-      }
-   }
-
-   private static Hashtable htAAColors = new Hashtable(31);
-   private static IntHashtable htFT = new IntHashtable(31);
-   private static int lastFrom=-1,lastTo=-1, lastText=-1;
-   private int[] computeAAColors(int base, int text) // computes the AA colors for a color
-   {
-      Long key = new Long(((long)base << 24) | text); // guich@tc100b5_55: cast base to long
-      int[] a = (int[]) htAAColors.get(key);
-      if (a == null)
-      {
-         a = new int[16];
-         int baseRB = base & 0xFF00FF;
-         int baseG = base & 0x00FF00;
-         int textRB = text & 0xFF00FF;
-         int textG = text & 0x00FF00;
-
-         for (int transparency = 16,i=15; transparency > 0; transparency--)
-            a[i--] = ((baseRB + (((textRB - baseRB) * transparency) >> 4)) & 0xFF00FF) | ((baseG + (((textG  - baseG) * transparency) >> 4)) & 0x00FF00);
-
-         htAAColors.put(key, a);
-      }
-      return a;
-   }
-
-   /** Changes all the pixels with the current foreground color to the current background color.
-    * This method correctly handles antialiased fonts, but it is a bit slower.
-    * @see #eraseRect(int,int,int,int)
-    * @deprecated 
-    */
-   public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor)
-   {
-      int xx,yy;
-      if (translateAndClip(x,y,w,h))
-      {
-         x = translateAndClipResults[0]; y = translateAndClipResults[1]; w = translateAndClipResults[2]; h = translateAndClipResults[3];
-         int x2 = x + w;
-         int y2 = y + h;
-         int []row = getSurfacePixels(surface);
-         int inc = pitch-(x2-x);
-         if (!fontIsAA)
-         {
-            int idx = y * pitch + x;
-            for (yy = y; yy < y2; yy++, idx += inc)
-               for (xx = x; xx < x2; xx++,idx++)
-                  if (row[idx] == fromColor)
-                     row[idx] = toColor;
-         }
-         else
-         {
-            IntHashtable ft = htFT;
-            if (lastFrom != fromColor || lastTo != toColor || lastText != textColor)
-            {
-               lastFrom = fromColor;
-               lastTo = toColor;
-               lastText = textColor;
-               int []froms = computeAAColors(fromColor, textColor);
-               int []tos = computeAAColors(toColor, textColor);
-               ft.clear();
-               for (int i =0; i < 16; i++)
-                  ft.put(froms[i],tos[i]);
-            }
-            int idx = y * pitch + x;
-            for (yy = y; yy < y2; yy++, idx += inc)
-               for (xx = x; xx < x2; xx++,idx++)
-               {
-                  int p = row[idx];
-                  if (p == fromColor)
-                     row[idx] = toColor;
-                  else
-                  if ((p = ft.get(p,-1)) != -1)
-                     row[idx] = p;
-               }
-         }
-      }
+      setPixel(x,y,foreColor|alpha);
    }
 
    private boolean surelyOutsideClip(int x1, int y1, int x2, int y2)
@@ -647,7 +495,7 @@ public final class Graphics
     */
    public void drawLine(int Ax, int Ay, int Bx, int By)
    {
-      drawLine(Ax,Ay,Bx,By,foreColor);
+      drawLine(Ax,Ay,Bx,By,foreColor|alpha);
    }
 
    /** Draws a dotted line in any direction.
@@ -660,108 +508,7 @@ public final class Graphics
     */
    public void drawDots(int Ax, int Ay, int Bx, int By)
    {
-      drawDottedLine(Ax,Ay,Bx,By,foreColor,backColor);
-   }
-
-   /** Fills a rectangle using the xor operation.
-    * So, if drawn twice, the original colors are placed back.
-    * @param x left coordinate of the rectangle
-    * @param y top coordinate of the rectangle
-    * @param w width of the rectangle. the rectangle is drawn from x to x+w-1.
-    * @param h height of the rectangle. the rectangle is drawn from y to y+h-1.
-    * @deprecated 
-    */
-   public void fillCursor(int x, int y, int w, int h)
-   {
-      int xx;
-      if (translateAndClip(x,y,w,h))
-      {
-         x = translateAndClipResults[0]; y = translateAndClipResults[1]; w = translateAndClipResults[2]; h = translateAndClipResults[3];
-         int x2 = x + w;
-         for (xx = x; xx < x2; xx++)
-            invVLineNOCT(xx,y,h);
-      }
-   }
-
-   /** Draws a rectangle using the xor operation.
-    * So, if drawn twice, the original colors are placed back.
-    * @param x left coordinate of the rectangle
-    * @param y top coordinate of the rectangle
-    * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
-    * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
-    * @since SuperWaba 2.0 beta 4
-    * @deprecated 
-    */
-   public void drawCursor(int x, int y, int width, int height)
-   {
-      if (translateAndClip(x,y,width,height))
-      {
-         int[] pixels = getSurfacePixels(surface);
-         x = translateAndClipResults[0]; y = translateAndClipResults[1]; width = translateAndClipResults[2]; height = translateAndClipResults[3];
-         if (width == 1) // vertical line?
-            invVLineNOCT(x,y,height);
-         else
-         if (height == 1) // horizontal line?
-            for (x += y*pitch; width-- > 0; )
-               pixels[x++] ^= 0xFFFFFF;
-         else
-         {
-            int x2 = x+width-1;
-            int y2 = y+height-1;
-            int xx1 = y *pitch+x+1;
-            int xx2 = y2*pitch+x+1;
-            for (int xx=x+1; xx < x2; xx++)
-            {
-               pixels[xx1++] ^= 0xFFFFFF;
-               pixels[xx2++] ^= 0xFFFFFF;
-            }
-            invVLineNOCT(x,y,height);
-            invVLineNOCT(x2,y,height);
-         }
-         if (isControlSurface) needsUpdate = true;
-      }
-   }
-
-   /** Draws a dotted rectangle outline, using the xor operation.
-    * So, if drawn twice, the original colors are placed back.
-    * @param x left coordinate of the rectangle
-    * @param y top coordinate of the rectangle
-    * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
-    * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
-    * @since SuperWaba 5.5
-    * @deprecated 
-    */
-   public void drawDottedCursor(int x, int y, int width, int height) // guich@550_32
-   {
-      x += transX;
-      y += transY;
-      int x2 = x + width -1;
-      int h = height-1;
-      int i,j;
-      if (width <= 0 || height <= 0) // guich@566_43
-         return;
-      int[] pixels = getSurfacePixels(surface);
-      for (i=0; i<=h; ++i)
-      {
-         int yy = i + y;
-         int px = yy * pitch;
-         if ((i==0) || (i==h)) // draw the horizontal rows
-         {
-            if (clipY1 <= yy && yy < clipY2)
-               for (j=x; j < x2; j+=2)
-                  if (clipX1 <= j && j < clipX2)
-                     pixels[px+j] ^= 0xFFFFFF;
-         }
-         else
-         if ((i&1)!=0 && clipY1 <= yy && yy < clipY2)
-         {
-            if (clipX1 <= x && x < clipX2)
-               pixels[px+x] ^= 0xFFFFFF;
-            if (clipX1 <= x2 && x2 < clipX2)
-               pixels[px+x2] ^= 0xFFFFFF;
-         }
-      }
-      if (isControlSurface) needsUpdate = true;
+      drawDottedLine(Ax,Ay,Bx,By,foreColor|alpha,backColor|alpha);
    }
 
    /** Draws a rectangle, using the current foreground color as the outline color.
@@ -772,10 +519,10 @@ public final class Graphics
     */
    public void drawRect(int x, int y, int w, int h)
    {
-      drawHLine(x,y,w,foreColor);
-      drawHLine(x,y+h-1,w,foreColor);
-      drawVLine(x,y,h,foreColor);
-      drawVLine(x+w-1,y,h,foreColor);
+      drawHLine(x,y,w,foreColor|alpha);
+      drawHLine(x,y+h-1,w,foreColor|alpha);
+      drawVLine(x,y,h,foreColor|alpha);
+      drawVLine(x+w-1,y,h,foreColor|alpha);
    }
 
    /** Fills a rectangle, using the current background color as the fill color.
@@ -800,30 +547,9 @@ public final class Graphics
             return;
          int []pix = getSurfacePixels(surface);
          for (x += y*pitch; h-- > 0; x += pitch)
-            Convert.fill(pix, x, x+w, backColor);
+            Convert.fill(pix, x, x+w, backColor|alpha);
          if (isControlSurface) needsUpdate = true;
       }
-   }
-
-   /** Draws a dotted rectangle.
-    * Use the current foreground color
-    * as the 1st, 3rd, ... pixels and the background color as the 2nd, 4th, ... pixels.
-    * @param x left coordinate of the rectangle
-    * @param y top coordinate of the rectangle
-    * @param w width of the rectangle. the rectangle is drawn from x to x+w-1.
-    * @param h height of the rectangle. the rectangle is drawn from y to y+h-1.
-    */
-   public void drawDottedRect(int x, int y, int w, int h)
-   {
-      int c1 = foreColor;
-      int c2 = backColor;
-      int x2 = x+w-1;
-      int y2 = y+h-1;
-      if (w <= 0 || h <= 0) return; // guich@566_43
-      drawDottedLine(x, y, x2,y, c1,c2);
-      drawDottedLine(x, y, x ,y2,c1,c2);
-      drawDottedLine(x2,y, x2,y2,c1,c2);
-      drawDottedLine(x, y2,x2,y2,c1,c2);
    }
 
    /** Fills a polygon, using the current background color as the fill color.
@@ -837,7 +563,7 @@ public final class Graphics
       if (nPoints > xPoints.length || nPoints > yPoints.length)
          throw new ArrayIndexOutOfBoundsException("array index out of range at fillPolygon: "+nPoints);
       else
-         fillPolygon(xPoints,yPoints,0,nPoints,null,null,0,backColor, backColor,false);
+         fillPolygon(xPoints,yPoints,0,nPoints,null,null,0,backColor|alpha, backColor|alpha,false);
    }
 
    /** Fills a vertical gradient polygon, mixing from the foreground color to the background color.
@@ -852,7 +578,7 @@ public final class Graphics
       if (nPoints > xPoints.length || nPoints > yPoints.length)
          throw new ArrayIndexOutOfBoundsException("array index out of range at fillPolygon: "+nPoints);
       else
-         fillPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor, backColor, true);
+         fillPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor|alpha, backColor|alpha, true);
    }
 
    /** Draws a polygon, using the current foreground color as the outline color.
@@ -867,9 +593,30 @@ public final class Graphics
          throw new ArrayIndexOutOfBoundsException("array index out of range at drawPolygon: "+nPoints);
       else
       {
-         drawPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor);
-         drawLine(xPoints[0],yPoints[0],xPoints[nPoints-1],yPoints[nPoints-1], foreColor);
+         drawPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor|alpha);
+         drawLine(xPoints[0],yPoints[0],xPoints[nPoints-1],yPoints[nPoints-1], foreColor|alpha);
       }
+   }
+
+   /** Draws a dotted rectangle.
+    * Use the current foreground color
+    * as the 1st, 3rd, ... pixels and the background color as the 2nd, 4th, ... pixels.
+    * @param x left coordinate of the rectangle
+    * @param y top coordinate of the rectangle
+    * @param w width of the rectangle. the rectangle is drawn from x to x+w-1.
+    * @param h height of the rectangle. the rectangle is drawn from y to y+h-1.
+    */
+   public void drawDottedRect(int x, int y, int w, int h)
+   {
+      int c1 = foreColor|alpha;
+      int c2 = backColor|alpha;
+      int x2 = x+w-1;
+      int y2 = y+h-1;
+      if (w <= 0 || h <= 0) return; // guich@566_43
+      drawDottedLine(x, y, x2,y, c1,c2);
+      drawDottedLine(x, y, x ,y2,c1,c2);
+      drawDottedLine(x2,y, x2,y2,c1,c2);
+      drawDottedLine(x, y2,x2,y2,c1,c2);
    }
 
    /** Draws a sequence of connected lines, using the current foreground color as the outline color.
@@ -883,7 +630,7 @@ public final class Graphics
       if (nPoints > xPoints.length || nPoints > yPoints.length)
          throw new ArrayIndexOutOfBoundsException("array index out of range at drawPolyline: "+nPoints);
       else
-         drawPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor);
+         drawPolygon(xPoints,yPoints,0,nPoints,null,null,0,foreColor|alpha);
    }
 
    /** Draws a sequence of points, using the current foreground color.
@@ -896,7 +643,7 @@ public final class Graphics
       if (nPoints > xPoints.length || nPoints > yPoints.length)
          throw new ArrayIndexOutOfBoundsException("array index out of range at drawPolyline: "+nPoints);
       else
-         setPixels(xPoints,yPoints,nPoints,foreColor);
+         setPixels(xPoints,yPoints,nPoints,foreColor|alpha);
    }
 
    public void drawText(char chars[], int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor)
@@ -938,7 +685,7 @@ public final class Graphics
       if (shadow)
       {
          int old = foreColor;
-         foreColor = shadowColor;
+         foreColor = shadowColor |alpha;
          drawText(text, x-1,y-1,justifyWidth);
          drawText(text, x+1,y-1,justifyWidth);
          drawText(text, x+1,y+1,justifyWidth);
@@ -960,51 +707,6 @@ public final class Graphics
    public void drawText(char chars[], int chrStart, int chrCount, int x, int y)
    {
       drawText(new String(chars, chrStart, chrCount), x,y);
-   }
-
-   /** Draws a text with the current font and the current foregrount color.
-    * On BlackBerry devices, this method is slower than drawText(String,x,y) because it convert the
-    * chars to a string.
-    * @param sb the StringBuffer to display
-    * @param chrStart the start position in array
-    * @param chrCount the number of characters to display
-    * @param x the left coordinate of the text's bounding box
-    * @param y the top coordinate of the text's bounding box
-    * @since TotalCross 1.0
-    */
-   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y)
-   {
-      try
-      {
-         drawText(sb.toString().substring(chrStart, chrStart+chrCount), x,y);
-      }
-      catch (StringIndexOutOfBoundsException e)
-      {
-         drawText(sb.toString().substring(chrStart), x,y);
-      }
-   }
-
-   /** Draws a text with the current font and the current foregrount color.
-    * On BlackBerry devices, this method is slower than drawText(String,x,y) because it convert the
-    * chars to a string.
-    * @param sb the StringBuffer to display
-    * @param chrStart the start position in array
-    * @param chrCount the number of characters to display
-    * @param x the left coordinate of the text's bounding box
-    * @param y the top coordinate of the text's bounding box
-    * @param justifyWidth The width to justify the text to.
-    * @since TotalCross 1.0
-    */
-   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth)
-   {
-      try
-      {
-         drawText(sb.toString().substring(chrStart, chrStart+chrCount), x,y, justifyWidth);
-      }
-      catch (StringIndexOutOfBoundsException e)
-      {
-         drawText(sb.toString().substring(chrStart), x,y, justifyWidth);
-      }
    }
 
    /** Draws a text with the current font and the current foregrount color.
@@ -1112,7 +814,7 @@ public final class Graphics
                for (x=x0; x < xMax; x++)  // draw each column
                {
                   if ((bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin)
-                     pixels[yy+x] = foreColor;
+                     pixels[yy+x] = foreColor|alpha;
                   if (++currentBit == 8) // finished this byte?
                   {
                      currentBit = 0; // reset counter
@@ -1142,13 +844,13 @@ public final class Graphics
                   if (transparency == 0 || x < xMin)
                      continue;
                   if (transparency == 0xF)
-                     pixels[yy+x] = foreColor;
+                     pixels[yy+x] = foreColor|alpha;
                   else
                   {
                      int i = pixels[yy + x];
                      int j = i & 0xFF00FF;
                      i &= 0x00FF00;
-                     pixels[yy + x] = ((j + (((pxRB - j) * transparency) >> 4)) & 0xFF00FF) | ((i + (((pxG  - i) * transparency) >> 4)) & 0x00FF00);
+                     pixels[yy + x] = ((j + (((pxRB - j) * transparency) >> 4)) & 0xFF00FF) | ((i + (((pxG  - i) * transparency) >> 4)) & 0x00FF00) |alpha;
                   }
                }
             }
@@ -1171,7 +873,6 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void drawRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1210,14 +911,13 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is filled from x to x+w-1.
     * @param height height of the rectangle. the rectangle is filled from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void fillRoundRect(int x, int y, int width, int height, int r)
    {
       if (r > (width >> 1) || r > (height >> 1)) r = Math.min(width >> 1,height >> 1); // guich@200b4_6: correct bug that crashed the device.
       int x1 = x+r,y1=y+r,x2=x+width-r-1,y2=y+height-r-1;
       int dec = 3-(r<<1),xx,yy;
-      int c = backColor;
+      int c = backColor|alpha;
 
       height -= (r<<1);
       y += r;
@@ -1351,33 +1051,19 @@ public final class Graphics
    * @param height the height of the area on the source surface
    * @param dstX the destination x location on the current surface
    * @param dstY the destination y location on the current surface
-   * @see #drawOp
-   * @see #DRAW_PAINT
-   * @see #DRAW_ERASE
-   * @see #DRAW_MASK
-   * @see #DRAW_INVERT
-   * @see #DRAW_OVERLAY
-   * @see #DRAW_PAINT_INVERSE
-   * @see #DRAW_SPRITE
-   * @see #DRAW_REPLACE_COLOR
-   * @see #DRAW_SWAP_COLORS
    */
    public void copyRect(GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY)
    {
       int []srcPixels = (int[]) getSurfacePixels(surface);
       if (srcPixels != null)
-         drawSurface(srcPixels, x,y,width,height, dstX,dstY, drawOp, backColor, foreColor, true, surface.getX(), surface.getY(), surface.getWidth(), surface.getHeight(), surface instanceof Image ? ((Image)surface).useAlpha : false);
+         drawSurface(srcPixels, surface, x,y,width,height, dstX,dstY, true, surface.getX(), surface.getY(), surface.getWidth(), surface.getHeight());
    }
 
    /** Sets the current font for operations that draw text. */
    public void setFont(Font font)
    {
       if (font != null && font != this.font)
-      {
          this.font = font;
-         totalcross.Launcher.UserFont uf = (totalcross.Launcher.UserFont)this.font.hv_UserFont;
-         fontIsAA = uf != null && uf.antialiased;
-      }
    }
 
    /** Returns the current translation from the origin for this Graphics object. */
@@ -1394,42 +1080,42 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
+      int fc = foreColor|alpha;
       int x2 = x+width-1;
       int y2 = y+height-1;
       if (top && bottom)
       {
-         drawLine(x,y+2,x,y2-2,foreColor); // left
-         drawLine(x+2,y2,x2-2,y2,foreColor); // bottom
-         drawLine(x2,y+2,x2,y2-2,foreColor); // right
-         drawLine(x+2,y,x2-2,y,foreColor); // top
-         setPixel(x+1,y+1,foreColor); // top left
-         setPixel(x2-1,y+1,foreColor); // top right
-         setPixel(x+1,y2-1,foreColor); // bottom left
-         setPixel(x2-1,y2-1,foreColor); // bottom right
+         drawLine(x,y+2,x,y2-2,fc); // left
+         drawLine(x+2,y2,x2-2,y2,fc); // bottom
+         drawLine(x2,y+2,x2,y2-2,fc); // right
+         drawLine(x+2,y,x2-2,y,fc); // top
+         setPixel(x+1,y+1,fc); // top left
+         setPixel(x2-1,y+1,fc); // top right
+         setPixel(x+1,y2-1,fc); // bottom left
+         setPixel(x2-1,y2-1,fc); // bottom right
       }
       else
       if (top && !bottom)
       {
-         drawLine(x,y+2,x,y2,foreColor); // left
-         drawLine(x,y2,x2,y2,foreColor); // bottom
-         drawLine(x2,y+2,x2,y2,foreColor); // right
-         drawLine(x+2,y,x2-2,y,foreColor); // top
-         setPixel(x+1,y+1,foreColor); // top left
-         setPixel(x2-1,y+1,foreColor); // top right
+         drawLine(x,y+2,x,y2,fc); // left
+         drawLine(x,y2,x2,y2,fc); // bottom
+         drawLine(x2,y+2,x2,y2,fc); // right
+         drawLine(x+2,y,x2-2,y,fc); // top
+         setPixel(x+1,y+1,fc); // top left
+         setPixel(x2-1,y+1,fc); // top right
       }
       else
       if (!top && bottom)
       {
-         drawLine(x,y,x,y2-2,foreColor); // left
-         drawLine(x+2,y2,x2-2,y2,foreColor); // bottom
-         drawLine(x2,y,x2,y2-2,foreColor); // right
-         drawLine(x,y,x2,y,foreColor); // top
-         setPixel(x+1,y2-1,foreColor); // bottom left
-         setPixel(x2-1,y2-1,foreColor); // bottom right
+         drawLine(x,y,x,y2-2,fc); // left
+         drawLine(x+2,y2,x2-2,y2,fc); // bottom
+         drawLine(x2,y,x2,y2-2,fc); // right
+         drawLine(x,y,x2,y,fc); // top
+         setPixel(x+1,y2-1,fc); // bottom left
+         setPixel(x2-1,y2-1,fc); // bottom right
       }
    }
 
@@ -1441,59 +1127,33 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
+      int c = backColor|alpha;
       int x2 = x+width-1;
       int y2 = y+height-1;
       if (top && bottom)
       {
          fillRect(x,y+2,width,height-4); // middle
-         drawLine(x+2,y,x2-2,y,backColor); // 1st line
-         drawLine(x+1,y+1,x2-1,y+1,backColor); // 2nd line
-         drawLine(x+1,y2-1,x2-1,y2-1,backColor); // last-1 line
-         drawLine(x+2,y2,x2-2,y2,backColor); // last line
+         drawLine(x+2,y,x2-2,y,c); // 1st line
+         drawLine(x+1,y+1,x2-1,y+1,c); // 2nd line
+         drawLine(x+1,y2-1,x2-1,y2-1,c); // last-1 line
+         drawLine(x+2,y2,x2-2,y2,c); // last line
       }
       else
       if (top && !bottom)
       {
-         drawLine(x+2,y,x2-2,y,backColor); // 1st line
-         drawLine(x+1,y+1,x2-1,y+1,backColor); // 2nd line
+         drawLine(x+2,y,x2-2,y,c); // 1st line
+         drawLine(x+1,y+1,x2-1,y+1,c); // 2nd line
          fillRect(x,y+2,width,height-2); // middle
       }
       else
       if (!top && bottom)
       {
          fillRect(x,y,width,height-2); // middle
-         drawLine(x+1,y2-1,x2-1,y2-1,backColor); // last-1 line
-         drawLine(x+2,y2,x2-2,y2,backColor); // last line
-      }
-   }
-
-   /** Used to draw the topleft lines of a rect with one color and the bottomright with another color.
-    * if yMirror, draws the borders mirrowed. Pass -1 to the colors to not draw that side.
-    * @deprecated 
-    */
-   public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
-   {
-      int x2 = x+w-1;
-      int y2 = y+h-1;
-      if (topLeftColor >= 0)
-      {
-         drawLine(x,y,x,y2,topLeftColor);
-         if (!yMirror)
-            drawLine(x,y,x2,y,topLeftColor);
-         else
-            drawLine(x,y2,x2,y2,topLeftColor);
-      }
-      if (bottomRightColor >= 0)
-      {
-         drawLine(x2,y2,x2,y,bottomRightColor);
-         if (!yMirror)
-            drawLine(x2,y2,x,y2,bottomRightColor);
-         else
-            drawLine(x2,y,x,y,bottomRightColor);
+         drawLine(x+1,y2-1,x2-1,y2-1,c); // last-1 line
+         drawLine(x+2,y2,x2-2,y2,c); // last line
       }
    }
 
@@ -1587,7 +1247,7 @@ public final class Graphics
 
    private void drawFadedPixel(int xx, int yy, int color) // guich@tc124_4
    {
-      foreColor = Color.interpolate(color,getPixel(xx,yy),20);
+      foreColor = color | 0x14000000;//Color.interpolate(color,getPixel(xx,yy),20);
       setPixel(xx,yy);
    }
 
@@ -1614,25 +1274,18 @@ public final class Graphics
      * only when you're sure that the image will not pass the current surface
      * bounds. Otherwise, be prepared to even <b>hard-reset</b> your device!
      * @since SuperWaba 3.3
-     * @see #drawOp
-     * @see #DRAW_PAINT
-     * @see #DRAW_ERASE
-     * @see #DRAW_MASK
-     * @see #DRAW_INVERT
-     * @see #DRAW_OVERLAY
-     * @see #DRAW_PAINT_INVERSE
-     * @see #DRAW_SPRITE
-     * @see #DRAW_REPLACE_COLOR
-     * @see #DRAW_SWAP_COLORS
      */
-   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip)
    {
-      int transpPixel = image.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT)
-         transpPixel = backColor;
       int []srcPixels = (int[]) image.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, 0,0, image.getWidth(), image.getHeight(), x,y, drawOp, transpPixel, this.foreColor, doClip, 0,0, image.getWidth(), image.getHeight(), image.useAlpha);
+         drawSurface(srcPixels, image, 0,0, image.getWidth(), image.getHeight(), x,y, doClip, 0,0, image.getWidth(), image.getHeight());
+   }
+
+   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   {
+      drawImage(image, x,y,doClip);
    }
 
     /** Copies a part of the given source image to here at the given position with the given draw operation
@@ -1653,25 +1306,17 @@ public final class Graphics
     * only when you're sure that the image will not pass the current surface
     * bounds. Otherwise, be prepared to even <b>hard-reset</b> your device!
     * @since SuperWaba 3.3
-    * @see #drawOp
-    * @see #DRAW_PAINT
-    * @see #DRAW_ERASE
-    * @see #DRAW_MASK
-    * @see #DRAW_INVERT
-    * @see #DRAW_OVERLAY
-    * @see #DRAW_PAINT_INVERSE
-    * @see #DRAW_SPRITE
-    * @see #DRAW_REPLACE_COLOR
-    * @see #DRAW_SWAP_COLORS
     */
-   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, boolean doClip)
    {
-      int transpPixel = src.transparentColor;
-      if (backColor >= 0 && drawOp != DRAW_PAINT) // this same cache is used in the pda
-         transpPixel = backColor;
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, x,y, width, height, 0,0, drawOp, transpPixel, this.foreColor, doClip, 0,0, src.getWidth(), src.getHeight(), src.useAlpha);
+         drawSurface(srcPixels,src, x,y, width, height, 0,0, doClip, 0,0, src.getWidth(), src.getHeight());
+   }
+
+   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
+   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   {
    }
 
    /** Draws an image at the given absolute x and y coordinates.
@@ -1683,7 +1328,7 @@ public final class Graphics
       // guich@tc100b5_5: refactored to use the transparent color
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
-         drawSurface(srcPixels, 0,0, src.getWidth(), src.getHeight(), x,y, drawOp, src.transparentColor, this.foreColor, true, 0,0, src.getWidth(), src.getHeight(), src.useAlpha);
+         drawSurface(srcPixels, src, 0,0, src.getWidth(), src.getHeight(), x,y, true, 0,0, src.getWidth(), src.getHeight());
    }
 
 
@@ -1693,7 +1338,6 @@ public final class Graphics
      * everytime you change the enabled state or the fore/back colors. This can
      * be easily achieved if you extend the onColorsChanged method
      * (but don't forget to call super.onColorsChanged).
-     * @deprecated 
      */
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
@@ -1719,11 +1363,13 @@ public final class Graphics
          }
          ht3dColors.put(key, four);
       }
-      Vm.arrayCopy(four, 0, fourColors, 0, 4);
+      fourColors[0] = four[0];
+      fourColors[1] = four[1];
+      fourColors[2] = four[2];
+      fourColors[3] = four[3];
    }
 
    /** Draws a shaded rectangle. 
-    * @deprecated 
     */
    public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor) // guich@573_6
    {
@@ -1731,10 +1377,10 @@ public final class Graphics
       int y1 = y+1;
       int x2 = x+width-1;
       int y2 = y+height-1;
-      foreColor = topColor;    drawLine(x1,y,x2-1,y,foreColor);
-      foreColor = rightColor;  drawLine(x2,y1,x2,y2-1,foreColor);
-      foreColor = bottomColor; drawLine(x1,y2,x2-1,y2,foreColor);
-      foreColor = leftColor;   drawLine(x,y1,x,y2-1,foreColor);
+      foreColor = topColor|alpha;    drawLine(x1,y,x2-1,y,foreColor);
+      foreColor = rightColor|alpha;  drawLine(x2,y1,x2,y2-1,foreColor);
+      foreColor = bottomColor|alpha; drawLine(x1,y2,x2-1,y2,foreColor);
+      foreColor = leftColor|alpha;   drawLine(x,y1,x,y2-1,foreColor);
    }
 
    private static Hashtable htVistaColors = new Hashtable(83);
@@ -1742,7 +1388,6 @@ public final class Graphics
    private static int lastVistaColor=-1;
 
    /** Gets a 11-level gradient color array used to draw the Vista user interface style. 
-    * @deprecated 
     */
    public static int[] getVistaColors(int c) // guich@573_6
    {
@@ -1763,7 +1408,6 @@ public final class Graphics
    }
 
    /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
-    * @deprecated 
     */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
@@ -1778,7 +1422,7 @@ public final class Graphics
       // now paint the shaded area
       for (int c=0; lineY < dim; c++, lineY += incY)
       {
-         backColor = vistaColors[invert ? 10-c : c];
+         backColor = vistaColors[invert ? 10-c : c] | alpha;
          int yy = y0+(lineY>>16);
          int k = hh - yy;
          if (!rotate)
@@ -1806,7 +1450,7 @@ public final class Graphics
          int i = c >= dim0 ? dim0-1 : c;
          int f = (invert ? dim0-1-i : i)*factor/dim0;
          if (f != lastF) // colors repeat often
-            backColor = Color.interpolate(c1, c2, lastF = f);
+            backColor = Color.interpolate(c1, c2, lastF = f) | alpha;
          int yy = y0+(lineY>>16);
          int k = hh - yy;
          if (!rotate)
@@ -1830,70 +1474,23 @@ public final class Graphics
     * @see #R3D_RAISED
     * @see #R3D_CHECK
     * @see #R3D_SHADED
-    * @deprecated 
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {
       if (type == R3D_SHADED)
       {
          boolean menu = simple; // is menu?
-         drawLine(menu?0:1,0,menu?width-1:width-3,0,foreColor);
-         drawLine(0,1,0,height-3,foreColor);
-         drawLine(width-2,1,width-2,height-3,foreColor);
-         drawLine(width-1,menu?1:2,width-1,height-3,foreColor);
-         drawLine(1,height-2,width-2,height-2,foreColor);
-         drawLine(2,height-1,width-3,height-1,foreColor);
+         drawLine(menu?0:1,0,menu?width-1:width-3,0,foreColor|alpha);
+         drawLine(0,1,0,height-3,foreColor|alpha);
+         drawLine(width-2,1,width-2,height-3,foreColor|alpha);
+         drawLine(width-1,menu?1:2,width-1,height-3,foreColor|alpha);
+         drawLine(1,height-2,width-2,height-2,foreColor|alpha);
+         drawLine(2,height-1,width-3,height-1,foreColor|alpha);
       } else
       switch (Settings.uiStyle)
       {
-         case Settings.WinCE:
-            switch (type)
-            {
-               case R3D_EDIT:
-                  drawHighLightFrame(x,y,width,height,fourColors[2],fourColors[1],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-                  break;
-               case R3D_LOWERED:
-                  drawHighLightFrame(x,y,width,height,fourColors[3],fourColors[0],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[2],fourColors[1],yMirror);
-                  break;
-               case R3D_RAISED:
-                  drawHighLightFrame(x,y,width,height,fourColors[0],fourColors[3],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[1],fourColors[2],yMirror);
-                  break;
-               case R3D_CHECK:
-                  drawHighLightFrame(x,y,width,height,fourColors[2],fourColors[1],yMirror);
-                  if (!simple) drawHighLightFrame(x+1,y+1,width-2,height-2,fourColors[3],fourColors[0],yMirror);
-                  break;
-            }
-            break;
-         case Settings.PalmOS:
-            foreColor = fourColors[2];
-            switch (type)
-            {
-               case R3D_CHECK:
-                  drawRect(x,y,width,height);
-                  break;
-               case R3D_EDIT:
-                  int h = height-1;
-                  drawDots(x,y+h,x+width,y+h);
-                  break;
-               case R3D_LOWERED:
-                  backColor = fourColors[1]; // dont move it from here!
-                  if (simple)
-                     fillRect(x,y,width,height);
-                  else
-                     fillHatchedRect(x,y,width,height,true,true); // no break; here!
-               case R3D_RAISED:
-                  if (simple)
-                     drawRect(x,y,width,height);
-                  else
-                     drawHatchedRect(x,y,width,height,true,true);
-                  break;
-            }
-            break;
          case Settings.Flat:
-            foreColor = fourColors[2];
+            foreColor = fourColors[2]|alpha;
             switch (type)
             {
                case R3D_CHECK:
@@ -1903,7 +1500,7 @@ public final class Graphics
                   drawRect(x,y,x+width,y+height);
                   break;
                case R3D_LOWERED:
-                  backColor = fourColors[1]; // dont move it from here!
+                  backColor = fourColors[1] | alpha; // dont move it from here!
                   fillRect(x,y,width,height);
                case R3D_RAISED:
                   drawRect(x,y,width,height);
@@ -1912,11 +1509,11 @@ public final class Graphics
             break;
          case Settings.Android:
          case Settings.Vista:
-            foreColor = fourColors[2];
+            foreColor = fourColors[2]|alpha;
             switch (type)
             {
                case R3D_CHECK:
-                  foreColor = fourColors[0];
+                  foreColor = fourColors[0]|alpha;
                   drawRect(x,y,width,height);
                   break;
                case R3D_EDIT:
@@ -1962,6 +1559,7 @@ public final class Graphics
      */
    public void drawArrow(int x, int y, int h, byte type, boolean pressed, int foreColor)
    {
+      foreColor |= alpha;
       this.foreColor = foreColor;
       if (pressed) {x++; y++;}
       int step = 1;
@@ -2109,7 +1707,7 @@ public final class Graphics
 
    ////////////////////   METHODS TAKED FROM THE TOTALCROSS VIRTUAL MACHINE //////////
    // copy the area x,y,width,height of the bitmap bmp with dimensions bmpW,bmpH to the (current active) screen location dstX,dstY
-   private void drawSurface(int []pixels, int x, int y, int width, int height, int dstX, int dstY, int drawOp, int backColor, int foreColor, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH, boolean useAlpha)
+   private void drawSurface(int []pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH)
    {
       try // guich@200b4_63
       {
@@ -2180,72 +1778,42 @@ public final class Graphics
          }
 
          int [] dst = getSurfacePixels(surface);
+         boolean isSrcScreen = !(srcSurface instanceof Image);
          int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY+y)*scrPitch+bmpX+x;
          int pdst = dstY*pitch+dstX;
-         if (drawOp == DRAW_PAINT)
+         for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
          {
-            if (useAlpha) // guich@tc126_12
-               for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
-               {
-                  int srcIdx = psrc; // guich@450_1
-                  int dstIdx = pdst;
-                  for (i=width; --i >= 0;)
-                  {
-                     bmpPt = pixels[srcIdx++];
-                     int a = (bmpPt >> 24) & 0xFF;
-                     if (a == 0xFF)
-                        dst[dstIdx] = bmpPt;
-                     else
-                     if (a != 0)
-                     {
-                        screenPt = dst[dstIdx];
-                        int br = (bmpPt >> 16) & 0xFF;
-                        int bg = (bmpPt >> 8) & 0xFF;
-                        int bb = (bmpPt     ) & 0xFF;
-                        int sr = (screenPt >> 16) & 0xFF;
-                        int sg = (screenPt >> 8 ) & 0xFF;
-                        int sb = (screenPt      ) & 0xFF;
-                        
-                        int ma = 0xFF-a;
-                        int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                        int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
-                        int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
-                        dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
-                     }
-                     dstIdx++;
-                  }
-               }
-            else
-               for (j=height; j > 0; j--,psrc += scrPitch, pdst += pitch)
-                  Vm.arrayCopy(pixels, psrc, dst, pdst, width);
-         }
-         else
-         {
-            for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
-            {
-               int srcIdx = psrc; // guich@450_1
-               int dstIdx = pdst;
+            int srcIdx = psrc; // guich@450_1
+            int dstIdx = pdst;
+            if (isSrcScreen)
                for (i=width; --i >= 0;)
+                  dst[dstIdx++] = pixels[srcIdx++];
+            else
+               for (i=width; --i >= 0; dstIdx++)
                {
-                  screenPt = dst[dstIdx];
                   bmpPt = pixels[srcIdx++];
-                  switch (drawOp)
+                  int a = (bmpPt >>> 24) & 0xFF;
+                  if (a == 0xFF)
+                     dst[dstIdx] = bmpPt;
+                  else
+                  if (a != 0)
                   {
-                     case DRAW_ERASE:         screenPt &=  bmpPt; break;
-                     case DRAW_MASK:          screenPt &= ~bmpPt; break;
-                     case DRAW_INVERT:        screenPt ^=  bmpPt; break;
-                     case DRAW_OVERLAY:       screenPt |=  bmpPt; break;
-                     case DRAW_PAINT_INVERSE: screenPt  = ~bmpPt; break;
-                     case DRAW_SPRITE:        if (bmpPt != backColor) screenPt = bmpPt;     break;
-                     case DRAW_REPLACE_COLOR: if (bmpPt != backColor) screenPt = foreColor; break;
-                     case DRAW_SWAP_COLORS:   if (bmpPt == backColor) screenPt = foreColor;
-                                              else
-                                              if (bmpPt == foreColor) screenPt = backColor; break;
+                     screenPt = dst[dstIdx];
+                     int br = (bmpPt >> 16) & 0xFF;
+                     int bg = (bmpPt >> 8) & 0xFF;
+                     int bb = (bmpPt     ) & 0xFF;
+                     int sr = (screenPt >> 16) & 0xFF;
+                     int sg = (screenPt >> 8 ) & 0xFF;
+                     int sb = (screenPt      ) & 0xFF;
+                     
+                     int ma = 0xFF-a;
+                     int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+                     int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
+                     int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
+                     dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
                   }
-                  dst[dstIdx++] = screenPt; // note: there is no performance gain by storing the results in an array and calling draw ScanLine instead.
                }
-            }
          }
          if (isControlSurface) needsUpdate = true;
       }
@@ -2411,17 +1979,6 @@ public final class Graphics
          drawLine(xPoints1[base1+i-1],yPoints1[base1+i-1],xPoints1[base1+i],yPoints1[base1+i],c);
       for (i=1; i < nPoints2; i++)
          drawLine(xPoints2[i-1],yPoints2[i-1],xPoints2[i],yPoints2[i],c);
-   }
-   ////////////////////////////////////////////////////////////////////////////
-   // inverts the vertical line, but does not translates or clip rect
-   private void invVLineNOCT (int x, int y, int h)
-   {
-      if (x < 0 || y < 0 || h < 0)
-         return;
-      int[] pixels = getSurfacePixels(surface);
-      for (x += y * pitch; h-- > 0; x+=pitch)
-         pixels[x] ^= 0xFFFFFF;
-      if (isControlSurface) needsUpdate = true;
    }
    ////////////////////////////////////////////////////////////////////////////
    // sets the bit value
@@ -3271,20 +2828,20 @@ public final class Graphics
       footerH -= 7; if (footerH < 0) footerH = 0;
       
       // text
-      backColor = titleColor;
+      backColor = titleColor |alpha;
       fillRect(x1l,ty,x2r-x1l,7-t0);    ty += 7-t0;   // corners
       fillRect(rectX1,ty,rectW,titleH); ty += titleH; // non-corners
       // separator
       if (drawSeparators && titleH > 0 && titleColor == bodyColor)
          drawLine(rectX1,ty-1,rectX2,ty-1,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64));
       // body
-      backColor = bodyColor;
+      backColor = bodyColor |alpha;
       fillRect(rectX1,ty,rectW,bodyH); ty += bodyH;
       // separator
       if (drawSeparators && footerH > 0 && bodyColor == footerColor)
          {drawLine(rectX1,ty,rectX2,ty,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64)); ty++; footerH--;}
       // footer
-      backColor = footerColor;
+      backColor = footerColor |alpha;
       fillRect(rectX1,ty,rectW,footerH); ty += footerH; // non-corners
       fillRect(x1l,ty,x2r-x1l,7-t0);                    // corners
    }
@@ -3326,29 +2883,34 @@ public final class Graphics
          int rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          int gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          int bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
          int sx = startX+i, sy = startY+i;
          drawRect(sx,sy,endX-i-sx,endY-i-sy);
          int ii = i-8;
          rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb;
+         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
          int i2 = i/8;
          drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = endX-i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
          sy = endY-i; drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = startX+i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
       }
-      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY, -1);
+      if (Settings.screenBPP < 24) dither(startX, startY, endX-startX, endY-startY);
    }
 
+   /** @deprecated TotalCross 2 no longer uses parameter ignoreColor. */
+   public void dither(int x, int y, int w, int h, int ignoreColor)
+   {
+      dither(x,y,w,h);
+   }
+   
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
-    * @param ignoreColor Pass a color that should not be changed, like the transparent color of an Image, or -1 to dither all colors
     * @since TotalCross 1.53
     */
-   public void dither(int x, int y, int w, int h, int ignoreColor)
+   public void dither(int x, int y, int w, int h)
    {
       if (!translateAndClip(x, y, w, h))
          return;
@@ -3364,7 +2926,6 @@ public final class Graphics
          for (int xx=x; xx < w; xx++)
          {
             p = pixels[yy*w+xx];
-            if (p == ignoreColor) continue;
             // get current pixel values
             oldR = (p>>16) & 0xFF;
             oldG = (p>>8) & 0xFF;

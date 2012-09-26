@@ -30,7 +30,6 @@ public class ChartTest extends MainWindow
    {
       Settings.applicationId = "Chrt";
       Settings.appVersion = "1.1";
-      Settings.useNewFont = true;
    }
 
    

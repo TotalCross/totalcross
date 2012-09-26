@@ -23,8 +23,6 @@ import totalcross.android.compat.*;
 
 import java.util.*;
 
-import android.view.animation.*;
-import android.view.animation.Animation.AnimationListener;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -47,7 +45,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
-   public static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
    static Rect rDirty = new Rect();
@@ -131,13 +128,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       instance = this;
       loader = context;
       surfHolder = getHolder();
+      surfHolder.setFormat(PixelFormat.RGBA_8888);
       surfHolder.addCallback(this);
       setWillNotDraw(true);
       setWillNotCacheDrawing(true);
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
-      hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+      Configuration config = getResources().getConfiguration();
+      hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       
       String vmPath = context.getApplicationInfo().dataDir;
@@ -187,18 +186,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    private static int firstOrientationSize;
+   static boolean surfaceChangedCalled;
    
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
+      nativeInitSize(holder.getSurface(),w,h);
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
       //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (sScreenBitmap == null) 
+      if (!surfaceChangedCalled) 
       {
+         surfaceChangedCalled = true;
          int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
          if (Build.VERSION.SDK_INT >= 13)
          {
@@ -232,9 +234,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             screenSize = screenSize0;
             AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
          }
-         sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
-         sScreenBitmap.eraseColor(0xFFFFFFFF);
-         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
+         //nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
          // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
@@ -271,8 +271,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               surfHolder.unlockCanvasAndPost(canvas);
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             }
@@ -294,7 +292,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       // here is where everything starts
       if (eventThread == null)
+      {
          eventThread = new TCEventThread(this);
+         eventThread.popTime = 20;
+      }
    }
 
    public void surfaceDestroyed(SurfaceHolder holder)
@@ -348,9 +349,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-      if (oldh < h)
+/*      if (oldh < h)
          updateScreen(0,0,w,h,TRANSITION_NONE);
-   }
+*/   }
 
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
@@ -444,118 +445,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return true;
    }
 
-   private static final int TRANSITION_NONE = 0;
-   private static final int TRANSITION_OPEN = 1;
-   private static final int TRANSITION_CLOSE = 2;
-   
-   static class ScreenView extends SurfaceView
-   {
-      public ScreenView(Context context)
-      {
-         super(context);
-         setWillNotDraw(false);
-         setWillNotCacheDrawing(true);
-      }
-      
-      public void draw(Canvas c)
-      {
-         c.drawBitmap(sScreenBitmap,0,0,null);
-      }
-   }
-   
-   static class AnimationThread implements Runnable,AnimationListener
-   {
-      Bitmap bm;
-      java.util.concurrent.CountDownLatch latch;
-      int trans;
-      ImageView newView;
-      ScreenView scrView;
-      
-      void startTransition(int trans)
-      {
-         this.trans = trans;
-         latch = new java.util.concurrent.CountDownLatch(1);
-         loader.runOnUiThread(this);
-         try {animt.latch.await();} catch (InterruptedException ie) {}
-      }
-      
-      public void run()
-      {
-         if (scrView == null)
-         {
-            ViewGroup vg = (ViewGroup)instance.getParent();
-            scrView = new ScreenView(instance.getContext());
-            newView = new ImageView(instance.getContext());
-            newView.setWillNotCacheDrawing(true);
-            newView.setVisibility(ViewGroup.INVISIBLE);
-            scrView.setVisibility(ViewGroup.INVISIBLE);
-            vg.addView(scrView);
-            vg.addView(newView);
-         }
-         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
-         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
-         {
-            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
-            bm.eraseColor(0xFFFFFFFF);
-            newView.setImageBitmap(bm);
-         }
-         Animation anim;
-         if (trans == TRANSITION_OPEN)
-         {
-            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-            newView.setImageBitmap(bm);
-            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-         else // TRANSITION_CLOSE
-         {
-            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-
-            newView.setImageBitmap(bm);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            scrView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-      }
-      
-      public void onAnimationEnd(Animation animation)
-      {
-         drawScreen();
-         newView.setVisibility(ViewGroup.INVISIBLE);
-         scrView.setVisibility(ViewGroup.INVISIBLE);
-         latch.countDown();
-      }
-
-      public void onAnimationRepeat(Animation animation) {}
-      public void onAnimationStart(Animation animation) {}
-   }
-   
-   static AnimationThread animt = new AnimationThread();
-   
    static void drawScreen()
    {
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
-      }
    }
 
    static void transitionEffectChanged(int type)
    {
-      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
-         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
    }
    
    static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
    {
-      if (!appPaused)
+/*      if (!appPaused)
       try
       {
          //long ini = System.currentTimeMillis();
@@ -580,7 +480,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          AndroidUtils.debug(Log.getStackTraceString(t));
       }
-   }
+*/   }
 
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
@@ -650,7 +550,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void onClick(DialogInterface dialoginterface, int i) 
             {
-               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
+//               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
                showingAlert = false;
             }
          })
@@ -683,7 +583,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeSetOffcreenBitmap(Bitmap bmp);
+   native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.

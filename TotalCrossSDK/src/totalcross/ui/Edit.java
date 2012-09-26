@@ -86,7 +86,7 @@ public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
    private static int xMins[] = {4,1,3,3,4};
-   public static final int prefH = uiCE || uiAndroid ? 4 : uiPalm ? 1 : 2;
+   public static final int prefH = uiAndroid ? 4 : 2;
 
    private boolean hasFocus;
    private boolean cursorShowing;
@@ -104,8 +104,6 @@ public class Edit extends Control
    public int alignment=LEFT;
 
    private ControlEvent cursorChangedEvent;
-   boolean alwaysDrawAll;
-
    private StringBuffer chars = new StringBuffer(10);
    protected boolean hasBorder=true;
    private int xMax,xMin,gap;
@@ -504,8 +502,6 @@ public class Edit extends Control
    }
    protected void popPosState()
    {
-      if (cursorShowing)
-         draw(getGraphics(),true);
       int len = chars.length();
       insertPos = Math.min(len,pushedInsertPos); // guich@571_5: make sure the insert position isn't bigger than the size of the text.
       startSelectPos = Math.min(len,pushedStartSelectPos); // guich@571_5
@@ -644,7 +640,7 @@ public class Edit extends Control
          if (mode == CURRENCY && isMaskedEdit) // correct the number if this is a numeric edit
          {
             if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1)
-               throw new IllegalArgumentException(s+". In CURRENCY mode, setText must receive an unmasked parameter");
+               s = Convert.replace(s,".","").replace(',','.');
 
             dot = s.indexOf('.');
             decimals = len - dot - 1;
@@ -718,7 +714,7 @@ public class Edit extends Control
 
    public int getPreferredWidth()
    {
-      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiCE||uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
+      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
    }
 
    public int getPreferredHeight()
@@ -762,21 +758,26 @@ public class Edit extends Control
       }
    }
 
-   protected void draw(Graphics g, boolean cursorOnly)
+/*   protected void draw(Graphics g, boolean cursorOnly)
+   {
+      draw(g);
+   }
+*/   
+   protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
       int y = this.height - fmH - gap;
       if (uiAndroid) y -= 1;
 
-      if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
+      //if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
       {
          g.backColor = back0;
          if (!transparentBackground)
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid || alwaysDrawAll) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (!uiAndroid) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (hasBorder && uiAndroid)
             {
                try
@@ -844,13 +845,14 @@ public class Edit extends Control
          // draw cursor
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
          {
-            if (!(!cursorShowing && alwaysDrawAll))
+            if (cursorShowing)
             {                  
                g.clearClip();
-               g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
+               g.foreColor = Color.interpolate(backColor,foreColor);
+               g.drawRect(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
             }
          }
-         cursorShowing = cursorOnly || alwaysDrawAll ? !cursorShowing : true;
+         cursorShowing = !cursorShowing;
       }
       else
          cursorShowing = false;
@@ -976,12 +978,10 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
+         if(Settings.fingerTouch && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
-      if (cursorShowing)
-         draw(getGraphics(), true); // pierre@400_93: erase cursor at old insert position
       Window w = getParentWindow();
       if (w != null) w.swapFocus(this);//requestFocus(); // guich@200b4: bring focus back -  guich@401_15: changed to swapFocus
 
@@ -1029,7 +1029,7 @@ public class Edit extends Control
             break;
 
          default:
-            if (virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
+            if (virtualKeyboard)
             {
                if (editable && !"".equals(validChars))
                {
@@ -1083,12 +1083,6 @@ public class Edit extends Control
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
          blinkTimer = null;
-      if (Settings.keypadOnly && (mode == CURRENCY || mode == DATE))
-      {
-         Keypad keypad = Keypad.getInstance();
-         keypad.setKeys(null);
-         keypad.setSymbolKeys(null);
-      }
    }
 
    /** Called by the system to pass events to the edit control. */
@@ -1104,8 +1098,6 @@ public class Edit extends Control
             setText("",true);
          return;
       }
-      Graphics drawg = null;
-      boolean redraw = false;
       boolean extendSelect = false;
       boolean clearSelect = false;
       boolean reapplyMask = false;
@@ -1133,7 +1125,7 @@ public class Edit extends Control
                else
                if (parent != null)
                {
-                  draw(getGraphics(), !alwaysDrawAll);
+                  Window.needsPaint = true;
                   // guich@tc130: show the copy/paste menu
                   if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
@@ -1149,7 +1141,6 @@ public class Edit extends Control
             isHighlighting = false; // guich@573_28: after closing a KCC, don't let the focus move from here.
          	wasFocusIn=true; // jairocg@450_31: set it so we can validate later
             hasFocus = true;
-            redraw = true;
             if (blinkTimer == null)
                blinkTimer = addTimer(350);
             if (len > 0) // guich@550_20: autoselect the text
@@ -1163,33 +1154,11 @@ public class Edit extends Control
                if (Settings.moveCursorToEndOnFocus) 
                   newInsertPos = len; 
             }
-            //guich@570_112: moved to Keyboard.KEYBOARD_ON_UNPOP - ignoreSelect = false;
-
-            // We only want [0-9] to be displayed on the keypad
-            // if edit is in mode currency
-            if (Settings.keypadOnly && (mode == CURRENCY || mode == DATE)) // fdie@570_107 use a keypad on "keypadOnly" devices - guich@573_30: change the default letters if CURRENCY or DATE
-            {
-               Keypad keypad = Keypad.getInstance();
-               keypad.setSymbolKeys(mode == CURRENCY ? ".-" : Convert.toString(Settings.dateSeparator));
-               keypad.setKeys(Keypad.numberKeyset);
-            }
-            else
-            if (mode == CURRENCY && !Settings.fingerTouch && Settings.platform.equals(Settings.PALMOS)) // guich@tc110_55 - guich@tc114_90: not on finger devices
-            {
-               Window.isSipShown = true;
-               Window.setSIP(Window.SIP_ENABLE_NUMERICPAD,null,false);
-            }
             break;
          case ControlEvent.FOCUS_OUT:
             if (cursorShowing)
-               draw(drawg=getGraphics(), true); // erase cursor at old insert position
+               Window.needsPaint = true; //draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
-            redraw = true;
-            if (mode == CURRENCY && !Settings.fingerTouch && Settings.platform.equals(Settings.PALMOS)) // guich@tc110_55 - guich@tc114_90: not on finger devices
-            {
-               Window.isSipShown = false;
-               Window.setSIP(Window.SIP_DISABLE_NUMERICPAD,null,false);
-            }
             focusOut();
             break;
          case KeyEvent.KEY_PRESS:
@@ -1232,7 +1201,7 @@ public class Edit extends Control
                   break;
                }
                boolean isControl = (ke.modifiers & SpecialKeys.CONTROL) != 0; // guich@320_46
-               if (Settings.onJavaSE || Settings.platform.equals(Settings.PALMOS)) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
+               if (Settings.onJavaSE) // guich@tc100b4_26: if the user pressed the command and then a key, assume is a control
                {
                   if (lastCommand > 0 && (Vm.getTimeStamp() - lastCommand) < 2500)
                   {
@@ -1325,14 +1294,13 @@ public class Edit extends Control
                if (del1 >= 0 && del2 < len)
                {
                   if (cursorShowing)
-                     draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
+                     Window.needsPaint = true; //draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
                   if (len > del2 - 1)
                   {
                      chars.delete(del1, del2+1);
                      reapplyMask = true;
                   }
                   newInsertPos = del1;
-                  redraw = true;
                   clearSelect = true;
                }
                if (isPrintable)
@@ -1362,7 +1330,6 @@ public class Edit extends Control
                            Convert.insertAt(chars, newInsertPos, c);
                      reapplyMask = true;
                      newInsertPos++;
-                     redraw = true;
                      clearSelect = true;
                   }
                   else Sound.beep();
@@ -1447,20 +1414,13 @@ public class Edit extends Control
             startSelectPos = insertPos;
          else if (newInsertPos == startSelectPos)
             startSelectPos = -1;
-         redraw = true;
       }
 
       if (wasFocusIn && startSelectPos != -1 && insertPos>startSelectPos) // jairocg@450_31: event validation with text selection
-      {
-      	 redraw=true;
       	 wasFocusIn=false;
-      }
       else
       if (clearSelect && startSelectPos != -1)
-      {
          startSelectPos = -1;
-         redraw = true;
-      }
       newInsertPos = Math.min(newInsertPos, chars.length());
       if (newInsertPos < 0)
          newInsertPos = 0;
@@ -1471,14 +1431,13 @@ public class Edit extends Control
       {
          int x = charPos2x(newInsertPos);
          if (cursorShowing)
-            draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
+            Window.needsPaint = true;//draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
          if (x - 3 < xMin)
          {
             // characters hidden on left - jump
             xOffset += (xMin - x) + fmH;
             if (xOffset > xMin)
                xOffset = xMin;
-            redraw = true;
          }
          int totalCharWidth = getTotalCharWidth();
          if (x > xMax)
@@ -1488,13 +1447,9 @@ public class Edit extends Control
             int minOfs = xMax - totalCharWidth;
             if (xOffset < minOfs)
                xOffset = minOfs;
-            redraw = true;
          }
          if (totalCharWidth < xMax - xMin && xOffset != xMin)
-         {
             xOffset = xMin;
-            redraw = true;
-         }
          cursorX = x;
       }
       if (reapplyMask)
@@ -1502,20 +1457,7 @@ public class Edit extends Control
 
       insertPos = newInsertPos;
       if (getParentWindow() == Window.topMost) // guich@tc124_24: prevent screen updates when we're not the topmost window
-      {
-         if (redraw)
-         {
-            if (transparentBackground)
-               Window.needsPaint = true; // must repaint everything due to a possible background image
-            else
-               draw(drawg == null ? (drawg = getGraphics()) : drawg, false);
-         }
-         else
-         if (insertChanged)
-            draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
-         if (event.target == this && (event instanceof KeyEvent || event instanceof PenEvent)) // guich@tc153: prevent drawing problems when a window is unpopping
-            updateScreen();
-      }
+         Window.needsPaint = true; // must repaint everything due to a possible background image
    }
 
    private boolean showClipboardMenu()
@@ -1618,7 +1560,7 @@ public class Edit extends Control
    /** Called by the system to draw the edit control. */
    public void onPaint(Graphics g)
    {
-      draw(g, false);
+      draw(g);
    }
 
    /** Returns the length of the text.

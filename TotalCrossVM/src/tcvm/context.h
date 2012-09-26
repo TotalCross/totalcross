@@ -83,6 +83,11 @@ struct TContext
    #ifdef TRACK_USED_OPCODES
    int8 usedOpcodes[256];
    #endif
+   #ifdef ANDROID
+   #define GL_COORD_COUNT 3000
+   GLfloat glcoords[GL_COORD_COUNT*3];
+   GLfloat glcolors[GL_COORD_COUNT*4];
+   #endif
 };
 
 Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes); // if bigContextSize is false, use STARTING_xxx_SIZE/10

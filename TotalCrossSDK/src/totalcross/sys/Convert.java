@@ -56,9 +56,6 @@ public final class Convert
       }
       Launcher.instance.fillSettings(); // guich@tc100
    }
-   static void newLauncherInstance4B()
-   {
-   }
    static void newLauncherInstance4D() {}
 
    static
@@ -146,7 +143,7 @@ public final class Convert
    /** The maximum number of digits in a double value, used when formatting to string. */
    public static final int MAX_DOUBLE_DIGITS = 15;
    
-   static final boolean useNative = !Settings.onJavaSE && !Settings.platform.equals(Settings.BLACKBERRY);
+   static final boolean useNative = !Settings.onJavaSE;
 
    private Convert()
    {
@@ -1880,10 +1877,6 @@ public final class Convert
             a[from] = value;
       }
    }
-   public static void fill4B(char[] a, int from, int to, char value)
-   {
-      net.rim.device.api.util.Arrays.fill(a, value, from, to-from);
-   }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to. */
    public static void fill(boolean[] a, int from, int to, boolean value)
@@ -1897,11 +1890,6 @@ public final class Convert
          for (; from < to; from++)
             a[from] = value;
       }
-   }
-   public static void fill4B(boolean[] a, int from, int to, boolean value)
-   {
-      for (; from < to; from++)
-         a[from] = value;
    }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to. */
@@ -1917,10 +1905,6 @@ public final class Convert
             a[from] = value;
       }
    }
-   public static void fill4B(int[] a, int from, int to, int value)
-   {
-      net.rim.device.api.util.Arrays.fill(a, value, from, to-from);
-   }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to. */
    public static void fill(double[] a, int from, int to, double value)
@@ -1934,11 +1918,6 @@ public final class Convert
          for (; from < to; from++)
             a[from] = value;
       }
-   }
-   public static void fill4B(double[] a, int from, int to, double value)
-   {
-      for (; from < to; from++)
-         a[from] = value;
    }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to.
@@ -1955,10 +1934,6 @@ public final class Convert
             a[from] = (short)value;
       }
    }
-   public static void fill4B(short[] a, int from, int to, int value)
-   {
-      net.rim.device.api.util.Arrays.fill(a, (short)value, from, to-from);
-   }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to.
     * The int value is casted to byte. */
@@ -1974,10 +1949,6 @@ public final class Convert
             a[from] = (byte)value;
       }
    }
-   public static void fill4B(byte[] a, int from, int to, int value)
-   {
-      net.rim.device.api.util.Arrays.fill(a, (byte)value, from, to-from);
-   }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to. */
    public static void fill(long[] a, int from, int to, long value)
@@ -1992,10 +1963,6 @@ public final class Convert
             a[from] = value;
       }
    }
-   public static void fill4B(long[] a, int from, int to, long value)
-   {
-      net.rim.device.api.util.Arrays.fill(a, value, from, to-from);
-   }
 
    /** Fills the given array, within the range, with the value specified. The array is filled as from &lt;= n &lt; to. */
    public static void fill(Object[] a, int from, int to, Object value)
@@ -2009,11 +1976,6 @@ public final class Convert
          for (; from < to; from++)
             a[from] = value;
       }
-   }
-   public static void fill4B(Object[] a, int from, int to, Object value)
-   {
-      for (; from < to; from++)
-         a[from] = value;
    }
 
    /** Returns the given double formatted using the Settings decimal and thousands separators.

@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 
-#if defined(ANDROID) || defined(__SYMBIAN32__)
+#if defined(ANDROID)
 #include <netinet/in.h>
 #endif
 

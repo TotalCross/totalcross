@@ -16,9 +16,7 @@
 
 #include "../../palmdb/palmdb.h"
 
-#ifndef PALMOS
- #define errNone 0
-#endif
+#define errNone 0
 
  #define PALM_ERROR !errNone
  #define DB_NAME_LENGTH 32

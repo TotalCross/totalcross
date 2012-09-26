@@ -52,11 +52,6 @@ Sourcecode for this game available under Public Domain license.
  */
 public class Breakout extends GameEngine
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
 	public int currentLevel = 1;
 	private int racketY;
 
@@ -72,7 +67,7 @@ public class Breakout extends GameEngine
 
    public Breakout()
   	{
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
    	gameName = "Breakout";
       gameCreatorID = "tCbA";
       gameVersion = 140;
@@ -143,11 +138,11 @@ public class Breakout extends GameEngine
             gfx.backColor = BACKG;
             gfx.fillRect(0,0,Settings.screenWidth, Settings.screenHeight);
 
-            levelRenderer.display(levelX, 2, currentLevel, false);
+            levelRenderer.display(levelX, 2, currentLevel);
          }
          if (level.dirty)
          {
-            tilesRenderer.display(tilesX, 2, level.tilesLeft, false);
+            tilesRenderer.display(tilesX, 2, level.tilesLeft);
             if (!levelChanged) ball.hide(); // guich: hide the ball to avoid that it redraws the erased part of a brick when it moves
             level.show();
             if (level.tilesLeft == 0)

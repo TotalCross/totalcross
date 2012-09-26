@@ -466,7 +466,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public void setIcon(int iconType, Image img) throws ImageException
    {
       if (iconType > 1)
-         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d, Color.WHITE); // guich@tc110_19
+         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d); // guich@tc110_19
       switch (iconType)
       {
          case ICON_PLUS:
@@ -1035,10 +1035,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
             checkClicked(sel);
          if (pex < btnX && sel != selectedIndex)
          {
-            Graphics myg = getGraphics();
-            if (selectedIndex >= 0) drawCursor(myg, selectedIndex, false);
             selectedIndex = sel;
-            drawCursor(myg, selectedIndex, true);
+            Window.needsPaint = true;
          }
       }
    }
@@ -1169,7 +1167,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       g.fillRect(0, 0, btnX, height);
       g.foreColor = foreColor;
 
-      g.draw3dRect(0, 0, width, height, uiPalm ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
+      g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
 
       // draw scrollbar border (why is it disappear in the first place? or is there a border for the scrollbar class??)
       g.drawRect(btnX - 1, 0, vbar.getPreferredWidth() + 1, height);
@@ -1182,8 +1180,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       g.setClip(2, 1, btnX - 4, fmH * visibleItems + 1);
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems + offset); // code corrected by Bjoem Knafla
       for (int i = offset; i < greatestVisibleItemIndex; ++i, dy += fmH)
+      {
+         if (i == selectedIndex) 
+            drawCursor(g, selectedIndex);
          drawNode(g, i, dx - hsOffset, dy);
-      if (selectedIndex >= 0) drawCursor(g, selectedIndex, true);
+      }
    }
    
    /**
@@ -1358,7 +1359,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    /**
     * Method to draw the highlight box when user select a listbox's item.
     */
-   protected void drawCursor(Graphics g, int sel, boolean on)
+   protected void drawCursor(Graphics g, int sel)
    {
       if (offset <= sel && sel < visibleItems + offset && sel < itemCount)
       {
@@ -1377,16 +1378,15 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          if (Settings.screenWidth > 160) dx += 3;
 
          int dy = 4;
-         if (Settings.uiStyle == Settings.PalmOS) dy--;
 
          dy += (sel - offset) * fmH;
          g.setClip(useFullWidthOnSelection ? 2 : dx - 1, dy - 1, btnX - (useFullWidthOnSelection ? 2 : dx), Math.min(fmH * visibleItems, this.height - dy));
-         g.foreColor = (on ? bgColor0 : bgColor1);
-         g.backColor = (on ? bgColor1 : bgColor0);
+         g.backColor = bgColor1;
          if (useFullWidthOnSelection)
-            g.eraseRect(2,dy-1,btnX-2,fmH + fm.descent - 1);
+            g.fillRect(2,dy-1,btnX-2,fmH + fm.descent - 1);
          else
-            g.eraseRect(dx + 1, dy-1, this.width-dx, fmH + fm.descent - 1);
+            g.fillRect(dx + 1, dy-1, this.width-dx, fmH + fm.descent - 1);
+         g.clearClip();
       }
    }
 
