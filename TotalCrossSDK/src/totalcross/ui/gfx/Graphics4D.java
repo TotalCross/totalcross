@@ -18,7 +18,6 @@
 
 package totalcross.ui.gfx;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.util.*;
 
@@ -61,16 +60,6 @@ public final class Graphics4D
    static public final byte ARROW_DOWN = 2;
    static public final byte ARROW_LEFT = 3;
    static public final byte ARROW_RIGHT = 4;
-
-   public static final int DRAW_PAINT         = 0;
-   public static final int DRAW_ERASE         = 1;
-   public static final int DRAW_MASK          = 2;
-   public static final int DRAW_INVERT        = 3;
-   public static final int DRAW_OVERLAY       = 4;
-   public static final int DRAW_PAINT_INVERSE = 5;
-   public static final int DRAW_SPRITE        = 6;
-   public static final int DRAW_REPLACE_COLOR = 7;
-   public static final int DRAW_SWAP_COLORS   = 8;
 
    public Graphics4D(GfxSurface surface)
    {
@@ -133,7 +122,6 @@ public final class Graphics4D
    }
 
    native protected void create(totalcross.ui.gfx.GfxSurface surface);
-   native public void drawDottedCursor(int x, int y, int w, int h);
    native public void drawEllipse(int xc, int yc, int rx, int ry);
    native public void fillEllipse(int xc, int yc, int rx, int ry);
    native public void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
@@ -146,11 +134,8 @@ public final class Graphics4D
    native public void fillCircle(int xc, int yc, int r);
    native public int getPixel(int x, int y);
    native public void setPixel(int x, int y);
-   native public void eraseRect(int x, int y, int w, int h);
    native public void drawLine(int ax, int ay, int bx, int by);
    native public void drawDots(int ax, int ay, int bx, int by);
-   native public void fillCursor(int x, int y, int w, int h); // OLD drawCursor
-   native public void drawCursor(int x, int y, int w, int h); // OLD drawCursorOutline
    native public void drawRect(int x, int y, int w, int h);
    native public void fillRect(int x, int y, int w, int h);
    native public void drawDottedRect(int x, int y, int w, int h);
@@ -160,8 +145,6 @@ public final class Graphics4D
    native public void drawText(String text, int x, int y);
    native public void drawText(char []chars, int start, int count, int x, int y);
    native public void drawText(String text, int x, int y, int justifyWidth);
-   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
-   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
    native public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
    native public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
    native public void drawRoundRect(int x, int y, int width, int height, int r);
@@ -176,7 +159,6 @@ public final class Graphics4D
    native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
    native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
    native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-   native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
    native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int[] colors);
    native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
    native public void drawImage(totalcross.ui.image.Image4D image, int x, int y);

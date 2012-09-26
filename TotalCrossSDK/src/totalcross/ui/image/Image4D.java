@@ -29,6 +29,8 @@ public class Image4D extends GfxSurface
    protected int height;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
+   private int textureId;
+   
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
    public String comment;
@@ -157,6 +159,8 @@ public class Image4D extends GfxSurface
       return gfx;
    }
 
+   native public void applyChanges();
+   
    native public void changeColors(int from, int to);
 
    public void saveTo(PDBFile cat, String name) throws ImageException, IOException

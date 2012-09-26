@@ -167,6 +167,7 @@ public class Image extends GfxSurface
      *    g.backColor = Color.getRGB(10*i,10*i,10*i);
      *    g.fillRect(i*10,0,10,160);
      * }
+     * img.applyChanges();
      * // save the bmp in a byte stream
      * ByteArrayStream bas = new ByteArrayStream(4096);
      * DataStream ds = new DataStream(bas);
@@ -298,6 +299,14 @@ public class Image extends GfxSurface
    {
       if (Launcher.instance.mainWindow != null) gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
       return gfx;
+   }
+   
+   /** Applies any pending changes made in this image.
+    * In Open GL platforms, creates a texture for this image.
+    * @since TotalCross 2
+    */
+   public void applyChanges()
+   {
    }
 
    /** Changes all the pixels of the image from one color to the other.

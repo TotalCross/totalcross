@@ -58,7 +58,6 @@ public class StandardControls extends Container
          int xx = clock.getWidth();
          int yy = clock.getHeight();
          Graphics g = clock.getGraphics();
-         g.backColor = Color.WHITE; g.fillRect(0,0,xx,yy);
          g.foreColor = Color.BLUE;
          g.drawCircle(xx/2,yy/2,xx/2);
          g.drawLine(xx/2,yy/2,xx,yy/2);

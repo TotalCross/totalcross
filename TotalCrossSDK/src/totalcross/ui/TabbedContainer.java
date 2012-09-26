@@ -810,13 +810,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          g.drawLine(r.x+1,yl,r.x2()-1,yl);
       }
 
-      if (Settings.keyboardFocusTraversable && focusMode == FOCUSMODE_CHANGING_TABS) // draw the focus around the current tab - guich@580_52: draw the cursor only when changing tabs
+/*      if (Settings.keyboardFocusTraversable && focusMode == FOCUSMODE_CHANGING_TABS) // draw the focus around the current tab - guich@580_52: draw the cursor only when changing tabs
       {
          g.drawDottedCursor(r.x+1,r.y+1,r.width-2,r.height-2);
          if (Settings.screenWidth == 320)
             g.drawDottedCursor(r.x+2,r.y+2,r.width-4,r.height-4);
       }
-   }
+*/   }
 
    /** Returns the color of the given tab.
     * @since TotalCross 1.52

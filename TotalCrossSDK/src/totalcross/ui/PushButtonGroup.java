@@ -67,7 +67,6 @@ public class PushButtonGroup extends Control
    private int userCursorColor=-1;
    private int []btnFColors,btnBColors;
    private int nullNames;
-   private Rect clip;
    
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
     * Works only when the type is BUTTON.
@@ -151,8 +150,6 @@ public class PushButtonGroup extends Control
          this.cols++;
       hidden = new boolean[count];
       onFontChanged();
-      if (uiAndroid)
-         clip = new Rect();
       colspan = new int[count];
       rowspan = new int[count];
    }
@@ -406,6 +403,14 @@ public class PushButtonGroup extends Control
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
+            if (i == selectedIndex)
+            {
+               g.clearClip();
+               int bb = g.backColor; g.backColor = dColor;
+               int k = simpleBorder?1:2;
+               g.fillRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k);
+               g.backColor = bb;
+            }
             int ty = (r.height-fmH) / 2; // nopt
             boolean useCustomColor = btnFColors != null && btnFColors[i] >= 0; // guich@573_37
             g.setClip(r.x+1,r.y+1,r.width-2,r.height-2);
@@ -419,12 +424,6 @@ public class PushButtonGroup extends Control
             }
             if (useCustomColor) g.foreColor = fColor;
          }
-      g.clearClip();
-      if (uiFlat && selectedIndex != -1 && (r = rects[selectedIndex]) != null && !hidden[selectedIndex])
-      {
-         int k = simpleBorder?1:2;
-         g.eraseRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k,backColor,dColor,foreColor);
-      }
    }
 
    private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException

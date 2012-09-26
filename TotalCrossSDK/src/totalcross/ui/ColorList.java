@@ -126,7 +126,10 @@ public class ColorList extends ListBox
          dy += (sel-offset) * ih;
          int yy = dy-2-(ih-fmH)/2;
          g.setClip(dx-1,yy,btnX-dx+1,Math.min(ih * visibleItems, this.height-dy)); // guich@200b4_83: fixed selection overflowing paint area
-         g.drawCursor(dx-1,yy,btnX-1,ih); // only select the Object - guich@200b4_130
+         int c = colors[sel].value;
+         int a = Color.getAlpha(c);
+         g.foreColor = a >= 128 ? 0 : Color.WHITE;
+         g.drawRect(dx-1,yy,btnX-1,ih); // only select the Object - guich@200b4_130
       }
    }
    public int getPreferredWidth()

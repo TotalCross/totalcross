@@ -2020,7 +2020,7 @@ public class Grid extends Container implements Scrollable
                         showControl(selectedLine, col);
                      else
                      {
-                        if (Settings.keyboardFocusTraversable) // guich@582_
+/*                        if (Settings.keyboardFocusTraversable) // guich@582_
                         {
                            Graphics g = getGraphics();
                            getColRect(rTemp, col, selectedLine, true); // guich@tc100: not sure if is "true" here
@@ -2031,7 +2031,7 @@ public class Grid extends Container implements Scrollable
                               repaintNow();//Window.updateScreen();
                            }
                         }
-                        postGridEvent(col,selectedLine,false); // guich@580_51
+*/                        postGridEvent(col,selectedLine,false); // guich@580_51
                      }
                   }
                   else break; // prevent repaint

@@ -74,7 +74,6 @@ public class MultiEdit extends Container implements Scrollable
    protected boolean improvedGeographicalFocus;
 
    protected IntVector first = new IntVector(5); //JR@0.4.  indices of first character of each line. the value of last is len(text)+1
-   private boolean forceDrawAll;
    private int firstToDraw; //JR@0.4
    private int numberTextLines; // JR@0.4
    private int hLine; // JR@0.4. height of a line
@@ -234,7 +233,6 @@ public class MultiEdit extends Container implements Scrollable
          firstToDraw = lastFirstToDrawLine;
       
       sb.setValue(firstToDraw);
-      forceDrawAll = true;
       newInsertPos = zToCharPos(z1);
       
       Window.needsPaint = true;
@@ -346,7 +344,6 @@ public class MultiEdit extends Container implements Scrollable
       newInsertPos = numberTextLines = 0;
       if (textRect != null)
          calculateFirst();
-      forceDrawAll=true;
       clearPosState();
       if (postPressed)
          postPressedEvent();
@@ -459,7 +456,6 @@ public class MultiEdit extends Container implements Scrollable
       sb.setValues(0, rowCount, 0, rowCount);
       numberTextLines = 0;
       firstToDraw = 0;
-      forceDrawAll = true;
       if (chars.length() > 0)
          calculateFirst();
       npback = null;
@@ -484,7 +480,6 @@ public class MultiEdit extends Container implements Scrollable
       // has the number of lines changed? enable/disable scrollbar
       if (numberTextLines != originalLineCount)
       {
-         forceDrawAll = true;
          boolean needScroll = numberTextLines > rowCount;
          if (!Settings.fingerTouch)
          {
@@ -521,10 +516,7 @@ public class MultiEdit extends Container implements Scrollable
 
       // need to change scrollbar position?
       if (sb.getValue() != firstToDraw)
-      {
-         forceDrawAll=true;
          sb.setValue(firstToDraw+1);
-      }
    }
 
    private void focusOut()
@@ -539,7 +531,7 @@ public class MultiEdit extends Container implements Scrollable
       if (removeTimer(blinkTimer))
          blinkTimer = null;
       if (cursorShowing) // kambisDarabi@310_7 : remove the cursor, if it is currently shown
-         draw(drawg, true);
+         draw(drawg);
       hasFocus = false;
       Window w = getParentWindow();
       if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && w != null && w == Window.getTopMost()) // guich@tc110_81: remove highlight from us. - guich@tc120_39: only if we're in the topmost window
@@ -574,7 +566,7 @@ public class MultiEdit extends Container implements Scrollable
                   return;
                }
                if (parent != null && (editMode || Settings.fingerTouch)) 
-                  draw(drawg, true);
+                  draw(drawg);
                // guich@tc130: show the copy/paste menu
                if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
@@ -620,7 +612,6 @@ public class MultiEdit extends Container implements Scrollable
                   int len = chars.length();
                   if (editable)
                   {
-                     forceDrawAll = false;
                      if (ke.key == 0) return; // guich@402_41: sometimes, the left key causes a zero key being entered, crashing everything
                      if (ke.key == LINEFEED) // guich@tc100: ignore \r\n, so we don't have to keep checking for both.
                         break;
@@ -725,7 +716,6 @@ public class MultiEdit extends Container implements Scrollable
                      {
                         if (len > del2 - 1) chars.delete(del1, del2 + 1); // Vm.arrayCopy(chars, del2 + 1, chars, del1, numOnRight);
                         newInsertPos = del1;
-                        forceDrawAll = true;
                         clearSelect = true;
                      }
                      if (isPrintable && (maxLength == 0 || len < maxLength))
@@ -747,7 +737,6 @@ public class MultiEdit extends Container implements Scrollable
                            if (firstToDraw != 0)
                            {
                               firstToDraw = 0;
-                              forceDrawAll = true;
                               sb.setValue(0);
                            }
                            break;
@@ -756,7 +745,6 @@ public class MultiEdit extends Container implements Scrollable
                            if (numberTextLines > rowCount)
                            {
                               firstToDraw = numberTextLines - rowCount;
-                              forceDrawAll = true;
                               sb.setValue(firstToDraw);
                            }
                            break;
@@ -786,7 +774,6 @@ public class MultiEdit extends Container implements Scrollable
                                  else
                                     newInsertPos = zToCharPos(z1);
                                  charPosToZ(newInsertPos, z1);
-                                 forceDrawAll = true;
                               }
                            }
                            break;
@@ -796,7 +783,6 @@ public class MultiEdit extends Container implements Scrollable
                            while (newInsertPos < first.items[firstToDraw])
                            {
                               firstToDraw--;
-                              forceDrawAll = true;
                               sb.setValue(sb.getValue() - 1);
                            }
                            charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
@@ -810,7 +796,6 @@ public class MultiEdit extends Container implements Scrollable
                                  while (newInsertPos >= first.items[firstToDraw + rowCount])
                                  {
                                     firstToDraw++;
-                                    forceDrawAll = true;
                                     sb.setValue(sb.getValue() + 1);
                                  }
                            }
@@ -833,7 +818,6 @@ public class MultiEdit extends Container implements Scrollable
                               }
                               else
                                  z1.y += hLine;
-                              forceDrawAll = true;
                               int line = firstToDraw + (z1.y - textRect.y) / hLine;
                               if (chars.charAt(newInsertPos) == ENTER && first.items[line + 1] - first.items[line] == 1)
                                  newInsertPos++;
@@ -1020,7 +1004,8 @@ public class MultiEdit extends Container implements Scrollable
          newInsertPos = Math.min(chars.length(), newInsertPos);
          if (newInsertPos < 0) newInsertPos = 0;
          boolean insertChanged = (newInsertPos != startSelectPos);
-         if (insertChanged && cursorShowing) draw(drawg, true); // erase cursor at old insert position
+         if (insertChanged && cursorShowing) 
+            draw(drawg); // erase cursor at old insert position
          insertPos = newInsertPos;
          if (redraw || insertChanged)
             Window.needsPaint = true;
@@ -1116,7 +1101,6 @@ public class MultiEdit extends Container implements Scrollable
             for (int i = 0; i < n; i++)
                Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
          calculateFirst();
-         forceDrawAll = true;
       }
    }
 
@@ -1138,10 +1122,10 @@ public class MultiEdit extends Container implements Scrollable
       }
    }
 
-   protected void draw(Graphics g, boolean cursorOnly)
+   protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed() || boardRect == null) return; // guich@tc114_65: check if its displayed
-      if (forceDrawAll && !transparentBackground)
+      if (!transparentBackground)
       {
          g.backColor = uiAndroid ? parent.backColor : back0;
          g.clearClip();
@@ -1162,62 +1146,62 @@ public class MultiEdit extends Container implements Scrollable
       }
       g.setClip(boardRect);
       // draw the text and/or the selection --original
-      if (!cursorOnly || forceDrawAll)
+      if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
       {
-         if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
+         // character regions are: -- original
+         // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
+         int sel1 = Math.min(startSelectPos, insertPos);
+         int sel2 = Math.max(startSelectPos, insertPos);
+         charPosToZ(sel1, z1);
+         charPosToZ(sel2, z2);
+         g.backColor = back1;
+         if (z1.y == z2.y)
+            g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
+         else
          {
-            // character regions are: -- original
-            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
-            int sel1 = Math.min(startSelectPos, insertPos);
-            int sel2 = Math.max(startSelectPos, insertPos);
-            charPosToZ(sel1, z1);
-            charPosToZ(sel2, z2);
-            g.backColor = back1;
-            if (z1.y == z2.y)
-               g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
-            else
-            {
-               g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
-               if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
-               g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
-            }
+            g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
+            if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
+            g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
          }
-         int i;
-         int h = textRect.y;
-         int dh = textRect.y + fm.ascent;
-         int maxh = h + textRect.height;
-         g.foreColor = fColor;
-         g.backColor = back0;
-         int last = numberTextLines - 1;
-         int len = chars.length();
-         for (i = firstToDraw; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      }
+      int i;
+      int h = textRect.y;
+      int dh = textRect.y + fm.ascent;
+      int maxh = h + textRect.height;
+      g.foreColor = fColor;
+      g.backColor = back0;
+      int last = numberTextLines - 1;
+      int len = chars.length();
+      for (i = firstToDraw; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      {
+         //if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
+         int k = first.items[i];
+         int k2 = first.items[i + 1];
+         g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+         if (drawDots)
          {
-            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-            int k = first.items[i];
-            int k2 = first.items[i + 1];
-            g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
-            if (drawDots)
-            {
-               g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
-               g.backColor = back0;
-            }
-         }
-
-         // guich@320_28: draw the dotted lines
-         if (!forceDrawAll || drawDots) for (; i < firstToDraw + rowCount; i++, h += hLine, dh += hLine)
-         {
-            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-            if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
+            g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
             g.backColor = back0;
          }
       }
-      forceDrawAll = false;
-      if (hasFocus && (editable || hasCursorWhenNotEditable))
+
+      // guich@320_28: draw the dotted lines
+      if (drawDots) 
+         for (; i < firstToDraw + rowCount; i++, h += hLine, dh += hLine)
+         {
+            if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
+            g.backColor = back0;
+         }
+    if (hasFocus && (editable || hasCursorWhenNotEditable))
       {
          // draw cursor
-         charPosToZ(insertPos, z1);
-         g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
-         cursorShowing = cursorOnly ? !cursorShowing : true;
+         if (cursorShowing)
+         {
+            charPosToZ(insertPos, z1);
+            g.foreColor = Color.interpolate(backColor,foreColor);
+            g.drawRect(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
+         }
+         cursorShowing = !cursorShowing;
          if (Window.isScreenShifted() && lastZ1y != z1.y)
             getParentWindow().shiftScreen(this, lastZ1y = z1.y);
       }
@@ -1232,8 +1216,7 @@ public class MultiEdit extends Container implements Scrollable
 
    public void onPaint(Graphics g)
    {
-      forceDrawAll=true;
-      draw(g, false);
+      draw(g);
    }
 
    private void clearPosState()
@@ -1251,7 +1234,7 @@ public class MultiEdit extends Container implements Scrollable
    protected void popPosState()
    {
       if (cursorShowing)
-         draw(drawg,true);
+         draw(drawg);
       insertPos = pushedInsertPos;
       startSelectPos = pushedStartSelectPos;
    }
@@ -1351,7 +1334,6 @@ public class MultiEdit extends Container implements Scrollable
 
          sb.setValue(val + inc);
          firstToDraw += inc;
-         forceDrawAll=true;
          Window.needsPaint = true;
          return this;
       }
@@ -1367,7 +1349,6 @@ public class MultiEdit extends Container implements Scrollable
       if (numberTextLines>rowCount)
       {
          firstToDraw=numberTextLines-rowCount;
-         forceDrawAll=true;
          sb.setValue(firstToDraw);
       }
    }
@@ -1379,7 +1360,6 @@ public class MultiEdit extends Container implements Scrollable
       if (firstToDraw!=0)
       {
          firstToDraw=0;
-         forceDrawAll=true;
          sb.setValue(0);
       }
    }

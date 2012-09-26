@@ -100,8 +100,8 @@ public class CompareBox extends Window
 
    private void doBlink()
    {
-      myg0.fillCursor(i,j,w,w);
-      myg1.fillCursor(i,j,w,w);
+      myg0.drawRect(i,j,w,w);
+      myg1.drawRect(i,j,w,w);
       showing = !showing;
    }
 

@@ -1035,10 +1035,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
             checkClicked(sel);
          if (pex < btnX && sel != selectedIndex)
          {
-            Graphics myg = getGraphics();
-            if (selectedIndex >= 0) drawCursor(myg, selectedIndex, false);
             selectedIndex = sel;
-            drawCursor(myg, selectedIndex, true);
+            Window.needsPaint = true;
          }
       }
    }
@@ -1182,8 +1180,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       g.setClip(2, 1, btnX - 4, fmH * visibleItems + 1);
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems + offset); // code corrected by Bjoem Knafla
       for (int i = offset; i < greatestVisibleItemIndex; ++i, dy += fmH)
+      {
+         if (i == selectedIndex) 
+            drawCursor(g, selectedIndex);
          drawNode(g, i, dx - hsOffset, dy);
-      if (selectedIndex >= 0) drawCursor(g, selectedIndex, true);
+      }
    }
    
    /**
@@ -1358,7 +1359,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    /**
     * Method to draw the highlight box when user select a listbox's item.
     */
-   protected void drawCursor(Graphics g, int sel, boolean on)
+   protected void drawCursor(Graphics g, int sel)
    {
       if (offset <= sel && sel < visibleItems + offset && sel < itemCount)
       {
@@ -1380,12 +1381,12 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
          dy += (sel - offset) * fmH;
          g.setClip(useFullWidthOnSelection ? 2 : dx - 1, dy - 1, btnX - (useFullWidthOnSelection ? 2 : dx), Math.min(fmH * visibleItems, this.height - dy));
-         g.foreColor = (on ? bgColor0 : bgColor1);
-         g.backColor = (on ? bgColor1 : bgColor0);
+         g.backColor = bgColor1;
          if (useFullWidthOnSelection)
-            g.eraseRect(2,dy-1,btnX-2,fmH + fm.descent - 1);
+            g.fillRect(2,dy-1,btnX-2,fmH + fm.descent - 1);
          else
-            g.eraseRect(dx + 1, dy-1, this.width-dx, fmH + fm.descent - 1);
+            g.fillRect(dx + 1, dy-1, this.width-dx, fmH + fm.descent - 1);
+         g.clearClip();
       }
    }
 
