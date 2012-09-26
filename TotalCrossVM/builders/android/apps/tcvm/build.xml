@@ -35,7 +35,7 @@
          tool, as well as ADT.
          This file is an integral part of the build system for your
          application and should be checked into Version Control Systems. -->
-    <property file="${source.vms.path}/src/jni/default.properties" />
+    <property file="default.properties" />
 
     <!-- Custom Android task to deal with the project target, and import the
          proper rules.
