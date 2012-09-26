@@ -127,6 +127,8 @@
 #define Image_frameCount(o)         FIELD_I32(o, 3)
 #define Image_currentFrame(o)       FIELD_I32(o, 4)
 #define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
+#define Image_textureId(o)          FIELD_I32(o, 6)
+
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
