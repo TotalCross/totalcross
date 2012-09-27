@@ -38,6 +38,7 @@ public final class Graphics4D
    protected int minX, minY, maxX, maxY;
    protected int lastRX,lastRY,lastXC,lastYC,lastSize; // used by arcPiePointDrawAndFill
    protected int pitch;
+   private int alpha;
    // instance doubles
    protected double lastPPD; // used by arcPiePointDrawAndFill
    // instance objects
@@ -64,6 +65,8 @@ public final class Graphics4D
    public Graphics4D(GfxSurface surface)
    {
       this.surface = surface;
+      if (surface instanceof totalcross.ui.image.Image)
+         alpha = 0xFF000000;
       create(surface);
    }
 

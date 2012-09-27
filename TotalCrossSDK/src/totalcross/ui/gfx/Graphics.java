@@ -461,7 +461,7 @@ public final class Graphics
       x += transX;
       y += transY;
       if (clipX1 <= x && x < clipX2 && clipY1 <= y && y < clipY2)
-         return getSurfacePixels(surface)[y*pitch+x];
+         return getSurfacePixels(surface)[y*pitch+x] & 0xFFFFFF;
       return -1;
    }
 

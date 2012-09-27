@@ -79,7 +79,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
 
-GLfloat ftransp[16];
+GLfloat ftransp[16], f255[256];
 static bool initGLES()
 {                
    int32 i;
@@ -123,6 +123,7 @@ static bool initGLES()
    appW = width;
    appH = height;
 
+   // program for point, line and rectangle
    gProgram = glCreateProgram();
    glAttachShader(gProgram, loadShader(GL_VERTEX_SHADER, vertexShaderCode(buf, width, height)));
    glAttachShader(gProgram, loadShader(GL_FRAGMENT_SHADER, fragmentShaderCode));
@@ -138,7 +139,7 @@ static bool initGLES()
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
    glViewport(0, 0, width, height);
-   /*glEnable*/glDisable(GL_SCISSOR_TEST);
+   //glEnable(GL_SCISSOR_TEST);
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glEnable(GL_BLEND); // enable color alpha channel
@@ -146,6 +147,8 @@ static bool initGLES()
 
    for (i = 0; i <= 15; i++)
       ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
+   for (i = 0; i <= 255; i++)
+      f255[i] = (GLfloat)i/(GLfloat)255;
 
    return true;
 }
@@ -234,9 +237,9 @@ void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
    coords[0] = x;
    coords[1] = y;
 
-   colors[0] = (GLfloat)pc.r / (GLfloat)255;
-   colors[1] = (GLfloat)pc.g / (GLfloat)255;
-   colors[2] = (GLfloat)pc.b / (GLfloat)255;
+   colors[0] = f255[pc.r];
+   colors[1] = f255[pc.g];
+   colors[2] = f255[pc.b];
    colors[3] = 1;
    glVertexAttribPointer(gColorHandle, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
@@ -254,9 +257,9 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
    coords[3] = x2;
    coords[4] = y2;
 
-   colors[0] = colors[4] = (GLfloat)pc.r / (GLfloat)255;
-   colors[1] = colors[5] = (GLfloat)pc.g / (GLfloat)255;
-   colors[2] = colors[6] = (GLfloat)pc.b / (GLfloat)255;
+   colors[0] = colors[4] = f255[pc.r];
+   colors[1] = colors[5] = f255[pc.g];
+   colors[2] = colors[6] = f255[pc.b];
    colors[3] = colors[7] = 1;
    glVertexAttribPointer(gColorHandle, 4*2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
@@ -278,9 +281,9 @@ void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
    coords[9] = x+w;
    coords[10] = y;
 
-   colors[0] = colors[4] = colors[8]  = colors[12] = colors[16] = colors[20] = (GLfloat)pc.r / (GLfloat)255;
-   colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = (GLfloat)pc.g / (GLfloat)255;
-   colors[2] = colors[6] = colors[10] = colors[14] = colors[18] = colors[22] = (GLfloat)pc.b / (GLfloat)255;
+   colors[0] = colors[4] = colors[8]  = colors[12] = colors[16] = colors[20] = f255[pc.r];
+   colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = f255[pc.g];
+   colors[2] = colors[6] = colors[10] = colors[14] = colors[18] = colors[22] = f255[pc.b];
    colors[3] = colors[7] = colors[11] = colors[15] = colors[19] = colors[23] = 1;
    glVertexAttribPointer(gColorHandle, 4*6, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data

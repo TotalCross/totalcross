@@ -11,9 +11,13 @@
 
 #include "tcvm.h"
 
+#ifdef ANDROID
+#define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
+#define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))
+#else
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
-#define Image_transparentPixel(o)  makePixelRGB(Image_transparentColor(o))
+#endif
 
 void glDrawPixel(Context c, int32 x, int32 y, int32 rgb);
 void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
