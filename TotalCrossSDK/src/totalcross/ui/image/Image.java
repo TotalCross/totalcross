@@ -303,6 +303,7 @@ public class Image extends GfxSurface
    
    /** Applies any pending changes made in this image.
     * In Open GL platforms, creates a texture for this image.
+    * In other platforms, does nothing.
     * @since TotalCross 2
     */
    public void applyChanges()

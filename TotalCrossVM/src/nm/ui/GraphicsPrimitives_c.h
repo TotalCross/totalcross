@@ -370,27 +370,6 @@ static PixelConv getPixelConv(Object g, int32 x, int32 y)
    return p;
 }
 
-// Given a surface, replace a color by another one
-static void eraseRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel from, Pixel to)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      Pixel *row;
-      Pixel *p;
-      uint32 i,j;
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (i=(uint32)height; i != 0; i--, row += Graphics_pitch(g))
-         for (p = row, j = (uint32)width; j != 0; p++,j--)
-            if (*p == from)
-               *p = to;
-#ifndef ANDROID
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-#else         
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
-#endif
-   }
-}
-
 // Device specific routine.
 // Sets the pixel to the given color, translating and clipping
 static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, Pixel pixel)
@@ -1748,94 +1727,6 @@ static void fillRoundRect(Context currentContext, Object g, int32 x, int32 y, in
       dec += 4*xx+6;
    }
 }
-static void drawCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      int32 h = height-1;
-      int32 j;
-      Pixel *p, *pMax, *row;
-
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (j=0; ; j++)
-      {
-         if (j==0 || j==h)
-         {
-            p = row;
-            pMax = row + width;
-            while (p < pMax)
-               *p++ ^= 0xFFFFFFFF;
-            if (j == h)
-               break;
-         }
-         else
-         {
-            *row ^= 0xFFFFFFFF;
-            if (width > 1)
-               *(row + width-1) ^= 0xFFFFFFFF;
-         }
-         row += Graphics_pitch(g);
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-   }
-}
-
-static void fillCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      Pixel *row, *p, *pMax;
-      int32 h = height;
-
-      for (row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x; h-- > 0; row += Graphics_pitch(g))
-      {
-         p = row;
-         pMax = p + width;
-         while (p < pMax)
-            *p++ ^= 0xFFFFFFFF;
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-   }
-}
-
-static void drawDottedCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (width > 0 && height > 0) // guich@566_43
-   {
-      int32 h = height-1;
-      int32 i,j,x2;
-      Pixel* row;
-      x += Graphics_transX(g);
-      y += Graphics_transY(g);
-      x2 = x+width-1;
-
-      // TODO a better clipping algotithm
-      // NOTE: translateAndClip cannot be used for this routine!
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (i=0; i<=h; ++i)
-      {
-         int32 yy = i + y;
-         if ((i==0) || (i==h)) // draw the horizontal rows
-         {
-            Pixel * p = row;
-            if (Graphics_clipY1(g) <= yy && yy < Graphics_clipY2(g))
-               for (j=x; j < x2; j+=2, p+=2)
-                  if (Graphics_clipX1(g) <= j && j < Graphics_clipX2(g))
-                     *p ^= 0xFFFFFFFF;
-         }
-         else
-         if (i&1 && Graphics_clipY1(g) <= yy && yy < Graphics_clipY2(g))
-         {
-            if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g))
-               *row ^= 0xFFFFFFFF;
-            if (Graphics_clipX1(g) <= x2 && x2 < Graphics_clipX2(g))
-               *(row + width-1) ^= 0xFFFFFFFF;
-         }
-         row += Graphics_pitch(g);
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-   }
-}
 
 ////////////////////////////////////////////////////////////////////////////
 // sets the clip rect to (x,y,x+w-1,y+h-1), translated to the current translated origin
@@ -2495,85 +2386,6 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
       red += redInc;
       green += greenInc;
       blue += blueInc;
-   }
-}
-
-static void eraseRectAA(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, int32 fromColor, int32 toColor, int32 textColor)
-{
-   Object fontObj = Graphics_font(g);
-   UserFont uf=null;
-   PixelConv from, to,text;
-
-   from.pixel = makePixelRGB(fromColor);
-   to.pixel   = makePixelRGB(toColor);
-   text.pixel = makePixelRGB(textColor);
-
-   uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
-   if (!uf->fontP.antialiased)
-      eraseRect(currentContext, g, x, y, width, height, from.pixel, to.pixel);
-   else
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      Pixel *row;
-      Pixel *p, *pMax;
-      int32 transparency,i,j;
-      PixelConv *aafroms,*aatos;
-      PixelConv *f,*t;
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      // select a cached version
-      if (currentContext->aaFromColor1 == fromColor && currentContext->aaToColor1 == toColor && currentContext->aaTextColor1 == textColor)
-      {
-         aafroms = currentContext->aafroms1;
-         aatos = currentContext->aatos1;
-      }
-      else
-      if (currentContext->aaFromColor2 == fromColor && currentContext->aaToColor2 == toColor && currentContext->aaTextColor2 == textColor)
-      {
-         aafroms = currentContext->aafroms2;
-         aatos = currentContext->aatos2;
-      }
-      else
-      {
-         // cache a version
-         f = aafroms = currentContext->lastWas1 ? currentContext->aafroms2 : currentContext->aafroms1;
-         t = aatos = currentContext->lastWas1 ? currentContext->aatos2 : currentContext->aatos1;
-         for (transparency = 16; transparency > 0; transparency--,f++,t++)
-         {
-            t->a = f->a = 0;
-            f->r = INTERP(from.r, text.r);
-            f->g = INTERP(from.g, text.g);
-            f->b = INTERP(from.b, text.b);
-            t->r = INTERP(to.r, text.r);
-            t->g = INTERP(to.g, text.g);
-            t->b = INTERP(to.b, text.b);
-         }
-         if (currentContext->lastWas1)
-         {
-            currentContext->aaFromColor2 = fromColor;
-            currentContext->aaToColor2 = toColor;
-            currentContext->aaTextColor2 = textColor;
-         }
-         else
-         {
-            currentContext->aaFromColor1 = fromColor;
-            currentContext->aaToColor1 = toColor;
-            currentContext->aaTextColor1 = textColor;
-         }
-         currentContext->lastWas1 = !currentContext->lastWas1;
-      }
-      // now replace the pixels
-      for (i=height; i > 0; i--, row += Graphics_pitch(g))
-         for (p = row, pMax = row + width; p < pMax; p++)
-            if (*p == from.pixel)
-               *p = to.pixel;
-            else
-            for (f=aafroms,j = 16; j > 0; j--,f++) // TODO put this in a hashtable
-               if (*p == f->pixel)
-               {
-                  *p = aatos[f-aafroms].pixel;
-                  break;
-               }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
    }
 }
 

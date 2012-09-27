@@ -100,12 +100,6 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
    createGfxSurface(w, h, g, stype);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
-{
-   Object g = p->obj[0];
-   drawDottedCursor(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
-}                   
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawEllipse_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawEllipse(int xc, int yc, int rx, int ry);
 {
    Object g = p->obj[0];
@@ -202,12 +196,6 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
    setPixel(p->currentContext, g, p->i32[0], p->i32[1], Graphics_forePixel(g));
 }           
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-   Object g = p->obj[0];
-   eraseRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g));
-}            
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
    Object g = p->obj[0];
@@ -219,17 +207,6 @@ TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
    Object g = p->obj[0];
    drawDottedLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g));
 }                 
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-   fillCursor(p->currentContext, p->obj[0], p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
-}             
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
-{
-   Object g = p->obj[0];
-   drawCursor(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
-}             
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRect(int x, int y, int w, int h);
 {
@@ -673,12 +650,6 @@ TC_API void tugG_drawArrow_iiibbi(NMParams p) // totalcross/ui/gfx/Graphics nati
          h--;
       }
    }
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
-{
-   Object g = p->obj[0];
-   eraseRectAA(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], p->i32[6]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawImage_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y);

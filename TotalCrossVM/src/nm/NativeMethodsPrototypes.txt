@@ -34,11 +34,11 @@ TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
 TC_API void tuiI_setTransparentColor_i(NMParams p);
+TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
-TC_API void tugG_drawDottedCursor_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
 TC_API void tugG_fillEllipse_iiii(NMParams p);
 TC_API void tugG_drawArc_iiidd(NMParams p);
@@ -54,19 +54,15 @@ TC_API void tugG_setPixel_ii(NMParams p);
 TC_API void tugG_eraseRect_iiii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
-TC_API void tugG_fillCursor_iiii(NMParams p);
-TC_API void tugG_drawCursor_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
-TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_fillPolygon_IIi(NMParams p);
+TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_drawPolygon_IIi(NMParams p);
 TC_API void tugG_drawPolyline_IIi(NMParams p);
 TC_API void tugG_drawText_sii(NMParams p);
 TC_API void tugG_drawText_Ciiii(NMParams p);
-TC_API void tugG_drawText_siiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
-TC_API void tugG_drawText_siiiii(NMParams p);
 TC_API void tugG_drawHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_fillHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
@@ -567,6 +563,10 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
 }
@@ -580,10 +580,6 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -647,14 +643,6 @@ TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRect(int x, int y, int w, int h);
 {
 }
@@ -663,11 +651,11 @@ TC_API void tugG_fillRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -687,15 +675,7 @@ TC_API void tugG_drawText_Ciiii(NMParams p) // totalcross/ui/gfx/Graphics native
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2306,6 +2286,11 @@ TESTCASE(tuiI_setTransparentColor_i) // totalcross/ui/image/Image native public 
    TEST_SKIP;
    finish: ;
 }
+TESTCASE(tuiI_applyChanges) // totalcross/ui/image/Image native public void applyChanges();
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tugG_dither_iiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TEST_SKIP;
@@ -2322,11 +2307,6 @@ TESTCASE(tugG_drawWindowBorder_iiiiiiiiii) // totalcross/ui/gfx/Graphics native 
    finish: ;
 }
 TESTCASE(tugG_create_g) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawDottedCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2406,16 +2386,6 @@ TESTCASE(tugG_drawDots_iiii) // totalcross/ui/gfx/Graphics native public void dr
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_fillCursor_iiii) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawRect_iiii) // totalcross/ui/gfx/Graphics native public void drawRect(int x, int y, int w, int h);
 {
    TEST_SKIP;
@@ -2426,12 +2396,12 @@ TESTCASE(tugG_fillRect_iiii) // totalcross/ui/gfx/Graphics native public void fi
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawDottedRect_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+TESTCASE(tugG_fillPolygon_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_fillPolygon_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+TESTCASE(tugG_drawDottedRect_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2456,17 +2426,7 @@ TESTCASE(tugG_drawText_Ciiii) // totalcross/ui/gfx/Graphics native public void d
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawText_siiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawText_siii) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
    TEST_SKIP;
    finish: ;
