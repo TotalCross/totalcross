@@ -2886,8 +2886,7 @@ void updateScreen(Context currentContext)
 {
 #ifdef darwin   
    if (callingScreenChange) return;
-#endif      
-#ifdef ANDROID
+#elif defined ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);
@@ -2901,9 +2900,13 @@ void updateScreen(Context currentContext)
       {
          if (transitionEffect == -1)
             transitionEffect = TRANSITION_NONE;
+#ifdef darwin            
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
+#endif
          graphicsUpdateScreen(currentContext, &screen, transitionEffect);
+#ifdef darwin            
          LOCKVAR(screen);     
+#endif         
       }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       currentContext->dirtyX1 = screen.screenW;
