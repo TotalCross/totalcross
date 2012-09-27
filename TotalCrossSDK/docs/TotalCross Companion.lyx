@@ -6129,7 +6129,7 @@ There's a special contract that can be made with us that will allow you
 \begin_layout Standard
 Some devices may not have an IMEI nor a serial number accessible by software.
  On these devices, a hard-reset will result in the consumption of one more
- key.
+ lisence if there is no backup of the activation file.
 \end_layout
 
 \begin_layout Standard
@@ -26394,6 +26394,7 @@ Some Advanced Controls
 
 \begin_layout Standard
 In this chapter, some advanced controls will be described in detail.
+ They are organized in alphabetical order.
 \end_layout
 
 \begin_layout Section
@@ -27229,8 +27230,8 @@ add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the
 
 \end_inset
 
-which results in the following images, where the bottom images show the
- title and one of the buttons being pressed:
+which results in the following images using Android style, where the bottom
+ images show the title and one of the buttons being pressed:
 \end_layout
 
 \begin_layout Standard
@@ -27604,11 +27605,115 @@ NullPointerException
  will be thrown.
 \end_layout
 
-\begin_layout Chapter
-Additional Advanced Controls
-\begin_inset CommandInset label
-LatexCommand label
-name "chap:Advanced-Controls"
+\begin_layout Section
+ColorList
+\end_layout
+
+\begin_layout Standard
+Implements a 
+\family typewriter
+ListBox
+\family default
+ where colors can be choosen from.
+ The only functional methods are 
+\family typewriter
+setColors()
+\family default
+, 
+\family typewriter
+getSelectedItem()
+\family default
+ and 
+\family typewriter
+getSelectedColor()
+\family default
+.
+ Next an example of how to use this class as a combo box color chooser:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+add(foreCombo = new ComboBox(new ColorList()), CENTER, BOTTOM); 
+\end_layout
+
+\end_inset
+
+which results in the following windows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorlist_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
 
 \end_inset
 
@@ -27616,18 +27721,1177 @@ name "chap:Advanced-Controls"
 \end_layout
 
 \begin_layout Standard
-Here a list of advanced controls which are not described in the other chapter
- is found.
- For more details, please check the JavaDocs.
+This special 
+\family typewriter
+ListBox
+\family default
+ by default contains the 256 colors of an 8 bpp screen.
+ Each item has a color with its hexadecimal number representation.
+ 
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
+Consider using 
+\family typewriter
+ColorChooserBox
+\family default
+ instead.
+\end_layout
+
+\begin_layout Standard
+This class has just one ommited public default constructor, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColors(int[]
+\begin_inset space ~
+\end_inset
+
+newColors) Sets the colors that will be displayed.
+ That is, it changes the default set of colors used by the default constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Returns the selected 
+\family typewriter
+ColorList.Item
+\family default
+ object, or a black 
+\family typewriter
+ColorList.Item
+\family default
+ representing the black color if none was selected.
+ From the 
+\family typewriter
+ColorList.Item
+\family default
+ you can retrieve the color as 
+\family typewriter
+int
+\family default
+.
+ Use the 
+\family typewriter
+getSelectedColor()
+\family default
+ method to retrieve the color directly.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedColor() Returns the selected color or black if no one is selected.
+\end_layout
+
+\begin_layout Standard
+This class has a nested class called 
+\family typewriter
+Item
+\family default
+.
+ This is the item added to the 
+\family typewriter
+ColorList
+\family default
+, containing the color as 
+\family typewriter
+String
+\family default
+ (hexadecimal representation) and as 
+\family typewriter
+int
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ColorList.Item
+\family default
+ class has just one attribute, one constructor, and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The integer color code.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColorList.Item(int
+\begin_inset space ~
+\end_inset
+
+value) Constructs a new 
+\family typewriter
+Item
+\family default
+ with the given color integer value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(int
+\begin_inset space ~
+\end_inset
+
+value) Sets an 
+\family typewriter
+Item
+\family default
+ with the given color integer value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+other) Checks if two 
+\family typewriter
+Item
+\family default
+s have the same integer color value or if the parameter is a 
+\family typewriter
+String
+\family default
+, checks if its value is equal to the string hexadecimal representation
+ of the 
+\family typewriter
+Item
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the hexadecimal string representation of the 
+\family typewriter
+Item
+\family default
+ color.
+\end_layout
+
+\begin_layout Section
+FlowContainer
+\end_layout
+
+\begin_layout Standard
+This class is a container that will place controls one after another and,
+ once the width has been reached, it wraps to the next line.
+ All controls must be added before calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ When calling 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+ for this control, the height must be 
+\family typewriter
+PREFERRED
+\family default
+ (with adjustments, if needed).
+ Also, if 
+\family typewriter
+initUI()
+\family default
+ is overriden, be sure to call 
+\family typewriter
+super.initUI()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Code example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Settings.uiAdjustmentsBasedOnFontHeight = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+Label l = new Label("Do you agree that TotalCross is a great development
+ platform?");
+\end_layout
+
+\begin_layout Plain Layout
+
+l.autoSplit = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(l, LEFT,AFTER,FILL,PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+FlowContainer fc = new FlowContainer(50,25);
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably Yes"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Probably No"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("Maybe"));
+\end_layout
+
+\begin_layout Plain Layout
+
+fc.add(new Radio("I don't know"));
+\end_layout
+
+\begin_layout Plain Layout
+
+add(fc, LEFT,AFTER,FILL,PREFERRED); 
+\end_layout
+
+\end_inset
+
+which results in:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/flow_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public constructor, and the following methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FlowContainer(int
+\begin_inset space ~
+\end_inset
+
+hgap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vgap) Constructs a 
+\family typewriter
+FlowContainer
+\family default
+ with the given horizontal and vertical gaps.
+ You must add all children controls before calling 
+\family typewriter
+setRect()
+\family default
+ for this container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initUI() Places the controls on screen.
+ 
+\end_layout
+
+\begin_layout Section
+ImageControl
+\end_layout
+
+\begin_layout Standard
+A control that can show an image bigger than its area and that can be dragged
+ using a pen to show the hidden parts.
+ Note that, by default, events (and dragging) are disabled.
+ You must call 
+\family typewriter
+setEventsEnabled()
+\family default
+ to allow dragging.
+ 
+\end_layout
+
+\begin_layout Standard
+This is used in the Litebase sample PhotoDB, where it is possible to drag
+ the picture to show other parts of it.
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollValue The amount to scroll when in penless mode.
+ It defaults to 10.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawOp Defines the drawing operation used to draw the image that is being
+ panned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+centerImage Set to 
+\family typewriter
+true
+\family default
+ to center the image in the control when it is loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastX,lastY The last position used for X and Y.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderColor Change this member to set the border color.
+ You may also set it to 
+\family typewriter
+null
+\family default
+ if you don't want a border color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowBeyondLimits Set to 
+\family typewriter
+true
+\family default
+ to let the image be dragged beyond container limits.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl(Image
+\begin_inset space ~
+\end_inset
+
+img) Constructs an 
+\family typewriter
+ImageControl
+\family default
+ using the given image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageControl() Constructs an 
+\family typewriter
+ImageControl
+\family default
+ with no initial image.
+ You must set the image with the 
+\family typewriter
+setImage()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEventsEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enabled) Changes this to 
+\family typewriter
+true
+\family default
+ to enable dragging and events on the image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the image to the given one.
+ If the image size is different, you must explicitly call 
+\family typewriter
+setRect()
+\family default
+ again if you want to resize the control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveTo(int
+\begin_inset space ~
+\end_inset
+
+newX,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+newY) Moves to the given coordinates, respecting the current moving policy
+ regarding
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+allowBeyondLimits
+\family default
+.
+ It returns 
+\family typewriter
+true
+\family default
+ if the image's position was changed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getImage() Returns the current image assigned to this 
+\family typewriter
+ImageControl
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackground(Image
+\begin_inset space ~
+\end_inset
+
+img) Sets the given image as a freezed background of this image control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getVisibleImage(boolean
+\begin_inset space ~
+\end_inset
+
+includeBackground) Gets an image representing the portion being shown.
+ If all image is being shown, returns the currently assigned image.
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Section
+Ruler
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Ruler"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 
 \family typewriter
+Ruler
+\family default
+ is a horizontal or vertical ruler.
+ Here's an example: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Ruler r = new Ruler();
+\end_layout
+
+\begin_layout Plain Layout
+
+r.invert = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(r, LEFT,AFTER+2);  
+\end_layout
+
+\end_inset
+
+which results in the following using Android style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/ruler_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+UIGadgets also uses a default ruler shown near the mouse arrow:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/ruler_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, two constructors, and the following
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+invert Set to 
+\family typewriter
+true
+\family default
+ to invert the color of the first and second lines.
+ Only makes sense if 3d is 
+\family typewriter
+true
+\family default
+ in the most sofisticated constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Ruler() Constructs a 3d horizonal ruler.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Ruler(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+is3d) Constructs a ruler of the given type, which can be horizontal (
+\family typewriter
+Ruler.HORIZONTAL
+\family default
+) or vertical (
+\family typewriter
+Ruler.VERTICAL
+\family default
+).
+ The second parameter indicates if the ruler is to be 3d or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() For horizontal rulers, it returns 
+\family typewriter
+FILL
+\family default
+.
+ Otherwise, it returns 2 if it's 3d or 1 if it's not 3d.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() For vertical rulers, it returns 
+\family typewriter
+FILL
+\family default
+.
+ Otherwise, it returns 2 if's 3d or 1 if it's not 3d.
+\end_layout
+
+\begin_layout Section
+Slider
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Slider
+\family default
+ is a simple slider.
+ You can set some properties of the slider, like 
+\family typewriter
+drawTicks
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+invertDirection
+\family default
+ and 
+\family typewriter
+drawFilledArea
+\family default
+.
+ You can change the thumb size by setting the 
+\family typewriter
+minDragBarSize
+\family default
+ public field and then call 
+\family typewriter
+setValues()
+\family default
+, 
+\family typewriter
+setMaximum()
+\family default
+, or 
+\family typewriter
+setMinimum()
+\family default
+ method (the value must always be ODD!).
+ The slider is the component pointed by the mouse arrow in the UIGadgets
+ sample using Android style below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/slider_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+invertDirection Inverts the direction of the marker.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawTicks Set to 
+\family typewriter
+true
+\family default
+ to draw the ticks.
+ Should be set only when maximum-minimum is much smaller than the width.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+ setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawFilledArea Set to 
+\family typewriter
+false
+\family default
+ to don't draw the filled area.
+ You must set this property before calling 
+\family typewriter
+setValues()
+\family default
+ (or 
+\family typewriter
+setMinimum()
+\family default
+/
+\family typewriter
+setMaximum()
+\family default
+/
+\family typewriter
+setValue()
+\family default
+/
+\family typewriter
+setVisibleItems()
+\family default
+ methods) for the first time.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Slider() Constructs a horizontal slider.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Slider(byte
+\begin_inset space ~
+\end_inset
+
+orientation) Constructs a slider with the given orientation, which can be
+ horizontal (
+\family typewriter
+ScrollBar.
+\begin_inset Newline newline
+\end_inset
+
+HORIZONTAL
+\family default
+) or vertical (
+\family typewriter
+ScrollBar.VERTICAL
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDragBarPos(int
+\begin_inset space ~
+\end_inset
+
+value) Returns the drag bar position.
+ 
+\end_layout
+
+\begin_layout Section
+Spacer
+\end_layout
+
+\begin_layout Standard
+Control used to add a space between controls.
+ It shows nothing on screen.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use it:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Spacer s = new Spacer("  ");
+\end_layout
+
+\begin_layout Plain Layout
+
+Button btnClear = new Button("Clear");
+\end_layout
+
+\begin_layout Plain Layout
+
+Button btnOK = new Button("OK");
+\end_layout
+
+\begin_layout Plain Layout
+
+add(s, CENTER,AFTER+2);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(btnClear, AFTER,SAME, s);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(btnOK, BEFORE, SAME, SAME, SAME, s); 
+\end_layout
+
+\end_inset
+
+which results in the following using Android style, which places two buttons
+ centered on screen, like this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The spacer is also used to separate the spinners in the Spiner Samples of
+ AndroidUI and the back and next buttons from the Litebase sample PhotoDB
+ (which uses the old Windows CE style):
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spacer_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just three constructors (the other fields from its superclasses
+ are excluded):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer() Constructs a new spacer, using a single space 
+\family typewriter
+" "
+\family default
+ to compute the width and height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y) Constructs a new spacer using the given 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Spacer(String
+\begin_inset space ~
+\end_inset
+
+s) Constructs a new spacer using the given string, whose width will be the
+ horizontal spacement.
+ The vertical spacement will be the font's height.
+ 
+\end_layout
+
+\begin_layout Section
+Spinner
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Spinner
+\family default
+ is a control that shows an image indicating that something is running in
+ the background.
+ It has two styles: 
+\family typewriter
+IPHONE
+\family default
+ and 
+\family typewriter
+ANDROID
+\family default
+.
+ It's used in the 
+\family typewriter
+ProgressBox
+\family default
+ and can be used in the 
+\family typewriter
+Bar
+\family default
+.
+ To start the spin call the 
+\family typewriter
+start()
+\family default
+ method, and to stop it call the 
+\family typewriter
+stop()
+\family default
+ method.
+ An image of it has already been shown in section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Ruler"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, an omitted default constructor,
+ and the following methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+spinnerType Defines the type of spinner for all instances.
+ Defaults for 
+\family typewriter
+Spinner.IPHONE
+\family default
+ when running on iPhone and 
+\family typewriter
+Spinner.ANDROID
+\family default
+ for all other platforms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+start() Starts the spinning thread.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stop() Stops the spinning thread.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isRunning() Returns if the spinner is running.
+ 
+\end_layout
+
+\begin_layout Section
 Tree
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 This class is a simple implementation of a tree widget.
  Since it's natural to render the tree in rows, this class borrows most
@@ -27664,25 +28928,1336 @@ Expands and collapses of folder.
 \family typewriter
 allowsChildren
 \family default
- flag to determine if the node is a leaf or folder.
+ flag to determine if the node is a leaf or a folder.
  
 \end_layout
 
 \begin_layout Itemize
-Delete, insert, and modify (user object) of a node.
+Delete, insert, and modify (user object or identifier) of a node.
  
 \end_layout
 
 \begin_layout Itemize
-Clicking on leaf node will swap leaf icon (like hyperlink).
+Clicking on a leaf node will swap to the leaf icon (like hyperlink).
  
 \end_layout
 
 \begin_layout Itemize
-Allows the creation of tree to show or hide root node.
+Allows the creation of a tree to show or hide the root node.
 \end_layout
 
-\end_deeper
+\begin_layout Standard
+You should use the 
+\family typewriter
+TreeModel
+\family default
+ class to modify the tree after and the class 
+\family typewriter
+Node
+\family default
+ to add nodes to the tree.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+TreeModel tmodel = new TreeModel();
+\end_layout
+
+\begin_layout Plain Layout
+
+Tree tree = new Tree(tmodel);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(tree,LEFT,TOP,FILL,FILL);
+\end_layout
+
+\begin_layout Plain Layout
+
+Node root = new Node("Tree");
+\end_layout
+
+\begin_layout Plain Layout
+
+tmodel.setRoot(root);
+\end_layout
+
+\begin_layout Plain Layout
+
+Node n;
+\end_layout
+
+\begin_layout Plain Layout
+
+root.add(n = new Node("Branch1"));
+\end_layout
+
+\begin_layout Plain Layout
+
+n.add(new Node("SubBranch1"));
+\end_layout
+
+\begin_layout Plain Layout
+
+n.add(new Node("SubBranch2")); 
+\end_layout
+
+\end_inset
+
+which results in the following window (using Android style):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tree_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tree_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+UIGadgets also has a sample called FileChooserTest which uses 
+\family typewriter
+Tree
+\family default
+.
+ Using Android style, it looks like this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tree_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+Tree
+\family default
+ class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multipleSelection Set to 
+\family typewriter
+true
+\family default
+ to allow multiple selections using a 
+\family typewriter
+Check
+\family default
+ drawn before the nodes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+expandClickingOnText Set to 
+\family typewriter
+false
+\family default
+ to only expand or collapse if you click on the +- buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useFullWidthOnSelection If 
+\family typewriter
+true
+\family default
+, all the tree will have the selection bar drawn in the full width instead
+ of the selected's text width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Tree() Constructs a new 
+\family typewriter
+Tree
+\family default
+ based on an empty tree model.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Tree(TreeModel
+\begin_inset space ~
+\end_inset
+
+model) Constructs a new 
+\family typewriter
+Tree
+\family default
+ based on the given tree model.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Tree(TreeModel
+\begin_inset space ~
+\end_inset
+
+model,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+showRoot) Constructs a new 
+\family typewriter
+Tree
+\family default
+ based on the given tree model.
+ It will show the root if the second parameter is 
+\family typewriter
+true
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dontShowFileAndFolderIcons() Call this method to hide the file and folder
+ icons.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setModel(TreeModel
+\begin_inset space ~
+\end_inset
+
+model) Method to set the tree model.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setScrollBarPolicy(int
+\begin_inset space ~
+\end_inset
+
+horiz,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+vert) Method to set the scroll bar appearance.
+ It can be shown always (
+\family typewriter
+SCROLLBAR_ALWAYS
+\family default
+), never (
+\family typewriter
+SCROLLBAR_NEVER
+\family default
+), or as needed (
+\family typewriter
+SCROLLBAR_AS_NEEDED
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initTree(Node
+\begin_inset space ~
+\end_inset
+
+root) Method to set the tree root node with the new root node.
+ If the new root node is 
+\family typewriter
+null
+\family default
+, the tree is unchanged.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setIcon(int
+\begin_inset space ~
+\end_inset
+
+iconType,
+\begin_inset space ~
+\end_inset
+
+Image
+\begin_inset space ~
+\end_inset
+
+img) Method to set the icon of the tree based on the icon type.
+ Note: you should not change the plus and minus icons.
+ You can set the open/close to 
+\family typewriter
+null
+\family default
+ (setting one will 
+\family typewriter
+null
+\family default
+ out the other).
+ The parameter 
+\family typewriter
+iconType
+\family default
+ can be one out of 
+\family typewriter
+ICON_PLUS
+\family default
+, 
+\family typewriter
+ICON_MINUS
+\family default
+, 
+\family typewriter
+ICON_OPEN
+\family default
+, 
+\family typewriter
+ICON_CLOSE
+\family default
+, and 
+\family typewriter
+ICON_FILE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() Method to empty the tree, setting all elements of the array
+ to 
+\family typewriter
+null
+\family default
+, so they can be garbage collected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Same as the 
+\family typewriter
+removeAll()
+\family default
+ method.
+ Just a more clearer method name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+index) Method to remove the given index from the tree items vector.
+ This method will not remove the node from the original node.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Object
+\begin_inset space ~
+\end_inset
+
+item) Method to remove an object (node) from the tree's items vector.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+expand(Node
+\begin_inset space ~
+\end_inset
+
+node) Method to expand a collapsed node.
+ It returns 
+\family typewriter
+true
+\family default
+ if the item was expanded; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+collapse(Node
+\begin_inset space ~
+\end_inset
+
+node) Method to collapse an expanded node.
+ It returns 
+\family typewriter
+true
+\family default
+ if the item was collapsed; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setItemAt(int
+\begin_inset space ~
+\end_inset
+
+i,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+s) Method to set an object (node) at the given index, starting from 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItemAt(int
+\begin_inset space ~
+\end_inset
+
+i) Method to get the object (node) at the given index.
+ Returns an empty string in case of error.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Method to return the selected item (node) of the tree
+ or 
+\family typewriter
+null
+\family default
+ if no selection has been made.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Method to return the position of the selected item (node)
+ of the tree or -1 if the tree has no selected index yet.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getItems() Method to return all items (nodes) in the items vector as an
+ array of objects.
+ The objects are of the class 
+\family typewriter
+Node
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(Object
+\begin_inset space ~
+\end_inset
+
+name) Method to return the index of the item (node) specified by the name,
+ or -1 if not found.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(Object
+\begin_inset space ~
+\end_inset
+
+name) Method to select the given name.
+ If the name is not found, the current selected item (node) is not changed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+i) Method to select the given index and scroll to it if necessary.
+ Note: the selection must be made only after the control has been added
+ to the container and its rect has been set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of items (
+\family typewriter
+Node
+\family default
+s).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(Control
+\begin_inset space ~
+\end_inset
+
+control),remove(Control
+\begin_inset space ~
+\end_inset
+
+control) Do nothing.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width, i.
+ e., size of the largest item plus 20.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the number of items multiplied by the font
+ metrics height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+find(char
+\begin_inset space ~
+\end_inset
+
+c) Searches the tree for an item with the first letter matching the given
+ character.
+ The search is made case insensitive.
+ Note: if you override this class you must implement this method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enabled) Method to enable this control if the specified enabled flag is
+ 
+\family typewriter
+true
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onBoundsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Method to recalculate the box size for the selected item
+ if the control is resized by the main application.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+nodeRemoved(Node
+\begin_inset space ~
+\end_inset
+
+node) Method to notify the tree that a node has been removed from the tree
+ model and to repaint the tree to reflect the changes, if necessary.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+nodeInserted(Node
+\begin_inset space ~
+\end_inset
+
+parent,
+\begin_inset space ~
+\end_inset
+
+Node
+\begin_inset space ~
+\end_inset
+
+child,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index) Method to notify the tree that a node has been added to the tree
+ model and to repaint the tree to reflect the changes.
+ 
+\family typewriter
+parent
+\family default
+ is the parent node of the new added node, 
+\family typewriter
+child
+\family default
+ is the newly added node and 
+\family typewriter
+index
+\family default
+ is the index of the new node.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+nodeModified(Node
+\begin_inset space ~
+\end_inset
+
+node) Method to notify the tree that a node in the tree model has been modified
+ (currently - only changing the user object).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkClicked(int
+\begin_inset space ~
+\end_inset
+
+sel) Checks or unchecks a node clicked with the given index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+color) Method to set the cursor color for the tree.
+ The default is equal to the background slightly darker.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reload() Method to reload the tree.
+ Use this method when the tree model has made a drastic change.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unload() Method to clear the tree and release the tree model references.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+Tree
+\family default
+ class has two auxiliary classes: 
+\family typewriter
+TreeModel
+\family default
+ and 
+\family typewriter
+Node
+\family default
+.
+ 
+\family typewriter
+TreeModel
+\family default
+ public components are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowsChildren Flag used to determine if a node is a leaf or a folder.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TreeModel(Node
+\begin_inset space ~
+\end_inset
+
+root,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+allowsChildren) Constructor to create a tree model with the specified root
+ node and indicating if the tree alows children or not (is to be a leaf
+ node).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TreeModel(Node
+\begin_inset space ~
+\end_inset
+
+root) Constructor to create a tree model with the specified root node and
+ with 
+\family typewriter
+allowsChildren == true
+\family default
+ (the node is not a leaf).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TreeModel() Constructor to create an empty tree model with 
+\family typewriter
+allowsChildren == true
+\family default
+.
+ The label of the root node will be empty.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TreeModel(boolean
+\begin_inset space ~
+\end_inset
+
+allowsChildren) Constructor to create an empty tree model that use 
+\family typewriter
+allowsChildren
+\family default
+ to determine the leaf node, if and only if 
+\family typewriter
+allowsChildren == true
+\family default
+.
+ The label of the root node will be empty.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Method to clear the tree model.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reload() Method to notify the tree to reload.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRoot() Method to return the root node of the tree model.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRoot(Node
+\begin_inset space ~
+\end_inset
+
+root) Method to set the root node of the tree model and notify the tree
+ to reload the tree.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insertNode(Node
+\begin_inset space ~
+\end_inset
+
+parent,
+\begin_inset space ~
+\end_inset
+
+Node
+\begin_inset space ~
+\end_inset
+
+newNode,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index) Method to insert a node to the parent node at the specified position.
+ This method will notify the associated tree to display the node, if the
+ parent node is expanded.
+ If the index is out of range, the new node will be inserted at the end
+ of the parent node children vector (consider, in this case, using the 
+\family typewriter
+addNode()
+\family default
+ method, which is faster).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addNode(Node
+\begin_inset space ~
+\end_inset
+
+parent,
+\begin_inset space ~
+\end_inset
+
+Node
+\begin_inset space ~
+\end_inset
+
+newNode) Method to add a node to the parent node at the last position of
+ the vector.
+ This method will notify the associated tree to display the node, if the
+ parent node is expanded.
+ This is faster than 
+\family typewriter
+insertNode()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeNode(Node
+\begin_inset space ~
+\end_inset
+
+parent,
+\begin_inset space ~
+\end_inset
+
+Node
+\begin_inset space ~
+\end_inset
+
+node) Method to remove a node from the tree.
+ This method will notify the tree to collapse itself.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+modifyNode(Node
+\begin_inset space ~
+\end_inset
+
+node,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+userObject) Method to modify a node whose identifier is 
+\family typewriter
+userObject
+\family default
+ and notify the tree of the changes.
+ 
+\end_layout
+
+\begin_layout Standard
+The other auxiliar class, 
+\family typewriter
+Node
+\family default
+, has the following attributes (excluding the ones heired from 
+\family typewriter
+Vector
+\family default
+):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+userObject The user's object that can be set with anything you want.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+userInt The user's integer that can be set with anything you want.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowsChildren Flag to determine if this node can have children (i.
+ e.
+ if it is not to be a leaf node).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+visited Flag to determine if the leaf node has been clicked before.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked Flag to determine if this node is checked (in multiple-selection
+ trees).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+backColor The background color, or -1 to use the default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foreColor The foreground color, or -1 to use the default.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Node() Default constructor to create a tree node that has no parent and
+ no children, but which allows children.
+ This node identifier is an empty string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Node(Object
+\begin_inset space ~
+\end_inset
+
+userObject) Constructor to create a tree node with no parent, no children,
+ but which allows children, and initializes it with the specified identifier,
+ which does not necessarily need to be a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(Node
+\begin_inset space ~
+\end_inset
+
+newChild) Method to remove 
+\family typewriter
+newChild
+\family default
+ from its parent and make it a child of the node by adding it to the end
+ of this node's children vector.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+breadthFirstVector() Method to create and return a vector of nodes that
+ traverses the subtree rooted at the node in breadth-first order.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getChildAfter(Node
+\begin_inset space ~
+\end_inset
+
+aChild) Method to return the child in the node's child array that immediately
+ follows 
+\family typewriter
+aChild
+\family default
+, which must be a child of the node; otherwise, retuns 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getChildBefore(Node
+\begin_inset space ~
+\end_inset
+
+aChild) Method to return the child in the node's child array that immediately
+ precedes 
+\family typewriter
+aChild
+\family default
+, which must be a child of the node; otherwise, retruns 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFirstChild() Method to return the node's first child.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLastChild() Method to return the node's last child.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLevel() Method to return the number of levels above the node, that is
+ the distance from the root to it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getNodeName() Method to return the node name of the node.
+ If the node identifier is not a string, it is converted to it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getNextSibling() Method to return the next sibling of the node in the parent's
+ children array.
+ Returns 
+\family typewriter
+null
+\family default
+ if the node has no parent or is the parent's last child.
+ This method performs a linear search that is 
+\family typewriter
+O(n)
+\family default
+ where 
+\family typewriter
+n
+\family default
+ is the number of children.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreviousSibling() Method to return the previous sibling of the node in
+ the parent's children array.
+ Returns 
+\family typewriter
+null
+\family default
+ if the node has no parent or is the parent's first child.
+ This method performs a linear search that is 
+\family typewriter
+O(n)
+\family default
+ where 
+\family typewriter
+n
+\family default
+ is the number of children.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getParent() Method to return the node's parent or 
+\family typewriter
+null
+\family default
+ if the node has no parent (is the root).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPath() Method to return the path from the root to get to this node.
+ It returns an array of nodes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getRoot() Method to return the root of the tree that contains the node.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getUserObjectPath() Method to return the user object path, from the root,
+ to get to the node.
+ It returns an object array with the nodes identifiers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insert(Node
+\begin_inset space ~
+\end_inset
+
+newChild,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+childIndex) Method to remove 
+\family typewriter
+newChild
+\family default
+ from its present parent (if it has a parent), sets the child's parent to
+ the node, and then adds the child to this node's child array at index 
+\family typewriter
+childIndex
+\family default
+.
+ If 
+\family typewriter
+childINdex
+\family default
+ is out of bounds, the new child will be inserted at the end of the children
+ vector.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isLeaf() Method to return 
+\family typewriter
+true
+\family default
+ if the node has no children.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isLeaf(boolean
+\begin_inset space ~
+\end_inset
+
+useAllowsChildren) Method to return 
+\family typewriter
+true
+\family default
+ if this node is not to have children (do not have and won't have children).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isRoot() Method to return 
+\family typewriter
+true
+\family default
+ if this node is a root.
+ Root node is node that has a 
+\family typewriter
+null
+\family default
+ parent node.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isNodeChild(Node
+\begin_inset space ~
+\end_inset
+
+aNode) Method to return 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+aNode
+\family default
+ is a child of the node.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isNodeSibling(Node
+\begin_inset space ~
+\end_inset
+
+anotherNode) Method to return 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+anotherNode
+\family default
+ is a sibling of (has the same parent as) the node.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+childIndex) Method to remove the child at the specified index from the node's
+ children and sets that node's parent to 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Node
+\begin_inset space ~
+\end_inset
+
+aChild) Method to remove 
+\family typewriter
+aChild
+\family default
+ from the node's child array, giving it a 
+\family typewriter
+null
+\family default
+ parent.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllChildren() Method to remove all of the node's children, setting
+ their parents to 
+\family typewriter
+null
+\family default
+.
+ If you don't want to set their parents to 
+\family typewriter
+null
+\family default
+, call 
+\family typewriter
+removeAllElements()
+\family default
+ instead.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeFromParent() Method to remove the subtree rooted at the node from
+ the tree, giving the node a 
+\family typewriter
+null
+\family default
+ parent.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setParent(Node
+\begin_inset space ~
+\end_inset
+
+parent) Method to set the node's parent to 
+\family typewriter
+parent
+\family default
+ but does not change the parent's child array.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Method to return the result of sending 
+\family typewriter
+toString()
+\family default
+ to the node's identifier, or an empty string if the node has no identifier.
+ 
+\end_layout
+
+\begin_layout Chapter
+Additional Advanced Controls
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Advanced-Controls"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here a list of advanced controls which are not described in the other chapter
+ is found.
+ For more details, please check the JavaDocs.
+\end_layout
+
 \begin_layout Itemize
 
 \family typewriter
@@ -27706,37 +30281,6 @@ Button
 \begin_layout Itemize
 
 \family typewriter
-ColorList
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Implements a list box where colors can be choosen from.
- The only functional methods are 
-\family typewriter
-setColors()
-\family default
-, 
-\family typewriter
-getSelectedItem()
-\family default
- and 
-\family typewriter
-getSelectedColor()
-\family default
-.
- Consider using 
-\family typewriter
-ColorChooserBox
-\family default
- instead.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 ComboBoxEditable
 \family default
  
@@ -27746,64 +30290,6 @@ ComboBoxEditable
 \begin_layout Standard
 This control is usually used as an edit that holds old typed values.
  When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-FlowContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is a container that will place controls one after the other and,
- once the width has been reached, it wraps to the next line.
- All controls must be added before calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
-.
- When calling 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
- for this control, the height must be 
-\family typewriter
-PREFERRED
-\family default
- (with adjustments, if needed).
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ImageControl
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A control that can show an image bigger than its area and that can be dragged
- using a pen to show the hidden parts.
- Note that, by default, events (and dragging) are disabled.
- You must call 
-\family typewriter
-setEventsEnabled()
-\family default
- to allow dragging.
  
 \end_layout
 
@@ -28248,24 +30734,6 @@ FIT
 \begin_layout Itemize
 
 \family typewriter
-Ruler
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Ruler
-\family default
- is a horizontal or vertical ruler.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 ScrollBar
 \end_layout
 
@@ -28374,71 +30842,6 @@ ButtonMenu
 \begin_layout Itemize
 
 \family typewriter
-Slider
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Slider
-\family default
- is a simple slider.
- You can set some properties of the slider, like 
-\family typewriter
-drawTicks
-\family default
-, 
-\family typewriter
-invertDirection
-\family default
- and 
-\family typewriter
-drawFilledArea
-\family default
-.
- You can change the thumb size by setting the 
-\family typewriter
-minDragBarSize
-\family default
- public field and then call 
-\family typewriter
-setValues()
-\family default
-, 
-\family typewriter
-setMaximum()
-\family default
-, or 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-setMinimum()
-\family default
- method (the value must always be ODD!).
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Spacer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Control used to add a space between controls.
- It shows nothing on the screen.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 SpinList
 \end_layout
 
@@ -28455,47 +30858,6 @@ Creates a control with two arrows, so that you can scroll values and show
 \begin_layout Standard
 In finger-touch devices, it will use the horizontal appearance, which is
  easier to deal with on such devices.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Spinner
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-Spinner
-\family default
- is a control that shows an image indicating that something is running in
- the background.
- It has two styles: 
-\family typewriter
-IPHONE
-\family default
- and 
-\family typewriter
-ANDROID
-\family default
-.
- It's used in the 
-\family typewriter
-ProgressBox
-\family default
-.
- To start the spin call the 
-\family typewriter
-start()
-\family default
- method, and to stop it call the 
-\family typewriter
-stop()
-\family default
- method.
  
 \end_layout
 
@@ -28779,7 +31141,19 @@ This class implements a message box that shows a spinner at the left of
 \begin_layout Itemize
 
 \family typewriter
-TimeBox
+TimeBox 
+\begin_inset Note Comment
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+colocar na sessão de Interface Dialogs
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
