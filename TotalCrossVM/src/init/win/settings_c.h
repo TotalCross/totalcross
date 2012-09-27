@@ -673,6 +673,7 @@ int GetMacAddressWMI(char* serialBuf)
                      {
                         VariantClear(&propertyAddress);
                         VariantInit(&propertyAddress);
+                        propertyAddress.bstrVal = null;
 
                         if ((hres = IWbemClassObject_Get(pNetworkAddress, bstrPropAddress, 0L, &propertyAddress, NULL, NULL)) == WBEM_S_NO_ERROR)
                         {
