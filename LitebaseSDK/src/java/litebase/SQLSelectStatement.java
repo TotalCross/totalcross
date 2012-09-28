@@ -342,7 +342,10 @@ class SQLSelectStatement extends SQLStatement
       if (rsBaseTable.answerCount >= 0)
       {
          rs.answerCount = rsBaseTable.answerCount;
-         rs.allRowsBitmap = rsBaseTable.allRowsBitmap;
+         
+         // juliana@263_3: corrected a bug where a new result set data could overlap an older result set data if both were related to the same table.
+         Vm.arrayCopy(rsBaseTable.allRowsBitmap, 0, rs.allRowsBitmap = new byte[rsBaseTable.allRowsBitmap.length], 0, 
+                      rsBaseTable.allRowsBitmap.length);
       }
       return rs;
    }

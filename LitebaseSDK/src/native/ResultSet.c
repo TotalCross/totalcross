@@ -43,7 +43,10 @@ void freeResultSet(ResultSet* resultSet)
    // Only frees the select clause if it is not from a prepared statement, which might be used again.
    if (resultSet->selectClause && !resultSet->isPrepared)
       heapDestroy(resultSet->selectClause->heap);
-
+   
+   // juliana@263_3: corrected a bug where a new result set data could overlap an older result set data if both were related to the same table.
+   xfree(resultSet->allRowsBitmap);
+   
    heapDestroy(resultSet->heap); // Frees the structure
 }
 
