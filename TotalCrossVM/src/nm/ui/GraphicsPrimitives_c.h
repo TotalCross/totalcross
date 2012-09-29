@@ -828,6 +828,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       pc.pixel = pixel;
       glClearColor((float)pc.r/(float)255,(float)pc.g/(float)255,(float)pc.b/(float)255,0);
       glClear(GL_COLOR_BUFFER_BIT);
+      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
       return;
    }
 #endif
