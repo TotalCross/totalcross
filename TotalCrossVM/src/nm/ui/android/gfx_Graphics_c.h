@@ -223,6 +223,8 @@ int32 glGetPixel(int32 x, int32 y)
 }
 void glDrawPixels(Context c, int32 n)
 {
+   glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
    glVertexAttribPointer(gColorHandle, 4 * n, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX * n, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), c->glcoords);
    glDrawArrays(GL_POINTS, 0,n);
@@ -261,6 +263,7 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
    colors[1] = colors[5] = f255[pc.g];
    colors[2] = colors[6] = f255[pc.b];
    colors[3] = colors[7] = 1;
+   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gColorHandle, 4*2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_LINES, 0,2);
@@ -285,6 +288,7 @@ void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
    colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = f255[pc.g];
    colors[2] = colors[6] = colors[10] = colors[14] = colors[18] = colors[22] = f255[pc.b];
    colors[3] = colors[7] = colors[11] = colors[15] = colors[19] = colors[23] = 1;
+   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gColorHandle, 4*6, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
    glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); // GL_LINES, GL_TRIANGLES, GL_POINTS
