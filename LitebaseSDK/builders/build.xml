@@ -584,7 +584,9 @@ target: Android builds
 
 <target name="build_android"  depends="build_android_native" description="Compiles liblitebase.so and builds the Litebase.apk for Android" >
    <copy todir="${android.project.path}/apps/litebase/libs" overwrite="true" >
-      <fileset dir="${source.lb.path}/src/native/jni/libs" />
+      <fileset dir="${source.lb.path}/src/native/jni/libs" >
+         <include name="**/*.so" />
+      </fileset>
    </copy>
   <retry retrycount="3">
     <antcall target="build_android_java" />
