@@ -300,6 +300,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
    heap = heapCreate();
    IF_HEAP_ERROR(heap)
    {
+finish:
       heapDestroy(heap);
       if (!*rsBaseTable->name) // juliana@223_14: solved possible memory problems.
          freeTable(context, rsBaseTable, false, true);
@@ -321,7 +322,11 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
    if (rsBaseTable->answerCount >= 0)
    {
       bag->answerCount = rsBaseTable->answerCount;
-      bag->allRowsBitmap = rsBaseTable->allRowsBitmap;
+      
+      // juliana@263_3: corrected a bug where a new result set data could overlap an older result set data if both were related to the same table.
+      if (!(bag->allRowsBitmap = (uint8*)xmalloc(rsBaseTable->allRowsBitmapLength)))
+         goto finish;
+      xmemmove(bag->allRowsBitmap, rsBaseTable->allRowsBitmap, rsBaseTable->allRowsBitmapLength); 
    }
 
    if ((resultSet = TC_createObject(context, "litebase.ResultSet")))
@@ -2599,7 +2604,7 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                   switch (booleanTreeEvaluateJoin(context, rightTree, rsList, totalRs, heap)) // Verifies the right branch.
                   {
                      case VALIDATION_RECORD_NOT_OK: 
-                        return VALIDATION_RECORD_NOT_OK;
+                        return VALIDATION_RECORD_INCOMPLETE_OK; // juliana@263_1: corrected a very old bug in a join with OR.
                      case VALIDATION_RECORD_INCOMPLETE: 
                         return VALIDATION_RECORD_INCOMPLETE;
                      case VALIDATION_RECORD_OK:

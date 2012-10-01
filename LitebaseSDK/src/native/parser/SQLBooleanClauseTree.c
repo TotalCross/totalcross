@@ -344,8 +344,10 @@ void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree)
             }
             else
                booleanClauseTree->indexRs = rightIndex;
-
-            booleanClauseTree->bothAreIdentifier = true;
+            
+            // juliana@263_2: corrected a very old bug in a join with comparision between two fields of the same table.
+            if (leftIndex != rightIndex)
+               booleanClauseTree->bothAreIdentifier = true;
          }
          else if (leftTree->operandType == OP_IDENTIFIER)
          {

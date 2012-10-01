@@ -34,23 +34,17 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.62";
+   public static String versionStr = "2.63";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 262;
+   public static int version = 263;
 
    /** 
     * Current build number.
     */
-   public static int buildNumber = 1;
-   
-   /** 
-    * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
-    * 40 seconds on other platforms.
-    */
-   static int indexSortMaxTime = Settings.onJavaSE? 20 : 40;
+   public static int buildNumber = 2;
    
    /**
     * The key which identifies one Litebase connection instance.
