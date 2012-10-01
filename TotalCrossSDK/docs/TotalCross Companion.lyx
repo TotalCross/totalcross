@@ -29112,6 +29112,204 @@ null
 \end_layout
 
 \begin_layout Section
+PagePosition
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+PagePosition
+\family default
+ implements the empty and filled balls that indicates the current page in
+ a set of pages, very common on Android and iPhone.
+ 
+\family typewriter
+PagePosition
+\family default
+ and 
+\family typewriter
+Flick
+\family default
+ use it.
+ It has three properties: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+visibleCount
+\family default
+: the number of visible balls.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+count
+\family default
+: the number of balls that will be displayed.
+ Can be less, equal or greater than the visible count.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+position
+\family default
+: the current position of the filled ball.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+PagePosition
+\family default
+ is shown in the image below from AndroidUI above the mouse cursor, where
+ it is inside a 
+\family typewriter
+ButtonMenu
+\family default
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pageposition_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has one public constructor and the following methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PagePosition(int
+\begin_inset space ~
+\end_inset
+
+visibleCount) Constructs a new 
+\family typewriter
+PagePosition
+\family default
+ with the given number of visible balls.
+ This number cannot be changed later.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCount(int
+\begin_inset space ~
+\end_inset
+
+c) Sets the balls count.
+ Invalid values are forced to a valid range.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPosition(int
+\begin_inset space ~
+\end_inset
+
+p) Sets the current position (starting at 1).
+ Invalid values are forced to a valid range.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getVisibleCount() Returns the 
+\family typewriter
+visibleCount
+\family default
+ parameter passed in the constructor.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCount() Returns the ball count.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPosition() Returns the current position.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+inc(boolean
+\begin_inset space ~
+\end_inset
+
+wrap) Increments the current position.
+ If 
+\family typewriter
+wrap
+\family default
+ is 
+\family typewriter
+true
+\family default
+, when position gets above 
+\family typewriter
+count
+\family default
+, it wraps to 1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dec(boolean
+\begin_inset space ~
+\end_inset
+
+wrap) Decrements the current position.
+ If 
+\family typewriter
+wrap
+\family default
+ is 
+\family typewriter
+true
+\family default
+, when position gets below 1, it wraps to 
+\family typewriter
+count
+\family default
+.
+\end_layout
+
+\begin_layout Section
 Ruler
 \begin_inset CommandInset label
 LatexCommand label
@@ -29281,6 +29479,30 @@ FILL
 \family default
 .
  Otherwise, it returns 2 if's 3d or 1 if it's not 3d.
+\end_layout
+
+\begin_layout Section
+PopupMenu
+\end_layout
+
+\begin_layout Standard
+Creates a popup menu with a single line list and some radio buttons at right,
+ like the Android combo box styles.
+ The 
+\family typewriter
+PRESSED
+\family default
+ event is sent when an item is selected.
+ The colors must be set before the control's bounds are defined using 
+\family typewriter
+setRect()
+\family default
+ or 
+\family typewriter
+add()
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Section
@@ -31374,81 +31596,6 @@ MultiListBox
 useFullWidthOnSelection
 \family default
  on penless devices.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-PagePosition
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-PagePosition
-\family default
- implements the empty and filled balls that indicates the current page in
- a set of pages, very common on Android and iPhone.
- It has three properties: 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-visibleCount
-\family default
-: the number of visible balls 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-count
-\family default
-: the number of balls that will be displayed.
- Can be less, equal or greater than visible count.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-position
-\family default
-: the current position of the filled ball.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-PopupMenu
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Creates a popup menu with a single line list and some radio buttons at right,
- like the Android combo box styles.
- The 
-\family typewriter
-PRESSED
-\family default
- event is sent when an item is selected.
- The colors must be set before the control's bounds are defined using 
-\family typewriter
-setRect()
-\family default
- or 
-\family typewriter
-add()
-\family default
-.
  
 \end_layout
 
