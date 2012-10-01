@@ -48,7 +48,7 @@ import totalcross.ui.image.ImageException;
  * 25% of the font's height, or 1/4; 150 means 150% of the font's height, or 1.5x; and so on.
  * This enabled the gaps be constant in physical inches no matter the screen DPI or resolution.
  * 
- * See the UIGadgets program for a sample of how to use this class.
+ * See the AndroidUI program for a sample of how to use this class.
  * 
  * @see #pagePositionDisposition
  * @since TotalCross 1.3
