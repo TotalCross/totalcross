@@ -72,7 +72,7 @@ IMPORTANT:
 <property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
-<condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r4b" else=""><os family="windows" /></condition>
+<condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
 
 <!-- installshield paths -->
@@ -1005,16 +1005,17 @@ target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="clean_android_native" description="Cleans the native files for Android" >
-  <delete dir="${android.project.path}/out/apps/tcvm" failonerror="false" />
+  <delete dir="${base.temp.path}/android/TotalCross" failonerror="false" />
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
-     <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
-     <env key="NDK_HOME" value="${android.ndk.path}"/>
-     <env key="TC_HOME" value="${source.vms.path}"/>
-     <arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh -${TYPE}'/>
-  </exec>
+   <property name="type" value="demo" />
+   <exec dir="${source.vms.path}/src" executable="cmd.exe" failonerror="true">
+      <env key="TYPE" value="${type}" />
+      <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
+      <env key="NORASID" value="${norasid}" />
+      <arg line="/c ${android.ndk.path}/ndk-build"/>
+   </exec>
   <sleep seconds="3"/>
 </target>
 
@@ -1042,6 +1043,11 @@ target: Android builds
 </target>
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
+   <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
+      <fileset dir="${source.vms.path}/src/jni/libs" >
+         <include name="**/*.so" />
+      </fileset>
+   </copy>
   <retry retrycount="3">
     <antcall target="build_android_java" />
   </retry>
@@ -1059,7 +1065,7 @@ target: Android builds
 <target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
   <antcall target="build_android" >
-	<param name="TYPE" value="demo" />
+	<param name="type" value="demo" />
 	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
   <copy file="${android.temp}/AndroidManifest_singleapk.xml" todir="${target.sdk.path}/etc/tools/android" />
@@ -1071,7 +1077,7 @@ target: Android builds
 <target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <antcall target="build_android" >
-	<param name="TYPE" value="release" />
+	<param name="type" value="release" />
 	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
 </target>   
@@ -1080,7 +1086,7 @@ target: Android builds
   <delete dir="${android.project.path}/out/src" />
   <property name="norasid" value=""/>
   <antcall target="build_android" >
-	<param name="TYPE" value="noras ${norasid}" />
+	<param name="type" value="noras" />
 	</antcall>
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
