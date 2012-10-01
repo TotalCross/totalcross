@@ -18,6 +18,22 @@
 
 #define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 
+static void checkGlErrorI(const char* op, int i) {
+   GLint error;
+    for (error = glGetError(); error; error
+            = glGetError()) {
+        debug("after %s() glError (0x%x) %x\n", op, error, i);
+    }
+}
+
+static void checkGlError(const char* op) {
+   GLint error;
+    for (error = glGetError(); error; error
+            = glGetError()) {
+        debug("after %s() glError (0x%x)\n", op, error);
+    }
+}
+
 static ANativeWindow *window;
 static EGLDisplay _display;
 static EGLSurface _surface;
@@ -28,38 +44,77 @@ static void destroyEGL();
 
 int realAppH,appW,appH;
 
-static char* vertexShaderCode(char *buf, int w, int h)
-{
-   // http://www.songho.ca/opengl/gl_projectionmatrix.html
-   xstrprintf(buf, "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;"
-      "mat4 projectionMatrix = mat4( 2.0/%d.0, 0.0, 0.0, -1.0,"
-                           "0.0, -2.0/%d.0, 0.0, 1.0,"
-                           "0.0, 0.0, -1.0, 0.0,"
-                           "0.0, 0.0, 0.0, 1.0);"
-      "void main() {v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}", w,h); // the matrix must be included as a modifier of gl_Position
-   return buf;
-}
+// http://www.songho.ca/opengl/gl_projectionmatrix.html
+//////////// texture
+#define TEXTURE_VERTEX_CODE  \
+      "uniform vec4 uTextureColor;" \
+      "attribute vec4 vertexPoint;" \
+      "attribute vec2 aTextureCoord;" \
+      "uniform mat4 projectionMatrix; " \
+      "varying vec2 vTextureCoord;" \
+      "varying vec4 vTextureColor;" \
+      "void main()" \
+      "{" \
+      "    gl_Position = vertexPoint * projectionMatrix;" \
+      "    vTextureCoord = aTextureCoord;" \
+      "    vTextureColor = uTextureColor;" \
+      "}"                         
+     
+#define TEXTURE_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 vTextureCoord;" \
+      "varying vec4 vTextureColor;" \
+      "uniform sampler2D sTexture;" \
+      "void main() {gl_FragColor = texture2D(sTexture, vTextureCoord) * vTextureColor;}"
 
-static char* fragmentShaderCode =
-   "precision mediump float;"
-   "varying vec4 v_Color;"
-   "void main() {gl_FragColor = v_Color;}";
+static GLuint textureProgram;
+static GLuint textureColor,texturePoint;
+static GLuint textureCoord,textureId;
+
+//////////// points (text)
+
+#define POINTS_VERTEX_CODE \
+      "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "uniform mat4 projectionMatrix;" \
+      "void main() {v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}"
+
+#define POINTS_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec4 v_Color;" \
+      "void main() {gl_FragColor = v_Color;}"
+
+static GLuint pointsProgram;
+static GLuint pointsPosition;
+static GLuint pointsColor;
+
+///////////// line, rect, point
+
+#define LRP_VERTEX_CODE \
+      "attribute vec4 a_Position;" \
+      "uniform mat4 projectionMatrix;" \
+      "void main() {gl_Position = a_Position*projectionMatrix;}"
+
+#define LRP_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "uniform vec4 a_Color;" \
+      "void main() {gl_FragColor = a_Color;}"
+
+static GLuint lrpProgram;
+static GLuint lrpPosition;
+static GLuint lrpColor;
+static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+
 
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
    GLuint shader = glCreateShader(shaderType);
-   if (shader)
-   {
-      glShaderSource(shader, 1, &pSource, NULL);
-      glCompileShader(shader);
-   }
+   checkGlErrorI("loadShader createShader",shaderType);
+   glShaderSource(shader, 1, &pSource, NULL);
+   checkGlError("loadShader glShaderSource");
+   glCompileShader(shader);
+   checkGlError("loadShader glCompileShader");
    return shader;
 }
-
-GLuint gProgram;
-GLuint gPositionHandle;
-GLuint gColorHandle;
-static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 static bool initGLES();
 
@@ -79,11 +134,78 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
 
+void initTexture()
+{  
+   GLfloat textureVerts[8] = { 0, 1,  1, 1,  1, 0,  0, 0 };
+   debug("init texture");
+   
+   textureProgram = glCreateProgram();
+   glAttachShader(textureProgram, loadShader(GL_VERTEX_SHADER, TEXTURE_VERTEX_CODE));
+   glAttachShader(textureProgram, loadShader(GL_FRAGMENT_SHADER, TEXTURE_FRAGMENT_CODE));
+   glLinkProgram(textureProgram);
+   glUseProgram(textureProgram);
+   
+   glEnable(GL_TEXTURE_2D);
+   glActiveTexture(GL_TEXTURE0);
+
+   textureColor = glGetUniformLocation(textureProgram, "uTextureColor");
+   textureId    = glGetUniformLocation(textureProgram, "sTexture");
+   texturePoint = glGetAttribLocation(textureProgram, "vertexPoint");
+   textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord");
+
+   glEnableVertexAttribArray(textureCoord);
+   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, textureVerts);
+
+   glEnableVertexAttribArray(texturePoint);
+}
+
+void initPoints()
+{
+   debug("init points");
+   pointsProgram = glCreateProgram();
+   glAttachShader(pointsProgram, loadShader(GL_VERTEX_SHADER, POINTS_VERTEX_CODE));
+   glAttachShader(pointsProgram, loadShader(GL_FRAGMENT_SHADER, POINTS_FRAGMENT_CODE));
+   glLinkProgram(pointsProgram);
+   glUseProgram(pointsProgram);
+
+   pointsColor    = glGetAttribLocation(pointsProgram, "a_Color");
+   pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointsColor); // Enable a handle to the colors
+   glEnableVertexAttribArray(pointsPosition); // Enable a handle to the vertices
+}
+
+void initLineRectPoint()
+{                       
+   debug("init lrp");
+   lrpProgram = glCreateProgram();
+   glAttachShader(lrpProgram, loadShader(GL_VERTEX_SHADER, LRP_VERTEX_CODE));
+   glAttachShader(lrpProgram, loadShader(GL_FRAGMENT_SHADER, LRP_FRAGMENT_CODE));
+   glLinkProgram(lrpProgram);
+   glUseProgram(lrpProgram);
+
+   lrpColor = glGetUniformLocation(lrpProgram, "a_Color");
+   lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(lrpPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+}
+
+static void setProjectionMatrix(GLfloat w, GLfloat h)
+{
+   GLfloat mat[16] = 
+   {
+      2.0/w, 0.0, 0.0, -1.0,
+      0.0, -2.0/h, 0.0, 1.0,
+      0.0, 0.0, -1.0, 0.0,
+      0.0, 0.0, 0.0, 1.0
+   };
+   glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
+   glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
+   glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
+}
+
 GLfloat ftransp[16], f255[256];
 static bool initGLES()
 {                
    int32 i;
-   char buf[512];
    const EGLint attribs[] =
    {
        EGL_SURFACE_TYPE, EGL_WINDOW_BIT, 
@@ -124,19 +246,10 @@ static bool initGLES()
    appH = height;
 
    // program for point, line and rectangle
-   gProgram = glCreateProgram();
-   glAttachShader(gProgram, loadShader(GL_VERTEX_SHADER, vertexShaderCode(buf, width, height)));
-   glAttachShader(gProgram, loadShader(GL_FRAGMENT_SHADER, fragmentShaderCode));
-   glLinkProgram(gProgram);
-   glUseProgram(gProgram);
-
-   gColorHandle = glGetAttribLocation(gProgram, "a_Color");
-   gPositionHandle = glGetAttribLocation(gProgram, "a_Position"); // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glEnableVertexAttribArray(gPositionHandle); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-
-   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+   initTexture();
+   initPoints();      
+   initLineRectPoint();
+   setProjectionMatrix(width,height);
 
    glViewport(0, 0, width, height);
    //glEnable(GL_SCISSOR_TEST);
@@ -144,6 +257,9 @@ static bool initGLES()
    glDisable(GL_DEPTH_TEST);
    glEnable(GL_BLEND); // enable color alpha channel
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   glPixelStorei(GL_PACK_ALIGNMENT, 1);   // for glGetPoints
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
    for (i = 0; i <= 15; i++)
       ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
@@ -177,8 +293,7 @@ static void destroyEGL()
 
 void privateScreenChange(int32 w, int32 h)
 {
-   UNUSED(w)
-   UNUSED(h)
+   setProjectionMatrix(w,h);
 }
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -213,7 +328,59 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    }
 }
 
+/*
+void prepare(String s)
+{
+   Text t = new Text();
+   android.graphics.Rect bounds = new android.graphics.Rect();
+   paint.getTextBounds(s, 0, s.length(), bounds);
+   t.textW = bounds.width();
+   t.textH = bounds.height()+20;
+   
+   Bitmap image = Bitmap.createBitmap(t.textW+1, t.textH+1, Bitmap.Config.ARGB_8888);
+   new Canvas(image).drawText(s, 0, t.textH-20, paint);
+
+   int[] texture = new int[1];
+   glGenTextures(1, texture, 0);
+   t.texture = texture[0];
+
+   // OpenGL ES provides support for non-power-of-two textures, including its associated mipmaps, provided that
+   // the s and t wrap modes are both GL_CLAMP_TO_EDGE.
+   glBindTexture(GL_TEXTURE_2D, t.texture);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   GLUtils.texImage2D(GL_TEXTURE_2D, 0, image, 0);
+   glUniform1i(textureId, 0);
+
+   return t;
+}
+
+float[] unitQuadVerts = new float[8];
+
+public void draw(Text text, int x, int y) throws Exception
+{
+   glUseProgram(textureProgram);
+   
+   unitQuadVerts[0] = unitQuadVerts[6] = x; 
+   unitQuadVerts[1] = unitQuadVerts[3] = y;
+   unitQuadVerts[2] = unitQuadVerts[4] = x+text.textW;
+   unitQuadVerts[5] = unitQuadVerts[7] = y-text.textH;
+   vertexBuf.put(unitQuadVerts); vertexBuf.rewind();
+   
+   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, vertexBuf);
+
+   glBindTexture(GL_TEXTURE_2D, text.texture);
+   glUniform4f(textureColor, 0,1,0,1);
+   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}*/
+
 ////////////////////////////// OPEN GL 2 //////////////////////////////////
+void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
+{
+}
+
 struct{ GLubyte r, g, b, a; } glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
@@ -221,37 +388,37 @@ int32 glGetPixel(int32 x, int32 y)
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
+
 void glDrawPixels(Context c, int32 n)
 {
-   glEnableVertexAttribArray(gColorHandle); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
-   glVertexAttribPointer(gColorHandle, 4 * n, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
-   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX * n, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), c->glcoords);
+   glUseProgram(pointsProgram);
+//   glVertexAttribPointer(pointsColor, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
+   pointsColor    = glGetAttribLocation(pointsProgram, "a_Color");
+   glEnableVertexAttribArray(pointsColor); // Enable a handle to the colors
+   glVertexAttribPointer(pointsColor, 4 * n, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
+//    checkGlError("6c");
+   glVertexAttribPointer(pointsPosition, COORDS_PER_VERTEX * n, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), c->glcoords);
+//    checkGlError("7");
    glDrawArrays(GL_POINTS, 0,n);
 }
 
 void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
 {
    GLfloat* coords = c->glcoords;
-   GLfloat* colors = c->glcolors;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x;
    coords[1] = y;
 
-   colors[0] = f255[pc.r];
-   colors[1] = f255[pc.g];
-   colors[2] = f255[pc.b];
-   colors[3] = 1;
-   glVertexAttribPointer(gColorHandle, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
-   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+   glUseProgram(lrpProgram);
+   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
+   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_POINTS, 0,1);
 }
 
 void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
 {           
    GLfloat* coords = c->glcoords;
-   GLfloat* colors = c->glcolors;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x1;
@@ -259,20 +426,15 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
    coords[3] = x2;
    coords[4] = y2;
 
-   colors[0] = colors[4] = f255[pc.r];
-   colors[1] = colors[5] = f255[pc.g];
-   colors[2] = colors[6] = f255[pc.b];
-   colors[3] = colors[7] = 1;
-   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
-   glVertexAttribPointer(gColorHandle, 4*2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
-   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+   glUseProgram(lrpProgram);
+   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
+   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_LINES, 0,2);
 }
 
 void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
 {
    GLfloat* coords = c->glcoords;
-   GLfloat* colors = c->glcolors;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x;
@@ -284,12 +446,8 @@ void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
    coords[9] = x+w;
    coords[10] = y;
 
-   colors[0] = colors[4] = colors[8]  = colors[12] = colors[16] = colors[20] = f255[pc.r];
-   colors[1] = colors[5] = colors[9]  = colors[13] = colors[17] = colors[21] = f255[pc.g];
-   colors[2] = colors[6] = colors[10] = colors[14] = colors[18] = colors[22] = f255[pc.b];
-   colors[3] = colors[7] = colors[11] = colors[15] = colors[19] = colors[23] = 1;
-   glVertexAttribPointer(gColorHandle, 4,   GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
-   glVertexAttribPointer(gColorHandle, 4*6, GL_FLOAT, GL_FALSE, 4 * sizeof(float), colors);
-   glVertexAttribPointer(gPositionHandle, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); // GL_LINES, GL_TRIANGLES, GL_POINTS
+   glUseProgram(lrpProgram);
+   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1);
+   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder);
 }

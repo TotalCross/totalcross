@@ -138,6 +138,12 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
    Pixel color = makePixelRGB(p->i32[0]);
    setTransparentColor(thisObj, color);
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+   Object thisObj = p->obj[0];
+   applyChanges(thisObj);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"
