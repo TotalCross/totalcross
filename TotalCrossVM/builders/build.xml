@@ -1043,7 +1043,9 @@ target: Android builds
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vms.path}/src/jni/libs" />
+      <fileset dir="${source.vms.path}/src/jni/libs" >
+         <include name="**/*.so" />
+      </fileset>
    </copy>
   <retry retrycount="3">
     <antcall target="build_android_java" />
