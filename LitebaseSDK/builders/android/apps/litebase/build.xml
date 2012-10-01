@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Litebase" >
 
+   <property name="android.project.path" value="${basedir}"/>
+   <property name="android.deploy" value="${basedir}/deploy"/>
+   <property name="source.vms.path" value="${basedir}/../../../../../../TotalCross/TotalCrossVm/"/>
+   <property name="source.lb.path" value="${basedir}/../../../../../../Litebase/LitebaseSDK"/>
+
 <!-- The local.properties file is created and updated by the 'android'
      tool.
      It contains the path to the SDK. It should *NOT* be checked into
@@ -30,7 +35,7 @@
          tool, as well as ADT.
          This file is an integral part of the build system for your
          application and should be checked into Version Control Systems. -->
-    <property file="default.properties" />
+    <property file="${source.lb.path}/src/native/jni/default.properties" />
 
     <!-- Custom Android task to deal with the project target, and import the
          proper rules.
@@ -44,11 +49,6 @@
     <taskdef name="setup"
         classname="com.android.ant.SetupTask"
         classpathref="android.antlibs" />
-
-	<property name="android.project.path" value="${basedir}"/>
-	<property name="android.deploy" value="${basedir}/deploy"/>
-	<property name="source.vms.path" value="${basedir}/../../../../../../TotalCross/TotalCrossVm/"/>
-	<property name="source.lb.path" value="${basedir}/../../../../../../Litebase/LitebaseSDK"/>
 
 	<loadfile srcfile="${source.lb.path}/src/java/litebase/LitebaseConnection.java" property="lb.version">
 		<filterchain>
