@@ -28850,6 +28850,268 @@ includeBackground) Gets an image representing the portion being shown.
 \end_layout
 
 \begin_layout Section
+ImageList
+\end_layout
+
+\begin_layout Standard
+Implements a 
+\family typewriter
+ListBox
+\family default
+ where the items are images.
+ If you don't add at least one image before calling 
+\family typewriter
+add()
+\family default
+/
+\family typewriter
+setRect()
+\family default
+, you must compute the preferred size yourself.
+ 
+\end_layout
+
+\begin_layout Standard
+Next an example of how to use this class as a combo box color chooser: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.io.IOException;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.image.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		ImageList list = new ImageList();
+\end_layout
+
+\begin_layout Plain Layout
+
+		try
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			list.add(new Image("black.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+			list.add(new Image("blue.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+			list.add(new Image("green.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+			list.add(new Image("red.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+			list.add(new Image("white.png"));
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (ImageException e) {}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (IOException e) {}
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new ComboBox(list), CENTER, BOTTOM);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using 32x32 images, the result of the above code is the following:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/imagelist_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/imagelist_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just two public constructors (excluding some fields from
+ its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageList() Construcs an empty 
+\family typewriter
+ImageList
+\family default
+ with no images.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ImageList(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Construct the 
+\family typewriter
+ImageList
+\family default
+ with the given images).
+ Each 
+\family typewriter
+Object
+\family default
+ must be an 
+\family typewriter
+Image
+\family default
+ and it can't be 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout Section
 Ruler
 \begin_inset CommandInset label
 LatexCommand label
@@ -30877,28 +31139,6 @@ ComboBoxEditable
 \begin_layout Standard
 This control is usually used as an edit that holds old typed values.
  When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ImageList 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Implements a list box where the items are images.
- If you don't add at least one image before calling 
-\family typewriter
-add()
-\family default
-/
-\family typewriter
-setRect()
-\family default
-, you must compute the preferred size yourself.
  
 \end_layout
 
