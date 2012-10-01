@@ -128,7 +128,7 @@ public class SSLSocket extends Socket
       }
       return sslConnection.write(buf, count);
    }
-
+   
    public void close() throws IOException
    {
       if (buffer != null)
