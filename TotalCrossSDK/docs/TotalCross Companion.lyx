@@ -29502,6 +29502,259 @@ setRect()
 add()
 \family default
 .
+\end_layout
+
+\begin_layout Standard
+This is a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String[] items =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Always",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Never",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Only in Silent mode",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Only when not in Silent mode",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"None of the answers above"
+\end_layout
+
+\begin_layout Plain Layout
+
+}; 
+\end_layout
+
+\begin_layout Plain Layout
+
+PopupMenu pm = new PopupMenu("Vibrate",items);
+\end_layout
+
+\begin_layout Plain Layout
+
+pm.popup(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which results in a window similar to the one below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/popmenu_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/popmenu_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cancelString The string of the button; defaults to 
+\family typewriter
+Cancel
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dataCol If the 
+\family typewriter
+items
+\family default
+ used in the constructor is a 
+\family typewriter
+String
+\family default
+ matrix (
+\family typewriter
+String[][]
+\family default
+), this field sets the column that will be shown.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemCount Sets the number of elements that should be used from the 
+\family typewriter
+items
+\family default
+ array passed in the constructor.
+ Defaults to 
+\family typewriter
+items.length
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkColor The check color used to fill the radio button used on Android.
+ Defaults to the fore color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableSearch Set to 
+\family typewriter
+true
+\family default
+ BEFORE popping up the window to enable search on the items of the 
+\family typewriter
+PopupMenu
+\family default
+.
+ Note that it only works if the items are ORDERED.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PopupMenu(String
+\begin_inset space ~
+\end_inset
+
+caption,
+\begin_inset space ~
+\end_inset
+
+Object[]
+\begin_inset space ~
+\end_inset
+
+items) Constructs a 
+\family typewriter
+PopupMenu
+\family default
+ with the given parameters and without multiple selection support.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PopupMenu(String
+\begin_inset space ~
+\end_inset
+
+caption,
+\begin_inset space ~
+\end_inset
+
+Object[]
+\begin_inset space ~
+\end_inset
+
+items,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+multipleSelection) Constructs a 
+\family typewriter
+PopupMenu
+\family default
+ with the given parameters, where multiple selection can be allowed or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+index) Selects the given index.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the selected index when this window was closed
+ or -1 if none was selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+c) Sets the cursor color.
+ By default, it is based in the background color.
  
 \end_layout
 
@@ -31329,6 +31582,172 @@ toString() Method to return the result of sending
 toString()
 \family default
  to the node's identifier, or an empty string if the node has no identifier.
+\end_layout
+
+\begin_layout Section
+Whiteboard
+\end_layout
+
+\begin_layout Standard
+This is a whiteboard that can be used to draw something.
+ It uses a special event flag in order to improve the accuracy.
+ 
+\end_layout
+
+\begin_layout Standard
+The sample Painter uses it.
+ The pictures below show its whiteboard empty and drawn, respectively, where
+ the application interface style was changed to Android:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/white_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/white_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+borderColor Set this to some color so that a frame can be drawn around the
+ image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useAA Set to 
+\family typewriter
+true
+\family default
+ to enable antialiase on the line drawing.
+ It must be set right after the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+thick Set to 
+\family typewriter
+true
+\family default
+ to draw a thick line.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Whiteboard() Constructs a new whiteboard, setting the back color to white.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onBoundsChanged(boolean
+\begin_inset space ~
+\end_inset
+
+screenChanged) Now that we know our bounds, we can create the image that
+ will hold the drawing.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getImage() Returns the image where the drawing is taking place.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width: 
+\family typewriter
+FILL
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the preferred height: 
+\family typewriter
+FILL
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(Image
+\begin_inset space ~
+\end_inset
+
+image) Sets the image for this whiteboard.
+ Pass 
+\family typewriter
+null
+\family default
+ to create an empty image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears the whiteboard to the current background color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPenColor(int
+\begin_inset space ~
+\end_inset
+
+c) Sets the drawing pen color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPenColor() Returns the drawing pen color.
  
 \end_layout
 
@@ -31890,20 +32309,6 @@ setRect()
  in your container.
  Otherwise, the flick and drag will not work and your container will be
  positioned incorrectly.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Whiteboard
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This is a whiteboard that can be used to draw something.
- It uses a special event flag in order to improve the accuracy.
  
 \end_layout
 
