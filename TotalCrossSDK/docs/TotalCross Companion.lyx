@@ -29686,6 +29686,165 @@ null
 \end_layout
 
 \begin_layout Section
+Keypad
+\end_layout
+
+\begin_layout Standard
+This class is used to handle letters and numbers input on devices with only
+ a keypad (
+\family typewriter
+Settings .keypadOnly = true
+\family default
+).
+ This is used only on old BlackBerry devices.
+\end_layout
+
+\begin_layout Standard
+This class has no public constructors and has the following public attributes
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+numberKeyset Only numbers: 0 ...
+ 9.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultKeyset The default character set.
+ All letters must be in lowercase.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultSymbolKeyset The default symbol character set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mode The current mode.
+ Use the 
+\family typewriter
+MODE_xxx
+\family default
+ constants, which are 
+\family typewriter
+MODE_LOWER
+\family default
+ (lowercase mode), 
+\family typewriter
+MODE_UPPER
+\family default
+ (uppercase mode), and 
+\family typewriter
+MODE_NUMBER
+\family default
+ (number mode).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+firstChar The ASCII code of the first character represented in the keyset.
+ Defaults to 
+\family typewriter
+0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastChar The ASCII code of the last character represented in the keyset.
+ Defaults to 
+\family typewriter
+9
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+backspaceChar The ASCII code of the character corresponding to a backspace.
+ Defaults to 
+\family typewriter
+*
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+symbolsTriggerChar The ASCII code of the character that triggers the symbols
+ character mode.
+ Defaults to 
+\family typewriter
+#
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getInstance() Returns the single instance of this class.
+ Instead of calling this method many times, it is better to hold the instance
+ of the keypad in a hook variable to reduce the number of methods called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setKeys(String[]
+\begin_inset space ~
+\end_inset
+
+newKeyset) Call this passing a new set to change the keys associated with
+ each pad number.
+ Or pass 
+\family typewriter
+null
+\family default
+ to restore the default key set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSymbolKeys(String
+\begin_inset space ~
+\end_inset
+
+nk) Call this to change the default 
+\family typewriter
+#
+\family default
+ to a set of characters to be selected.
+ Remember to set it to 
+\family typewriter
+null
+\family default
+ afterward to restore the original behaviour!
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+handleKey(int
+\begin_inset space ~
+\end_inset
+
+key) Called by the system to handle the pressed key.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+e) On a timeout of the close timer, closes this control.
+ 
+\end_layout
+
+\begin_layout Section
 PagePosition
 \end_layout
 
@@ -32342,24 +32501,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-Keypad 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class is used to handle letters and numbers input on devices with only
- a keypad (
-\family typewriter
-Settings .keypadOnly = true
-\family default
-).
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
@@ -42289,11 +42430,11 @@ true
 
 \begin_layout FieldList
 \labelwidthstring 0
-keypadOnly Field that represents if this device has a keypad only (BlackBerry
- only).
+keypadOnly Field that represents if this device has a keypad only (old BlackBerr
+y devices only).
  On such devices, presses in the 1-9 and *# pops up the 
 \family typewriter
-KeyPad
+Keypad
 \family default
  class (used in phones without alpha keys).
  You can set 
@@ -42302,7 +42443,7 @@ keypadOnly
 \family default
  to enable/disable the the 
 \family typewriter
-KeyPad
+Keypad
 \family default
  popup.
  The disabling occurs everytime a non-digit is pressed.
