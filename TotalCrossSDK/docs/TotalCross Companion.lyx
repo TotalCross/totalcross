@@ -27875,8 +27875,7 @@ The AndroidUI program has good samples on how to use this class.
 
 \begin_layout Standard
 This class has the following attributes, constructors, and methods (excluding
- some fields from its superclasses).
- 
+ some fields from its superclasses): 
 \end_layout
 
 \begin_layout FieldList
@@ -28210,6 +28209,353 @@ add(ib2,LEFT+10,CENTER,FILL-10,ib2.getPreferredHeight(4));
 \begin_layout FieldList
 \labelwidthstring 0
 getSelectedIndex() Returns the index of the selected button.
+\end_layout
+
+\begin_layout Section
+ComboBoxEditable
+\end_layout
+
+\begin_layout Standard
+This control is a 
+\family typewriter
+ComboBox
+\family default
+ and is usually used as an edit that holds old typed values.
+ When the user types a word, it is automatically selected in the combo box.
+ Here's a sample of how to use it similar to the one found in UIGadgets:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String[] items = 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Ana",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Barbara",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Raul",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Marcelo",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Eduardo",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Denise",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Michelle",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Guilherme",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Vera",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Dulce",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Leonardo",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Andre",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Gustavo",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Anne",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Renato",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Zelia",
+\end_layout
+
+\begin_layout Plain Layout
+
+	"Helio"
+\end_layout
+
+\begin_layout Plain Layout
+
+};    
+\end_layout
+
+\begin_layout Plain Layout
+
+ComboBoxEditable cbe = new ComboBoxEditable(items);
+\end_layout
+
+\begin_layout Plain Layout
+
+cbe.qsort();
+\end_layout
+
+\begin_layout Plain Layout
+
+add(cbe, LEFT,BOTTOM-100);  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The next images show the result of this sample and some screenshots from
+ UIGadgets:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/comboeditable_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/comboeditable_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/comboeditable_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/comboeditable_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/comboeditable_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has one attribute, constructors, and one method (excluding some
+ fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+edit The edit used in this combo box.
+ You can customize it if you need.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxEditable() Similar to 
+\family typewriter
+ComboBox()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxEditable(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Similar to 
+\family typewriter
+ComboBox(ListBox userListBox)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxEditable(ListBox
+\begin_inset space ~
+\end_inset
+
+userListBox) Similar to 
+\family typewriter
+ComboBox(Object[] items)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ComboBoxEditable(ComboBoxDropDown
+\begin_inset space ~
+\end_inset
+
+userPopList) Similar to 
+\family typewriter
+ComboBox(ComboBoxDropDown userPopList)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setAutoAdd(boolean
+\begin_inset space ~
+\end_inset
+
+on,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+keepSorted) Set to 
+\family typewriter
+true
+\family default
+ to add automatically new names that were typed in the edit, where 
+\family typewriter
+on
+\family default
+ is a flag indicating if auto add must be set and 
+\family typewriter
+keepSorted
+\family default
+ indicates if the list must be sorted after a new item is added by the auto
+ add.
 \end_layout
 
 \begin_layout Section
@@ -31996,22 +32342,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-ComboBoxEditable
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This control is usually used as an edit that holds old typed values.
- When the user types a word, it is automatically selected in the combo box.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
