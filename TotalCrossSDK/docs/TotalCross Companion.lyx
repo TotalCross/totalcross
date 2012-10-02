@@ -28657,6 +28657,234 @@ initUI() Places the controls on screen.
 \end_layout
 
 \begin_layout Section
+HtmlContainer
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+HtmlContainer
+\family default
+ renders an HTML Page.
+\end_layout
+
+\begin_layout Standard
+Note that the form controls back and fore colors are defined by 
+\family typewriter
+UIColors.
+\begin_inset Newline newline
+\end_inset
+
+htmlContainerControlsFore
+\family default
+ and 
+\family typewriter
+UIColors.htmlContainerControlsBack
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+When a link is clicked, a 
+\family typewriter
+PRESSED
+\family default
+ event is thrown, with this 
+\family typewriter
+HtmlContainer
+\family default
+ as target.
+ The link can then be retrieved with the 
+\family typewriter
+pressedLink
+\family default
+ property.
+\end_layout
+
+\begin_layout Standard
+Some images taken from the sample HtmlBrowser, which uses this control,
+ are shown here, where the application interface style was changed to Android:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/html_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has just one public attribute, an ommited public default constructor,
+ and the following methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pressedLink The last link that was pressed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDocument() Returns the HTML document of this control, which is a 
+\family typewriter
+Document
+\family default
+ object.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDocument(Document
+\begin_inset space ~
+\end_inset
+
+doc) Sets the document to be displayed in the 
+\family typewriter
+HtmlContainer
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resetWith(String
+\begin_inset space ~
+\end_inset
+
+url) Resets the given form of the current document with the given parameters.
+ 
+\end_layout
+
+\begin_layout Section
 ImageControl
 \end_layout
 
@@ -32597,57 +32825,6 @@ UIColors.htmlXXX
 htmlContainer.setBackForeColors()
 \family default
  with these colors.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-HtmlContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-HtmlContainer
-\family default
- renders an HTML Page.
-\end_layout
-
-\begin_layout Standard
-Note that the form controls back and fore colors are defined by 
-\family typewriter
-UIColors.
-\begin_inset Newline newline
-\end_inset
-
-htmlContainerControlsFore
-\family default
- and 
-\family typewriter
-UIColors.htmlContainerControlsBack
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-When a link is clicked, a 
-\family typewriter
-PRESSED
-\family default
- event is thrown, with this 
-\family typewriter
-HtmlContainer
-\family default
- as target.
- The link can then be retrieved with the 
-\family typewriter
-pressedLink
-\family default
- property.
  
 \end_layout
 
