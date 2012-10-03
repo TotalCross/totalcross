@@ -26740,6 +26740,375 @@ control.setRect(CENTER-getLeftInset()/2,...);
 \end_layout
 
 \begin_layout Section
+Animation
+\end_layout
+
+\begin_layout Standard
+This control displays an animation that can be loaded from indexed PNG files
+ (one frame per image), a multi-framed PNG (this kind of PNG file contains
+ a list of images having all the same size and that lay side by side), or
+ a GIF.
+ Some examples taken from the game Scape and GifAnimatedTest are shown below,
+ where the first one uses multi-framed PNGs and the second one uses GIFs
+ (the PNG images are below the sample windows which use them):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animation_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animation_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/hockey.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/ball.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animation_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animation_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pauseIfNotVisible Set to 
+\family typewriter
+true
+\family default
+ to stop the animation if its parent window is not the topmost.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawOp Drawing operation used when the animation images are copied to the
+ screen buffer.
+ It receives the same values of 
+\family typewriter
+Graphics.drawOp
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+framePeriod Delay between two frames.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isPlaying Reflects the animation play state.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isPaused Reflects the animation pause state.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+transColor Transparency color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+framesBuffer Frames buffer.
+ It's the image passed to this class to execute the animation.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Animation(Image
+\begin_inset space ~
+\end_inset
+
+frames,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+framePeriod) Constructs an 
+\family typewriter
+Animation
+\family default
+ where 
+\family typewriter
+frames 
+\family default
+is a single image containing all frames.
+ The number of frames and the transparent colors are gotten from the image
+ and 
+\family typewriter
+framePeriod
+\family default
+ is the delay in milliseconds between two frames.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Animation(Image
+\begin_inset space ~
+\end_inset
+
+frames,int
+\begin_inset space ~
+\end_inset
+
+frameCount,int
+\begin_inset space ~
+\end_inset
+
+transColor,int
+\begin_inset space ~
+\end_inset
+
+framePeriod) Similar to the above one.
+ However, this one receives a frame count instead of using the number of
+ frames of the image and a transparent color instead of using the image
+ transparent color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(Image
+\begin_inset space ~
+\end_inset
+
+frames,int
+\begin_inset space ~
+\end_inset
+
+frameCount,int
+\begin_inset space ~
+\end_inset
+
+transColor,int
+\begin_inset space ~
+\end_inset
+
+framePeriod) Changes the image and its animation attributes passed originally
+ in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of frames of the animation image.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enableEvents(int
+\begin_inset space ~
+\end_inset
+
+mask) Enable the posting of events.
+ By default the posting of events are disabled.
+ The values of mask can be one out of: 
+\family typewriter
+eventNone 
+\family default
+(no notify at all), 
+\family typewriter
+eventFinish
+\family default
+ (notifies animation endings), 
+\family typewriter
+eventLoop
+\family default
+ (notifies animation loops), and 
+\family typewriter
+eventFrame
+\family default
+ (notifies animation frames).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pause() Pauses a running animation.
+ If the animation is not playing, this call has no effect.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resume() Resumes a paused animation.
+ If the animation is not playing, this call has no effect.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stop() Stops the animation.
+ If the animation is not playing, this call has no effect.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+start(int
+\begin_inset space ~
+\end_inset
+
+sFrame,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+eFrame,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+step,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+loops) Starts the animation with a frame range.
+ This function starts an animation by specifying the frame range and a loop
+ flag.
+ If the animation is playing, this call has no effect.
+ 
+\family typewriter
+sFrame
+\family default
+ is the start frame index, 
+\family typewriter
+eFrame
+\family default
+ is the final frame index, 
+\family typewriter
+step
+\family default
+ is the frame increment, and 
+\family typewriter
+loops
+\family default
+ is number of animation iterations, where 
+\family typewriter
+LOOPS_UNLIMITED
+\family default
+ must be used for an endless repetition.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+start(int
+\begin_inset space ~
+\end_inset
+
+loops) Starts the animation.
+ This function starts the animation and loops the specified amount of time.
+ If the application is playing, this call has no effect.
+ This is a simpler version of the one above.
+ 
+\end_layout
+
+\begin_layout Section
 ArrowButton
 \end_layout
 
