@@ -31806,6 +31806,208 @@ c) Sets the cursor color.
 \end_layout
 
 \begin_layout Section
+ScrollPosition
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+ScrollPosition
+\family default
+ implements the auto-hide scroll bar that exists in finger-touched devices.
+ This special scroll bar is just a small position indicator that appears
+ when the area is dragged.
+ 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ScrollPosition
+\family default
+ does not take an area of the control, since it appears and disappears automatic
+ally.
+ All 
+\family typewriter
+Scrollable
+\family default
+ controls change their 
+\family typewriter
+ScrollBar
+\family default
+ by 
+\family typewriter
+ScrollPosition
+\family default
+ when 
+\family typewriter
+Settings.fingerTouch = true
+\family default
+.
+ If the back color and the bar color are the same, the bar is not drawn;
+ this is how the 
+\family typewriter
+ButtonMenu
+\family default
+ class hides this control.
+\end_layout
+
+\begin_layout Standard
+Some images of it can be found in the AndroidUI sample when scrolling its
+ main window:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollposition_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollposition_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AUTO_HIDE Set to 
+\family typewriter
+false
+\family default
+ this static attribute to make the position bar be always shown for all
+ 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ScrollPosition
+\family default
+s (instead of the default auto-hide behaviour).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+barColor The bar color.
+ Defaults to 
+\family typewriter
+UIColors.positionbarColor
+\family default
+ but can be changed to something else.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+heightMultiplierToShowHandle Defines the height multiplier that must be
+ reached to show the handle while scrolling.
+ The handle speeds up scrolling since the user can drag it (like the bar
+ in a 
+\family typewriter
+ProgressBar
+\family default
+).
+ It is very useful for long lists.
+ Setting this to 10 will make the handle appear when the height of the item's
+ list exceeds 10 times the height of the 
+\family typewriter
+ScrollContainer
+\family default
+.
+ Set it to 0 will always show the handle, set to something very big (like
+ 
+\family typewriter
+Convert.MAX_INT
+\family default
+) to never show the handle.
+ Defaults to 7.
+ Since it is a static attribute, the value set will hold for all components
+ of this class.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollPosition() Constructs a vertical 
+\family typewriter
+ScrollPosition
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollPosition(byte
+\begin_inset space ~
+\end_inset
+
+orientation) Constructs a 
+\family typewriter
+ScrollPosition
+\family default
+ with the given orientation.
+ It can be 
+\family typewriter
+ScrollBar.VERTICAL
+\family default
+, or 
+\family typewriter
+ScrollBar.HORIZONTAL.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisible(boolean
+\begin_inset space ~
+\end_inset
+
+b) Don't allow change in the visibility.
+ This is done automatically.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Resets position to 0 and posts a pressed event.
+ 
+\end_layout
+
+\begin_layout Section
 Slider
 \end_layout
 
@@ -34135,53 +34337,6 @@ FILL
 \family default
  on the control's height, which is allowed.
  
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ScrollPosition
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-ScrollPosition
-\family default
- implements the auto-hide scroll bar that exists in finger-touched devices.
- This special scroll bar is just a small position indicator that appears
- when the area is dragged.
- 
-\family typewriter
-ScrollPosition
-\family default
- does not take an area of the control, since it appears and disappears automatic
-ally.
- All 
-\family typewriter
-Scrollable
-\family default
- controls change their 
-\family typewriter
-ScrollBar
-\family default
- by 
-\family typewriter
-ScrollPosition
-\family default
- when 
-\family typewriter
-Settings.fingerTouch = true
-\family default
-.
- If the back color and the bar color are the same, the bar is not drawn;
- this is how the 
-\family typewriter
-ButtonMenu
-\family default
- class hides this control.
 \end_layout
 
 \end_deeper
