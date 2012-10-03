@@ -29201,6 +29201,162 @@ Item
 \end_layout
 
 \begin_layout Section
+Document
+\end_layout
+
+\begin_layout Standard
+Represents an HTML Document.
+ To change the font size, you must change 
+\family typewriter
+Style.
+\begin_inset Newline newline
+\end_inset
+
+defaultFontSize
+\family default
+.
+ To change the default colors, change 
+\family typewriter
+UIColors.htmlXXX
+\family default
+ fields, and don't forget to call 
+\family typewriter
+htmlContainer.setBackForeColors()
+\family default
+ with these colors.
+ 
+\end_layout
+
+\begin_layout Standard
+To see it being used, see the sample HtmlBrowser.
+ Some screen shots of it are in the section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:HtmlContainer"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+baseURI Base URL for the document.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+title The title associated with this document.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+vForms All forms in this document.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+passwordMode The password mode for the edits.
+ Defaults to 
+\family typewriter
+Edit.PASSWORD_ALL
+\family default
+.
+ It can also be 
+\family typewriter
+Edit.
+ PASSWORD
+\family default
+, where the last character is shown.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Document(XmlReadable
+\begin_inset space ~
+\end_inset
+
+doc) A constructor which receives a XML readable document.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Document() Default constructor.
+ The document must be rendered using 
+\family typewriter
+renderDoc()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+loadImage(String
+\begin_inset space ~
+\end_inset
+
+src,
+\begin_inset space ~
+\end_inset
+
+URI
+\begin_inset space ~
+\end_inset
+
+baseURI) It can be overridden by the caller in order to load an image from
+ a different place.
+ Must return 
+\family typewriter
+null
+\family default
+ if not handled/not found.
+ By default, searches for the given file at the loaded libraries (TCZ files).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+renderDoc(XmlReadable
+\begin_inset space ~
+\end_inset
+
+doc) Renders the XML readable document.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scroll(int
+\begin_inset space ~
+\end_inset
+
+dir) Scrolls the document in the given direction.
+ The direction values can be 
+\family typewriter
+RIGHT
+\family default
+, 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+BOTTOM
+\family default
+, or 
+\family typewriter
+TOP
+\family default
+.
+\end_layout
+
+\begin_layout Section
 FlowContainer
 \end_layout
 
@@ -29373,6 +29529,13 @@ initUI() Places the controls on screen.
 
 \begin_layout Section
 HtmlContainer
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:HtmlContainer"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -34674,37 +34837,6 @@ getTime()
 \begin_layout Standard
 The time can be entered also using the arrow keys and by typing the numbers
  directly.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-Document
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Represents an HTML Document.
- To change the font size, you must change 
-\family typewriter
-Style.
-\begin_inset Newline newline
-\end_inset
-
-defaultFontSize
-\family default
-.
- To change the default colors, change 
-\family typewriter
-UIColors.htmlXXX
-\family default
- fields, and don't forget to call 
-\family typewriter
-htmlContainer.setBackForeColors()
-\family default
- with these colors.
  
 \end_layout
 
