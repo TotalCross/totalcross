@@ -30210,6 +30210,951 @@ onEvent(Event
 \end_inset
 
 e) On a timeout of the close timer, closes this control.
+\end_layout
+
+\begin_layout Section
+ListContainer
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+ListContainer
+\family default
+ is a 
+\family typewriter
+ListBox
+\family default
+ where each item is a 
+\family typewriter
+Container
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The correct way to create a 
+\family typewriter
+ListContainer
+\family default
+ item is by subclassing a 
+\family typewriter
+Container
+\family default
+ and adding the controls in the 
+\family typewriter
+initUI()
+\family default
+ method.
+ Adding directly using 
+\family typewriter
+getContainer().add()
+\family default
+ will not work.
+\end_layout
+
+\begin_layout Standard
+Below is an example of how to use it, taken from the UIGadgets sample using
+ the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class LCItem extends ScrollContainer
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Label lDate,lPrice,lDesc;
+\end_layout
+
+\begin_layout Plain Layout
+
+	Check chPaid;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public LCItem()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super(false); // VERY IMPORTANT (a RuntimeException will be thrown if
+ this is not used because it can't have a scroll bar).
+       
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(chPaid = new Check("Paid"),LEFT,TOP);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lDate = new Label("99/99/9999"),RIGHT,TOP);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Label("US$"),LEFT,AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lPrice = new Label("999.999.99"),AFTER,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(lDesc = new Label("",RIGHT),AFTER+10,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		lDesc.setText("description");
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+private void testListContainer()
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ListContainer lc;
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(lc = new ListContainer(),LEFT,TOP,FILL,FILL);
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i =0; i < 10; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+		lc.addContainer(new LCItem());
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+The resulting window from it looks like the screenshots below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/listcontainer_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/listcontainer_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+From AndroidUI, the following screenshots were taken:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/listcontainer_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/listcontainer_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When an item is selected, a 
+\family typewriter
+PRESSED
+\family default
+ event is dispatched.
+ The list container supports navigation using the keys up/down, page-up/down,
+ and enter.
+ The left and right keys acts like clicking on the left or right buttons
+ (if any).
+ 
+\end_layout
+
+\begin_layout Standard
+The class 
+\family typewriter
+ListContainer
+\family default
+ has the following public attributes, one omitted default constructor, and
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightColor Color used to highlight a container.
+ Based on the background color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawHLine If 
+\family typewriter
+true
+\family default
+ (default), draws a horizontal line between each container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLayout(int
+\begin_inset space ~
+\end_inset
+
+itemCount,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+itemsPerLine) Creates a 
+\family typewriter
+ListContainer.Layout
+\family default
+ object with the given parameters.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+size() Returns the number of items of this list.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addContainer(Container
+\begin_inset space ~
+\end_inset
+
+c) Adds a new 
+\family typewriter
+Container
+\family default
+ to the list.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addContainers(Container[]
+\begin_inset space ~
+\end_inset
+
+all) Adds an array of 
+\family typewriter
+Container
+\family default
+s to this list.
+ Adding hundreds of containers is hundred times faster using this method
+ instead of adding one at a time.
+ Consider also increasing the value of 
+\family typewriter
+Flick.defaultLongestFlick
+\family default
+ BEFORE creating the 
+\family typewriter
+ListContainer
+\family default
+, otherwise the user may take forever to flick.
+ You can set it to 
+\family typewriter
+3 * all.length
+\family default
+, if 
+\family typewriter
+all.length
+\family default
+ is above 1000.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAllContainers() Removes all containers of this 
+\family typewriter
+ListContainer
+\family default
+.
+ Note that 
+\family typewriter
+onRemove()
+\family default
+ is not called in the containers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Returns the selected container, or 
+\family typewriter
+null
+\family default
+ if none is selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the selected index, or -1 if none is selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+idx) Sets the selected container based on its index.
+ Pass -1 to unselect all containers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(Container
+\begin_inset space ~
+\end_inset
+
+c) Sets the selected container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getContainer(int
+\begin_inset space ~
+\end_inset
+
+idx) Returns the container of the given index or 
+\family typewriter
+null
+\family default
+ if its invalid.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBackColor(Container
+\begin_inset space ~
+\end_inset
+
+c,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+back) Changes the color of all controls inside the given container that
+ matches the background color of this 
+\family typewriter
+ListContainer
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToControl(Control
+\begin_inset space ~
+\end_inset
+
+c) Positions the given 
+\family typewriter
+Container
+\family default
+ (that should be a control added to this 
+\family typewriter
+ListContainer
+\family default
+) at the top of the list.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ListContainer
+\family default
+ class has two nested classes.
+ The first one to be described is 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ListContainer.Item
+\family default
+, which is an item of a 
+\family typewriter
+ListContainer
+\family default
+ and extends 
+\family typewriter
+Container
+\family default
+:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+leftControl,
+\begin_inset space ~
+\end_inset
+
+rightControl The left and/or right controls that will be displayed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+items The 
+\family typewriter
+String
+\family default
+s that will be displayed in the container.
+ Individual items cannot be 
+\family typewriter
+null
+\family default
+; pass 
+\family typewriter
+""
+\family default
+ instead to not display it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+leftControlVisible,
+\begin_inset space ~
+\end_inset
+
+rightControlVisible When 
+\family typewriter
+leftControl
+\family default
+ or 
+\family typewriter
+rightControl
+\family default
+ is an 
+\family typewriter
+Image
+\family default
+, set this to 
+\family typewriter
+false
+\family default
+ to don't show it (and also disable the controls).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ListContainer.Item(ListContainer.Layout
+\begin_inset space ~
+\end_inset
+
+layout) Constructs an 
+\family typewriter
+Item
+\family default
+ based in the given layout.
+ You must set the items array with the strings that will be displayed.
+ You may also set 
+\family typewriter
+leftControl
+\family default
+/
+\family typewriter
+rightControl,
+\family default
+ individual colors, and bold items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getColors() Returns the colors used on the 
+\family typewriter
+Item
+\family default
+.
+ You can then set the individual colors if you wish.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setImage(boolean
+\begin_inset space ~
+\end_inset
+
+isLeft,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+toImage1) Sets the 
+\family typewriter
+Item
+\family default
+ image.
+ 
+\family typewriter
+isLeft
+\family default
+ indicates if the image to be set is the left or the right one, and 
+\family typewriter
+toImage1
+\family default
+ indicates which default image is to be set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+postListContainerEvent(Object
+\begin_inset space ~
+\end_inset
+
+target,Object
+\begin_inset space ~
+\end_inset
+
+source,int
+\begin_inset space ~
+\end_inset
+
+type,boolean
+\begin_inset space ~
+\end_inset
+
+is2) Posts a 
+\family typewriter
+ListContainerEvent
+\family default
+, where 
+\family typewriter
+target
+\family default
+ is the target of the event, 
+\family typewriter
+source
+\family default
+ is the source of the event, 
+\family typewriter
+type
+\family default
+ is the event type, and 
+\family typewriter
+is2
+\family default
+ indicates if the new image is the second one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLeftControlX(),
+\begin_inset space ~
+\end_inset
+
+getRightControlX() Returns the horizontal position of the left or right
+ control.
+\end_layout
+
+\begin_layout Standard
+The other nested class is 
+\family typewriter
+ListContainer.Layout
+\family default
+, which is a set of fields and default fields that will be used to define
+ the layout of a 
+\family typewriter
+ListContainer
+\family default
+'s 
+\family typewriter
+Item
+\family default
+ and is described in detail below:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+leftImageEnlargeIfSmaller,
+\begin_inset space ~
+\end_inset
+
+rightImageEnlargeIfSmaller Specify what to do if the left or right controls
+ are images.
+ There are two situations that occurs when the image has a different height
+ of the 
+\family typewriter
+ListContainer
+\family default
+'s 
+\family typewriter
+Item
+\family default
+: 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+The image is smaller than the 
+\family typewriter
+ListContainer
+\family default
+'s 
+\family typewriter
+Item
+\family default
+ height.
+ It can be enlarged or vertically centered.
+ If the flag is 
+\family typewriter
+false
+\family default
+ (default), the image will be centered.
+ Otherwise, a "smooth upscaled" image will be created, however the image
+ will mostly have a bad appearance.
+ This is the worst choice.
+ The best choice is always to have a big image (for the biggest possible
+ resolution of the device) that will always be scaled down.
+ 
+\end_layout
+
+\begin_layout Enumerate
+The image is bigger than the 
+\family typewriter
+ListContainer
+\family default
+'s 
+\family typewriter
+Item
+\family default
+ height.
+ It will always be scaled down, using a "smooth scale" algorithm.
+ This is the best choice.
+ In general way, the image never defines the height of the 
+\family typewriter
+Item
+\family default
+; it's the opposite: the number of 
+\family typewriter
+Item
+\family default
+ lines is that defines the image height and size.
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+defaultLeftImage,
+\begin_inset space ~
+\end_inset
+
+defaultRightImage If the left and/or right control is a fixed image, set
+ it here and it will be replicated on all lines.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultLeftImage2,
+\begin_inset space ~
+\end_inset
+
+defaultRightImage2 If the left and/or right control is a fixed image, set
+ it here and it will be replicated on all lines.
+ These images can be set only if the default image was set.
+ The image size must be the same of the default one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultItemColors The default colors of all items.
+ Defaults to 
+\family typewriter
+Color.BLACK
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+boldItems The items that will have a bold font.
+ Defaults to 
+\family typewriter
+false
+\family default
+ (plain font).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+relativeFontSizes The default relative font sizes.
+ You can specify a delta compared to the font size of the
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+ListContainer
+\family default
+.
+ For example, specifying -1 will make the item have a font 1 size less than
+ the standard one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+positions The x position of the label, relative to the column's width.
+ It can be 
+\family typewriter
+AFTER
+\family default
+ (default for all items), 
+\family typewriter
+CENTER
+\family default
+ (relative to container's width), 
+\family typewriter
+CENTER_OF
+\family default
+ (relative to the space available after the last string added), 
+\family typewriter
+RIGHT
+\family default
+ (adjustments are NOT allowed!), or 
+\family typewriter
+BEFORE
+\family default
+.
+ The number of lines of the 
+\family typewriter
+Item
+\family default
+ is computed based on the column count.
+ Note that this field cannot be changed after the first Item is created,
+ since the internal computation of number of lines is done only once.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+controlGap The gap between the left/right controls and the text.
+ This gap is a percentage based in the control font's height.
+ So, if you pass 100 (default), it will be 100% of the font's height, 50
+ will be 50% of the height, 150 will be 1.5x the font height, and so on.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+imageGap The gap between the image and the item's top/bottom.
+ This is useful if your item has 3 lines but you want to decrase the image's
+ height.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insets The gap between the 
+\family typewriter
+Item
+\family default
+ and the borders can be set using this field.
+ The values stored are not absolute pixels, but a percentage.
+ Defaults to 0 (%) for all items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lineGap The line spacing between two consecutive lines.
+ Again, a percentage of the font's height is used.
+ Defaults to 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+centerVertically Set to 
+\family typewriter
+true
+\family default
+ to center the labels vertically if there are empty lines ("") before or
+ after the items array.
+ Only works if the items form a single column.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ListContainer.Layout(int
+\begin_inset space ~
+\end_inset
+
+temCount,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+itemsPerLine) Constructs a 
+\family typewriter
+Layout
+\family default
+ component with the given columns and item count.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setup() After you set the properties, you must call this method to setup
+ the internal coordinates.
+ If you create an 
+\family typewriter
+Item
+\family default
+ before calling this method, a 
+\family typewriter
+RuntimeException
+\family default
+ will be thrown.
  
 \end_layout
 
@@ -32870,66 +33815,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-ListContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-ListContainer
-\family default
- is a 
-\family typewriter
-ListBox
-\family default
- where each item is a 
-\family typewriter
-Container
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-The correct way to create a 
-\family typewriter
-ListContainer
-\family default
- item is by subclassing a 
-\family typewriter
-Container
-\family default
- and adding the controls in the 
-\family typewriter
-initUI()
-\family default
- method.
- Adding directly using 
-\family typewriter
-getContainer().
- add()
-\family default
- will not work.
-\end_layout
-
-\begin_layout Standard
-When an item is selected, a 
-\family typewriter
-PRESSED
-\family default
- event is dispatched.
- The list container supports navigation using the keys up/down, page-up/down,
- and enter.
- The left and right keys acts like clicking in the left or right buttons
- (if any).
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
