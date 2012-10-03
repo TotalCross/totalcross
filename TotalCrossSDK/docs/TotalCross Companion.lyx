@@ -32560,6 +32560,405 @@ s) Constructs a new spacer using the given string, whose width will be the
 \end_layout
 
 \begin_layout Section
+SpinList
+\end_layout
+
+\begin_layout Standard
+Creates a control with two arrows, so that you can scroll values and show
+ the current one.
+ It supports auto-scroll (by clicking and holding) and can also dynamically
+ compute the items based on ranges.
+ The spin list can be horizontal or vertical.
+ You can use something like: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+SpinList sl = new SpinList(..., !Settings.fingerTouch); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This way, in finger-touch devices, it will use the horizontal appearance,
+ which is easier to deal with on such devices.
+\end_layout
+
+\begin_layout Standard
+The screenshots below from UIGadgets using Android user interface style
+ shows the days being increased and decreased when pressing the increase
+ or decrease arrow, respectively:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spinlist_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spinlist_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spinlist_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/spinlist_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timerInterval Timer interval in which the scroll will be done.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timerInitialDelay Number of ticks of the timer interval that will be waited
+ until the scroll starts.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hAlign The horizontal text alignment of the 
+\family typewriter
+SpinList
+\family default
+: 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, or 
+\family typewriter
+RIGHT
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useNumericBox Set to 
+\family typewriter
+true
+\family default
+ if there are only numbers in the 
+\family typewriter
+SpinList
+\family default
+ and you want to open a 
+\family typewriter
+NumericBox
+\family default
+ to let the user enter a value.
+ The 
+\family typewriter
+SpinList
+\family default
+ is divided into 3 areas: left (decrease), right (increase), and middle
+ (opens the 
+\family typewriter
+NumericBox
+\family default
+).
+ Works only when
+\family typewriter
+ 
+\family default
+it is horizontal.
+ The area that pops up the 
+\family typewriter
+NumericBox
+\family default
+ is drawn in a darker background.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useCalculatorBox Set to 
+\family typewriter
+true
+\family default
+ if there are only numbers in the 
+\family typewriter
+SpinList
+\family default
+ and you want to open a 
+\family typewriter
+CalculatorBox
+\family default
+ to let the user enter a value.
+ This field behaves similar to the above one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SpinList(String[]
+\begin_inset space ~
+\end_inset
+
+choices) Constructs a vertical 
+\family typewriter
+SpinList
+\family default
+ with the given choices, selecting index 0 by default.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SpinList(String[]
+\begin_inset space ~
+\end_inset
+
+choices,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+isVertical) Similar to the one above except that the orientation can be
+ vertical or horizontal.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setChoices(String[]
+\begin_inset space ~
+\end_inset
+
+choices) Sets the choices to the given ones.
+ Searches for 
+\family typewriter
+[i0,if]
+\family default
+ and then expands the items.
+ For example, passing some string as 
+\family typewriter
+Day [1,31]
+\family default
+ will expand that to an array of 
+\family typewriter
+Day 1
+\family default
+, 
+\family typewriter
+Day 2
+\family default
+, ..., 
+\family typewriter
+Day 31
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+expand(Vector
+\begin_inset space ~
+\end_inset
+
+v,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+str) Static method that expands the items in the format 
+\family typewriter
+prefix [start,end] suffix
+\family default
+, where 
+\family typewriter
+prefix
+\family default
+ and 
+\family typewriter
+suffix
+\family default
+ are optional.
+ For example, passing some string as 
+\family typewriter
+Day [1,31]
+\family default
+ will expand that to an array of 
+\family typewriter
+Day 1
+\family default
+, 
+\family typewriter
+Day 2
+\family default
+, ..., 
+\family typewriter
+Day 31
+\family default
+.
+ The result will be stored in the 
+\family typewriter
+v
+\family default
+ parameter.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getChoices() Returns the choices array, after the expansion (if any).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Returns the selected item.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the selected index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the selected item; -1 is NOT accepted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedItem(String
+\begin_inset space ~
+\end_inset
+
+item) Selects the given item.
+ If the item is not found, the selected index remains unchanged.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAt(int
+\begin_inset space ~
+\end_inset
+
+index) Removes the item at the given index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeCurrent() Removes the current item.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+indexOf(String
+\begin_inset space ~
+\end_inset
+
+elem) Returns the index of the given item.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insertInOrder(String
+\begin_inset space ~
+\end_inset
+
+elem) Inserts the given element in order (based in the assumption that the
+ original choices was ordered).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears this control, selecting the element 
+\family typewriter
+clearValueInt
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
 Spinner
 \end_layout
 
@@ -34506,29 +34905,6 @@ FILL
 \begin_layout Itemize
 
 \family typewriter
-SpinList
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Creates a control with two arrows, so that you can scroll values and show
- the current one.
- It supports auto-scroll (by clicking and holding) and can also dynamically
- compute the items based on ranges.
- The spin list can be horizontal or vertical.
- 
-\end_layout
-
-\begin_layout Standard
-In finger-touch devices, it will use the horizontal appearance, which is
- easier to deal with on such devices.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 TabbedContainer
 \end_layout
 
@@ -34792,18 +35168,6 @@ This class implements a message box that shows a spinner at the left of
 
 \family typewriter
 TimeBox 
-\begin_inset Note Comment
-status open
-
-\begin_layout Plain Layout
-
-\family typewriter
-colocar na sessão de Interface Dialogs
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_deeper
