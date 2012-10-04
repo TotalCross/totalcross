@@ -175,6 +175,7 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
    UNLOCKVAR(screen);
 }
 
+void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h);
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
 // Destination is always a Graphics object.
 static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
@@ -260,17 +261,11 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
-/*   if (Graphics_useOpenGL(dstSurf))
-   {
-      GLuint texName;
-      glGenTextures(1, &texName);
-      glBindTexture(GL_TEXTURE_2D, texName);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, srcWidth, srcHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, srcPixels);
- 
-      glBindTexture(GL_TEXTURE_2D, 0);
-   }
-   else   */
+#ifdef ANDROID
+   if (Graphics_useOpenGL(dstSurf) && !isSrcScreen && Image_textureId(srcSurf) > 0)
+      glDrawTexture(currentContext, Image_textureId(srcSurf), dstX, dstY, width, height);
+   else
+#endif      
    for (i=0; i < (uint32)height; i++)
    {
       PixelConv *ps = (PixelConv*)srcPixels;
@@ -293,8 +288,8 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
             *colors++ = (GLfloat)ps->b / (GLfloat)255;
             *colors++ = (GLfloat)ps->a / (GLfloat)255;
          }
-         if (colors != currentContext->glcolors)
-            glDrawPixels(currentContext, ((int32)(colors-currentContext->glcolors)>>2));
+//         if (colors != currentContext->glcolors)
+  //          glDrawPixels(currentContext, ((int32)(colors-currentContext->glcolors)>>2));
       }
       else
 #endif

@@ -37,8 +37,7 @@ static void checkGlError(const char* op)
       debug("after %s() glError %s\n", op, msg);
       c++;
    }
-   if (!c)
-      debug("after %s() NO ERROR",op);
+//   if (!c) debug("after %s() NO ERROR",op);
 }
 
 static ANativeWindow *window;
@@ -77,7 +76,7 @@ GLfloat ftransp[16], f255[256];
 
 static GLuint textureProgram;
 static GLuint textureColor,texturePoint;
-static GLuint textureCoord,textureId;
+static GLuint textureCoord,textureS;
 
 //////////// points (text)
 
@@ -130,6 +129,32 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
    return shader;
 }
 
+static GLint lastProg=-1;
+static void setCurrentProgram(GLint prog)
+{
+   if (prog != lastProg)
+      glUseProgram(lastProg = prog);
+}
+
+static GLuint createProgram(char* vertexCode, char* fragmentCode)
+{
+   GLint ret;
+   GLuint p = glCreateProgram();
+   glAttachShader(p, loadShader(GL_VERTEX_SHADER, vertexCode));
+   glAttachShader(p, loadShader(GL_FRAGMENT_SHADER, fragmentCode));
+   glLinkProgram(p);
+   glValidateProgram(p);
+   glGetProgramiv(p, GL_LINK_STATUS, &ret);
+   if (!ret)
+   {
+      glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret);
+      GLchar buffer[ret];
+      glGetProgramInfoLog(p, ret, &ret, buffer);
+      debug("Link error: %s",buffer);
+   } 
+   return p;
+}
+
 static bool initGLES();
 
 /*
@@ -142,35 +167,14 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
    appW = width;
    appH = height;
-//   if (pointsProgram != 0) glDeleteProgram(pointsProgram); // glDeleteShader(shader);
 
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
 
-static GLint lastProg=-1;
-static void setCurrentProgram(GLint prog)
-{
-   if (prog != lastProg)
-      glUseProgram(lastProg = prog);
-}
-
 static void initPoints()
 {  
-   GLint ret;
-   pointsProgram = glCreateProgram();
-   glAttachShader(pointsProgram, loadShader(GL_VERTEX_SHADER, POINTS_VERTEX_CODE));
-   glAttachShader(pointsProgram, loadShader(GL_FRAGMENT_SHADER, POINTS_FRAGMENT_CODE));
-   glLinkProgram(pointsProgram);
-   glValidateProgram(pointsProgram);
-   glGetProgramiv(pointsProgram, GL_LINK_STATUS, &ret);
-   if (!ret)
-   {
-      glGetProgramiv(pointsProgram, GL_INFO_LOG_LENGTH, &ret);
-      GLchar buffer[ret];
-      glGetProgramInfoLog(pointsProgram, ret, &ret, buffer);
-      debug("Link error: %s",buffer);
-   } 
+   pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
    pointsColor = glGetAttribLocation(pointsProgram, "a_Color");
    pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); // get handle to vertex shader's vPosition member
@@ -186,46 +190,69 @@ void glDrawPixels(Context c, int32 n)
    glDrawArrays(GL_POINTS, 0,n);
 }
 
+static GLfloat textureVerts[8] = { 0, 1,  1, 1,  1, 0,  0, 0 };
 void initTexture()
 {
-/*   GLfloat textureVerts[8] = { 0, 1,  1, 1,  1, 0,  0, 0 };
-
-   textureProgram = glCreateProgram();
-   glAttachShader(textureProgram, loadShader(GL_VERTEX_SHADER, TEXTURE_VERTEX_CODE));
-   glAttachShader(textureProgram, loadShader(GL_FRAGMENT_SHADER, TEXTURE_FRAGMENT_CODE));
-   glLinkProgram(textureProgram);
-   glValidateProgram(textureProgram);
+   textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
-
-   glActiveTexture(GL_TEXTURE0);
-
+//   glActiveTexture(GL_TEXTURE0);
    textureColor = glGetUniformLocation(textureProgram, "uTextureColor");
-   textureId    = glGetUniformLocation(textureProgram, "sTexture");
+   textureS     = glGetUniformLocation(textureProgram, "sTexture");
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint");
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord");
 
    glEnableVertexAttribArray(textureCoord);
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, textureVerts);
+   glEnableVertexAttribArray(texturePoint);
+}
 
-   glEnableVertexAttribArray(texturePoint);*/
+void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
+{  
+   int32 i;
+   PixelConv* pf = (PixelConv*)pixels;
+   PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   if (!pt)
+      return;
+   
+   if (*textureId)
+      debug("reusing texture %d",*textureId);
+      
+   glGenTextures(1, textureId);
+   // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
+   glBindTexture(GL_TEXTURE_2D, *textureId);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   
+   // must invert the pixels from ARGB to RGBA
+   for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
+   glBindTexture(GL_TEXTURE_2D, 0);
+   xfree(pt0);
+}
+
+void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h)
+{
+   GLfloat* coords = c->glcoords;
+   setCurrentProgram(textureProgram);
+
+   coords[0] = coords[6] = x;
+   coords[1] = coords[3] = y+h;
+   coords[2] = coords[4] = x+w;
+   coords[5] = coords[7] = y;
+   glBindTexture(GL_TEXTURE_2D, textureId);
+   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords);
+   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, textureVerts);
+   glUniform1i(textureS, 0);
+   glUniform4f(textureColor, 1,1,1,1);
+   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+   glBindTexture(GL_TEXTURE_2D, 0);
+   coords[2] = coords[5] = 0; 
 }
 
 void initLineRectPoint()
 { 
-   GLint ret;
-   lrpProgram = glCreateProgram();
-   glAttachShader(lrpProgram, loadShader(GL_VERTEX_SHADER, LRP_VERTEX_CODE));
-   glAttachShader(lrpProgram, loadShader(GL_FRAGMENT_SHADER, LRP_FRAGMENT_CODE));
-   glLinkProgram(lrpProgram);
-   glValidateProgram(lrpProgram);
-   glGetProgramiv(pointsProgram, GL_LINK_STATUS, &ret);
-   if (!ret)
-   {
-      glGetProgramiv(pointsProgram, GL_INFO_LOG_LENGTH, &ret);
-      GLchar buffer[ret];
-      glGetProgramInfoLog(pointsProgram, ret, &ret, buffer);
-      debug("Link error: %s",buffer);
-   }                                                      
+   lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color");
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); // get handle to vertex shader's vPosition member
@@ -291,63 +318,11 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    };
-//   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
-   setCurrentProgram(lrpProgram); glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
-   setCurrentProgram(pointsProgram); glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
+   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
+   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
+   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
 }
 
-/*
-void prepare(String s)
-{
-   Text t = new Text();
-   android.graphics.Rect bounds = new android.graphics.Rect();
-   paint.getTextBounds(s, 0, s.length(), bounds);
-   t.textW = bounds.width();
-   t.textH = bounds.height()+20;
-
-   Bitmap image = Bitmap.createBitmap(t.textW+1, t.textH+1, Bitmap.Config.ARGB_8888);
-   new Canvas(image).drawText(s, 0, t.textH-20, paint);
-
-   int[] texture = new int[1];
-   glGenTextures(1, texture, 0);
-   t.texture = texture[0];
-
-   // OpenGL ES provides support for non-power-of-two textures, including its associated mipmaps, provided that
-   // the s and t wrap modes are both GL_CLAMP_TO_EDGE.
-   glBindTexture(GL_TEXTURE_2D, t.texture);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-   GLUtils.texImage2D(GL_TEXTURE_2D, 0, image, 0);
-   glUniform1i(textureId, 0);
-
-   return t;
-}
-
-float[] unitQuadVerts = new float[8];
-
-public void draw(Text text, int x, int y) throws Exception
-{
-   setCurrentProgram(textureProgram);
-
-   unitQuadVerts[0] = unitQuadVerts[6] = x;
-   unitQuadVerts[1] = unitQuadVerts[3] = y;
-   unitQuadVerts[2] = unitQuadVerts[4] = x+text.textW;
-   unitQuadVerts[5] = unitQuadVerts[7] = y-text.textH;
-   vertexBuf.put(unitQuadVerts); vertexBuf.rewind();
-
-   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, vertexBuf);
-
-   glBindTexture(GL_TEXTURE_2D, text.texture);
-   glUniform4f(textureColor, 0,1,0,1);
-   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-}*/
-
-////////////////////////////// OPEN GL 2 //////////////////////////////////
-void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
-{
-}
 
 struct{ GLubyte r, g, b, a; } glpixel;
 
@@ -355,7 +330,6 @@ int32 glGetPixel(int32 x, int32 y)
 {
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
-   return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -401,6 +375,7 @@ static bool initGLES()
    appW = width;
    appH = height;
 
+   initTexture();
    initLineRectPoint();
    initPoints();
    setProjectionMatrix(appW,appH);

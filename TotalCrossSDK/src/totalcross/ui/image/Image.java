@@ -302,7 +302,7 @@ public class Image extends GfxSurface
    }
    
    /** Applies any pending changes made in this image.
-    * In Open GL platforms, creates a texture for this image.
+    * In Open GL platforms, creates a texture for this image, which speeds up painting up to 99%.
     * In other platforms, does nothing.
     * @since TotalCross 2
     */

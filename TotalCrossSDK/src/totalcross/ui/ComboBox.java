@@ -319,6 +319,7 @@ public class ComboBox extends Container
       {
          img = Resources.comboArrow.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
+         img.applyChanges();
       }
       catch (ImageException e)
       {

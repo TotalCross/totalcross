@@ -53,6 +53,11 @@ public class TristateImage
    
    public Image getNormalInstance(int width, int height, int backColor) throws ImageException
    {
+      return getNormalInstance(width, height, backColor, true);
+   }
+   
+   private Image getNormalInstance(int width, int height, int backColor, boolean apply) throws ImageException
+   {
       int hash;
       synchronized(sblock)
       {
@@ -64,6 +69,7 @@ public class TristateImage
       {
          ret = scaleTo(width,height);
          ret.applyColor(backColor);
+         ret.applyChanges();
          htNormal.put(hash, ret);
       }
       return ret;
@@ -79,7 +85,10 @@ public class TristateImage
       }
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
-         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor).getFadedInstance(backColor));
+      {
+         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance(backColor));
+         ret.applyChanges();
+      }
       return ret;
    }
    
@@ -100,9 +109,10 @@ public class TristateImage
             ret.applyColor2(pressColor);
          }
          else 
-            ret = getNormalInstance(width,height,backColor).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+            ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
             ret = ret.getFadedInstance(backColor);
+         ret.applyChanges();
          htPressed.put(hash, ret);
       }
       return ret;
