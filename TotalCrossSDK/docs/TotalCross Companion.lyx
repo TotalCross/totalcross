@@ -33404,6 +33404,362 @@ c) Sets the cursor color.
 \end_layout
 
 \begin_layout Section
+ProgressBar
+\end_layout
+
+\begin_layout Standard
+A basic progress bar, with the bar and a text.
+ The text is comprised of a prefix and a suffix.
+ 
+\end_layout
+
+\begin_layout Standard
+You can create a horizontal endless progress bar, always going from left
+ to right, by setting the given parameters: 
+\end_layout
+
+\begin_layout Itemize
+Call 
+\family typewriter
+setEndless()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+max-min
+\family default
+: used to compute the width of the bar.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+prefix
+\family default
+ and 
+\family typewriter
+suffix
+\family default
+: displayed, but the current value is not displayed.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+setValue(n)
+\family default
+: 
+\family typewriter
+n
+\family default
+ used to increment the current value, not to set the value to 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Then set a timer to update the value.
+\end_layout
+
+\begin_layout Standard
+Here is some progress bar samples taken from AndroidUI and UIGadgets (using
+ Android user interface style):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbar_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbar_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+min The minimum value of the progress bar.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+max The maximum value of the progress bar.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+prefix The string prefix.
+ The displayed label will be 
+\family typewriter
+prefix+value+sufix
+\family default
+.
+ The default value is an empty string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+suffix The string suffix.
+ The displayed label will be 
+\family typewriter
+prefix+value+sufix
+\family default
+.
+ The default value is the percentage symbol.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawText Set to 
+\family typewriter
+false
+\family default
+ to don't let the text be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawValue Set to 
+\family typewriter
+false
+\family default
+ to don't let the value be drawn.
+ Note that 
+\family typewriter
+prefix
+\family default
+ and 
+\family typewriter
+suffix
+\family default
+ will still be drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+textColor The text color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawBorder If 
+\family typewriter
+false
+\family default
+, no border is drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlight If 
+\family typewriter
+true
+\family default
+, the text is highlighted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightColor The highlight color, or -1 to use one based on 
+\family typewriter
+textColor
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+vertical If 
+\family typewriter
+false
+\family default
+, use the horizontal mode (default).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBar() Creates a progress bar, with minimum and maximum set as 0
+ and 100, respectively.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBar(int
+\begin_inset space ~
+\end_inset
+
+min,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+max) Creates a progress bar with a given minimum and maximum values.
+ It uses the specified minimum value for the initial value of the progress
+ bar.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEndless() Call this method to make the progress bar a horizontal endless
+ progress bar; just keep calling 
+\family typewriter
+setValue(step)
+\family default
+ to increase the value of the progress bar.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Gets the preferred width, which is the parent's 
+\family typewriter
+width-6
+\family default
+, or the screen's width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the preferred height, which is 
+\family typewriter
+fmH+2
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValue(int
+\begin_inset space ~
+\end_inset
+
+n) Sets the current value.
+ Due to performance reasons, the minimum and maximum values are not verified.
+ If the value was not changed, nothing happens.
+ The progress bar is repainted immediately.
+ If this is an endless progress bar, the given number is used as an increment
+ to the current value.
+ Note that 
+\family typewriter
+n
+\family default
+ must be greater than 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValue(int
+\begin_inset space ~
+\end_inset
+
+value,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+prefix,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+suffix) Sets the current value, the prefix, and the suffix.
+ Note that, due to performance reasons, the minimum and maximum values are
+ not verified.
+ This does not check if the value had changed; it always repaints the progress
+ bar immediately.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Returns the current value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onPaint(Graphics
+\begin_inset space ~
+\end_inset
+
+g) Paints the Progress Bar.
+ The filled part of the bar is painted with the foreground color, the empty
+ part of the bar is painted with the background color, the text is painted
+ with the defined 
+\family typewriter
+textColor
+\family default
+ color, and no border is drawn.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears this control, setting the value to 
+\family typewriter
+clearValueInt
+\family default
+, which defauts to 0.
+ 
+\end_layout
+
+\begin_layout Section
 ScrollPosition
 \end_layout
 
@@ -36014,77 +36370,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-ProgressBar
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A basic progress bar, with the bar and a text.
- The text is comprised of a prefix and a suffix.
- 
-\end_layout
-
-\begin_layout Standard
-You can create a horizontal endless progress bar, always going from left
- to right, by setting the given parameters: 
-\end_layout
-
-\begin_layout Itemize
-Call 
-\family typewriter
-setEndless()
-\family default
-.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-max-min
-\family default
-: used to compute the width of the bar.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-prefix
-\family default
- and 
-\family typewriter
-suffix
-\family default
-: displayed, but the current value is not displayed.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-setValue(n)
-\family default
-: 
-\family typewriter
-n
-\family default
- used to increment the current value, not to set the value to 
-\family typewriter
-n
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-Then set a timer to update the value.
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
