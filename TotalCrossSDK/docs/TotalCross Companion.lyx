@@ -31322,6 +31322,760 @@ RuntimeException
 \end_layout
 
 \begin_layout Section
+MenuBar
+\end_layout
+
+\begin_layout Standard
+Constructs a menu with the given items.
+ A menu can be opened by the user in a couple of ways: 
+\end_layout
+
+\begin_layout Itemize
+By clicking on the menu button on the devices.
+\end_layout
+
+\begin_layout Itemize
+By clicking on the title of a window.
+ 
+\end_layout
+
+\begin_layout Itemize
+By holding during 1 second the middle button of the 5-way navigation buttons.
+\end_layout
+
+\begin_layout Standard
+The menu supports disabled and checked items.
+ The menu can be closed by a click on a valid item or clicking outside of
+ its bounds.
+ A 
+\family typewriter
+PRESSED
+\family default
+ event will be thrown when the menu is closed and a menu item was selected.
+ To discover which item was selected, see the method 
+\family typewriter
+getSelectedIndex()
+\family default
+, which returns -1 if none, or the matrix index otherwise.
+ 
+\end_layout
+
+\begin_layout Standard
+Note that the separator dotted line doesn't generate events and can't be
+ selected.
+ 
+\end_layout
+
+\begin_layout Standard
+After changing the 
+\family typewriter
+isChecked
+\family default
+ and 
+\family typewriter
+isEnabled
+\family default
+ states, there's no need to call 
+\family typewriter
+repaint()
+\family default
+, bacause they will show up only the next time the menu bar opens.
+\end_layout
+
+\begin_layout Standard
+Here is an example of a menu bar taken from UIGadgets:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MenuItem col0[] =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("File"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Minimize"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Exit"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem(),
+\end_layout
+
+\begin_layout Plain Layout
+
+	miShowKeys = new MenuItem("Show key codes", false)
+\end_layout
+
+\begin_layout Plain Layout
+
+};       
+\end_layout
+
+\begin_layout Plain Layout
+
+String p = Settings.platform;
+\end_layout
+
+\begin_layout Plain Layout
+
+col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) ||
+ p.equals(Settings.BLACKBERRY) || Settings.isWindowsDevice() || p.equals(Settings.WIN
+32);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+MenuItem col1[] =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("UIStyle"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("WinCE"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("PalmOS"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Flat"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Vista"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Android"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem(),
+\end_layout
+
+\begin_layout Plain Layout
+
+	miPenless = new MenuItem("Penless device",false),
+\end_layout
+
+\begin_layout Plain Layout
+
+	miGeoFocus= new MenuItem("Geographical focus",false),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem(),
+\end_layout
+
+\begin_layout Plain Layout
+
+	miUnmovableSIP = new MenuItem("Unmovable SIP",false)
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+MenuItem col2[] =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Tests1"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Standard controls"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("TabbedContainer with images"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Masked Edit"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Image and text buttons"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Scaled Image button"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Justified MultiEdit and Label")
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+MenuItem col3[] =
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Tests2"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Scroll Container"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("File Chooser with Tree"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("SpinList ToolTip ProgressBar"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("Drag scroll"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("AlignedLabelsContainer"),
+\end_layout
+
+\begin_layout Plain Layout
+
+	new MenuItem("ListContainer"),
+\end_layout
+
+\begin_layout Plain Layout
+
+};
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The result of this sample is shown in the images below taken from UIGadgets
+ using Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/menubar_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/menubar_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/menubar_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/menubar_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attribute, constructor, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gap If you want to change the spacement between the menu items (maybe to
+ make more items fit in the row), change this gap value.
+ Default is 3 (3 pixels at left and 3 at right).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MenuBar(MenuItem[][]
+\begin_inset space ~
+\end_inset
+
+items) Creates a 
+\family typewriter
+MenuBar
+\family default
+ with the given menu items.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+strings2items(String[][]
+\begin_inset space ~
+\end_inset
+
+items) Converts a string matrix into a 
+\family typewriter
+MenuItem
+\family default
+ matrix.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMenuItems() Returns the matrix of 
+\family typewriter
+MenuItem
+\family default
+s passed in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMenuItems() Returns the matrix of 
+\family typewriter
+MenuItem
+\family default
+s passed in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMenuItem(int
+\begin_inset space ~
+\end_inset
+
+index) Returns the 
+\family typewriter
+MenuItem
+\family default
+ at the given index.
+ E.
+ g.: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MenuItem file = mbar.getMenuItem(102); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPopColors(int
+\begin_inset space ~
+\end_inset
+
+back,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+fore,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+cursor) Sets the colors for the popup windows.
+ You can pass -1 to any parameter to keep the current settings.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+c) Sets the cursor color.
+ By default, it is based in the background color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisible(boolean
+\begin_inset space ~
+\end_inset
+
+b) Called by the 
+\family typewriter
+Window
+\family default
+ class to popup this 
+\family typewriter
+MenuBar
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the current menu item selected.
+ It returns -1 if no item was selected, or a number with format 
+\family typewriter
+xyy
+\family default
+, where 
+\family typewriter
+x
+\family default
+ is the index of the item selected at the 
+\family typewriter
+MenuBar
+\family default
+ and 
+\family typewriter
+yy
+\family default
+ is the 
+\family typewriter
+index+1
+\family default
+ ( = the index of the string array that defines the items) of the item selected
+ in the 
+\family typewriter
+MenuBarDropDown
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onPopup() Setups some important variables.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onClickedOutside(PenEvent
+\begin_inset space ~
+\end_inset
+
+event) Closes the popup list with a click outside its bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveBy(int
+\begin_inset space ~
+\end_inset
+
+i) Moves to the 
+\family typewriter
+MenuItem
+\family default
+ array at left or right depending on the passed value (-1 or +1).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setAlternativeStyle(int
+\begin_inset space ~
+\end_inset
+
+back,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+fore) Sets the style of the 
+\family typewriter
+MenuBar
+\family default
+ to an alternative style (no borders, rectangular appearance).
+ Here's a sample, taken from the UIGadgets sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
+\end_layout
+
+\end_inset
+
+The colors are set using a combination of the given back and fore colors.
+ You can have a more flexible color selection by using the code below, instead
+ of calling this method.
+ Under most situations, though, this method is enough.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mbar.setBackForeColors(Color.BLUE, Color.WHITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+mbar.setCursorColor(0x6464FF);
+\end_layout
+
+\begin_layout Plain Layout
+
+mbar.setBorderStyle(NO_BORDER);
+\end_layout
+
+\begin_layout Plain Layout
+
+mbar.setPopColors(0x0078FF, Color.CYAN, -1); // use the default cursor color
+ for the popup
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+MenuItem
+\family default
+ is an auxiliar class used in 
+\family typewriter
+MenuBar
+\family default
+ and in 
+\family typewriter
+MenuBarDropDown
+\family default
+ (described in the next section), whose description is given below:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+caption The menu item's caption.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isChecked 
+\family typewriter
+true
+\family default
+ if this item is checked.
+ Note that you must use the constructor that specifies the starting state
+ of the check (if set or unset), otherwise changing this will not work.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isEnabled 
+\family typewriter
+true
+\family default
+ if the item is enabled; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MenuItem() Constructs a separator menu item.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MenuItem(String
+\begin_inset space ~
+\end_inset
+
+caption) Constructs a menu item with the given caption.
+ This item CANNOT be checked (to allow that, use the other constructor with
+ 2 parameters), but can be enabled/disabled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MenuItem(String
+\begin_inset space ~
+\end_inset
+
+caption,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+isChecked) Constructs a menu item with the given caption and the given default
+ state for the check.
+ This item CAN be checked and can be enabled/disabled as well.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isCheckable() Returns 
+\family typewriter
+true
+\family default
+ if this menu item is checkable.
+ 
+\end_layout
+
+\begin_layout Section
 PagePosition
 \end_layout
 
@@ -34579,70 +35333,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-MenuBar
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Constructs a menu with the given items.
- The menu supports disabled and checked items.
- A menu can be opened by the user in a couple of ways: 
-\end_layout
-
-\begin_layout Itemize
-By clickingon the menu button on Palm OS devices.
-\end_layout
-
-\begin_layout Itemize
-By clicking on the title of a Window.
- 
-\end_layout
-
-\begin_layout Itemize
-By holding during 1 second the middle button of the 5-way navigation buttons.
-\end_layout
-
-\begin_layout Standard
-The menu can be closed by a click on a valid item or clicking outside of
- its bounds.
- A 
-\family typewriter
-PRESSED
-\family default
- event will be thrown when the menu is closed and a menu item was selected.
- To discover which item was selected, see the method 
-\family typewriter
-getSelectedIndex()
-\family default
-, which returns -1 if none, or the matrix index otherwise.
- Note that the separator dotted line doesn't generate events and can't be
- selected.
- 
-\end_layout
-
-\begin_layout Standard
-Note that, after changing the 
-\family typewriter
-isChecked
-\family default
- and 
-\family typewriter
-isEnabled
-\family default
- states, there's no need to call 
-\family typewriter
-repaint()
-\family default
-, bacause they will show up only the next time the menu bar opens.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
