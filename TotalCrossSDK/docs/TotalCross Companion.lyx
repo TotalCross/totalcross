@@ -32383,6 +32383,380 @@ KeyEvent
 \end_layout
 
 \begin_layout Section
+MultiListBox
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+MultiListBox
+\family default
+ is a 
+\family typewriter
+ListBox
+\family default
+ that allows more than one item to be selected.
+ The maximum number of selections can be defined using 
+\family typewriter
+setMaxSelections()
+\family default
+.
+ Be sure to save a reference to the 
+\family typewriter
+MultiListBox
+\family default
+ so you can call the specific methods of this class.
+ 
+\end_layout
+
+\begin_layout Standard
+To create a 
+\family typewriter
+ComboBox
+\family default
+ with a 
+\family typewriter
+MultiListBox
+\family default
+, use: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MultiListBox mlb;
+\end_layout
+
+\begin_layout Plain Layout
+
+new ComboBox(mlb = new MultiListBox()) 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+getSelectedIndex()
+\family default
+ returns just the last selected index; to retrieve all indexes, use
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+getSelectedIndexes()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In penless devices, there will be a cursor which will be used to highlight
+ an item; to select or unselect it, you must press the left key.
+ 
+\family typewriter
+MultiListBox
+\family default
+ requires the 
+\family typewriter
+useFullWidthOnSelection
+\family default
+ on penless devices.
+\end_layout
+
+\begin_layout Standard
+The following screenshots from UIGadgets using Android user interface style
+ shows the MultiListBox behavior:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multilist_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multilist_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multilist_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/multilist_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clearValues Fill this 
+\family typewriter
+IntVector
+\family default
+ with the values that will be selected when the 
+\family typewriter
+clear()
+\family default
+ method is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showOrderInTip Set to 
+\family typewriter
+false
+\family default
+ to don't show the number of selected elements as they are clicked.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unselectFirstWhenMaxIsReached Set to 
+\family typewriter
+true
+\family default
+ if you want to unselect the first element once the maximum number of selected
+ items is reached.
+ Note that this implies that 
+\family typewriter
+setOrderIsImportant(true)
+\family default
+ and also
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+setMaxSelections()
+\family default
+ were both called; otherwise, it has no effects.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemsText Suffix used to display the number of items in a combo box.
+ Defaults to 
+\family typewriter
+" items"
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MultiListBox() Constructs an empty 
+\family typewriter
+MultiListBox
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MultiListBox(Object[]
+\begin_inset space ~
+\end_inset
+
+items) Constructs a 
+\family typewriter
+MultiListBox
+\family default
+ with the given items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setOrderIsImportant(boolean
+\begin_inset space ~
+\end_inset
+
+set) Call this method if you want to keep track of the order in which the
+ items were selected.
+ Note that this makes the list box slower.
+ Calling this method clears all the selected items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isOrderImportant() Returns 
+\family typewriter
+true
+\family default
+ if you requested that the order is important.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the selected index.
+ If more than one item is selected, it returns the last one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLastSelectedItem() Returns the last selected item if you had set order
+ is important; otherwise, it returns 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaxSelections(int
+\begin_inset space ~
+\end_inset
+
+max) Defines the maximum number of items that can be selected.
+ If currently there are more items selected than the allowed, all selections
+ are cleared.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndexes() Returns a vector with the indexes which have been selected.
+ The elements of the vector are the indexes in the vector of the items.
+ So if this vector is holding 
+\family typewriter
+[3, 12, 5]
+\family default
+ it means that the items 3, 5, and 12 have been selected.
+ If the order is important, then an ordered vector is returned (caution:
+ do not change the returned array!).
+ Note that the indexes are not in order; to order them, call 
+\family typewriter
+qsort()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isSelected(int
+\begin_inset space ~
+\end_inset
+
+index) Returns if given index is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+index) In the 
+\family typewriter
+MultiListBox
+\family default
+, inverts the status of the given index, or clears all if -1 is passed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+index,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+set) Sets or clears an index.
+ It can also be used to set or clear all indexes, passing -1 as the index.
+ Both operations are limited by the defined maximum selections.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getText() Returns the string with the selected item (if single) or a string
+ with the number of selected items.
+ You can change the suffix 
+\family typewriter
+itemsText
+\family default
+ to another one.
+ If the order is important, it returns the last selected item.
+\end_layout
+
+\begin_layout Section
 PagePosition
 \end_layout
 
@@ -35640,71 +36014,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-MultiListBox
-\family default
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-MultiListBox
-\family default
- is a 
-\family typewriter
-ListBox
-\family default
- that allows more than one item to be selected.
- The maximum number of selections can be defined using 
-\family typewriter
-setMaxSelections
-\family default
-.
- Be sure to save a reference to the 
-\family typewriter
-MultiListBox
-\family default
- so you can call the specific methods of this class.
- 
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-getSelectedIndex()
-\family default
- returns just the last selected index; to retrieve all indexes, use 
-\family typewriter
-getSelectedIndexes()
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-In penless devices, there will be a cursor which will be used to highlight
- an item; to select or unselect it, you must press the left key.
- 
-\family typewriter
-MultiListBox
-\family default
- requires the 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-useFullWidthOnSelection
-\family default
- on penless devices.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
