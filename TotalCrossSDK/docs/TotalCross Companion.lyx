@@ -34489,6 +34489,527 @@ clearValueInt
 \end_layout
 
 \begin_layout Section
+ScrollBar
+\end_layout
+
+\begin_layout Standard
+The scroll bar orientation can be horizontal or vertical.
+ It implements auto scroll when pressing and holding a button or the gap
+ area of the scroll bar.
+ Here is an example of how to use it.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.event.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ScrollBar sb1, sb2, sb3, sb4;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(sb1 = new ScrollBar(ScrollBar.VERTICAL), RIGHT, CENTER, PREFERRED,
+ Settings.screenHeight/2);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(sb2 = new ScrollBar(ScrollBar.VERTICAL), BEFORE, SAME, PREFERRED, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		sb2.setLiveScrolling(true);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(sb3 = new ScrollBar(ScrollBar.HORIZONTAL), LEFT,CENTER, Settings.screenWidth
+/2, PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(sb4 = new ScrollBar(ScrollBar.HORIZONTAL), SAME, AFTER, SAME, PREFERRED);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (event.type == ControlEvent.PRESSED && event.target == sb2)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			int value = sb2.getValue();
+\end_layout
+
+\begin_layout Plain Layout
+
+			sb1.setValue(value);
+\end_layout
+
+\begin_layout Plain Layout
+
+			sb3.setValue(value);
+\end_layout
+
+\begin_layout Plain Layout
+
+			sb4.setValue(value);
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+which results in the following images:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollbar_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollbar_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollbar_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollbar_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableBlockIncrement Set to 
+\family typewriter
+true
+\family default
+ to disable block increments, which occurs when the user clicks outside
+ the bar and buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+minDragBarSize The minimum drag bar size in pixels.
+ By default, it is 5.
+ This has no effect if the user interface style is Palm OS.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+INITIAL_DELAY The initial delay to start the automatic scroll.
+ Since this is a static member, it affects all scroll bars.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AUTO_DELAY The frequency in which the scroll will be done.
+ Since this is a static member, it affects all scroll bars.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+extraSize The extra size (width for vertical scroll bars or height for horizonta
+l ones) used in all scroll bars.
+ Note that this member is static, so it will affect all scroll bars created
+ afterwards, unless you reset it to 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollBar() Creates a 
+\family typewriter
+ScrollBar
+\family default
+ object with the default values, where the maximum is 100, the minimum is
+ 0, the orientation is 
+\family typewriter
+VERTICAL
+\family default
+, the block increment is 50, the unit increment is 1, the initial value
+ is 0, and the number visible items being equal to the block increment.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollBar(byte
+\begin_inset space ~
+\end_inset
+
+orientation) Similar to the above method except that the orientation can
+ be chosen (
+\family typewriter
+VERTICAL
+\family default
+ or
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+HORIZONTAL
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValues(int
+\begin_inset space ~
+\end_inset
+
+newValue,int
+\begin_inset space ~
+\end_inset
+
+newVisibleItems,int
+\begin_inset space ~
+\end_inset
+
+newMinimum,int
+\begin_inset space ~
+\end_inset
+
+newMaximum) Sets the value, number of visible items, and minimum and maximum
+ values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMaximum(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the maximum value.
+ Note that you must explicitly call 
+\family typewriter
+repaint()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMaximum() Gets the maximum value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMinimum(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the minimum value.
+ Note that you must explicitly call 
+\family typewriter
+repaint()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMinimum() Gets the minimum value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBlockIncrement(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the amount to increment the value when clicking above the bar.
+ This value is set as default to be equal to number of visible items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBlockIncrement() Gets the amount to increment the value when clicking
+ above the bar.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setUnitIncrement(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the amount to increment the value when clicking the up or down buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getUnitIncrement() Gets the amount to increment the value when clicking
+ the up or down buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setValue(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Gets the value.
+ This is the value minus the visible items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setVisibleItems(int
+\begin_inset space ~
+\end_inset
+
+i) Sets the count of visible items for the scroll bar.
+ This value cannot be zero.
+ It also sets the block increment to be equal to the given value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getVisibleItems() Gets the count of visible items for the scroll bar.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setLiveScrolling(boolean
+\begin_inset space ~
+\end_inset
+
+liveScrolling) Sets the live scrolling.
+ If 
+\family typewriter
+true
+\family default
+ an event is thrown during dragging or when the button is held.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+blockScroll(boolean
+\begin_inset space ~
+\end_inset
+
+inc) Scrolls a block, and posts the 
+\family typewriter
+PRESSED
+\family default
+ event if the value changes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() If this is a vertical scroll bar, I strongly suggest
+ you use 
+\family typewriter
+PREFERRED
+\family default
+ in your control's width (with small adjustments).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() If this is a horizontal scroll bar, I strongly suggest
+ you use 
+\family typewriter
+PREFERRED
+\family default
+ in your control's height (with small adjustments).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears this control, setting the value to 
+\family typewriter
+clearValueInt
+\family default
+, which defaults to 0.
+ 
+\end_layout
+
+\begin_layout Section
 ScrollPosition
 \end_layout
 
@@ -37099,21 +37620,6 @@ Here a list of advanced controls which are not described in the other chapter
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-ScrollBar
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-The scroll bar orientation can be horizontal or vertical.
- It implements auto scroll when pressing and holding a button or the gap
- area of the scroll bar.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
