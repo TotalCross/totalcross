@@ -33760,6 +33760,735 @@ clearValueInt
 \end_layout
 
 \begin_layout Section
+PushButtonGroup
+\end_layout
+
+\begin_layout Standard
+Group or matrix of push buttons in a single control.
+ It is one of the most versatiles controls of TotalCross.
+ The width of each button is calculated based on its caption size plus 
+\family typewriter
+insideGap
+\family default
+, if you use 
+\family typewriter
+PREFERRED
+\family default
+ as the width; otherwise, it uses the size you specified (e.
+ g.: 
+\family typewriter
+FILL
+\family default
+, 
+\family typewriter
+FIT
+\family default
+, etc).
+ The height is calculated based on the font's size or on the height you
+ specified.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is an example of constructor: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+new PushButtonGroup(new String[]{"Button1", "Button2", "Button3"},  false,
+ -1, -1, 4, 0, false, PushButtonGroup.NORMAL); 
+\end_layout
+
+\end_inset
+
+which results in this window when the control is added to its center using
+ Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Also using Android user interface style, the screenshots below from UIGadgets
+ also show this control being used:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+checkAppearsRaised Set to 
+\family typewriter
+true
+\family default
+ to make the 
+\family typewriter
+CHECK
+\family default
+ mode appear as raised by default (the default is button lowered when not
+ selected).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+names The buttons captions passed in the contructor or changed after by
+ calling 
+\family typewriter
+setNames()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insideGap Space between the text and the button border.
+ The ideal is 4.
+ If the parameter 
+\family typewriter
+allSameWidth
+\family default
+ passed in the constructor is 
+\family typewriter
+true
+\family default
+, it is only used to compute the preferred width and may be overriden; otherwise
+, it is used as the internal gap.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rects The bounds of each of the buttons.
+ Never change this directly.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+autoRepeat Set to 
+\family typewriter
+true
+\family default
+ to enable the auto-repeat feature for this button.
+ The 
+\family typewriter
+PRESSED
+\family default
+ event will be sent while this button is held.
+ Works only when the type is 
+\family typewriter
+BUTTON
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+INITIAL_DELAY The initial delay to start the auto-repeat.
+ Defaults to 600 ms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AUTO_DELAY The frequency in which the 
+\family typewriter
+PRESSED
+\family default
+ event will be posted after the 
+\family typewriter
+INITIAL_DELAY
+\family default
+ was reached.
+ Defaults to 150 ms.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hidden The boolean array that defines which buttons are hidden.
+ If you want to hide a button, just access this and set an array index to
+ 
+\family typewriter
+true
+\family default
+.
+ Note that you must also explicitly call the 
+\family typewriter
+repaint()
+\family default
+ method to update the control.
+ Sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+pbg.hidden[5] = true; // hides button 5
+\end_layout
+
+\begin_layout Plain Layout
+
+repaint(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+colspan Spans across multiple columns and rows.
+ These cells that will be overriden must be 
+\family typewriter
+null
+\family default
+ and the parameter 
+\family typewriter
+allSameWidth
+\family default
+ passed in the constructor must be 
+\family typewriter
+true
+\family default
+.
+ This sample:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String []numerics = {"1", "2", "3", "4", "5", "6", "7", "clear", null, "0",
+ null, null};
+\end_layout
+
+\begin_layout Plain Layout
+
+PushButtonGroup pbg = new PushButtonGroup(numerics, false, -1, 4, 0, 4,
+ true, PushButtonGroup.BUTTON);
+\end_layout
+
+\begin_layout Plain Layout
+
+pbg.colspan[7] = 2;
+\end_layout
+
+\begin_layout Plain Layout
+
+pbg.rowspan[7] = 2;
+\end_layout
+
+\begin_layout Plain Layout
+
+add(pbg, LEFT+50,AFTER+50,FILL-50,FILL-50); 
+\end_layout
+
+\end_inset
+
+will show this:
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/pushbutton_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rowspan Spans across multiple columns and rows.
+ These cells that will be overriden must be 
+\family typewriter
+null
+\family default
+ and the parameter 
+\family typewriter
+allSameWidth
+\family default
+ passed in the constructor must be 
+\family typewriter
+true
+\family default
+.
+ See the sample above.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PushButtonGroup(String[]
+\begin_inset space ~
+\end_inset
+
+names,boolean
+\begin_inset space ~
+\end_inset
+
+atLeastOne,int
+\begin_inset space ~
+\end_inset
+
+selected,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap,int
+\begin_inset space ~
+\end_inset
+
+rows,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,byte
+\begin_inset space ~
+\end_inset
+
+type) Creates the button matrix where 
+\family typewriter
+names
+\family default
+ is the captions of the buttons (you can specify some names as 
+\family typewriter
+null
+\family default
+ so the button is not displayed; this is good if you're creating a button
+ matrix and want to hide some buttons definetively; you can hide some buttons
+ temporarily setting the 
+\family typewriter
+hiden
+\family default
+ array; you can also use the 
+\family typewriter
+hidden
+\family default
+ property to dynamically show/hide buttons), 
+\family typewriter
+atLeastOne
+\family default
+ indicates if at least one button must be selected, 
+\family typewriter
+selected
+\family default
+ is the default index to appear selected (-1 if none), 
+\family typewriter
+gap
+\family default
+ is the space between the buttons (-1 glue them), 
+\family typewriter
+insideGap
+\family default
+ is the space between the text and the button border (the ideal is 4; if
+ 
+\family typewriter
+allSameWidth
+\family default
+ is 
+\family typewriter
+true
+\family default
+, it is only used to compute the preferred width and may be overriden; otherwise
+, it is used as the internal gap), 
+\family typewriter
+rows
+\family default
+ creates a button matrix if > 1, 
+\family typewriter
+allSameWidth
+\family default
+ indicates that all the buttons will have the width of the largest one if
+ 
+\family typewriter
+true
+\family default
+, and 
+\family typewriter
+type
+\family default
+ can be 
+\family typewriter
+NORMAL
+\family default
+ (only one selected at a time), 
+\family typewriter
+BUTTON
+\family default
+ (the button will be selected and unselected immediately, acting like a
+ real button), or 
+\family typewriter
+CHECK
+\family default
+ (one click on the button will select it and another click will unselect
+ it; however, only one button can be selected at a time).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PushButtonGroup(String[]
+\begin_inset space ~
+\end_inset
+
+names,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+gap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+insideGap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+rows) This is a simpler version of the above method with with 
+\family typewriter
+selected = -1
+\family default
+, 
+\family typewriter
+atLeastOne = false
+\family default
+, 
+\family typewriter
+allSameWidth = false
+\family default
+, 
+\family typewriter
+and type = BUTTON
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PushButtonGroup(String[]
+\begin_inset space ~
+\end_inset
+
+names,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+gap,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+rows) This is a simpler version of the first constructor shown with 
+\family typewriter
+insideGap = 4
+\family default
+, 
+\family typewriter
+selected = -1
+\family default
+, 
+\family typewriter
+atLeastOne = false
+\family default
+, 
+\family typewriter
+allSameWidth = true
+\family default
+, and 
+\family typewriter
+type = BUTTON
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setNames(String[]
+\begin_inset space ~
+\end_inset
+
+newNames) Sets the captions of the buttons.
+ Note that it must have the same number of elements passed in the constructor,
+ and the bounds are NOT recomputed.
+ 
+\family typewriter
+repaint()
+\family default
+ is called.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setColor(int
+\begin_inset space ~
+\end_inset
+
+index,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+foreColor,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+backColor) Sets a button's index color.
+ The other buttons will remain with the default color.
+ Pass -1 to restore the default color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSimpleBorder(boolean
+\begin_inset space ~
+\end_inset
+
+simple) Uses a border with a single line (not 3d and not Android's).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedIndex() Returns the index of the selected button, or -1 if none
+ is selected.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSelectedItem() Returns the caption of the selected button, or 
+\family typewriter
+null
+\family default
+ if no button is selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCursorColor(int
+\begin_inset space ~
+\end_inset
+
+color) Sets the cursor color for the 
+\family typewriter
+PushButtonGroup
+\family default
+.
+ The default value is equal to the background slightly darker.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSelectedIndex(int
+\begin_inset space ~
+\end_inset
+
+ind) Sets the selected button index.
+ Note that if there are any 
+\family typewriter
+null
+\family default
+ or hidden buttons, you must consider them too to compute the correct index.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clear() Clears this control, selecting index 
+\family typewriter
+clearValueInt
+\family default
+, which defaults to 0.
+ Note that if the parameter 
+\family typewriter
+atLeastOne
+\family default
+ passed to the constructor is 
+\family typewriter
+true
+\family default
+, setting 
+\family typewriter
+clearValueInt
+\family default
+ to -1 will have no effect.
+ 
+\end_layout
+
+\begin_layout Section
 ScrollPosition
 \end_layout
 
@@ -36373,40 +37102,6 @@ Here a list of advanced controls which are not described in the other chapter
 \begin_layout Itemize
 
 \family typewriter
-PushButtonGroup
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Group or matrix of push buttons in a single control.
- It is one of the most versatiles controls of TotalCross.
- The width of each button is calculated based on its caption size plus 
-\family typewriter
-insideGap
-\family default
-, if you use 
-\family typewriter
-PREFERRED
-\family default
- as the width; otherwise, it uses the size you specified (e.
- g.: 
-\family typewriter
-FILL
-\family default
-, 
-\family typewriter
-FIT
-\family default
-, etc).
- The height is calculated based on the font's size or on the height you
- specified.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
 ScrollBar
 \end_layout
 
@@ -36621,149 +37316,6 @@ XYChart
 XYChart
 \family default
  is a scatter chart.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ColorChooserBox
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Shows a color dialog that can be used to select a color.
- There are several ways to choose a color: 
-\end_layout
-
-\begin_layout Itemize
-Using a color matrix.
-\end_layout
-
-\begin_layout Itemize
-Using a websafe palette.
- 
-\end_layout
-
-\begin_layout Itemize
-Writting the red, green, and blue components.
- 
-\end_layout
-
-\begin_layout Itemize
-Writting the color in hexdecimal.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ControlBox 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A popup window that displays any control, given as parameter to the constructor.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-FileChooserBox
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-A class that shows all folders from a startup one to allow the user select
- a file or a folder.
- The file tree is mounted 
-\emph on
-on demand
-\emph default
- to speedup the process.
- 
-\end_layout
-
-\begin_layout Standard
-Here's a list of customizations you can do: 
-\end_layout
-
-\begin_layout Itemize
-You can set a path to be selected initially by setting the 
-\family typewriter
-initialPath
-\family default
- property.
- 
-\end_layout
-
-\begin_layout Itemize
-Set the 
-\family typewriter
-defaultButton
-\family default
- property to allow the selection of an item doing a double-click on it.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-ProgressBox
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This class implements a message box that shows a spinner at the left of
- the text.
- You can set the spinner color and type before constructing the progress
- box (usually you do this in your application's constructor, and not for
- each progress bar created).
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-TimeBox 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Class used to input a time from the user.
- Correctly handles the AM/PM depending on 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-Settings.is24Hour
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-When the window closes, a 
-\family typewriter
-PRESSED
-\family default
- event is sent to the caller, and the time can be retrieved using 
-\family typewriter
-getTime()
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-The time can be entered also using the arrow keys and by typing the numbers
- directly.
  
 \end_layout
 
@@ -38423,6 +38975,133 @@ public void onEvent(Event event)
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+ColorChooserBox
+\end_layout
+
+\begin_layout Standard
+Shows a color dialog that can be used to select a color.
+ There are several ways to choose a color: 
+\end_layout
+
+\begin_layout Itemize
+Using a color matrix.
+\end_layout
+
+\begin_layout Itemize
+Using a websafe palette.
+ 
+\end_layout
+
+\begin_layout Itemize
+Writting the red, green, and blue components.
+ 
+\end_layout
+
+\begin_layout Itemize
+Writting the color in hexdecimal.
+ 
+\end_layout
+
+\begin_layout Section
+ControlBox
+\family typewriter
+ 
+\end_layout
+
+\begin_layout Standard
+A popup window that displays any control, given as parameter to the constructor.
+ 
+\end_layout
+
+\begin_layout Section
+FileChooserBox
+\end_layout
+
+\begin_layout Standard
+A class that shows all folders from a startup one to allow the user select
+ a file or a folder.
+ The file tree is mounted 
+\emph on
+on demand
+\emph default
+ to speedup the process.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a list of customizations you can do: 
+\end_layout
+
+\begin_layout Itemize
+You can set a path to be selected initially by setting the 
+\family typewriter
+initialPath
+\family default
+ property.
+ 
+\end_layout
+
+\begin_layout Itemize
+Set the 
+\family typewriter
+defaultButton
+\family default
+ property to allow the selection of an item doing a double-click on it.
+ 
+\end_layout
+
+\begin_layout Section
+ProgressBox
+\end_layout
+
+\begin_layout Standard
+This class implements a message box that shows a spinner at the left of
+ the text.
+ You can set the spinner color and type before constructing the progress
+ box (usually you do this in your application's constructor, and not for
+ each progress bar created).
+\end_layout
+
+\begin_layout Section
+TimeBox
+\family typewriter
+ 
+\end_layout
+
+\begin_layout Standard
+Class used to input a time from the user.
+ Correctly handles the AM/PM depending on 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Settings.is24Hour
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+When the window closes, a 
+\family typewriter
+PRESSED
+\family default
+ event is sent to the caller, and the time can be retrieved using 
+\family typewriter
+getTime()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The time can be entered also using the arrow keys and by typing the numbers
+ directly.
+ 
 \end_layout
 
 \begin_layout Chapter
