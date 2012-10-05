@@ -806,11 +806,15 @@ public class Control extends GfxSurface
    /** Redraws the control immediately. If this control is a Window, the whole window area is
      * marked for repaint (useful if you're removing some controls from a container).
      * This method affects only this control, while the repaint method affects the whole screen.
+     * 
+     * If Window.enableUpdateScreen is true, the method returns immediately.
      * @since SuperWaba 2.0 beta 4 release 3
      * @see #repaint()
      */
    public void repaintNow()
    {
+      if (!Window.enableUpdateScreen)
+         return;
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
