@@ -62,7 +62,6 @@ public class MultiEdit extends Container implements Scrollable
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';
    private int lastZ1y = -9999;
-   private Graphics drawg; // only valid while the edit has focus --   original
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
    private boolean hasFocus;
    private boolean cursorShowing;
@@ -447,7 +446,6 @@ public class MultiEdit extends Container implements Scrollable
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      drawg = null;
       int zOffset = uiFlat?0:2; // size of borders
       boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-(Settings.fingerTouch?0:sb.getPreferredWidth()),this.height-2*zOffset);    //JR @0.5
       textRect = boardRect.modifiedBy(gap,gap,-2*gap,-2*gap);
@@ -531,7 +529,7 @@ public class MultiEdit extends Container implements Scrollable
       if (removeTimer(blinkTimer))
          blinkTimer = null;
       if (cursorShowing) // kambisDarabi@310_7 : remove the cursor, if it is currently shown
-         draw(drawg);
+         Window.needsPaint = true;
       hasFocus = false;
       Window w = getParentWindow();
       if ((Settings.keyboardFocusTraversable || Settings.geographicalFocus) && w != null && w == Window.getTopMost()) // guich@tc110_81: remove highlight from us. - guich@tc120_39: only if we're in the topmost window
@@ -566,7 +564,7 @@ public class MultiEdit extends Container implements Scrollable
                   return;
                }
                if (parent != null && (editMode || Settings.fingerTouch)) 
-                  draw(drawg);
+                  Window.needsPaint = true;
                // guich@tc130: show the copy/paste menu
                if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
@@ -586,7 +584,6 @@ public class MultiEdit extends Container implements Scrollable
                else
                if (!Settings.fingerTouch)
                   showSip(); // guich@tc126_21
-               if (drawg == null) drawg = getGraphics();
                hasFocus = true;
                if (blinkTimer == null) 
                   blinkTimer = addTimer(350);
@@ -1005,11 +1002,10 @@ public class MultiEdit extends Container implements Scrollable
          if (newInsertPos < 0) newInsertPos = 0;
          boolean insertChanged = (newInsertPos != startSelectPos);
          if (insertChanged && cursorShowing) 
-            draw(drawg); // erase cursor at old insert position
+            Window.needsPaint = true; // erase cursor at old insert position
          insertPos = newInsertPos;
          if (redraw || insertChanged)
             Window.needsPaint = true;
-         if (event.type == ControlEvent.FOCUS_OUT) drawg = null;
       }
       else if (event.target == sb && event.type == ControlEvent.PRESSED)
       {
@@ -1234,7 +1230,7 @@ public class MultiEdit extends Container implements Scrollable
    protected void popPosState()
    {
       if (cursorShowing)
-         draw(drawg);
+         Window.needsPaint = true;
       insertPos = pushedInsertPos;
       startSelectPos = pushedStartSelectPos;
    }
