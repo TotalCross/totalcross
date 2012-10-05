@@ -302,8 +302,11 @@ public class Image extends GfxSurface
    }
    
    /** Applies any pending changes made in this image.
-    * In Open GL platforms, creates a texture for this image, which speeds up painting up to 99%.
-    * In other platforms, does nothing.
+    * In Open GL platforms, creates a texture for this image. This is already done, lazily, when the image
+    * is going to be painted. If you want to speedup paint, call this method as soon as any changes in the image
+    * are finished.
+    * 
+    * In non-open gl platforms, does nothing.
     * @since TotalCross 2
     */
    public void applyChanges()

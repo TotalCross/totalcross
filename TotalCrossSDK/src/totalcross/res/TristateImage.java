@@ -69,7 +69,6 @@ public class TristateImage
       {
          ret = scaleTo(width,height);
          ret.applyColor(backColor);
-         ret.applyChanges();
          htNormal.put(hash, ret);
       }
       return ret;
@@ -85,10 +84,7 @@ public class TristateImage
       }
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
-      {
          htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance(backColor));
-         ret.applyChanges();
-      }
       return ret;
    }
    
@@ -112,7 +108,6 @@ public class TristateImage
             ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
             ret = ret.getFadedInstance(backColor);
-         ret.applyChanges();
          htPressed.put(hash, ret);
       }
       return ret;

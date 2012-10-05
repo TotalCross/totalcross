@@ -144,6 +144,15 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
    Object thisObj = p->obj[0];
    applyChanges(thisObj);
 }
+//////////////////////////////////////////////////////////////////////////
+void glDeleteTexture(int32* textureId);
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{  
+#ifdef ANDROID   
+   Object thisObj = p->obj[0];
+   glDeleteTexture(&(Image_textureId(thisObj)));
+#endif   
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"

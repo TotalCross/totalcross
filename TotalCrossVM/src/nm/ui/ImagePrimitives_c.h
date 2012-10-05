@@ -644,13 +644,15 @@ void setTransparentColor(Object obj, Pixel color)
 
 
 void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height);
-static void applyChanges(Object obj)
+void applyChanges(Object obj);
+void applyChanges(Object obj)
 {
    int32 frameCount = Image_frameCount(obj);
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
    glLoadTexture(&(Image_textureId(obj)), pixels, width, Image_height(obj));
+   Image_changed(obj) = false;
 }
 
 static bool nativeEquals(Object thisObj, Object otherObj)

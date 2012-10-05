@@ -176,6 +176,8 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
 }
 
 void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h);
+void applyChanges(Object obj);
+
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
 // Destination is always a Graphics object.
 static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
@@ -262,8 +264,12 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
 #ifdef ANDROID
-   if (Graphics_useOpenGL(dstSurf) && !isSrcScreen && Image_textureId(srcSurf) > 0)
+   if (Graphics_useOpenGL(dstSurf) && !isSrcScreen)
+   {
+      if (Image_changed(srcSurf))
+         applyChanges(srcSurf);
       glDrawTexture(currentContext, Image_textureId(srcSurf), dstX, dstY, width, height);
+   }
    else
 #endif      
    for (i=0; i < (uint32)height; i++)
@@ -271,55 +277,31 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       PixelConv *ps = (PixelConv*)srcPixels;
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
-#ifdef ANDROID
-      if (Graphics_useOpenGL(dstSurf))
-      {
-         int32 x = dstX;
-         int32 y = i + dstY;
-         GLfloat *coords = currentContext->glcoords;
-         GLfloat *colors = currentContext->glcolors;
-         for (; count != 0; x++,ps++, count--)
+      int32 a,r,g,b,ma;
+      if (isSrcScreen)
+         for (;count != 0; pt++,ps++, count--)
          {
-            *coords++ = x;
-            *coords++ = y;
-            coords++;
-            *colors++ = (GLfloat)ps->r / (GLfloat)255;
-            *colors++ = (GLfloat)ps->g / (GLfloat)255;
-            *colors++ = (GLfloat)ps->b / (GLfloat)255;
-            *colors++ = (GLfloat)ps->a / (GLfloat)255;
+            pt->pixel = ps->pixel;
+            pt->a = 0xFF;
          }
-//         if (colors != currentContext->glcolors)
-  //          glDrawPixels(currentContext, ((int32)(colors-currentContext->glcolors)>>2));
-      }
       else
-#endif
-      {
-         int32 a,r,g,b,ma;
-         if (isSrcScreen)
-            for (;count != 0; pt++,ps++, count--)
-            {
+         for (;count != 0; pt++,ps++, count--)
+         {
+            a = ps->a;
+            if (a == 0xFF)
                pt->pixel = ps->pixel;
-               pt->a = 0xFF;
-            }
-         else
-            for (;count != 0; pt++,ps++, count--)
+            else
+            if (a != 0)
             {
-               a = ps->a;
-               if (a == 0xFF)
-                  pt->pixel = ps->pixel;
-               else
-               if (a != 0)
-               {
-                  ma = 0xFF-a;
-                  r = (a * ps->r + ma * pt->r);
-                  g = (a * ps->g + ma * pt->g);
-                  b = (a * ps->b + ma * pt->b);
-                  pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                  pt->g = (g+1 + (g >> 8)) >> 8;
-                  pt->b = (b+1 + (b >> 8)) >> 8;
-               }
+               ma = 0xFF-a;
+               r = (a * ps->r + ma * pt->r);
+               g = (a * ps->g + ma * pt->g);
+               b = (a * ps->b + ma * pt->b);
+               pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+               pt->g = (g+1 + (g >> 8)) >> 8;
+               pt->b = (b+1 + (b >> 8)) >> 8;
             }
-      }
+         }
       srcPixels += srcPitch;
       dstPixels += Graphics_pitch(dstSurf);
    }

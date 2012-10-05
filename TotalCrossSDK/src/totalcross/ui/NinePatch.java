@@ -198,7 +198,6 @@ public class NinePatch
          if (ret == null)
          {
             ret = getNormalInstance(parts[type],width,height,color,rotate);
-            ret.applyChanges();
             if (fromCache)
                htBtn.put(hash, ret);
          }
@@ -225,7 +224,6 @@ public class NinePatch
                pressed.applyColor(pressColor); // colorize it
             }
             else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
-            pressed.applyChanges();
             if (fromCache)
                htPressBtn.put(hash, pressed);
          }

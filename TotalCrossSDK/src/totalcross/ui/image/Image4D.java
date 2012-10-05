@@ -30,6 +30,7 @@ public class Image4D extends GfxSurface
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
    private int textureId;
+   private boolean changed = true;
    
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
@@ -155,6 +156,7 @@ public class Image4D extends GfxSurface
 
    public Graphics4D getGraphics()
    {
+      changed = true;
       gfx.setFont(MainWindow.getDefaultFont());
       return gfx;
    }
@@ -487,4 +489,10 @@ public class Image4D extends GfxSurface
    native private boolean nativeEquals(Image other);
    native public void applyColor2(int color);
    native public Image setTransparentColor4D(int color);
+   native private void freeTexture();
+   
+   public void finalize()
+   {
+      freeTexture();
+   }
 }

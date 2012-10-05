@@ -35,6 +35,7 @@ TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
 TC_API void tuiI_setTransparentColor_i(NMParams p);
 TC_API void tuiI_applyChanges(NMParams p);
+TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
@@ -564,6 +565,10 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2287,6 +2292,11 @@ TESTCASE(tuiI_setTransparentColor_i) // totalcross/ui/image/Image native public 
    finish: ;
 }
 TESTCASE(tuiI_applyChanges) // totalcross/ui/image/Image native public void applyChanges();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_freeTexture) // totalcross/ui/image/Image native private void freeTexture();
 {
    TEST_SKIP;
    finish: ;

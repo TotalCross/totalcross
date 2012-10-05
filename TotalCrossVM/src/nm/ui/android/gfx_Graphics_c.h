@@ -54,28 +54,24 @@ GLfloat ftransp[16], f255[256];
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
 #define TEXTURE_VERTEX_CODE  \
-      "uniform vec4 uTextureColor;" \
       "attribute vec4 vertexPoint;" \
       "attribute vec2 aTextureCoord;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
-      "varying vec4 vTextureColor;" \
       "void main()" \
       "{" \
       "    gl_Position = vertexPoint * projectionMatrix;" \
       "    vTextureCoord = aTextureCoord;" \
-      "    vTextureColor = uTextureColor;" \
       "}"
 
 #define TEXTURE_FRAGMENT_CODE \
       "precision mediump float;" \
       "varying vec2 vTextureCoord;" \
-      "varying vec4 vTextureColor;" \
       "uniform sampler2D sTexture;" \
-      "void main() {gl_FragColor = texture2D(sTexture, vTextureCoord) * vTextureColor;}"
+      "void main() {gl_FragColor = texture2D(sTexture, vTextureCoord);}"
 
 static GLuint textureProgram;
-static GLuint textureColor,texturePoint;
+static GLuint texturePoint;
 static GLuint textureCoord,textureS;
 
 //////////// points (text)
@@ -196,7 +192,6 @@ void initTexture()
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
 //   glActiveTexture(GL_TEXTURE0);
-   textureColor = glGetUniformLocation(textureProgram, "uTextureColor");
    textureS     = glGetUniformLocation(textureProgram, "sTexture");
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint");
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord");
@@ -210,25 +205,36 @@ void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
    PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   bool textureAlreadyCreated = *textureId != 0;
    if (!pt)
       return;
    
-   if (*textureId)
-      debug("reusing texture %d",*textureId);
-      
-   glGenTextures(1, textureId);
+   if (!textureAlreadyCreated)
+      glGenTextures(1, textureId);
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
    glBindTexture(GL_TEXTURE_2D, *textureId);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-   
+   if (!textureAlreadyCreated)
+   {
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glUniform1i(textureS, 0);
+   }
    // must invert the pixels from ARGB to RGBA
    for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
+   if (textureAlreadyCreated)
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
+   else
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
    glBindTexture(GL_TEXTURE_2D, 0);
    xfree(pt0);
+}
+
+void glDeleteTexture(int32* textureId)
+{                  
+   glDeleteTextures(1,textureId);
+   *textureId = 0;
 }
 
 void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h)
@@ -243,8 +249,6 @@ void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 
    glBindTexture(GL_TEXTURE_2D, textureId);
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords);
    glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, textureVerts);
-   glUniform1i(textureS, 0);
-   glUniform4f(textureColor, 1,1,1,1);
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
    glBindTexture(GL_TEXTURE_2D, 0);
    coords[2] = coords[5] = 0; 
@@ -268,7 +272,7 @@ void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
    coords[1] = y;
 
    setCurrentProgram(lrpProgram);
-   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
+   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line - nopt to cache color
    glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
    glDrawArrays(GL_POINTS, 0,1);
 }
@@ -400,17 +404,14 @@ static bool initGLES()
 
 static void destroyEGL()
 {           
-   debug("destroy egl ********************");
-    eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    eglDestroyContext(_display, _context);
-    eglDestroySurface(_display, _surface);
-    eglTerminate(_display);
+   eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+   eglDestroyContext(_display, _context);
+   eglDestroySurface(_display, _surface);
+   eglTerminate(_display);
 
-    _display = EGL_NO_DISPLAY;
-    _surface = EGL_NO_SURFACE;
-    _context = EGL_NO_CONTEXT;
-
-    return;
+   _display = EGL_NO_DISPLAY;
+   _surface = EGL_NO_SURFACE;
+   _context = EGL_NO_CONTEXT;
 }
 
 
