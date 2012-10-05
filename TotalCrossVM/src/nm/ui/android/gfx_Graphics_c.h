@@ -186,7 +186,6 @@ void glDrawPixels(Context c, int32 n)
    glDrawArrays(GL_POINTS, 0,n);
 }
 
-static GLfloat textureVerts[8] = { 0, 1,  1, 1,  1, 0,  0, 0 };
 void initTexture()
 {
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
@@ -236,21 +235,30 @@ void glDeleteTexture(int32* textureId)
    *textureId = 0;
 }
 
-void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h)
+void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
    GLfloat* coords = c->glcoords;
    setCurrentProgram(textureProgram);
-
-   coords[0] = coords[6] = x;
-   coords[1] = coords[3] = y+h;
-   coords[2] = coords[4] = x+w;
-   coords[5] = coords[7] = y;
    glBindTexture(GL_TEXTURE_2D, textureId);
+
+   // destination coordinates   
+   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
+   coords[0] = coords[6] = dstX;
+   coords[1] = coords[3] = dstY+h;
+   coords[2] = coords[4] = dstX+w;
+   coords[5] = coords[7] = dstY;
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords);
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, textureVerts);
+   
+   // source coordinates
+   coords[ 8] = coords[14] = left; 
+   coords[ 9] = coords[11] = bottom;
+   coords[10] = coords[12] = right; 
+   coords[13] = coords[15] = top;
+   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]);
+   
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
    glBindTexture(GL_TEXTURE_2D, 0);
-   coords[2] = coords[5] = 0; 
+   coords[2] = coords[5] = coords[8] = coords[11] = coords[14]; 
 }
 
 void initLineRectPoint()
@@ -387,7 +395,6 @@ static bool initGLES()
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
    glViewport(0, 0, width, height);
-   //glEnable(GL_SCISSOR_TEST);
    glDisable(GL_CULL_FACE);
    glDisable(GL_DEPTH_TEST);
    glEnable(GL_BLEND); // enable color alpha channel
@@ -445,7 +452,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 }
 
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
-{
+{                
    eglSwapBuffers(_display, _surface);
 }
 

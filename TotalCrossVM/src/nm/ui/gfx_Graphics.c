@@ -24,6 +24,8 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
 void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb);
 void glDrawPixels(Context c, int32 n);
 int32 glGetPixel(int32 x, int32 y);
+void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
+void applyChanges(Object obj);
 
 #if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"

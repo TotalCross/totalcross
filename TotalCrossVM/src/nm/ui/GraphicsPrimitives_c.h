@@ -175,9 +175,6 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
    UNLOCKVAR(screen);
 }
 
-void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h);
-void applyChanges(Object obj);
-
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
 // Destination is always a Graphics object.
 static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
@@ -268,7 +265,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    {
       if (Image_changed(srcSurf))
          applyChanges(srcSurf);
-      glDrawTexture(currentContext, Image_textureId(srcSurf), dstX, dstY, width, height);
+      glDrawTexture(currentContext, Image_textureId(srcSurf), srcX,srcY,width,height, dstX,dstY, srcWidth,srcHeight);
    }
    else
 #endif      
@@ -277,26 +274,21 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       PixelConv *ps = (PixelConv*)srcPixels;
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
-      int32 a,r,g,b,ma;
       if (isSrcScreen)
-         for (;count != 0; pt++,ps++, count--)
-         {
-            pt->pixel = ps->pixel;
-            pt->a = 0xFF;
-         }
+         xmemmove(pt, ps, count<<2);
       else
          for (;count != 0; pt++,ps++, count--)
          {
-            a = ps->a;
+            int32 a = ps->a;
             if (a == 0xFF)
                pt->pixel = ps->pixel;
             else
             if (a != 0)
             {
-               ma = 0xFF-a;
-               r = (a * ps->r + ma * pt->r);
-               g = (a * ps->g + ma * pt->g);
-               b = (a * ps->b + ma * pt->b);
+               int32 ma = 0xFF-a;
+               int32 r = (a * ps->r + ma * pt->r);
+               int32 g = (a * ps->g + ma * pt->g);
+               int32 b = (a * ps->b + ma * pt->b);
                pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
                pt->g = (g+1 + (g >> 8)) >> 8;
                pt->b = (b+1 + (b >> 8)) >> 8;
