@@ -191,7 +191,6 @@ void initTexture()
 {
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
-//   glActiveTexture(GL_TEXTURE0);
    textureS     = glGetUniformLocation(textureProgram, "sTexture");
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint");
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord");
@@ -208,7 +207,7 @@ void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
    bool textureAlreadyCreated = *textureId != 0;
    if (!pt)
       return;
-   
+
    if (!textureAlreadyCreated)
       glGenTextures(1, textureId);
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
