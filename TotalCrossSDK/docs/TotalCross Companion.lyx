@@ -26733,6 +26733,713 @@ control.setRect(CENTER-getLeftInset()/2,...);
 \end_layout
 
 \begin_layout Section
+AnimatedButton
+\end_layout
+
+\begin_layout Standard
+An animated button control.
+ It extends 
+\family typewriter
+Animation
+\family default
+, the class described in the next section.
+\end_layout
+
+\begin_layout Standard
+This control displays an animated button which can take 
+\family typewriter
+S
+\family default
+ different states and each state is fade in or out in 
+\family typewriter
+F
+\family default
+ frames.
+ 
+\family typewriter
+S
+\family default
+ and 
+\family typewriter
+F
+\family default
+ represent the two first constructor arguments.
+ The frames of this special animation have to be ordered to be supported
+ by this class.
+ The states are numbered from 0 to 
+\family typewriter
+S-1
+\family default
+ and the frames order is the following depending on the layout type value:
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+FADE_OUT_LAYOUT
+\family default
+: 
+\family typewriter
+S0F0
+\family default
+,
+\family typewriter
+S0F1
+\family default
+,
+\family typewriter
+S0F2
+\family default
+,
+\family typewriter
+S1F0
+\family default
+,
+\family typewriter
+S1F1
+\family default
+,
+\family typewriter
+S1F2
+\family default
+,
+\family typewriter
+S2F0
+\family default
+,
+\family typewriter
+S2F1
+\family default
+,
+\family typewriter
+S2F2
+\family default
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+FADE_IN_LAYOUT
+\family default
+: 
+\family typewriter
+S0F2
+\family default
+,
+\family typewriter
+S0F1
+\family default
+,
+\family typewriter
+S0F0
+\family default
+,
+\family typewriter
+S1F2
+\family default
+,
+\family typewriter
+S1F1
+\family default
+,
+\family typewriter
+S1F0
+\family default
+,
+\family typewriter
+S2F2
+\family default
+,
+\family typewriter
+S2F1
+\family default
+,
+\family typewriter
+S2F0
+\family default
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+FADE_OUT_IN_LAYOUT
+\family default
+: 
+\family typewriter
+S0F0
+\family default
+,
+\family typewriter
+S0F1
+\family default
+,
+\family typewriter
+S1F1
+\family default
+,
+\family typewriter
+S1F0
+\family default
+,
+\family typewriter
+S1F1
+\family default
+,
+\family typewriter
+S2F1
+\family default
+,
+\family typewriter
+S2F0
+\family default
+,
+\family typewriter
+S2F1
+\family default
+,
+\family typewriter
+S0F1
+\family default
+ 
+\end_layout
+
+\begin_layout Standard
+where 
+\family typewriter
+S
+\family default
+ stands for state, 
+\family typewriter
+F
+\family default
+ for frame and where 
+\family typewriter
+S0F0
+\family default
+, 
+\family typewriter
+S1F0
+\family default
+, and 
+\family typewriter
+S2F0
+\family default
+ are the full states and the others are transition frames.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is an example of how to use this class:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.game.AnimatedButton;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.io.IOException;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.image.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	AnimatedButton btn;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		try
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			btn = new AnimatedButton(new Image("Ping_onOff.png"), 2,6,AnimatedButton.FADE_O
+UT_LAYOUT,-1,50);
+\end_layout
+
+\begin_layout Plain Layout
+
+			add(btn, CENTER, CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (ImageException e) {}
+\end_layout
+
+\begin_layout Plain Layout
+
+		catch (IOException e) {}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+where 
+\family typewriter
+Ping_onOff.png
+\family default
+ is the following image:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/Ping_onOff.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+which results in the following screenshots (the button starts an animation
+ when it's clicked on):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_009.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_010.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_011.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/animatedbutton_012.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor and methods (excluding some
+ fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AnimatedButton(Image
+\begin_inset space ~
+\end_inset
+
+frames,int
+\begin_inset space ~
+\end_inset
+
+states,int
+\begin_inset space ~
+\end_inset
+
+framesPerState,int
+\begin_inset space ~
+\end_inset
+
+layoutType,int
+\begin_inset space ~
+\end_inset
+
+transColor,int
+\begin_inset space ~
+\end_inset
+
+framePeriod) Animated button constructor, where 
+\family typewriter
+frames
+\family default
+ is the button different states frames in multi-framed PNG format, 
+\family typewriter
+states
+\family default
+ is the number of states of the button, 
+\family typewriter
+framesPerState
+\family default
+ is the number of frames for each state, 
+\family typewriter
+layoutType
+\family default
+ must be 
+\family typewriter
+FADE_OUT_LAYOUT
+\family default
+, 
+\family typewriter
+FADE_IN_LAYOUT
+\family default
+ or 
+\family typewriter
+FADE_OUT_IN_LAYOUT
+\family default
+, 
+\family typewriter
+transColor
+\family default
+ is the the transparency color, and 
+\family typewriter
+framePeriod
+\family default
+ is the delay in milliseconds between two frames.
+\begin_inset Newline newline
+\end_inset
+
+In the case of a 
+\family typewriter
+S
+\family default
+ states button of 
+\family typewriter
+F
+\family default
+ frames per state, 
+\family typewriter
+FADE_OUT_LAYOUT
+\family default
+ means that the frames are a 
+\family typewriter
+S
+\family default
+ set of 
+\family typewriter
+F
+\family default
+ frames that are fading out the state, that means the first frame of of
+ each set is the full state image.
+ In the 
+\family typewriter
+FADE_IN_LAYOUT
+\family default
+ layout, it's the opposite, namely the last frame of each set represents
+ the state ending position.
+ Finaly the 
+\family typewriter
+FADE_OUT_IN_LAYOUT
+\family default
+ is a mix of the two others, because inter-frames represent successively
+ fading out from one state to fading in to next state.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setState(int
+\begin_inset space ~
+\end_inset
+
+state) Sets the animated button state, where 
+\family typewriter
+state
+\family default
+ range from 0 to the number of states - 1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getState() Gets the animated button state.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+event) Animated button event handler.
+\end_layout
+
+\begin_layout Section
 Animation
 \end_layout
 
