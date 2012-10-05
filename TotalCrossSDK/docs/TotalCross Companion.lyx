@@ -22045,14 +22045,7 @@ You can extend
 \family typewriter
 ListBox
 \family default
- to implement a customized type, like a color-chooser list box (see 
-\begin_inset CommandInset ref
-LatexCommand nameref
-reference "chap:Advanced-Controls"
-
-\end_inset
-
-).
+ to implement a customized type, like a color-chooser list box.
  If doing so, the following methods must be overridden:
 \end_layout
 
@@ -35010,6 +35003,528 @@ clearValueInt
 \end_layout
 
 \begin_layout Section
+ScrollContainer
+\end_layout
+
+\begin_layout Standard
+This is a container with a horizontal only, vertical only, both, or no scroll
+ bars, depending on the control positions.
+ The default unit scroll is an edit's height (for the vertical scrollbar),
+ and the width of an 
+\family typewriter
+@
+\family default
+ (for the horizontal scrollbar).
+ 
+\end_layout
+
+\begin_layout Standard
+Caution: you must not use 
+\family typewriter
+RIGHT
+\family default
+, 
+\family typewriter
+BOTTOM
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, and 
+\family typewriter
+FILL
+\family default
+ when setting the control bounds, unless you disable the corresponding scroll
+ bar! The only exception to this is to use 
+\family typewriter
+FILL
+\family default
+ on the control's height, which is allowed.
+\end_layout
+
+\begin_layout Standard
+Here is an example showing how it can be used: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings; 
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public class Teste extends MainWindow 
+\end_layout
+
+\begin_layout Plain Layout
+
+{    
+\end_layout
+
+\begin_layout Plain Layout
+
+	public Teste()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Teste", HORIZONTAL_GRADIENT);
+\end_layout
+
+\begin_layout Plain Layout
+
+		setUIStyle(Settings.Android);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	ScrollContainer sc;
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		ScrollContainer sc;
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(sc = new ScrollContainer());
+\end_layout
+
+\begin_layout Plain Layout
+
+		sc.setBorderStyle(BORDER_SIMPLE);
+\end_layout
+
+\begin_layout Plain Layout
+
+		sc.setRect(LEFT+10,TOP+10,FILL-20,FILL-20);
+\end_layout
+
+\begin_layout Plain Layout
+
+		int xx = new Label("Name99").getPreferredWidth()+2; // edit's alignment
+\end_layout
+
+\begin_layout Plain Layout
+
+		for (int i =0; i < 100; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			sc.add(new Label("Name"+i),LEFT,AFTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+			sc.add(new Edit("@@@@@@@@@@@@@@@@@@@@"),xx,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+			if (i % 3 == 0)
+\end_layout
+
+\begin_layout Plain Layout
+
+				sc.add(new Button("Go"), AFTER+2,SAME,PREFERRED,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+which results in the following screenshots:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollcontainer_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollcontainer_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollcontainer_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollcontainer_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+AndroidUI uses this control in almost all windows so that its components
+ can be scrolled.
+ UIGadgets also uses it in one of its tests.
+ Using Android user interface style, the following screenshot can be seen:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/scrollcontainer_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+sbH,
+\begin_inset space ~
+\end_inset
+
+sbV Contains the horizontal and vertical scroll bars for 
+\family typewriter
+ScrollContainer
+\family default
+.
+ With it, you can directly set its parameters, like the block increment,
+ the unit increment or if it has live scrolling.
+ But be careful, don't mess with the minimum, maximum and number of visible
+ items.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shrink2size Set to 
+\family typewriter
+true
+\family default
+, to make the surrounding container shrink to its size.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollContainer() Standard constructor for a new 
+\family typewriter
+ScrollContainer
+\family default
+, with both scroll bars enabled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollContainer(boolean
+\begin_inset space ~
+\end_inset
+
+allowScrollBars) Constructor used to specify when both scroll bars are enabled
+ or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ScrollContainer(boolean
+\begin_inset space ~
+\end_inset
+
+allowHScrollBar,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+allowVScrollBar) Constructor used to specify when each scroll bar is enabled
+ or not.
+ By disabling the horizontal scroll bar, you can use 
+\family typewriter
+RIGHT
+\family default
+ and 
+\family typewriter
+CENTER
+\family default
+ on the 
+\family typewriter
+x
+\family default
+ parameter of a control that is added.
+ By disabling the vertical scroll bar, you can use 
+\family typewriter
+BOTTOM
+\family default
+ and 
+\family typewriter
+CENTER
+\family default
+ on the 
+\family typewriter
+y
+\family default
+ parameter of a control that is added.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(Control
+\begin_inset space ~
+\end_inset
+
+control) Adds a child control to the bag container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remove(Control
+\begin_inset space ~
+\end_inset
+
+control) Removes a child control from the bag container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resize() This method resizes the control to the needed bounds, based on
+ the added childs.
+ It must be called if you're controlling reposition by your own, after you
+ repositioned the controls inside of it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resize(int
+\begin_inset space ~
+\end_inset
+
+maxX,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+maxY) This method resizes the control to the needed bounds, based on the
+ given maximum width and heights.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getScrollDistance() Override this method to return the correct scroll distance.
+ Defaults to the container's width.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the preferred width AFTER the 
+\family typewriter
+resize()
+\family default
+ method was called.
+ If the scroll bars are disabled, it returns the maximum size of the container
+ to hold all controls.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the preferred height AFTER the 
+\family typewriter
+resize()
+\family default
+ method was called.
+ If the scroll bars are disabled, it returns the maximum size of the container
+ to hold all controls.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToPage(int
+\begin_inset space ~
+\end_inset
+
+p) Scrolls to the given page, which is the flick's scroll distance (if set),
+ or the control's height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scrollToControl(Control
+\begin_inset space ~
+\end_inset
+
+c) Scrolls to the given control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeAll() Removes all controls from the 
+\family typewriter
+ScrollContainer
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBagChildren() Returns the children of the bag.
+ If you call 
+\family typewriter
+ScrollContainer.getChildren()
+\family default
+, it will not return the controls added to the 
+\family typewriter
+ScrollContainer
+\family default
+, since they are actually added to the bag.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+\end_layout
+
+\begin_layout Section
 ScrollPosition
 \end_layout
 
@@ -36081,6 +36596,60 @@ stop() Stops the spinning thread.
 \begin_layout FieldList
 \labelwidthstring 0
 isRunning() Returns if the spinner is running.
+ 
+\end_layout
+
+\begin_layout Section
+TabbedContainer
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+TabbedContainer
+\family default
+ is a bar of text or image tabs.
+ It is assumed that all images will have the same height, but they may have
+ different widths.
+ A scroll is automatically added when the total width of the titles is bigger
+ than the control's width.
+ The containers are created automatically and switched when the user press
+ the corresponding tab.
+ 
+\end_layout
+
+\begin_layout Standard
+When the user interface has Android style, the tabs do not look good if
+ the background is the same of the parent's.
+ In this case, we force the background to be slighly darker.
+ There are a few fields that you can use to change the color, like 
+\family typewriter
+activeTabBackColor
+\family default
+, 
+\family typewriter
+useOnTabTheContainerColor
+\family default
+, and 
+\family typewriter
+pressedColor
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Important: with 
+\family typewriter
+Settings.fingerTouch = true
+\family default
+, you CANNOT call 
+\family typewriter
+setRect()
+\family default
+ in your container.
+ Otherwise, the flick and drag will not work and your container will be
+ positioned incorrectly.
  
 \end_layout
 
@@ -37604,126 +38173,20 @@ getPenColor() Returns the drawing pen color.
 \end_layout
 
 \begin_layout Chapter
-Additional Advanced Controls
-\begin_inset CommandInset label
-LatexCommand label
-name "chap:Advanced-Controls"
-
-\end_inset
-
-
+Charts
 \end_layout
 
 \begin_layout Standard
-Here a list of advanced controls which are not described in the other chapter
- is found.
+Here a list of chart classes supported by TotalCross.
+ They are located in the package 
+\family typewriter
+totalcross.ui.
+ chart
+\family default
+.
  For more details, please check the JavaDocs.
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-ScrollContainer 
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-This is a container with a horizontal only, vertical only, both or no scroll
- bars, depending on the control positions.
- The default unit scroll is an edit's height (for the vertical scrollbar),
- and the width of an 
-\family typewriter
-@
-\family default
- (for the horizontal scrollbar).
- 
-\end_layout
-
-\begin_layout Standard
-Caution: you must not use 
-\family typewriter
-RIGHT
-\family default
-, 
-\family typewriter
-BOTTOM
-\family default
-, 
-\family typewriter
-CENTER
-\family default
-, and 
-\family typewriter
-FILL
-\family default
- when setting the control bounds, unless you disable the corresponding scroll
- bar! The only exception to this is to use 
-\family typewriter
-FILL
-\family default
- on the control's height, which is allowed.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-TabbedContainer
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-
-\family typewriter
-TabbedContainer
-\family default
- is a bar of text or image tabs.
- It is assumed that all images will have the same height, but they may have
- different widths.
- A scroll is automatically added when the total width of the titles is bigger
- than the control's width.
- The containers are created automatically and switched when the user press
- the corresponding tab.
- 
-\end_layout
-
-\begin_layout Standard
-When the user interface has Android style, the tabs do not look good if
- the background is the same of the parent's.
- In this case, we force the background to be slighly darker.
- There are a few fields that you can use to change the color, like 
-\family typewriter
-activeTabBackColor
-\family default
-, 
-\family typewriter
-useOnTabTheContainerColor
-\family default
-, and 
-\family typewriter
-pressedColor
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-Important: with 
-\family typewriter
-Settings.fingerTouch = true
-\family default
-, you CANNOT call 
-\family typewriter
-setRect()
-\family default
- in your container.
- Otherwise, the flick and drag will not work and your container will be
- positioned incorrectly.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
