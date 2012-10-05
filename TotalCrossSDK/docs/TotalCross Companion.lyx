@@ -36613,7 +36613,7 @@ TabbedContainer
  different widths.
  A scroll is automatically added when the total width of the titles is bigger
  than the control's width.
- The containers are created automatically and switched when the user press
+ The containers are created automatically and switched when the user presses
  the corresponding tab.
  
 \end_layout
@@ -36626,8 +36626,12 @@ When the user interface has Android style, the tabs do not look good if
 \family typewriter
 activeTabBackColor
 \family default
-, 
+,
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 useOnTabTheContainerColor
 \family default
 , and 
@@ -36639,6 +36643,20 @@ pressedColor
 \end_layout
 
 \begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
 Important: with 
 \family typewriter
 Settings.fingerTouch = true
@@ -36650,7 +36668,656 @@ setRect()
  in your container.
  Otherwise, the flick and drag will not work and your container will be
  positioned incorrectly.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Below are some screenshots taken from UIGadgets (using Android user interface
+ style) and AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/tabbedcontainer_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+beepOn Set to 
+\family typewriter
+true
+\family default
+ to enable the beep when a tab is clicked.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+arrowsColor Sets the arrows color right after the constructor and after
+ calling 
+\family typewriter
+setCaptionColor()
+\family default
+, which also changes this property.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+activeTabBackColor This color is the one used to paint the background of
+ the active tab.
+ This is specially useful for image tabs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+tabsBackColor Stores the colors used on each tab.
+ You must create and set the array with the colors.
+ Use -1 to keep the original color.
+ This array has precedence over the other ways that changes colors, except
  
+\family typewriter
+activeTabBackColor
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useOnTabTheContainerColor Sets the tabs with the same colors of the container.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lastActiveTab Stores the last active tab index, or -1 if none was previously
+ selected.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flickIntoDisabledTabs On finger touch devices, the user still can flick
+ into a disabled tab.
+ To disable this behaviour, set this flag to 
+\family typewriter
+false
+\family default
+; so when a disabled tab is reached, the user will not be able to flick
+ into it, and will have to click on an enabled tab to continue flicking.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pressedColor Stores the color when the user clicks on the tab.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allSameWidth Set to 
+\family typewriter
+true
+\family default
+ to make all tabs have the same width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+extraTabHeight Defines an extra height for the tabs.
+ Use something line 
+\family typewriter
+fmH*2
+\family default
+.
+ Required when 
+\family typewriter
+setIcons()
+\family default
+ is called.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TabbedContainer(String[]
+\begin_inset space ~
+\end_inset
+
+strCaptions) Constructs a tab bar control with strings as captions.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TabbedContainer(Image[]
+\begin_inset space ~
+\end_inset
+
+imgCaptions,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+transparentColor) Constructs a tab bar control with images as captions,
+ using the given color as transparent color.
+ If you don't want to use transparent colors, just pass -1 to the color.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTabCount() Returns the number of tabs.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setEnabled(int
+\begin_inset space ~
+\end_inset
+
+tabIndex,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+on) Sets the given tab index as enabled or not, where 
+\family typewriter
+tabIndex
+\family default
+ is the tab's index (starting with 0), and 
+\family typewriter
+on
+\family default
+ must be 
+\family typewriter
+true
+\family default
+ to enable the tab; 
+\family typewriter
+false
+\family default
+, otherwise.
+ When a tab is disabled, it is displayed faded, and if the user clicks on
+ it, nothing happens.
+ However, you still can activate it by calling 
+\family typewriter
+setActiveTab()
+\family default
+.
+ If there are no tabs enabled, the current tab will be made active and the
+ controls will also be enabled.
+ So, if you plan to disable all tabs, better disable the 
+\family typewriter
+TabbedContainer
+\family default
+ control instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isEnabled(int
+\begin_inset space ~
+\end_inset
+
+tabIndex) Returns if the given tab index is enabled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setIcons(Image[]
+\begin_inset space ~
+\end_inset
+
+icons) Sets the given icons to appear on the top (or bottom, if its type
+ is 
+\family typewriter
+TABS_BOTTOM
+\family default
+) of a text 
+\family typewriter
+TabbedContainer
+\family default
+.
+ The icon images must be squared.
+ You must also set the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+extraTabHeight
+\family default
+ value, because the icons will be resized to 
+\family typewriter
+extraTabHeight-fmH
+\family default
+ in both directions.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setType(byte
+\begin_inset space ~
+\end_inset
+
+type) Sets the position of the tabs.
+ Use the constants 
+\family typewriter
+TABS_TOP
+\family default
+ (specifies that the tabs will be placed on the top) or 
+\family typewriter
+TABS_BOTTOM
+\family default
+ (specifies that the tabs will be placed on the bottom).
+ Since the tabs are not changed dinamicaly, this method must be called after
+ the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getContainer(int
+\begin_inset space ~
+\end_inset
+
+i) Returns the 
+\family typewriter
+Container
+\family default
+ for tab 
+\family typewriter
+i
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBorderStyle(byte
+\begin_inset space ~
+\end_inset
+
+style) Sets the type of border.
+ Currently, only the 
+\family typewriter
+Window.NO_BORDER
+\family default
+ and 
+\family typewriter
+Window.RECT_BORDER
+\family default
+ types are supported.
+ 
+\family typewriter
+Window.NO_BORDER
+\family default
+ only draws the line under the tabs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setContainer(int
+\begin_inset space ~
+\end_inset
+
+i,
+\begin_inset space ~
+\end_inset
+
+Container
+\begin_inset space ~
+\end_inset
+
+container) Replaces the default created 
+\family typewriter
+Container
+\family default
+ with the given one.
+ This way you can avoid adding a container to a container and, as such,
+ waste memory.
+ Note that you must do this before the first 
+\family typewriter
+setRect()
+\family default
+ for this 
+\family typewriter
+TabbedContainer
+\family default
+; otherwise, you must explicitly call 
+\family typewriter
+setRect()
+\family default
+ again to update the added container bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setActiveTab(int
+\begin_inset space ~
+\end_inset
+
+tab) Sets the currently active tab.
+ A 
+\family typewriter
+PRESSED
+\family default
+ event will be posted to the given tab if it is not the currently active
+ tab; then, the containers will be switched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getActiveTab() Returns the index of the selected tab.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getActiveContainer() Returns the container of the active tab.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredHeight() Returns the caption height for this 
+\family typewriter
+TabbedContainer
+\family default
+.
+ Note that it is not possible to compute the correct height of each container,
+ since they will be added AFTER the 
+\family typewriter
+TabbedContainer
+\family default
+ has their bounds set.
+ So, you should actually use some other way to specify the bounds, like
+ 
+\family typewriter
+FILL
+\family default
+ or 
+\family typewriter
+FIT
+\family default
+; using 
+\family typewriter
+PREFERRED
+\family default
+ in the height of 
+\family typewriter
+setRect()
+\family default
+ will make your application abort.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPreferredWidth() Returns the minimum width (based on the sizes of the
+ captions) for the 
+\family typewriter
+TabbedContainer
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onFontChanged() Computes the rectangles of the tabs based on the selected
+ (bolded) and unselected (plain) titles.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTabColor(int
+\begin_inset space ~
+\end_inset
+
+tab) Returns the color of the given tab.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCaptionColor(int
+\begin_inset space ~
+\end_inset
+
+capColor) Sets the text color of the captions in the tabs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCaptionColor() Gets the text color of the captions.
+ Returns a grayed value if this control is not enabled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getClientRect() Returns the area excluding the tabs and borders for this
+ 
+\family typewriter
+TabbedContainer
+\family default
+.
+ Note: do not change the returning 
+\family typewriter
+Rect
+\family default
+ object!
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getClientRect(Rect
+\begin_inset space ~
+\end_inset
+
+r) Returns the area excluding the tabs and borders for the 
+\family typewriter
+TabbedContainer
+\family default
+.
+ In this version, you provide the created 
+\family typewriter
+Rect
+\family default
+ to be filled with the coords.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+changeHighlighted(Container
+\begin_inset space ~
+\end_inset
+
+p,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+forward) Tranfers the focus between the containers of the 
+\family typewriter
+TabbedContainer
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setHighlighting() Only returns to highlighting when we want.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isAtTop() Returns 
+\family typewriter
+true
+\family default
+ if the type is set to 
+\family typewriter
+TABS_TOP
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resizeHeight() Resizes the height of each added container and sets the height
+ of the 
+\family typewriter
+TabbedContainer
+\family default
+ to the maximum height of the containers.
 \end_layout
 
 \begin_layout Section
