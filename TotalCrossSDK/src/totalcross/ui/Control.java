@@ -821,7 +821,13 @@ public class Control extends GfxSurface
          if (Settings.platform.equals(Settings.ANDROID))
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
-            Window.repaintActiveWindows();
+            if (MainWindow.isMainThread())
+               Window.repaintActiveWindows();
+            else
+            {
+               MainWindow.mainWindowInstance.setTimerInterval(1);
+               Vm.safeSleep(1);
+            }
          }
          else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything

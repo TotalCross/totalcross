@@ -62,26 +62,22 @@ public class ProgressBarSamples extends BaseContainer
          sc.add(pbzv,BEFORE-gap,SAME,fmH/2,SAME);
          
          final int ini = Vm.getTimeStamp();
-         new Thread() { 
-            public void run()
-            {
-               for (int i = max; --i >= 0;)
-               {
-                  int v = pbh.getValue();
-                  v = (v+1) % (pbh.max+1);
-                  Window.enableUpdateScreen = false; // since each setValue below updates the screen, we disable it to let it paint all at once at the end
-                  pbh.setValue(v);
-                  pbv.setValue(i);
-                  pbe.setValue(5); // increment value
-                  pbzh.setValue(v);
-                  Window.enableUpdateScreen = true;
-                  pbzv.setValue(v);
-               }
-               setInfo("Elapsed: "+(Vm.getTimeStamp()-ini)+"ms");
-            }
-         }.start();
-
          setInfo("Click Info button for help.");
+         repaintNow();
+         // runs the bench test
+         for (int i = max; --i >= 0;)
+         {
+            int v = pbh.getValue();
+            v = (v+1) % (pbh.max+1);
+            Window.enableUpdateScreen = false; // since each setValue below updates the screen, we disable it to let it paint all at once at the end
+            pbh.setValue(v);
+            pbv.setValue(i);
+            pbe.setValue(5); // increment value
+            pbzh.setValue(v);
+            Window.enableUpdateScreen = true;
+            pbzv.setValue(v);
+         }
+         setInfo("Elapsed: "+(Vm.getTimeStamp()-ini)+"ms");
       }
       catch (Exception ee)
       {

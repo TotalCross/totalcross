@@ -98,7 +98,7 @@ public class MainMenu extends BaseContainer
       if (itemInstances[idx] == null)
          itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
       itemInstances[idx].show();
-      if (itemClasses[idx] == ListContainerSamples.class) // this sample will change each time it is called
+      if (itemClasses[idx] == ListContainerSamples.class || itemClasses[idx] == ProgressBarSamples.class) // these samples will change each time it is called
          itemInstances[idx] = null;
    }
 }

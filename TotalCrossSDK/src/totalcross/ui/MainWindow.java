@@ -61,13 +61,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static int timeAvailable;
 
    static Font defaultFont;
+   private static Thread mainThread;
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()
    {
       this(null,NO_BORDER);
    }
-
+   
    /** Constructs a main window with the given title and border style.
     * @see #NO_BORDER
     * @see #RECT_BORDER
@@ -79,6 +80,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
+      mainThread = Thread.currentThread();
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -114,6 +116,14 @@ public class MainWindow extends Window implements totalcross.MainClass
             restoreRegistry = true;
          }
          catch (Exception e) {e.printStackTrace();}
+   }
+   
+   /** Returns true if this is the main thread.
+    * @since TotalCross 2.0
+    */
+   public static boolean isMainThread()
+   {
+      return mainThread == Thread.currentThread();
    }
 
    void mainWindowCreate()
@@ -573,7 +583,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (minInterval > 0 || lastMinInterval > 0) // guich@tc100: call only if there's a timer to run
          setTimerInterval(lastMinInterval = minInterval);
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
-         repaintActiveWindows();
+         repaintActiveWindows(); // already calls updateScreen
+      else
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
          updateScreen();
    }
