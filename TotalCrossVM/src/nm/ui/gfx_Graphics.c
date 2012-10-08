@@ -11,21 +11,22 @@
 
 #include "tcvm.h"
 
-#ifdef ANDROID
+#ifdef __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
 #define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))
+void glDrawPixel(int32 x, int32 y, int32 rgb);
+void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
+void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb);
+void glDrawPixels(int32 n);
+int32 glGetPixel(int32 x, int32 y);
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
+void applyChanges(Object obj);
+bool checkGLfloatBuffer(Context c, int32 n);
 #else
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
 #endif
 
-void glDrawPixel(Context c, int32 x, int32 y, int32 rgb);
-void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
-void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb);
-void glDrawPixels(Context c, int32 n);
-int32 glGetPixel(int32 x, int32 y);
-void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
-void applyChanges(Object obj);
 
 #if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"

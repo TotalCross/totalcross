@@ -18,7 +18,7 @@
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
 
-#ifdef ANDROID
+#ifdef __gl2_h_
 extern int appW,appH;
 #endif
 
@@ -260,17 +260,17 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
-#ifdef ANDROID
+#ifdef __gl2_h_
    if (Graphics_useOpenGL(dstSurf) && !isSrcScreen)
    {
       if (Image_changed(srcSurf))
          applyChanges(srcSurf);
-      glDrawTexture(currentContext, Image_textureId(srcSurf), srcX,srcY,width,height, dstX,dstY, srcWidth,srcHeight);
+      glDrawTexture(Image_textureId(srcSurf), srcX,srcY,width,height, dstX,dstY, srcWidth,srcHeight);
    }
    else
 #endif      
-   for (i=0; i < (uint32)height; i++)
-   {
+   for (i=0; i < (uint32)height; i++) // in opengl, only case of image drawing on image
+   {                             
       PixelConv *ps = (PixelConv*)srcPixels;
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
@@ -297,7 +297,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       srcPixels += srcPitch;
       dstPixels += Graphics_pitch(dstSurf);
    }
-#ifndef ANDROID
+#ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
 #else
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) currentContext->fullDirty = true;
@@ -317,7 +317,7 @@ static int32 getPixel(Object g, int32 x, int32 y)
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {              
       PixelConv p;
-#ifdef ANDROID
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
          return glGetPixel(x,y);
       else
@@ -347,10 +347,10 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
-#ifdef ANDROID
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-         glDrawPixel(currentContext,x,y,pixel);
+         glDrawPixel(x,y,pixel);
          if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
       }
       else
@@ -398,10 +398,10 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
       if (width <= 0)
          return;
-#ifdef ANDROID
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {   
-         glDrawLine(currentContext,x,y,x+width,y,pixel1);
+         glDrawLine(x,y,x+width,y,pixel1);
          if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
       }
       else
@@ -449,10 +449,10 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
       if (height <= 0)
          return;
-#ifdef ANDROID
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-         glDrawLine(currentContext,x,y,x,y+height,pixel1);
+         glDrawLine(x,y,x,y+height,pixel1);
          if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
       }
       else
@@ -523,10 +523,10 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     if (dX == 0) // vertical line?
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
     else
-#ifdef ANDROID
+#ifdef __gl2_h_
     if (Graphics_useOpenGL(g))
     {
-       glDrawLine(currentContext,x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),pixel1);
+       glDrawLine(x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),pixel1);
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
     }
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
@@ -790,7 +790,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    if ((y+height) > clipY2)    // line stops after clip y2
       height = clipY2-y;
 
-#ifdef ANDROID
+#ifdef __gl2_h_
    if (x == 0 && y == 0 && width == appW && height == appH && Graphics_useOpenGL(g))
    {
       PixelConv pc;
@@ -804,10 +804,10 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 
    if (height > 0 && width > 0)
    {
-#ifdef ANDROID
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-         glFillRect(currentContext,x,y,width,height,pixel);
+         glFillRect(x,y,width,height,pixel);
          if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
       }
       else
@@ -839,8 +839,9 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 #define INTERP(j,f) (j + (((f - j) * transparency) >> 4)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-#ifdef ANDROID
+#ifdef __gl2_h_
 extern GLfloat ftransp[16];
+extern GLfloat *glcoords, *glcolors;
 #endif
 
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
@@ -859,7 +860,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
-#ifdef ANDROID
+#ifdef __gl2_h_
    GLfloat fR,fG,fB;
    GLfloat *glC, *glV;
 #endif
@@ -871,7 +872,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    fcG = fc.g;
    fcB = fc.b;
 
-#ifdef ANDROID
+#ifdef __gl2_h_
    fR = (GLfloat)fcR / (GLfloat)255;
    fG = (GLfloat)fcG / (GLfloat)255;
    fB = (GLfloat)fcB / (GLfloat)255;
@@ -942,7 +943,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          bitIndexTable = uf->bitIndexTable;
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
-         last = uf->fontP.lastChar;
+         last = uf->fontP.lastChar;                                        
+#ifdef __gl2_h_
+         checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
+#endif         
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
@@ -977,12 +981,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       {
          start = bitmapTable + (offset >> 1) + rowWIB * yDif;
          isNibbleStartingLow = (offset & 1) == 1;
-#ifdef ANDROID
+#ifdef __gl2_h_
          // draws the char, a row at a time
          if (Graphics_useOpenGL(g))
          {
-            glC = currentContext->glcolors;
-            glV = currentContext->glcoords;
+            glC = glcolors;
+            glV = glcoords;
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)
             {
                current = start;
@@ -1005,8 +1009,8 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                   glV++;
                }
             }
-            if (glC != currentContext->glcolors) // flush vertices buffer
-               glDrawPixels(currentContext, ((int32)(glC-currentContext->glcolors)>>2));
+            if (glC != glcolors) // flush vertices buffer
+               glDrawPixels(((int32)(glC-glcolors)>>2));
          }
          else
 #endif
@@ -1042,7 +1046,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       if (k <= extraPixelsRemaining)
          x0++;
    }
-#ifndef ANDROID
+#ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
@@ -2373,7 +2377,7 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
       bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
-#ifdef ANDROID
+#ifdef __gl2_h_
       currentContext->fullDirty |= markDirty;
 #endif      
 
@@ -2384,7 +2388,7 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
          for (; h-- > 0; pixels += inc, data += w)
          {
             xmemmove(pixels, data, w<<2);
-#ifndef ANDROID
+#ifndef __gl2_h_
             if (markDirty)
                markScreenDirty(currentContext, x, y++, w, 1);
 #endif
@@ -2588,7 +2592,7 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
             addError(pixels+1+pitch, x+1,y+1,w,h, errR,errG,errB,1,16);
          }
       }
-#ifndef ANDROID
+#ifndef __gl2_h_
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
 #else
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
@@ -2703,14 +2707,6 @@ void markWholeScreenDirty(Context currentContext)
 
 static bool checkScreenPixels()
 {
-#ifdef ANDROID // android gets the pixels inside graphicsLock
-   if (screen.pixels == null)
-   {
-      if (!graphicsLock(&screen, true))
-         return false;
-      graphicsLock(&screen,false);
-   }
-#endif
    return screen.pixels != null;
 }
 
@@ -2725,7 +2721,7 @@ void updateScreen(Context currentContext)
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;
-#ifndef ANDROID
+#ifndef __gl2_h_
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
 #endif
       {

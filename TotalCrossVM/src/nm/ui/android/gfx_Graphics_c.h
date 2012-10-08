@@ -50,6 +50,10 @@ static void destroyEGL();
 
 int realAppH,appW,appH;
 GLfloat ftransp[16], f255[256];
+int32 flen;
+GLfloat* glcoords;//[flen*3];
+GLfloat* glcolors;//[flen*4];
+
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -178,11 +182,11 @@ static void initPoints()
    glEnableVertexAttribArray(pointsPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 }
 
-void glDrawPixels(Context c, int32 n)
+void glDrawPixels(int32 n)
 {
    setCurrentProgram(pointsProgram);
-   glVertexAttribPointer(pointsColor, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), c->glcolors);
-   glVertexAttribPointer(pointsPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), c->glcoords);
+   glVertexAttribPointer(pointsColor, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), glcolors);
+   glVertexAttribPointer(pointsPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), glcoords);
    glDrawArrays(GL_POINTS, 0,n);
 }
 
@@ -235,14 +239,13 @@ void glDeleteTexture(int32* textureId)
    *textureId = 0;
 }
 
-void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
-   GLfloat* coords = c->glcoords;
+   GLfloat* coords = glcoords;
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId);
 
    // destination coordinates   
-   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
    coords[0] = coords[6] = dstX;
    coords[1] = coords[3] = dstY+h;
    coords[2] = coords[4] = dstX+w;
@@ -250,6 +253,7 @@ void glDrawTexture(Context c, int32 textureId, int32 x, int32 y, int32 w, int32 
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords);
    
    // source coordinates
+   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
    coords[ 8] = coords[14] = left; 
    coords[ 9] = coords[11] = bottom;
    coords[10] = coords[12] = right; 
@@ -270,9 +274,9 @@ void initLineRectPoint()
    glEnableVertexAttribArray(lrpPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 }
 
-void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
+void glDrawPixel(int32 x, int32 y, int32 rgb)
 {
-   GLfloat* coords = c->glcoords;
+   GLfloat* coords = glcoords;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x;
@@ -284,9 +288,9 @@ void glDrawPixel(Context c, int32 x, int32 y, int32 rgb)
    glDrawArrays(GL_POINTS, 0,1);
 }
 
-void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
+void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
 {
-   GLfloat* coords = c->glcoords;
+   GLfloat* coords = glcoords;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x1;
@@ -300,9 +304,9 @@ void glDrawLine(Context c, int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
    glDrawArrays(GL_LINES, 0,2);
 }
 
-void glFillRect(Context c, int32 x, int32 y, int32 w, int32 h, int32 rgb)
+void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb)
 {
-   GLfloat* coords = c->glcoords;
+   GLfloat* coords = glcoords;
    PixelConv pc;
    pc.pixel = rgb;
    coords[0] = x;
@@ -344,6 +348,26 @@ int32 glGetPixel(int32 x, int32 y)
 }
 
 /////////////////////////////////////////////////////////////////////////
+bool checkGLfloatBuffer(Context c, int32 n)
+{
+   if (n > flen)
+   {
+      xfree(glcoords);
+      xfree(glcolors);
+      flen = n*3/2;
+      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*3);
+      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*4);
+      if (!glcoords || !glcolors)
+      {
+         throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
+         xfree(glcoords);
+         xfree(glcolors);
+         flen = 0;
+         return false;
+      }
+   }
+   return true;
+}
 
 static bool initGLES()
 {
@@ -358,7 +382,6 @@ static bool initGLES()
        EGL_NONE
    };
    EGLint context_attribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
-//   EGLint window_attribs[] = {EGL_RENDER_BUFFER, EGL_SINGLE_BUFFER, EGL_NONE };
    EGLDisplay display;
    EGLConfig config;
    EGLint numConfigs;
@@ -375,7 +398,7 @@ static bool initGLES()
 
    ANativeWindow_setBuffersGeometry(window, 0, 0, format);
 
-   if (!(surface = eglCreateWindowSurface(display, config, window, 0/*window_attribs*/)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
+   if (!(surface = eglCreateWindowSurface(display, config, window, 0)))     {debug("eglCreateWindowSurface() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!(context = eglCreateContext(display, config, EGL_NO_CONTEXT, context_attribs))) {debug("eglCreateContext() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglMakeCurrent(display, surface, surface, context))                 {debug("eglMakeCurrent() returned error %d", eglGetError()); destroyEGL(); return false;}
    if (!eglQuerySurface(display, surface, EGL_WIDTH, &width) || !eglQuerySurface(display, surface, EGL_HEIGHT, &height)) {debug("eglQuerySurface() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -404,12 +427,12 @@ static bool initGLES()
       ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
    for (i = 0; i <= 255; i++)
       f255[i] = (GLfloat)i/(GLfloat)255;
-
-   return true;
+   
+   return checkGLfloatBuffer(mainContext,1000);
 }
 
 static void destroyEGL()
-{           
+{
    eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
    eglDestroyContext(_display, _context);
    eglDestroySurface(_display, _surface);
@@ -418,8 +441,9 @@ static void destroyEGL()
    _display = EGL_NO_DISPLAY;
    _surface = EGL_NO_SURFACE;
    _context = EGL_NO_CONTEXT;
+   xfree(glcoords);
+   xfree(glcolors);
 }
-
 
 /*
  * Class:     totalcross_Launcher4A
