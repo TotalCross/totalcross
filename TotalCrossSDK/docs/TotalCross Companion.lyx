@@ -41963,11 +41963,47 @@ Simple dialog used to display a text with some user-defined buttons.
 \end_layout
 
 \begin_layout Standard
+Below there is a 
+\family typewriter
+MessageBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/messagebox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 
 \family typewriter
 MessageBox
 \family default
- has three constructors:
+ has five constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -42062,6 +42098,28 @@ text,String[]
 \begin_inset space ~
 \end_inset
 
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth) Same as above, but the last parameter indicates that all the
+ buttons have the same width,
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
 buttonCaptions,int
 \begin_inset space ~
 \end_inset
@@ -42070,7 +42128,7 @@ gap,int
 \begin_inset space ~
 \end_inset
 
-insideGap) Same as the above, but also receives the 
+insideGap) Same as the second one, but also receives the 
 \family typewriter
 gap
 \family default
@@ -42085,6 +42143,35 @@ PushButtonGroup
 .
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) It is the most complete constructor, with all the possible parameters.
+\end_layout
+
 \begin_layout Standard
 The message box is displayed on the center of the device screen, and its
  bounds are calculated based on the given title, text and buttons.
@@ -42097,10 +42184,150 @@ The message box is displayed on the center of the device screen, and its
 \family typewriter
 MessageBox
 \family default
- has only three instance methods:
+ has the following fields (omitting some methods from its superclasses):
 \end_layout
 
 \begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+btns The 
+\family typewriter
+PushButtonGroup
+\family default
+ with the box buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where the window opens.
+ It can be changed to 
+\family typewriter
+TOP
+\family default
+ or 
+\family typewriter
+BOTTOM
+\family default
+.
+ Defaults to 
+\family typewriter
+CENTER
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the 
+\family typewriter
+buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+ For example, if you set the buttons to 
+\family typewriter
+{"Ok","Cancel"}
+\family default
+, you can map the enter key for the 
+\family typewriter
+Ok
+\family default
+ button and the escape key for the 
+\family typewriter
+Cancel
+\family default
+ button by assigning: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE}; 
+\end_layout
+
+\end_inset
+
+Note that 
+\family typewriter
+ENTER
+\family default
+ is also handled as 
+\family typewriter
+ACTION
+\family default
+, since the 
+\family typewriter
+ENTER
+\family default
+ key is mapped to 
+\family typewriter
+ACTION
+\family default
+ on some platforms.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showExceptionTitle Title shown in the 
+\family typewriter
+showException()
+\family default
+ dialog for all exceptions shown this way.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+MessageBox
+\family default
+ has the following instance methods (omitting some methods from its superclasses
+):
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+setText(String
+\begin_inset space ~
+\end_inset
+
+text) This method can be used to set the text AFTER the dialog was shown.
+ However, the dialog will not be resized.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setIcon(Image
+\begin_inset space ~
+\end_inset
+
+icon) Sets an icon to be shown in the 
+\family typewriter
+MessageBox
+\family default
+'s title, at left.
+ It only works if there's a title.
+ If you really need an empty title, pass as title a string with a couple
+ of spaces, like 
+\family typewriter
+" "
+\family default
+.
+ The icon's width and height will be set to title's font ascent.
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 getPressedButtonIndex() Returns the index of the pressed button.
@@ -42141,7 +42368,7 @@ setTextAlignment(int
 \end_inset
 
 align) Sets the alignment of the label that displays the text.
- The argument must be one of the following constants 
+ The argument must be one of the following constants: 
 \family typewriter
 LEFT
 \family default
@@ -42149,7 +42376,7 @@ LEFT
 \family typewriter
 CENTER
 \family default
-, 
+, or 
 \family typewriter
 RIGHT
 \family default
@@ -42192,6 +42419,48 @@ TimerEvent
 \family default
  is triggered.
  Be sure to learn how the timer works to better understand this method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+e) Handles scroll buttons and normal buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDelayToShowButton(int
+\begin_inset space ~
+\end_inset
+
+ms) Calling this method will make the buttons initially hidden and will
+ show them after the specified number of milisseconds.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MessageBox mb = new MessageBox("Novo Tweet!",tweet);
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.setTimeToShowButton(7000);
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.popup();  
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_deeper
@@ -42283,7 +42552,7 @@ boolean
 \end_inset
 
 dumpToConsole) Immediately displays a message box showing the given throwable
- name, message and its stack trace.
+ name, message, and its stack trace.
  This information is dumped to the debug console if the field 
 \family typewriter
 dumpToConsole
