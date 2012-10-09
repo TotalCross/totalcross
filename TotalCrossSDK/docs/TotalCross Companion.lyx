@@ -42184,7 +42184,7 @@ The message box is displayed on the center of the device screen, and its
 \family typewriter
 MessageBox
 \family default
- has the following fields (omitting some methods from its superclasses):
+ has the following public fields (omitting some methods from its superclasses):
 \end_layout
 
 \begin_deeper
@@ -42291,8 +42291,8 @@ showException()
 \family typewriter
 MessageBox
 \family default
- has the following instance methods (omitting some methods from its superclasses
-):
+ has the following public instance methods (omitting some methods from its
+ superclasses):
 \end_layout
 
 \begin_deeper
@@ -42805,8 +42805,8 @@ The
 \family typewriter
 InputBox
 \family default
- class provides the following attributes and methods (omitting some fields
- from its superclasses):
+ class provides the following public attributes and methods (omitting some
+ fields from its superclasses):
 \end_layout
 
 \begin_layout FieldList
@@ -43063,8 +43063,8 @@ CURRENCY
 \end_layout
 
 \begin_layout Standard
-This class has the following attributes, constructors, and methods (excluding
- some fields from its superclasses):
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
 \end_layout
 
 \begin_layout FieldList
@@ -43232,6 +43232,11 @@ CalendarBox
 Displays a calendar where a date can be chosen.
  It pops up with the current day as default and the user can scroll through
  months or years.
+ It uses the 
+\family typewriter
+Date
+\family default
+ class for all operations.
  When a day is selected the calendar is closed and you may retrieve a 
 \family typewriter
 Date
@@ -43240,11 +43245,113 @@ Date
 \end_layout
 
 \begin_layout Standard
-The 
+Instead of creating a new instance (which consumes memory), you may use
+ the 
 \family typewriter
-CalendarBox
+Edit
 \family default
- class has only the default constructor and the following methods:
+'s static field calendar.
+\end_layout
+
+\begin_layout Standard
+If there is something in the edit box which poped up the calendar, the clear
+ button will clear it.
+ Cancel will leave whatever was in there.
+ 
+\end_layout
+
+\begin_layout Standard
+The month can be changed via keyboard using the left/right keys, and the
+ year can be changed using up/down keys.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is a sample from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/calendar_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, one omitted default constructor,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+canceled 
+\family typewriter
+true
+\family default
+ if the user had canceled without selecting.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+weekNames The 7 week names painted in the control.
+ It defaults to 
+\family typewriter
+{"S","M","T","W","T","F","S"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+todayClearCancel The labels for 
+\family typewriter
+Today
+\family default
+, 
+\family typewriter
+Clear
+\family default
+, and 
+\family typewriter
+Cancel
+\family default
+.
+ It defaults to 
+\family typewriter
+{"Today","Clear","Cancel"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yearMonth The labels between the arrows for year and month.
+ It defaults to 
+\family typewriter
+{"year","month"}
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
