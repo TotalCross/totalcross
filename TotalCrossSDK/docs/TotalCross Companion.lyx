@@ -43513,6 +43513,112 @@ Writting the color in hexdecimal.
  
 \end_layout
 
+\begin_layout Standard
+Here's a sample code: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ColorChooserBox ccb = new ColorChooserBox(getBackColor());
+\end_layout
+
+\begin_layout Plain Layout
+
+ccb.popup();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (ccb.choosenColor != -1) // user pressed cancel?
+\end_layout
+
+\begin_layout Plain Layout
+
+	int color = ccb.choosenColor; // no, color was selected 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ColorChooserBox
+\family default
+ looks like the following images taken from UIGadgets using Android user
+ interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorchoser_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorchoser_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attribute and constructor (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+choosenColor The chosen color or -1 if the user cancelled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColorChooserBox(int
+\begin_inset space ~
+\end_inset
+
+defaultColor) Constructs a 
+\family typewriter
+ColorChooserBox
+\family default
+ with a default color as the chosen color.
+\end_layout
+
 \begin_layout Section
 ControlBox
 \family typewriter
