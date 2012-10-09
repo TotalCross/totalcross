@@ -42103,7 +42103,7 @@ buttonCaptions,boolean
 \end_inset
 
 allSameWidth) Same as above, but the last parameter indicates that all the
- buttons have the same width,
+ buttons have the same width.
 \end_layout
 
 \begin_layout FieldList
@@ -42603,13 +42603,50 @@ InputBox
 
 \begin_layout Standard
 Simple dialog used to get a text input from the user.
- It contains a label do display some text, an edit to receive the user input,
+ It contains a label to display some text, an edit to receive the user input,
  and some user-defined buttons.
  Basically it's like a message box with an edit.
+ 
 \end_layout
 
 \begin_layout Standard
-It has two constructors:
+Below there is a 
+\family typewriter
+InputBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/inputbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It has three constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -42652,27 +42689,15 @@ InputBox(String
 \begin_inset space ~
 \end_inset
 
-title,
+title,String
 \begin_inset space ~
 \end_inset
 
-String
+text,String
 \begin_inset space ~
 \end_inset
 
-text,
-\begin_inset space ~
-\end_inset
-
-String
-\begin_inset space ~
-\end_inset
-
-defaultValue,
-\begin_inset space ~
-\end_inset
-
-String[]
+defaultValue,String[]
 \begin_inset space ~
 \end_inset
 
@@ -42687,6 +42712,51 @@ PushButtonGroup
 getPressedButtonIndex()
 \family default
  method returns the pressed button index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InputBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String
+\begin_inset space ~
+\end_inset
+
+defaultValue,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) The most complete version, where 
+\family typewriter
+allSameWidth
+\family default
+ indicates that all the buttons have the same width, 
+\family typewriter
+gap
+\family default
+ is the space between buttons, and 
+\family typewriter
+insideGap
+\family default
+ is the space between the button's text and it's bounds.
 \end_layout
 
 \begin_deeper
@@ -42735,7 +42805,91 @@ The
 \family typewriter
 InputBox
 \family default
- class provides the following instance methods:
+ class provides the following attributes and methods (omitting some fields
+ from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+openKeyboardOnPopup Set to 
+\family typewriter
+true
+\family default
+ to automatically open the keyboard once the 
+\family typewriter
+InputBox
+\family default
+ is open.
+ Since this is a static member, it is valid for all 
+\family typewriter
+InputBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where the window opens.
+ Can be changed to 
+\family typewriter
+TOP
+\family default
+ or 
+\family typewriter
+BOTTOM
+\family default
+.
+ Defaults to 
+\family typewriter
+CENTER
+\family default
+.
+ The image above shows a 
+\family typewriter
+InputBox
+\family default
+ opened at the bottom.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the 
+\family typewriter
+buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTextAlignment(int
+\begin_inset space ~
+\end_inset
+
+align) Sets the alignment for the text.
+ The parameter must be 
+\family typewriter
+CENTER
+\family default
+ (default), 
+\family typewriter
+LEFT
+\family default
+, or 
+\family typewriter
+RIGHT
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
