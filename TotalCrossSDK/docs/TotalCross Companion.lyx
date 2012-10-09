@@ -42974,6 +42974,42 @@ When the keyboard box is popped up, it gets the control of the topmost window
 The edit and multi edit controls may use the keyboard box for text input.
 \end_layout
 
+\begin_layout Standard
+Below there is a 
+\family typewriter
+KeyboardBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/keyboardbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 CalculatorBox
 \end_layout
@@ -42986,11 +43022,187 @@ A dialog with a simpler calculator.
 \end_layout
 
 \begin_layout Standard
-The 
+This class is used by the 
+\family typewriter
+Edit
+\family default
+ class when its mode is set to 
+\family typewriter
+CURRENCY
+\family default
+ and displays a calculator with six basic operations and a numeric pad.
+ Here is a sample from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/calculator_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following attributes, constructors, and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+edNumber The edit used to show the number.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+actions Strings used to display the action messages.
+ You can localize these strings if you wish.
+ Its default value is 
+\family typewriter
+{"Clear","Ok","Cancel"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultTitle A static field that defines the default title for all calculator
+ boxes, which is 
+\family typewriter
+Numeric Pad
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+optionalValue Defines an optional character to be used in the 
 \family typewriter
 CalculatorBox
 \family default
- class has only the default constructor and the following methods:
+.
+ Replaces the decimal separator 
+\family typewriter
+/ 00
+\family default
+ character.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+maxLength The maximum length for the edit that will be created.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cOrig The control that had focus when the 
+\family typewriter
+CalculatorBox
+\family default
+ was popped up.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultValue The default value of the edit.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keepOriginalValue Set to 
+\family typewriter
+true
+\family default
+ to don't replace the original value in the 
+\family typewriter
+Edit
+\family default
+ if the user pressed Ok.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showNextButtonInsteadOfClear Set to 
+\family typewriter
+true
+\family default
+ to replace the 
+\family typewriter
+Clear
+\family default
+ button by the 
+\family typewriter
+Next
+\family default
+ button.
+ This button is equivalent to the 
+\family typewriter
+Ok
+\family default
+ button, but it also changes the focus to the next field.
+ The user can still clean the edit by clicking the backspace 
+\family typewriter
+<<
+\family default
+ button.
+ The default behaviour calls 
+\family typewriter
+moveFocusToNextControl()
+\family default
+.
+ You can change it by overriding the method 
+\family typewriter
+gotoNext()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CalculatorBox() Constructs a 
+\family typewriter
+CalculatorBox
+\family default
+ with the 6 basic operations visible.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CalculatorBox(boolean
+\begin_inset space ~
+\end_inset
+
+showOperations) Constructs a 
+\family typewriter
+CalculatorBox
+\family default
+ with the 6 basic operations hidden if the parameter is 
+\family typewriter
+false
+\family default
+.
+ In this case, it will become a numeric box.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -43005,7 +43217,11 @@ requestFocusOnOper1) Clears everything in this calculator.
 \begin_layout FieldList
 \labelwidthstring 0
 getAnswer() Returns a string with the answer the user selected to be pasted
- (the result or the first operand).
+ (the result, the first operand, or 
+\family typewriter
+null
+\family default
+ if the user canceled).
 \end_layout
 
 \begin_layout Section
