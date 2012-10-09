@@ -43626,7 +43626,210 @@ ControlBox
 \end_layout
 
 \begin_layout Standard
-A popup window that displays any control, given as parameter to the constructor.
+A popup window that displays any control given as parameter to the constructor.
+ Here is a sample from Litebase AllTests:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/controlbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where this window opens.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the
+\family typewriter
+ buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb) Constructs a 
+\family typewriter
+ControlBox
+\family default
+ with the given parameters, and an 
+\family typewriter
+Ok
+\family default
+ and a 
+\family typewriter
+Cancel
+\family default
+ buttons.
+ The control may have at least one item, which will be used to determine
+ the preferred size.
+ The 
+\family typewriter
+text
+\family default
+ parameter is the text that will be displayed in a label above the control
+ 
+\family typewriter
+cb
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, plus a string array specifying the buttons
+ captions.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,int
+\begin_inset space ~
+\end_inset
+
+prefW,int
+\begin_inset space ~
+\end_inset
+
+prefH,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, plus the preferred height and width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,int
+\begin_inset space ~
+\end_inset
+
+prefW,int
+\begin_inset space ~
+\end_inset
+
+prefH,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,int
+\begin_inset space ~
+\end_inset
+
+buttonRows) Same as the above, plus the number of rows for the buttons.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+e) Handles scroll buttons and normal buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the pressed button index, starting from
+ 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getControl() Returns the control associated.
  
 \end_layout
 
