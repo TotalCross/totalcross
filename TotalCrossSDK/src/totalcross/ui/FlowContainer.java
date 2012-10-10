@@ -99,6 +99,25 @@ public class FlowContainer extends Container
 
    public int getPreferredHeight()
    {
+      int lines = 1;
+      // position first control
+      Control c = children;
+      int g = Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? hgap*fmH/100 : hgap;
+      // position next controls
+      int x2 = 0;
+      while (c != null)
+      {
+         int w = c.getPreferredWidth()+g;
+         x2 += w;
+         c = c.next;
+         if (x2 > tempW) // still fits in the same line?
+         {
+            lines++;
+            x2 = w;
+         }
+         if (c == null) 
+            break;
+      }
       return lines * (fmH+Edit.prefH) + getGap(vgap)*(lines-1);
    }
 }
