@@ -44266,7 +44266,311 @@ This class implements a message box that shows a spinner at the left of
  the text.
  You can set the spinner color and type before constructing the progress
  box (usually you do this in your application's constructor, and not for
- each progress bar created).
+ each progress box created).
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ProgressBox pb = new ProgressBox("Message","Loading, please wait...",null);
+\end_layout
+
+\begin_layout Plain Layout
+
+pb.popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ lengthy task
+\end_layout
+
+\begin_layout Plain Layout
+
+pb.unpop(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the AndroidUI sample, there is some examples using 
+\family typewriter
+ProgressBox
+\family default
+.
+ The images order follow the buttons order to show the examples:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors (excluding some fields
+ from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+msg) Constructs a progress box with the text and one "Ok" button.
+ The text may be separated by 
+\family typewriter
+
+\backslash
+n
+\family default
+ as the line delimiters; otherwise, it is automatically splitted if its
+ too big to fit on screen.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as above, plus the specified button captions.
+ If 
+\family typewriter
+buttonCaptions
+\family default
+ is 
+\family typewriter
+null
+\family default
+, no buttons are displayed and you must dismiss the dialog by calling 
+\family typewriter
+unpop()
+\family default
+ or by setting the delay using the 
+\family typewriter
+setUnpopDelay()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth) Same as above, plus the parameter 
+\family typewriter
+allSameWidth
+\family default
+, which is the same as in the constructor for 
+\family typewriter
+PushButtonGroup
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) Same as the second one, plus the parameters 
+\family typewriter
+gap
+\family default
+ and 
+\family typewriter
+insideGap
+\family default
+, which are the same as in the constructor for 
+\family typewriter
+PushButtonGroup
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) This is the most complete constructor with all the possible parameter
+s.
+ 
 \end_layout
 
 \begin_layout Section
