@@ -44609,6 +44609,222 @@ getTime()
 \begin_layout Standard
 The time can be entered also using the arrow keys and by typing the numbers
  directly.
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+TimeBox tb;
+\end_layout
+
+\begin_layout Plain Layout
+
+public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	try
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		(tb=new TimeBox()).popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		e.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (e.type == ControlEvent.PRESSED && e.target == tb)
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.debug("ret: "+tb.getTime());
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It looks like the following image taken from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/timebox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+okCaption Used in the button.
+ Change it if you want to localize the text.
+ It defaults to 
+\family typewriter
+OK
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clearCaption Used in the button.
+ Change it if you want to localize the text.
+ It defaults to 
+\family typewriter
+Clear
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hideIfInvalid Set to 
+\family typewriter
+false
+\family default
+ to disable the buttons instead of hiding them if they are not a valid number
+ to appear at the current position.
+ By default, the buttons are hidden, but setting this to 
+\family typewriter
+false
+\family default
+ can disable them instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TimeBox() Constructs a 
+\family typewriter
+TimeBox
+\family default
+ with time set to midnight.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TimeBox(Time
+\begin_inset space ~
+\end_inset
+
+time) Constructs a 
+\family typewriter
+TimeBox
+\family default
+ with the given time.
+ If the time is invalid, it is set to midnight.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTime(Time
+\begin_inset space ~
+\end_inset
+
+time) Sets the time if it was not set yet in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTime() Returns the time placed in this control, which is the time passed
+ in the constructor (if any) updated with the hours, minutes, and seconds.
  
 \end_layout
 
