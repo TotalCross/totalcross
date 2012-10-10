@@ -289,7 +289,24 @@ public class File extends RandomAccessStream
          }
       }
 
-      java.io.File fileRef4Java = pathURI != null ? new java.io.File(pathURI) : new java.io.File(path);
+      java.io.File fileRef4Java = null;
+      try
+      {
+         if (pathURI != null)
+            fileRef4Java = new java.io.File(pathURI);
+      }
+      catch (IllegalArgumentException e)
+      {
+         /*
+          * The path may contain characters that may not be correctly interpreted when converted to URI. Maybe we can
+          * replace them with escape codes, but for now we'll just ignore this error and try again using the path as
+          * provided.
+          */
+      }
+
+      if (fileRef4Java == null)
+         fileRef4Java = new java.io.File(path);
+
       if (mode != DONT_OPEN)
       {
          if (mode != CREATE && mode != CREATE_EMPTY && !fileRef4Java.exists())
