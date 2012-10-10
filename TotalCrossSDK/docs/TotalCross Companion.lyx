@@ -38029,6 +38029,13 @@ TabbedContainer
 
 \begin_layout Section
 Tree
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Tree"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -43626,7 +43633,8 @@ ControlBox
 \end_layout
 
 \begin_layout Standard
-A popup window that displays any control given as parameter to the constructor.
+A popup window that displays any control given as parameter to the constructor
+ To add more than one control, use a container.
  Here is a sample from Litebase AllTests:
 \end_layout
 
@@ -43844,7 +43852,7 @@ A class that shows all folders from a startup one to allow the user select
 \emph on
 on demand
 \emph default
- to speedup the process.
+ to speed up the process.
  
 \end_layout
 
@@ -43867,6 +43875,385 @@ Set the
 defaultButton
 \family default
  property to allow the selection of an item doing a double-click on it.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	FileChooserBox w = new FileChooserBox("Select the folder",new String[]{"
+ This one "," Cancel "}, 
+\end_layout
+
+\begin_layout Plain Layout
+
+		new FileChooserBox.Filter()
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			public boolean accept(File f) throws IOException
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				return f.isDir(); // will only list folders.
+ you may filter by other file types too
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+		});
+\end_layout
+
+\begin_layout Plain Layout
+
+	w.mountTree(Settings.appPath,1);
+\end_layout
+
+\begin_layout Plain Layout
+
+	w.popup();
+\end_layout
+
+\begin_layout Plain Layout
+
+	return w.getPressedButtonIndex() == 0 ? w.getAnswer() : null;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (IOException e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return null;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Tree"
+
+\end_inset
+
+ from chapter 
+\begin_inset Quotes eld
+\end_inset
+
+Some Advanced Controls
+\begin_inset Quotes erd
+\end_inset
+
+ shows some images of its usage.
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultButtonCaptions The default button captions: 
+\family typewriter
+" Select "
+\family default
+ and 
+\family typewriter
+" Cancel "
+\family default
+.
+ You can localize them if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgVolume The 
+\family typewriter
+"Volume: "
+\family default
+ label that's placed before the volume combo.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgRefresh The 
+\family typewriter
+" Refresh "
+\family default
+ button that's placed after the volume combo.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgInvalidVolumeTitle The title of a message box that appears if the user
+ tries to access a volume and an error is issued by the operating system.
+ Defaults to 
+\family typewriter
+"Error"
+\family default
+.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgInvalidVolumeMessage The body of a message box that appears if the user
+ tries to access a volume and an error is issued by the operating system.
+ Defaults to 
+\family typewriter
+"Unable to read the contents of the selected volume.
+ Make sure the volume is mounted and you have
+\begin_inset Newline newline
+\end_inset
+
+enough privileges to query its contents."
+\family default
+.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fileCount The number of files found in the current directory.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multipleSelection Set to 
+\family typewriter
+true
+\family default
+ to allow multiple selections using a 
+\family typewriter
+Check
+\family default
+ drawn before the nodes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initialPath Selects a file that is in the tree.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultButton The button index that will be chosen if the user makes a double-cl
+ick in an item.
+ Usually you set this to the index of the 
+\family typewriter
+Ok
+\family default
+ button.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FileChooserBox(FileChooserBox.Filter
+\begin_inset space ~
+\end_inset
+
+ff) Constructs a file chooser with 
+\family typewriter
+"Select a file"
+\family default
+ as the window title, and 
+\family typewriter
+"Select"
+\family default
+ and 
+\family typewriter
+"Cancel"
+\family default
+ buttons.
+ It receives the filter as parameter.
+ Pass 
+\family typewriter
+null
+\family default
+ to accept all files.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FileChooserBox(String
+\begin_inset space ~
+\end_inset
+
+caption,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,FileChooserBox.Filter
+\begin_inset space ~
+\end_inset
+
+ff) Constructs a file chooser with the given parameters, where caption is
+ the caption to be displayed in the title and 
+\family typewriter
+buttonCaptions
+\family default
+ is the button captions that will be used in the 
+\family typewriter
+PushButtonGroup
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mountTree(String
+\begin_inset space ~
+\end_inset
+
+filePath,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+volume) Call this method to mount the tree, starting from the given path
+ and volume.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the button index used to close the window.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAnswer() Returns the path choosen by the user.
+ If using the default captions and the cancel button was pressed, returns
+ 
+\family typewriter
+null
+\family default
+.
+ The filename is returned with normal (
+\family typewriter
+/
+\family default
+) slashes; the path also ends with a slash.
+ If 
+\family typewriter
+multipleSelections
+\family default
+ is on, a list of paths, separated by comma (
+\family typewriter
+,
+\family default
+) is returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTree() Returns the tree.
+ 
+\end_layout
+
+\begin_layout Standard
+This class use a nested interface called 
+\family typewriter
+FileChooserBox.Filter
+\family default
+.
+ This is necessary to indicate that a filter must have the method 
+\family typewriter
+accept(File f)
+\family default
+, which must return 
+\family typewriter
+true
+\family default
+ if the file is to be added to the tree.
  
 \end_layout
 
