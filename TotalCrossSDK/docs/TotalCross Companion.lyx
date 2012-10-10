@@ -38029,6 +38029,13 @@ TabbedContainer
 
 \begin_layout Section
 Tree
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Tree"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -39717,6 +39724,337 @@ popupNonBlocking()
 \end_layout
 
 \begin_layout Standard
+The following example creates a popup window class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class TestWindow extends Window
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Button btnHi;
+\end_layout
+
+\begin_layout Plain Layout
+
+	public TestWindow()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Test",RECT_BORDER); // with caption and borders
+\end_layout
+
+\begin_layout Plain Layout
+
+		setRect(CENTER,CENTER,Settings.screenWidth/2,Settings.screenHeight/4);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(btnHi=new Button("Hi!"),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (event.type == ControlEvent.PRESSED && event.target == btnHi)
+\end_layout
+
+\begin_layout Plain Layout
+
+			unpop(); // a WINDOW_CLOSED event will be posted to this PARENT window.
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To use it in the normal way (
+\series bold
+blocking
+\series default
+): 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class Launcher extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Button btn;
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (e.target == btn)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			TestWindow tw = new TestWindow();
+\end_layout
+
+\begin_layout Plain Layout
+
+			tw.popup(); // this line is only executed after the window is closed.
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To use it non-blocking (the execution continues right after the popup command,
+ even with the window still open): 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class Launcher extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	TestWindow tw;
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		tw = new TestWindow();
+\end_layout
+
+\begin_layout Plain Layout
+
+		tw.popupNonBlocking(); // this line is executed immediately
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event event)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (event.target == tw && event.type == ControlEvent.WINDOW_CLOSED)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			// any stuff
+\end_layout
+
+\begin_layout Plain Layout
+
+			break;
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Blocking popup may be use in 
+\family typewriter
+InputBox
+\family default
+/
+\family typewriter
+MessageBox
+\family default
+ classes, while non-blocking popup is used in 
+\family typewriter
+MenuBar
+\family default
+ and other classes.
+ Important note: you can't use 
+\family typewriter
+popup()
+\family default
+ with a delay to unpop it.
+ In this case, the correct would be to use 
+\family typewriter
+popupNonBlocking()
+\family default
+: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mb = new MessageBox(...);
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.sleep(5000); // or do something else
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.unpop(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If you use 
+\family typewriter
+popup()
+\family default
+ in this specific case, the VM will hang.
+\end_layout
+
+\begin_layout Standard
 Some other features of the 
 \family typewriter
 Window
@@ -39727,22 +40065,60 @@ Window
 \begin_layout Itemize
 Windows can have a title that can be set by the method 
 \family typewriter
-setTitle()
+setTitle(String title)
 \family default
- or passed to the constructor.
+ (which calls 
+\family typewriter
+repaint()
+\family default
+) or passed to the constructor.
 \end_layout
 
 \begin_layout Itemize
 The window border can be selected from one of the multiple styles shown
  below, by using the 
 \family typewriter
-setBorderStyle()
+setBorderStyle(byte borderStyle)
 \family default
  method or passing the desired style to the 
 \family typewriter
 Window
 \family default
  constructor.
+ The parameter value can be 
+\family typewriter
+NO_BORDER
+\family default
+, 
+\family typewriter
+RECT_BORDER
+\family default
+, 
+\family typewriter
+ROUND_ BORDER
+\family default
+, 
+\family typewriter
+TAB_BORDER
+\family default
+, 
+\family typewriter
+TAB_ONLY_BORDER
+\family default
+, 
+\family typewriter
+HORIZONTAL_GRADIENT
+\family default
+, or 
+\family typewriter
+VERTICAL_ GRADIENT
+\family default
+.
+ To retrive it, use 
+\family typewriter
+getBorderStyle()
+\family default
+.
 \end_layout
 
 \begin_layout Itemize
@@ -39751,6 +40127,20 @@ There are two constructors: the default one, that creates a window with
  parameters.
 \end_layout
 
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+Window()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Window(String title, byte borderStyle)
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
 Windows can be moved around the screen by dragging the window’s title.
  If the window has no title, it can’t be moved.
@@ -39767,6 +40157,15 @@ The title font can be changed using the
 setTitleFont()
 \family default
  method.
+ To retrive it, use
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+getTitleFont()
+\family default
+.
  By default, the font is the one used by the main window, with bold style.
 \end_layout
 
@@ -39774,7 +40173,7 @@ setTitleFont()
 Only one control can hold the focus at a time.
  To change focus to another control, use the 
 \family typewriter
-setFocus()
+setFocus(Control c)
 \family default
  method (this can also be done through the 
 \family typewriter
@@ -39785,11 +40184,23 @@ requestFocus()
 totalcross.ui.Control
 \family default
  class).
+ When a user types a key, the control with focus gets the key event.
+ Calling this method will cause a 
+\family typewriter
+FOCUS_OUT
+\family default
+ control event to be posted to the window's current focus control (if one
+ exists) and will cause a 
+\family typewriter
+FOCUS_IN
+\family default
+ control event to be posted to the new focus control.
  The 
 \family typewriter
 getFocus()
 \family default
  method returns the control that currently owns the focus.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -39836,6 +40247,16 @@ popupNonBlocking()
 this.popupNonBlocking()
 \family default
 .
+ Calling 
+\family typewriter
+unpop()
+\family default
+ when only the 
+\family typewriter
+MainWindow
+\family default
+ is active does nothing.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -40038,12 +40459,12 @@ VK_HIDE
 \family typewriter
 VK_TOP
 \family default
- and 
+, and 
 \family typewriter
 VK_BOTTOM
 \family default
  to hide, display the virtual keyboard at the top of the screen or at the
- bottom of the screen.
+ bottom of the screen, respectively.
  Note that this will have no effect in devices that don't have a virtual
  keyboard.
 \end_layout
@@ -40068,6 +40489,25 @@ Suppose you wish to allow the user to abort a task being executed by pressing.
 pumpEvents()
 \family default
  to process all events in the queue.
+ This method is used to implement a blocking Window.
+ Here is an example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+while(someCondition) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	Event.pumpEvents();
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -40194,6 +40634,15 @@ postUnpop() Called after the unpop process ended.
  window is currently the topmost.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+postPressedEvent() Posts a 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event on the focused control.
+\end_layout
+
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -40219,7 +40668,8 @@ A very common mistake is to popup a window without setting its bounds.
 \end_layout
 
 \begin_layout Standard
-Some other important members of the 
+The other members that can be used (all public and some protected) of the
+ 
 \family typewriter
 Window
 \family default
@@ -40228,47 +40678,40 @@ Window
 
 \begin_layout FieldList
 \labelwidthstring 0
-boolean
-\begin_inset space ~
-\end_inset
-
 needsPaint 
 \family typewriter
 true
 \family default
- if there are any controls marked for repaint.
+ if there are any controls marked for repaint (some area of the window is
+ invalidated).
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-boolean
-\begin_inset space ~
-\end_inset
-
-flickEnabled If 
+tempTitle A temporary title that will be displayed when the 
 \family typewriter
-true
+Window
 \family default
-, the background area is erased during the repaint process.
- This causes flickering if the window is not double buffered.
+ pops up.
+ It will be replaced by the original title when it is closed.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-Window
-\begin_inset space ~
-\end_inset
-
 topmost Stores the topmost window.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-boolean
-\begin_inset space ~
-\end_inset
+firstFocus The control that should get focus when a focus traversal key
+ is pressed and none has focus.
+ 
+\end_layout
 
-canDrag If 
+\begin_layout FieldList
+\labelwidthstring 0
+canDrag (protected) If 
 \family typewriter
 true
 \family default
@@ -40278,13 +40721,9 @@ true
 
 \begin_layout FieldList
 \labelwidthstring 0
-boolean
-\begin_inset space ~
-\end_inset
-
-highResPrepared This extremely important member is used when your program
- runs on devices with a screen resolution greater than the default 160x160
- of Palm OS.
+highResPrepared (protected) This extremely important member is used when
+ your program runs on devices with a screen resolution greater than the
+ default 160x160 of Palm OS.
  Some devices have 320x320, 240x320, etc.
  For each device, the font is usually proportional to the resolution.
  Since TotalCross programs are placed in a relative way, and since the relativen
@@ -40307,6 +40746,492 @@ setRect()
 true
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cancelPenUp If 
+\family typewriter
+true
+\family default
+, the next 
+\family typewriter
+PEN_UP
+\family default
+ event will be ignored.
+ This is used when a 
+\family typewriter
+PEN_DOWN
+\family default
+ cancels a flick, or if a drag-scrollable control needs to cancel the next
+ pen_up during a drag-scrolling interaction.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gradientTitleStartColor The starting and ending colors used to fill the
+ gradient title.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gradientTitleEndColor The starting and ending colors used to fill the gradient
+ title.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleColor The title color.
+ The title color depends on the border type: it will be the foreground color
+ if 
+\family typewriter
+NO_BORDER
+\family default
+ is set; otherwise, it will be the background color.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleGap A vertical gap used to increase the title area.
+ Defaults to 
+\family typewriter
+fmH/2
+\family default
+ on Android and 0 on other user interface styles.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+titleAlign The title horizontal alignment in the window's title area.
+ It can be 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+CENTER
+\family default
+, or 
+\family typewriter
+RIGHT
+\family default
+, and you can use an adjustment on the value (E.G.: 
+\family typewriter
+LEFT+5
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+headerColor,
+\begin_inset space ~
+\end_inset
+
+footerColor Has the header and the footer colors when on Android style and
+ border type is 
+\family typewriter
+ROUND_BORDER
+\family default
+.
+ Not used on other styles.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fadeOtherWindows Set to 
+\family typewriter
+true
+\family default
+ to make the other windows be faded when the window appears.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fadeValue The value used to fade the other windows.
+ Defaults to 128.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+robot The 
+\family typewriter
+UIRobot
+\family default
+ instance that is being used to record or play events.
+\end_layout
+
+\begin_layout Standard
+The other public methods are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDeviceTitle(String
+\begin_inset space ~
+\end_inset
+
+title) Sets the title text in the task bar for non-Palm OS operating systems.
+ Does not work in full-screen mode.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeFocus() Calling this method will cause a 
+\family typewriter
+FOCUS_OUT
+\family default
+ control event to be posted to the window's current focus control (if one
+ exists).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+swapFocus(Control
+\begin_inset space ~
+\end_inset
+
+c) Changes the focus to the desired control, without posting 
+\family typewriter
+FOCUS_IN
+\family default
+ and 
+\family typewriter
+FOCUS_OUT
+\family default
+ events.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+validate() Calls 
+\family typewriter
+_doPaint()
+\family default
+ if the window needs painting.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSIP(int
+\begin_inset space ~
+\end_inset
+
+sipOption,
+\begin_inset space ~
+\end_inset
+
+Control
+\begin_inset space ~
+\end_inset
+
+edit,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+secret) Used to set the position of the Soft Input Panel on devices that
+ support it, like Windows CE, where 
+\family typewriter
+sipOption
+\family default
+ is one of the 
+\family typewriter
+SIP_xxx
+\family default
+ values (
+\family typewriter
+SIP_HIDE
+\family default
+, 
+\family typewriter
+SIP_SHOW
+\family default
+, 
+\family typewriter
+SIP_TOP
+\family default
+, 
+\family typewriter
+SIP_BOTTOM
+\family default
+, 
+\family typewriter
+SIP_ENABLE_NUMERICPAD
+\family default
+, and 
+\family typewriter
+SIP_DISABLE_NUMERICPAD
+\family default
+), 
+\family typewriter
+edit
+\family default
+ is the control 
+\family typewriter
+Edit
+\family default
+ or 
+\family typewriter
+MultiEdit
+\family default
+ (iPhone only), and 
+\family typewriter
+secret
+\family default
+ is to enable password entry (iPhone only).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+swap(Container
+\begin_inset space ~
+\end_inset
+
+newContainer) Used to swap containers from the window.
+ To restore the first container, pass 
+\family typewriter
+null
+\family default
+ as parameter.
+ Note that 
+\family typewriter
+null
+\family default
+ cannot be used for the first swap.
+ See 
+\family typewriter
+samples.ui.ContainerSwitch
+\family default
+.
+ This method correctly handles screen rotation for containers that were
+ already swapped.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+repaintActiveWindows() Static method that repaints the window stack from
+ 0 to 
+\family typewriter
+zStack.size()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setHighlighted(Control
+\begin_inset space ~
+\end_inset
+
+c) Sets the currently highlighted control which will gain focus if the ACTION
+ button is pressed.
+ It may be the same of the one that holds focus.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getHighlighted() Gets the currently highlighted control.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+drawHighlight() Avoid drawing the highlight on a 
+\family typewriter
+Window
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+screenResized() Called when the screen is resized, probably caused by a
+ rotation.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+resize() This method resizes the 
+\family typewriter
+Window
+\family default
+ to the needed bounds, based on added childs.
+ It changes only the size, keeping the 
+\family typewriter
+x
+\family default
+,
+\family typewriter
+y
+\family default
+ coordinates passed on 
+\family typewriter
+setRect()
+\family default
+.
+ You can add spaces at right and bottom using the 
+\family typewriter
+insets.right
+\family default
+/
+\family typewriter
+bottom
+\family default
+ properties.
+ Sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class TestWindow extends Window
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public TestWindow()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		...
+ call constructor
+\end_layout
+
+\begin_layout Plain Layout
+
+		setRect(CENTER, CENTER, Screen.width-40, 1000); // height will be resized
+ later
+\end_layout
+
+\begin_layout Plain Layout
+
+	} 
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		setInsets(5,5,5,5);
+\end_layout
+
+\begin_layout Plain Layout
+
+		...
+ add controls resize();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+In this sample, since the height is variable, you can't use 
+\family typewriter
+BOTTOM
+\family default
+ on 
+\family typewriter
+y
+\family default
+ nor 
+\family typewriter
+FILL
+\family default
+ on 
+\family typewriter
+height
+\family default
+; otherwise, resize will not work as expected.
+ The same counts if you have a variable width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPopupCount() Returns the number of windows that are popped up.
+ If there's only a 
+\family typewriter
+MainWindow
+\family default
+, returns 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onRobotKey() Called when a robot key is pressed.
+ Don't call this method directly, use 
+\family typewriter
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+deviceRobotSpecialKey
+\family default
+ instead.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shiftScreen(Control
+\begin_inset space ~
+\end_inset
+
+c,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+deltaY) Shifts the screen if SIP can't be moved.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isScreenShifted() Returns if the screen is shifted or not.
 \end_layout
 
 \begin_layout Standard
@@ -41045,11 +41970,47 @@ Simple dialog used to display a text with some user-defined buttons.
 \end_layout
 
 \begin_layout Standard
+Below there is a 
+\family typewriter
+MessageBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/messagebox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 
 \family typewriter
 MessageBox
 \family default
- has three constructors:
+ has five constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -41144,6 +42105,28 @@ text,String[]
 \begin_inset space ~
 \end_inset
 
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth) Same as above, but the last parameter indicates that all the
+ buttons have the same width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
 buttonCaptions,int
 \begin_inset space ~
 \end_inset
@@ -41152,7 +42135,7 @@ gap,int
 \begin_inset space ~
 \end_inset
 
-insideGap) Same as the above, but also receives the 
+insideGap) Same as the second one, but also receives the 
 \family typewriter
 gap
 \family default
@@ -41167,6 +42150,35 @@ PushButtonGroup
 .
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+MessageBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) It is the most complete constructor, with all the possible parameters.
+\end_layout
+
 \begin_layout Standard
 The message box is displayed on the center of the device screen, and its
  bounds are calculated based on the given title, text and buttons.
@@ -41179,10 +42191,150 @@ The message box is displayed on the center of the device screen, and its
 \family typewriter
 MessageBox
 \family default
- has only three instance methods:
+ has the following public fields (omitting some methods from its superclasses):
 \end_layout
 
 \begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+btns The 
+\family typewriter
+PushButtonGroup
+\family default
+ with the box buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where the window opens.
+ It can be changed to 
+\family typewriter
+TOP
+\family default
+ or 
+\family typewriter
+BOTTOM
+\family default
+.
+ Defaults to 
+\family typewriter
+CENTER
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the 
+\family typewriter
+buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+ For example, if you set the buttons to 
+\family typewriter
+{"Ok","Cancel"}
+\family default
+, you can map the enter key for the 
+\family typewriter
+Ok
+\family default
+ button and the escape key for the 
+\family typewriter
+Cancel
+\family default
+ button by assigning: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE}; 
+\end_layout
+
+\end_inset
+
+Note that 
+\family typewriter
+ENTER
+\family default
+ is also handled as 
+\family typewriter
+ACTION
+\family default
+, since the 
+\family typewriter
+ENTER
+\family default
+ key is mapped to 
+\family typewriter
+ACTION
+\family default
+ on some platforms.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showExceptionTitle Title shown in the 
+\family typewriter
+showException()
+\family default
+ dialog for all exceptions shown this way.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+MessageBox
+\family default
+ has the following public instance methods (omitting some methods from its
+ superclasses):
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+setText(String
+\begin_inset space ~
+\end_inset
+
+text) This method can be used to set the text AFTER the dialog was shown.
+ However, the dialog will not be resized.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setIcon(Image
+\begin_inset space ~
+\end_inset
+
+icon) Sets an icon to be shown in the 
+\family typewriter
+MessageBox
+\family default
+'s title, at left.
+ It only works if there's a title.
+ If you really need an empty title, pass as title a string with a couple
+ of spaces, like 
+\family typewriter
+" "
+\family default
+.
+ The icon's width and height will be set to title's font ascent.
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 getPressedButtonIndex() Returns the index of the pressed button.
@@ -41223,7 +42375,7 @@ setTextAlignment(int
 \end_inset
 
 align) Sets the alignment of the label that displays the text.
- The argument must be one of the following constants 
+ The argument must be one of the following constants: 
 \family typewriter
 LEFT
 \family default
@@ -41231,7 +42383,7 @@ LEFT
 \family typewriter
 CENTER
 \family default
-, 
+, or 
 \family typewriter
 RIGHT
 \family default
@@ -41274,6 +42426,48 @@ TimerEvent
 \family default
  is triggered.
  Be sure to learn how the timer works to better understand this method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+e) Handles scroll buttons and normal buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDelayToShowButton(int
+\begin_inset space ~
+\end_inset
+
+ms) Calling this method will make the buttons initially hidden and will
+ show them after the specified number of milisseconds.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+MessageBox mb = new MessageBox("Novo Tweet!",tweet);
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.setTimeToShowButton(7000);
+\end_layout
+
+\begin_layout Plain Layout
+
+mb.popup();  
+\end_layout
+
+\end_inset
+
+ 
 \end_layout
 
 \begin_deeper
@@ -41365,7 +42559,7 @@ boolean
 \end_inset
 
 dumpToConsole) Immediately displays a message box showing the given throwable
- name, message and its stack trace.
+ name, message, and its stack trace.
  This information is dumped to the debug console if the field 
 \family typewriter
 dumpToConsole
@@ -41416,13 +42610,50 @@ InputBox
 
 \begin_layout Standard
 Simple dialog used to get a text input from the user.
- It contains a label do display some text, an edit to receive the user input,
+ It contains a label to display some text, an edit to receive the user input,
  and some user-defined buttons.
  Basically it's like a message box with an edit.
+ 
 \end_layout
 
 \begin_layout Standard
-It has two constructors:
+Below there is a 
+\family typewriter
+InputBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/inputbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It has three constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -41465,27 +42696,15 @@ InputBox(String
 \begin_inset space ~
 \end_inset
 
-title,
+title,String
 \begin_inset space ~
 \end_inset
 
-String
+text,String
 \begin_inset space ~
 \end_inset
 
-text,
-\begin_inset space ~
-\end_inset
-
-String
-\begin_inset space ~
-\end_inset
-
-defaultValue,
-\begin_inset space ~
-\end_inset
-
-String[]
+defaultValue,String[]
 \begin_inset space ~
 \end_inset
 
@@ -41500,6 +42719,51 @@ PushButtonGroup
 getPressedButtonIndex()
 \family default
  method returns the pressed button index.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+InputBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String
+\begin_inset space ~
+\end_inset
+
+defaultValue,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) The most complete version, where 
+\family typewriter
+allSameWidth
+\family default
+ indicates that all the buttons have the same width, 
+\family typewriter
+gap
+\family default
+ is the space between buttons, and 
+\family typewriter
+insideGap
+\family default
+ is the space between the button's text and it's bounds.
 \end_layout
 
 \begin_deeper
@@ -41548,7 +42812,91 @@ The
 \family typewriter
 InputBox
 \family default
- class provides the following instance methods:
+ class provides the following public attributes and methods (omitting some
+ fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+openKeyboardOnPopup Set to 
+\family typewriter
+true
+\family default
+ to automatically open the keyboard once the 
+\family typewriter
+InputBox
+\family default
+ is open.
+ Since this is a static member, it is valid for all 
+\family typewriter
+InputBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where the window opens.
+ Can be changed to 
+\family typewriter
+TOP
+\family default
+ or 
+\family typewriter
+BOTTOM
+\family default
+.
+ Defaults to 
+\family typewriter
+CENTER
+\family default
+.
+ The image above shows a 
+\family typewriter
+InputBox
+\family default
+ opened at the bottom.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the 
+\family typewriter
+buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTextAlignment(int
+\begin_inset space ~
+\end_inset
+
+align) Sets the alignment for the text.
+ The parameter must be 
+\family typewriter
+CENTER
+\family default
+ (default), 
+\family typewriter
+LEFT
+\family default
+, or 
+\family typewriter
+RIGHT
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -41633,6 +42981,42 @@ When the keyboard box is popped up, it gets the control of the topmost window
 The edit and multi edit controls may use the keyboard box for text input.
 \end_layout
 
+\begin_layout Standard
+Below there is a 
+\family typewriter
+KeyboardBox
+\family default
+ from the UIGadgets sample using the Android user interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/keyboardbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 CalculatorBox
 \end_layout
@@ -41645,11 +43029,187 @@ A dialog with a simpler calculator.
 \end_layout
 
 \begin_layout Standard
-The 
+This class is used by the 
+\family typewriter
+Edit
+\family default
+ class when its mode is set to 
+\family typewriter
+CURRENCY
+\family default
+ and displays a calculator with six basic operations and a numeric pad.
+ Here is a sample from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/calculator_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+edNumber The edit used to show the number.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+actions Strings used to display the action messages.
+ You can localize these strings if you wish.
+ Its default value is 
+\family typewriter
+{"Clear","Ok","Cancel"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultTitle A static field that defines the default title for all calculator
+ boxes, which is 
+\family typewriter
+Numeric Pad
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+optionalValue Defines an optional character to be used in the 
 \family typewriter
 CalculatorBox
 \family default
- class has only the default constructor and the following methods:
+.
+ Replaces the decimal separator 
+\family typewriter
+/ 00
+\family default
+ character.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+maxLength The maximum length for the edit that will be created.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cOrig The control that had focus when the 
+\family typewriter
+CalculatorBox
+\family default
+ was popped up.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultValue The default value of the edit.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keepOriginalValue Set to 
+\family typewriter
+true
+\family default
+ to don't replace the original value in the 
+\family typewriter
+Edit
+\family default
+ if the user pressed Ok.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showNextButtonInsteadOfClear Set to 
+\family typewriter
+true
+\family default
+ to replace the 
+\family typewriter
+Clear
+\family default
+ button by the 
+\family typewriter
+Next
+\family default
+ button.
+ This button is equivalent to the 
+\family typewriter
+Ok
+\family default
+ button, but it also changes the focus to the next field.
+ The user can still clean the edit by clicking the backspace 
+\family typewriter
+<<
+\family default
+ button.
+ The default behaviour calls 
+\family typewriter
+moveFocusToNextControl()
+\family default
+.
+ You can change it by overriding the method 
+\family typewriter
+gotoNext()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CalculatorBox() Constructs a 
+\family typewriter
+CalculatorBox
+\family default
+ with the 6 basic operations visible.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CalculatorBox(boolean
+\begin_inset space ~
+\end_inset
+
+showOperations) Constructs a 
+\family typewriter
+CalculatorBox
+\family default
+ with the 6 basic operations hidden if the parameter is 
+\family typewriter
+false
+\family default
+.
+ In this case, it will become a numeric box.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -41664,7 +43224,11 @@ requestFocusOnOper1) Clears everything in this calculator.
 \begin_layout FieldList
 \labelwidthstring 0
 getAnswer() Returns a string with the answer the user selected to be pasted
- (the result or the first operand).
+ (the result, the first operand, or 
+\family typewriter
+null
+\family default
+ if the user canceled).
 \end_layout
 
 \begin_layout Section
@@ -41675,6 +43239,11 @@ CalendarBox
 Displays a calendar where a date can be chosen.
  It pops up with the current day as default and the user can scroll through
  months or years.
+ It uses the 
+\family typewriter
+Date
+\family default
+ class for all operations.
  When a day is selected the calendar is closed and you may retrieve a 
 \family typewriter
 Date
@@ -41683,11 +43252,113 @@ Date
 \end_layout
 
 \begin_layout Standard
-The 
+Instead of creating a new instance (which consumes memory), you may use
+ the 
 \family typewriter
-CalendarBox
+Edit
 \family default
- class has only the default constructor and the following methods:
+'s static field calendar.
+\end_layout
+
+\begin_layout Standard
+If there is something in the edit box which poped up the calendar, the clear
+ button will clear it.
+ Cancel will leave whatever was in there.
+ 
+\end_layout
+
+\begin_layout Standard
+The month can be changed via keyboard using the left/right keys, and the
+ year can be changed using up/down keys.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is a sample from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/calendar_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, one omitted default constructor,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+canceled 
+\family typewriter
+true
+\family default
+ if the user had canceled without selecting.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+weekNames The 7 week names painted in the control.
+ It defaults to 
+\family typewriter
+{"S","M","T","W","T","F","S"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+todayClearCancel The labels for 
+\family typewriter
+Today
+\family default
+, 
+\family typewriter
+Clear
+\family default
+, and 
+\family typewriter
+Cancel
+\family default
+.
+ It defaults to 
+\family typewriter
+{"Today","Clear","Cancel"}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yearMonth The labels between the arrows for year and month.
+ It defaults to 
+\family typewriter
+{"year","month"}
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -41849,6 +43520,112 @@ Writting the color in hexdecimal.
  
 \end_layout
 
+\begin_layout Standard
+Here's a sample code: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ColorChooserBox ccb = new ColorChooserBox(getBackColor());
+\end_layout
+
+\begin_layout Plain Layout
+
+ccb.popup();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (ccb.choosenColor != -1) // user pressed cancel?
+\end_layout
+
+\begin_layout Plain Layout
+
+	int color = ccb.choosenColor; // no, color was selected 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ColorChooserBox
+\family default
+ looks like the following images taken from UIGadgets using Android user
+ interface style:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorchoser_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/colorchoser_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attribute and constructor (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+choosenColor The chosen color or -1 if the user cancelled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColorChooserBox(int
+\begin_inset space ~
+\end_inset
+
+defaultColor) Constructs a 
+\family typewriter
+ColorChooserBox
+\family default
+ with a default color as the chosen color.
+\end_layout
+
 \begin_layout Section
 ControlBox
 \family typewriter
@@ -41856,7 +43633,211 @@ ControlBox
 \end_layout
 
 \begin_layout Standard
-A popup window that displays any control, given as parameter to the constructor.
+A popup window that displays any control given as parameter to the constructor
+ To add more than one control, use a container.
+ Here is a sample from Litebase AllTests:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/controlbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yPosition Defines the 
+\family typewriter
+y
+\family default
+ position on screen where this window opens.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+buttonKeys If you set the
+\family typewriter
+ buttonCaptions
+\family default
+ array in the construction, you can also set this public field to an 
+\family typewriter
+int
+\family default
+ array of the keys that maps to each of the buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb) Constructs a 
+\family typewriter
+ControlBox
+\family default
+ with the given parameters, and an 
+\family typewriter
+Ok
+\family default
+ and a 
+\family typewriter
+Cancel
+\family default
+ buttons.
+ The control may have at least one item, which will be used to determine
+ the preferred size.
+ The 
+\family typewriter
+text
+\family default
+ parameter is the text that will be displayed in a label above the control
+ 
+\family typewriter
+cb
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, plus a string array specifying the buttons
+ captions.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,int
+\begin_inset space ~
+\end_inset
+
+prefW,int
+\begin_inset space ~
+\end_inset
+
+prefH,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as the above, plus the preferred height and width.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ControlBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,Control
+\begin_inset space ~
+\end_inset
+
+cb,int
+\begin_inset space ~
+\end_inset
+
+prefW,int
+\begin_inset space ~
+\end_inset
+
+prefH,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,int
+\begin_inset space ~
+\end_inset
+
+buttonRows) Same as the above, plus the number of rows for the buttons.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+onEvent(Event
+\begin_inset space ~
+\end_inset
+
+e) Handles scroll buttons and normal buttons.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the pressed button index, starting from
+ 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getControl() Returns the control associated.
  
 \end_layout
 
@@ -41871,7 +43852,7 @@ A class that shows all folders from a startup one to allow the user select
 \emph on
 on demand
 \emph default
- to speedup the process.
+ to speed up the process.
  
 \end_layout
 
@@ -41897,6 +43878,385 @@ defaultButton
  
 \end_layout
 
+\begin_layout Standard
+Here's a sample of how to use it: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	FileChooserBox w = new FileChooserBox("Select the folder",new String[]{"
+ This one "," Cancel "}, 
+\end_layout
+
+\begin_layout Plain Layout
+
+		new FileChooserBox.Filter()
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			public boolean accept(File f) throws IOException
+\end_layout
+
+\begin_layout Plain Layout
+
+			{
+\end_layout
+
+\begin_layout Plain Layout
+
+				return f.isDir(); // will only list folders.
+ you may filter by other file types too
+\end_layout
+
+\begin_layout Plain Layout
+
+			}
+\end_layout
+
+\begin_layout Plain Layout
+
+		});
+\end_layout
+
+\begin_layout Plain Layout
+
+	w.mountTree(Settings.appPath,1);
+\end_layout
+
+\begin_layout Plain Layout
+
+	w.popup();
+\end_layout
+
+\begin_layout Plain Layout
+
+	return w.getPressedButtonIndex() == 0 ? w.getAnswer() : null;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (IOException e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return null;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Tree"
+
+\end_inset
+
+ from chapter 
+\begin_inset Quotes eld
+\end_inset
+
+Some Advanced Controls
+\begin_inset Quotes erd
+\end_inset
+
+ shows some images of its usage.
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultButtonCaptions The default button captions: 
+\family typewriter
+" Select "
+\family default
+ and 
+\family typewriter
+" Cancel "
+\family default
+.
+ You can localize them if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgVolume The 
+\family typewriter
+"Volume: "
+\family default
+ label that's placed before the volume combo.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgRefresh The 
+\family typewriter
+" Refresh "
+\family default
+ button that's placed after the volume combo.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgInvalidVolumeTitle The title of a message box that appears if the user
+ tries to access a volume and an error is issued by the operating system.
+ Defaults to 
+\family typewriter
+"Error"
+\family default
+.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+msgInvalidVolumeMessage The body of a message box that appears if the user
+ tries to access a volume and an error is issued by the operating system.
+ Defaults to 
+\family typewriter
+"Unable to read the contents of the selected volume.
+ Make sure the volume is mounted and you have
+\begin_inset Newline newline
+\end_inset
+
+enough privileges to query its contents."
+\family default
+.
+ You can localize it if you want.
+ Since this is a static field, it values for all 
+\family typewriter
+FileChooserBox
+\family default
+es.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+fileCount The number of files found in the current directory.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multipleSelection Set to 
+\family typewriter
+true
+\family default
+ to allow multiple selections using a 
+\family typewriter
+Check
+\family default
+ drawn before the nodes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+initialPath Selects a file that is in the tree.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+defaultButton The button index that will be chosen if the user makes a double-cl
+ick in an item.
+ Usually you set this to the index of the 
+\family typewriter
+Ok
+\family default
+ button.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FileChooserBox(FileChooserBox.Filter
+\begin_inset space ~
+\end_inset
+
+ff) Constructs a file chooser with 
+\family typewriter
+"Select a file"
+\family default
+ as the window title, and 
+\family typewriter
+"Select"
+\family default
+ and 
+\family typewriter
+"Cancel"
+\family default
+ buttons.
+ It receives the filter as parameter.
+ Pass 
+\family typewriter
+null
+\family default
+ to accept all files.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+FileChooserBox(String
+\begin_inset space ~
+\end_inset
+
+caption,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,FileChooserBox.Filter
+\begin_inset space ~
+\end_inset
+
+ff) Constructs a file chooser with the given parameters, where caption is
+ the caption to be displayed in the title and 
+\family typewriter
+buttonCaptions
+\family default
+ is the button captions that will be used in the 
+\family typewriter
+PushButtonGroup
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mountTree(String
+\begin_inset space ~
+\end_inset
+
+filePath,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+volume) Call this method to mount the tree, starting from the given path
+ and volume.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPressedButtonIndex() Returns the button index used to close the window.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAnswer() Returns the path choosen by the user.
+ If using the default captions and the cancel button was pressed, returns
+ 
+\family typewriter
+null
+\family default
+.
+ The filename is returned with normal (
+\family typewriter
+/
+\family default
+) slashes; the path also ends with a slash.
+ If 
+\family typewriter
+multipleSelections
+\family default
+ is on, a list of paths, separated by comma (
+\family typewriter
+,
+\family default
+) is returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTree() Returns the tree.
+ 
+\end_layout
+
+\begin_layout Standard
+This class use a nested interface called 
+\family typewriter
+FileChooserBox.Filter
+\family default
+.
+ This is necessary to indicate that a filter must have the method 
+\family typewriter
+accept(File f)
+\family default
+, which must return 
+\family typewriter
+true
+\family default
+ if the file is to be added to the tree.
+ 
+\end_layout
+
 \begin_layout Section
 ProgressBox
 \end_layout
@@ -41906,7 +44266,311 @@ This class implements a message box that shows a spinner at the left of
  the text.
  You can set the spinner color and type before constructing the progress
  box (usually you do this in your application's constructor, and not for
- each progress bar created).
+ each progress box created).
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ProgressBox pb = new ProgressBox("Message","Loading, please wait...",null);
+\end_layout
+
+\begin_layout Plain Layout
+
+pb.popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ lengthy task
+\end_layout
+
+\begin_layout Plain Layout
+
+pb.unpop(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the AndroidUI sample, there is some examples using 
+\family typewriter
+ProgressBox
+\family default
+.
+ The images order follow the buttons order to show the examples:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/progressbox_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors (excluding some fields
+ from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+msg) Constructs a progress box with the text and one "Ok" button.
+ The text may be separated by 
+\family typewriter
+
+\backslash
+n
+\family default
+ as the line delimiters; otherwise, it is automatically splitted if its
+ too big to fit on screen.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions) Same as above, plus the specified button captions.
+ If 
+\family typewriter
+buttonCaptions
+\family default
+ is 
+\family typewriter
+null
+\family default
+, no buttons are displayed and you must dismiss the dialog by calling 
+\family typewriter
+unpop()
+\family default
+ or by setting the delay using the 
+\family typewriter
+setUnpopDelay()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth) Same as above, plus the parameter 
+\family typewriter
+allSameWidth
+\family default
+, which is the same as in the constructor for 
+\family typewriter
+PushButtonGroup
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) Same as the second one, plus the parameters 
+\family typewriter
+gap
+\family default
+ and 
+\family typewriter
+insideGap
+\family default
+, which are the same as in the constructor for 
+\family typewriter
+PushButtonGroup
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ProgressBox(String
+\begin_inset space ~
+\end_inset
+
+title,String
+\begin_inset space ~
+\end_inset
+
+text,String[]
+\begin_inset space ~
+\end_inset
+
+buttonCaptions,boolean
+\begin_inset space ~
+\end_inset
+
+allSameWidth,int
+\begin_inset space ~
+\end_inset
+
+gap,int
+\begin_inset space ~
+\end_inset
+
+insideGap) This is the most complete constructor with all the possible parameter
+s.
+ 
 \end_layout
 
 \begin_layout Section
@@ -41945,6 +44609,222 @@ getTime()
 \begin_layout Standard
 The time can be entered also using the arrow keys and by typing the numbers
  directly.
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+TimeBox tb;
+\end_layout
+
+\begin_layout Plain Layout
+
+public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	try
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		(tb=new TimeBox()).popupNonBlocking();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	catch (Exception e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		e.printStackTrace();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (e.type == ControlEvent.PRESSED && e.target == tb)
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.debug("ret: "+tb.getTime());
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It looks like the following image taken from AndroidUI:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/timebox_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes, constructors and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+okCaption Used in the button.
+ Change it if you want to localize the text.
+ It defaults to 
+\family typewriter
+OK
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clearCaption Used in the button.
+ Change it if you want to localize the text.
+ It defaults to 
+\family typewriter
+Clear
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hideIfInvalid Set to 
+\family typewriter
+false
+\family default
+ to disable the buttons instead of hiding them if they are not a valid number
+ to appear at the current position.
+ By default, the buttons are hidden, but setting this to 
+\family typewriter
+false
+\family default
+ can disable them instead.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TimeBox() Constructs a 
+\family typewriter
+TimeBox
+\family default
+ with time set to midnight.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TimeBox(Time
+\begin_inset space ~
+\end_inset
+
+time) Constructs a 
+\family typewriter
+TimeBox
+\family default
+ with the given time.
+ If the time is invalid, it is set to midnight.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTime(Time
+\begin_inset space ~
+\end_inset
+
+time) Sets the time if it was not set yet in the constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTime() Returns the time placed in this control, which is the time passed
+ in the constructor (if any) updated with the hours, minutes, and seconds.
  
 \end_layout
 
