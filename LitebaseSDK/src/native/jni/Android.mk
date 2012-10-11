@@ -2,14 +2,24 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-include apps/options.mk
+TYPE ?= release
 
-TC_SRCDIR := TotalCrossVM/src
-TC_INCLUDEDIR := TotalCrossVM/src
-LB_SRCDIR := LitebaseSDK/src/native
-LB_INCLUDEDIR := LitebaseSDK/src/native
+ifeq ($(TYPE), noras)
+	include $(LOCAL_PATH)/options_noras.mk
+endif
+ifeq ($(TYPE), release)
+	include $(LOCAL_PATH)/options_nodemo.mk
+endif
+ifeq ($(TYPE), demo)
+	include $(LOCAL_PATH)/options_demo.mk
+endif
 
-Litebase_sources = \
+LB_SRCDIR := ..
+LB_INCLUDEDIR := $(LB_SRCDIR)/native
+TC_SRCDIR := $(LB_SRCDIR)/../../../../TotalCross/TotalCrossVM/src
+TC_INCLUDEDIR := $(LB_SRCDIR)/../../../TotalCross/TotalCrossVM/src
+
+LITEBASE_FILES = \
 	$(LB_SRCDIR)/lbFile.c	\
 	$(LB_SRCDIR)/PlainDB.c	\
 	$(LB_SRCDIR)/TCVMLib.c	\
@@ -28,7 +38,7 @@ Litebase_sources = \
 	$(LB_SRCDIR)/PreparedStatement.c \
 	$(LB_SRCDIR)/UtilsLB.c
 
-Parser_sources = \
+PARSER_FILES = \
 	$(LB_SRCDIR)/parser/LitebaseLex.c \
 	$(LB_SRCDIR)/parser/LitebaseMessage.c \
 	$(LB_SRCDIR)/parser/LitebaseParser.c \
@@ -40,13 +50,16 @@ Parser_sources = \
 	$(LB_SRCDIR)/parser/SQLSelectStatement.c \
 	$(LB_SRCDIR)/parser/SQLUpdateStatement.c
 
-Tests_sources = \
-	$(TC_SRCDIR)/tests/tc_testsuite.c
+_TEST_SUITE ?= DISABLE
+
+ifeq ($(_TEST_SUITE),ENABLE)
+TEST_SUITE_FILES = $(TC_SRCDIR)/tests/tc_testsuite.c
+endif
 
 SOURCE_FILES = \
-	$(Litebase_sources) \
-	$(Parser_sources) \
-	$(Tests_sources)
+	$(LITEBASE_FILES) \
+	$(PARSER_FILES) \
+	$(TEST_SUITE_FILES)
 
 
 LOCAL_ARM_MODE   := arm
@@ -55,6 +68,6 @@ LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/nm/lang $(LB_INCLUDEDIR)/parser $(LB_INCLUDEDIR)
 LOCAL_LDLIBS     := -llog -ldl
 LOCAL_CFLAGS     := -DTOTALCROSS -DLB_EXPORTS -DFORCE_LIBC_ALLOC $(EXTRA_DEFINES)
-LOCAL_LDFLAGS    := -Wl,-Map=$(LB_SRCDIR)/../../builders/android/apps/litebase/litebase.map
+LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
 
 include $(BUILD_SHARED_LIBRARY)
