@@ -905,6 +905,7 @@ target: Android builds
    <exec dir="${source.vms.path}/src" executable="cmd.exe" failonerror="true">
       <env key="TYPE" value="${type}" />
       <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
+      <env key="NORASID" value="${norasid}" />
       <arg line="/c ${android.ndk.path}/ndk-build"/>
    </exec>
   <sleep seconds="3"/>
@@ -977,7 +978,7 @@ target: Android builds
   <delete dir="${android.project.path}/out/src" />
   <property name="norasid" value=""/>
   <antcall target="build_android" >
-	<param name="type" value="noras ${norasid}" />
+	<param name="type" value="noras" />
 	</antcall>
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
