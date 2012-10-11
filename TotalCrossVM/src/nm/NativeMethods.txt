@@ -51,7 +51,6 @@ totalcross/ui/gfx/Graphics|native public void drawCircle(int xc, int yc, int r);
 totalcross/ui/gfx/Graphics|native public void fillCircle(int xc, int yc, int r);
 totalcross/ui/gfx/Graphics|native public int getPixel(int x, int y);
 totalcross/ui/gfx/Graphics|native public void setPixel(int x, int y);
-totalcross/ui/gfx/Graphics|native public void eraseRect(int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public void drawLine(int ax, int ay, int bx, int by);
 totalcross/ui/gfx/Graphics|native public void drawDots(int ax, int ay, int bx, int by);
 totalcross/ui/gfx/Graphics|native public void drawRect(int x, int y, int w, int h);
@@ -77,7 +76,6 @@ totalcross/ui/gfx/Graphics|native public void setPixels(int []xPoints, int []yPo
 totalcross/ui/gfx/Graphics|native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
 totalcross/ui/gfx/Graphics|native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
 totalcross/ui/gfx/Graphics|native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-totalcross/ui/gfx/Graphics|native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
 totalcross/ui/gfx/Graphics|native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
 totalcross/ui/gfx/Graphics|native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
 totalcross/ui/gfx/Graphics|native public void drawImage(totalcross.ui.image.Image image, int x, int y);
