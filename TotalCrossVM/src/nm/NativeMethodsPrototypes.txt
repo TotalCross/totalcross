@@ -52,7 +52,6 @@ TC_API void tugG_drawCircle_iii(NMParams p);
 TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
-TC_API void tugG_eraseRect_iiii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
@@ -78,7 +77,6 @@ TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p);
-TC_API void tugG_eraseRect_iiiiiii(NMParams p);
 TC_API void tugG_fillVistaRect_iiiibbI(NMParams p);
 TC_API void tugG_drawArrow_iiibbi(NMParams p);
 TC_API void tugG_drawImage_iii(NMParams p);
@@ -636,10 +634,6 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
 }
@@ -737,10 +731,6 @@ TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p) // totalcross/ui/gfx/Graphic
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2381,11 +2371,6 @@ TESTCASE(tugG_setPixel_ii) // totalcross/ui/gfx/Graphics native public void setP
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_eraseRect_iiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawLine_iiii) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
    TEST_SKIP;
@@ -2507,11 +2492,6 @@ TESTCASE(tugG_drawVistaRect_iiiiiiii) // totalcross/ui/gfx/Graphics native publi
    finish: ;
 }
 TESTCASE(tugG_draw3dRect_iiiibbbI) // totalcross/ui/gfx/Graphics native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_eraseRect_iiiiiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
 {
    TEST_SKIP;
    finish: ;

@@ -57,7 +57,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillCircle_iii"), &tugG_fillCircle_iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_getPixel_ii"), &tugG_getPixel_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_setPixel_ii"), &tugG_setPixel_ii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tugG_eraseRect_iiii"), &tugG_eraseRect_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawLine_iiii"), &tugG_drawLine_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawDots_iiii"), &tugG_drawDots_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawRect_iiii"), &tugG_drawRect_iiii);
@@ -83,7 +82,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_refresh_iiiiiif"), &tugG_refresh_iiiiiif);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawVistaRect_iiiiiiii"), &tugG_drawVistaRect_iiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_draw3dRect_iiiibbbI"), &tugG_draw3dRect_iiiibbbI);
-   htPutPtr(&htNativeProcAddresses, hashCode("tugG_eraseRect_iiiiiii"), &tugG_eraseRect_iiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillVistaRect_iiiibbI"), &tugG_fillVistaRect_iiiibbI);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawArrow_iiibbi"), &tugG_drawArrow_iiibbi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawImage_iii"), &tugG_drawImage_iii);

@@ -124,61 +124,6 @@ public final class Graphics4D
       return r;
    }
 
-   native protected void create(totalcross.ui.gfx.GfxSurface surface);
-   native public void drawEllipse(int xc, int yc, int rx, int ry);
-   native public void fillEllipse(int xc, int yc, int rx, int ry);
-   native public void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
-   native public void drawPie(int xc, int yc, int r, double startAngle, double endAngle);
-   native public void fillPie(int xc, int yc, int r, double startAngle, double endAngle);
-   native public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-   native public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-   native public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-   native public void drawCircle(int xc, int yc, int r);
-   native public void fillCircle(int xc, int yc, int r);
-   native public int getPixel(int x, int y);
-   native public void setPixel(int x, int y);
-   native public void drawLine(int ax, int ay, int bx, int by);
-   native public void drawDots(int ax, int ay, int bx, int by);
-   native public void drawRect(int x, int y, int w, int h);
-   native public void fillRect(int x, int y, int w, int h);
-   native public void drawDottedRect(int x, int y, int w, int h);
-   native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
-   native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
-   native public void drawPolyline(int []xPoints, int []yPoints, int nPoints);
-   native public void drawText(String text, int x, int y);
-   native public void drawText(char []chars, int start, int count, int x, int y);
-   native public void drawText(String text, int x, int y, int justifyWidth);
-   native public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-   native public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-   native public void drawRoundRect(int x, int y, int width, int height, int r);
-   native public void fillRoundRect(int x, int y, int width, int height, int r);
-   native public void setClip(int x, int y, int w, int h);
-   native public boolean clip(totalcross.ui.gfx.Rect r);
-   native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
-   native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
-   native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
-   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
-   native public void setPixels(int []xPoints, int []yPoints, int nPoints);
-   native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
-   native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
-   native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-   native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int[] colors);
-   native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
-   native public void drawImage(totalcross.ui.image.Image4D image, int x, int y);
-   native public void fillEllipseGradient(int xc, int yc, int rx, int ry);
-   native public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle);
-   native public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-   native public void fillCircleGradient(int xc, int yc, int r);
-   native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
-   native public int getRGB(int[] data, int offset, int x, int y, int w, int h);
-   native public int setRGB(int[] data, int offset, int x, int y, int w, int h);
-   native public static void fadeScreen(int fadeValue);
-   native public void drawText(char chars[], int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
-   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
-   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
-   native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
-   native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
-
    ////////////////////////////////////////////////////////////////////////////////
    public void setClip(Rect r)
    {
@@ -303,8 +248,60 @@ public final class Graphics4D
       }
    }
    /////////////////////////////////////////////////////////////////////////////////////////////
-   // guich@tc130: now stuff for Android ui style
-   
+   native protected void create(totalcross.ui.gfx.GfxSurface surface);
+   native public void drawEllipse(int xc, int yc, int rx, int ry);
+   native public void fillEllipse(int xc, int yc, int rx, int ry);
+   native public void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
+   native public void drawPie(int xc, int yc, int r, double startAngle, double endAngle);
+   native public void fillPie(int xc, int yc, int r, double startAngle, double endAngle);
+   native public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+   native public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+   native public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+   native public void drawCircle(int xc, int yc, int r);
+   native public void fillCircle(int xc, int yc, int r);
+   native public int getPixel(int x, int y);
+   native public void setPixel(int x, int y);
+   native public void drawLine(int ax, int ay, int bx, int by);
+   native public void drawDots(int ax, int ay, int bx, int by);
+   native public void drawRect(int x, int y, int w, int h);
+   native public void fillRect(int x, int y, int w, int h);
+   native public void drawDottedRect(int x, int y, int w, int h);
+   native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+   native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
+   native public void drawPolyline(int []xPoints, int []yPoints, int nPoints);
+   native public void drawText(String text, int x, int y);
+   native public void drawText(char []chars, int start, int count, int x, int y);
+   native public void drawText(String text, int x, int y, int justifyWidth);
+   native public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
+   native public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
+   native public void drawRoundRect(int x, int y, int width, int height, int r);
+   native public void fillRoundRect(int x, int y, int width, int height, int r);
+   native public void setClip(int x, int y, int w, int h);
+   native public boolean clip(totalcross.ui.gfx.Rect r);
+   native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
+   native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
+   native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
+   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
+   native public void setPixels(int []xPoints, int []yPoints, int nPoints);
+   native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
+   native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
+   native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
+   native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int[] colors);
+   native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
+   native public void drawImage(totalcross.ui.image.Image4D image, int x, int y);
+   native public void fillEllipseGradient(int xc, int yc, int rx, int ry);
+   native public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle);
+   native public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+   native public void fillCircleGradient(int xc, int yc, int r);
+   native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
+   native public int getRGB(int[] data, int offset, int x, int y, int w, int h);
+   native public int setRGB(int[] data, int offset, int x, int y, int w, int h);
+   native public static void fadeScreen(int fadeValue);
+   native public void drawText(char chars[], int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
+   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
+   native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
+   native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
+   native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
    native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
    native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
