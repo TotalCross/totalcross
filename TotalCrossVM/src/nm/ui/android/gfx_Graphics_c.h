@@ -10,14 +10,14 @@
  * *
  *********************************************************************************/
 
-
-
 #include "gfx_ex.h"
+
+#ifdef ANDROID
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #include <android/log.h>
-
 #define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
+#endif
 
 static void checkGlError(const char* op)
 {
@@ -40,11 +40,14 @@ static void checkGlError(const char* op)
 //   if (!c) debug("after %s() NO ERROR",op);
 }
 
+#ifdef ANDROID
 static ANativeWindow *window;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
+#endif
 static void destroyEGL();
+
 
 #define COORDS_PER_VERTEX 3
 
@@ -143,7 +146,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    glAttachShader(p, loadShader(GL_VERTEX_SHADER, vertexCode));
    glAttachShader(p, loadShader(GL_FRAGMENT_SHADER, fragmentCode));
    glLinkProgram(p);
-   glValidateProgram(p);
+   //glValidateProgram(p);
    glGetProgramiv(p, GL_LINK_STATUS, &ret);
    if (!ret)
    {
@@ -155,13 +158,9 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    return p;
 }
 
-static bool initGLES();
+bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
 
-/*
- * Class:     totalcross_Launcher4A
- * Method:    nativeInitSize
- * Signature: (int,int)V
- */
+#ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {
    ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
@@ -171,6 +170,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
+#endif
 
 static void initPoints()
 {  
@@ -369,7 +369,37 @@ bool checkGLfloatBuffer(Context c, int32 n)
    return true;
 }
 
-static bool initGLES()
+bool setupGL(int width, int height)
+{
+    int i;
+    appW = width;
+    appH = height;
+    
+    initTexture();
+    initLineRectPoint();
+    initPoints();
+    setProjectionMatrix(appW,appH);
+    
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND); // enable color alpha channel
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    for (i = 0; i <= 15; i++)
+        ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
+    for (i = 0; i <= 255; i++)
+        f255[i] = (GLfloat)i/(GLfloat)255;
+
+    glViewport(0, 0, width, height);
+    
+    return checkGLfloatBuffer(mainContext,1000);
+}
+
+#ifdef ANDROID
+bool initGLES(ScreenSurface screen)
 {
    int32 i;
    const EGLint attribs[] =
@@ -406,29 +436,7 @@ static bool initGLES()
    _display = display;
    _surface = surface;
    _context = context;
-   appW = width;
-   appH = height;
-
-   initTexture();
-   initLineRectPoint();
-   initPoints();
-   setProjectionMatrix(appW,appH);
-
-   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-   glViewport(0, 0, width, height);
-   glDisable(GL_CULL_FACE);
-   glDisable(GL_DEPTH_TEST);
-   glEnable(GL_BLEND); // enable color alpha channel
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-   for (i = 0; i <= 15; i++)
-      ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
-   for (i = 0; i <= 255; i++)
-      f255[i] = (GLfloat)i/(GLfloat)255;
-   
-   return checkGLfloatBuffer(mainContext,1000);
+   return setupGL(width,height);
 }
 
 static void destroyEGL()
@@ -444,13 +452,12 @@ static void destroyEGL()
    xfree(glcoords);
    xfree(glcolors);
 }
+#endif
 
-/*
- * Class:     totalcross_Launcher4A
- * Method:    nativeOnSizeChanged
- * Signature: (II)V
- */
-
+bool graphicsLock(ScreenSurface screen, bool on)
+{
+    return true;
+}
 
 void privateScreenChange(int32 w, int32 h)
 {
@@ -459,33 +466,51 @@ void privateScreenChange(int32 w, int32 h)
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
-   screen->bpp = ANDROID_BPP;
+   screen->bpp = 32;
    screen->screenX = screen->screenY = 0;
    screen->screenW = lastW;
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   return initGLES();
+   return initGLES(screen);
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
+#ifndef ANDROID    
+   screen->extension = deviceCtx;
+#endif    
    screen->pitch = screen->screenW * screen->bpp / 8;
    screen->pixels = xmalloc(screen->screenW * screen->screenH * 4);
    return screen->pixels != null;
 }
 
+void graphicsUpdateScreenIOS(ScreenSurface screen, int32 transitionEffect);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
 {                
+#ifdef ANDROID
    eglSwapBuffers(_display, _surface);
+#else
+   graphicsUpdateScreenIOS(screen, transitionEffect);
+#endif
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
+#ifdef ANDROID
    if (!isScreenChange)
    {
-      destroyEGL();
+       destroyEGL();
       xfree(screen->extension);
    }
+#else
+   if (isScreenChange)
+       screen->extension = NULL;
+   else
+   {
+      if (screen->extension)
+          free(screen->extension);
+      deviceCtx = screen->extension = NULL;
+   }
+#endif
 }
-

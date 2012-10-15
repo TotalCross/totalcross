@@ -16,7 +16,13 @@
 
 //#define ENABLE_TRACE
 
-#ifdef ANDROID
+#ifdef darwin
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#define __gl2_h_
+#endif
+
+#if defined(ANDROID)
 #include <jni.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>

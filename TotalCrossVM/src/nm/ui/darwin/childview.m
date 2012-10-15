@@ -8,6 +8,16 @@ static ScreenSurface gscreen;
 int getTimeStamp();
 char* createPixelsBuffer(int width, int height);
 int realAppH;
+extern int appW,appH;
+void Sleep(int ms);
+extern BOOL callingScreenChange;
+
++ (Class)layerClass 
+{
+   return [CAEAGLLayer class];
+}
+
+bool setupGL(int width, int height);
 
 - (id)init:(UIViewController*) ctrl
 {                                    
@@ -15,34 +25,21 @@ int realAppH;
    self = [ super init ];
    if (self != nil )
    {
-      // initialize the screen bitmap with the full width and height
-      CGRect rect = [[UIScreen mainScreen] bounds];
-      int w = rect.size.width, h = rect.size.height;
-      int s = w > h ? w : h;
-      screenBuffer = (char*)createPixelsBuffer(s, s);
-      colorSpace = CGColorSpaceCreateDeviceRGB();
-      provider = CGDataProviderCreateWithData(NULL, screenBuffer, 4*w*h, NULL);
       [self setOpaque:YES];
-      [self setClearsContextBeforeDrawing:NO];
-      [self setClipsToBounds:NO];
-      //[self setContentMode:UIViewContentModeRedraw];
+      //  self.contentScaleFactor = [UIScreen mainScreen].scale;
    }  
    return self; 
 }
 
-- (void)updateScreen: (void*)scr
+- (void)setScreenValues: (void*)scr
 {
    ScreenSurface screen = gscreen = scr;
-   screen->screenW = self.frame.size.width;
-   screen->screenH = self.frame.size.height;
+   int scale = ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ([UIScreen mainScreen].scale == 2.0)) ?2:1;
+   screen->screenW = self.frame.size.width * scale;
+   screen->screenH = self.frame.size.height * scale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
 }
-
-void Sleep(int ms);
-BOOL invalidated;
-
-extern BOOL callingScreenChange;
 
 - (void)drawRect:(CGRect)frame
 {
@@ -61,12 +58,12 @@ extern BOOL callingScreenChange;
    if (w != clientW)
    {
       realAppH = h;
-      if (cgImage != null) CGImageRelease(cgImage);
-      cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
+      //if (cgImage != null) CGImageRelease(cgImage);
+      //cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
       if (clientW != 0)
       {
          callingScreenChange = true;
-         [self updateScreen: gscreen];
+         [self setScreenValues: gscreen];
          [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
            @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
          while (callingScreenChange)
@@ -75,7 +72,7 @@ extern BOOL callingScreenChange;
    }
    clientW = w;
    // CGContext: 6.5s; CGLayer: 3.5s
-   CGSize s = CGSizeMake(w,h);
+/*   CGSize s = CGSizeMake(w,h);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGLayerRef layer = CGLayerCreateWithContext(context, s, NULL);
    
@@ -84,15 +81,37 @@ extern BOOL callingScreenChange;
    CGContextScaleCTM(layerContext, 1, -1);
    CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
    CGContextDrawLayerAtPoint(context, CGPointZero, layer);
-   CGLayerRelease(layer);
-   invalidated = TRUE;
+   CGLayerRelease(layer);*/
 }
 
-void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2, int* dirtyY2);
-
-- (void)invalidateScreen:(void*)vscreen withContext:(void*)context
+- (void)graphicsSetup
 {
-   ScreenSurface screen = (ScreenSurface)vscreen;
+   bool ok;
+   CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+   eaglLayer.opaque = TRUE;
+   glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   ok = [EAGLContext setCurrentContext:glcontext];
+   // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
+   glGenFramebuffers(1, &defaultFramebuffer);
+   glGenRenderbuffers(1, &colorRenderbuffer);
+   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
+   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
+
+   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer];
+   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   if (stat != GL_FRAMEBUFFER_COMPLETE)
+      NSLog(@"Failed to make complete framebuffer object %x", stat);
+   setupGL(gscreen->screenW,gscreen->screenH);
+   glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
+   realAppH = appH;
+}
+- (void)invalidateScreen:(void*)vscreen
+{
+   [glcontext presentRenderbuffer:GL_RENDERBUFFER];
+   glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
+   {
+   /*ScreenSurface screen = (ScreenSurface)vscreen;
    int dirtyX1,dirtyY1,dirtyX2,dirtyY2;
    getDirtyFromContext(context, &dirtyX1,&dirtyY1,&dirtyX2,&dirtyY2);
    
@@ -105,7 +124,8 @@ void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];*/
+   }
 }    
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
