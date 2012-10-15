@@ -1372,7 +1372,7 @@ Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 
       int32 type = table->columnTypes[index];
       SQLValue* value = table->defaultValues[index];  
       DoubleBuf buffer;
-      CharP valueCharP;     
+      CharP valueCharP = "";     
                 
       if (!value) // No default value, returns null.
          return null;

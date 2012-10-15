@@ -261,7 +261,6 @@ int32 keyRemove(Context context, Key* key, int32 record)
       else // Otherwise, it is necessary to find the record.
       {
          int32 lastRecord = -1,
-               lastNext,
                auxRecord;
          XFile* fvalues = key->index->fvalues;
          int32 lastPos = 0,
@@ -282,9 +281,8 @@ int32 keyRemove(Context context, Key* key, int32 record)
                }
                else
                {
-                  lastNext = idx;
                   nfSetPos(fvalues, lastPos);
-                  if (!valueSave(context, lastRecord, lastNext, fvalues))
+                  if (!valueSave(context, lastRecord, idx, fvalues))
                      return REMOVE_ERROR;
                   return REMOVE_VALUE_ALREADY_SAVED;
                }
@@ -293,7 +291,6 @@ int32 keyRemove(Context context, Key* key, int32 record)
             // Sets a new last value.
             lastPos = pos;
             lastRecord = auxRecord;
-            lastNext = idx;
          }
       }
    }

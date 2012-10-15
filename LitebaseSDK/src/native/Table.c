@@ -236,7 +236,7 @@ int32 deleteAllIndexes(Context context, Table* table)
 bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: changed from static to global.
 {
 	TRACE("computeColumnOffsets")
-   int16* offsets = table->columnOffsets;
+   uint16* offsets = table->columnOffsets;
    int8* types = table->columnTypes;
    bool notRecomputing = !offsets;
    int32 sum = 0,
@@ -319,7 +319,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 #ifdef WINCE
          indexNameLength,
 #endif
-         primaryKeyCol = 0,
          stringLength,
          slot = table->slot;
    bool exist,
@@ -462,7 +461,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 #endif
    indexName[nameLength = xstrlen(indexName)] = '$';
 
-   primaryKeyCol = table->primaryKeyCol;
    i = -1;
    while (++i < columnCount) // Loads the indices.
    { 
@@ -643,7 +641,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             columnTypesIdx[j] = columnTypes[columns[j]];
          }
             
-         exist = false;
          xstrcpy(&indexName[nameLength + 1], TC_int2str(i + 1, intBuf));
          xstrcat(indexName, IDK_EXT);
             
@@ -1859,7 +1856,6 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             indexCount = index->numberColumns,
             bytes = NUMBEROFBYTES(columnCount),
             indexSize = index->numberColumns,
-            size,
             type,
             offset = 0;
 		bool isNull;
@@ -1869,7 +1865,6 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
       uint8* columns = null;
       uint16* columnOffsets = table->columnOffsets;
       int8* types = index->types;
-      int32* columnSizes = index->colSizes;
       
       if (!rows) // juliana@223_14: solved possible memory problems.
          return indexSetWriteDelayed(context, index, isDelayed);
@@ -1890,10 +1885,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 
       type = *types;
       if (column != -1)
-      {
-         size = *columnSizes;
          offset = columnOffsets[column];
-      }
       else
          columns = composedIndex->columns;
 		
@@ -2214,8 +2206,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    bool changePos,
         addingNewRecord = recPos == -1,
         valueOk,
-        hasIndex, 
-        isChar,
+        hasIndex,
         isNullVOld,
         isNull;
    int8* columnTypes = table->columnTypes;
@@ -2324,7 +2315,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       isNull = isBitSet(columnNulls0, i);
 		idx = columnIndexes[i]; // If a new value is being written, the table index (if any) needs to be updated.
       hasIndex = (valueOk = (values[i] || isNull)) && idx; // Only if this row is being updated.
-      isChar = (type = columnTypes[i]) == CHARS_NOCASE_TYPE || type == CHARS_TYPE;
+      type = columnTypes[i];
       offset = columnOffsets[i];
       changePos = false;
 
@@ -2391,10 +2382,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* index;
       SQLValue* vals[MAXIMUMS];
-      SQLValue* oldVals;
+      SQLValue* oldVals = null;
       uint8* columns;
-      int32 numberColumns,
-            maxNumberColumns = 0,
+      int32 maxNumberColumns = 0,
             column;
       bool remove, // juliana@230_43
            change; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
@@ -2414,7 +2404,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       {
          compIndex = composedIndexes[i];
          index = compIndex->index;
-         numberColumns = j = compIndex->numberColumns;
+         j = compIndex->numberColumns;
          columns = compIndex->columns;
          valueOk = remove = true;
 			change = false; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
@@ -2600,7 +2590,7 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
    {
       PlainDB* plainDB = &table->db;
       int8* types = index->types;
-      int16* offsets = table->columnOffsets;
+      uint16* offsets = table->columnOffsets;
       uint8* basbuf = plainDB->basbuf;
 
       if (!plainRead(context, plainDB, recPos)) // Reads the table row.
@@ -2807,8 +2797,7 @@ void make_crc_table(void)
    TRACE("make_crc_table")
    int32 n = 256, 
 		   c, 
-			k,
-			y;
+			k;
 
 	while (--n >= 0)
    {
@@ -2816,7 +2805,6 @@ void make_crc_table(void)
       k = 8;
       while (--k >= 0)
       {
-			y = c & 0x10000000;
          if ((c & 1) != 0)
             c = 0xedb88320 ^ (((uint32)c) >> 1);
          else

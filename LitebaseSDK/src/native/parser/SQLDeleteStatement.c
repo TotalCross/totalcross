@@ -247,7 +247,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       uint8* nulls = table->columnNulls;
 		int32* columnSizes = table->columnSizes;
 		int8* columnTypes = table->columnTypes;
-      int32* colIdxSizes;
       int8* colIdxTypes;
       uint8* columns;
       int32 maxSize = 0,
@@ -329,7 +328,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 						compIndex = composedIndexes[i];
 						index = compIndex->index;
 						id = compIndex->numberColumns;
-                  colIdxSizes = index->colSizes;
                   colIdxTypes = index->types;
                   columns = compIndex->columns;
 						while (--id >= 0)
