@@ -3353,6 +3353,30 @@ Please notice this is the only option that does not require a main class
 \end_layout
 
 \begin_layout Standard
+To create a library, you must end your 
+\family typewriter
+.jar
+\family default
+ name with 
+\family typewriter
+lib
+\family default
+ or 
+\family typewriter
+Lib
+\family default
+, such as 
+\family typewriter
+xxxlib.jar
+\family default
+ or 
+\family typewriter
+xxxLib.jar
+\family default
+.
+\end_layout
+
+\begin_layout Standard
 However, if you use this option to deploy an application, the 
 \family typewriter
 .jar/.zip
@@ -4572,8 +4596,11 @@ install.exe
 \family default
  lines followed by the file name (which is searched in the classpath and
  in current folder).
- Files prefixed with [G] are placed in the same folder of the TCVM, and
- 
+ Files prefixed with 
+\family typewriter
+[G]
+\family default
+ are placed in the same folder of the TCVM, and 
 \family typewriter
 [L]
 \family default
