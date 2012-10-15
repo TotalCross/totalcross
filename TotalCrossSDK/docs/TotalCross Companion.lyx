@@ -44839,15 +44839,19 @@ Image is a rectangular image, which you can draw into or copy to a surface
 Graphics
 \family default
  object).
- They are always 24bpp, and TotalCross supports only the PNG and JPEG formats
+ They are always 24 bpp, and TotalCross supports only the PNG and JPEG formats
  when running on the TCVM.
 \end_layout
 
 \begin_layout Standard
 However, you may still use GIF and BMP files on your application, because
  these formats are also supported when running on Java, and the TotalCross
- deployer automatically converts those files to 24bpp PNG files, which are
- then packaged with your application (along with any other required resources).
+ deployer automatically converts those files to 24 bpp PNG files, which
+ are then packaged with your application (along with any other required
+ resources).
+ The deployed PNG may contain transparency information which is correctly
+ handled.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -44856,7 +44860,8 @@ However, you may still use GIF and BMP files on your application, because
 Image
 \family default
  objects cannot be directly added to the user interface because they are
- not controls (i.e.
+ not controls (i.
+ e.
  the 
 \family typewriter
 Image
@@ -44883,7 +44888,47 @@ Button
 \end_layout
 
 \begin_layout Standard
-Image constructors:
+Some transformation methods return a new instance of this image while others
+ apply to the current instance.
+ To preserve an image with a single frame, use 
+\family typewriter
+getFrameInstance(0)
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+TotalCross does not support grayscale PNG with alpha-channel.
+ Convert the image to true-color with alpha-channel and it will work fine
+ (the only backdraw is that the new image will be bigger).
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Image
+\family default
+ constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -44907,6 +44952,49 @@ Image
  object with the given width and height.
  The new image has the same color depth and color map of the default drawing
  surface.
+ Here is an example of use: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img = new Image(100,100);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+g.backColor = Color.WHITE;
+\end_layout
+
+\begin_layout Plain Layout
+
+g.fillRect(25,25,50,50);
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics screenG = getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+screenG.drawImage(img,CENTER,CENTER);  
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -44921,6 +45009,136 @@ Image
 \family default
  object from the given byte array, which must specify the whole image, including
  its headers.
+ Use only JPEG or PNG images on the devices (GIF and BMP are supported on
+ the desktop only).
+ Here is a code example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// create the image and fill it with something
+\end_layout
+
+\begin_layout Plain Layout
+
+Image img = new Image(160,160);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i =0; i < 16; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	g.backColor = Color.getRGB(10*i,10*i,10*i);
+\end_layout
+
+\begin_layout Plain Layout
+
+	g.fillRect(i*10,0,10,160);
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\begin_layout Plain Layout
+
+// save the bmp in a byte stream
+\end_layout
+
+\begin_layout Plain Layout
+
+ByteArrayStream bas = new ByteArrayStream(4096);
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(bas);
+\end_layout
+
+\begin_layout Plain Layout
+
+int totalBytesWritten = img.createBmp(ds);
+\end_layout
+
+\begin_layout Plain Layout
+
+// parse the saved bmp
+\end_layout
+
+\begin_layout Plain Layout
+
+Image im = new Image(bas.getBuffer()); // Caution! the buffer may be greater
+ than totalBytesWritten, but when parsing theres no problem.
+\end_layout
+
+\begin_layout Plain Layout
+
+if (im.getWidth() > 0) // successfully parsed?
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	getGraphics().drawImage(im,CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.sleep(2000);
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Caution: if reading a JPEG file, the original array contents will be changed!
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -44930,7 +45148,19 @@ Image(String
 \end_inset
 
 path) Attempts to read the contents of the file specified by the given path,
- creating an image object from the bytes read.
+ creating an 
+\family typewriter
+Image
+\family default
+ object from the bytes read.
+ The path given is the path to the image file.
+ The file must be in 2, 16, 256, 24 bpp color compressed (RLE) or uncompressed
+ BMP bitmap format, a PNG file, a GIF file, or a JPEG file.
+ If the image cannot be loaded, an 
+\family typewriter
+ImageException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout FieldList
@@ -44944,6 +45174,11 @@ s) Attempts to read the contents of the given stream, and create an
 Image
 \family default
  object from the bytes read.
+ Loads a BMP, JPEG, GIF, or PNG image from a stream.
+ Note that GIF and BMP are supported only on the desktop.
+ Note that all the bytes of the given stream will be fetched, even those
+ bytes that may follow the image.
+ 
 \end_layout
 
 \begin_deeper
@@ -44972,6 +45207,76 @@ The usage of this last constructor with connection oriented streams (like
 \end_layout
 
 \end_deeper
+\begin_layout Standard
+
+\family typewriter
+Image
+\family default
+ public attributes (omitting the ones from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+transparentColor Sets the transparent pixel of this image.
+ Used in many controls.
+ Note that you can set it to -1 to make the image use the background color.
+ Note also that this value is not used by the system, but the controls (e.
+ g.: 
+\family typewriter
+Button
+\family default
+) use the value stored here to set the background color when going to draw
+ a transparent image.
+ The value that will be 
+\family typewriter
+NO_TRANSPARENT_COLOR
+\family default
+ when image has no transparent color.
+ It defaults to 
+\family typewriter
+Color.WHITE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+comment A textual description stored in the PNG image.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useAlpha 
+\family typewriter
+true
+\family default
+ if this image has an alpha-channel for transparency (higher 8 bits).
+ Important: if 
+\family typewriter
+useAlpha
+\family default
+ is 
+\family typewriter
+true
+\family default
+, 
+\family typewriter
+transparentColor
+\family default
+ must be set to -1, otherwise, many 
+\family typewriter
+Graphics
+\family default
+ methods will not work.
+ Also, the only operation that works with alpha-channel is 
+\family typewriter
+Graphics.DRAW_PAINT
+\family default
+; all other drawing operations ignore the alpha channel.
+ 
+\end_layout
+
 \begin_layout Itemize
 If you want to check if a specific file is supported by the platform at
  runtime, you may use the static method 
@@ -44979,6 +45284,9 @@ If you want to check if a specific file is supported by the platform at
 Image.isSupported(String filename)
 \family default
 .
+ PNG or JPEG are always supported.
+ GIF and BMP are supported on JavaSE only.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -44986,11 +45294,16 @@ To retrieve the image dimensions, you may use the methods
 \family typewriter
 getWidth()
 \family default
- and 
+ and
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 getHeight()
 \family default
 .
+ You can check if the image is ok by comparing these values with zero.
 \end_layout
 
 \begin_layout Itemize
@@ -45010,9 +45323,19 @@ Graphics
 You may change all pixels of the same color by another color with the method
  
 \family typewriter
-changeColors(int from, int to)
+changeColors (int from, int to)
 \family default
 .
+ The current value of the transparent color is not changed.
+ Using this routine, you can change the colors to any other you want.
+ Note this replaces a single solid color by another solid color.
+ If you want to change a gradient or colorize an image, use the 
+\family typewriter
+applyColor(int color)
+\family default
+ method instead, which applies the given color RGB values to all pixels
+ of this image, preserving the transparent color and alpha channel, if set.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -45053,7 +45376,7 @@ setFrameCount (int n)
 \end_layout
 
 \begin_layout Standard
-The image's frame count cannot be changed if their value is already higher
+The image's frame count cannot be changed if its value is already higher
  than 1.
  In this case, the 
 \family typewriter
@@ -45063,7 +45386,7 @@ setFrameCount()
 \end_layout
 
 \begin_layout Standard
-The following methods should be used only on multi-frame images.
+The following methods should be used only on multi-framed images.
 \end_layout
 
 \begin_layout FieldList
@@ -45117,7 +45440,7 @@ nextFrame()
 \family typewriter
 prevFrame()
 \family default
- treat the multi-frame image as a circular list, looping back to the first
+ treat the multi-framed image as a circular list, looping back to the first
  frame if moving forward from the last frame, or to the last frame if moving
  backwards from the first frame.
 \end_layout
@@ -45156,6 +45479,8 @@ int
 
 newHeight) Returns a scaled instance of this image.
  The arguments are the new dimensions for this image in pixels.
+ The algorithm used is the replicate scale: not good quality, but fast.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45175,6 +45500,13 @@ double
 scaleY) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
+ The algorithm used is the replicate scale: not good quality, but fast.
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45199,12 +45531,30 @@ int
 \begin_inset space ~
 \end_inset
 
-backColor) Returns a scaled instance of this image.
+backColor) Returns a scaled instance of the image using the area averaging
+ algorithm.
  Transparent pixels are replaced by 
 \family typewriter
 backColor
 \family default
 , which produces a smooth border.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.getSmoothScaledInstance(200,200, getBackColor());
+\end_layout
+
+\end_inset
+
+On device and JavaSE it uses a Catmull-rom resampling, and on Blackberry
+ it uses an area-average resampling.
+ The reason is that the Catmull-rom consumes more memory and is also slower
+ than the area-average, although the final result is much better.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45232,11 +45582,29 @@ int
 backColor) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
- Transparent pixels are replaced by 
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ The transparent pixels are replaced by 
 \family typewriter
 backColor
 \family default
 , which produces a smooth border.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.smoothScaledBy(0.75,0.75, getBackColor()); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -45262,6 +45630,47 @@ int
 \end_inset
 
 fillColor) Returns a rotated and/or scaled version of this image.
+ A new 
+\family typewriter
+Image
+\family default
+ object is returned which will render the image at the specified scale ratio
+ and rotation angle.
+ After rotation, the empty parts of the rectangular area of the resulting
+ image are filled with the fill color.
+ If color is -1, then the fill color is the transparent color, or white
+ if none.
+ The new image will probably have a different size of the original image.
+ In multi-framed images, each image is rotated/scaled independently.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+scale
+\family default
+ is a number greater than or equal to 0 stating the percentage of scaling
+ to be performed.
+ 100 is not scaling, 200 doubles the size, 50 shrinks the image by 2.
+ 
+\family typewriter
+angle
+\family default
+ is the rotation angle, expressed in trigonometric degrees and 
+\family typewriter
+fillColor
+\family default
+ is the fill color (-1 indicates the transparent color of this image or
+ 
+\family typewriter
+Color.WHITE
+\family default
+ if the 
+\family typewriter
+transparentColor
+\family default
+ was not set).
 \end_layout
 
 \begin_deeper
@@ -45315,6 +45724,23 @@ byte
 
 contrast) Returns a touched-up instance of this image with the specified
  brightness and contrast.
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+brightness
+\family default
+ is a number between -128 and 127 stating the desired level of brightness.
+ 127 is the highest brightness level (white image), while -128 is no brightness
+ (darkest image).
+ 
+\family typewriter
+contrast
+\family default
+ is a number between -128 and 127 stating the desired level of contrast.
+ 127 is the highest contrast level, while -128 is no contrast.
+ 
 \end_layout
 
 \begin_deeper
@@ -45368,6 +45794,133 @@ Images with anti-aliased borders produce better results because of the extra
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+smoothScaledFixedAspectRatio(int
+\begin_inset space ~
+\end_inset
+
+newSize,boolean
+\begin_inset space ~
+\end_inset
+
+isHeight,int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns the scaled instance using fixed aspect ratio for this
+ image, given the scale arguments.
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ This method is useful to resize an image, specifying only one of its sides:
+ the width or the height.
+ The other side is computed to keep the aspect ratio.
+ 
+\family typewriter
+newSize
+\family default
+ is the new size (width or height) for the image, if 
+\family typewriter
+isHeight
+\family default
+ is 
+\family typewriter
+true
+\family default
+, 
+\family typewriter
+newSize
+\family default
+ is considered as the new height of the image; if 
+\family typewriter
+false
+\family default
+, 
+\family typewriter
+newSize
+\family default
+ is considered the new width of the image, and 
+\family typewriter
+backColor
+\family default
+ is the background color to be used as transparent pixel (for PNG images
+ with alpha-channel, use -1).
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.smoothScaledFixed(fmH, true, -1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFadedInstance(int
+\begin_inset space ~
+\end_inset
+
+backColor) Creates a faded instance of the image, interpolating all pixels
+ with the given background color.
+ The pixels that match the transparent color will not be changed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFrameInstance(int
+\begin_inset space ~
+\end_inset
+
+frame) In a multi-framed image, returns a copy of the given frame.
+ In a single-framed image, gets a copy of the image.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+smoothScaledFromResolution(int
+\begin_inset space ~
+\end_inset
+
+originalRes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns a smooth scaled instance of this image with a fixed aspect
+ ratio based on the given resolution (which is the resolution that you used
+ to MAKE the image).
+ The target size is computed as 
+\family typewriter
+image_size*min(screen_size)/original_resolution
+\family default
+.
+ 
+\family typewriter
+originalRes
+\family default
+ is the original resolution that the image was developed for (it's a good
+ idea to create images for 320x320 and then scale them down) and 
+\family typewriter
+backColor
+\family default
+ is the background color.
+ 
+\end_layout
+
 \begin_layout Standard
 And finally, to save your 
 \family typewriter
@@ -45382,7 +45935,31 @@ createPng(Stream
 \begin_inset space ~
 \end_inset
 
-s) Attempts to write this image as a 24bpp PNG file on the given stream.
+s) Attempts to write this image as a 24 bpp PNG file on the given stream
+ (if 
+\family typewriter
+useAlpha
+\family default
+ is 
+\family typewriter
+true
+\family default
+, it saves as 32 bpp).
+ If you're sending the PNG through a stream but not saving it to a 
+\family typewriter
+PDBFile
+\family default
+, you can use this method.
+ If you're going to save it to a 
+\family typewriter
+PDBFile
+\family default
+, then you must use the 
+\family typewriter
+saveTo()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45399,12 +45976,287 @@ String
 \begin_inset space ~
 \end_inset
 
-name) Writes this image as a 24bpp PNG file on the currently selected record
+name) Writes this image as a 24 bpp PNG file on the currently selected record
  of the given 
 \family typewriter
 PDBFile
 \family default
 , using the given name.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The stored image size is limited to near 64 Kb.
+ Note that a stored image size has no relation to its size in pixels.
+ For example, a 1300x1200 completely-white PNG file takes 7 Kb of storage
+ size but 6 MB of RAM when loaded.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 
+\family typewriter
+PDBFile
+\family default
+ can save multiple images, but the record must be prefixed with the image's
+ name and must be sorted.
+ 
+\end_layout
+
+\begin_layout Itemize
+This method finds the exact place where to insert the PNG and puts it there.
+ 
+\end_layout
+
+\begin_layout Itemize
+If you want to create a PNG to be transfered by a stream to serial or socket
+ then you must use the method 
+\family typewriter
+createPng()
+\family default
+ instead.
+ 
+\end_layout
+
+\begin_layout Itemize
+If a record with this name already exists, it will be replaced.
+ 
+\end_layout
+
+\begin_layout Itemize
+The name is always converted to lowercase and the method makes sure that
+ PNG is appended to it.
+ 
+\end_layout
+
+\begin_layout Itemize
+To get the list of images in a PDBFile, just do a 
+\family typewriter
+readString()
+\family default
+ at the beginning of each record.
+ 
+\end_layout
+
+\begin_layout Itemize
+To retrieve the image, use the 
+\family typewriter
+loadFrom(PDBFile cat, String name)
+\family default
+ method.
+\end_layout
+
+\begin_layout Standard
+Here is a sample code: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// create the image and paint over it
+\end_layout
+
+\begin_layout Plain Layout
+
+Image img = new Image(100,100);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+g.backColor = Color.getRGB(100,150,200);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.fillRect(25,25,50,50);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.foreColor = Color.WHITE;
+\end_layout
+
+\begin_layout Plain Layout
+
+g.drawCircle(50,50,20);  // create the PDBFile to save the image.
+ You must change CRTR to match your apps creator ID
+\end_layout
+
+\begin_layout Plain Layout
+
+String pdbName = "images.CRTR.TYPE";
+\end_layout
+
+\begin_layout Plain Layout
+
+PDBFile pdb = new PDBFile(pdbName, PDBFile.CREATE);
+\end_layout
+
+\begin_layout Plain Layout
+
+img.saveTo(pdb, "boxcircle.png");
+\end_layout
+
+\begin_layout Plain Layout
+
+pdb.close();  // load the previously created image
+\end_layout
+
+\begin_layout Plain Layout
+
+PDBFile pdb = new PDBFile(pdbName, PDBFile.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(new ImageControl(Image.loadFrom(pdb,"boxcircle.png")),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+pdb.close();  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here's a code that lists the images in a PDB (saved using this method).
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public static String[] list(PDBFile cat) throws IOException  
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	DataStream ds = new DataStream(cat);
+\end_layout
+
+\begin_layout Plain Layout
+
+	int n = cat.getRecordCount();
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] names = new String[n];
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i =0; i < n; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		cat.setRecordPos(i);
+\end_layout
+
+\begin_layout Plain Layout
+
+		names[i] = ds.readString();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	return names;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Some other 
+\family typewriter
+Image
+\family default
+ public methods (omitting the ones from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPixels() Used only on the desktop to get the image's pixels; NOT AVAILABLE
+ on the device (it will throw a 
+\family typewriter
+NoSuchMethodError
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getX(),
+\begin_inset space ~
+\end_inset
+
+getY() Returns 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+o) Returns 
+\family typewriter
+true
+\family default
+ if the given 
+\family typewriter
+Image
+\family default
+ object has the same size and RGB pixels of the original one.
+ The alpha-channel is ignored.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+applyColor2(int
+\begin_inset space ~
+\end_inset
+
+color) Applies the given color RGB values to all pixels of this image, preservin
+g the transparent color and alpha channel, if set.
+ This method is used to colorize the Android buttons.
 \end_layout
 
 \begin_layout Standard
@@ -45707,7 +46559,8 @@ public void onEvent(Event event)
 
 \end_inset
 
-
+Note that it will work in the same way on desktop or on device.
+ 
 \end_layout
 
 \begin_layout Chapter
