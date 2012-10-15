@@ -46901,10 +46901,28 @@ th
 \end_inset
 
 , 2999.
-\end_layout
-
-\begin_layout Standard
-It also provides constants and methods for date manipulation and comparison.
+ It checks to make sure that the dates that are instanciated or changed
+ exist and if they don't an exception (
+\family typewriter
+InvalidDateException
+\family default
+) is thrown.
+ It provides methods to advance the date backwards and forwards by increments
+ of day, week, and month.
+ It provides comparisons 
+\family typewriter
+=
+\family default
+,
+\family typewriter
+>
+\family default
+,
+\family typewriter
+<
+\family default
+.
+ It also provides constants and methods for date manipulation and comparison.
 \end_layout
 
 \begin_layout Standard
@@ -47061,108 +47079,6 @@ Date.DECEMBER
 \end_inset
 
 
-\begin_inset space \hspace{}
-\length 20line%
-\end_inset
-
-
-\begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Days of week
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.SUNDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.MONDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.TUESDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.WEDNESDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.THURSDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.FRIDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.SATURDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Itemize
@@ -47238,7 +47154,20 @@ sentYear)
 \family typewriter
 Date
 \family default
- object using the given values.
+ object using the given values, where 
+\family typewriter
+sentDay
+\family default
+ must be an integer between 1 and the last day in the month, 
+\family typewriter
+sentMonth
+\family default
+ must be an integer between 1 and 12, and 
+\family typewriter
+sentYear
+\family default
+ must be an integer between 1000 and 2999.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -47264,7 +47193,7 @@ strDate
 Settings.dateFormat
 \family default
 ).
- The date separator can be any non-number character, the constructor auto-detect
+ The date separator can be any non-number character; the constructor auto-detect
 s what character is being used as separator.
 \end_layout
 
@@ -47307,7 +47236,19 @@ dateFormat
 \family typewriter
 Settings.DATE_XXX
 \family default
- constants.
+ constants, where
+\family typewriter
+ DATE_MDY
+\family default
+ stands for month, day, and year format, 
+\family typewriter
+DATE_DMY
+\family default
+ stands for day, year, and month format, and 
+\family typewriter
+DATE_YMD
+\family default
+ stands for year, month, and day format.
 \end_layout
 
 \begin_layout FieldList
@@ -47385,6 +47326,15 @@ advanceMonth(boolean
 \end_inset
 
 direction) Changes the date to the beginning of the next or previous month.
+ The static variables 
+\family typewriter
+Date.FORWARD
+\family default
+ or 
+\family typewriter
+Date.BACKWARD
+\family default
+ instructs the method to either move to the next or previous month.
 \end_layout
 
 \begin_layout FieldList
@@ -47400,6 +47350,15 @@ advanceWeek(boolean
 \end_inset
 
 direction) Changes the date to the beginning of the next or previous week.
+ The static variables 
+\family typewriter
+Date.FORWARD
+\family default
+ or 
+\family typewriter
+Date.BACKWARD
+\family default
+ instructs the method to either move to the next or previous week.
 \end_layout
 
 \begin_layout FieldList
@@ -47409,6 +47368,70 @@ setToday() Sets this
 Date
 \family default
  object to the current day.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Sets the date fields to the given ones and returns an integer in the
+ format 
+\family typewriter
+YYYYMMDD
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(String
+\begin_inset space ~
+\end_inset
+
+strDate,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dateFormat) Sets the date fields by parsing the given string, and using
+ the given 
+\family typewriter
+dateFormat
+\family default
+.
+ If you want to use the default date format, use 
+\family typewriter
+Settings.dateFormat
+\family default
+.
+ Trailing spaces are skipped.
+ It returns an integer in the format 
+\family typewriter
+YYYYMMDD
+\family default
+.
 \end_layout
 
 \end_deeper
@@ -47621,6 +47644,51 @@ month) Returns the number of days in the given month of the set year.
 
 \begin_layout FieldList
 \labelwidthstring 0
+getDaysInMonth(int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Static method which returns the number of days in the passed month
+ and year.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMonthName(int
+\begin_inset space ~
+\end_inset
+
+m) Returns the string representation of the month passed, that is 
+\family typewriter
+monthNames[m]
+\family default
+ if 
+\family typewriter
+Date.
+ JANUARY <= m
+\family default
+ and 
+\family typewriter
+m <= Date.DECEMBER
+\family default
+.
+ It returns an empty string if 
+\family typewriter
+m
+\family default
+ is out of the valid bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 getGregorianDay() Returns the number of days since the January 1
 \begin_inset script superscript
 
@@ -47631,6 +47699,16 @@ st
 \end_inset
 
  of the epoch year 1000.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isLeapYear(int
+\begin_inset space ~
+\end_inset
+
+year) Checks if the year is a leap year.
+ 
 \end_layout
 
 \end_deeper
@@ -47651,13 +47729,145 @@ Settings.dateFormat
 
 \begin_layout FieldList
 \labelwidthstring 0
-getDate() Returns a string representation of the date using the current
- device settings (see 
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Formats the date specified with the 
 \family typewriter
-Settings.
- dateFormat
+Settings.dateFormat
 \family default
-).
+, zero padded.
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+separator) Formats the date specified with 
+\family typewriter
+Settings.dateFormat
+\family default
+, zero padded, and using the given separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dateFormat) Formats the date specified with the 
+\family typewriter
+dateFormat
+\family default
+ parameter, zero padded.
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,int
+\begin_inset space ~
+\end_inset
+
+month,int
+\begin_inset space ~
+\end_inset
+
+year,byte
+\begin_inset space ~
+\end_inset
+
+dateFormat,String
+\begin_inset space ~
+\end_inset
+
+dateSeparator) Formats the date specified with the 
+\family typewriter
+dateFormat
+\family default
+ parameter, zero padded, and using the given separator.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -47669,6 +47879,11 @@ Settings.
  dateFormat
 \family default
 ).
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -47683,6 +47898,34 @@ format) Returns a string representation of the date using the given format,
 Settings.DATE_XXX
 \family default
  constants.
+ The date separator used is 
+\family typewriter
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(byte
+\begin_inset space ~
+\end_inset
+
+dateFormat,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+separator) Returns the date in a string format and using the given format
+ and separator.
+ 
 \end_layout
 
 \end_deeper
@@ -47790,6 +48033,29 @@ Settings.DATE_XXX
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+The 
+\family typewriter
+Date
+\family default
+ class has the field 
+\family typewriter
+monthNames
+\family default
+, which is the month names used in some routines.
+ You can localize it if you wish.
+ Its default value is: 
+\family typewriter
+{"", "January", "February", "March", "April", "May", "June", "July", "August",
+ "September",
+\begin_inset Newline newline
+\end_inset
+
+"October", "November", "December"}
+\family default
+.
+\end_layout
+
 \begin_layout Standard
 Sample code:
 \end_layout
