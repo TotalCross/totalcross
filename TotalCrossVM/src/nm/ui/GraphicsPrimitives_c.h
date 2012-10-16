@@ -791,7 +791,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       height = clipY2-y;
 
 #ifdef __gl2_h_
-   if (x == 0 && y == 0 && width == appW && height == appH && Graphics_useOpenGL(g))
+   if (x == 0 && width == appW && height == appH && Graphics_useOpenGL(g))
    {
       PixelConv pc;
       pc.pixel = pixel;

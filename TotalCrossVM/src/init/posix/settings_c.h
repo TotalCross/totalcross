@@ -426,7 +426,7 @@ bool fillSettings(Context currentContext)
    xstrncpy(userName, u.nodename, sizeof(userName));
 #endif
 
-   *tcSettings.keyboardFocusTraversablePtr = *tcSettings.keypadOnlyPtr = 0;
+   *tcSettings.keyboardFocusTraversablePtr = 0;
 
 // platform, touch screen and virtual keyboard settings
 #if defined darwin

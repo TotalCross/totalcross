@@ -9,6 +9,10 @@
 #include "mainview.h"
 #include "gfx_ex.h"
 #import <QuartzCore/CALayer.h>
+#import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 #define LKLayer CALayer
 
 bool allowMainThread();
@@ -302,9 +306,8 @@ static bool callingCamera;
 
 void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
-void privateScreenChange(int32 w, int32 h) {}
 
-bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
+bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
@@ -314,46 +317,18 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
    [window makeKeyAndVisible];
    
-   [ DEVICE_CTX->_childview updateScreen: screen ];
+   [ DEVICE_CTX->_childview setScreenValues: screen ];
    screen->pixels = (void*)1;
    return true;
 }
 
-bool graphicsCreateScreenSurface(ScreenSurface screen)
+void graphicsSetupIOS()
 {
-   screen->extension = deviceCtx;
-   return true;
+   [DEVICE_CTX->_childview graphicsSetup];
 }
-
-BOOL invalidated;
-void Sleep(int ms);
-
-void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
-{								  
-   ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
-   if (allowMainThread())
-   {
-      invalidated = FALSE;
-      [vw invalidateScreen:screen withContext:currentContext];
-      while (!invalidated) Sleep(10);
-   }      
-}
-
-void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
-{
-   if (isScreenChange)
-     screen->extension = NULL;
-   else
-   {
-      if (screen->extension)
-        free(screen->extension);
-     deviceCtx = screen->extension = NULL;
-   }
-}
-
-bool graphicsLock(ScreenSurface screen, bool on)
-{
-   return true;
+void graphicsUpdateScreenIOS(ScreenSurface screen, int32 transitionEffect)
+{                
+   [DEVICE_CTX->_childview invalidateScreen:screen];
 }
 
 //////////////// interface to mainview methods ///////////////////

@@ -28,14 +28,14 @@ bool checkGLfloatBuffer(Context c, int32 n);
 #endif
 
 
-#if defined(darwin)
+/*#if defined(darwin)
  #include "darwin/gfx_Graphics_c.h"
-#endif
+#endif*/
 #include "GraphicsPrimitives_c.h"
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
-#elif defined(ANDROID)
+#elif defined(ANDROID) || defined(darwin)
  #include "android/gfx_Graphics_c.h"
 #elif defined(linux) && !defined(darwin)
  #include "linux/gfx_Graphics_c.h"

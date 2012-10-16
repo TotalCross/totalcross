@@ -105,6 +105,8 @@ void pumpEvents(Context currentContext)
    }
 }
 
+void graphicsSetupIOS();
+
 void mainEventLoop(Context currentContext)
 {
    // now that the Main class was load, it's safe to get these methods
@@ -113,6 +115,9 @@ void mainEventLoop(Context currentContext)
    onMinimize = getMethod(OBJ_CLASS(mainClass), true, "onMinimize", 0);
    onRestore = getMethod(OBJ_CLASS(mainClass), true, "onRestore", 0);
 
+#ifdef darwin
+    graphicsSetupIOS();
+#endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");
    else

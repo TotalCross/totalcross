@@ -141,14 +141,16 @@ TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
 {
+#ifdef __gl2_h_    
    Object thisObj = p->obj[0];
    applyChanges(thisObj);
+#endif    
 }
 //////////////////////////////////////////////////////////////////////////
 void glDeleteTexture(int32* textureId);
 TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
 {  
-#ifdef ANDROID   
+#ifdef __gl2_h_   
    Object thisObj = p->obj[0];
    glDeleteTexture(&(Image_textureId(thisObj)));
 #endif   
