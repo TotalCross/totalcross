@@ -7942,12 +7942,178 @@ NullPointerException Thrown when a
 null
 \family default
  object has being used in the last operation.
- 
 \end_layout
 
 \end_deeper
 \end_deeper
 \end_deeper
+\begin_layout Chapter
+Exit Codes
+\end_layout
+
+\begin_layout Standard
+When the VM exits, it returns an exit code.
+ Obviously, this chapter only concerns TotalCross applications running on
+ Windows 32, Windows CE/Mobile, Palm OS, iOS, and Android since on Java
+ SE and BlackBerry the TotalCross VM is not used.
+ 
+\end_layout
+
+\begin_layout Standard
+The codes and their description are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+100 If it was not possible to initialize the application current context.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+101 If it was not possible to load 
+\family typewriter
+TCBase.tcz
+\family default
+.
+ 
+\family typewriter
+TCBase.tcz
+\family default
+ was not found or is corrupted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+102 If it was not possible to initialize the event handler.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+104 If it was not possible to load the application 
+\family typewriter
+.tcz
+\family default
+.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+105 If the 
+\family typewriter
+Settings
+\family default
+ class could not be loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+106 If it is not possible to run multiple instances of the application and
+ the application is already running.
+ This only happens on Windows 32 and Windows CE.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+107 It it was not possible to initialize the graphics before the 
+\family typewriter
+MainWindow
+\family default
+ settings is loaded.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+108 If it was not possible to retrive the settings.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+109 If it was not possible to initialize the graphics after the 
+\family typewriter
+MainWindow
+\family default
+ settings is loaded.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+111 If the class 
+\family typewriter
+ras.ActivationClient
+\family default
+ can' t be loaded or an exception occurs when loading it during the activation
+ check.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+112 If the method 
+\family typewriter
+getInstance()
+\family default
+ can't be loaded from the class 
+\family typewriter
+ras.ActivationClient
+\family default
+ during the activation check.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+113 If the method 
+\family typewriter
+getInstance()
+\family default
+ during the activation check throws an exception.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+114 If the method 
+\family typewriter
+isActivatedSilent()
+\family default
+ can't be loaded from the class 
+\family typewriter
+ras.
+\begin_inset Newline newline
+\end_inset
+
+ActivationClient
+\family default
+ during the activation process.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+115 If an error occurs when loading the TotalCross libraries.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+116 If the main class could not be loaded (has thrown an exception, was
+ not found or is corrupted).
+\end_layout
+
 \begin_layout Part
 USER INTERFACE
 \end_layout
