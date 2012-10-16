@@ -48554,7 +48554,7 @@ int
 
 startIndex) Returns the index of the given object, or -1 if the object is
  not found.
- The array is searched using a 
+ The array is searched using an 
 \family typewriter
 O(n)
 \family default
@@ -48634,7 +48634,11 @@ Vector
 \family typewriter
 newSize
 \family default
- and greater are discarded.
+ and greater are discarded (set to 
+\family typewriter
+null
+\family default
+).
  The new size can't be negative.
 \end_layout
 
@@ -49108,7 +49112,11 @@ IntVector
 \family typewriter
 Vector
 \family default
-: It also allows public access to its internal array, but 
+: it also allows public access to its internal array (
+\family typewriter
+items
+\family default
+), but 
 \emph on
 you must only access it to retrieve (get) or replace (set) elements, and
  never to insert, remove, or resize the buffer
@@ -49159,7 +49167,7 @@ size) Creates an
 \family typewriter
 IntVector
 \family default
- with the given size, which cannot be negative (minimum size is 0).
+ with the given size, which MUST BE greater than 0.
 \end_layout
 
 \begin_layout FieldList
@@ -49234,11 +49242,25 @@ addElement(int
 \begin_inset space ~
 \end_inset
 
-item) Adds the given integer to the end of this 
+item) Adds the given integer to the end of the 
 \family typewriter
 intVector
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElements(int[]
+\begin_inset space ~
+\end_inset
+
+elements) Appends an array of integers at the end of the 
+\family typewriter
+intVector
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -49261,6 +49283,13 @@ IntVector
 \family default
 , shifting elements with index greater or equal to the specified index to
  have an index one greater than it had previously.
+ If 
+\family typewriter
+index
+\family default
+ is less than 0 or above the number of elements, the new item is inserted
+ at the end.
+ 
 \end_layout
 
 \end_deeper
@@ -49303,7 +49332,7 @@ removeAllElements() Removes all elements from this
 \family typewriter
 IntVector
 \family default
-, reseting its length to 0.
+, reseting its length to 0 and setting all elements to 0.
 \end_layout
 
 \end_deeper
@@ -49332,7 +49361,7 @@ int
 
 startIndex) Returns the index of the given integer, or -1 if the integer
  is not found.
- The array is searched using a 
+ The array is searched using an 
 \family typewriter
 O(n)
 \family default
@@ -49367,7 +49396,11 @@ IntVector
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-isEmpty() Returns true if this 
+isEmpty() Returns 
+\family typewriter
+true
+\family default
+ if the 
 \family typewriter
 IntVector
 \family default
@@ -49376,7 +49409,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this 
+size() Returns the number of elements in the 
 \family typewriter
 IntVector
 \family default
@@ -49385,7 +49418,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this 
+qsort() Sorts the elements of the 
 \family typewriter
 IntVector
 \family default
@@ -49394,7 +49427,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-toIntArray() Returns an array of integers containing all elements of this
+toIntArray() Returns an array of integers containing all elements of the
  
 \family typewriter
 IntVector
@@ -49426,7 +49459,7 @@ Vector.toObjectArray()
 \family typewriter
 toIntArray()
 \family default
- does not returns 
+ does not return 
 \family typewriter
 null
 \family default
@@ -49450,12 +49483,12 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this 
+newSize) Sets the size of the 
 \family typewriter
 IntVector
 \family default
 .
- If the new size is greater than the current size, new items equals to zero
+ If the new size is greater than the current size, new items equal to zero
  are added to the end of the 
 \family typewriter
 IntVector
@@ -49466,7 +49499,52 @@ IntVector
 \family typewriter
 newSize
 \family default
- and greater are discarded.
+ and greater are discarded (set to 0).
+ The new size can't be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(int[]
+\begin_inset space ~
+\end_inset
+
+out) Copies the items of the vector into the given array, which MUST have
+ at least the current size of this vector.
+ If the out vector is greater than the current size, the remaining positions
+ will remain unchanged.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+contains(int
+\begin_inset space ~
+\end_inset
+
+v) Returns 
+\family typewriter
+true
+\family default
+ if the vector contains the specified element.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reverse() Reverses the order of the elements in the vector.
+ In a vector with 
+\family typewriter
+n
+\family default
+ elements, the element of index 0 is moved to the index 
+\family typewriter
+n-1
+\family default
+, the element of index 1 is moved to the index 
+\family typewriter
+n-2
+\family default
+, and so on.
+ 
 \end_layout
 
 \end_deeper
@@ -49485,7 +49563,7 @@ push(int
 \begin_inset space ~
 \end_inset
 
-item) Pushes an item onto the top of this stack.
+item) Pushes an item onto the top of the stack.
  It actually just calls the method 
 \family typewriter
 addElement()
@@ -49495,7 +49573,7 @@ addElement()
 
 \begin_layout FieldList
 \labelwidthstring 0
-pop() Removes the item at the top of this stack, returning that integer.
+pop() Removes the item at the top of the stack, returning that integer.
  
 \end_layout
 
@@ -49505,13 +49583,13 @@ pop(int
 \begin_inset space ~
 \end_inset
 
-howMany) Removes the desired number of items from the top of this stack.
+howMany) Removes the desired number of items from the top of the stack.
  Unlike the previous method, nothing is returned.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-peek() Returns the item at the top of this stack without removing it.
+peek() Returns the item at the top of the stack without removing it.
 \end_layout
 
 \end_deeper
@@ -49552,7 +49630,7 @@ As an alternative, you may use the
 \family typewriter
 IntVector
 \family default
- as a a real bit array using the provided methods and save a lot of memory.
+ as a real bit array using the provided methods and save a lot of memory.
  But there is a drawback: the internal array does not grow by itself when
  you try to access an index bigger than the array's size.
  So you must make sure the 
@@ -49588,6 +49666,10 @@ IntVector
 \family default
  is large enough to hold the given number of bits.
  You should always call this method before using it as a bit array.
+ After that, you can safely use the two methods below.
+ This must be done because those methods do not check the bounds of the
+ array.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -49604,7 +49686,11 @@ boolean
 \begin_inset space ~
 \end_inset
 
-on) Sets the bit at the given index if on is 
+on) Sets the bit at the given index if 
+\family typewriter
+on
+\family default
+ is 
 \family typewriter
 true
 \family default
@@ -49692,7 +49778,7 @@ bitVector.ensureBits(40000); // First we make sure the array is large enough.
 
 \begin_layout Plain Layout
 
-// This time our array uses only 8000 bytes.
+// This time our array uses only 1251 bytes.
 \end_layout
 
 \begin_layout Plain Layout
