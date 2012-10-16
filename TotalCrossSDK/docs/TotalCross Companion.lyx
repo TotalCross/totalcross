@@ -49803,7 +49803,7 @@ Hashtable
 \begin_layout Standard
 This class implements a hash table, which is a data structure that associates
  keys with values.
- It's primary operation is a lookup: given a key, find the corresponding
+ It's primary operation is a lookup: given a key, finds the corresponding
  value.
  It works by transforming the key into a hash using the method 
 \family typewriter
@@ -49824,7 +49824,40 @@ Hash tables should be used when the number of search operations greatly
 \begin_layout Standard
 Any non-null object can be used as a key or as a value, optionally, you
  can provide your own hash code instead of providing a key from which the
- hash code will be calculated..
+ hash code will be calculated.
+\end_layout
+
+\begin_layout Standard
+An instance of 
+\family typewriter
+Hashtable
+\family default
+ has two parameters that affect its efficiency: its 
+\emph on
+capacity
+\emph default
+ and its 
+\emph on
+load factor
+\emph default
+.
+ The load factor should be between 0.0 and 1.0.
+ When the number of entries in the hash table exceeds the product of the
+ load factor and the current capacity, the capacity is increased by calling
+ the 
+\family typewriter
+rehash()
+\family default
+ method.
+ Larger load factors use memory more efficiently, at the expense of larger
+ expected time per lookup.
+ 
+\end_layout
+
+\begin_layout Standard
+If many entries are to be made into a hash table, creating it with a sufficientl
+y large capacity may allow the entries to be inserted more efficiently than
+ letting it perform automatic rehashing as needed to grow the table.
 \end_layout
 
 \begin_layout Itemize
@@ -49832,7 +49865,36 @@ Any non-null object can be used as a key or as a value, optionally, you
 \family typewriter
 Hashtable
 \family default
- has two important constructors:
+ has two public fields:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+collisions Computes the number of collisions for a set of inserts.
+ You must zero this each time you want to compute it.
+ Keep in mind that the lower collisions is better, but don't waste too much
+ memory if its too high.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowDuplicateKeys Setting this to 
+\family typewriter
+true
+\family default
+ will allow the hashtable to have more than one key with the same value.
+ In this case, the methods will always return the first matching key.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Hashtable
+\family default
+ has four constructors:
 \end_layout
 
 \begin_deeper
@@ -49843,7 +49905,16 @@ Hashtable(int
 \end_inset
 
 initialCapacity) Creates an empty hash table with the specified initial
- capacity.
+ capacity and default load factor of 
+\family typewriter
+0.75f
+\family default
+.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
 \end_layout
 
 \begin_deeper
@@ -49868,6 +49939,8 @@ initialCapacity
 \family default
 's value should be the final number of entries in the hash table to avoid
  rehashing.
+ The hash table will grow if necessary, but using a number near or above
+ the final size can improve performance.
 \end_layout
 
 \end_inset
@@ -49876,6 +49949,30 @@ initialCapacity
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+loadFactor) Creates a new, empty hashtable with the specified initial capacity
+ and the specified load factor.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
+ 
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 Hashtable(String
@@ -49894,11 +49991,153 @@ key = value
 n
 \family default
 ).
+ This aids the task of creating resource bundles to add localization to
+ your application.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// save these two lines in a file named EN.txt:  
+\end_layout
+
+\begin_layout Plain Layout
+
+Message = Message  
+\end_layout
+
+\begin_layout Plain Layout
+
+TestMsg = This is a test  
+\end_layout
+
+\begin_layout Plain Layout
+
+Exit = Exit  
+\end_layout
+
+\begin_layout Plain Layout
+
+// save these other two in a file named PT.txt:  
+\end_layout
+
+\begin_layout Plain Layout
+
+Message = Mensagem 
+\end_layout
+
+\begin_layout Plain Layout
+
+TestMsg = Isso e um teste 
+\end_layout
+
+\begin_layout Plain Layout
+
+Exit = Sair 
+\end_layout
+
+\end_inset
+
+The TotalCross deployer will include the two files referenced below in the
+ 
+\family typewriter
+.tcz
+\family default
+ file.
+ Now, when your program starts, you can do:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String txt = idiom == EN? "EN.txt" : "PT.txt";
+\end_layout
+
+\begin_layout Plain Layout
+
+byte[] b = Vm.getFile(txt);
+\end_layout
+
+\begin_layout Plain Layout
+
+Hashtable res = new Hashtable(new String(b,0,b.length));
+\end_layout
+
+\begin_layout Plain Layout
+
+new MessageBox(res.get("Message"), res.get("TestMsg"), new String[]{res.get("Exit")
+}).popupNonBlocking();
+\end_layout
+
+\end_inset
+
+Note that the keys are case sensitive, and that all strings are trimmed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(Object[]
+\begin_inset space ~
+\end_inset
+
+keys,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+values) Creates a 
+\family typewriter
+Hashtable
+\family default
+ with the given keys and values.
+ The values can be two things: 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+An 
+\family typewriter
+Object
+\family default
+ array (
+\family typewriter
+Object[]
+\family default
+).
+ In this case, the number of keys and values must match.
+ 
+\end_layout
+
+\begin_layout Enumerate
+A single 
+\family typewriter
+Object
+\family default
+.
+ This object is set as value to all keys.
+ 
+\end_layout
+
+\begin_layout Standard
+The values parameter cannot be 
+\family typewriter
+null
+\family default
+.
+ 
 \end_layout
 
 \end_deeper
+\end_deeper
 \begin_layout Itemize
-The insert a new entry on the hash table:
+To insert a new entry on the hash table:
 \end_layout
 
 \begin_deeper
@@ -49917,6 +50156,23 @@ Object
 \end_inset
 
 value) Maps the given value to the hash code of the given key.
+ Neither the key nor the value can be 
+\family typewriter
+null
+\family default
+.
+ The value can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
+ It returns the previous value of the specified key in the hash table, or
+ 
+\family typewriter
+null
+\family default
+ if it did not have one.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -49934,12 +50190,52 @@ Object
 \end_inset
 
 value) Maps the given value to the given hash.
+ The value can't be 
+\family typewriter
+null
+\family default
+ and can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
+ It returns the previous value of the specified key in the hash table, or
+ 
+\family typewriter
+null
+\family default
+ if it did not have one.
+\begin_inset Newline newline
+\end_inset
+
+This method receives a hash code instead of the object.
+ You MUST use the 
+\family typewriter
+get(int)
+\family default
+ method to retrieve the value, otherwise you will get a 
+\family typewriter
+NullPointerException
+\family default
+, because no key is stored using this method.
+ 
 \end_layout
 
 \begin_layout Standard
 If the given hash (or key's hash code) already exists in the hash table,
- the old value will be replaced by the given value and the put method will
- return the old value.
+ the old value will be replaced by the given value (unless 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+true
+\family default
+) and the 
+\family typewriter
+put()
+\family default
+ method will return the old value.
  Otherwise, a 
 \family typewriter
 null
@@ -49967,8 +50263,38 @@ get(Object
 \begin_inset space ~
 \end_inset
 
-key) Returns the value to which the specified key is mapped in this hash
+key) Returns the value to which the specified key is mapped in the hash
  table.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified key is mapped in
+ the hash table.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -49977,8 +50303,94 @@ get(int
 \begin_inset space ~
 \end_inset
 
-hash) Returns the value to which the specified hash is mapped in this hash
+hash) Returns the value to which the specified hash is mapped in the hash
  table.
+ Caution: since you're passing an integer instead of an object, if there
+ are two objects that map to the same key, this method will always return
+ the first one only.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(int
+\begin_inset space ~
+\end_inset
+
+hash,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified hash is mapped in
+ the hash table.
+ Caution: since you're passing an integer instead of an object, if there
+ are two objects that map to the same key, this method will always return
+ the first one only.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getString(Object
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key is mapped in this hash
+ table as a string.
+ If the item is a string, a cast is made, otherwise, the 
+\family typewriter
+toString()
+\family default
+ method is called.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getString(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified key is mapped in
+ the hash table as a string.
+ If the item is a atring, a cast is made, otherwise, the 
+\family typewriter
+toString()
+\family default
+ method is called.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
 \end_layout
 
 \end_deeper
@@ -49993,7 +50405,13 @@ getKeys() Returns a
 \family typewriter
 Vector
 \family default
- with all the keys in this hash table.
+ with all the keys in the hash table.
+ The order is the same of the 
+\family typewriter
+getValues()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -50002,7 +50420,12 @@ getValues() Returns a
 \family typewriter
 Vector
 \family default
- with all the values in this hash table.
+ with all the values in the hash table.
+ The order is the same of the 
+\family typewriter
+getKeys()
+\family default
+ method.
 \end_layout
 
 \begin_layout FieldList
@@ -50015,7 +50438,84 @@ separator) Returns a
 \family typewriter
 Vector
 \family default
- with all the key/value pairs in the form key + separator + value.
+ with all the key/value pairs in the form 
+\family typewriter
+key + separator + value
+\family default
+.
+ Each vector's element can safely be casted to string and separator sould
+ be 
+\family typewriter
+:
+\family default
+, 
+\family typewriter
+=
+\family default
+, etc.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(Hashtable
+\begin_inset space ~
+\end_inset
+
+target) Copies the keys and values of the hash table into the given target
+ hash table.
+ Note that the target hash table is not cleared; you should do that by yourself.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dumpKeysValues(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,vString
+\begin_inset space ~
+\end_inset
+
+keyvalueSeparator,String
+\begin_inset space ~
+\end_inset
+
+lineSeparator) Dumps the keys and values into the given 
+\family typewriter
+StringBuffer
+\family default
+, where 
+\family typewriter
+keyvalueSeparator
+\family default
+ is the separator between the key and the value (e.
+ g.
+ 
+\family typewriter
+:
+\family default
+) and 
+\family typewriter
+lineSeparator
+\family default
+ is the separator placed after each key+value pair (e.
+ g.
+ 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+).
+ The last separator is cut from the 
+\family typewriter
+StringBuffer
+\family default
+.
+ 
 \end_layout
 
 \end_deeper
@@ -50024,19 +50524,57 @@ The method
 \family typewriter
 size()
 \family default
- returns the number of keys in this hash table.
+ returns the number of keys in the hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use 
+To remove a key and its corresponding value from the hash table, use:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+
 \family typewriter
-remove(Object key)
+remove(Object
 \family default
-.
+
+\begin_inset space ~
+\end_inset
+
+
+\family typewriter
+key)
+\family default
+ Removes the key (and its corresponding value) from the hash table.
+ This method does nothing if the key is not in the hash table.
+ It returns the value to which the key had been mapped in the hash table,
+ or 
+\family typewriter
+null
+\family default
+ if the key did not have a mapping.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+hash) Removes the key (and its corresponding value) from the hash table.
+ This method does nothing if the key is not in the hash table.
+ It returns the value to which the key had been mapped in the hash table,
+ or 
+\family typewriter
+null
+\family default
+ if the key did not have a mapping.
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use 
+To clear the hash table, removing all its entries, use 
 \family typewriter
 clear()
 \family default
