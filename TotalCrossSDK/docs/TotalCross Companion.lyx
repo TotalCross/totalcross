@@ -48176,7 +48176,7 @@ Vector
 \family typewriter
 Vector
 \family default
- can dynamically grow as needed.
+ can dynamically grow as needed, but it never shrinks.
  If the array never needs to be increased, an array should be used.
 \end_layout
 
@@ -48197,7 +48197,7 @@ remove()
 \family typewriter
 retrieve()
 \family default
- or 
+, or 
 \family typewriter
 replace()
 \family default
@@ -48224,7 +48224,11 @@ To avoid this performance issue, TotalCross'
 \family typewriter
 Vector
 \family default
- implementation allows public access to its internal array.
+ implementation allows public access to its internal array (
+\family typewriter
+items
+\family default
+).
  However, to guarantee the Vector's integrity
 \emph on
  you must only access it to retrieve (get) or replace (set) elements, and
@@ -48238,7 +48242,67 @@ You may also use a
 \family typewriter
 Vector
 \family default
- as a stack, which feature is better explained below.
+ as a stack, whose feature is better explained below.
+\end_layout
+
+\begin_layout Standard
+Here is an example showing a vector being used: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+Vector vec = new Vector();
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.addElement(obj1);
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.addElement(obj2);
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.insertElementAt(obj3, 3);
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.removeElementAt(2);
+\end_layout
+
+\begin_layout Plain Layout
+
+if (vec.size() > 5)
+\end_layout
+
+\begin_layout Plain Layout
+
+   ...
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -48252,7 +48316,7 @@ Vector
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Vector() Default constructor, creates a 
+Vector() Default constructor, which creates a 
 \family typewriter
 Vector
 \family default
@@ -48270,7 +48334,10 @@ size) Creates a
 \family typewriter
 Vector
 \family default
- with the given size, which cannot be negative (minimum size is 0).
+ with the given size, which is the initial size of the vector's internal
+ object array and cannot be negative (the minimum size is 0).
+ The vector will grow as needed when objects are added.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48288,6 +48355,12 @@ Vector
 Vector
 \family default
  size.
+ Note that the given array must not have 
+\family typewriter
+null
+\family default
+ elements.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -48344,11 +48417,35 @@ addElement(Object
 \begin_inset space ~
 \end_inset
 
-obj) Adds a reference to the given object to the end of this 
+obj) Adds a reference to the given object to the end of the 
 \family typewriter
 Vector
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElements(Object[]
+\begin_inset space ~
+\end_inset
+
+objects) Adds an array of objects at the end of the vector.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElementsNotNull(Object[]
+\begin_inset space ~
+\end_inset
+
+objects) Adds an array of objects at the end of the vector (
+\family typewriter
+null
+\family default
+ objects are skipped).
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48372,6 +48469,13 @@ Vector
 \family default
 , shifting elements with index greater or equal to the specified index to
  have an index one greater than it had previously.
+ If 
+\family typewriter
+index
+\family default
+ is less than 0 or above the number of elements, the object is inserted
+ at the end.
+ 
 \end_layout
 
 \end_deeper
@@ -48415,6 +48519,13 @@ removeAllElements() Removes all elements from this
 Vector
 \family default
 , reseting its length to 0.
+ Note that this method sets all items in this vector to 
+\family typewriter
+null
+\family default
+, so, if you had directly assigned an array to this vector, all items inside
+ it will be nulled.
+ 
 \end_layout
 
 \end_deeper
@@ -48482,7 +48593,7 @@ isEmpty() Returns
 \family typewriter
 true
 \family default
- if this 
+ if the 
 \family typewriter
 Vector
 \family default
@@ -48491,7 +48602,7 @@ Vector
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this 
+size() Returns the number of elements in the 
 \family typewriter
 Vector
 \family default
@@ -48504,7 +48615,7 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this 
+newSize) Sets the size of the 
 \family typewriter
 Vector
 \family default
@@ -48524,11 +48635,12 @@ Vector
 newSize
 \family default
  and greater are discarded.
+ The new size can't be negative.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this 
+qsort() Sorts the elements of the 
 \family typewriter
 Vector
 \family default
@@ -48575,7 +48687,7 @@ String
 \end_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-toObjectArray() Returns an array of objects containing all elements of this
+toObjectArray() Returns an array of objects containing all elements of the
  
 \family typewriter
 Vector
@@ -48607,7 +48719,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-If the first element of this 
+If the first element of the 
 \family typewriter
 Vector
 \family default
@@ -48641,11 +48753,76 @@ String[]
 \end_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-dump() Dumps the contents of this 
+dump() Dumps the contents of the 
 \family typewriter
 Vector
 \family default
 , returning a string representation of it.
+ If the number of elements is big, it can take a lot of memory! 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the items of the vector separated by comma in a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(String
+\begin_inset space ~
+\end_inset
+
+separator) Returns the items of the vector separated by the given string
+ 
+\family typewriter
+separator
+\family default
+ in a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(Object[]
+\begin_inset space ~
+\end_inset
+
+out) Copies the items of the vector into the given array, which must have
+ at least the current size of the vector.
+ If the output vector is greater than the current size, the remaining positions
+ will remain unchanged.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+contains(Object
+\begin_inset space ~
+\end_inset
+
+o) Returns 
+\family typewriter
+true
+\family default
+ if the vector contains the specified element.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reverse() Reverses the order of the elements in the vector.
+ In a vector with 
+\family typewriter
+n
+\family default
+ elements, the element of index 0 is moved to the index 
+\family typewriter
+n-1
+\family default
+, the element of index 1 is moved to the index 
+\family typewriter
+n-2
+\family default
+, and so on.
  
 \end_layout
 
@@ -48665,7 +48842,7 @@ push(Object
 \begin_inset space ~
 \end_inset
 
-obj) Pushes an item onto the top of this stack.
+obj) Pushes an item onto the top of the stack.
  It actually just calls the method 
 \family typewriter
 addElement()
@@ -48675,19 +48852,59 @@ addElement()
 
 \begin_layout FieldList
 \labelwidthstring 0
-pop() Removes the object at the top of this stack, returning that object.
+pop() Removes the object at the top of the stack, returning that object.
  
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-peek() Returns the object the object at the top of this stack without removing
- it.
+pop(int
+\begin_inset space ~
+\end_inset
+
+n) Pops 
+\family typewriter
+n
+\family default
+ last elements from the stack.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+peek() Returns the object at the top of the stack without removing it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+peek(int
+\begin_inset space ~
+\end_inset
+
+n) Returns the 
+\family typewriter
+n
+\family default
+-last object, without removing it.
+ Note that 
+\family typewriter
+peek(0)
+\family default
+ is the same of 
+\family typewriter
+peek()
+\family default
+.
+ 
+\family typewriter
+n
+\family default
+ is how many elements to get from the top and must be a positive number.
 \end_layout
 
 \end_deeper
 \begin_layout Standard
-Although the 
+Although 
 \family typewriter
 Vector
 \family default
@@ -48705,7 +48922,7 @@ If you can estimate the number of elements, you can create the
 \family typewriter
 Vector
 \family default
- with enough room for them:
+ object with enough room for them:
 \end_layout
 
 \begin_deeper
@@ -48751,7 +48968,7 @@ If you know the exact number of elements, you can create an array and initialize
 \family typewriter
 Vector
 \family default
- with this array:
+ object with this array:
 \end_layout
 
 \begin_deeper
