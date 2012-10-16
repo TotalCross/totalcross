@@ -86,7 +86,7 @@ static GLuint textureCoord,textureS;
 #define POINTS_VERTEX_CODE \
       "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color; " \
       "uniform mat4 projectionMatrix; " \
-      "void main() {v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}"
 
 #define POINTS_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -102,7 +102,7 @@ static GLuint pointsColor;
 #define LRP_VERTEX_CODE \
       "attribute vec4 a_Position;" \
       "uniform mat4 projectionMatrix;" \
-      "void main() {gl_Position = a_Position*projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; gl_Position = a_Position*projectionMatrix;}"
 
 #define LRP_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -262,7 +262,7 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
    glBindTexture(GL_TEXTURE_2D, 0);
-   coords[2] = coords[5] = coords[8] = coords[11] = coords[14]; 
+   coords[2] = coords[5] = coords[8] = coords[11] = coords[14] = 0; 
 }
 
 void initLineRectPoint()
@@ -409,6 +409,7 @@ bool initGLES(ScreenSurface screen)
        EGL_GREEN_SIZE, 8,
        EGL_RED_SIZE, 8,
        EGL_ALPHA_SIZE, 8,
+       EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
        EGL_NONE
    };
    EGLint context_attribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
@@ -453,11 +454,6 @@ static void destroyEGL()
    xfree(glcolors);
 }
 #endif
-
-bool graphicsLock(ScreenSurface screen, bool on)
-{
-    return true;
-}
 
 void privateScreenChange(int32 w, int32 h)
 {
