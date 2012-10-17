@@ -91,7 +91,7 @@ public class FlowContainer extends Container
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      if (setH == FILL)
+      if (setW == FILL)
          throw new RuntimeException("For FlowContainer subclasses, please use PARENTSIZE+100 instead of FILL");
       if (this.width > 0 && this.width != lastASW && ((PREFERRED-RANGE) <= setH && setH <= (PREFERRED+RANGE)))
       {
