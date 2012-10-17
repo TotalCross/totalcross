@@ -7701,6 +7701,24 @@ Class.newInstance()
 
 \begin_layout FieldList
 \labelwidthstring 0
+IntHashtable.DuplicatedKeyException Exception thrown when 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is set to 
+\family typewriter
+false
+\family default
+ in an 
+\family typewriter
+IntHashtable
+\family default
+ and one tries to add a repeated key.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 InvalidDateException Represents a date that is invalid.
  
 \end_layout
@@ -50130,13 +50148,12 @@ double
 \end_inset
 
 loadFactor) Creates a new, empty hashtable with the specified initial capacity
- and the specified load factor.
+ and the specified load factor, which must be between 0.0 and 1.0.
  If 
 \family typewriter
 initialCapacity
 \family default
  is zero, it is changed to 5.
- 
 \end_layout
 
 \begin_layout FieldList
@@ -50747,6 +50764,37 @@ clear()
 .
 \end_layout
 
+\begin_layout Itemize
+The Hashtable class has a nested class called 
+\family typewriter
+Hashtable.Entry
+\family default
+.
+ It has the following public fields:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+hash The hash code of a key.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+key A key in the hash table.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The value mapped to this key.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+next Another entry in the hash table.
+\end_layout
+
+\end_deeper
 \begin_layout Standard
 This example creates a hash table of numbers.
  It uses the name of the numbers as keys:
@@ -50821,11 +50869,56 @@ This class implements a hash table where both the keys and values inserted
 \end_layout
 
 \begin_layout Itemize
+Its public fields are similar to the ones from 
+\family typewriter
+Hashtable
+\family default
+.
+ In 
+\family typewriter
+allowDuplicateKeys
+\family default
+, set it to 
+\family typewriter
+false
+\family default
+ to throw a 
+\family typewriter
+IntHashtable.DuplicatedKeyException
+\family default
+ if you add a key that already exists.
+ It's very unusually to have two objects with same key, but it can occur.
+ This is good to improve the program's correctness.
+ 
+\end_layout
+
+\begin_layout Itemize
+It also has an 
+\family typewriter
+Entry
+\family default
+ nested class.
+ However, diferently from 
+\family typewriter
+Hashtable
+\family default
+, it does not have the field 
+\family typewriter
+hash
+\family default
+ and 
+\family typewriter
+key
+\family default
+ is an integer instead of an object.
+\end_layout
+
+\begin_layout Itemize
 
 \family typewriter
 IntHashtable
 \family default
- has an important constructor:
+ has two constructor:
 \end_layout
 
 \begin_deeper
@@ -50836,8 +50929,39 @@ IntHashtable(int
 \end_inset
 
 initialCapacity) Creates an empty hash table with the specified initial
- capacity, which should be the final number of entries in the hash table
- to avoid rehashing.
+ capacity and default load factor of 
+\family typewriter
+0.75f
+\family default
+.
+ The initial capacity must be the number of elements you think the hash
+ table will end with.
+ The hash table will grow if necessary, but using a number near or above
+ the final size can improve performance.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IntHashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+loadFactor) Same as above but receiving a load factor which must be between
+ 0.0 and 1.0.
 \end_layout
 
 \end_deeper
@@ -50863,11 +50987,75 @@ int
 value) Maps the given value to the given key.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+put(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value) Takes out the hash code from the given key object (
+\family typewriter
+object.hashCode()
+\family default
+) and calls the previous method.
+ To increase safeness, set 
+\family typewriter
+allowDuplicateKeys
+\family default
+ to 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Standard
 If the given hash (or key's hash code) already exists in the hash table,
- the old value will be replaced by the given value and the put method will
- return the old value.
+ the old value will be replaced by the given value (unless 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+true
+\family default
+) and the 
+\family typewriter
+put()
+\family default
+ method will return the old value (or the object hash code when inserting
+ an object).
  Otherwise, the given value will be returned.
+ If 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+false
+\family default
+ and a duplicated key is inserted, 
+\family typewriter
+IntHashtable.DuplicatedKeyException
+\family default
+ is thrown.
+\begin_inset Newline newline
+\end_inset
+
+The value can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
 \end_layout
 
 \end_deeper
@@ -50892,6 +51080,31 @@ get(int
 
 key) Returns the value to which the specified key is mapped in this hash
  table.
+ It throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(Object
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key hash code (
+\family typewriter
+key.hashCode()
+\family default
+) is mapped in this hash table.
+ It throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -50966,7 +51179,13 @@ getKeys() Returns an
 \family typewriter
 IntVector
 \family default
- with all the keys in this hash table.
+ with all the keys in the hash table.
+ The order is the same of the 
+\family typewriter
+getValues()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -50975,7 +51194,13 @@ getValues() Returns an
 \family typewriter
 IntVector
 \family default
- with all the values in this hash table.
+ with all the values in the hash table.
+ The order is the same of the 
+\family typewriter
+getKeys()
+\family default
+ method.
+ 
 \end_layout
 
 \end_deeper
@@ -50994,6 +51219,8 @@ pos
 ArrayIndexOutOfBoundsException
 \family default
  is thrown if the given position is out of range.
+ Note that the first key has no relation with the smallest key.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -51001,23 +51228,44 @@ The method
 \family typewriter
 size()
 \family default
- returns the number of keys in this hash table.
+ returns the number of keys in the hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use 
+To remove a key and its corresponding value from the hash table, use 
 \family typewriter
 remove(int key)
 \family default
 .
+ This method throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
 \end_layout
 
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use 
+To clear the hash table, removing all its entries, use 
 \family typewriter
 clear()
 \family default
 .
+\end_layout
+
+\begin_layout Itemize
+The method 
+\family typewriter
+incrementValue(int key, int amount)
+\family default
+ increments the value of a key by the given amount.
+ If the key doesn't exist, a new one is created with the amount.
+ Otherwise, its value is changed by the amount.
+ This method is useful to use an 
+\family typewriter
+IntHashtable
+\family default
+ as a multi counter.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -51106,6 +51354,110 @@ catch(ElementNotFoundException e)
 \begin_layout Plain Layout
 
 }
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Another example is to count the number of collisions so that it is possible
+ to chose the best 
+\family typewriter
+IntHashtable
+\family default
+ size (a similar code can be used for 
+\family typewriter
+Hashtable
+\family default
+):
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+int max = 0xFFFFFFF;
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int h = 5; ; h++)  
+\end_layout
+
+\begin_layout Plain Layout
+
+{     
+\end_layout
+
+\begin_layout Plain Layout
+
+	IntHashtable ht = new IntHashtable(h);
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("nbsp".hashCode(),' ');
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("shy".hashCode(),'-');
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("quot".hashCode(),'"');
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+     
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (ht.collisions < max)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.debug("h: "+h+" colli: "+ht.collisions);
+\end_layout
+
+\begin_layout Plain Layout
+
+		max = ht.collisions;
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (max == 0)
+\end_layout
+
+\begin_layout Plain Layout
+
+			break;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
 \end_layout
 
 \end_inset
