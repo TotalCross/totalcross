@@ -277,7 +277,7 @@ public class SSL4B
             
             try
             {
-               ssl = conn = new SSL30Connection(new SSLSocket(nativeSocket), nativeSocket.url, true);
+               ssl = conn = new SSL30Connection(new SSLSocketAdapter(nativeSocket), nativeSocket.url, true);
                is = conn.openInputStream();
                os = conn.openOutputStream();
                
@@ -485,11 +485,11 @@ public class SSL4B
    
    // This is an adapter class used to read and write data from the socket
    // in the SSL connection.
-   private static class SSLSocket implements StreamConnection
+   private static class SSLSocketAdapter implements StreamConnection
    {
       private Socket4B socket;
       
-      public SSLSocket(Socket4B socket)
+      public SSLSocketAdapter(Socket4B socket)
       {
          this.socket = socket;
       }

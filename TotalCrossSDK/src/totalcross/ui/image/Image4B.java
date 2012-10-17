@@ -184,12 +184,12 @@ public class Image4B extends GfxSurface
 
    public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException, ImageException
    {
-      if (frameCount > 1)
+      if (frameCount > 1 && n != frameCount)
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
 
-      if (n > 1 && frameCount <= 1)
+      if (n != frameCount && n > 1 && frameCount <= 1)
          try
          {
             Bitmap pixelsOfAllFrames = frames[0];

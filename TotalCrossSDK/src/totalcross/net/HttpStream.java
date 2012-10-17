@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
 import totalcross.io.*;
@@ -103,6 +101,11 @@ public class HttpStream extends Stream
     * @see Options#setCookies(Hashtable)
     */
    public Hashtable cookies; // guich@570_32
+   
+   /** This Hashtable contains all headers that came in the response that don't belong to the public fields.
+    * @since TotalCross 1.62
+    */
+   public Hashtable headers = new Hashtable(10);
 
    /** Used in the contentType property. */
    public static final byte UNKNOWN_TYPE    = 0;
@@ -130,7 +133,7 @@ public class HttpStream extends Stream
    {
       /**
       * Basic support for proxy servers on HttpStream.
-      * You set the variables <var>proxyAddress<var> and <var>proxyPort</var>
+      * You set the variables <var>proxyAddress</var> and <var>proxyPort</var>
       * for this HttpStream instance to get the data thru your proxy.
       *<p>
       * There is yet the SSL part and the "don't use proxy for
@@ -280,14 +283,14 @@ public class HttpStream extends Stream
          postHeaders.put("Cookie",cookies.dumpKeysValues(new StringBuffer(512), "=","; ").toString());
       }
 
-		/**
-		 * Base64 encodes the username and password given for basic server authentication
-		 * 
-		 * @param user
-		 *           The username for the server. Passing null disables authentication.
-		 * @param password
-		 *           The password for the username account on the server. Passing null disables authentication.
-		 */
+      /**
+       * Base64 encodes the username and password given for basic server authentication
+       * 
+       * @param user
+       *           The username for the server. Passing null disables authentication.
+       * @param password
+       *           The password for the username account on the server. Passing null disables authentication.
+       */
       public void setBasicAuthentication(String user, String password)
       {
          if (user == null || password == null)
@@ -296,15 +299,15 @@ public class HttpStream extends Stream
             postHeaders.put("Authorization", Base64.encode((user + ":" + password).getBytes()));
       }
       
-		/**
-		 * Encodes the given username and password in Base64 for basic proxy authorization
-		 * 
-		 * @param user
-		 *           the username for the proxy. Passing null disables proxy authorization.
-		 * @param password
-		 *           the password for the proxy. Passing null disables proxy authorization.
-		 * @since TotalCross 1.27
-		 */
+      /**
+       * Encodes the given username and password in Base64 for basic proxy authorization
+       * 
+       * @param user
+       *           the username for the proxy. Passing null disables proxy authorization.
+       * @param password
+       *           the password for the proxy. Passing null disables proxy authorization.
+       * @since TotalCross 1.27
+       */
       public void setBasicProxyAuthorization(String user, String password)
       {
          if (user == null || password == null)
@@ -463,21 +466,21 @@ public class HttpStream extends Stream
 
    public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
-	   int startPos = start;
-	   int bytesLeft = count;
-	   int sentBytes = 0;
+      int startPos = start;
+      int bytesLeft = count;
+      int sentBytes = 0;
 
-	   while (bytesLeft > 0)
-	   {
-		   int ret = socket.writeBytes(buf, startPos, (bytesLeft >= writeBytesSize ? writeBytesSize : bytesLeft));
-		   sentBytes += ret;
-		   bytesLeft -= ret;
-		   startPos += ret;
-		   if (sendSleep > 0)
-				Vm.sleep(sendSleep); // this is needed for softick
-	   }
+      while (bytesLeft > 0)
+      {
+         int ret = socket.writeBytes(buf, startPos, (bytesLeft >= writeBytesSize ? writeBytesSize : bytesLeft));
+         sentBytes += ret;
+         bytesLeft -= ret;
+         startPos += ret;
+         if (sendSleep > 0)
+            Vm.sleep(sendSleep); // this is needed for softick
+      }
 
-	   return sentBytes;
+      return sentBytes;
    }
 
    public void close() throws totalcross.io.IOException
@@ -613,7 +616,7 @@ public class HttpStream extends Stream
       sb.append(Convert.CRLF);
 
       if (options.partContent == null)
-      	sb.append(Convert.CRLF); // append the last line separator
+         sb.append(Convert.CRLF); // append the last line separator
       if (debugHeader)
           Vm.debug(sb.toString());
       
@@ -881,7 +884,7 @@ public class HttpStream extends Stream
    {
       int type = -1;
       int start = ofsStart;
-      int end;
+      int end,end1=0,start1=0;
 
       if ((contentType == UNKNOWN_TYPE) && bsContentTypeFieldName.equalsIgnoreCase(buffer, ofsStart, bsContentTypeFieldName.len))
       {
@@ -920,7 +923,11 @@ public class HttpStream extends Stream
       }
       else
       {
-         return;
+         start1 = start;
+         while (buffer[start] != ':' && buffer[start] >= 32)
+            start++;
+         end1 = start;
+         if (buffer[start] == ':') start++;
       }
       // trim the string
       byte b;
@@ -937,6 +944,9 @@ public class HttpStream extends Stream
       // now set the properties
       switch (type)
       {
+         case -1:
+            headers.put(new String(buffer,start1,end1-start1), new String(buffer,start, end-start));
+            break;
          case 0:
             contentType = getContentType(start, end-start);
             break;

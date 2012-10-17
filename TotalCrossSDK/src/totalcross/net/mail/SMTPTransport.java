@@ -54,7 +54,8 @@ public class SMTPTransport extends Transport
    protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException,
          MessagingException
    {
-      startTLS();
+      if (supportsTLS)
+         startTLS();
       ehlo();
 
       switch (authSupported)
@@ -147,7 +148,7 @@ public class SMTPTransport extends Transport
       boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
 
       this.connection = connection;
-      this.writer = new DataStream(connection);
+      this.writer = new DataStream(connection, true);
       try
       {
          reader = new LineReader(connection);

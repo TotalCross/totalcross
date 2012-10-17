@@ -30,7 +30,7 @@ import totalcross.util.*;
  * You can use the up/down keys to scroll and enter the first
  * letter of an item to select it.
  * <p>
- * Note: the color used in the setBackground method will be used in the scrollbar
+ * Note: the color used in the <code>setBackColor()</code> method will be used in the scrollbar
  * only. The background color of the control will be a lighter version of the
  * given color.
  * <p>
@@ -166,7 +166,6 @@ public class ListBox extends Container implements Scrollable
    protected Flick flick;
    
    /** Sets the number of visible lines, used to make PREFERRED height return the given number of lines as the grid height.
-    * This method must be called before setRect.
     * @since TotalCross 1.13
     */
    public int visibleLines = -1;
@@ -988,7 +987,7 @@ public class ListBox extends Container implements Scrollable
       if (selectedIndex >= 0) drawCursor(g,selectedIndex,true);
    }
 
-   /** Sets the cursor color for this ListBox. The default is equal to the background slightly darker. Make sure you tested it in 2,4 and 8bpp devices. */
+   /** Sets the cursor color for this ListBox. The default is equal to the background slightly darker. */
    public void setCursorColor(int color)
    {
       this.customCursorColor = color;

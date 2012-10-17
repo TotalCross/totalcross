@@ -509,7 +509,7 @@ public class PushButtonGroup extends Control
             if (actLikeButton && autoRepeat) 
                autoRepeatTimer = addTimer(INITIAL_DELAY);
          case PenEvent.PEN_DRAG:
-            if (actLikeButton && Settings.fingerTouch)
+            if (!enabled || (actLikeButton && Settings.fingerTouch))
                break;
             if (sel != selectedIndex && (!atLeastOne || sel != -1))
                setSelectedIndex(sel);
@@ -573,7 +573,7 @@ public class PushButtonGroup extends Control
          case PenEvent.PEN_UP:
             if (autoRepeat && autoRepeatTimer != null)
                disableAutoRepeat();
-            if (!Settings.fingerTouch || !hadParentScrolled())
+            if (enabled && (!Settings.fingerTouch || !hadParentScrolled()))
             {
                if (actLikeButton && Settings.fingerTouch)
                {

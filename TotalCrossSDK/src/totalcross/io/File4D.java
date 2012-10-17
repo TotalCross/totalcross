@@ -253,7 +253,7 @@ public class File4D extends RandomAccessStream
       return slot;
    }
 
-   private static void listFiles(String dir, Vector files) throws IOException // guich@tc115_92
+   private static void listFiles(String dir, Vector files, boolean recursive) throws IOException // guich@tc115_92
    {
       String[] list = new File(dir).listFiles();
       if (list != null)
@@ -262,19 +262,24 @@ public class File4D extends RandomAccessStream
             String p = list[i];
             String full = Convert.appendPath(dir,p);
             files.addElement(full);
-            if (p.endsWith("/"))
-               listFiles(full, files);
+            if (recursive && p.endsWith("/"))
+               listFiles(full, files, recursive);
          }
    }
-   
+
    public static String[] listFiles(String dir) throws IOException // guich@tc115_92
    {
+      return listFiles(dir, true);
+   }
+
+   public static String[] listFiles(String dir, boolean recursive) throws IOException
+   {
       Vector files = new Vector(50);
-      dir = Convert.appendPath(dir,"/");
+      dir = Convert.appendPath(dir, "/");
       files.addElement(dir);
-      listFiles(dir,files);
+      listFiles(dir, files, recursive);
       files.qsort();
-      return (String[])files.toObjectArray();
+      return (String[]) files.toObjectArray();
    }
 
    public static void deleteDir(String dir) throws IOException // guich@tc115_92

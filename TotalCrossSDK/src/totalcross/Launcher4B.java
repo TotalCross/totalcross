@@ -59,8 +59,6 @@ import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.StringUtilities;
-import ras.ActivationClient;
-import ras.ui.ActivationWindow;
 import totalcross.io.ByteArrayStream;
 import totalcross.io.DataStream;
 import totalcross.io.File;
@@ -68,6 +66,8 @@ import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 import totalcross.net.SocketTimeoutException;
+import totalcross.net.ssl.SSLSocket;
+import totalcross.net.ssl.SSLSocket4B;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.sys.Settings;
@@ -146,6 +146,7 @@ public class Launcher4B
    public static String appPath;
    public static String tempPath;
    public static String mainWindowPath;
+   private boolean activated=true;
    
    /**
     * Constructs a new instance of Launcher
@@ -215,22 +216,11 @@ public class Launcher4B
          f.createDir();
       f.close();
 
-      Class clazz = null;
       //$IF,FULLVERSION
-      ActivationClient client = null;
-      boolean activated = false;
-
-      client = ActivationClient.getInstance();
-      if (!(activated = client.isActivatedSilent())) // check activation
-         clazz = ActivationWindow.class;
-      else
-      {
-         //$END
-         clazz = Class.forName(className);
-         logger.info("Class '" + className + "' loaded");
-         //$IF,FULLVERSION
-      }
+      activated = ras.ActivationClient.getInstance().isActivatedSilent();
       //$END
+      Class clazz = Class.forName(className);
+      logger.info("Class '" + className + "' loaded");
       
       String path = clazz.getName().replace('.', '/');
       int idx = path.lastIndexOf('/');
@@ -244,17 +234,8 @@ public class Launcher4B
          screen.setTitle(moduleName);
       stub.pushScreen(screen);
 
-      //$IF,FULLVERSION
-      if (!activated)
-         mainWindow = new ActivationWindow(client);
-      else
-      {
-         //$END
-         mainWindow = (MainWindow)clazz.newInstance(); // instantiate main window class
-         logger.info("Class '" + className + "' instantiated");
-         //$IF,FULLVERSION
-      }
-      //$END
+      mainWindow = (MainWindow)clazz.newInstance(); // instantiate main window class
+      logger.info("Class '" + className + "' instantiated");
 
       logger.exiting("totalcross.Launcher", "init");
    }
@@ -361,19 +342,22 @@ public class Launcher4B
                while (!stub.isHandlingEvents())
                   Thread.yield();
                int demoTime = -1;
-
+               if (!activated)
+                  demoTime = -999999;
                //$IF,DEMOVERSION
-               logger.info("Starting demo controller");
-               DemoController dc = new DemoController(5000); // sleeps 5 seconds before updating demo time
-               long current = dc.getAvailableTime();
-               int hours = (int)(current / 3600);
-               int mins = (int)((current % 3600) / 60);
-               demoTime = hours*100+mins;
-               demoThread = new Thread(dc);
-               demoThread.setPriority(Thread.MIN_PRIORITY);
-               demoThread.start();
+               else
+               {
+                  logger.info("Starting demo controller");
+                  DemoController dc = new DemoController(5000); // sleeps 5 seconds before updating demo time
+                  long current = dc.getAvailableTime();
+                  int hours = (int)(current / 3600);
+                  int mins = (int)((current % 3600) / 60);
+                  demoTime = hours*100+mins;
+                  demoThread = new Thread(dc);
+                  demoThread.setPriority(Thread.MIN_PRIORITY);
+                  demoThread.start();
+               }
                //$END
-
                logger.info("Starting application");
                mainWindow.appStarting(demoTime);
                started = true;
@@ -2136,7 +2120,7 @@ public class Launcher4B
 
          try
          {
-            int r = s.readBytes(oneByte, 0, 1);
+            int r = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superReadBytes(oneByte, 0, 1) : s.readBytes(oneByte, 0, 1);
 
             if (left != -1 && r == 1)
                left--;
@@ -2159,7 +2143,7 @@ public class Launcher4B
             if (left != -1 && len > left)
                len = left;
 
-            int r = s.readBytes(buf, off, len);
+            int r = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superReadBytes(buf, off, len) : s.readBytes(buf, off, len);
 
             if (left != -1 && r > 0)
                left -= r;
@@ -2217,7 +2201,7 @@ public class Launcher4B
          {
             oneByte[0] = (byte)(b & 0xFF);
 
-            int w = s.writeBytes(oneByte, 0, 1);
+            int w = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superWriteBytes(oneByte, 0, 1) : s.writeBytes(oneByte, 0, 1);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 
@@ -2233,7 +2217,7 @@ public class Launcher4B
       {
          try
          {
-            int w = s.writeBytes(buf, off, len);
+            int w = s instanceof SSLSocket4B ? ((SSLSocket4B) s).superWriteBytes(buf, off, len) : s.writeBytes(buf, off, len);
             if (w < 0)
                throw new java.io.IOException("Unknown error when writing to stream");
 

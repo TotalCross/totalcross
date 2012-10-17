@@ -10,6 +10,7 @@ function display_help
   echo "  -demo              build a demo version"
   echo "  -help              this help message"
   echo "  -noras id          build a noras version"
+  echo "  -password <pw>     ignored"
   exit
 }
 
@@ -27,6 +28,10 @@ do
         shift
         export norasid="$1"
       fi
+      shift
+      ;;
+    -p|-password)
+      shift
       shift
       ;;
     -h|-help)

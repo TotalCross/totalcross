@@ -187,6 +187,7 @@ public class Control extends GfxSurface
    protected Font setFont;
    protected Control setRel;
    protected boolean repositionAllowed;
+   protected int tempW; // used in flowContainer
    
    /** The shadow color to be applied to this control. */
    public int textShadowColor; // guich@tc126_26
@@ -528,6 +529,7 @@ public class Control extends GfxSurface
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
+            tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
@@ -562,6 +564,7 @@ public class Control extends GfxSurface
             {
                if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width = cli.width - x + cli.x +(width-FILL)*fmH/100; else
                if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width = lpx - x +(width-FIT)*fmH/100;
+               tempW = width;
             }
             // height that depends on y
             if (height > MAXABSOLUTECOORD)
@@ -577,6 +580,7 @@ public class Control extends GfxSurface
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
+            tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
@@ -611,6 +615,7 @@ public class Control extends GfxSurface
             {
                if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width += cli.width - x + cli.x -FILL; else
                if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width += lpx - x -FIT;
+               tempW = width;
             }
             // height that depends on y
             if (height > MAXABSOLUTECOORD)

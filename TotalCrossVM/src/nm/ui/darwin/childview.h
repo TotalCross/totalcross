@@ -29,7 +29,7 @@
 - (id)init:(UIViewController*) ctrl;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen;
+- (void)invalidateScreen:(void*)vscreen withContext:(void*)context;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
