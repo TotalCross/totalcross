@@ -300,7 +300,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
 #else
-   if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) currentContext->fullDirty = true;
+   currentContext->fullDirty |= !Surface_isImage(dstSurf);
 #endif
 end:
    ;
@@ -351,7 +351,7 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
       if (Graphics_useOpenGL(g))
       {
          glDrawPixel(x,y,pixel);
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
 #endif
@@ -402,7 +402,7 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
       if (Graphics_useOpenGL(g))
       {   
          glDrawLine(x,y,x+width,y,pixel1);
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
 #endif
@@ -453,7 +453,7 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
       if (Graphics_useOpenGL(g))
       {
          glDrawLine(x,y,x,y+height,pixel1);
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
 #endif
@@ -529,7 +529,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     if (Graphics_useOpenGL(g))
     {
        glDrawLine(x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),pixel1);
-       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+       currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
     }
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
 #endif
@@ -799,7 +799,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       pc.pixel = pixel;
       glClearColor((float)pc.r/(float)255,(float)pc.g/(float)255,(float)pc.b/(float)255,0);
       glClear(GL_COLOR_BUFFER_BIT);
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       return;
    }
 #endif
@@ -810,7 +810,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       if (Graphics_useOpenGL(g))
       {
          glFillRect(x,y,width,height,pixel);
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
 #endif
@@ -1052,7 +1052,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
-   if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #endif
 }
 
@@ -2622,7 +2622,7 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
 #ifndef __gl2_h_
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
 #else
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) currentContext->fullDirty = true;
+      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #endif
    }
 }
