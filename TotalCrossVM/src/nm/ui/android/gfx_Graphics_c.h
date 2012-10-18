@@ -56,7 +56,8 @@ GLfloat ftransp[16], f255[256];
 int32 flen;
 GLfloat* glcoords;//[flen*3];
 GLfloat* glcolors;//[flen*4];
-
+static GLfloat texcoords[16], lrcoords[12];
+static GLfloat *pixcoords, *pixcolors, *pixcolorsEnd;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -133,10 +134,14 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
+static int32 lastRGB=-1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
+   {                 
+      lastRGB = -1;
       glUseProgram(lastProg = prog);
+   }
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -241,7 +246,7 @@ void glDeleteTexture(int32* textureId)
 
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
-   GLfloat* coords = glcoords;
+   GLfloat* coords = texcoords;
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -262,7 +267,6 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
    glBindTexture(GL_TEXTURE_2D, 0);
-   coords[2] = coords[5] = coords[8] = coords[11] = coords[14] = 0; 
 }
 
 void initLineRectPoint()
@@ -274,52 +278,110 @@ void initLineRectPoint()
    glEnableVertexAttribArray(lrpPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 }
 
+void flushPixels()
+{
+   if (pixcoords != glcoords)               
+   {
+      int n = (pixcolors-glcolors)>>2,i;
+      GLfloat* coords = lrcoords;
+      setCurrentProgram(lrpProgram);
+      pixcoords = glcoords;
+      pixcolors = glcolors;
+      glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
+      for (i = 0; i < n; i++, pixcoords += 3, pixcolors += 4)
+      {
+         int x = pixcoords[0];
+         int y = pixcoords[1];
+         coords[0] = coords[3]  = x;
+         coords[1] = coords[10] = y;
+         coords[4] = coords[7]  = y+1;
+         coords[6] = coords[9]  = x+1;
+         
+         if (i == 0 || pixcolors[-4] != pixcolors[0] || pixcolors[-3] != pixcolors[1] || pixcolors[-2] != pixcolors[2]) // prevent color change = performance x2 in galaxy tab2
+            glUniform4fv(lrpColor, 1, pixcolors);
+         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder);
+      }      
+      pixcoords = glcoords;
+      pixcolors = glcolors;
+   }
+}
+
 void glDrawPixel(int32 x, int32 y, int32 rgb)
 {
-   GLfloat* coords = glcoords;
    PixelConv pc;
    pc.pixel = rgb;
-   coords[0] = x;
-   coords[1] = y;
+   *pixcoords++ = x;
+   *pixcoords++ = y;
+   *pixcoords++ = 0;
+   *pixcolors++ = f255[pc.r];
+   *pixcolors++ = f255[pc.g];
+   *pixcolors++ = f255[pc.b];
+   *pixcolors++ = 1;
+   if (pixcolors == pixcolorsEnd)
+      flushPixels();
+}
 
-   setCurrentProgram(lrpProgram);
-   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line - nopt to cache color
-   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
-   glDrawArrays(GL_POINTS, 0,1);
+void glDrawPixelA(int32 x, int32 y, int32 rgb, int32 a)
+{
+   PixelConv pc;
+   pc.pixel = rgb;
+   *pixcoords++ = x;
+   *pixcoords++ = y;
+   *pixcoords++ = 0;
+   *pixcolors++ = f255[pc.r];
+   *pixcolors++ = f255[pc.g];
+   *pixcolors++ = f255[pc.b];
+   *pixcolors++ = a;
+   if (pixcolors == pixcolorsEnd)
+      flushPixels();
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
-{
-   GLfloat* coords = glcoords;
-   PixelConv pc;
-   pc.pixel = rgb;
-   coords[0] = x1;
-   coords[1] = y1;
-   coords[3] = x2;
-   coords[4] = y2;
-
-   setCurrentProgram(lrpProgram);
-   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
-   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
-   glDrawArrays(GL_LINES, 0,2);
+{               
+   // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
+   if (x1 == x2)
+      glFillRect(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb);
+   else
+   if (y1 == y2)
+      glFillRect(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb);
+   else
+   {
+      GLfloat* coords = lrcoords;
+      PixelConv pc;
+      pc.pixel = rgb;
+      coords[0] = x1;
+      coords[1] = y1;
+      coords[3] = x2;
+      coords[4] = y2;
+   
+      setCurrentProgram(lrpProgram);
+      
+      if (lastRGB != rgb)
+      {
+         glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
+         lastRGB = rgb;
+      }
+      glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+      glDrawArrays(GL_LINES, 0,2);
+   }
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb)
-{
-   GLfloat* coords = glcoords;
+{             
+   GLfloat* coords = lrcoords;
    PixelConv pc;
    pc.pixel = rgb;
-   coords[0] = x;
-   coords[1] = y;
-   coords[3] = x;
-   coords[4] = y+h;
-   coords[6] = x+w;
-   coords[7] = y+h;
-   coords[9] = x+w;
-   coords[10] = y;
+   coords[0] = coords[3]  = x;
+   coords[1] = coords[10] = y;
+   coords[4] = coords[7]  = y+h;
+   coords[6] = coords[9]  = x+w;
 
    setCurrentProgram(lrpProgram);
-   glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1);
+   if (lastRGB != rgb)
+   {
+      glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
+      lastRGB = rgb;
+   }
    glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder);
 }
@@ -332,7 +394,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0, -2.0/h, 0.0, 1.0,
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
-   };
+   };             
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
@@ -342,7 +404,8 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
 struct{ GLubyte r, g, b, a; } glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
-{
+{                             
+   flushPixels();
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
@@ -355,8 +418,9 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glcoords);
       xfree(glcolors);
       flen = n*3/2;
-      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*3);
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*4);
+      pixcoords = glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*3);
+      pixcolors = glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*4);
+      pixcolorsEnd = pixcolors + flen*4;
       if (!glcoords || !glcolors)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
@@ -456,7 +520,8 @@ static void destroyEGL()
 #endif
 
 void privateScreenChange(int32 w, int32 h)
-{
+{                
+   
    setProjectionMatrix(w,h);
 }
 
@@ -483,7 +548,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 void graphicsUpdateScreenIOS(ScreenSurface screen, int32 transitionEffect);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
-{                
+{  
+   flushPixels();              
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);
 #else

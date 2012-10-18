@@ -517,9 +517,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
 
     // guich: if its a pixel, draw only the pixel
     if (dX == 0 && dY == 0)
-       setPixel(currentContext, g, xMin,yMin,pixel1); else
+       setPixel(currentContext, g, xMin,yMin,pixel1); 
+    else
     if (dY == 0) // horizontal line?
-       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2); else
+       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2); 
+    else
     if (dX == 0) // vertical line?
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
     else
@@ -840,7 +842,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 #ifdef __gl2_h_
-extern GLfloat ftransp[16];
+extern GLfloat ftransp[16], f255[256];
 extern GLfloat *glcoords, *glcolors;
 #endif
 
@@ -873,9 +875,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    fcB = fc.b;
 
 #ifdef __gl2_h_
-   fR = (GLfloat)fcR / (GLfloat)255;
-   fG = (GLfloat)fcG / (GLfloat)255;
-   fB = (GLfloat)fcB / (GLfloat)255;
+   fR = f255[fcR];
+   fG = f255[fcG];
+   fB = f255[fcB];
+   flushPixels();
 #endif
 
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
@@ -2432,6 +2435,18 @@ static int32 windowBorderAlpha[3][7][7] =
    }
 };
 
+static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
+{                          
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+      glDrawPixelA(x,y,color.pixel,alpha);
+   else
+#endif 
+      setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
+}
+
 static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
    int32 kx, ky, a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
@@ -2477,39 +2492,51 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
          // top left
          a = windowBorderAlpha[thickness-1][j][6-i];
          if (a != OUT_BORDER)
-         {
-            if (a <= 0)
+         {         
+            if (a == 0)
+               setPixel(currentContext, g, left,top,titleColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, left,top,interpolate(borderColor, titleColor, -a));
             else
-               setPixel(currentContext, g, left,top,interpolate(borderColor, getPixelConv(g, left,top), a));
+               setPixelA(currentContext, g, left,top,borderColor, a);
          }
-
+ 
          // top right
          a = windowBorderAlpha[thickness-1][j][i];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, right,top,titleColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, right,top,interpolate(borderColor, titleColor, -a));
             else
-               setPixel(currentContext, g, right,top,interpolate(borderColor, getPixelConv(g, right,top), a));
+               setPixelA(currentContext, g, right,top,borderColor, a);
          }
          // bottom left
          a = windowBorderAlpha[thickness-1][i][j];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, left,bot,footerColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, left,bot,interpolate(borderColor, footerColor, -a));
             else
-               setPixel(currentContext, g, left,bot,interpolate(borderColor, getPixelConv(g, left,bot), a));
+               setPixelA(currentContext, g, left,bot,borderColor, a);
          }
          // bottom right
          a = windowBorderAlpha[thickness-1][6-i][j];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, right,bot,footerColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, right,bot,interpolate(borderColor, footerColor, -a));
             else
-               setPixel(currentContext, g, right,bot,interpolate(borderColor, getPixelConv(g, right,bot), a));
+               setPixelA(currentContext, g, right,bot,borderColor, a);
          }
       }
    }
