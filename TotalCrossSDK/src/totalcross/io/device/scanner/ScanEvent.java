@@ -28,14 +28,11 @@ import totalcross.ui.event.*;
  */
 public class ScanEvent extends Event
 {
-   /** The event type for a scanner scanning event. Note that since they are set at runtime, you cannot use them in a switch statement.
-    * Caution: do not call popup when handling this event, or the application will be blocked; use popupNonBlocking instead. */
+   /** The event type for a scanner scanning event.*/
    public static final int SCANNED = 1101;
-   /** The event type for a scanner low battery event. Note that since they are set at runtime, you cannot use them in a switch statement.
-    * Caution: do not call popup when handling this event, or the application will be blocked; use popupNonBlocking instead. */
+   /** The event type for a scanner low battery event. */
    public static final int BATTERY_ERROR = 1102;
-   /** The event type for a scanner triggered: A scan attempt was initiated - hard or soft trigger. Note that since they are set at runtime, you cannot use them in a switch statement.
-    * Caution: do not call popup when handling this event, or the application will be blocked; use popupNonBlocking instead. */
+   /** The event type for a scanner triggered: A scan attempt was initiated - hard or soft trigger. */
    public static final int TRIGGERED = 1103;
 
    /**

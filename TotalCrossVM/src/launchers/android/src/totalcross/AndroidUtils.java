@@ -198,8 +198,10 @@ public class AndroidUtils
                if (files[i].endsWith(".tcz.bak"))
                {
                   long t1 = System.currentTimeMillis();
+                  String sout = files[i].substring(0,files[i].length()-4);
                   RandomAccessFile in  = new RandomAccessFile(new File(dataDir, files[i]),"r");
-                  RandomAccessFile out = new RandomAccessFile(new File(dataDir, files[i].substring(files[i].length()-4)),"rw");
+                  try {new File(dataDir,sout).delete();} catch (Exception ee) {}
+                  RandomAccessFile out = new RandomAccessFile(new File(dataDir, sout),"rw");
                   int len = 0;
                   for (int n; (n = in.read(buf)) > 0; len += n)
                      out.write(buf, 0, n);

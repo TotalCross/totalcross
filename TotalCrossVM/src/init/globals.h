@@ -52,8 +52,6 @@ extern Object mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
 #if defined PALMOS
 extern void *pealLoadLibrary68K, *pealUnloadLibrary68K, *pealGetProcAddress68K;
-#elif defined WIN32 || defined linux || defined __SYMBIAN32__
-extern TCHAR exeName[MAX_PATHNAME];
 #elif defined(ANDROID)
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
@@ -62,6 +60,8 @@ extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 extern jfieldID jsipVisible,jappTitleH;
 extern jmethodID jgetHeight;
+#elif defined WIN32 || defined linux || defined __SYMBIAN32__
+extern TCHAR exeName[MAX_PATHNAME];
 #endif
 
 // window.c
