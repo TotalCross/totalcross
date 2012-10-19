@@ -336,11 +336,11 @@ static PixelConv getPixelConv(Object g, int32 x, int32 y)
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
-/*#ifdef __gl2_h_
+#ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
          p.pixel = glGetPixel(x,y);
       else
-#endif*/
+#endif
          p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
    }
    return p;
@@ -2485,14 +2485,22 @@ static int32 windowBorderAlpha[3][7][7] =
 
 static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
 {
-   x += Graphics_transX(g);
-   y += Graphics_transY(g);
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
-      glDrawPixel(x,y,color.pixel,alpha);
+      glDrawPixel(x+Graphics_transX(g),y+Graphics_transY(g),color.pixel,alpha);
    else
 #endif
       setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
+}
+
+static void drawLineA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, PixelConv color, int32 alpha)
+{
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+      glDrawLine(x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),color.pixel,alpha);
+   else
+#endif
+      drawLine(currentContext, g, x1,y1,x2,y2,interpolate(color, getPixelConv(g, x1, y1), alpha)); // bottom
 }
 
 static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
@@ -2514,21 +2522,17 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
          continue;
       kx = x1l;
       ky = yy+i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2r,yy+i,interpolate(borderColor, c, a)); // top
+      drawLineA(currentContext, g, kx,ky,x2r,yy+i,borderColor, a); // top
 
       ky = y2-i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2r,y2-i,interpolate(borderColor, c, a)); // bottom
+      drawLineA(currentContext, g, kx,ky,x2r,y2-i,borderColor, a); // bottom
 
       kx = xx+i;
       ky = y1l;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,xx+i,y2r,interpolate(borderColor, c, a)); // left
+      drawLineA(currentContext, g, kx,ky,xx+i,y2r,borderColor, a); // left
 
       kx = x2-i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2-i,y2r,interpolate(borderColor, c, a)); // right
+      drawLineA(currentContext, g, kx,ky,x2-i,y2r,borderColor, a); // right
    }
    // round corners
    for (j = 0; j < 7; j++)
