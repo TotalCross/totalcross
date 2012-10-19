@@ -921,7 +921,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
-   GLfloat fR,fG,fB;
    GLfloat *glC, *glV;
 #endif
 
@@ -933,9 +932,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    fcB = fc.b;
 
 #ifdef __gl2_h_
-   fR = f255[fcR];
-   fG = f255[fcG];
-   fB = f255[fcB];
    flushPixels();
 #endif
 
@@ -1059,19 +1055,15 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                   if (transparency == 0 || x < xMin)
                      continue;
 
-                  // color
-                  *glC++ = fR;
-                  *glC++ = fG;
-                  *glC++ = fB;
+                  // alpha
                   *glC++ = ftransp[transparency];
                   // vertices
                   *glV++ = x;
                   *glV++ = y;
-                  glV++;
                }
             }
             if (glC != glcolors) // flush vertices buffer
-               glDrawPixels(((int32)(glC-glcolors)>>2));
+               glDrawPixels(((int32)(glC-glcolors)),foreColor);
          }
          else
 #endif

@@ -48,15 +48,12 @@ static EGLContext _context;
 #endif
 static void destroyEGL();
 
-
-#define COORDS_PER_VERTEX 3
-
 int realAppH,appW,appH;
 GLfloat ftransp[16], f255[256];
 int32 flen;
-GLfloat* glcoords;//[flen*3];
-GLfloat* glcolors;//[flen*4];
-static GLfloat texcoords[16], lrcoords[12];
+GLfloat* glcoords;//[flen*2]; x,y
+GLfloat* glcolors;//[flen];   alpha
+static GLfloat texcoords[16], lrcoords[8];
 static GLfloat *pixcoords, *pixEnd;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
@@ -85,9 +82,9 @@ static GLuint textureCoord,textureS;
 //////////// points (text)
 
 #define POINTS_VERTEX_CODE \
-      "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color; " \
+      "attribute vec4 a_Position; uniform vec4 a_Color; varying vec4 v_Color; attribute float alpha;" \
       "uniform mat4 projectionMatrix; " \
-      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position * projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z,alpha); gl_Position = a_Position * projectionMatrix;}"
 
 #define POINTS_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -97,6 +94,7 @@ static GLuint textureCoord,textureS;
 static GLuint pointsProgram;
 static GLuint pointsPosition;
 static GLuint pointsColor;
+static GLuint pointsAlpha;
 
 ///////////// line, rect, point
 
@@ -178,18 +176,25 @@ static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
-   pointsColor = glGetAttribLocation(pointsProgram, "a_Color");
+   pointsColor = glGetUniformLocation(pointsProgram, "a_Color");
+   pointsAlpha = glGetAttribLocation(pointsProgram, "alpha");
    pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(pointsColor); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(pointsAlpha); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(pointsPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 }
 
-void glDrawPixels(int32 n)
+static int pixLastRGB = -1;
+void glDrawPixels(int32 n, int32 rgb)
 {
-
    setCurrentProgram(pointsProgram);
-   glVertexAttribPointer(pointsColor, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), glcolors);
-   glVertexAttribPointer(pointsPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), glcoords);
+   if (pixLastRGB != rgb)
+   {
+      PixelConv pc;
+      pc.pixel = pixLastRGB = rgb;
+      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0);
+   }
+   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors);
+   glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords);
    glDrawArrays(GL_POINTS, 0,n);
 }
 
@@ -285,24 +290,23 @@ void flushPixels()
       GLfloat* coords = lrcoords;
       setCurrentProgram(lrpProgram);
       pixcoords = glcoords;
-      glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
       int32 lastRGBA = ~*((int32*)&pixcoords[2]);
       for (i = 0; i < n; i++, pixcoords += 3)
       {
          int32 x = pixcoords[0];
          int32 y = pixcoords[1];
          int32 rgba = *((int32*)&pixcoords[2]);
-         coords[0] = coords[3]  = x;
-         coords[1] = coords[10] = y;
-         coords[4] = coords[7]  = y+1;
-         coords[6] = coords[9]  = x+1;
+         coords[0] = coords[2]  = x;
+         coords[1] = coords[7] = y;
+         coords[3] = coords[5]  = y+1;
+         coords[4] = coords[6]  = x+1;
 
          if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
          {
             pc.pixel = lastRGBA = rgba;
             glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]);
          }
-         pixcoords[2] = 0;
          glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
       }
       lastRGB = lastA = -1;
@@ -312,6 +316,8 @@ void flushPixels()
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
+   if ((pixcoords+3) > pixEnd)
+      flushPixels();
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
@@ -319,8 +325,6 @@ void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
    pixcoords[1] = y;
    *((int32*)&pixcoords[2]) = pc.pixel;
    pixcoords += 3;
-   if (pixcoords == pixEnd)
-      flushPixels();
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
@@ -336,8 +340,8 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
       GLfloat* coords = lrcoords;
       coords[0] = x1;
       coords[1] = y1;
-      coords[3] = x2;
-      coords[4] = y2;
+      coords[2] = x2;
+      coords[3] = y2;
 
       setCurrentProgram(lrpProgram);
 
@@ -348,7 +352,7 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
          lastA = a;
          glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
       }
-      glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); // Prepare the triangle coordinate data
       glDrawArrays(GL_LINES, 0,2);
    }
 }
@@ -356,10 +360,10 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
    GLfloat* coords = lrcoords;
-   coords[0] = coords[3]  = x;
-   coords[1] = coords[10] = y;
-   coords[4] = coords[7]  = y+h;
-   coords[6] = coords[9]  = x+w;
+   coords[0] = coords[2]  = x;
+   coords[1] = coords[7] = y;
+   coords[3] = coords[5]  = y+h;
+   coords[4] = coords[6]  = x+w;
 
    setCurrentProgram(lrpProgram);
    if (lastRGB != rgb || lastA != a)
@@ -369,7 +373,7 @@ void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
       lastA = a;
       glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
    }
-   glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
+   glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
 }
 
@@ -421,9 +425,10 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glcoords);
       xfree(glcolors);
       flen = n*3/2;
-      pixcoords = glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*3);
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen*4);
-      pixEnd = pixcoords + flen*3;
+      int len = flen*2;
+      pixcoords = glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
+      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
+      pixEnd = pixcoords + len;
       if (!glcoords || !glcolors)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");

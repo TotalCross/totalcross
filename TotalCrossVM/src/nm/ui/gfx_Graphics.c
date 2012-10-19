@@ -17,7 +17,7 @@
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a);
-void glDrawPixels(int32 n);
+void glDrawPixels(int32 n, int32 rgb);
 int32 glGetPixel(int32 x, int32 y);
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
 void applyChanges(Object obj);
