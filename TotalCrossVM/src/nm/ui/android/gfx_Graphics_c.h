@@ -134,14 +134,11 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static int32 lastRGB=-1;
+static int32 lastRGB=-1,lastA=-1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
-   {
-      lastRGB = -1;
       glUseProgram(lastProg = prog);
-   }
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -308,11 +305,12 @@ void flushPixels()
          pixcoords[2] = 0;
          glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
       }
+      lastRGB = lastA = -1;
       pixcoords = glcoords;
    }
 }
 
-void glDrawPixelA(int32 x, int32 y, int32 rgb, int32 a)
+void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    PixelConv pc;
    pc.pixel = rgb;
@@ -325,32 +323,17 @@ void glDrawPixelA(int32 x, int32 y, int32 rgb, int32 a)
       flushPixels();
 }
 
-void glDrawPixel(int32 x, int32 y, int32 rgb)
-{
-   PixelConv pc;
-   pc.pixel = rgb;
-   pc.a = 0xFF;
-   pixcoords[0] = x;
-   pixcoords[1] = y;
-   *((int32*)&pixcoords[2]) = pc.pixel;
-   pixcoords += 3;
-   if (pixcoords == pixEnd)
-      flushPixels();
-}
-
-void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
+void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      glFillRect(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb);
+      glFillRect(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
    else
    if (y1 == y2)
-      glFillRect(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb);
+      glFillRect(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
    else
    {
       GLfloat* coords = lrcoords;
-      PixelConv pc;
-      pc.pixel = rgb;
       coords[0] = x1;
       coords[1] = y1;
       coords[3] = x2;
@@ -358,31 +341,33 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb)
 
       setCurrentProgram(lrpProgram);
 
-      if (lastRGB != rgb)
+      if (lastRGB != rgb || lastA != a)
       {
-         glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
-         lastRGB = rgb;
+         PixelConv pc;
+         pc.pixel = lastRGB = rgb;
+         lastA = a;
+         glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
       }
       glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords); // Prepare the triangle coordinate data
       glDrawArrays(GL_LINES, 0,2);
    }
 }
 
-void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb)
+void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
    GLfloat* coords = lrcoords;
-   PixelConv pc;
-   pc.pixel = rgb;
    coords[0] = coords[3]  = x;
    coords[1] = coords[10] = y;
    coords[4] = coords[7]  = y+h;
    coords[6] = coords[9]  = x+w;
 
    setCurrentProgram(lrpProgram);
-   if (lastRGB != rgb)
+   if (lastRGB != rgb || lastA != a)
    {
-      glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], 1); // Set color for drawing the line
-      lastRGB = rgb;
+      PixelConv pc;
+      pc.pixel = lastRGB = rgb;
+      lastA = a;
+      glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
    }
    glVertexAttribPointer(lrpPosition, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, COORDS_PER_VERTEX * sizeof(float), coords);
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
@@ -411,6 +396,22 @@ int32 glGetPixel(int32 x, int32 y)
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
+
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
+{  
+   if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
+      glDisable(GL_SCISSOR_TEST);
+   else
+   {                             
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(x1,appH-y2,x2-x1,y2-y1);
+   }
+}
+
+void glClearClip()
+{
+   glDisable(GL_SCISSOR_TEST);
+}   
 
 /////////////////////////////////////////////////////////////////////////
 bool checkGLfloatBuffer(Context c, int32 n)
