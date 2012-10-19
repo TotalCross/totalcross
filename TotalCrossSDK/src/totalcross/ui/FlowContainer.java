@@ -28,7 +28,7 @@ import totalcross.sys.*;
  * 
  * Label l = new Label("Do you agree that TotalCross is a great development platform?");
  * l.autoSplit = true;
- * add(l, LEFT,AFTER,FILL,PREFERRED);
+ * add(l, LEFT,AFTER,PARENTSIZE+100,PREFERRED);
  * 
  * FlowContainer fc = new FlowContainer(50,25);
  * fc.add(new Radio("Probably Yes"));
@@ -42,6 +42,8 @@ import totalcross.sys.*;
  * When calling setRect for this control, the height must be PREFERRED (with adjustments, if needed).
  * 
  * Also, if initUI is overriden, be sure to call <code>super.initUI()</code>.
+ * 
+ * <b>IT IS VERY IMPORTANT THAT YOU USE PARENTSIZE+100 INSTEAD OF FILL IN THE WIDTH PARAMETER!</b>
  * 
  * @since TotalCross 1.39
  */
@@ -89,6 +91,8 @@ public class FlowContainer extends Container
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      if (setW == FILL)
+         throw new RuntimeException("For FlowContainer subclasses, please use PARENTSIZE+100 instead of FILL");
       if (this.width > 0 && this.width != lastASW && ((PREFERRED-RANGE) <= setH && setH <= (PREFERRED+RANGE)))
       {
          lastASW = this.width;
