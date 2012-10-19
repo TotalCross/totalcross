@@ -268,9 +268,9 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       glDrawTexture(Image_textureId(srcSurf), srcX,srcY,width,height, dstX,dstY, srcWidth,srcHeight);
    }
    else
-#endif      
+#endif
    for (i=0; i < (uint32)height; i++) // in opengl, only case of image drawing on image
-   {                             
+   {
       PixelConv *ps = (PixelConv*)srcPixels;
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
@@ -315,14 +315,14 @@ static int32 getPixel(Object g, int32 x, int32 y)
    x += Graphics_transX(g);
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
-   {              
+   {
       PixelConv p;
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
          return glGetPixel(x,y);
       else
-#endif      
-      p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
+#endif
+         p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
       ret = (p.r << 16) | (p.g << 8) | p.b;
    }
    return ret;
@@ -335,7 +335,14 @@ static PixelConv getPixelConv(Object g, int32 x, int32 y)
    x += Graphics_transX(g);
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
-      p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
+   {
+/*#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
+         p.pixel = glGetPixel(x,y);
+      else
+#endif*/
+         p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
+   }
    return p;
 }
 
@@ -360,6 +367,27 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
          if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
       }
    }
+}
+
+static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
+{
+   int m = 255-factor;
+   c.r = (c.r*factor + d.r*m)/255;
+   c.g = (c.g*factor + d.g*m)/255;
+   c.b = (c.b*factor + d.b*m)/255;
+   return c.pixel;
+}
+
+static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
+{
+   x += Graphics_transX(g);
+   y += Graphics_transY(g);
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+      glDrawPixelA(x,y,color.pixel,alpha);
+   else
+#endif
+      setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
 }
 
 static inline bool surelyOutsideClip(Object g, int32 x1, int32 y1, int32 x2, int32 y2)
@@ -400,8 +428,11 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
          return;
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
-      {   
+      {
          glDrawLine(x,y,x+width,y,pixel1);
+         if (pixel1 != pixel2)
+            for (x++; width > 0; width -= 2, x += 2)
+               glDrawPixel(x,y, pixel2);
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -453,6 +484,9 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
       if (Graphics_useOpenGL(g))
       {
          glDrawLine(x,y,x,y+height,pixel1);
+         if (pixel1 != pixel2)
+            for (y++; height > 0; height -= 2, y += 2)
+               glDrawPixel(x,y, pixel2);
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -485,6 +519,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     int32 xInc,yInc,pyInc; // py incs by pixel, y incs by row
     // used in clipping
     int32 xMin,yMin;
+    int32 tX = Graphics_transX(g), tY = Graphics_transY(g);
 
     if (surelyOutsideClip(g, x1,y1,x2,y2)) // guich@tc115_63
        return;
@@ -517,22 +552,14 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
 
     // guich: if its a pixel, draw only the pixel
     if (dX == 0 && dY == 0)
-       setPixel(currentContext, g, xMin,yMin,pixel1); 
+       setPixel(currentContext, g, xMin,yMin,pixel1);
     else
     if (dY == 0) // horizontal line?
-       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2); 
+       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2);
     else
     if (dX == 0) // vertical line?
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
-    else
-#ifdef __gl2_h_
-    if (Graphics_useOpenGL(g))
-    {
-       glDrawLine(x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),pixel1);
-       currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-    }
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
-#endif
     {
        int32 currentX,currentY;  // saved for later markScreenDirty
        Pixel *row;
@@ -541,14 +568,24 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        int32 clipX1 = Graphics_clipX1(g), clipY1 = Graphics_clipY1(g), clipX2 = Graphics_clipX2(g), clipY2 = Graphics_clipY2(g);
        bool dontClip = true; // the most common will be draw lines that do not cross the clip bounds, so we may speedup a little
 
+#ifdef __gl2_h_
+       if (Graphics_useOpenGL(g)) // draw a full line and then cover with pixel2 colors
+       {
+          glDrawLine(x1+tX,y1+tY,x2+tX,y2+tY,pixel1);
+          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+          if (pixel1 == pixel2)
+            return;
+       }
+#endif
+
        xMin += Graphics_transX(g);
        yMin += Graphics_transY(g);
 
        if (xMin < clipX1 || (xMin+dX) >= clipX2 || yMin < clipY1 || (yMin+dY) >= clipY2)
           dontClip = false;
 
-       currentX = x1+Graphics_transX(g);
-       currentY = y1+Graphics_transY(g);
+       currentX = x1+tX;
+       currentY = y1+tY;
 
        row = getGraphicsPixels(g) + (pyInc>0 ? yMin : (yMin+dY)) * Graphics_pitch(g) + (xInc>0 ? xMin : (xMin+dX)); // currentX    | else start from the max value
 
@@ -567,7 +604,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = pixel1;                        // plot the pixel
+                   *row = pixel1;                        // plot the pixel - never in opengl
                 row      += xInc;                        // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -583,7 +620,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g) && (on++ & 1) == 0)
+                      glDrawPixel(currentX, currentY, pixel2);
+#else
                    *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+#endif
                 row += xInc;                             // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -622,7 +664,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = (on++ & 1)?pixel1:pixel2;      // plot the pixel
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g) && (on++ & 1) == 0)
+                      glDrawPixel(currentX, currentY, pixel2);
+#else
+                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+#endif
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -635,7 +682,9 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
                    p += dPr;                             // increment decision (for right)
              }
        }
+#ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+#endif
     }
 }
 
@@ -655,6 +704,7 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   int32 xs,ys,DeltaX,DeltaY;
   int32 red, green, blue,rr,gg,bb;
   PixelConv bgColor,color;
+  int32 tX = Graphics_transX(g), tY = Graphics_transY(g);
 
   if (surelyOutsideClip(g, x1,y1,x2,y2)) // guich@tc115_63
      return;
@@ -687,6 +737,17 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
      k = (dy<<16) / dx;
      // Set middle pixels
      yt = (y1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (xs=x1+1; xs<x2; xs++, yt += k)
+           glDrawPixel (xs+tX, (yt>>16)  +tY, color_);
+        yt = (y1<<16) + k;
+        for (xs=x1+1; xs<x2; xs++, yt += k)
+           glDrawPixelA(xs+tX, (yt>>16)+1+tY, color_, 128);
+     }
+     else
+#endif
      for (xs=x1+1; xs<x2; xs++)
      {
         z = (yt>>16);
@@ -704,7 +765,6 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         green = (notdist*bgColor.g + distance*gg) >> 16;
         blue  = (notdist*bgColor.b + distance*bb) >> 16;
         setPixel(currentContext, g, xs, z+1, makePixel(red,green,blue));
-
         yt += k;
      }
   }
@@ -721,6 +781,17 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
 
      // Set middle pixels
      xt = (x1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (ys=y1+1; ys<y2; ys++, xt += k)
+           glDrawPixel ((xt>>16)  +tX, ys+tY, color_);
+        xt = (x1<<16) + k;
+        for (ys=y1+1; ys<y2; ys++, xt += k)
+           glDrawPixelA((xt>>16)+1+tX, ys+tY, color_, 128);
+     }
+     else
+#endif
      for (ys=y1+1; ys<y2; ys++)
      {
         z = xt>>16;
@@ -793,7 +864,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       height = clipY2-y;
 
 #ifdef __gl2_h_
-   if (x == 0 && width == appW && height == appH && Graphics_useOpenGL(g))
+   if (x == 0 && width == appW && height == appH && Graphics_useOpenGL(g)) // in opengl is mandatory to do this at least once, per frame
    {
       PixelConv pc;
       pc.pixel = pixel;
@@ -946,10 +1017,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          bitIndexTable = uf->bitIndexTable;
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
-         last = uf->fontP.lastChar;                                        
+         last = uf->fontP.lastChar;
 #ifdef __gl2_h_
          checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
-#endif         
+#endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
@@ -2278,15 +2349,6 @@ inline static int getOffset(int radius, int y)
    return radius - (int32)sqrt(radius * radius - y * y);
 }
 
-static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
-{
-   int m = 255-factor;
-   c.r = (c.r*factor + d.r*m)/255;
-   c.g = (c.g*factor + d.g*m)/255;
-   c.b = (c.b*factor + d.b*m)/255;
-   return c.pixel;
-}
-
 static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4
 {
    PixelConv c1,c2;
@@ -2382,7 +2444,7 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
 #ifdef __gl2_h_
       currentContext->fullDirty |= markDirty;
-#endif      
+#endif
 
       if (isGet)
          for (; h-- > 0; pixels += inc, data += w)
@@ -2435,18 +2497,6 @@ static int32 windowBorderAlpha[3][7][7] =
    }
 };
 
-static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
-{                          
-   x += Graphics_transX(g);
-   y += Graphics_transY(g);
-#ifdef __gl2_h_
-   if (Graphics_useOpenGL(g))
-      glDrawPixelA(x,y,color.pixel,alpha);
-   else
-#endif 
-      setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
-}
-
 static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
    int32 kx, ky, a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
@@ -2492,7 +2542,7 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
          // top left
          a = windowBorderAlpha[thickness-1][j][6-i];
          if (a != OUT_BORDER)
-         {         
+         {
             if (a == 0)
                setPixel(currentContext, g, left,top,titleColor.pixel);
             else
@@ -2501,7 +2551,7 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
             else
                setPixelA(currentContext, g, left,top,borderColor, a);
          }
- 
+
          // top right
          a = windowBorderAlpha[thickness-1][j][i];
          if (a != OUT_BORDER)
@@ -2759,8 +2809,8 @@ void updateScreen(Context currentContext)
 #endif
          graphicsUpdateScreen(currentContext, &screen, transitionEffect);
 #ifdef darwin
-         LOCKVAR(screen);     
-#endif         
+         LOCKVAR(screen);
+#endif
       }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       currentContext->dirtyX1 = screen.screenW;
