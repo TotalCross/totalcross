@@ -550,7 +550,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    screen->extension = deviceCtx;
 #endif
    screen->pitch = screen->screenW * screen->bpp / 8;
-   screen->pixels = xmalloc(screen->screenW * screen->screenH * 4);
+   screen->pixels = (uint8*)1;
    return screen->pixels != null;
 }
 
