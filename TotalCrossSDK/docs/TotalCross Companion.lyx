@@ -51488,6 +51488,95 @@ DataStream
 .
 \end_layout
 
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Properties props = new Properties();
+\end_layout
+
+\begin_layout Plain Layout
+
+File file;
+\end_layout
+
+\begin_layout Plain Layout
+
+if (existe_arquivo(arquivo))
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	file = new File(arquivo, File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+	props.load(new DataStream(file));
+\end_layout
+
+\begin_layout Plain Layout
+
+	file.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+}         
+\end_layout
+
+\begin_layout Plain Layout
+
+props.put(propriedade,new Properties.Str(valor));
+\end_layout
+
+\begin_layout Plain Layout
+
+file = new File(arquivo, File.CREATE);
+\end_layout
+
+\begin_layout Plain Layout
+
+props.save(new DataStream(file));
+\end_layout
+
+\begin_layout Plain Layout
+
+file.close();      
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+To avoid that the 
+\family typewriter
+load()
+\family default
+ method gets into an infinite loop if the file is empty or corrupted, the
+ constant 
+\family typewriter
+MAX_PROPS
+\family default
+ limits the number of properties to 1000.
+ If you are saving more than 1000 properties, just change this maximum value.
+ 
+\end_layout
+
 \begin_layout Itemize
 Properties has the following constructors:
 \end_layout
@@ -51547,7 +51636,7 @@ Properties.Value
 \begin_inset space ~
 \end_inset
 
-v) Maps the given value to the given key in this 
+v) Maps the given value to the given key in the 
 \family typewriter
 Properties
 \family default
@@ -51560,7 +51649,7 @@ get(String
 \begin_inset space ~
 \end_inset
 
-key) Returns the value which the given key is mapped to in this 
+key) Returns the value which the given key is mapped to in the 
 \family typewriter
 Properties
 \family default
@@ -51600,9 +51689,30 @@ Vector
 
 \begin_layout FieldList
 \labelwidthstring 0
-clear() Clears this 
+clear() Clears the 
 \family typewriter
 Properties
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dumpKeysValues(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,String
+\begin_inset space ~
+\end_inset
+
+keyvalueSeparator,String
+\begin_inset space ~
+\end_inset
+
+lineSeparator) Similar to 
+\family typewriter
+Hashtable.dumpKeysValues()
 \family default
 .
 \end_layout
@@ -51632,6 +51742,42 @@ Properties
 DataStream
 \family default
 .
+ Before calling this method, be sure that there's something to be read (i.
+ e., that the file is not empty), to improve efficiency.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+load(DataStream
+\begin_inset space ~
+\end_inset
+
+ds,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+cleanBeforeLoad) Load all 
+\family typewriter
+Properties
+\family default
+ from the given 
+\family typewriter
+DataStream
+\family default
+.
+ If 
+\family typewriter
+cleanBeforeLoad
+\family default
+ is 
+\family typewriter
+true
+\family default
+, the contents of the object will be cleared before reading from the stream.
  
 \end_layout
 
@@ -51671,7 +51817,8 @@ toString()
 \end_layout
 
 \begin_layout Itemize
-The following classes are already implemented in the SDK:
+The following classes (and their field definition) are already implemented
+ in the SDK:
 \end_layout
 
 \begin_deeper
@@ -51687,6 +51834,95 @@ boolean
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+B
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+boolean
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+boolean
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns 
+\family typewriter
+1
+\family default
+ if value is 
+\family typewriter
+true
+\family default
+; 
+\family typewriter
+0
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the integer 1231 if the object represents 
+\family typewriter
+true
+\family default
+ and returns the integer 1237 if the object represents 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Returns 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Boolean
+\family default
+ object that represents the same 
+\family typewriter
+boolean
+\family default
+ value as the current object.
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -51699,6 +51935,40 @@ double
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(D).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+double
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+double
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number.
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
