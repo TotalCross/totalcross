@@ -54,7 +54,7 @@ int32 flen;
 GLfloat* glcoords;//[flen*2]; x,y
 GLfloat* glcolors;//[flen];   alpha
 static GLfloat texcoords[16], lrcoords[8];
-static GLfloat *pixcoords, *pixEnd;
+static GLfloat *pixcoords, *pixcolors, *pixEnd;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -285,22 +285,23 @@ void flushPixels()
 {
    if (pixcoords != glcoords)
    {
-      int n = (pixcoords-glcoords)/3,i;
+      int n = (pixcoords-glcoords)/2,i;
       PixelConv pc;
       GLfloat* coords = lrcoords;
       setCurrentProgram(lrpProgram);
       pixcoords = glcoords;
+      pixcolors = glcolors;
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
-      int32 lastRGBA = ~*((int32*)&pixcoords[2]);
-      for (i = 0; i < n; i++, pixcoords += 3)
+      int32 lastRGBA = ~*((int32*)pixcolors);
+      for (i = 0; i < n; i++)
       {
-         int32 x = pixcoords[0];
-         int32 y = pixcoords[1];
-         int32 rgba = *((int32*)&pixcoords[2]);
-         coords[0] = coords[2]  = x;
+         int32 x = *pixcoords++;
+         int32 y = *pixcoords++;
+         int32 rgba = *((int32*)pixcolors); pixcolors++;
+         coords[0] = coords[2] = x;
          coords[1] = coords[7] = y;
-         coords[3] = coords[5]  = y+1;
-         coords[4] = coords[6]  = x+1;
+         coords[3] = coords[5] = y+1;
+         coords[4] = coords[6] = x+1;
 
          if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
          {
@@ -311,20 +312,20 @@ void flushPixels()
       }
       lastRGB = lastA = -1;
       pixcoords = glcoords;
+      pixcolors = glcolors;
    }
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
-   if ((pixcoords+3) > pixEnd)
+   if ((pixcoords+2) > pixEnd)
       flushPixels();
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
-   pixcoords[0] = x;
-   pixcoords[1] = y;
-   *((int32*)&pixcoords[2]) = pc.pixel;
-   pixcoords += 3;
+   *pixcoords++ = x;
+   *pixcoords++ = y;
+   *((int32*)pixcolors) = pc.pixel; pixcolors++;
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
@@ -401,10 +402,14 @@ int32 glGetPixel(int32 x, int32 y)
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
 
+void glSetClipG(Object g)
+{
+   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));  
+}
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {  
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
-      glDisable(GL_SCISSOR_TEST);
+      glClearClip();
    else
    {                             
       glEnable(GL_SCISSOR_TEST);
@@ -427,7 +432,7 @@ bool checkGLfloatBuffer(Context c, int32 n)
       flen = n*3/2;
       int len = flen*2;
       pixcoords = glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
+      pixcolors = glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
       pixEnd = pixcoords + len;
       if (!glcoords || !glcolors)
       {
