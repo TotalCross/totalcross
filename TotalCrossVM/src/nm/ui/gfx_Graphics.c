@@ -681,7 +681,10 @@ TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native public static void fadeScreen(int fadeValue);
-{
+{                    
+#ifdef __gl2_h_
+   glFillRect(0,0,appW,appH,0,p->i32[0]);
+#else   
    //int32 ini = getTimeStamp();
    if (graphicsLock(&screen, true))
    {
@@ -721,6 +724,7 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
       graphicsLock(&screen, false);
    }                          
    //debug("elapsed %d ms",getTimeStamp()-ini);
+#endif   
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
