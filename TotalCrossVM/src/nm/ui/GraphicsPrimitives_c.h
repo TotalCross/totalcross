@@ -2331,8 +2331,11 @@ inline static int getOffset(int radius, int y)
 static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4
 {
 #ifdef __gl2_h_
-   if (Graphics_useOpenGL(g))
-      glDrawPixel(xx+Graphics_transX(g),yy+Graphics_transY(g),c,20*255/100);
+   if (Graphics_useOpenGL(g))   
+   {  
+      if (Graphics_clipX1(g) <= xx && xx <= Graphics_clipX2(g) && Graphics_clipY1(g) <= yy && yy <= Graphics_clipY2(g))
+         glDrawPixel(xx+Graphics_transX(g),yy+Graphics_transY(g),c,20*255/100);
+   }
    else
 #endif
    {      
@@ -2375,9 +2378,6 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
       startY = endY;
       endY = temp;
    }
-#ifdef __gl2_h_
-   glSetClipG(g);
-#endif
 
    for (i = 0; i < numSteps; i++)
    {
@@ -2415,9 +2415,6 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
       green += greenInc;
       blue += blueInc;
    }
-#ifdef __gl2_h_
-   glClearClip();
-#endif
 }
 
 static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
@@ -2519,9 +2516,7 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
    int32 x2r = x2-6;
    int32 y2r = y2-6;
    PixelConv c;
-#ifdef __gl2_h_
-   glSetClipG(g);
-#endif
+
    // horizontal and vertical lines
    for (i = 0; i < 3; i++)
    {
@@ -2625,9 +2620,6 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
    // footer
    fillRect(currentContext, g, rectX1,ty,rectW,footerH,footerColor.pixel); ty += footerH; // non-corners
    fillRect(currentContext, g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
-#ifdef __gl2_h_
-   glClearClip();
-#endif
 }
 
 static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)

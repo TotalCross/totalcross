@@ -402,10 +402,6 @@ int32 glGetPixel(int32 x, int32 y)
    return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
 }
 
-void glSetClipG(Object g)
-{
-   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));  
-}
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {  
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
