@@ -445,6 +445,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       if (plus) gImg.drawLine(mid, 2, mid, w - 3); // vertical slash
       gImg.drawLine(2, mid, w - 3, mid); // draw horizontal slash
       img.applyChanges();
+      img.setTransparentColor(gImg.backColor);
       return img;
    }
 

@@ -51,7 +51,7 @@ public class FileChooserTest extends Container
             try
             {
                String s = l.getText();
-               new File(s,File.DONT_OPEN,1).delete();
+               new File(s,File.DONT_OPEN).delete();
             }
             catch (Exception ee)
             {
