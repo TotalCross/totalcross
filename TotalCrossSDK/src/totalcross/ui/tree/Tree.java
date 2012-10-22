@@ -128,8 +128,6 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private boolean         showIcons           = true;
    private int             x0;
 
-   private static int[] icons = {0x474E5089,0x0A1A0A0D,0x0D000000,0x52444849,0x33000000,0x0D000000,0x00000302,0xBEBF7900,0x00000064,0x544C500C,0xFFFFFF45,0x00808080,0xFFFF0000,0xA4486800,0x000000B5,0x41444989,0x455E7854,0xC20A31CB,0xE1801430,0x488A253F,0x8E024107,0x03E24ECE,0x83A3ADC1,0x3A9F4883,0x7A5928E6,0xDDE58E8F,0xBC53A5C2,
-      0x3A1DB593,0x05387C7F,0x00CC1DC2,0x3CA82B9F,0x56C122A4,0x8FCAED42,0x0F63CD56,0x393A581B,0xFDD15312,0xCCAECE4D,0x7BF53639,0x85FB9CB0,0x56262BEA,0xC5D87993,0x7993AF46,0xC36CCB91,0x227367EB,0xE5B8D9A7,0x505A3B6F,0xEDAAA27D,0xE3336B68,0x759AD660,0x270300FC,0xA4686D2D,0x000060C7,0x45490000,0x42AE444E,0x00008260};
    private static Image imgOpenDefault,imgCloseDefault,imgFileDefault;
    private boolean isScrolling;
    private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
@@ -349,14 +347,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          }
       }
       resetScrollBars();
-      if (imgPlus == null) initImage();
    }
 
-   public void onFontChanged()
+/*   public void onFontChanged()
    {
       initImage();
    }
-
+*/
    /**
     * Method to initialize the vertical and horizontal scrollbars maximum.
     */
@@ -400,11 +397,9 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          if (imgOpenDefault == null)
          {
-            Image img = new Image(Convert.ints2bytes(icons, icons.length*4-2)); // the three icons are stored in the same file to save space
-            img.setFrameCount(3);
-            imgCloseDefault = img.getFrameInstance(0); imgCloseDefault.applyChanges();
-            imgOpenDefault = img.getFrameInstance(1); imgOpenDefault.applyChanges();
-            imgFileDefault = img.getFrameInstance(2); imgFileDefault.applyChanges();
+            imgCloseDefault = new Image("totalcross/res/closed_folder.png");
+            imgOpenDefault = new Image("totalcross/res/open_folder.png");
+            imgFileDefault = new Image("totalcross/res/document.png");
          }
          setIcon(ICON_PLUS, getIcon(true));
          setIcon(ICON_MINUS, getIcon(false));
@@ -412,7 +407,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          setIcon(ICON_OPEN, imgOpenDefault);
          setIcon(ICON_FILE, imgFileDefault);
       }
-      catch (ImageException e)
+      catch (Exception e)
       {
          // Should never happen
       }
@@ -444,8 +439,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       mid = (w / 2); // where is the midpoint of our +
       if (plus) gImg.drawLine(mid, 2, mid, w - 3); // vertical slash
       gImg.drawLine(2, mid, w - 3, mid); // draw horizontal slash
-      img.applyChanges();
-      img.setTransparentColor(gImg.backColor);
+      //img.applyChanges();
+      //img.setTransparentColor(gImg.backColor);
       return img;
    }
 
@@ -467,7 +462,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public void setIcon(int iconType, Image img) throws ImageException
    {
       if (iconType > 1)
-         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d); // guich@tc110_19
+      {
+         img = img.smoothScaledFixedAspectRatio(fmH*8/10,true); // guich@tc110_19
+         if (iconType == ICON_OPEN || iconType == ICON_CLOSE)
+            img.applyColor2(backColor);
+      }
       switch (iconType)
       {
          case ICON_PLUS:
@@ -884,6 +883,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       }
    }
 
+   public void setBackColor(int c)
+   {
+      super.setBackColor(c);
+      if (imgPlus == null) 
+         initImage();
+   }
+   
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (colorsChanged)
