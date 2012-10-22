@@ -342,7 +342,7 @@ bool litebaseBindInsertStatement(Context context, SQLInsertStatement* insertStmt
    uint8* storeNulls = insertStmt->storeNulls;
    SQLValue** record = insertStmt->record;
    CharP* fields = insertStmt->fields;
-   int8* paramIndexes = insertStmt->paramIndexes;
+   uint8* paramIndexes = insertStmt->paramIndexes;
 
 	while (++i < valuesCount) // Checks if there are undefined values.
 	   // Identifies the values that are placeholders for parameters.

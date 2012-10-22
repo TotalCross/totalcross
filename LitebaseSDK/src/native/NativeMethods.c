@@ -2136,7 +2136,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	      }
 
          // juliana@222_2: the table must be not closed properly in order to recover it.
-	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (uint8*)&crc32Lido, 0, 1, &read)))
+	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (CharP)&crc32Lido, 0, 1, &read)))
          {
 		      fileError(context, j, name);
             lbfileClose(&tableDb);
@@ -2388,7 +2388,7 @@ LB_API void lLC_convert_s(NMParams p)
 	      }
 
 	      // The version must be the previous of the current one.
-	      if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileReadBytes(tableDb, (uint8*)&j, 0, 1, &read))) 
+	      if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileReadBytes(tableDb, (CharP)&j, 0, 1, &read))) 
          {
 		      fileError(context, i, name);
             lbfileClose(&tableDb);
@@ -2407,7 +2407,7 @@ LB_API void lLC_convert_s(NMParams p)
 
          // Changes the version to be current one and closes it.
 	      j = useCrypto? VERSION_TABLE ^ 0xAA : VERSION_TABLE;
-         if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (uint8*)&j, 0, 1, &read)))
+         if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (CharP)&j, 0, 1, &read)))
          {
 		      fileError(context, i, name);
             lbfileClose(&tableDb);
@@ -2733,7 +2733,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
 	      }
 
          // Reads the flag.
-	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (uint8*)&i, 0, 1, &read)))
+	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (CharP)&i, 0, 1, &read)))
          {
 		      fileError(context, j, name);
             lbfileClose(&tableDb);

@@ -590,7 +590,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                plainDB->setPos(dbo, dbo->finalPos);
                xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
@@ -615,7 +614,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                
                plainDB->setPos(dbo, dbo->finalPos);       
                xmove4(buffer, &dbo->position);
-               buffer += 4;
                value->asInt = dbo->position; // The string position for an index.
 
                // Writes the string.
@@ -693,7 +691,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                plainDB->setPos(dbo, dbo->finalPos);
                xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
@@ -721,7 +718,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                // Writes its position in the buffer.
 				   xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Writes the blob size to .dbo and the blob itself to .dbo.
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 4) 

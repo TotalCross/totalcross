@@ -100,7 +100,7 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
          while (--length >= 0)
          {
             *asChars = TC_JCharToUpper(*asChars);
-            *asChars++;
+            asChars++;
          }
          break;
       }
@@ -111,7 +111,7 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
          while (--length >= 0)
          {
             *asChars = TC_JCharToLower(*asChars);
-            *asChars++;
+            asChars++;
          }
       }
    }

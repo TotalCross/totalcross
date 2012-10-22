@@ -153,6 +153,7 @@ uint8* keySave(Key* key, uint8* dataStream)
          dataStream += typeSizes[types[i]];
       }
    }
+
    xmove4(dataStream, &key->record); // Writes the number that represents the record.
    return dataStream + 4;
 }

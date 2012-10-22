@@ -34,7 +34,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
 {
 	TRACE("nfCreateFile")
    TCHAR buffer[MAX_PATHNAME];
-   int32 ret;
+   uint32 ret;
 
    xmemzero(xFile, sizeof(XFile));
    fileInvalidate(xFile->file);
@@ -62,7 +62,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
       
    // Creates the file or opens it and gets its size.
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
-    || (ret = lbfileGetSize(xFile->file, null, &xFile->size)))
+    || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
       fileError(context, ret, name);
       if (fileIsValid(xFile->file))
@@ -342,7 +342,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
 		}
 
    // Reads data from the file.
-   if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
+   if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, (CharP)xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
       fileError(context, ret, xFile->name);
       return false;
@@ -370,7 +370,7 @@ bool flushCache(Context context, XFile* xFile)
          ret;
 
    if ((ret = lbfileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = lbfileWriteBytes(xFile->file, 
-                         &xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
+                         (CharP)&xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
       goto error;
    xFile->cacheIsDirty = false;
 
