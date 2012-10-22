@@ -52478,6 +52478,56 @@ ran0()
  is fast and has low memory consumption, and it will do the job.
 \end_layout
 
+\begin_layout Standard
+Here's a sample of how to use the Random class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Random r = new Random(0x1234); // the use of the same key is sometimes desirable
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+for (...) 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	int nextRandomInt = r.between(0,10);
+\end_layout
+
+\begin_layout Plain Layout
+
+	char nextRandomChar = r.between('a','z');
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
 Random has the following constructors:
 \end_layout
@@ -52503,7 +52553,16 @@ seed) Creates a
 Random
 \family default
  object using the given seed.
- The only reasonable seeds are between 0 and 231 inclusive.
+ The only reasonable seeds are between 0 and 2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+31
+\end_layout
+
+\end_inset
+
+ inclusive.
  If a negative value is received, its absolute value will be used.
 \end_layout
 
@@ -52524,11 +52583,25 @@ n) Returns a random integer in the range
 [0, n)
 \family default
 .
+ 
+\family typewriter
+n
+\family default
+ must be 
+\family typewriter
+> 0
+\family default
+; otherwise, -1 is returned.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-nextDouble() Returns a random double in the half-open range 
+nextDouble() Returns a random 
+\family typewriter
+double
+\family default
+ in the half-open range 
 \family typewriter
 [0, 1)
 \family default
@@ -52551,6 +52624,26 @@ int
 \end_inset
 
 e) Returns a random integer in the given region.
+ E.
+ g.
+ : 
+\family typewriter
+rand(1, 10)
+\family default
+ returns a random integer in the range of 1 to 10, inclusive.
+ Note that if 
+\family typewriter
+s == e
+\family default
+, it will return in the range 
+\family typewriter
+s
+\family default
+ and 
+\family typewriter
+e+1
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -52568,7 +52661,20 @@ char
 \end_inset
 
 e) Returns a random character in the given region.
- 
+ E.
+ g.: 
+\family typewriter
+between('a', 'e')
+\family default
+ returns a random character between 
+\family typewriter
+a
+\family default
+ and 
+\family typewriter
+e
+\family default
+, inclusive.
 \end_layout
 
 \end_deeper
