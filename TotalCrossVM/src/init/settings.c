@@ -82,6 +82,7 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
+   tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
@@ -132,6 +133,9 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    saveVKSettings();
 #elif defined(ANDROID)
    *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+#endif
+#if defined(darwin) || defined(ANDROID)
+   *tcSettings.isOpenGL = true;
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");

@@ -1788,7 +1788,7 @@ public final class Graphics
             int dstIdx = pdst;
             if (isSrcScreen)
                for (i=width; --i >= 0;)
-                  dst[dstIdx++] = pixels[srcIdx++];
+                  dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
             else
                for (i=width; --i >= 0; dstIdx++)
                {

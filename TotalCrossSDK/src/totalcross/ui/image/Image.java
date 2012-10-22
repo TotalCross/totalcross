@@ -320,6 +320,9 @@ public class Image extends GfxSurface
    * Note this replaces a single solid color by another solid color. If you want to change
    * a gradient, or colorize an image, use the applyColor method instead.
    * 
+   * In OpenGL platforms, you must pass the color with the alpha channel (usually, 0xFF).
+   * For example, to change a red to green, use from=0xFFFF0000 (0xFF0000 with alpha=0xFF), to=0xFF00FF00.
+   * 
    * @see #applyColor(int)
    * @see #applyColor2(int)
    */

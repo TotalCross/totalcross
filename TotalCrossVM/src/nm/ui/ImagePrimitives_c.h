@@ -11,6 +11,8 @@
 
 #include <math.h>
 
+void applyChanges(Object obj);
+
 static void setCurrentFrame(Object obj, int32 nr)
 {
    int32 y,width,widthOfAllFrames;
@@ -306,8 +308,8 @@ static void changeColors(Object obj, Pixel from, Pixel to)
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    for (; len-- > 0; pixels++)
-      if ((*pixels & 0xFFFFFF) == from)
-         *pixels = (*pixels & 0xFF000000) | to; // keep alpha unchanged
+      if (*pixels == from)
+         *pixels = to;
    if (frameCount != 1)
    {
       Image_currentFrame(obj) = 2;
@@ -644,7 +646,6 @@ void setTransparentColor(Object obj, Pixel color)
 
 
 void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height);
-void applyChanges(Object obj);
 void applyChanges(Object obj)
 {
    int32 frameCount = Image_frameCount(obj);

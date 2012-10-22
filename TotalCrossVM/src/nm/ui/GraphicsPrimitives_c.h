@@ -261,13 +261,18 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
 #ifdef __gl2_h_
-   if (Graphics_useOpenGL(dstSurf) && !isSrcScreen)
-   {
-      if (Image_changed(srcSurf))
-         applyChanges(srcSurf);
-      int32 fc = Image_frameCount(srcSurf);
-      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+   if (Graphics_useOpenGL(dstSurf))
+   {                              
+      if (isSrcScreen)
+         glGetPixels(dstPixels,srcX,srcY,width,height,Graphics_pitch(dstSurf));
+      else
+      {
+         if (Image_changed(srcSurf))
+            applyChanges(srcSurf);
+         int32 fc = Image_frameCount(srcSurf);
+         int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
+         glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+      }
    }
    else
 #endif
@@ -277,7 +282,11 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
       if (isSrcScreen)
-         xmemmove(pt, ps, count<<2);
+         while (count-- > 0)
+         {
+            pt->pixel = ps->pixel;
+            pt->a = 0xFF;
+         }
       else
          for (;count != 0; pt++,ps++, count--)
          {
@@ -851,18 +860,6 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    }
    if ((y+height) > clipY2)    // line stops after clip y2
       height = clipY2-y;
-
-#ifdef __gl2_h_
-   if (x == 0 && width == appW && height == appH && Graphics_useOpenGL(g)) // in opengl is mandatory to do this at least once, per frame
-   {
-      PixelConv pc;
-      pc.pixel = pixel;
-      glClearColor((float)pc.r/(float)255,(float)pc.g/(float)255,(float)pc.b/(float)255,0);
-      glClear(GL_COLOR_BUFFER_BIT);
-      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-      return;
-   }
-#endif
 
    if (height > 0 && width > 0)
    {
@@ -2435,8 +2432,10 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
 #ifdef __gl2_h_
       currentContext->fullDirty |= markDirty;
+      if (isGet && Graphics_useOpenGL(g))
+         glGetPixels(data,x,y,w,h,w);
+      else
 #endif
-
       if (isGet)
          for (; h-- > 0; pixels += inc, data += w)
             xmemmove(data, pixels, w<<2);

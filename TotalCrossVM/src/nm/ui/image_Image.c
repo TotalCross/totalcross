@@ -55,8 +55,8 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
 {
    Object thisObj = p->obj[0];
-   Pixel from = makePixelRGB(p->i32[0]);
-   Pixel to = makePixelRGB(p->i32[1]);
+   Pixel from = makePixelARGB(p->i32[0]);
+   Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
 }
 //////////////////////////////////////////////////////////////////////////

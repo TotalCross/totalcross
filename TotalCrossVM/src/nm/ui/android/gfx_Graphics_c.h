@@ -393,13 +393,41 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
 }
 
 
-struct{ GLubyte r, g, b, a; } glpixel;
+typedef union
+{
+   struct{ GLubyte r, g, b, a; };
+   Pixel pixel;
+} glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
-{
+{                
+   glpixel gp;
    flushPixels();
-   glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &glpixel);
-   return (((int32)glpixel.r) << 16) | (((int32)glpixel.g) << 8) | (int32)glpixel.b;
+   glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp);
+   return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
+}
+
+void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch)
+{          
+   Pixel* p;
+   PixelConv pc;
+   glpixel gp;
+   int32 i;
+   flushPixels();
+   for (; height-- > 0; srcY++,dstPixels += pitch)
+   {
+      glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels);
+      p = dstPixels;
+      for (i = 0; i < width; i++)
+      {
+         gp.pixel = *p;
+         pc.a = gp.a;
+         pc.r = gp.r;
+         pc.g = gp.g;
+         pc.b = gp.b;
+         *p++ = pc.pixel;       
+      }
+   }
 }
 
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
@@ -564,6 +592,8 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 tr
 #else
    graphicsUpdateScreenIOS(screen, transitionEffect);
 #endif
+   glClearColor(0,0,0,0);
+   glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
