@@ -430,8 +430,11 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
       {
          glDrawLine(x,y,x+width,y,pixel1,255);
          if (pixel1 != pixel2)
+         {
             for (x++; width > 0; width -= 2, x += 2)
                glDrawPixel(x,y, pixel2,255);
+            flushPixels();
+         }
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -484,8 +487,11 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
       {
          glDrawLine(x,y,x,y+height,pixel1,255);
          if (pixel1 != pixel2)
+         {
             for (y++; height > 0; height -= 2, y += 2)
                glDrawPixel(x,y, pixel2,255);
+            flushPixels();
+         }      
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -686,6 +692,9 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        }
 #ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+#else
+       if (pixel1 != pixel2)
+          flushPixels();
 #endif
     }
 }
