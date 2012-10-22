@@ -657,7 +657,7 @@ int32 compareNumericOperands(Context context, SQLBooleanClauseTree* booleanClaus
          return -1;
       }
       
-      rightValueType = booleanClauseTree->leftTree->valueType = booleanClauseTree->rightTree->valueType = DOUBLE_TYPE;
+      booleanClauseTree->leftTree->valueType = booleanClauseTree->rightTree->valueType = DOUBLE_TYPE;
       booleanClauseTree->isFloatingPointType = true;
       compareType = DOUBLE_TYPE;
    }

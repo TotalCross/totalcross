@@ -1022,8 +1022,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                                         duplicateByteArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
                                                                                         NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
 	   goto error; // juliana@223_14: solved possible memory problems.
-
-   count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
    if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {

@@ -59,7 +59,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
       
    // Creates the file or opens it and gets its size.
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
-    || (ret = lbfileGetSize(xFile->file, null, &xFile->size)))
+    || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
       fileError(context, ret, name);
       if (fileIsValid(xFile->file))
