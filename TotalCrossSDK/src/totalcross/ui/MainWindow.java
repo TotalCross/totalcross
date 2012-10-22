@@ -637,7 +637,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       Image img = new Image(w,h);
       Graphics gimg = img.getGraphics();
       enableUpdateScreen = false;
-      repaintActiveWindows();
+      repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
       enableUpdateScreen = true;
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)

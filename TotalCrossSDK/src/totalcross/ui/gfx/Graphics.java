@@ -2908,6 +2908,8 @@ public final class Graphics
    
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * 
+    * In OpenGL platforms, does not work if the surface is the screen (in other words, works only for images).
     * @since TotalCross 1.53
     */
    public void dither(int x, int y, int w, int h)
