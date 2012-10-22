@@ -265,7 +265,9 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    {
       if (Image_changed(srcSurf))
          applyChanges(srcSurf);
-      glDrawTexture(Image_textureId(srcSurf), srcX,srcY,width,height, dstX,dstY, srcWidth,srcHeight);
+      int32 fc = Image_frameCount(srcSurf);
+      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
    }
    else
 #endif
