@@ -143,15 +143,15 @@ public class StandardControls extends Container
          }
          
          if (!initialized)
-         if (Settings.appSecretKey == null) // display the marquee only once per 5 runs.
+         if (Settings.appSecretKey == null) // display the marquee only once per 10 runs.
          {
             Settings.appSecretKey = "1";
-            //lStatus.setMarqueeText("Click title to see the menu options and also be able to select other user interface tests.", 100, 1, -5);
+            lStatus.setMarqueeText("Click title to see the menu options and also be able to select other user interface tests.", 100, 1, -5);
          }
          else 
          {
             Settings.appSecretKey += "1";
-            if (Settings.appSecretKey.length() >= 5)
+            if (Settings.appSecretKey.length() >= 10)
                Settings.appSecretKey = null;
          }
       }
@@ -164,7 +164,7 @@ public class StandardControls extends Container
    public void onEvent(Event event)
    {
       if (event instanceof UIRobotEvent)
-         ;//lStatus.setMarqueeText(event.type == UIRobotEvent.ROBOT_SUCCEED ? "Robot succeed" : "Robot failed: "+((UIRobotEvent)event).failureReason, 100,1,-5);
+         lStatus.setMarqueeText(event.type == UIRobotEvent.ROBOT_SUCCEED ? "Robot succeed" : "Robot failed: "+((UIRobotEvent)event).failureReason, 100,1,-5);
       else
       if (event.type == ControlEvent.PRESSED)
       {
@@ -259,7 +259,7 @@ public class StandardControls extends Container
                case 1: s = "button type: the button will be selected and unselected immediately, acting like a real button"; break;
                case 2: s = "check type: one click in the button will select it and another click will unselect it. However, only one button can be selected at a time"; break;
             }
-            //lStatus.setMarqueeText(s, 100, 1, -5);
+            lStatus.setMarqueeText(s, 100, 1, -5);
          }
       }
    }
