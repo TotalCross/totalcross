@@ -47,7 +47,7 @@ public class ZipSample extends MainWindow
          FileChooserBox fcb = new FileChooserBox(null);
          fcb.setTitle("Select the files");
          fcb.multipleSelection = true;
-         fcb.mountTree("device/", 1);
+         fcb.mountTree("device/");
          fcb.popup();
 
          if (fcb.getPressedButtonIndex() == 0)

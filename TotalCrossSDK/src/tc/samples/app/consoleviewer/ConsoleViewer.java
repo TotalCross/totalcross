@@ -70,7 +70,7 @@ public class ConsoleViewer extends MainWindow
                return f.isDir() || path.indexOf("DebugConsole.txt") >= 0;
             }
          });
-         fcb.mountTree("/Applications",0);
+         fcb.mountTree("/Applications");
          if (fcb.getTree() == null || fcb.getTree().size() <= 1)
          {
             new MessageBox("Attention", "No DebugConsole.txt found on tree hierarchy!").popup();

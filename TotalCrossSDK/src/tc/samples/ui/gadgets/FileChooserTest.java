@@ -26,7 +26,7 @@ public class FileChooserTest extends Container
                {
                   FileChooserBox fcb = new FileChooserBox(null);
                   fcb.multipleSelection = ch.isChecked(); // guich@tc115_4
-                  fcb.mountTree("device/",1);
+                  fcb.mountTree("device/");
                   fcb.popup();
                   String s = fcb.getAnswer();
                   if (s == null)
