@@ -51649,7 +51649,7 @@ get(String
 \begin_inset space ~
 \end_inset
 
-key) Returns the value which the given key is mapped to in the 
+key) Returns the value whose key is mapped to in the 
 \family typewriter
 Properties
 \family default
@@ -51965,7 +51965,213 @@ double
 
 \begin_layout FieldList
 \labelwidthstring 0
-toString() Returns a string representation of the value number.
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code for the 
+\family typewriter
+Properties.Double
+\family default
+ object.
+ The result is the exclusive OR of the two halves of the 
+\family typewriter
+long
+\family default
+ integer bit representation, exactly as produced by the method 
+\family typewriter
+doubleToLongBits(double)
+\family default
+, of the primitive 
+\family typewriter
+double
+\family default
+ value represented by the object.
+ That is, the hash code is the value of the expression: 
+\family typewriter
+(int) (v ˆ (v >>> 32))
+\family default
+ where 
+\family typewriter
+v
+\family default
+ is defined by: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+long v = Convert.doubleToLongBits(this.value); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Double
+\family default
+ object that represents a 
+\family typewriter
+double
+\family default
+ that has the same value as the 
+\family typewriter
+double
+\family default
+ represented by the original object.
+ For this purpose, two 
+\family typewriter
+double
+\family default
+ values are considered to be the same if and only if the method 
+\family typewriter
+doubleToLongBits(double)
+\family default
+ returns the identical 
+\family typewriter
+long
+\family default
+ value when applied to each.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note that, in most cases, for two instances of class 
+\family typewriter
+Properties.Double
+\family default
+, 
+\family typewriter
+d1
+\family default
+ and 
+\family typewriter
+d2
+\family default
+, the value of 
+\family typewriter
+d1.equals(d2)
+\family default
+ is 
+\family typewriter
+true
+\family default
+ if and only if 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Convert.doubleToLongBits(d1.value) ==
+\begin_inset Newline newline
+\end_inset
+
+Convert.doubleToLongBits(d2.value)
+\family default
+ also has the value 
+\family typewriter
+true
+\family default
+.
+ However, there are two exceptions: 
+\begin_inset Newline newline
+\end_inset
+
+If 
+\family typewriter
+d1
+\family default
+ and 
+\family typewriter
+d2
+\family default
+ both represent 
+\family typewriter
+Convert.DOUBLE_NAN_BITS
+\family default
+, then the 
+\family typewriter
+equals()
+\family default
+ method returns 
+\family typewriter
+true
+\family default
+, even though 
+\family typewriter
+Convert.doubleToLongBits(Convert.
+\begin_inset Newline newline
+\end_inset
+
+DOUBLE_NAN_BITS) == Convert.doubleToLongBits(Convert.
+\begin_inset Newline newline
+\end_inset
+
+DOUBLE_NAN_BITS)
+\family default
+ has the value 
+\family typewriter
+false
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+If 
+\family typewriter
+d1
+\family default
+ represents 
+\family typewriter
++0.0
+\family default
+ while 
+\family typewriter
+d2
+\family default
+ represents 
+\family typewriter
+-0.0
+\family default
+, or vice versa, the equal test has the value 
+\family typewriter
+false
+\family default
+, even though 
+\family typewriter
++0.0==-0.0
+\family default
+ has the value 
+\family typewriter
+true
+\family default
+.
+ This definition allows hash tables to operate properly.
+ 
 \end_layout
 
 \end_deeper
@@ -51981,6 +52187,90 @@ int
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+I
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+int
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+int
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code value for the object, equal to the primitive
+ 
+\family typewriter
+int
+\family default
+ value represented by the 
+\family typewriter
+Properties.Int
+\family default
+ object.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Int
+\family default
+ object that contains the same 
+\family typewriter
+int
+\family default
+ value as the original object.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -51993,6 +52283,94 @@ long
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+L
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+long
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+long
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code for the 
+\family typewriter
+Properties.Long
+\family default
+ object.
+ The result is the exclusive OR of the two halves of the primitive 
+\family typewriter
+long
+\family default
+ value held by the object.
+ That is, the hash code is the value of the expression: 
+\family typewriter
+(int) (this.value ˆ (this.value >>> 32))
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Long
+\family default
+ object that contains the same 
+\family typewriter
+long
+\family default
+ value as the original object.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -52005,6 +52383,77 @@ String
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+S
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+String
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns 
+\family typewriter
+value
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the hash code of the enclosed string value (
+\family typewriter
+value.hashCode()
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+String
+\family default
+ object, or another 
+\family typewriter
+Properties.Str
+\family default
+ object, that represents the same sequence of characters as the original
+ object.
+ 
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Section
 Random
@@ -52027,6 +52476,56 @@ ran0()
 \family default
  isn't that great – there are much better generators out there -- but it
  is fast and has low memory consumption, and it will do the job.
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use the Random class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Random r = new Random(0x1234); // the use of the same key is sometimes desirable
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+for (...) 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	int nextRandomInt = r.between(0,10);
+\end_layout
+
+\begin_layout Plain Layout
+
+	char nextRandomChar = r.between('a','z');
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -52054,7 +52553,16 @@ seed) Creates a
 Random
 \family default
  object using the given seed.
- The only reasonable seeds are between 0 and 231 inclusive.
+ The only reasonable seeds are between 0 and 2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+31
+\end_layout
+
+\end_inset
+
+ inclusive.
  If a negative value is received, its absolute value will be used.
 \end_layout
 
@@ -52075,11 +52583,25 @@ n) Returns a random integer in the range
 [0, n)
 \family default
 .
+ 
+\family typewriter
+n
+\family default
+ must be 
+\family typewriter
+> 0
+\family default
+; otherwise, -1 is returned.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-nextDouble() Returns a random double in the half-open range 
+nextDouble() Returns a random 
+\family typewriter
+double
+\family default
+ in the half-open range 
 \family typewriter
 [0, 1)
 \family default
@@ -52102,6 +52624,26 @@ int
 \end_inset
 
 e) Returns a random integer in the given region.
+ E.
+ g.
+ : 
+\family typewriter
+rand(1, 10)
+\family default
+ returns a random integer in the range of 1 to 10, inclusive.
+ Note that if 
+\family typewriter
+s == e
+\family default
+, it will return in the range 
+\family typewriter
+s
+\family default
+ and 
+\family typewriter
+e+1
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -52119,7 +52661,20 @@ char
 \end_inset
 
 e) Returns a random character in the given region.
- 
+ E.
+ g.: 
+\family typewriter
+between('a', 'e')
+\family default
+ returns a random character between 
+\family typewriter
+a
+\family default
+ and 
+\family typewriter
+e
+\family default
+, inclusive.
 \end_layout
 
 \end_deeper
