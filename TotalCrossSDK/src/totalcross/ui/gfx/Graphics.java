@@ -1229,8 +1229,10 @@ public final class Graphics
          if (vertical)
          {
             drawLine(startX + leftOffset, startY+i, endX - rightOffset, startY+i);
-            drawFadedPixel(endX - rightOffset+1, startY+i, fc);
-            drawFadedPixel(startX+leftOffset-1, startY+i, fc);
+            if (rightOffset != 0)
+               drawFadedPixel(endX - rightOffset+1, startY+i, fc);
+            if (leftOffset != 0)
+               drawFadedPixel(startX+leftOffset-1, startY+i, fc);
          }
          else
          {
@@ -1450,7 +1452,10 @@ public final class Graphics
          int i = c >= dim0 ? dim0-1 : c;
          int f = (invert ? dim0-1-i : i)*factor/dim0;
          if (f != lastF) // colors repeat often
+         {
             backColor = Color.interpolate(c1, c2, lastF = f) | alpha;
+            System.out.println(f);
+         }
          int yy = y0+(lineY>>16);
          int k = hh - yy;
          if (!rotate)

@@ -2413,8 +2413,10 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
       {
          int32 fc = p;
          drawLine(currentContext, g, startX + leftOffset, startY+i, endX - rightOffset, startY+i, p);
-         drawFadedPixel(currentContext, g, endX - rightOffset+1, startY+i, fc);
-         drawFadedPixel(currentContext, g, startX+leftOffset-1, startY+i, fc);
+         if (rightOffset != 0)
+            drawFadedPixel(currentContext, g, endX - rightOffset+1, startY+i, fc);
+         if (leftOffset != 0)
+            drawFadedPixel(currentContext, g, startX+leftOffset-1, startY+i, fc);
       }
       else
          drawLine(currentContext, g, startX+i, startY + leftOffset, startX+i, endY - rightOffset, p);
