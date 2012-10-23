@@ -118,7 +118,10 @@ public class ColumnChart extends Chart
             {
                int fade = (type & GRADIENT_DARK) != 0 ? Color.darker(c,128) : Color.brighter(c,128);
                boolean invertGradient = (type & GRADIENT_INVERT) != 0;
-               g.drawRoundGradient(x, y, x+colW, yAxisY1, 0,0,0,0, invertGradient ? c : fade, invertGradient ? fade : c, (type & GRADIENT_VERTICAL) != 0);
+               if ((type & GRADIENT_VERTICAL) == 0)
+                  g.drawRoundGradient(x, y, x+colW, yAxisY1, 0,0,0,0, invertGradient ? c : fade, invertGradient ? fade : c, (type & GRADIENT_VERTICAL) != 0);
+               else
+                  g.fillShadedRect(x,y,colW, yAxisY1-y,invertGradient,false,c,fade,100); // 3x faster
             }
             else
             {
