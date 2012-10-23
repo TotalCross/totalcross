@@ -1356,6 +1356,7 @@ public class Window extends Container
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
+      newContainer.onSwapFinished();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the size of the title if any plus the size of the border.

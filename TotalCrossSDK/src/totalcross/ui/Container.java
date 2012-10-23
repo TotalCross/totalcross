@@ -193,8 +193,6 @@ public class Container extends Control
             for (int i =i0; n >= 0; i+=iinc, n -= step)
             {
                g.clearClip();
-               g.backColor = 0;
-               g.fillRect(0,0,w,h);
                g.drawImage(s0,0,0);
                int minx = (int)(mx - i*incX);
                int miny = (int)(my - i*incY);
@@ -1002,5 +1000,12 @@ public class Container extends Control
          if (cc.asContainer != null)
             cc.asContainer.setFocusTraversable(b);
       }
+   }
+   
+   /** Called when this container has been swapped into the Window and the swap is done.
+    * @since TotalCross 2.0
+    */
+   public void onSwapFinished()
+   {
    }
 }
