@@ -21,6 +21,7 @@ package tc.samples.ui.chart;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.chart.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
@@ -43,6 +44,7 @@ public class ChartTest extends MainWindow
    Check is3D,showTitle,showCategories,showHGrids,
      showVGrids, isVGrad, isHGrad, isInvGrad, isDarker, showYValues;
    ComboBox legendPosition;
+   Button bt;
 
    public ChartTest()
    {
@@ -83,6 +85,7 @@ public class ChartTest extends MainWindow
       add(new Radio("Line", rgType), BEFORE-2, SAME);
       add(new Radio("Column",rgType), BEFORE-2, SAME);
       rgType.setSelectedIndex(2);
+      add(bt = new Button("*"),BEFORE-fmH/2,SAME,PREFERRED,SAME);
 
       int gap =Settings.screenWidth > 320 ? fmH/2 : 0;
       add(showTitle, LEFT, TOP + 2+gap);
@@ -94,8 +97,8 @@ public class ChartTest extends MainWindow
       add(is3D, AFTER + 2, SAME);
 
       int r = width - is3D.getRect().x2()-6;
-      add(sh = new Slider(),AFTER+2,SAME,r/2,PREFERRED);
-      add(sv = new Slider(),AFTER+2,SAME,r/2,PREFERRED);
+      add(sh = new Slider(),AFTER+2,SAME,r/2,fmH);
+      add(sv = new Slider(),AFTER+2,SAME,r/2,fmH);
       sh.setMinimum(-6); sh.setMaximum(6); sv.setMaximum(6);
       sh.drawTicks = sv.drawTicks = true;
       sh.drawFilledArea = sv.drawFilledArea = false;
@@ -149,6 +152,15 @@ public class ChartTest extends MainWindow
    {
       if (e.type == ControlEvent.PRESSED)
       {
+         if (e.target == bt)
+         {
+            int ini = Vm.getTimeStamp();
+            for (int i = 0; i < 50; i++)
+               repaintNow();
+            int fim = Vm.getTimeStamp();
+            new MessageBox("Benchmark", "Elapsed: "+(fim-ini)+"ms").popup();
+         }
+         else
          if (e.target == mbar && mbar.getSelectedIndex() == 1)
             exit(0);
          else
