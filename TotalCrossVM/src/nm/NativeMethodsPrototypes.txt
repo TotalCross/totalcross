@@ -36,6 +36,7 @@ TC_API void tuiI_applyColor2_i(NMParams p);
 TC_API void tuiI_setTransparentColor_i(NMParams p);
 TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_freeTexture(NMParams p);
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
@@ -566,6 +567,10 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2286,6 +2291,11 @@ TESTCASE(tuiI_freeTexture) // totalcross/ui/image/Image native private void free
    TEST_SKIP;
    finish: ;
 }
+TESTCASE(tugG_fillShadedRect_iiiibbiii) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tugG_dither_iiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TEST_SKIP;
@@ -2657,6 +2667,11 @@ TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public static void setSI
    finish: ;
 }
 TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void setDeviceTitle(String title);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsCC_bytes2chars_Bii) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
    TEST_SKIP;
    finish: ;

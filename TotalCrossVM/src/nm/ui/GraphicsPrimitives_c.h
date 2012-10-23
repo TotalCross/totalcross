@@ -430,11 +430,8 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
       {
          glDrawLine(x,y,x+width,y,pixel1,255);
          if (pixel1 != pixel2)
-         {
             for (x++; width > 0; width -= 2, x += 2)
                glDrawPixel(x,y, pixel2,255);
-            flushPixels();
-         }
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -487,11 +484,8 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
       {
          glDrawLine(x,y,x,y+height,pixel1,255);
          if (pixel1 != pixel2)
-         {
             for (y++; height > 0; height -= 2, y += 2)
                glDrawPixel(x,y, pixel2,255);
-            flushPixels();
-         }      
          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
       }
       else
@@ -692,9 +686,6 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        }
 #ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
-#else
-       if (pixel1 != pixel2)
-          flushPixels();
 #endif
     }
 }
@@ -2731,6 +2722,44 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
       sx = startX+i; drawLine(currentContext, g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
    }
    if (screen.bpp < 24) dither(currentContext, g, startX, startY, endX-startX, endY-startY);
+}
+
+void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
+{                 
+   PixelConv pc1,pc2;
+#ifdef __gl2_h_
+   pc1.pixel = c1;
+   pc2.pixel = c2;
+   glFillShadedRect(Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
+   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+#else   
+   int32 dim = rotate ? width : height, dim0 = dim;
+   int32 y0 = rotate ? x : y;
+   int32 hh = rotate ? x+dim : y+dim;
+   int32 incY,lineH,lineY=0,lastF=-1,c=0,backColor,i,f,yy,k;
+
+   pc1.pixel = c1;
+   pc2.pixel = c2;
+   dim <<= 16;
+   if (height == 0) return;
+   incY = dim/height;
+   lineH = (incY>>16)+1;
+   lineY=0;
+   // now paint the shaded area
+   for (; lineY < dim; c++, lineY += incY)
+   {
+      i = c >= dim0 ? dim0-1 : c;
+      f = (invert ? dim0-1-i : i)*factor/dim0;
+      if (f != lastF) // colors repeat often
+         backColor = interpolate(pc1, pc2, lastF = f*255/100);
+      yy = y0+(lineY>>16);
+      k = hh - yy;
+      if (!rotate)
+         fillRect(currentContext,g,x,yy,width,k < lineH ? k : lineH, backColor);
+      else
+         fillRect(currentContext,g,yy,y,k < lineH ? k : lineH, height, backColor);
+   } 
+#endif
 }
 
 /////////////// Start of Device-dependant functions ///////////////

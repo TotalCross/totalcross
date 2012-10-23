@@ -26,6 +26,7 @@ void flushPixels();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 void glClearClip();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
+void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 #else
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
@@ -755,6 +756,12 @@ TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Grap
    Object g = p->obj[0];
    drawCylindricShade(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
 }                     
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+   Object g = p->obj[0];
+   fillShadedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], makePixelRGB(p->i32[6]), makePixelRGB(p->i32[7]), p->i32[8]);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "gfx_Graphics_test.h"

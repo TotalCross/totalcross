@@ -53,8 +53,8 @@ GLfloat ftransp[16], f255[256];
 int32 flen;
 GLfloat* glcoords;//[flen*2]; x,y
 GLfloat* glcolors;//[flen];   alpha
-static GLfloat texcoords[16], lrcoords[8];
-static GLfloat *pixcoords, *pixcolors, *pixEnd;
+static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
+static int32 *pixcoords, *pixcolors, *pixEnd;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -113,6 +113,23 @@ static GLuint lrpPosition;
 static GLuint lrpColor;
 static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
+///////////// shaded rect
+
+#define SHADE_VERTEX_CODE \
+      "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "uniform mat4 projectionMatrix;" \
+      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position*projectionMatrix;}"
+
+#define SHADE_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec4 v_Color;" \
+      "void main() {gl_FragColor = v_Color;}"
+
+static GLuint shadeProgram;
+static GLuint shadePosition;
+static GLuint shadeColor;
+
+
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
    GLint ret=1;
@@ -132,7 +149,6 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static int32 lastRGB=-1,lastA=-1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
@@ -198,6 +214,53 @@ void glDrawPixels(int32 n, int32 rgb)
    glDrawArrays(GL_POINTS, 0,n);
 }
 
+static void initShade()
+{
+   shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
+   setCurrentProgram(shadeProgram);
+   shadeColor = glGetAttribLocation(shadeProgram, "a_Color");
+   shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(shadeColor); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(shadePosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+}
+
+void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+{     
+   if (pixcolors != (int32*)glcolors) flushPixels();
+   setCurrentProgram(shadeProgram);
+   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors);
+   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords);
+   
+   shcoords[0] = shcoords[2] = x;
+   shcoords[1] = shcoords[7] = y;
+   shcoords[3] = shcoords[5] = y+h;
+   shcoords[4] = shcoords[6] = x+w;
+
+   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; 
+   if (!horiz)
+   {
+      shcolors[0] = shcolors[12] = shcolors[20] = f255[c1.r];
+      shcolors[1] = shcolors[13] = shcolors[21] = f255[c1.g];
+      shcolors[2] = shcolors[14] = shcolors[22] = f255[c1.b];
+      
+      shcolors[4] = shcolors[8]  = shcolors[16] = f255[c2.r];
+      shcolors[5] = shcolors[9]  = shcolors[17] = f255[c2.g];
+      shcolors[6] = shcolors[10] = shcolors[18] = f255[c2.b];
+   }
+   else
+   {
+      shcolors[0] = shcolors[4] = shcolors[16] = shcolors[20] = f255[c2.r];
+      shcolors[1] = shcolors[5] = shcolors[17] = shcolors[21] = f255[c2.g];
+      shcolors[2] = shcolors[6] = shcolors[18] = shcolors[22] = f255[c2.b];
+      
+      shcolors[8]  = shcolors[12] = f255[c1.r];
+      shcolors[9]  = shcolors[13] = f255[c1.g];
+      shcolors[10] = shcolors[14] = f255[c1.b];
+   }
+    
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+}
+
 void initTexture()
 {
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
@@ -250,6 +313,7 @@ void glDeleteTexture(int32* textureId)
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
    GLfloat* coords = texcoords;
+   if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -277,105 +341,111 @@ void initLineRectPoint()
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color");
-   lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(lrpPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   lrpPosition = glGetAttribLocation(lrpProgram, "a_Position");
+   glEnableVertexAttribArray(lrpPosition);
 }
+
+#define IS_PIXEL (1<<31)
+#define IS_DIAGONAL  (1<<30)
 
 void flushPixels()
 {
-   if (pixcoords != glcoords)
+   if (pixcolors != (int32*)glcolors)
    {
-      int n = (pixcoords-glcoords)/2,i;
+      int32 n = pixcolors-(int32*)glcolors, i;
       PixelConv pc;
       GLfloat* coords = lrcoords;
       setCurrentProgram(lrpProgram);
-      pixcoords = glcoords;
-      pixcolors = glcolors;
+      pixcoords = (int32*)glcoords;
+      pixcolors = (int32*)glcolors;
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
-      int32 lastRGBA = ~*((int32*)pixcolors);
+      int32 lastRGBA = ~*pixcolors;
+      int32 x,y,w,h,x2,y2;
       for (i = 0; i < n; i++)
-      {
-         int32 x = *pixcoords++;
-         int32 y = *pixcoords++;
-         int32 rgba = *((int32*)pixcolors); pixcolors++;
-         coords[0] = coords[2] = x;
-         coords[1] = coords[7] = y;
-         coords[3] = coords[5] = y+1;
-         coords[4] = coords[6] = x+1;
-
+      {  
+         // color
+         int32 rgba = *pixcolors++;
          if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
          {
             pc.pixel = lastRGBA = rgba;
             glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]);
          }
-         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+         // coord
+         x = *pixcoords++;
+         y = *pixcoords++;
+         if (x & IS_DIAGONAL)
+         {                    
+            x2 = *pixcoords++;
+            y2 = *pixcoords++;
+            coords[0] = x & ~IS_DIAGONAL;
+            coords[1] = y;
+            coords[2] = x2;
+            coords[3] = y2;
+            glDrawArrays(GL_LINES, 0,2);
+         }
+         else
+         {
+            if (x & IS_PIXEL)
+            {
+               x &= ~IS_PIXEL;
+               w = h = 1;
+            }
+            else
+            {
+               w = *pixcoords++;
+               h = *pixcoords++;
+            }
+            coords[0] = coords[2] = x;
+            coords[1] = coords[7] = y;
+            coords[3] = coords[5] = y+h;
+            coords[4] = coords[6] = x+w;
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+         }
       }
-      lastRGB = lastA = -1;
-      pixcoords = glcoords;
-      pixcolors = glcolors;
+      pixcoords = (int32*)glcoords;
+      pixcolors = (int32*)glcolors;
    }
 }
 
-void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
+static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   if ((pixcoords+2) > pixEnd)
+   bool isPixel = (x & IS_PIXEL) != 0;
+   if ((pixcoords+(isPixel ? 2 : 4)) > pixEnd)
       flushPixels();
+   *pixcoords++ = x;
+   *pixcoords++ = y;
+   if (!isPixel)
+   {
+      *pixcoords++ = w;
+      *pixcoords++ = h;
+   }
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
-   *pixcoords++ = x;
-   *pixcoords++ = y;
-   *((int32*)pixcolors) = pc.pixel; pixcolors++;
+   *pixcolors++ = pc.pixel;
+}
+
+void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
+{   
+   add2pipe(x|IS_PIXEL,y,1,1,rgb,a);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      glFillRect(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
+      add2pipe(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
    else
    if (y1 == y2)
-      glFillRect(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
-   else
-   {
-      GLfloat* coords = lrcoords;
-      coords[0] = x1;
-      coords[1] = y1;
-      coords[2] = x2;
-      coords[3] = y2;
-
-      setCurrentProgram(lrpProgram);
-
-      if (lastRGB != rgb || lastA != a)
-      {
-         PixelConv pc;
-         pc.pixel = lastRGB = rgb;
-         lastA = a;
-         glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
-      }
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); // Prepare the triangle coordinate data
-      glDrawArrays(GL_LINES, 0,2);
-   }
+      add2pipe(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
+   else              
+      add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   GLfloat* coords = lrcoords;
-   coords[0] = coords[2]  = x;
-   coords[1] = coords[7] = y;
-   coords[3] = coords[5]  = y+h;
-   coords[4] = coords[6]  = x+w;
-
-   setCurrentProgram(lrpProgram);
-   if (lastRGB != rgb || lastA != a)
-   {
-      PixelConv pc;
-      pc.pixel = lastRGB = rgb;
-      lastA = a;
-      glUniform4f(lrpColor, f255[pc.r], f255[pc.g], f255[pc.b], f255[a]); // Set color for drawing the line
-   }
-   glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+   add2pipe(x,y,w,h,rgb,a);
 }
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
@@ -390,6 +460,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
+   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat);
 }
 
 
@@ -402,7 +473,7 @@ typedef union
 int32 glGetPixel(int32 x, int32 y)
 {                
    glpixel gp;
-   flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels();
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp);
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
@@ -413,7 +484,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    PixelConv pc;
    glpixel gp;
    int32 i;
-   flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels();
    for (; height-- > 0; srcY++,dstPixels += pitch)
    {
       glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels);
@@ -455,8 +526,8 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glcolors);
       flen = n*3/2;
       int len = flen*2;
-      pixcoords = glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
-      pixcolors = glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
+      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); pixcoords = (int32*)glcoords;
+      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); pixcolors = (int32*)glcolors;
       pixEnd = pixcoords + len;
       if (!glcoords || !glcolors)
       {
@@ -479,6 +550,7 @@ bool setupGL(int width, int height)
     initTexture();
     initLineRectPoint();
     initPoints();
+    initShade();
     setProjectionMatrix(appW,appH);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -496,7 +568,7 @@ bool setupGL(int width, int height)
 
     glViewport(0, 0, width, height);
 
-    return checkGLfloatBuffer(mainContext,1000);
+    return checkGLfloatBuffer(mainContext,10000);
 }
 
 #ifdef ANDROID
@@ -586,7 +658,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 void graphicsUpdateScreenIOS(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
-   flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels();
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);
 #else
