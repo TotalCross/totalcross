@@ -313,6 +313,19 @@ public class Image extends GfxSurface
    {
    }
 
+   /** In OpenGL platforms, apply changes to the current texture and
+    * frees the memory used for the pixels in internal memory (the 
+    * image can, however, be drawn on screen because the texture will
+    * be ready). Calling getGraphics after this method will return a 
+    * null reference.
+    * 
+    * In non-OpenGL, does nothing.
+    * @since TotalCross 2.0
+    */ 
+   public void lockChanges()
+   {
+   }
+
    /** Changes all the pixels of the image from one color to the other.
    * The current value of the transparent color is not changed.
    * Using this routine, you can change the colors to any other you want.

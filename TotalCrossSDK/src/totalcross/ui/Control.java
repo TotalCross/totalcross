@@ -1245,7 +1245,7 @@ public class Control extends GfxSurface
    {
       if (enableUpdateScreen)
       {
-         totalcross.Launcher.instance.updateScreen(Container.getNextTransitionEffect());
+         totalcross.Launcher.instance.updateScreen();
          Graphics.needsUpdate = false;
       }
    }

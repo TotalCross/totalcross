@@ -111,7 +111,6 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
-TC_API void tuC_transitionEffectChanged_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -867,10 +866,6 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2662,16 +2657,6 @@ TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public static void setSI
    finish: ;
 }
 TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuC_transitionEffectChanged_i) // totalcross/ui/Container native static void transitionEffectChanged(int t);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsCC_bytes2chars_Bii) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
    TEST_SKIP;
    finish: ;

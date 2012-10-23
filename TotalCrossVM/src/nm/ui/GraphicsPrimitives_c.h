@@ -25,7 +25,7 @@ extern int appW,appH;
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect);
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen);
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
 #if !defined(NO_GRAPHICS_LOCK_NEEDED)
 bool graphicsLock(ScreenSurface screen, bool on);
@@ -2760,10 +2760,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
       if (screen.mainWindowPixels == null)
-      {
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
-         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
-      }
       *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
 #else
@@ -2776,7 +2773,6 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       else
       {
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
-         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
 
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
@@ -2812,22 +2808,18 @@ void updateScreen(Context currentContext)
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
    {
-      int32 transitionEffect = *containerNextTransitionEffectPtr;
 #ifndef __gl2_h_
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
 #endif
       {
-         if (transitionEffect == -1)
-            transitionEffect = TRANSITION_NONE;
 #ifdef darwin
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
 #endif
-         graphicsUpdateScreen(currentContext, &screen, transitionEffect);
+         graphicsUpdateScreen(currentContext, &screen);
 #ifdef darwin
          LOCKVAR(screen);
 #endif
       }
-      *containerNextTransitionEffectPtr = TRANSITION_NONE;
       currentContext->dirtyX1 = screen.screenW;
       currentContext->dirtyY1 = screen.screenH;
       currentContext->dirtyX2 = currentContext->dirtyY2 = 0;

@@ -583,14 +583,14 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return screen->pixels != null;
 }
 
-void graphicsUpdateScreenIOS(ScreenSurface screen, int32 transitionEffect);
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect)
+void graphicsUpdateScreenIOS(ScreenSurface screen);
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
    flushPixels();
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);
 #else
-   graphicsUpdateScreenIOS(screen, transitionEffect);
+   graphicsUpdateScreenIOS(screen);
 #endif
    glClearColor(0,0,0,0);
    glClear(GL_COLOR_BUFFER_BIT);

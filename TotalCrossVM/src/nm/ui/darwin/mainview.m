@@ -326,7 +326,7 @@ void graphicsSetupIOS()
 {
    [DEVICE_CTX->_childview graphicsSetup];
 }
-void graphicsUpdateScreenIOS(ScreenSurface screen, int32 transitionEffect)
+void graphicsUpdateScreenIOS(ScreenSurface screen)
 {                
    [DEVICE_CTX->_childview invalidateScreen:screen];
 }

@@ -47,6 +47,7 @@ import totalcross.io.*;
 import totalcross.io.IOException;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.Container;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
 import totalcross.util.*;
@@ -935,11 +936,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
 
-   public void updateScreen(int transitionEffect)
+   public void updateScreen()
    {
-      if (transitionEffect == -1)
-         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
-
       //int ini = totalcross.sys.Vm.getTimeStamp();
       int[] pixels = (int[])totalcross.ui.gfx.Graphics.mainWindowPixels;
       int n = Settings.screenWidth * Settings.screenHeight;
@@ -1014,48 +1012,15 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          g.setClip(0,0,ww,yy);         // limit drawing area
          g.translate(0,-(int)(shiftY*toScale));
       }
-      switch (transitionEffect)
+      if (toScale != 1) // guich@tc126_74 - guich@tc130 
       {
-         case totalcross.ui.Container.TRANSITION_CLOSE:
-         case totalcross.ui.Container.TRANSITION_OPEN:
-         {
-            n = Math.min(w,h);
-            int mx = w/2,mw=1,mh=1;
-            int my = h/2;
-            float incX=1,incY=1;
-            if (w > h)
-               {incX = (float)w/h; mw = (int)incX+1;}
-             else
-               {incY = (float)h/w; mh = (int)incY+1;}
-            int i0 = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? n : 0;
-            int iinc = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? -1 : 1;
-            for (int i =i0; --n >= 0; i+=iinc)
-            {
-               int minx = (int)(mx - i*incX);
-               int miny = (int)(my - i*incY);
-               int maxx = (int)(mx + i*incX);
-               int maxy = (int)(my + i*incY);
-               drawImageLine(g,minx-mw,miny-mh,maxx+mw,miny+mh);
-               drawImageLine(g,minx-mw,miny-mh,minx+mw,maxy+mh);
-               drawImageLine(g,maxx-mw,miny-mh,maxx+mw,maxy+mh);
-               drawImageLine(g,minx-mw,maxy-mh,maxx+mw,maxy+mh);
-               Vm.sleep(1);
-            }
-            if (toScale == 1)
-               break;
-         }
-         case totalcross.ui.Container.TRANSITION_NONE:
-            if (toScale != 1) // guich@tc126_74 - guich@tc130 
-            {
-               Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
-               g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
-               img.flush();
-            }
-            else
-            if (g != null)
-               g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
-            break;
+         Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+         g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+         img.flush();
       }
+      else
+      if (g != null)
+         g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
       if (shiftY != 0)
       {
          g.translate(0,(int)(shiftY*toScale));
@@ -1063,10 +1028,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       //System.out.println(++count+" total in "+(totalcross.sys.Vm.getTimeStamp()-ini)+"ms");
       //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
-   }
-   private void drawImageLine(Graphics g, int minx, int miny, int maxx, int maxy)
-   {
-      g.drawImage(screenImg, (int)(minx*toScale),(int)(miny*toScale),(int)(maxx*toScale),(int)(maxy*toScale), minx,miny,maxx,maxy, this); // this is faster than use img.getScaledInstance
    }
 
    //static int count;

@@ -156,6 +156,7 @@ public class Image4D extends GfxSurface
 
    public Graphics4D getGraphics()
    {
+      if (pixels == null) return null;
       changed = true;
       gfx.setFont(MainWindow.getDefaultFont());
       return gfx;
@@ -494,5 +495,12 @@ public class Image4D extends GfxSurface
    public void finalize()
    {
       freeTexture();
+   }
+   
+   public void lockChanges()
+   {
+      if (changed)
+         applyChanges();
+      pixels = pixelsOfAllFrames = null;
    }
 }

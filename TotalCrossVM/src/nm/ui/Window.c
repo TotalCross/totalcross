@@ -24,15 +24,6 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
-{
-#ifdef ANDROID
-   JNIEnv *env = getJNIEnv();
-   if (env && jtransitionEffectChanged != null)
-      (*env)->CallStaticVoidMethod(env, applicationClass, jtransitionEffectChanged, p->i32[0]);
-#endif   
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
 {
    int32 sipOption = p->i32[0];

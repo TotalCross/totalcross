@@ -15,13 +15,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -152,20 +151,64 @@ public class Container extends Control
    {
       nextTransitionEffect = t;
       if (t != TRANSITION_NONE)
-         transitionEffectChanged(t);
+         try
+         {
+            screen0 = MainWindow.getScreenShot();
+            screen0.lockChanges();
+         }
+         catch (Exception e) {}
    }
 
-   public static int getNextTransitionEffect()
+   static Image screen0;
+
+   static void applyTransitionEffect()
    {
-      int ret = nextTransitionEffect;
+      int transitionEffect = nextTransitionEffect;
       nextTransitionEffect = Container.TRANSITION_NONE;
-      return ret;
-   }
+      if (transitionEffect == -1)
+         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
 
-   static void transitionEffectChanged(int t)
-   {
+      if (screen0 != null)
+         try
+         {
+            Image screen1 = MainWindow.getScreenShot();
+            screen1.lockChanges();
+            int w = totalcross.sys.Settings.screenWidth;
+            int h = totalcross.sys.Settings.screenHeight;
+            int n = Math.min(w,h)/2;
+            int mx = w/2;
+            int my = h/2;
+            double incX=1,incY=1;
+            if (w > h)
+               incX = (double)w/h;
+             else
+               incY = (double)h/w;
+            Graphics g = MainWindow.mainWindowInstance.getGraphics();
+            int i0,iinc,step = Math.max(1,n/30);
+            Image s0,s1;
+            if (transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE)
+               {i0 = n; iinc = -step; s0 = screen1; s1 = screen0;}
+            else
+               {i0 = 0; iinc =  step; s0 = screen0; s1 = screen1;}
+            for (int i =i0; n >= 0; i+=iinc, n -= step)
+            {
+               g.clearClip();
+               g.backColor = 0;
+               g.fillRect(0,0,w,h);
+               g.drawImage(s0,0,0);
+               int minx = (int)(mx - i*incX);
+               int miny = (int)(my - i*incY);
+               int maxx = (int)(mx + i*incX);
+               int maxy = (int)(my + i*incY);
+               g.setClip(minx,miny,maxx-minx,maxy-miny);
+               g.drawImage(s1,0,0);
+               Window.updateScreen();
+            }
+         }
+         catch (Exception e) {}
+      screen0 = null;
+      Vm.gc();
    }
-   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01

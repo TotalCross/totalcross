@@ -445,43 +445,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return true;
    }
 
-   static void drawScreen()
-   {
-   }
-
-   static void transitionEffectChanged(int type)
-   {
-   }
-   
-   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
-   {
-/*      if (!appPaused)
-      try
-      {
-         //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
-            return;
-         
-         switch (transitionEffect)
-         {
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-               animt.startTransition(transitionEffect);
-               // no break!
-            case TRANSITION_NONE:
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               drawScreen();
-               break;
-         }
-         //int ela = (int)(System.currentTimeMillis() - ini);
-         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
-      }
-      catch (Throwable t)
-      {
-         AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-*/   }
-
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
