@@ -168,7 +168,8 @@ public class Container extends Control
       if (transitionEffect == -1)
          transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
 
-      if (screen0 != null)
+      if (screen0 != null) // only when transitionEffect is not NONE
+      {
          try
          {
             Image screen1 = MainWindow.getScreenShot();
@@ -204,8 +205,9 @@ public class Container extends Control
             }
          }
          catch (Throwable e) {}
-      screen0 = null;
-      Vm.gc();
+         screen0 = null;
+         Vm.gc();
+      }
    }
 
    /** Sets the insets value to match the given ones.
