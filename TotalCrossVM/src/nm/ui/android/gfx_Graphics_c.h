@@ -222,6 +222,7 @@ static void initShade()
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(shadePosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; 
 }
 
 void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -236,26 +237,25 @@ void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelCon
    shcoords[3] = shcoords[5] = y+h;
    shcoords[4] = shcoords[6] = x+w;
 
-   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; 
    if (!horiz)
    {
-      shcolors[0] = shcolors[12] = shcolors[20] = f255[c1.r];
-      shcolors[1] = shcolors[13] = shcolors[21] = f255[c1.g];
-      shcolors[2] = shcolors[14] = shcolors[22] = f255[c1.b];
+      shcolors[0] = shcolors[12] = shcolors[20] = f255[c2.r];
+      shcolors[1] = shcolors[13] = shcolors[21] = f255[c2.g];
+      shcolors[2] = shcolors[14] = shcolors[22] = f255[c2.b];
       
-      shcolors[4] = shcolors[8]  = shcolors[16] = f255[c2.r];
-      shcolors[5] = shcolors[9]  = shcolors[17] = f255[c2.g];
-      shcolors[6] = shcolors[10] = shcolors[18] = f255[c2.b];
+      shcolors[4] = shcolors[8]  = shcolors[16] = f255[c1.r];
+      shcolors[5] = shcolors[9]  = shcolors[17] = f255[c1.g];
+      shcolors[6] = shcolors[10] = shcolors[18] = f255[c1.b];
    }
    else
    {
-      shcolors[0] = shcolors[4] = shcolors[16] = shcolors[20] = f255[c2.r];
-      shcolors[1] = shcolors[5] = shcolors[17] = shcolors[21] = f255[c2.g];
-      shcolors[2] = shcolors[6] = shcolors[18] = shcolors[22] = f255[c2.b];
+      shcolors[0] = shcolors[4] = shcolors[16] = f255[c2.r];
+      shcolors[1] = shcolors[5] = shcolors[17] = f255[c2.g];
+      shcolors[2] = shcolors[6] = shcolors[18] = f255[c2.b];
       
-      shcolors[8]  = shcolors[12] = f255[c1.r];
-      shcolors[9]  = shcolors[13] = f255[c1.g];
-      shcolors[10] = shcolors[14] = f255[c1.b];
+      shcolors[8]  = shcolors[12] = shcolors[20] = f255[c1.r];
+      shcolors[9]  = shcolors[13] = shcolors[21] = f255[c1.g];
+      shcolors[10] = shcolors[14] = shcolors[22] = f255[c1.b];
    }
     
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);

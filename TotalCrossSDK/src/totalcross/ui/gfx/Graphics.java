@@ -1434,34 +1434,33 @@ public final class Graphics
       }
    }
 
-   /** Fills a shaded rectangle. Used to draw many Android user interface style controls */
+   /** Fills a shaded rectangle. Used to draw many Android user interface style controls
+    * @factor Ranges from 0 to 100 
+    */
    public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor) // guich@573_6
    {
       int dim = rotate ? width : height, dim0 = dim;
       int y0 = rotate ? x : y;
       int hh = rotate ? x+dim : y+dim;
       dim <<= 16;
-      if (height == 0) return;
-      int incY = dim/height;
-      int lineH = (incY>>16)+1;
-      int lineY=0;
+      if (dim0 == 0) return;
+      int inc = dim/dim0;
+      int lineS = (inc>>16)+1;
+      int line0=0;
       int lastF=-1;
       // now paint the shaded area
-      for (int c=0; lineY < dim; c++, lineY += incY)
+      for (int c=0; line0 < dim; c++, line0 += inc)
       {
          int i = c >= dim0 ? dim0-1 : c;
          int f = (invert ? dim0-1-i : i)*factor/dim0;
          if (f != lastF) // colors repeat often
-         {
             backColor = Color.interpolate(c1, c2, lastF = f) | alpha;
-            System.out.println(f);
-         }
-         int yy = y0+(lineY>>16);
+         int yy = y0+(line0>>16);
          int k = hh - yy;
          if (!rotate)
-            fillRect(x,yy,width,k < lineH ? k : lineH);
+            fillRect(x,yy,width,k < lineS ? k : lineS);
          else
-            fillRect(yy,y,k < lineH ? k : lineH, height);
+            fillRect(yy,y,k < lineS ? k : lineS, height);
       }
    }
 

@@ -2730,35 +2730,36 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
 #ifdef __gl2_h_
    pc1.pixel = c1;
    pc2.pixel = c2;
+   pc1.pixel = interpolate(pc1,pc2,factor*255/100);
    glFillShadedRect(Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
    currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #else   
-   int32 dim = rotate ? width : height, dim0 = dim;
-   int32 y0 = rotate ? x : y;
-   int32 hh = rotate ? x+dim : y+dim;
-   int32 incY,lineH,lineY=0,lastF=-1,c=0,backColor,i,f,yy,k;
-
+   int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
    pc2.pixel = c2;
+   dim = rotate ? width : height; dim0 = dim;
+   y0 = rotate ? x : y;
+   hh = rotate ? x+dim : y+dim;
    dim <<= 16;
-   if (height == 0) return;
-   incY = dim/height;
-   lineH = (incY>>16)+1;
-   lineY=0;
+   if (dim0 == 0) return;
+   inc = dim/dim0;
+   lineS = (inc>>16)+1;
+   line0=0;
+   lastF=-1;
    // now paint the shaded area
-   for (; lineY < dim; c++, lineY += incY)
+   for (c=0; line0 < dim; c++, line0 += inc)
    {
       i = c >= dim0 ? dim0-1 : c;
       f = (invert ? dim0-1-i : i)*factor/dim0;
       if (f != lastF) // colors repeat often
          backColor = interpolate(pc1, pc2, lastF = f*255/100);
-      yy = y0+(lineY>>16);
+      yy = y0+(line0>>16);
       k = hh - yy;
       if (!rotate)
-         fillRect(currentContext,g,x,yy,width,k < lineH ? k : lineH, backColor);
+         fillRect(currentContext,g,x,yy,width,k < lineS ? k : lineS, backColor);
       else
-         fillRect(currentContext,g,yy,y,k < lineH ? k : lineH, height, backColor);
-   } 
+         fillRect(currentContext,g,yy,y,k < lineS ? k : lineS, height, backColor);
+   }
 #endif
 }
 
