@@ -2739,11 +2739,8 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      glFillShadedRect(x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
-      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-   }
+   glFillShadedRect(g,Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
+   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #else   
    int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;

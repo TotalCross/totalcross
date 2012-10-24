@@ -225,7 +225,7 @@ static void initShade()
    shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; 
 }
 
-void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {     
    if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
@@ -258,7 +258,9 @@ void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelCon
       shcolors[10] = shcolors[14] = shcolors[22] = f255[c1.b];
    }
     
+   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+   glClearClip();
 }
 
 void initTexture()
@@ -501,20 +503,16 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    }
 }
 
-void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
+// note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
 {  
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
       glClearClip();
    else
-   {                
-      glEnable(GL_SCISSOR_TEST); 
+   {                             
+      glEnable(GL_SCISSOR_TEST);
       glScissor(x1,appH-y2,x2-x1,y2-y1);
    }
-}
-
-void glSetClipG(Object g)
-{  
-   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
 }
 
 void glClearClip()
