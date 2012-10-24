@@ -162,33 +162,6 @@ public final class Graphics4D
       fourColors[3] = four[3];
    }
 
-   private static Hashtable htVistaColors = new Hashtable(83);
-   private static int[] lastVistaColors; // speedup
-   private static int lastVistaColor=-1;
-
-   public static int[] getVistaColors(int c) // guich@573_6
-   {
-      int []vistaColors = (int[])htVistaColors.get(c);
-      if (vistaColors == null)
-      {
-         int origC = c;
-         int step = UIColors.vistaFadeStep;
-         vistaColors = new int[11];
-         for (int p = 0; p <= 10; p++)
-         {
-            vistaColors[p] = c;
-            c = Color.darker(c, p == 4 ? (step+step) : step);
-         }
-         htVistaColors.put(origC, vistaColors);
-      }
-      return vistaColors;
-   }
-
-   public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
-   {
-      fillVistaRect(x, y, width, height, invert, rotate, back == lastVistaColor ? lastVistaColors : (lastVistaColors = getVistaColors(lastVistaColor=back)));
-   }
-
    public void getAnglePoint(int xc, int yc, int rx, int ry, int angle, Coord out) // guich@300_41: fixed method signature
    {
       if (angle < 0 || angle >= 360)
@@ -222,6 +195,7 @@ public final class Graphics4D
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////
+   native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
    native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
    native protected void create(totalcross.ui.gfx.GfxSurface surface);
    native public void drawEllipse(int xc, int yc, int rx, int ry);

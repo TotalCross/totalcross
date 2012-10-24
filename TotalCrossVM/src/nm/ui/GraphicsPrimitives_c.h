@@ -2300,25 +2300,33 @@ static void drawVistaRect(Context currentContext, Object g, int32 x, int32 y, in
    drawLine(currentContext, g,x,y1,x,y2-1, leftColor);
 }
 
-static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, Object colors)
+static Pixel darkerColor(Pixel rgb, int32 step)
+{                             
+   PixelConv pc;
+   pc.pixel = rgb;
+   pc.r = max32(pc.r - step,0);
+   pc.g = max32(pc.g - step,0);
+   pc.b = max32(pc.b - step,0);
+   return pc.pixel;
+}
+
+void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor);
+static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel back, bool invert, bool rotate)
 {
-   int32 dim,y0,hh,incY,lineH,lineY=0,yy,k,c=0;
-   int32 *vistaColors = (int32*)ARRAYOBJ_START(colors);
-   dim = rotate ? width : height;
-   y0 = rotate ? x : y;
-   hh = rotate ? x+dim : y+dim;
-   dim <<= 16;
-   incY = dim/10;
-   lineH = (incY>>16)+1;
-   for (; lineY < dim; c++, lineY += incY)
+   int32 step = *vistaFadeStepP;
+   int32 s = rotate ? width : height;
+   int32 mid = s * 5 / 11;
+   Pixel ini1 = back, end1 = darkerColor(ini1,3*step); 
+   Pixel ini2 = darkerColor(end1,step), end2 = darkerColor(end1,step*7);
+   if (rotate)
    {
-      Pixel backColor = makePixelRGB(vistaColors[invert ? 10-c : c]);
-      yy = y0+(lineY>>16);
-      k = hh-yy;
-      if (!rotate)
-         fillRect(currentContext, g, x,yy,width,k < lineH ? k : lineH, backColor);
-      else
-         fillRect(currentContext, g, yy,y,k < lineH ? k : lineH, height, backColor);
+      fillShadedRect(currentContext,g,x,y,mid,height,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+      fillShadedRect(currentContext,g,x+mid,y,width-mid,height,!invert,rotate,invert?ini1:ini2,invert?end1:end2,100);
+   }
+   else
+   {
+      fillShadedRect(currentContext,g,x,y,width,mid,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+      fillShadedRect(currentContext,g,x,y+mid,width,height-mid,!invert,rotate,invert?end1:ini2,invert?ini1:end2,100);
    }
 }
 
@@ -2731,8 +2739,11 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
-   glFillShadedRect(Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
-   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+   if (translateAndClip(g, &x, &y, &width, &height))
+   {
+      glFillShadedRect(x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
+      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+   }
 #else   
    int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
@@ -2755,10 +2766,11 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
          backColor = interpolate(pc1, pc2, lastF = f*255/100);
       yy = y0+(line0>>16);
       k = hh - yy;
+      if (k > lineS) k = lineS;
       if (!rotate)
-         fillRect(currentContext,g,x,yy,width,k < lineS ? k : lineS, backColor);
+         fillRect(currentContext,g,x,yy,width,k, backColor);
       else
-         fillRect(currentContext,g,yy,y,k < lineS ? k : lineS, height, backColor);
+         fillRect(currentContext,g,yy,y,k,height, backColor);
    }
 #endif
 }

@@ -1385,52 +1385,24 @@ public final class Graphics
       foreColor = leftColor|alpha;   drawLine(x,y1,x,y2-1,foreColor);
    }
 
-   private static Hashtable htVistaColors = new Hashtable(83);
-   private static int[] lastVistaColors; // speedup
-   private static int lastVistaColor=-1;
-
-   /** Gets a 11-level gradient color array used to draw the Vista user interface style. 
-    */
-   public static int[] getVistaColors(int c) // guich@573_6
-   {
-      int []vistaColors = (int[])htVistaColors.get(c);
-      if (vistaColors == null)
-      {
-         int origC = c;
-         int step = UIColors.vistaFadeStep;
-         vistaColors = new int[11];
-         for (int p = 0; p <= 10; p++)
-         {
-            vistaColors[p] = c;
-            c = Color.darker(c, p == 4 ? (step+step) : step);
-         }
-         htVistaColors.put(origC, vistaColors);
-      }
-      return vistaColors;
-   }
-
    /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
     */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
-      int []vistaColors = (back == lastVistaColor && back != -1) ? lastVistaColors : (lastVistaColors = getVistaColors(lastVistaColor=back));
-      int dim = rotate ? width : height;
-      int y0 = rotate ? x : y;
-      int hh = rotate ? x+dim : y+dim;
-      dim <<= 16;
-      int incY = dim/10;
-      int lineH = (incY>>16)+1;
-      int lineY=0;
-      // now paint the shaded area
-      for (int c=0; lineY < dim; c++, lineY += incY)
+      int step = UIColors.vistaFadeStep;
+      int s = rotate ? width : height;
+      int mid = s * 5 / 11;
+      int ini1 = back, end1 = Color.darker(ini1,3*step); 
+      int ini2 = Color.darker(end1,step), end2 = Color.darker(end1,step*7);
+      if (rotate)
       {
-         backColor = vistaColors[invert ? 10-c : c] | alpha;
-         int yy = y0+(lineY>>16);
-         int k = hh - yy;
-         if (!rotate)
-            fillRect(x,yy,width,k < lineH ? k : lineH);
-         else
-            fillRect(yy,y,k < lineH ? k : lineH, height);
+         fillShadedRect(x,y,mid,height,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+         fillShadedRect(x+mid,y,width-mid,height,!invert,rotate,invert?ini1:ini2,invert?end1:end2,100);
+      }
+      else
+      {
+         fillShadedRect(x,y,width,mid,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+         fillShadedRect(x,y+mid,width,height-mid,!invert,rotate,invert?end1:ini2,invert?ini1:end2,100);
       }
    }
 
@@ -1457,10 +1429,11 @@ public final class Graphics
             backColor = Color.interpolate(c1, c2, lastF = f) | alpha;
          int yy = y0+(line0>>16);
          int k = hh - yy;
+         if (k > lineS) k = lineS;
          if (!rotate)
-            fillRect(x,yy,width,k < lineS ? k : lineS);
+            fillRect(x,yy,width,k);
          else
-            fillRect(yy,y,k < lineS ? k : lineS, height);
+            fillRect(yy,y,k,height);
       }
    }
 

@@ -63,6 +63,7 @@ int32* controlEnableUpdateScreenPtr;
 TScreenSurface screen;
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+int32* vistaFadeStepP;
 bool callingScreenChange;
 
 // mem.c

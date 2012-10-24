@@ -506,10 +506,15 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
       glClearClip();
    else
-   {                             
-      glEnable(GL_SCISSOR_TEST);
+   {                
+      glEnable(GL_SCISSOR_TEST); 
       glScissor(x1,appH-y2,x2-x1,y2-y1);
    }
+}
+
+void glSetClipG(Object g)
+{  
+   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
 }
 
 void glClearClip()

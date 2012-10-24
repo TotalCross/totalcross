@@ -24,6 +24,7 @@ void applyChanges(Object obj);
 bool checkGLfloatBuffer(Context c, int32 n);
 void flushPixels();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
+void glSetClipG(Object g);
 void glClearClip();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
 void glFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
@@ -617,11 +618,10 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p) // totalcross/ui/gfx/Graphics native private void fill3dRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
    Object g = p->obj[0];
-   if (p->obj[1])
-      fillVistaRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], (bool)p->i32[4], (bool)p->i32[5], p->obj[1]);
+   fillVistaRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], makePixelRGB(p->i32[4]), (bool)p->i32[5], (bool)p->i32[6]);
 }                   
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawArrow_iiibbi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);

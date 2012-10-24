@@ -342,10 +342,10 @@ public class Radio extends Control
             g.fillCircle(5,6,4);
          if (uiVista && enabled) // guich@573_6: shade diagonally
          {
-            int[] vcolors = Graphics.getVistaColors(bColor);
-            for (k=9,j=0; j < 7; j++) // bigger k -> darker
+            g.foreColor = Color.darker(bColor,UIColors.vistaFadeStep*2);
+            for (k=9,j=6; j >= 0; j--) // bigger k -> darker
             {
-               g.foreColor = vcolors[k--];
+               g.foreColor = Color.darker(g.foreColor,UIColors.vistaFadeStep);
                g.drawLine(2,4+j,4+j,2);
             }
          }
@@ -376,19 +376,18 @@ public class Radio extends Control
             g.backColor = cColor;
             if (uiVista) // guich@573_6
             {
-               int[] vcolors = Graphics.getVistaColors(cColor);
                if (big)
                {
-                  g.backColor = vcolors[9];
+                  g.backColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
                   g.fillCircle(7,7,4);
-                  g.backColor = vcolors[0];
+                  g.backColor = cColor;
                   g.fillCircle(7,7,2);
                }
                else
                {
-                  g.backColor = vcolors[0];
+                  g.backColor = cColor;
                   g.fillRect(5, 4, 2, 4);
-                  g.foreColor = vcolors[9];
+                  g.foreColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
                   g.drawLine(4, 5, 4, 6);
                   g.drawLine(7, 5, 7, 6);
                }

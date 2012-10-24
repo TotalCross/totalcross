@@ -91,7 +91,7 @@ TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p);
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p);
 TC_API void tugG_drawArrow_iiibbi(NMParams p);
 TC_API void tugG_drawImage_iii(NMParams p);
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p);

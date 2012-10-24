@@ -139,6 +139,7 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
+   vistaFadeStepP = getStaticFieldInt(uiColorsClass, "vistaFadeStep");
    return true;
 }
 
