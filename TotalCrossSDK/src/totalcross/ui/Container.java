@@ -156,7 +156,7 @@ public class Container extends Control
             screen0 = MainWindow.getScreenShot();
             screen0.lockChanges();
          }
-         catch (Exception e) {}
+         catch (Throwable e) {}
    }
 
    static Image screen0;
@@ -203,7 +203,7 @@ public class Container extends Control
                Window.updateScreen();
             }
          }
-         catch (Exception e) {}
+         catch (Throwable e) {}
       screen0 = null;
       Vm.gc();
    }
