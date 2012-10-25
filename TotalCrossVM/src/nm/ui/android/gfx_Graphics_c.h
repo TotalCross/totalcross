@@ -222,7 +222,7 @@ static void initShade()
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(shadePosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; 
+   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
 }
 
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -239,25 +239,79 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 
    if (!horiz)
    {
-      shcolors[0] = shcolors[12] = shcolors[20] = f255[c2.r];
-      shcolors[1] = shcolors[13] = shcolors[21] = f255[c2.g];
-      shcolors[2] = shcolors[14] = shcolors[22] = f255[c2.b];
+      shcolors[0] = shcolors[12] = f255[c2.r]; // upper left + upper right
+      shcolors[1] = shcolors[13] = f255[c2.g];
+      shcolors[2] = shcolors[14] = f255[c2.b];
       
-      shcolors[4] = shcolors[8]  = shcolors[16] = f255[c1.r];
-      shcolors[5] = shcolors[9]  = shcolors[17] = f255[c1.g];
-      shcolors[6] = shcolors[10] = shcolors[18] = f255[c1.b];
+      shcolors[4] = shcolors[8]  = f255[c1.r]; // lower left + lower right
+      shcolors[5] = shcolors[9]  = f255[c1.g];
+      shcolors[6] = shcolors[10] = f255[c1.b];
    }
    else
    {
-      shcolors[0] = shcolors[4] = shcolors[16] = f255[c2.r];
-      shcolors[1] = shcolors[5] = shcolors[17] = f255[c2.g];
-      shcolors[2] = shcolors[6] = shcolors[18] = f255[c2.b];
+      shcolors[0] = shcolors[4] = f255[c2.r];  // upper left + lower left
+      shcolors[1] = shcolors[5] = f255[c2.g];
+      shcolors[2] = shcolors[6] = f255[c2.b];
       
-      shcolors[8]  = shcolors[12] = shcolors[20] = f255[c1.r];
-      shcolors[9]  = shcolors[13] = shcolors[21] = f255[c1.g];
-      shcolors[10] = shcolors[14] = shcolors[22] = f255[c1.b];
+      shcolors[8]  = shcolors[12] = f255[c1.r]; // lower right + upper right
+      shcolors[9]  = shcolors[13] = f255[c1.g];
+      shcolors[10] = shcolors[14] = f255[c1.b];
    }
     
+   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+   glClearClip();
+}
+/*
+void gltDrawArc(unsigned int const segments, float angle_start, float angle_stop)
+{
+    int i;
+    float const angle_step = (angle_stop - angle_start)/segments;
+
+    GLfloat *arc_vertices;
+    arc_vertices = malloc(2*sizeof(GLfloat) * (segments+2));
+
+    arc_vertices[0] = arc_vertices[1] = 0.
+
+    for(i=0; i<segments+1; i++) 
+    {
+        arc_vertices[2 + 2*i    ] = cos(angle_start + i*angle_step);
+        arc_vertices[2 + 2*i + 1] = sin(angle_start + i*angle_step);
+    }
+    glVertexPointer(2, GL_FLOAT, 0, arc_vertices);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, segments+2);
+    free(arc_vertices);
+}
+*/
+void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur)
+{     
+   if (pixcolors != (int32*)glcolors) flushPixels();
+   setCurrentProgram(shadeProgram);
+   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors);
+   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords);
+   
+   shcoords[0] = shcoords[2] = x;
+   shcoords[1] = shcoords[7] = y;
+   shcoords[3] = shcoords[5] = y+h;
+   shcoords[4] = shcoords[6] = x+w;
+
+   shcolors[0] = f255[ul.r]; // upper left
+   shcolors[1] = f255[ul.g];
+   shcolors[2] = f255[ul.b];
+
+   shcolors[4] = f255[ll.r]; // lower left
+   shcolors[5] = f255[ll.g];
+   shcolors[6] = f255[ll.b];
+
+   shcolors[8]  = f255[lr.r]; // lower right
+   shcolors[9]  = f255[lr.g];
+   shcolors[10] = f255[lr.b];
+
+   shcolors[12] = f255[ur.r]; // upper right
+   shcolors[13] = f255[ur.g];
+   shcolors[14] = f255[ur.b];
+
    glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
    glClearClip();
@@ -347,8 +401,8 @@ void initLineRectPoint()
    glEnableVertexAttribArray(lrpPosition);
 }
 
-#define IS_PIXEL (1<<31)
-#define IS_DIAGONAL  (1<<30)
+#define IS_PIXEL (1<<28)
+#define IS_DIAGONAL  (1<<27)
 
 void flushPixels()
 {
@@ -401,7 +455,6 @@ void flushPixels()
             coords[1] = coords[7] = y;
             coords[3] = coords[5] = y+h;
             coords[4] = coords[6] = x+w;
-
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
          }
       }
@@ -439,7 +492,7 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
    if (x1 == x2)
       add2pipe(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
    else
-   if (y1 == y2)
+   if (y1 == y2) 
       add2pipe(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
    else              
       add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);

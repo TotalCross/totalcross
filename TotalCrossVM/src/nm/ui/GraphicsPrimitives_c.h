@@ -22,6 +22,15 @@
 extern int appW,appH;
 extern GLfloat ftransp[16], f255[256];
 extern GLfloat *glcoords, *glcolors;
+
+static void glDrawPixelG(Object g, int32 xx, int32 yy, int32 color, int32 alpha)
+{
+   xx += Graphics_transX(g);
+   yy += Graphics_transY(g);
+   if (Graphics_clipX1(g) <= xx && xx <= Graphics_clipX2(g) && Graphics_clipY1(g) <= yy && yy <= Graphics_clipY2(g))
+      glDrawPixel(xx,yy,color,alpha);
+}
+
 #endif
 
 
@@ -264,7 +273,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(dstSurf))
-   {                              
+   {
       if (isSrcScreen)
          glGetPixels(dstPixels,srcX,srcY,width,height,Graphics_pitch(dstSurf));
       else
@@ -575,7 +584,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        if (xMin < clipX1 || (xMin+dX) >= clipX2 || yMin < clipY1 || (yMin+dY) >= clipY2)
           dontClip = false;
 
-#ifdef __gl2_h_  
+#ifdef __gl2_h_
        bool useOpenGL = Graphics_useOpenGL(g);
        if (useOpenGL) // draw a full line and then cover with pixel2 colors
        {
@@ -716,23 +725,6 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   DeltaX = abs32(dx);
   DeltaY = abs32(dy);
 
-#ifdef __gl2_h_
-  if (Graphics_useOpenGL(g))
-  {
-     if (DeltaX > DeltaY)
-     {
-        glDrawLine(x1+tX,y1+tY,x2+tX,y2+tY, color_, 255);
-        glDrawLine(x1+tX,y1+tY+1,x2+tX,y2+tY+1, color_, 128);
-     }
-     else 
-     {
-        glDrawLine(x1+tX,y1+tY,x2+tX,y2+tY, color_, 255);
-        glDrawLine(x1+tX+1,y1+tY,x2+tX+1,y2+tY, color_, 128);
-     }
-     return;
-  }
-#endif
-
   color.pixel = color_;
   rr = color.r;
   gg = color.g;
@@ -750,15 +742,33 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   else
   if (DeltaX > DeltaY)
   {
-     // Exchange line end points
      if (dx < 0)
      {
         temp = x1; x1 = x2; x2 = temp;
         temp = y1; y1 = y2; y2 = temp;
      }
+     // Exchange line end points
      k = (dy<<16) / dx;
      // Set middle pixels
      yt = (y1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (xs=x1+1; xs<x2; xs++)
+        {
+           z = (yt>>16);
+           distance = yt - (z<<16);
+           notdist = (1<<16) - distance;
+           temp = 255;//(distance*255 + notdist*255) >> 16;
+           glDrawPixelG(g, xs, z, (rr<<16)|(gg<<8)|bb,temp);
+   
+           temp = 128;//(notdist*255 + distance*255) >> 16;
+           glDrawPixelG(g, xs, z+1, (rr<<16)|(gg<<8)|bb,temp);
+           yt += k;
+        }
+     }
+     else
+#endif
      for (xs=x1+1; xs<x2; xs++)
      {
         z = (yt>>16);
@@ -792,6 +802,30 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
 
      // Set middle pixels
      xt = (x1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (ys=y1+1; ys<y2; ys++)
+        {
+           z = xt>>16;
+           distance = xt - (z<<16);
+           notdist = (1<<16) - distance;
+   
+//           bgColor = getPixelConv(g,z, ys);
+//           red   = (distance*bgColor.r + notdist*rr) >> 16;
+           temp = 255;
+           glDrawPixelG(g, z, ys, (rr<<16)|(gg<<8)|bb,temp);
+   
+//           bgColor = getPixelConv(g,z+1, ys);
+//           red   = (notdist*bgColor.r + distance*rr) >> 16;
+           temp = 128;
+           glDrawPixelG(g, z+1,ys, (rr<<16)|(gg<<8)|bb,temp);
+   
+           xt += k;
+        }
+     }
+     else
+#endif      
      for (ys=y1+1; ys<y2; ys++)
      {
         z = xt>>16;
@@ -2299,7 +2333,7 @@ static void drawVistaRect(Context currentContext, Object g, int32 x, int32 y, in
 }
 
 static Pixel darkerColor(Pixel rgb, int32 step)
-{                             
+{
    PixelConv pc;
    pc.pixel = rgb;
    pc.r = max32(pc.r - step,0);
@@ -2314,7 +2348,7 @@ static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, in
    int32 step = *vistaFadeStepP;
    int32 s = rotate ? width : height;
    int32 mid = s * 5 / 11;
-   Pixel ini1 = back, end1 = darkerColor(ini1,3*step); 
+   Pixel ini1 = back, end1 = darkerColor(ini1,3*step);
    Pixel ini2 = darkerColor(end1,step), end2 = darkerColor(end1,step*7);
    if (rotate)
    {
@@ -2336,14 +2370,11 @@ inline static int getOffset(int radius, int y)
 static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4
 {
 #ifdef __gl2_h_
-   if (Graphics_useOpenGL(g))   
-   {  
-      if (Graphics_clipX1(g) <= xx && xx <= Graphics_clipX2(g) && Graphics_clipY1(g) <= yy && yy <= Graphics_clipY2(g))
-         glDrawPixel(xx+Graphics_transX(g),yy+Graphics_transY(g),c,20*255/100);
-   }
+   if (Graphics_useOpenGL(g))
+      glDrawPixelG(g,xx,yy,c,20*255/100);
    else
 #endif
-   {      
+   {
    PixelConv c1,c2;
    c1.pixel = c;
    c2 = getPixelConv(g, xx, yy);
@@ -2499,17 +2530,37 @@ static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelC
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
-      glDrawPixel(x+Graphics_transX(g),y+Graphics_transY(g),color.pixel,alpha);
+   {
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      if (Graphics_clipX1(g) <= x && x <= Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y <= Graphics_clipY2(g))
+         glDrawPixel(x,y,color.pixel,alpha);
+   }
    else
 #endif
       setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
 }
 
+// only supports horizontal and vertical lines
 static void drawLineA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, PixelConv color, int32 alpha)
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
-      glDrawLine(x1+Graphics_transX(g),y1+Graphics_transY(g),x2+Graphics_transX(g),y2+Graphics_transY(g),color.pixel,alpha);
+   {
+      x1 += Graphics_transX(g);
+      y1 += Graphics_transY(g);
+      x2 += Graphics_transX(g);
+      y2 += Graphics_transY(g);
+      if (x1 < Graphics_clipX1(g))
+         x1 = Graphics_clipX1(g);
+      if (x2 > Graphics_clipX2(g))
+         x2 = Graphics_clipX2(g);
+      if (y1 < Graphics_clipY1(g))
+         y1 = Graphics_clipY1(g);
+      if (y2 > Graphics_clipY2(g))
+         y2 = Graphics_clipY2(g);
+      glDrawLine(x1,y1,x2,y2,color.pixel,alpha);
+   }
    else
 #endif
       drawLine(currentContext, g, x1,y1,x2,y2,interpolate(color, getPixelConv(g, x1, y1), alpha)); // bottom
@@ -2693,6 +2744,19 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
 
 static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
+#ifdef __gl2_h_
+   PixelConv pc1,pc2;
+   int32 w = endX-startX,h = endY-startY, w2=w/2, h2=h/2, x = Graphics_transX(g)+startX,y=Graphics_transY(g)+startY;
+   pc1.pixel = startColor;
+   pc2.pixel = endColor;
+
+   // PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur
+   glDrawCylindricShade(g,x,y,w2,h2,pc1,pc1,pc2,pc1);
+   glDrawCylindricShade(g,x+w2,y,w2,h2,pc1,pc2,pc1,pc1);
+   glDrawCylindricShade(g,x,y+h2,w2,h2,pc1,pc1,pc1,pc2);
+   glDrawCylindricShade(g,x+w2,y+h2,w2,h2,pc2,pc1,pc1,pc1);
+   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+#else
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
    int32 startRed = (startColor >> 16) & 0xFF;
    int32 startGreen = (startColor >> 8) & 0xFF;
@@ -2706,13 +2770,16 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
    int32 red = startRed << 16;
    int32 green = startGreen << 16;
    int32 blue = startBlue << 16;
-   int32 foreColor,rr,gg,bb,sx,sy,ii,i2,i;
+   int32 rr,gg,bb,sx,sy,ii,i2,i;
+   Pixel foreColor;
+   PixelConv pc;
+   pc.a = 255;
    for (i = 0; i < numSteps; i++)
    {
       rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
       gg = ((green+i*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
       bb = ((blue+i*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-      foreColor = (rr << 16) | (gg << 8) | bb;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
       sx = startX+i;
       sy = startY+i;
       drawRect(currentContext, g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
@@ -2720,7 +2787,7 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
       rr = ((red+ii*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
       gg = ((green+ii*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
       bb = ((blue+ii*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-      foreColor = (rr << 16) | (gg << 8) | bb;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
       i2 = i/8;
       drawLine(currentContext, g,sx-i2,sy+i2,sx+i2,sy-i2,foreColor);
       sx = endX-i; drawLine(currentContext, g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
@@ -2728,10 +2795,11 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
       sx = startX+i; drawLine(currentContext, g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
    }
    if (screen.bpp < 24) dither(currentContext, g, startX, startY, endX-startX, endY-startY);
+#endif
 }
 
 void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
-{                 
+{
    PixelConv pc1,pc2;
 #ifdef __gl2_h_
    pc1.pixel = c1;
@@ -2739,7 +2807,7 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
    glFillShadedRect(g,Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
    currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-#else   
+#else
    int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
    pc2.pixel = c2;
@@ -2865,7 +2933,7 @@ void updateScreen(Context currentContext)
       currentContext->fullDirty = false;
    }
 #ifdef __gl2_h_
-   else 
+   else
    if (keepRunning && controlEnableUpdateScreenPtr && !*controlEnableUpdateScreenPtr)
       flushAll();
 #endif
