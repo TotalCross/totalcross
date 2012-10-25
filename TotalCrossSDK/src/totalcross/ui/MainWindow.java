@@ -647,6 +647,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
       if (!Settings.isOpenGL)
          img.setTransparentColor(-1);
+      else
+         img.applyChanges();
       return img;
    }
 }

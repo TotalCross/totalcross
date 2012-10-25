@@ -20,6 +20,8 @@
 
 #ifdef __gl2_h_
 extern int appW,appH;
+extern GLfloat ftransp[16], f255[256];
+extern GLfloat *glcoords, *glcolors;
 #endif
 
 
@@ -898,10 +900,6 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 #define INTERP(j,f) (j + (((f - j) * transparency) >> 4)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-#ifdef __gl2_h_
-extern GLfloat ftransp[16], f255[256];
-extern GLfloat *glcoords, *glcolors;
-#endif
 
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
@@ -2866,6 +2864,11 @@ void updateScreen(Context currentContext)
       currentContext->dirtyX2 = currentContext->dirtyY2 = 0;
       currentContext->fullDirty = false;
    }
+#ifdef __gl2_h_
+   else 
+   if (keepRunning && controlEnableUpdateScreenPtr && !*controlEnableUpdateScreenPtr)
+      flushAll();
+#endif
    UNLOCKVAR(screen);
 }
 

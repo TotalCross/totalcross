@@ -494,13 +494,13 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
       for (i = 0; i < width; i++)
       {
          gp.pixel = *p;
-         pc.a = gp.a;
+         pc.a = 255;//gp.a; - with this, the transition effect causes a fade-out when finished in UIGadgets
          pc.r = gp.r;
          pc.g = gp.g;
          pc.b = gp.b;
          *p++ = pc.pixel;       
       }
-   }
+   }   
 }
 
 // note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
@@ -519,6 +519,12 @@ void glClearClip()
 {
    glDisable(GL_SCISSOR_TEST);
 }   
+
+void flushAll()
+{
+   flushPixels();
+   glFlush();
+}
 
 /////////////////////////////////////////////////////////////////////////
 bool checkGLfloatBuffer(Context c, int32 n)
@@ -667,7 +673,7 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #else
    graphicsUpdateScreenIOS(screen);
 #endif
-   glClearColor(0,0,0,0);
+   glClearColor(1,1,1,1);
    glClear(GL_COLOR_BUFFER_BIT);
 }
 
