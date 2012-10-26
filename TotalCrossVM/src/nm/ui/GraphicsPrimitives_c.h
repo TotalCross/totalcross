@@ -733,10 +733,10 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   // Set start pixel
   setPixel(currentContext, g, x1, y1, color_);
 
-  // X-dominant line
   if (DeltaX == 0 && DeltaY == 0) // the pixel was already drawn
      ;
   else
+  // X-dominant line
   if (DeltaX > DeltaY)
   {
      if (dx < 0)
@@ -755,10 +755,7 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         {
            z = (yt>>16);
            glDrawPixelG(g, xs, z, color_,255);
-           glDrawPixelG(g, xs+1, z-1, color_,96);
-           glDrawPixelG(g, xs+1, z+1, color_,96);
-           glDrawPixelG(g, xs-1, z+1, color_,96);
-           glDrawPixelG(g, xs-1, z-1, color_,96);
+           glDrawPixelG(g, xs, z+1, color_,96);
            yt += k;
         }
      }
@@ -804,10 +801,7 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         {
            z = xt>>16;
            glDrawPixelG(g, z, ys, color_,255);
-           glDrawPixelG(g, z-1, ys-1, color_,96);
-           glDrawPixelG(g, z+1, ys+1, color_,96);
-           glDrawPixelG(g, z-1, ys+1, color_,96);
-           glDrawPixelG(g, z+1, ys-1, color_,96);
+           glDrawPixelG(g, z+1, ys, color_,96);
            xt += k;
         }
      }
