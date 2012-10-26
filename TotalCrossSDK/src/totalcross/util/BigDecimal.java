@@ -406,7 +406,6 @@ public class BigDecimal implements Comparable
     * @return a BigDecimal whose value is the remainder
     * @throws InvalidNumberException 
     * @throws IllegalArgumentException 
-    * @throws ArithmeticException 
     * @throws ArithmeticException
     *            if val == 0
     */
