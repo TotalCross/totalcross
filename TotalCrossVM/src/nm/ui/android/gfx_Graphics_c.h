@@ -262,30 +262,9 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
    glClearClip();
 }
-/*
-void gltDrawArc(unsigned int const segments, float angle_start, float angle_stop)
-{
-    int i;
-    float const angle_step = (angle_stop - angle_start)/segments;
 
-    GLfloat *arc_vertices;
-    arc_vertices = malloc(2*sizeof(GLfloat) * (segments+2));
-
-    arc_vertices[0] = arc_vertices[1] = 0.
-
-    for(i=0; i<segments+1; i++) 
-    {
-        arc_vertices[2 + 2*i    ] = cos(angle_start + i*angle_step);
-        arc_vertices[2 + 2*i + 1] = sin(angle_start + i*angle_step);
-    }
-    glVertexPointer(2, GL_FLOAT, 0, arc_vertices);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, segments+2);
-    free(arc_vertices);
-}
-*/
 void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur)
-{     
+{
    if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors);
@@ -401,6 +380,12 @@ void initLineRectPoint()
    glEnableVertexAttribArray(lrpPosition);
 }
 
+void glSetLineWidth(int32 w)
+{
+   setCurrentProgram(lrpProgram);
+   glLineWidth(w);
+}
+
 #define IS_PIXEL (1<<28)
 #define IS_DIAGONAL  (1<<27)
 
@@ -484,6 +469,11 @@ static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {   
    add2pipe(x|IS_PIXEL,y,1,1,rgb,a);
+}
+
+void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
+{
+   add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)

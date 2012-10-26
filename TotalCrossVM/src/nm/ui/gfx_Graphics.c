@@ -27,7 +27,8 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 void glClearClip();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
-void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur);
+void glSetLineWidth(int32 w);
+void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void flushAll();
 #else
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))

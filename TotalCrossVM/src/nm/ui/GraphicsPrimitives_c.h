@@ -2722,21 +2722,19 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
    }
 }
 
+static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
+{                    
+   if (translateAndClip(g, &x,&y,&width,&height))
+   {             
+      glDrawThickLine(x,y,x+width,y,pixel,255);
+      glDrawThickLine(x,y,x,y+height,pixel,255);
+      glDrawThickLine(x+width,y,x+width,y+height,pixel,255);
+      glDrawThickLine(x,y+height,x+width,y+height,pixel,255);
+   }
+}
+
 static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
-#ifdef __gl2_h_
-   PixelConv pc1,pc2;
-   int32 w = endX-startX,h = endY-startY, w2=w/2, h2=h/2, x = Graphics_transX(g)+startX,y=Graphics_transY(g)+startY;
-   pc1.pixel = startColor;
-   pc2.pixel = endColor;
-
-   // PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur
-   glDrawCylindricShade(g,x,y,w2,h2,pc1,pc1,pc2,pc1);
-   glDrawCylindricShade(g,x+w2,y,w2,h2,pc1,pc2,pc1,pc1);
-   glDrawCylindricShade(g,x,y+h2,w2,h2,pc1,pc1,pc1,pc2);
-   glDrawCylindricShade(g,x+w2,y+h2,w2,h2,pc2,pc1,pc1,pc1);
-   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-#else
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
    int32 startRed = (startColor >> 16) & 0xFF;
    int32 startGreen = (startColor >> 8) & 0xFF;
@@ -2753,7 +2751,24 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
    int32 rr,gg,bb,sx,sy,ii,i2,i;
    Pixel foreColor;
    PixelConv pc;
-   pc.a = 255;
+   pc.a = 255;      
+#ifdef __gl2_h_
+   flushPixels();
+   glSetLineWidth(2);
+   for (i = 0; i < numSteps; i++)
+   {
+      rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+      gg = ((green+i*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+      bb = ((blue+i*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
+      sx = startX+i;
+      sy = startY+i;
+      drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
+   }
+   flushPixels();
+   glSetLineWidth(1);
+   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+#else
    for (i = 0; i < numSteps; i++)
    {
       rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
