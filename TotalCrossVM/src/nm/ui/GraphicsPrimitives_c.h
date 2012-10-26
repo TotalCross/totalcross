@@ -737,9 +737,6 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   if (DeltaX == 0 && DeltaY == 0) // the pixel was already drawn
      ;
   else
-  if (DeltaY == 0 || DeltaX == 0 || DeltaX == DeltaY)
-     drawDottedLine(currentContext, g,x1,y1,x2,y2, color_, color_);
-  else
   if (DeltaX > DeltaY)
   {
      if (dx < 0)
@@ -757,13 +754,11 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (xs=x1+1; xs<x2; xs++)
         {
            z = (yt>>16);
-           distance = yt - (z<<16);
-           notdist = (1<<16) - distance;
-           temp = 255;//(distance*255 + notdist*255) >> 16;
-           glDrawPixelG(g, xs, z, (rr<<16)|(gg<<8)|bb,temp);
-   
-           temp = 128;//(notdist*255 + distance*255) >> 16;
-           glDrawPixelG(g, xs, z+1, (rr<<16)|(gg<<8)|bb,temp);
+           glDrawPixelG(g, xs, z, color_,255);
+           glDrawPixelG(g, xs+1, z-1, color_,96);
+           glDrawPixelG(g, xs+1, z+1, color_,96);
+           glDrawPixelG(g, xs-1, z+1, color_,96);
+           glDrawPixelG(g, xs-1, z-1, color_,96);
            yt += k;
         }
      }
@@ -775,7 +770,7 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         distance = yt - (z<<16);
         notdist = (1<<16) - distance;
 
-        bgColor = getPixelConv(g,xs, z);
+        bgColor = getPixelConv(g, xs, z);
         red   = (distance*bgColor.r + notdist*rr) >> 16;
         green = (distance*bgColor.g + notdist*gg) >> 16;
         blue  = (distance*bgColor.b + notdist*bb) >> 16;
@@ -808,19 +803,11 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (ys=y1+1; ys<y2; ys++)
         {
            z = xt>>16;
-           distance = xt - (z<<16);
-           notdist = (1<<16) - distance;
-   
-//           bgColor = getPixelConv(g,z, ys);
-//           red   = (distance*bgColor.r + notdist*rr) >> 16;
-           temp = 255;
-           glDrawPixelG(g, z, ys, (rr<<16)|(gg<<8)|bb,temp);
-   
-//           bgColor = getPixelConv(g,z+1, ys);
-//           red   = (notdist*bgColor.r + distance*rr) >> 16;
-           temp = 128;
-           glDrawPixelG(g, z+1,ys, (rr<<16)|(gg<<8)|bb,temp);
-   
+           glDrawPixelG(g, z, ys, color_,255);
+           glDrawPixelG(g, z-1, ys-1, color_,96);
+           glDrawPixelG(g, z+1, ys+1, color_,96);
+           glDrawPixelG(g, z-1, ys+1, color_,96);
+           glDrawPixelG(g, z+1, ys-1, color_,96);
            xt += k;
         }
      }
@@ -847,7 +834,6 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         xt += k;
      }
   }
-
   // Set end pixel
   setPixel(currentContext, g, x2, y2, color_);
 }
