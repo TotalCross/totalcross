@@ -54147,6 +54147,167 @@ BigDecimal b = new BigDecimal(edValor.getText());
 \end_layout
 
 \begin_layout Standard
+This class has the following constants:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZERO The constant zero as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ONE The constant one as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TEN The constant ten as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UP Rounding mode to round away from zero.
+ Always increments the digit prior to a nonzero discarded fraction.
+ Note that this rounding mode never decreases the magnitude of the calculated
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_DOWN Rounding mode to round towards zero.
+ Never increments the digit prior to a discarded fraction (i.
+ e., truncates).
+ Note that this rounding mode never increases the magnitude of the calculated
+ value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_CEILING Rounding mode to round towards positive infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+; if negative, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this rounding mode never decreases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_FLOOR Rounding mode to round towards negative infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behave as for 
+\family typewriter
+ROUND_DOWN
+\family default
+; if negative, behave as for 
+\family typewriter
+ROUND_UP
+\family default
+.
+ Note that this rounding mode never increases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_UP Rounding mode to round towards "nearest neighbor" unless both
+ neighbors are equidistant, in which case round up.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+>= 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this is the rounding mode that most of us were taught in grade
+ school.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_DOWN Rounding mode to round towards "nearest neighbor" unless
+ both neighbors are equidistant, in which case round down.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+> 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_EVEN Rounding mode to round towards the "nearest neighbor" unless
+ both neighbors are equidistant, in which case, round towards the even neighbor.
+ Behaves as for 
+\family typewriter
+ROUND_HALF_UP
+\family default
+ if the digit to the left of the discarded fraction is odd; behaves as for
+ 
+\family typewriter
+ROUND_HALF_DOWN
+\family default
+ if it's even.
+ Note that this is the rounding mode that minimizes cumulative error when
+ applied repeatedly over a sequence of calculations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UNNECESSARY Rounding mode to assert that the requested operation has
+ an exact result, hence no rounding is necessary.
+ If this rounding mode is specified on an operation that yields an inexact
+ result, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout Standard
 This class has the following public constructors and methods (excluding
  some fields from its superclasses):
 \end_layout
