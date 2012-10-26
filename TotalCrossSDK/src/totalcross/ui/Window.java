@@ -1035,7 +1035,7 @@ public class Window extends Container
             {
                case HORIZONTAL_GRADIENT:
                case VERTICAL_GRADIENT:
-                  gg.drawRoundGradient(0, 0, width,hh, 0, 0, 0, 0, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor, borderStyle == VERTICAL_GRADIENT);
+                  gg.fillShadedRect(0, 0, width,hh, true, borderStyle == HORIZONTAL_GRADIENT, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor,100);
                   break;
                case TAB_BORDER:
                case TAB_ONLY_BORDER:
