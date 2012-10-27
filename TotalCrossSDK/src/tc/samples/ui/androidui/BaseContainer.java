@@ -24,12 +24,14 @@ public class BaseContainer extends Container
    public BaseContainer()
    {
       transitionEffect = TRANSITION_OPEN;
+      backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
    }
    
    public void initUI()
    {
       try
       {
+         setForeColor(0xBFCFFF);
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
          
@@ -148,10 +150,10 @@ public class BaseContainer extends Container
          MainWindow.exit(0); // we're the last screen, so just exit the application
       }
    }
-   
+/*   
    public void onPaint(Graphics g)
    {
       super.onPaint(g); 
       g.drawCylindricShade(0xBFCFFF,Color.WHITE,0,headerBar.getY2(),width,height-footerBar.getHeight());
    }
-}
+*/}
