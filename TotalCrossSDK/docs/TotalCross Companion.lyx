@@ -17310,7 +17310,7 @@ totalcross.ui.
 \begin_inset Newline newline
 \end_inset
 
- or ulatorBox
+ CalculatorBox
 \family default
  is the one popped up.
  You can change the calculator to a numeric box for a specific edit by making
@@ -52839,6 +52839,7 @@ You may get or set the logger default settings with these static methods:
 \labelwidthstring 0
 getDefaultSeparator() Returns the string used as initial message separator,
  which is used by new loggers.
+ A separator is a string that separates two log messages.
 \end_layout
 
 \begin_layout FieldList
@@ -52872,7 +52873,7 @@ The logger level may be one of the above message levels, or any composition
 \family typewriter
 OR
 \family default
-ed together.
+'ed together.
  You may also use one of the following constants:
 \end_layout
 
@@ -52907,7 +52908,8 @@ getLogger(String
 \begin_inset space ~
 \end_inset
 
-name) Returns the logger with the given name.
+name) Returns the logger with the given name, keeping its level and output
+ handlers unchanged.
  If the logger does not exist, it will be created and stored for future
  use.
 \end_layout
@@ -52926,9 +52928,15 @@ int
 \begin_inset space ~
 \end_inset
 
-level) Returns the logger with the given name, setting the specified level.
+level) Returns the logger with the given name, setting the specified level
+ and keeping the output handlers unchanged.
  If the logger does not exist, it will be created and stored for future
  use.
+ If 
+\family typewriter
+level == -1
+\family default
+, it won't be changed.
 \end_layout
 
 \begin_layout FieldList
@@ -52958,6 +52966,15 @@ outputStream) Returns the logger with the given name, setting the level
  handlers.
  If the logger does not exist, it will be created and stored for future
  use.
+ If 
+\family typewriter
+level == -1
+\family default
+ or 
+\family typewriter
+outputStream == null
+\family default
+, it won't be changed.
 \end_layout
 
 \begin_layout FieldList
@@ -52967,22 +52984,31 @@ getGlobalLogger() Returns the global anonymous logger (
 name == null
 \family default
 ).
+ Notice that the name can't be null in the above methods.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-After getting a Logger instance, you may get or set its settings:
+After getting a 
+\family typewriter
+Logger
+\family default
+ instance, you may get or set its settings:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getName() Returns the name of this logger.
+getName() Returns the name of the logger or 
+\family typewriter
+null
+\family default
+, if the logger is the global anonymous logger.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSeparator() Returns the string used by this logger to separate log messages.
+getSeparator() Returns the string used by the logger to separate log messages.
 \end_layout
 
 \begin_layout FieldList
@@ -52991,12 +53017,26 @@ setSeparator(String
 \begin_inset space ~
 \end_inset
 
-separator) Sets the separator to be used by this logger.
+separator) Sets the separator to be used by the logger.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getLevel() Returns the current level of this logger.
+getLevel() Returns the current level of the logger, which is an integer
+ number representing the current logger level.
+ To check if the logger is set to log a specific type of message (
+\family typewriter
+SEVERE
+\family default
+, 
+\family typewriter
+WARNING
+\family default
+, etc), just check if the level 
+\family typewriter
+OR
+\family default
+'ed with the message level is different from zero.
 \end_layout
 
 \begin_layout FieldList
@@ -53005,12 +53045,77 @@ setLevel(int
 \begin_inset space ~
 \end_inset
 
-level) Sets the current level of this logger.
+level) Sets the current level of the logger.
+ 
+\family typewriter
+level
+\family default
+ should be a composition of one or more of the message types constants (
+\family typewriter
+FINEST
+\family default
+, 
+\family typewriter
+FINER
+\family default
+, 
+\family typewriter
+FINE
+\family default
+, 
+\family typewriter
+CONFIG
+\family default
+, 
+\family typewriter
+INFO
+\family default
+, 
+\family typewriter
+WARNING
+\family default
+, or 
+\family typewriter
+SEVERE
+\family default
+), 
+\family typewriter
+OFF
+\family default
+, if you want to disable all logging, or 
+\family typewriter
+ALL
+\family default
+, if you want to enable all logging.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSeparator() Gets the string used to separate two log messages, that is,
+ the string written after each log message.
+ A separator can be 
+\family typewriter
+
+\backslash
+n
+\family default
+ (newline), white spaces, etc.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSeparator(String
+\begin_inset space ~
+\end_inset
+
+separator) Sets the string used to separate two log messages.
+ 
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-You must add a output handler to a logger, which is a stream object that
+You must add an output handler to a logger, which is a stream object that
  will receive the log messages.
  A logger may have multiple output handlers.
 \end_layout
@@ -53022,13 +53127,17 @@ addOutputHandler(Stream
 \begin_inset space ~
 \end_inset
 
-output) Adds an output stream to this logger's output handler set.
- Does nothing if the given stream was previously added to this logger.
+output) Adds an output stream to the logger's output handler set.
+ It does nothing if the given stream was previously added to this logger.
+ This means that every logged message (depending on the current logger level)
+ will be written to this new stream.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getOutputHandlers() Get the output handlers associated with this logger.
+getOutputHandlers() Gets the output handlers associated with the logger,
+ returning an array of all registered output handlers.
 \end_layout
 
 \begin_layout FieldList
@@ -53037,7 +53146,12 @@ removeOutputHandler(Stream
 \begin_inset space ~
 \end_inset
 
-output) Removes an output handler from this logger's output handler set.
+output) Removes an output handler from the logger's output handler set.
+ It return 
+\family typewriter
+true
+\family default
+ if, and only if, the stream was successfully removed.
 \end_layout
 
 \begin_layout Standard
@@ -53101,6 +53215,15 @@ params) Logs a
 FINER
 \family default
  message reporting a method entry.
+ A record with message
+\family typewriter
+ ENTRY
+\family default
+, log level 
+\family typewriter
+FINER
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \begin_layout FieldList
@@ -53122,6 +53245,15 @@ sourceMethod) Logs a
 FINER
 \family default
  message reporting a method return.
+ A record with message
+\family typewriter
+ RETURN
+\family default
+, log level 
+\family typewriter
+FINER
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \begin_layout FieldList
@@ -53151,6 +53283,15 @@ thrown) Logs a
 SEVERE
 \family default
  message reporting an exception being thrown.
+ A record with message
+\family typewriter
+ THROW
+\family default
+, log level 
+\family typewriter
+SEVERE
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \end_deeper
@@ -53184,6 +53325,15 @@ boolean
 prependInfo) Logs the given message, using the given level.
  The last argument is a flag indicating whether this log message must be
  prepended with the current date and time, level string, logger name, etc.
+ It will throw a 
+\family typewriter
+NullPointerException
+\family default
+ if one or more registered output handler streams are 
+\family typewriter
+null
+\family default
+ or the logger has been disposed.
 \end_layout
 
 \end_deeper
@@ -53193,7 +53343,7 @@ Or one of the convenience methods, which are actually just calls to the
 \family typewriter
 log()
 \family default
- using the given message, the appropriate level and the 
+ using the given message, the appropriate level, and the 
 \family typewriter
 prependInfo
 \family default
@@ -53201,8 +53351,8 @@ prependInfo
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 config(String
@@ -53218,8 +53368,8 @@ CONFIG
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 info(String
@@ -53235,8 +53385,8 @@ INFO
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 fine(String
@@ -53252,8 +53402,8 @@ FINE
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 finer(String
@@ -53269,8 +53419,8 @@ FINER
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 finest(String
@@ -53286,8 +53436,8 @@ FINEST
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 warning(String
@@ -53303,8 +53453,8 @@ WARNING
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 severe(String
@@ -53371,13 +53521,2020 @@ You shouldn't (and in fact you can't) dispose the global logger.
 \family typewriter
 dispose()
 \family default
- for the global logger does not discards it, only adds an useless method
+ for the global logger does not discard it, only adds an useless method
  call to your code.
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+BigDecimal
+\end_layout
+
+\begin_layout Standard
+Arbitrary-precision signed decimal numbers.
+ A 
+\family typewriter
+BigDecimal
+\family default
+ consists of an arbitrary precision integer unscaled value and a 32-bit
+ integer scale.
+ If zero or positive, the scale is the number of digits to the right of
+ the decimal point.
+ If negative, the unscaled value of the number is multiplied by ten to the
+ power of the negation of the scale.
+ The value of the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ is therefore 
+\family typewriter
+unscaledValue × 10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+-scale
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BigDecimal
+\family default
+ class provides operations for arithmetic, scale manipulation, rounding,
+ comparison, hashing, and format conversion.
+ The 
+\family typewriter
+toString()
+\family default
+ method provides a canonical representation of a 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BigDecimal
+\family default
+ class gives its user complete control over rounding behavior.
+ If no rounding mode is specified and the exact result cannot be represented,
+ an exception is thrown; otherwise, calculations can be carried out to a
+ chosen precision and rounding mode.
+\end_layout
+
+\begin_layout Standard
+Since the same numerical value can have different representations (with
+ different scales), the rules of arithmetic and rounding must specify both
+ the numerical result and the scale used in the result's representation.
+ In general the rounding modes and precision setting determine how operations
+ return results with a limited number of digits when the exact result has
+ more digits (perhaps infinitely many in the case of division) than the
+ number of digits returned.
+ 
+\end_layout
+
+\begin_layout Standard
+For all arithmetic operators, the operation is carried out as though an
+ exact intermediate result were first calculated and then rounded to the
+ number of digits specified by the precision setting (if necessary), using
+ the selected rounding mode.
+ If the exact result is not returned, some digit positions of the exact
+ result are discarded.
+ When rounding increases the magnitude of the returned result, it is possible
+ for a new digit position to be created by a carry propagating to a leading
+ "9" digit.
+ For example, rounding the value 999.9 to three digits rounding up would
+ be numerically equal to one thousand, represented as 100×10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+.
+ In such cases, the new "1" is the leading digit position of the returned
+ result.
+ 
+\end_layout
+
+\begin_layout Standard
+Besides a logical exact result, each arithmetic operation has a preferred
+ scale for representing a result.
+ The preferred scale for each operation is listed in the table below.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Operation
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Preferred Scale of Result
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+max(addend.scale(), augend.scale())
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Subtract
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+max(minuend.scale(), subtrahend.scale())
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Multiply
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+multiplier.scale() + multiplicand.scale()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Divide
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+dividend.scale() - divisor.scale()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+These scales are the ones used by the methods which return exact arithmetic
+ results; except that an exact divide may have to use a larger scale since
+ the exact result may have more digits.
+ For example, 1/32 is 0.03125.
+ 
+\end_layout
+
+\begin_layout Standard
+Before rounding, the scale of the logical exact intermediate result is the
+ preferred scale for that operation.
+ If the exact numerical result cannot be represented in precision digits,
+ rounding selects the set of digits to return and the scale of the result
+ is reduced from the scale of the intermediate result to the least scale
+ which can represent the precision digits actually returned.
+ If the exact result can be represented with at most precision digits, the
+ representation of the result with the scale closest to the preferred scale
+ is returned.
+ In particular, an exactly representable quotient may be represented in
+ fewer than precision digits by removing trailing zeros and decreasing the
+ scale.
+ For example, rounding to three digits using the floor rounding mode, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+19/100 = 0.19 // integer=19, scale=2 
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+but 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+21/110 = 0.190 // integer=190, scale=3
+\family default
+ 
+\end_layout
+
+\begin_layout Standard
+Note that for add, subtract, and multiply, the reduction in scale will equal
+ the number of digit positions of the exact result which are discarded.
+ If the rounding causes a carry propagation to create a new high-order digit
+ position, an additional digit of the result is discarded than when no new
+ digit position is created.
+ 
+\end_layout
+
+\begin_layout Standard
+Other methods may have slightly different rounding semantics.
+ For example, the result of the 
+\family typewriter
+pow()
+\family default
+ method using the specified algorithm can occasionally differ from the rounded
+ mathematical result by more than one unit in the last place, one ulp.
+ 
+\end_layout
+
+\begin_layout Standard
+Two types of operations are provided for manipulating the scale of a 
+\family typewriter
+BigDecimal
+\family default
+: scaling/rounding operations and decimal point motion operations.
+ Scaling/rounding operations (
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+setScale()
+\family default
+) return a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is approximately (or exactly) equal to that of the operand,
+ but whose scale or precision is the specified value; that is, they increase
+ or decrease the precision of the stored number with minimal effect on its
+ value.
+ Decimal point motion operations (
+\family typewriter
+movePointLeft()
+\family default
+ and 
+\family typewriter
+movePointRight()
+\family default
+) return a 
+\family typewriter
+BigDecimal
+\family default
+ created from the operand by moving the decimal point a specified distance
+ in the specified direction.
+ 
+\end_layout
+
+\begin_layout Standard
+All methods and constructors for this class throw 
+\family typewriter
+NullPointerException
+\family default
+ when passed a 
+\family typewriter
+null
+\family default
+ object reference for any input parameter.
+ 
+\end_layout
+
+\begin_layout Standard
+If you need numerical precision, you need to use this class when dealing
+ with floating point numbers.
+ 
+\end_layout
+
+\begin_layout Standard
+Computers don't deal properly with decimals.
+ As you already know, data is represented internaly using the binary format.
+\end_layout
+
+\begin_layout Standard
+The number 4, for instance, is represented by 100 (
+\family typewriter
+1x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+
+ + 0x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+ + 0x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ = 4
+\family default
+).
+\end_layout
+
+\begin_layout Standard
+How to represent a number smaller than 1? Each decimal digit after the dot
+ represents the values 
+\family typewriter
+1/2
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-1
+\end_layout
+
+\end_inset
+
+
+\family default
+), 
+\family typewriter
+1/4
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-2
+\end_layout
+
+\end_inset
+
+
+\family default
+), 
+\family typewriter
+1/8
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-3
+\end_layout
+
+\end_inset
+
+
+\family default
+), and so on.
+\end_layout
+
+\begin_layout Standard
+Therefore, the numbers 4.25, 4.5, and 4.75 are represented in binary like this,
+ respectively: 100,01, 100,10, and 100,11.
+\end_layout
+
+\begin_layout Standard
+This is very poor to represent decimals.
+ Trying to represent 0.3 in binary results in an infinite binary number,
+ because 0.3 = 0.25 + 0.03125 + 0.009765635...
+\end_layout
+
+\begin_layout Standard
+To bypass the problem, the calculations are done with many decimal digits
+ and then the result is rounded.
+ This explains why 
+\family typewriter
+double
+\family default
+ and 
+\family typewriter
+float
+\family default
+ calculations are not precise.
+ Some processors use 50 bits, which is good enough for many applications.
+ However, it is not an infinite number of bits, which is needed to represent
+ some numbers, such as 0.3.
+ 
+\end_layout
+
+\begin_layout Standard
+A correct example to use this class is the following:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public static BigDecimal newBigDecimal(String value) throws InvalidNumberExcepti
+on
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return new BigDecimal(value.replace(Settings.decimalSeparator, '.'));
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public static String toPlainString(BigDecimal value)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return value.toPlainString().replace('.', Settings.decimalSeparator);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num1 = newBigDecimal("5.912");
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num2 = newBigDecimal("0.01");
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num3 = num1.multiply(num2).setScale(4, BigDecimal.ROUND_HALF_EVEN);
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug("Resultado: "+toPlainString(num3)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If you are getting a value typed by the user in a text box, DON'T CONVERT
+ IT TO DOUBLE! You must create a 
+\family typewriter
+BigDecimal
+\family default
+ directly.
+\end_layout
+
+\begin_layout Standard
+That is, the following code is WRONG:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+double d = Convert.toDouble(edValor.getText());
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal b = new BigDecimal(d);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When you convert the number to double, you LOSE PRECISION.
+ The correct code is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+BigDecimal b = new BigDecimal(edValor.getText()); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following constants:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZERO The constant zero as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ONE The constant one as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TEN The constant ten as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UP Rounding mode to round away from zero.
+ Always increments the digit prior to a nonzero discarded fraction.
+ Note that this rounding mode never decreases the magnitude of the calculated
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_DOWN Rounding mode to round towards zero.
+ Never increments the digit prior to a discarded fraction (i.
+ e., truncates).
+ Note that this rounding mode never increases the magnitude of the calculated
+ value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_CEILING Rounding mode to round towards positive infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+; if negative, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this rounding mode never decreases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_FLOOR Rounding mode to round towards negative infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behave as for 
+\family typewriter
+ROUND_DOWN
+\family default
+; if negative, behave as for 
+\family typewriter
+ROUND_UP
+\family default
+.
+ Note that this rounding mode never increases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_UP Rounding mode to round towards "nearest neighbor" unless both
+ neighbors are equidistant, in which case round up.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+>= 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this is the rounding mode that most of us were taught in grade
+ school.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_DOWN Rounding mode to round towards "nearest neighbor" unless
+ both neighbors are equidistant, in which case round down.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+> 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_EVEN Rounding mode to round towards the "nearest neighbor" unless
+ both neighbors are equidistant, in which case, round towards the even neighbor.
+ Behaves as for 
+\family typewriter
+ROUND_HALF_UP
+\family default
+ if the digit to the left of the discarded fraction is odd; behaves as for
+ 
+\family typewriter
+ROUND_HALF_DOWN
+\family default
+ if it's even.
+ Note that this is the rounding mode that minimizes cumulative error when
+ applied repeatedly over a sequence of calculations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UNNECESSARY Rounding mode to assert that the requested operation has
+ an exact result, hence no rounding is necessary.
+ If this rounding mode is specified on an operation that yields an inexact
+ result, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ which represents the number given by the parameter.
+ If its value is invalid, the method throws an 
+\family typewriter
+InvalidNumberException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Constructs a new 
+\family typewriter
+BigDecimal 
+\family default
+whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is zero.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Constructs a new 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+num
+\family default
+ and whose scale is zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+num
+\family default
+ and whose scale is 
+\family typewriter
+scale
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(double
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ which represents the number given by the parameter.
+ If the number represents infinity values or NaN (not a number), it will
+ throw an 
+\family typewriter
+InvalidNumberException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Static method similar to 
+\family typewriter
+BigDecimal(long val)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Static method that creates a new 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is 
+\family typewriter
+scale
+\family default
+.
+ It will throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if the value is 
+\family typewriter
+NaN
+\family default
+ or infinite
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(double
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Static method that returns a new 
+\family typewriter
+BigDecimal
+\family default
+ constructed from the 
+\family typewriter
+BigDecimal(String)
+\family default
+ constructor using the 
+\family typewriter
+Convert.toString(double)
+\family default
+ method to obtain the string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Adds two 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The scales need to be lined up, that is, the one which has the smaller
+ scale must be multiplied by a power of ten so that both scales are equal.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+subtract(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Executes a subtraction using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The scales also need to be lined up.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multiply(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Multiplies two 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The unscaled values are multipled and the scales are added.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+newScale,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one passed as parameter.
+ If the rounding mode is invalid or it is necessary to round the resulting
+ value (has a nonterminating decimal expansion) and the rounding mode passed
+ is 
+\family typewriter
+ROUND_UNNECESSARY
+\family default
+, an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one from the original object.
+ If the rounding mode is invalid or it is necessary to round the resulting
+ value and the rounding mode passed is 
+\family typewriter
+ROUND_UNNECESSARY
+\family default
+, an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+divisor) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one from the original object.
+ If it is necessary to round the resulting value an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remainder(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the remainder in the quotient 
+\family typewriter
+this / val
+\family default
+.
+ This is obtained by 
+\family typewriter
+subtract(divideToIntegralValue(val).multiply(val))
+\family default
+.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divideAndRemainder(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ array, the first element of which is the integer part of 
+\family typewriter
+this / val
+\family default
+, and the second element of which is the remainder of that quotient.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divideToIntegralValue(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the integer part of the quotient 
+\family typewriter
+this / val
+\family default
+.
+ The preferred scale is 
+\family typewriter
+this.scale - val.scale
+\family default
+.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+compareTo(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns 0 if the two values represent the same number, -1 if 
+\family typewriter
+this < val
+\family default
+, and 1 if 
+\family typewriter
+val > this
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+o) Returns 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+o
+\family default
+ is a 
+\family typewriter
+BigDecimal
+\family default
+, both scales are equal and their comparison (
+\family typewriter
+this.compare To((BigDecimal)o
+\family default
+) returns 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a XOR between the integer part of the object and its
+ scale.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+max(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this > val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+min(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this < val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+movePointRight(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Multiplies the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ by 
+\family typewriter
+10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+n
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+movePointLeft(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Divides the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ by 
+\family typewriter
+10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+n
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+signum() Returns the sign of the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scale() Returns the scale of the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unscaledValue() Returns the unscaled value of the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+abs() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is the modulus of the original one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+negate() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is the negation of the original one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+plus() Returns the 
+\family typewriter
+BigDecimal
+\family default
+ unchanged.
+ This is included for symmetry with the method 
+\family typewriter
+negate()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+precision() Returns the precision of the 
+\family typewriter
+BigDecimal
+\family default
+ (the number of digits in the unscaled value).
+ The precision of a zero value is 1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ using scientific notation if necessary.
+ The following steps are taken to generate the result: 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+the 
+\family typewriter
+BigInteger
+\family default
+ 
+\family typewriter
+unscaledValue
+\family default
+'s 
+\family typewriter
+toString()
+\family default
+ method is called and if 
+\family typewriter
+scale == 0
+\family default
+, this string is returned.
+ 
+\end_layout
+
+\begin_layout Enumerate
+An integer 
+\family typewriter
+adjExp
+\family default
+ is created, which is equal to the negation of scale plus the number of
+ digits in the unscaled value, minus one.
+ 
+\end_layout
+
+\begin_layout Enumerate
+If 
+\family typewriter
+scale >= 0 && adjExp >= -6
+\family default
+, then we represent the 
+\family typewriter
+BigDecimal
+\family default
+ without scientific notation.
+ A decimal is added if the scale is positive and zeros are prepended as
+ necessary.
+\end_layout
+
+\begin_layout Enumerate
+If scale is negative or 
+\family typewriter
+adjExp
+\family default
+ is less than -6, we use scientific notation.
+ If the unscaled value has more than one digit, a decimal is inserted after
+ the first digit, the character 
+\family typewriter
+E
+\family default
+ is appended and 
+\family typewriter
+adjExp
+\family default
+ is appended.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+toEngineeringString() Returns the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ using engineering notation if necessary.
+ This is similar to 
+\family typewriter
+toString()
+\family default
+ but when exponents are used, the exponent is made to be a multiple of 3
+ such that the integer part is between 1 and 999.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toPlainString() Returns a string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ without using scientific notation.
+ Zeros may be added to the end of the string.
+ For example, an unscaled value of 1234 and a scale of -3 would result in
+ the string 1234000, but the 
+\family typewriter
+toString()
+\family default
+ method would return 
+\family typewriter
+1.234E+6
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toBigInteger() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ Any fractional part will be discarded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toBigIntegerExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+, throwing an 
+\family typewriter
+ArithmeticException
+\family default
+ if the conversion is not exact.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+intValue() Returns an integer from the conversion of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stripTrailingZeros() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ which is numerically equal to the original 
+\family typewriter
+BigDecimal
+\family default
+ but with no trailing zeros in the representation.
+ For example, if the 
+\family typewriter
+BigDecimal
+\family default
+ has 
+\family typewriter
+[unscaledValue, scale] = [6313000, 4]
+\family default
+ this method returns a 
+\family typewriter
+BigDecimal
+\family default
+ with 
+\family typewriter
+[unscaledValue, scale] = [6313, 1]
+\family default
+.
+ As another example, 
+\family typewriter
+[12400, -2]
+\family default
+ would become
+\family typewriter
+ [124, -4]
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+longValue() Returns a 
+\family typewriter
+long
+\family default
+ from the conversion of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+doubleValue() Converts the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+double
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setScale(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Changes the scale.
+ If rounding is necessary, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setScale(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Changes the scale.
+ If rounding is necessary and 
+\family typewriter
+roundingMode == ROUND_UNNECESSARY
+\family default
+, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+ It will also be thrown if 
+\family typewriter
+scale < 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scaleByPowerOfTen(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose numerical value is the numerical value of the original 
+\family typewriter
+BigDecimal
+\family default
+ multiplied by 10 to the power of 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pow(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the original value to the power of 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ulp() Returns the size of a unit in the last place of the 
+\family typewriter
+BigDecimal
+\family default
+.
+ This returns a 
+\family typewriter
+BigDecimal
+\family default
+ with 
+\family typewriter
+[unscaledValue, scale] = [1, scale]
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+longValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+long
+\family default
+ value.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if rounding or overflow occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+intValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into an integer by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into an 
+\family typewriter
+int
+\family default
+.
+ It will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into an 
+\family typewriter
+int
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shortValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+short
+\family default
+ by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into a 
+\family typewriter
+short
+\family default
+.
+ It will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into a 
+\family typewriter
+short
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+byteValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a byte by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into a byte.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into a byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+compareTo(Object
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+other) Just calls 
+\family typewriter
+compareTo((BigDecimal)other)
+\family default
+.
 \end_layout
 
 \begin_layout Chapter
