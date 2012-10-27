@@ -2868,14 +2868,14 @@ public final class Graphics
          int rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          int gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          int bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
+         foreColor = (rr << 16) | (gg << 8) | bb | alpha;
          int sx = startX+i, sy = startY+i;
          drawRect(sx,sy,endX-i-sx,endY-i-sy);
          int ii = i-8;
          rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
+         foreColor = (rr << 16) | (gg << 8) | bb | alpha;
          int i2 = i/8;
          drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = endX-i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
