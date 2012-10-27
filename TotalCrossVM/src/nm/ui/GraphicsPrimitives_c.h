@@ -2337,8 +2337,16 @@ static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, in
    }
    else
    {
-      fillShadedRect(currentContext,g,x,y,width,mid,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
-      fillShadedRect(currentContext,g,x,y+mid,width,height-mid,!invert,rotate,invert?end1:ini2,invert?ini1:end2,100);
+      if (invert)
+      {                                                 
+         fillShadedRect(currentContext,g,x,y,width,mid,true,rotate,end2,ini2,100);
+         fillShadedRect(currentContext,g,x,y+mid,width,height-mid,true,rotate,end1,ini1,100);
+      }
+      else
+      {
+         fillShadedRect(currentContext,g,x,y,width,mid,true,rotate,ini1,end1,100);
+         fillShadedRect(currentContext,g,x,y+mid,width,height-mid,true,rotate,ini2,end2,100);
+      }
    }
 }
 
