@@ -178,7 +178,7 @@ bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
 
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
-{
+{                               
    ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
    appW = width;
    appH = height;
@@ -506,6 +506,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
    setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat);
+   glViewport(0, 0, w, h);
 }
 
 
@@ -618,8 +619,6 @@ bool setupGL(int width, int height)
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
 
-    glViewport(0, 0, width, height);
-
     return checkGLfloatBuffer(mainContext,10000);
 }
 
@@ -681,9 +680,8 @@ static void destroyEGL()
 #endif
 
 void privateScreenChange(int32 w, int32 h)
-{
-
-   setProjectionMatrix(w,h);
+{                  
+   setProjectionMatrix(w,h); 
 }
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -707,19 +705,6 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return screen->pixels != null;
 }
 
-void graphicsUpdateScreenIOS(ScreenSurface screen);
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
-{
-   if (pixcolors != (int32*)glcolors) flushPixels();
-#ifdef ANDROID
-   eglSwapBuffers(_display, _surface);
-#else
-   graphicsUpdateScreenIOS(screen);
-#endif
-   glClearColor(1,1,1,1);
-   glClear(GL_COLOR_BUFFER_BIT);
-}
-
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
 #ifdef ANDROID
@@ -738,4 +723,17 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       deviceCtx = screen->extension = NULL;
    }
 #endif
+}
+
+void graphicsUpdateScreenIOS(ScreenSurface screen);
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
+{
+   if (pixcolors != (int32*)glcolors) flushPixels();
+#ifdef ANDROID
+   eglSwapBuffers(_display, _surface);
+#else
+   graphicsUpdateScreenIOS(screen);
+#endif
+   glClearColor(1,1,1,1);
+   glClear(GL_COLOR_BUFFER_BIT);
 }

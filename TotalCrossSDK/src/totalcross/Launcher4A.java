@@ -187,11 +187,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private static int firstOrientationSize;
    static boolean surfaceChangedCalled;
+   static boolean firstChange=true;
    
-   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
+   public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      nativeInitSize(holder.getSurface(),w,h);
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
@@ -267,12 +267,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void run()
             {
+               if (firstChange)
+                  nativeInitSize(holder.getSurface(),lastScreenW,lastScreenH);
+               firstChange = false;
                deviceFontHeight = (int)new TextView(getContext()).getTextSize();
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+               sendCloseSIPEvent(); // makes first screen rotation work
             }
          });
       }
@@ -345,13 +349,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean hardwareKeyboardIsVisible;
    
-   
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-/*      if (oldh < h)
-         updateScreen(0,0,w,h,TRANSITION_NONE);
-*/   }
+   }
 
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {

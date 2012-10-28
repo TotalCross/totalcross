@@ -71,6 +71,15 @@ static inline Pixel* getGraphicsPixels(Object g)
 }
 // <<<<<<<<<
 
+void repaintActiveWindows(Context currentContext)
+{
+   static Method repaintActiveWindows;
+   if (repaintActiveWindows == null && mainClass != null)
+      repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
+   if (repaintActiveWindows != null)
+      executeMethod(currentContext, repaintActiveWindows);
+}
+
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
    callingScreenChange = true;
@@ -83,23 +92,15 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    markWholeScreenDirty(currentContext);
    privateScreenChange(newWidth, newHeight);
    if (!nothingChanged)
-   {
+   {            
       graphicsDestroy(&screen, true);
       createScreenSurface(currentContext, true);
    }
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
+   repaintActiveWindows(mainContext);
    callingScreenChange = false;
-}
-
-void repaintActiveWindows(Context currentContext)
-{
-   static Method repaintActiveWindows;
-   if (repaintActiveWindows == null && mainClass != null)
-      repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
-   if (repaintActiveWindows != null)
-      executeMethod(currentContext, repaintActiveWindows);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1879,7 +1880,6 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 #elif defined(ANDROID)
 extern int realAppH;
 static int32 lastAppHeightOnSipOpen;
-void markWholeScreenDirty(Context currentContext);
 static int desiredShiftY=-1;
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
 {
