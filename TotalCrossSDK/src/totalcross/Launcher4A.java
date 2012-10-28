@@ -187,11 +187,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private static int firstOrientationSize;
    static boolean surfaceChangedCalled;
-   static boolean firstChange=true;
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
+      nativeInitSize(holder.getSurface(),lastScreenW,lastScreenH);
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
@@ -267,9 +267,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void run()
             {
-               if (firstChange)
-                  nativeInitSize(holder.getSurface(),lastScreenW,lastScreenH);
-               firstChange = false;
                deviceFontHeight = (int)new TextView(getContext()).getTextSize();
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;

@@ -41,7 +41,7 @@ static void checkGlError(const char* op)
 }
 
 #ifdef ANDROID
-static ANativeWindow *window;
+static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
@@ -174,7 +174,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    return p;
 }
 
-bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
+bool initGLES(bool callInitGL); // in iOS, implemented in mainview.m
 
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
@@ -185,6 +185,13 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   if (lastWindow && lastWindow != window)
+   {  
+      destroyEGL();
+      bool b = initGLES(true);
+      debug("initgles returned %d",b);
+   }
+   lastWindow = window;
 }
 #endif
 
@@ -590,7 +597,7 @@ bool checkGLfloatBuffer(Context c, int32 n)
          flen = 0;
          return false;
       }
-   }
+   }                                fernando mendes 7 31
    return true;
 }
 
@@ -623,7 +630,7 @@ bool setupGL(int width, int height)
 }
 
 #ifdef ANDROID
-bool initGLES(ScreenSurface screen)
+bool initGLES(bool callInitGL)
 {
    int32 i;
    const EGLint attribs[] =
@@ -661,7 +668,8 @@ bool initGLES(ScreenSurface screen)
    _display = display;
    _surface = surface;
    _context = context;
-   return setupGL(width,height);
+   debug("query surface: %d,%d",width,height);
+   return !callInitGL || setupGL(width,height);
 }
 
 static void destroyEGL()
@@ -674,8 +682,6 @@ static void destroyEGL()
    _display = EGL_NO_DISPLAY;
    _surface = EGL_NO_SURFACE;
    _context = EGL_NO_CONTEXT;
-   xfree(glcoords);
-   xfree(glcolors);
 }
 #endif
 
@@ -692,7 +698,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   return initGLES(screen);
+   return initGLES(true);
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
@@ -710,8 +716,10 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 #ifdef ANDROID
    if (!isScreenChange)
    {
-       destroyEGL();
+      destroyEGL();
       xfree(screen->extension);
+      xfree(glcoords);
+      xfree(glcolors);
    }
 #else
    if (isScreenChange)
