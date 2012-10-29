@@ -187,11 +187,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private static int firstOrientationSize;
    static boolean surfaceChangedCalled;
+   private android.view.Surface lastSurface;
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      nativeInitSize(holder.getSurface(),lastScreenW,lastScreenH);
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
       //PixelFormat pf = new PixelFormat(); - android returns 5
@@ -259,26 +259,34 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          return;
       }
       
-      if (w != lastScreenW || h != lastScreenH)
+      android.view.Surface surface = holder.getSurface();
+      if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
       {
+         lastSurface = surface;
          lastScreenW = w;
          lastScreenH = h;
-         eventThread.invokeInEventThread(false, new Runnable()
-         {
-            public void run()
-            {
-               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
-               rDirty.left = rDirty.top = 0;
-               rDirty.right = lastScreenW;
-               rDirty.bottom = lastScreenH;
-               DisplayMetrics metrics = getResources().getDisplayMetrics();
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-               sendCloseSIPEvent(); // makes first screen rotation work
-            }
-         });
+         sendScreenChangeEvent();
       }
    }
 
+   private void sendScreenChangeEvent()
+   {
+      eventThread.invokeInEventThread(false, new Runnable()
+      {
+         public void run()
+         {
+            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
+            deviceFontHeight = (int)new TextView(getContext()).getTextSize();
+            rDirty.left = rDirty.top = 0;
+            rDirty.right = lastScreenW;
+            rDirty.bottom = lastScreenH;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            sendCloseSIPEvent(); // makes first screen rotation work
+         }
+      });
+   }
+   
    private void sendOrientationChange(boolean invert)
    {
       Message msg = loader.achandler.obtainMessage();
@@ -291,11 +299,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void surfaceCreated(SurfaceHolder holder)
    {
+      AndroidUtils.debug("surface: "+holder.getSurface()+" "+eventThread);
       // here is where everything starts
       if (eventThread == null)
       {
          eventThread = new TCEventThread(this);
          eventThread.popTime = 20;
+      }
+      else
+      {
+         lastSurface = holder.getSurface();
+         sendScreenChangeEvent();
       }
    }
 

@@ -1,4 +1,3 @@
-
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
  *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
@@ -55,6 +54,7 @@ static EGLContext _context;
 #endif
 static void destroyEGL();
 
+VoidPtrs imgTextures;
 int realAppH,appW,appH;
 GLfloat ftransp[16], f255[256];
 int32 flen;
@@ -183,7 +183,8 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    return p;
 }
 
-bool initGLES(bool callInitGL); // in iOS, implemented in mainview.m
+bool initGLES(); // in iOS, implemented in mainview.m
+void recreateTextures(VoidPs imgTextures);
 
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
@@ -197,8 +198,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    if (lastWindow && lastWindow != window)
    {  
       destroyEGL();
-      bool b = initGLES(true);
-      debug("initgles returned %d",b);
+      initGLES();
+      recreateTextures(imgTextures);
    }
    lastWindow = window;
 }
@@ -324,7 +325,7 @@ void initTexture()
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
+void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
@@ -353,15 +354,19 @@ void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
    else
    {
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      if (updateList)
+         imgTextures = VoidPsAdd(imgTextures, img, null);
    }
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    xfree(pt0);
 }
 
-void glDeleteTexture(int32* textureId)
+void glDeleteTexture(Object img, int32* textureId, bool updateList)
 {         
    glDeleteTextures(1,textureId); GL_CHECK_ERROR
-   *textureId = 0;
+   *textureId = 0;                               
+   if (updateList)
+      imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
@@ -639,6 +644,7 @@ bool setupGL(int width, int height)
     initPoints();
     initShade();
     setProjectionMatrix(appW,appH);
+    debug("setup gl thread: %X",threadGetCurrent());
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1); GL_CHECK_ERROR
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); GL_CHECK_ERROR
@@ -657,7 +663,7 @@ bool setupGL(int width, int height)
 }
 
 #ifdef ANDROID
-bool initGLES(bool callInitGL)
+bool initGLES()
 {
    int32 i;
    const EGLint attribs[] =
@@ -695,7 +701,7 @@ bool initGLES(bool callInitGL)
    _display = display;
    _surface = surface;
    _context = context;
-   return !callInitGL || setupGL(width,height);
+   return setupGL(width,height);
 }
 
 static void destroyEGL()
@@ -727,7 +733,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   return initGLES(true);
+   return initGLES();
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
