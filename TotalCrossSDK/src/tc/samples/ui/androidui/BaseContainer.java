@@ -24,7 +24,6 @@ public class BaseContainer extends Container
    public BaseContainer()
    {
       transitionEffect = TRANSITION_OPEN;
-      backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
    }
    
    public void initUI()
@@ -34,6 +33,7 @@ public class BaseContainer extends Container
          setForeColor(0xBFCFFF);
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
+         if (isMainMenu) backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
          
          if (infoImg == null)
             infoImg = new Image("images/ic_dialog_info.png");
