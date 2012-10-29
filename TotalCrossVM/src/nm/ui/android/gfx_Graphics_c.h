@@ -505,12 +505,15 @@ void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
    add2pipe(x,y,w,h,rgb,a);
 }
 
+static int32 glLastShiftY;
 static void setProjectionMatrix(GLfloat w, GLfloat h)
-{
+{       
+   GLfloat t = glLastShiftY, b = h;
+   
    GLfloat mat[16] =
    {
       2.0/w, 0.0, 0.0, -1.0,
-      0.0, -2.0/h, 0.0, 1.0,
+      0.0, 2.0/(t-b), (t+b)/(t-b), 1.0,
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    };
@@ -749,6 +752,13 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #else
    graphicsUpdateScreenIOS(screen);
 #endif
-   glClearColor(1,1,1,1);
-   glClear(GL_COLOR_BUFFER_BIT);
+   PixelConv gray;
+   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
+   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
+   glClear(GL_COLOR_BUFFER_BIT); 
+   if (glLastShiftY != screen->shiftY)
+   {
+      glLastShiftY = screen->shiftY;
+      setProjectionMatrix(appW,appH);
+   }
 }

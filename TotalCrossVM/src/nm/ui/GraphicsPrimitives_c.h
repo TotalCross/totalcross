@@ -1939,6 +1939,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
 
+#ifndef __gl2_h_
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
 
@@ -1949,6 +1950,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       return false;
    }
    firstUpdate = false;
+#endif
 
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
    {
@@ -1997,7 +1999,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    screen.shiftY = shiftY;
 
-#ifndef darwin // in darwin, the temporary buffer already is in the target format
+#ifndef __gl2_h_ // in opengl there's no temporary buffer
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -2918,9 +2920,7 @@ void updateScreen(Context currentContext)
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
    {
-#ifndef __gl2_h_
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
-#endif
       {
 #ifdef darwin
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
