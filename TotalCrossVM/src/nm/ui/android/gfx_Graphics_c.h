@@ -396,6 +396,12 @@ void glSetLineWidth(int32 w)
 #define IS_PIXEL (1<<28)
 #define IS_DIAGONAL  (1<<27)
 
+static void clearPixels()
+{
+   pixcoords = (int32*)glcoords;
+   pixcolors = (int32*)glcolors;
+}
+
 void flushPixels()
 {
    if (pixcolors != (int32*)glcolors)
@@ -450,8 +456,7 @@ void flushPixels()
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
          }
       }
-      pixcoords = (int32*)glcoords;
-      pixcolors = (int32*)glcolors;
+      clearPixels();
    }
 }
 
@@ -597,7 +602,7 @@ bool checkGLfloatBuffer(Context c, int32 n)
          flen = 0;
          return false;
       }
-   }                                fernando mendes 7 31
+   }
    return true;
 }
 
@@ -668,7 +673,6 @@ bool initGLES(bool callInitGL)
    _display = display;
    _surface = surface;
    _context = context;
-   debug("query surface: %d,%d",width,height);
    return !callInitGL || setupGL(width,height);
 }
 
@@ -686,7 +690,10 @@ static void destroyEGL()
 #endif
 
 void privateScreenChange(int32 w, int32 h)
-{                  
+{
+   appW = w;
+   appH = h;                           
+   clearPixels();
    setProjectionMatrix(w,h); 
 }
 
