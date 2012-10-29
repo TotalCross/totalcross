@@ -3602,6 +3602,7 @@ finish: ;
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
+// juliana@265_1: corrected getRow() behavior, which must match with absolute(). 
 /**
  * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
  *
@@ -3612,12 +3613,55 @@ LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRo
 {
 	TRACE("lRS_getRow")
    Object resultSet = p->obj[0];
+   Context context = p->currentContext;
    
    MEMORY_TEST_START
    
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
-      p->retI = getResultSetBag(resultSet)->pos; // Returns the current position of the cursor.
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
+   {
+      ResultSet* resultSetBag = getResultSetBag(resultSet);
+      Table* table = resultSetBag->table;
+      PlainDB* plainDB = &table->db;
+      uint8* rowsBitmap = resultSetBag->allRowsBitmap;
+      uint8* basbuf = plainDB->basbuf;
+      int32 pos = resultSetBag->pos;
+      
+      if (pos == -1 || pos == plainDB->rowCount)
+         p->retI = pos;
+      else if (rowsBitmap)
+      {
+         int32 i = -1,
+               absolute = 0;
+            
+         while (++i < pos)
+            if (isBitSet(rowsBitmap, i))
+               absolute++;
+         p->retI = absolute;
+      }
+      else if (table->deletedRowsCount)
+      {
+         int32 i = -1,
+               absolute = 0,
+               value;
    
+            // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
+            while (++i < pos) 
+            {
+               if (!plainRead(context, plainDB, i))
+				      goto finish;
+				   xmove4(&value, basbuf); 
+               if ((value & ROW_ATTR_MASK) != ROW_ATTR_DELETED)
+                  absolute++;
+            }
+
+            if (plainRead(context, plainDB, i - 1))
+		         xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+            p->retI = absolute;
+      }
+      else
+         p->retI = pos; // Returns the current position of the cursor.
+   }
+finish: ;
    MEMORY_TEST_END
 }
 

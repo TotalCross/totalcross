@@ -912,6 +912,7 @@ public class ResultSet
       return true;
    }
 
+   // juliana@265_1: corrected getRow() behavior, which must match with absolute(). 
    /**
     * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
     *
@@ -920,7 +921,56 @@ public class ResultSet
    public int getRow() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
-      return pos; // Returns the current position of the cursor.
+
+      if (pos == -1 || pos == lastRecordIndex)
+         return pos;
+      
+      try
+      {
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         DataStreamLE basds = plainDB.basds;
+         ByteArrayStream bas = plainDB.bas;
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {            
+            int i = -1,
+                absolute = 0;
+            
+            while (++i < pos)
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+                  absolute++;
+            return absolute;
+         }
+         
+         // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
+         if (tableAux.deletedRowsCount > 0)
+         {
+            int i = -1,
+                absolute = 0;
+   
+            // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
+            while (++i < pos) 
+            {
+               plainDB.read(i); 
+               if (!((basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
+                  absolute++;
+            }
+
+            plainDB.read(i - 1);
+            bas.setPos(0);
+            tableAux.readNullBytesOfRecord(0, false, 0);
+            return absolute;
+         }
+         
+         return pos;
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
    }
 
    /**
