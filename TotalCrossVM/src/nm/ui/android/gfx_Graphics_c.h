@@ -19,10 +19,13 @@
 #define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 #endif
 
-static void checkGlError(const char* op)
+static void checkGlError(const char* op, int line)
 {
    GLint error;
    int c=0;
+   if (!op)
+      glGetError();
+   else
    for (error = glGetError(); error; error = glGetError())
    {
       char* msg = "???";
@@ -33,12 +36,16 @@ static void checkGlError(const char* op)
          case GL_INVALID_OPERATION: msg = "INVALID OPERATION"; break;
          case GL_OUT_OF_MEMORY    : msg = "OUT OF MEMORY"; break;
       }
-
-      debug("after %s() glError %s\n", op, msg);
+      debug("glError %s at %s (%d)\n", msg, op, line);
       c++;
    }
-//   if (!c) debug("after %s() NO ERROR",op);
 }
+
+#if 1
+#define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
+#else
+#define GL_CHECK_ERROR 
+#endif
 
 #ifdef ANDROID
 static ANativeWindow *window,*lastWindow;
@@ -132,17 +139,17 @@ static GLuint shadeColor;
 
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
-   GLint ret=1;
-   GLuint shader = glCreateShader(shaderType);
-   glShaderSource(shader, 1, &pSource, NULL);
-   glCompileShader(shader);
+   GLint ret=1;               
+   GLuint shader = glCreateShader(shaderType); GL_CHECK_ERROR
+   glShaderSource(shader, 1, &pSource, NULL); GL_CHECK_ERROR
+   glCompileShader(shader); GL_CHECK_ERROR
 
-   glGetShaderiv(shader, GL_COMPILE_STATUS, &ret);
+   glGetShaderiv(shader, GL_COMPILE_STATUS, &ret); GL_CHECK_ERROR
    if(!ret)
    {
-      glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &ret);
+      glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
       GLchar buffer[ret];
-      glGetShaderInfoLog(shader, ret, &ret, buffer);
+      glGetShaderInfoLog(shader, ret, &ret, buffer); GL_CHECK_ERROR
       debug("Shader compiler error: %s",buffer);
    }
    return shader;
@@ -152,23 +159,25 @@ static GLint lastProg=-1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
-      glUseProgram(lastProg = prog);
+   {
+      glUseProgram(lastProg = prog); GL_CHECK_ERROR
+   }
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
 {
    GLint ret;
    GLuint p = glCreateProgram();
-   glAttachShader(p, loadShader(GL_VERTEX_SHADER, vertexCode));
-   glAttachShader(p, loadShader(GL_FRAGMENT_SHADER, fragmentCode));
-   glLinkProgram(p);
+   glAttachShader(p, loadShader(GL_VERTEX_SHADER, vertexCode)); GL_CHECK_ERROR
+   glAttachShader(p, loadShader(GL_FRAGMENT_SHADER, fragmentCode)); GL_CHECK_ERROR
+   glLinkProgram(p); GL_CHECK_ERROR
    //glValidateProgram(p);
-   glGetProgramiv(p, GL_LINK_STATUS, &ret);
+   glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
    if (!ret)
    {
-      glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret);
+      glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
       GLchar buffer[ret];
-      glGetProgramInfoLog(p, ret, &ret, buffer);
+      glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
       debug("Link error: %s",buffer);
    }
    return p;
@@ -199,11 +208,11 @@ static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
-   pointsColor = glGetUniformLocation(pointsProgram, "a_Color");
-   pointsAlpha = glGetAttribLocation(pointsProgram, "alpha");
-   pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(pointsAlpha); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glEnableVertexAttribArray(pointsPosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
+   pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
+   pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 }
 
 static int pixLastRGB = -1;
@@ -214,30 +223,30 @@ void glDrawPixels(int32 n, int32 rgb)
    {
       PixelConv pc;
       pc.pixel = pixLastRGB = rgb;
-      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0);
-   }
-   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors);
-   glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords);
-   glDrawArrays(GL_POINTS, 0,n);
+      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
+   }                               
+   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+   glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
 }
 
 static void initShade()
-{
+{         
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
    setCurrentProgram(shadeProgram);
-   shadeColor = glGetAttribLocation(shadeProgram, "a_Color");
-   shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(shadeColor); // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glEnableVertexAttribArray(shadePosition); // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
+   shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
    shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
 }
 
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
-{     
+{
    if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
-   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors);
-   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords);
+   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -265,17 +274,17 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
       shcolors[10] = shcolors[14] = f255[c1.b];
    }
     
-   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g)); GL_CHECK_ERROR
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
    glClearClip();
 }
 
 void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur)
-{
+{                
    if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
-   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors);
-   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords);
+   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -299,20 +308,20 @@ void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelCon
    shcolors[14] = f255[ur.b];
 
    glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
    glClearClip();
 }
 
 void initTexture()
-{
+{         
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
-   textureS     = glGetUniformLocation(textureProgram, "sTexture");
-   texturePoint = glGetAttribLocation(textureProgram, "vertexPoint");
-   textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord");
+   textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
+   texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
+   textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
 
-   glEnableVertexAttribArray(textureCoord);
-   glEnableVertexAttribArray(texturePoint);
+   glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
+   glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 }
 
 void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
@@ -324,47 +333,50 @@ void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height)
    if (!pt)
       return;
 
-   if (!textureAlreadyCreated)
-      glGenTextures(1, textureId);
+   if (!textureAlreadyCreated) {glGenTextures(1, textureId); GL_CHECK_ERROR}
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
-   glBindTexture(GL_TEXTURE_2D, *textureId);
+   glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
    if (!textureAlreadyCreated)
    {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glUniform1i(textureS, 0);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); GL_CHECK_ERROR
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); GL_CHECK_ERROR
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
+//      glUniform1i(textureS, 0); GL_CHECK_ERROR - was giving INVALID OPERATION
    }
    // must invert the pixels from ARGB to RGBA
    for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
    if (textureAlreadyCreated)
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
+   {
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+   }
    else
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0);
-   glBindTexture(GL_TEXTURE_2D, 0);
+   {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+   }
+   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    xfree(pt0);
 }
 
 void glDeleteTexture(int32* textureId)
-{
-   glDeleteTextures(1,textureId);
+{         
+   glDeleteTextures(1,textureId); GL_CHECK_ERROR
    *textureId = 0;
 }
 
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
-{
+{         
    GLfloat* coords = texcoords;
    if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(textureProgram);
-   glBindTexture(GL_TEXTURE_2D, textureId);
+   glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
 
    // destination coordinates
    coords[0] = coords[6] = dstX;
    coords[1] = coords[3] = dstY+h;
    coords[2] = coords[4] = dstX+w;
    coords[5] = coords[7] = dstY;
-   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords);
+   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    // source coordinates
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
@@ -372,25 +384,25 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    coords[ 9] = coords[11] = bottom;
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]);
+   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
 
-   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-   glBindTexture(GL_TEXTURE_2D, 0);
+   glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
+   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
 }
 
 void initLineRectPoint()
-{
+{         
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
-   lrpColor = glGetUniformLocation(lrpProgram, "a_Color");
-   lrpPosition = glGetAttribLocation(lrpProgram, "a_Position");
-   glEnableVertexAttribArray(lrpPosition);
+   lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
+   lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
+   glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
 }
 
 void glSetLineWidth(int32 w)
-{
+{         
    setCurrentProgram(lrpProgram);
-   glLineWidth(w);
+   glLineWidth(w); GL_CHECK_ERROR
 }
 
 #define IS_PIXEL (1<<28)
@@ -403,7 +415,7 @@ static void clearPixels()
 }
 
 void flushPixels()
-{
+{         
    if (pixcolors != (int32*)glcolors)
    {
       int32 n = pixcolors-(int32*)glcolors, i;
@@ -412,7 +424,7 @@ void flushPixels()
       setCurrentProgram(lrpProgram);
       pixcoords = (int32*)glcoords;
       pixcolors = (int32*)glcolors;
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords);
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
       int32 lastRGBA = ~*pixcolors;
       int32 x,y,w,h,x2,y2;
       for (i = 0; i < n; i++)
@@ -422,7 +434,7 @@ void flushPixels()
          if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
          {
             pc.pixel = lastRGBA = rgba;
-            glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]);
+            glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
          }
          // coord
          x = *pixcoords++;
@@ -435,7 +447,7 @@ void flushPixels()
             coords[1] = y;
             coords[2] = x2;
             coords[3] = y2;
-            glDrawArrays(GL_LINES, 0,2);
+            glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
          }
          else
          {
@@ -453,7 +465,7 @@ void flushPixels()
             coords[1] = coords[7] = y;
             coords[3] = coords[5] = y+h;
             coords[4] = coords[6] = x+w;
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
          }
       }
       clearPixels();
@@ -517,11 +529,11 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    };
-   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat);
-   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat);
-   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat);
-   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat);
-   glViewport(0, 0, w, h);
+   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   glViewport(0, 0, w, h); GL_CHECK_ERROR
 }
 
 
@@ -535,7 +547,7 @@ int32 glGetPixel(int32 x, int32 y)
 {                
    glpixel gp;
    if (pixcolors != (int32*)glcolors) flushPixels();
-   glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp);
+   glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
 
@@ -548,7 +560,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    if (pixcolors != (int32*)glcolors) flushPixels();
    for (; height-- > 0; srcY++,dstPixels += pitch)
    {
-      glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels);
+      glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels); GL_CHECK_ERROR
       p = dstPixels;
       for (i = 0; i < width; i++)
       {
@@ -566,23 +578,30 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
 {  
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
-      glClearClip();
+      {glClearClip(); GL_CHECK_ERROR}
    else
-   {                             
-      glEnable(GL_SCISSOR_TEST);
-      glScissor(x1,appH-y2,x2-x1,y2-y1);
+   {
+      glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
+      if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
+      if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
+      if (y1 < 0) y1 = 0; else if (y1 > appH) y1 = appH;
+      if (y2 < 0) y2 = 0; else if (y2 > appH) y2 = appH;
+      int32 h = y2-y1, w = x2-x1;
+      if (h < 0) h = 0;
+      if (w < 0) w = 0;
+      glScissor(x1,appH-y2,w,h); GL_CHECK_ERROR
    }
 }
 
 void glClearClip()
-{
-   glDisable(GL_SCISSOR_TEST);
+{            
+   glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
 }   
 
 void flushAll()
 {
    flushPixels();
-   glFlush();
+   glFlush(); GL_CHECK_ERROR
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -621,13 +640,13 @@ bool setupGL(int width, int height)
     initShade();
     setProjectionMatrix(appW,appH);
 
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1); GL_CHECK_ERROR
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); GL_CHECK_ERROR
 
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND); // enable color alpha channel
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE); GL_CHECK_ERROR
+    glDisable(GL_DEPTH_TEST); GL_CHECK_ERROR
+    glEnable(GL_BLEND); GL_CHECK_ERROR // enable color alpha channel
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
     for (i = 0; i <= 15; i++)
         ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
@@ -660,7 +679,7 @@ bool initGLES(bool callInitGL)
    EGLContext context;
    EGLint width;
    EGLint height;
-
+   
    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)    {debug("eglGetDisplay() returned error %d", eglGetError()); return false;}
    if (!eglInitialize(display, 0, 0))                                       {debug("eglInitialize() returned error %d", eglGetError()); return false;}
    if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))         {debug("eglChooseConfig() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -680,7 +699,7 @@ bool initGLES(bool callInitGL)
 }
 
 static void destroyEGL()
-{
+{         
    eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
    eglDestroyContext(_display, _context);
    eglDestroySurface(_display, _surface);
@@ -754,8 +773,8 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #endif
    PixelConv gray;
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
-   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
-   glClear(GL_COLOR_BUFFER_BIT); 
+   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
+   glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
    if (glLastShiftY != screen->shiftY)
    {
       glLastShiftY = screen->shiftY;
