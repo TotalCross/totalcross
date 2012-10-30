@@ -57559,11 +57559,24 @@ millis
 
 \end_deeper
 \begin_layout Itemize
+Time has a constant called 
+\family typewriter
+SECONDS_PER_DAY
+\family default
+, which obviously represents the number of seconds in a day, being equal
+ to 
+\family typewriter
+24 * 3600
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
 
 \family typewriter
 Time
 \family default
- has four constructors:
+ has six constructors:
 \end_layout
 
 \begin_deeper
@@ -57686,6 +57699,28 @@ YYYYMMDDHHMMSS
 
 \begin_layout FieldList
 \labelwidthstring 0
+Time(int
+\begin_inset space ~
+\end_inset
+
+yyyymmdd,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+hhmmssmmm) Constructs a 
+\family typewriter
+Time
+\family default
+ object from the given date and time values.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 Time(String
 \begin_inset space ~
 \end_inset
@@ -57717,7 +57752,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Please notice the last two constructors do not include the milliseconds,
+Please notice the last three constructors do not include the milliseconds,
  so the field 
 \family typewriter
 millis
@@ -57731,6 +57766,83 @@ millis
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Time(String
+\begin_inset space ~
+\end_inset
+
+time,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasYear,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasMonth,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasDay,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasHour,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasMinute,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasSeconds) Constructs a 
+\family typewriter
+Time
+\family default
+ object, parsing the string and placing the fields depending on the flags
+ that were set, using 
+\family typewriter
+Settings.timeSeparator
+\family default
+ as spliter.
+ The number of parts must match the number of 
+\family typewriter
+true
+\family default
+ flags, or an 
+\family typewriter
+ArrayIndexOutOfBoundsException
+\family default
+ will be thrown.
+ AM/PM is supported.
+ 
+\end_layout
+
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -57752,7 +57864,7 @@ Time
 \family default
  fields values, not even on the constructors.
  However, the default constructor will never initialize an object with invalid
- values, and the last constructor may throw an 
+ values, and the last two constructors may throw an 
 \family typewriter
 InvalidNumberException
 \family default
@@ -57765,6 +57877,20 @@ InvalidNumberException
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+Finally, 
+\family typewriter
+Time
+\family default
+ has the following methods:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+update() Updates the internal fields with the current timestamp.
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 equals(Object
@@ -57784,7 +57910,7 @@ true
 \family typewriter
 null
 \family default
- and its a 
+ and it's a 
 \family typewriter
 Time
 \family default
@@ -57822,17 +57948,122 @@ YYYYMMDDTHH:MM:SS
 
 \begin_layout FieldList
 \labelwidthstring 0
-toString() Converts this 
+toString() Returns the time in format specified in 
 \family typewriter
-Time
+totalcross.sys.Settings
 \family default
- object to a string using the date format specified in 
+ (does NOT include the date neither the milliseconds).
+ To return the date, use the class 
 \family typewriter
-Settings.dateFormat
+totalcross.util.
+\begin_inset Newline newline
+\end_inset
+
+Date
 \family default
 .
+ So, to get a string with the date and time, use: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Time t = new Time(); 
 \end_layout
 
+\begin_layout Plain Layout
+
+String dateAndTime = new Date(t) + " " + t;
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(String
+\begin_inset space ~
+\end_inset
+
+timeSeparator) Similar to the above method except that it uses the specified
+ separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dump(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+timeSeparator,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+includeMillis) Dumps the time into the given 
+\family typewriter
+StringBuffer
+\family default
+, using the given separator and including the millileconds if asked by the
+ user.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isValid() Returns 
+\family typewriter
+true
+\family default
+ if the time is valid.
+ Note that the date part is NOT checked; only hour, minute, second, and
+ millis are checked against valid ranges.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+inc(int
+\begin_inset space ~
+\end_inset
+
+hours,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+minutes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+seconds) Increments or decrements the fields below.
+ Note that this method does NOT update the day/month/year fields.
+ The parameters can be positive (to increment), zero (to keep it), or negative
+ (to decrement).
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Section
 CharacterConvert
 \end_layout
@@ -57863,6 +58094,23 @@ Convert.setDefaultConverter()
 CharacterConverter
 \family default
  class (better look at the implementation to know what to pass on).
+ For example, if you created a class named 
+\family typewriter
+Iso88592CharacterConverter
+\family default
+, call 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Convert.setDefaultConverter("Iso88592"); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -57887,6 +58135,62 @@ System.out.println("" + sun.io.ByteToCharConverter.getDefault());
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+This class only has a public default constructor and the following methods
+ (excluding some fields from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bytes2chars(byte[]
+\begin_inset space ~
+\end_inset
+
+bytes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Converts the given byte array range to a char array.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chars2bytes(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Converts the given char array range to a byte array.
+ 
 \end_layout
 
 \begin_layout Section
