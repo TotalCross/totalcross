@@ -55537,6 +55537,548 @@ compareTo((BigDecimal)other)
 .
 \end_layout
 
+\begin_layout Section
+BigInteger
+\end_layout
+
+\begin_layout Standard
+This class represent arbitrary-precision integers.
+ All operations behave as if 
+\family typewriter
+BigIntegers
+\family default
+ were represented in two's-complement notation (like Java's primitive integer
+ types).
+ 
+\family typewriter
+BigInteger
+\family default
+ provides analogues to all of Java's primitive integer operators.
+ Additionally, 
+\family typewriter
+BigInteger
+\family default
+ provides operations for modular arithmetic, GCD calculation, primality
+ testing, prime generation, bit manipulation, and a few other miscellaneous
+ operations.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of arithmetic operations exactly mimic those of Java's integer
+ arithmetic operators, as defined in The Java Language Specification.
+ For example, division by zero throws an 
+\family typewriter
+ArithmeticException
+\family default
+, and division of a negative by a positive yields a negative (or zero) remainder.
+ All of the details in the specification concerning overflow are ignored,
+ as 
+\family typewriter
+BigIntegers
+\family default
+ are made as large as necessary to accommodate the results of an operation.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of shift operations extend those of Java's shift operators to
+ allow for negative shift distances.
+ A right-shift with a negative shift distance results in a left shift, and
+ vice-versa.
+ The unsigned right shift operator (>>>) is omitted, as this operation makes
+ little sense in combination with the "infinite word size" abstraction provided
+ by this class.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of bitwise logical operations exactly mimic those of Java's bitwise
+ integer operators.
+ The binary operators (and, or, xor) implicitly perform sign extension on
+ the shorter of the two operands prior to performing the operation.
+ 
+\end_layout
+
+\begin_layout Standard
+Comparison operations perform signed integer comparisons, analogous to those
+ performed by Java's relational and equality operators.
+ 
+\end_layout
+
+\begin_layout Standard
+Modular arithmetic operations are provided to compute residues, perform
+ exponentiation, and compute multiplicative inverses.
+ These methods always return a non-negative result, between 0 and (modulus
+ - 1), inclusive.
+ 
+\end_layout
+
+\begin_layout Standard
+Bit operations operate on a single bit of the two's-complement representation
+ of their operand.
+ If necessary, the operand is sign-extended so that it contains the designated
+ bit.
+ None of the single-bit operations can produce a 
+\family typewriter
+BigInteger
+\family default
+ with a different sign from the 
+\family typewriter
+BigInteger
+\family default
+ being operated on, as they affect only a single bit, and the "infinite
+ word size" abstraction provided by this class ensures that there are infinitely
+ many "virtual sign bits" preceding each 
+\family typewriter
+BigInteger
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Most methods and constructors in this class throw 
+\family typewriter
+NullPointerException
+\family default
+ when passed a 
+\family typewriter
+null
+\family default
+ object reference for any input parameter.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZERO The constant zero as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ONE The constant one as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TEN The constant ten as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+radix) Translates the string representation of a 
+\family typewriter
+BigInteger
+\family default
+ in the specified radix into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The string representation consists of an optional minus sign followed by
+ a sequence of one or more digits in the specified radix.
+ The string may not contain any extraneous characters (whitespace, for example).
+ If so, an 
+\family typewriter
+InvalidNumberException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Translates the decimal string representation of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The string representation consists of an optional minus sign followed by
+ a sequence of one or more decimal digits.
+ The String may not contain any extraneous characters (whitespace, for example).
+ If so, an 
+\family typewriter
+InvalidNumberException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(byte[]
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Translates a byte array containing the two's-complement binary representati
+on of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The input array is assumed to be in big-endian byte-order: the most significant
+ byte is in the zero
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+ element.
+ This method will throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if the byte array is 
+\family typewriter
+null
+\family default
+ or its size is 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+signum,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+byte[]
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+magnitude) Translates the sign-magnitude representation of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The sign is represented as an integer 
+\family typewriter
+signum
+\family default
+ value: -1 for negative, 0 for zero, or 1 for positive.
+ The magnitude is a byte array in big-endian byte-order: the most significant
+ byte is in the zero
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+ element.
+ A zero-length magnitude array is permissible, and will result in in a 
+\family typewriter
+BigInteger
+\family default
+ value of 0, whether signum is -1, 0 or 1.
+ This method will throw an 
+\family typewriter
+NumberFormatException
+\family default
+ if 
+\family typewriter
+signum
+\family default
+ is not one of the three legal values (-1, 0, and 1), signum is 0 and magnitude
+ contains one or more non-zero bytes, or the byte array is 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+numBits,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Constructs a randomly generated 
+\family typewriter
+BigInteger
+\family default
+, uniformly distributed over the range 0 to (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+numBits
+\end_layout
+
+\end_inset
+
+ - 1
+\family default
+), inclusive.
+ The uniformity of the distribution assumes that a fair source of random
+ bits is provided in 
+\family typewriter
+rnd
+\family default
+.
+ Note that this constructor always constructs a non-negative 
+\family typewriter
+BigInteger
+\family default
+.
+ The number of bits can't be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+bitLength,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+certainty,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Constructs a randomly generated positive 
+\family typewriter
+BigInteger
+\family default
+ that is probably prime, with the specified 
+\family typewriter
+bitLength
+\family default
+.
+ It is recommended that the 
+\family typewriter
+probablePrime
+\family default
+ method be used in preference to this constructor unless there is a compelling
+ need to specify a certainty.
+ The certainty is a measure of the uncertainty that the caller is willing
+ to tolerate.
+ The probability that the new 
+\family typewriter
+BigInteger
+\family default
+ represents a prime number will exceed (
+\family typewriter
+1 - 1/2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+certainty
+\end_layout
+
+\end_inset
+
+
+\family default
+).
+ The execution time of this constructor is proportional to the value of
+ this parameter.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+probablePrime(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+bitLength,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Returns a 
+\family typewriter
+BigInteger
+\family default
+ that is 
+\family typewriter
+bitLength
+\family default
+ bits long with a probability < 
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+-100
+\end_layout
+
+\end_inset
+
+
+\family default
+ of being composite.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+bitLength < 2
+\family default
+.
+\end_layout
+
 \begin_layout Chapter
 totalcross.sys
 \end_layout
