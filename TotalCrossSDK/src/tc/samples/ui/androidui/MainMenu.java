@@ -58,7 +58,7 @@ public class MainMenu extends BaseContainer
       
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       menu.pressedColor = BKGCOLOR;
-      if (Math.max(Settings.screenWidth,Settings.screenHeight) >= 800)
+      if (Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30)
       {
          menu.borderGap = 100;
          menu.buttonHorizGap = menu.buttonVertGap = 200;
