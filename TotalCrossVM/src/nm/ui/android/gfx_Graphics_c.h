@@ -54,7 +54,7 @@ static EGLContext _context;
 #endif
 static void destroyEGL();
 
-VoidPtrs imgTextures;
+VoidPs* imgTextures;
 int realAppH,appW,appH;
 GLfloat ftransp[16], f255[256];
 int32 flen;
@@ -184,7 +184,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(); // in iOS, implemented in mainview.m
-void recreateTextures(VoidPs imgTextures);
+void recreateTextures(VoidPs* imgTextures);
 
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once

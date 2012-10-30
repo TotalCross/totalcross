@@ -651,26 +651,26 @@ void applyChanges(Object obj, bool updateList)
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   glLoadTexture(&(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+   glLoadTexture(obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
    Image_changed(obj) = false;
 }
 
 void freeTexture(Object img, bool updateList)
 {
-   Object thisObj = p->obj[0];
-   glDeleteTexture(thisObj,&(Image_textureId(thisObj)), updateList);
+   glDeleteTexture(img,&(Image_textureId(img)), updateList);
 }
 
-void recreateTextures(VoidPs imageTextures) // called by opengl when the application changes the opengl surface
+void recreateTextures(VoidPs* imgTextures) // called by opengl when the application changes the opengl surface
 {
-   VoidPs* current = imageTextures;
-   do
-   {
-      Object img = (Object)current->value;
-      glDeleteTexture(img,&(Image_textureId(img)),false);
-      applyChanges(img,false);
-      current = current->next;
-   } while (imageTextures != current);
+   VoidPs* current = imgTextures;
+   if (current)
+      do
+      {    
+         Object img = (Object)current->value;
+         glDeleteTexture(img,&(Image_textureId(img)),false);
+         applyChanges(img,false);
+         current = current->next;
+      } while (imgTextures != current);
 }
 
 static bool nativeEquals(Object thisObj, Object otherObj)
