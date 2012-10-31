@@ -29,9 +29,8 @@ public class AndroidUtils
 {
    static class Config
    {
-      private int version = 1;
+      private int version = 2;
       public String install_md5hash;
-      public int saved_screen_size;
       public int demotime;
       
       public Config()
@@ -42,7 +41,6 @@ public class AndroidUtils
          if (oldconf != null && !oldconf.isEmpty())
          {
             install_md5hash = pref.getString("install_md5hash",null);
-            saved_screen_size = pref.getInt("saved_screen_size",-1);
             demotime = pref.getInt("demotime",0);
             pref.edit().clear().commit();
          }
@@ -55,7 +53,7 @@ public class AndroidUtils
                if (version >= 1)
                {
                   install_md5hash = ds.readUTF();
-                  saved_screen_size = ds.readInt();
+                  if (version == 1) /*saved_screen_size = */ds.readInt();
                   demotime = ds.readInt();
                }
                f.close();
@@ -74,7 +72,6 @@ public class AndroidUtils
             DataOutputStream ds = new DataOutputStream(f);
             ds.writeInt(version);
             ds.writeUTF(install_md5hash);
-            ds.writeInt(saved_screen_size);
             ds.writeInt(demotime);
             f.close();
          }
@@ -211,17 +208,6 @@ public class AndroidUtils
                   debug("Updated "+dataDir+"/"+files[i]+" in "+(System.currentTimeMillis()-t1)+" ms");
                }
       }         
-   }
-   
-   public static int getSavedScreenSize()
-   {
-      return configs.saved_screen_size;
-   }
-
-   public static void setSavedScreenSize(int newValue)
-   {
-      configs.saved_screen_size = newValue;
-      configs.save();
    }
    
    public static void updateInstall(StartupTask task, String pack) throws Exception

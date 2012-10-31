@@ -185,8 +185,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
-   private static int firstOrientationSize;
-   static boolean surfaceChangedCalled;
    private android.view.Surface lastSurface;
    
    public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
@@ -194,57 +192,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (h == 0 || w == 0) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
-      //PixelFormat pf = new PixelFormat(); - android returns 5
-      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
-      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (!surfaceChangedCalled) 
-      {
-         surfaceChangedCalled = true;
-         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
-         if (Build.VERSION.SDK_INT >= 13)
-         {
-            // if first try, check if the value was already cached
-            int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
-            {
-               screenSize = temp;
-               //AndroidUtils.debug("restoring size from cache: "+screenSize);
-               firstOrientationSize = 1;
-            }
-            else
-            {
-               // not yet cached. first try? store the size and cache it
-               if (firstOrientationSize == 0)
-               {
-                  //AndroidUtils.debug("@@@@ first: "+screenSize);
-                  firstOrientationSize = screenSize;
-                  sendOrientationChange(true);
-                  return;
-               }
-               //AndroidUtils.debug("@@@@ second: "+screenSize);
-               if (firstOrientationSize > screenSize)
-                  screenSize = firstOrientationSize;
-               AndroidUtils.setSavedScreenSize(screenSize);
-               sendOrientationChange(false); // restore orientation to what user wants
-            }
-         }
-         if (screenSize == 0)
-         {
-            screenSize = screenSize0;
-            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
-         }
-         //nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
-         
-         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-         // for this second chance and ignore the first one.
-
-         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
-         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
-         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
-//         if (Loader.isFullScreen && h != screenHeight) return; 
-      }
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -287,16 +235,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       });
    }
    
-   private void sendOrientationChange(boolean invert)
-   {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putBoolean("invert",invert);
-      b.putInt("type",Loader.INVERT_ORIENTATION);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
-   }
-
    public void surfaceCreated(SurfaceHolder holder)
    {
       // here is where everything starts
