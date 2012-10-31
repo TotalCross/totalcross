@@ -648,15 +648,18 @@ void setTransparentColor(Object obj, Pixel color)
 void applyChanges(Object obj, bool updateList)
 {
    int32 frameCount = Image_frameCount(obj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
-   Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   glLoadTexture(obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj); 
+   if (pixelsObj)
+   {
+      Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+      int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+      glLoadTexture(obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+   }
    Image_changed(obj) = false;
 }
 
 void freeTexture(Object img, bool updateList)
-{
+{                                      
    glDeleteTexture(img,&(Image_textureId(img)), updateList);
 }
 

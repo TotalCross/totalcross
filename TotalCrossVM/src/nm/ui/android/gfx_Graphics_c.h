@@ -41,6 +41,7 @@ static void checkGlError(const char* op, int line)
 }
 
 #if 1
+//#define GL_CHECK_ERROR debug("%s (%d)",__FILE__,__LINE__);
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
 #else
 #define GL_CHECK_ERROR 
@@ -51,6 +52,7 @@ static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
+static bool surfaceWillChange;
 #endif
 static void destroyEGL();
 
@@ -184,7 +186,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(); // in iOS, implemented in mainview.m
-void recreateTextures(VoidPs* imgTextures);
+void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
 
 #ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
@@ -192,7 +194,13 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
    appW = width;
    appH = height;
-
+   
+   if (surface == null) // passed null when the surface is destroyed
+   {
+      surfaceWillChange = true; // block all screen updates
+      return;
+   }         
+   surfaceWillChange = false;
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (lastWindow && lastWindow != window)
@@ -644,7 +652,6 @@ bool setupGL(int width, int height)
     initPoints();
     initShade();
     setProjectionMatrix(appW,appH);
-    debug("setup gl thread: %X",threadGetCurrent());
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1); GL_CHECK_ERROR
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); GL_CHECK_ERROR
@@ -770,7 +777,8 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 void graphicsUpdateScreenIOS(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
-{
+{ 
+   if (surfaceWillChange) {clearPixels(); return;}
    if (pixcolors != (int32*)glcolors) flushPixels();
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);

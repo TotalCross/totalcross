@@ -299,7 +299,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void surfaceCreated(SurfaceHolder holder)
    {
-      AndroidUtils.debug("surface: "+holder.getSurface()+" "+eventThread);
       // here is where everything starts
       if (eventThread == null)
       {
@@ -315,6 +314,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void surfaceDestroyed(SurfaceHolder holder)
    {
+      instance.nativeInitSize(null,0,0); // signal vm that the surface will change
    }
 
    private static final int PEN_DOWN  = 1;

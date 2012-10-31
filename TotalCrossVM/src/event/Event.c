@@ -55,10 +55,14 @@ extern bool wokeUp();
 static int32 nextAutoOffTick;
 #endif
 
-static void pumpEvent(Context currentContext)
-{
+static bool pumpEvent(Context currentContext)
+{          
+   bool ok = true;   
    if (currentContext != mainContext) // only pump events on the mainContext
+   {
+      ok = false;
       goto sleep;
+   }
 #ifdef WINCE 
    {
     int32 ts;
@@ -76,13 +80,16 @@ static void pumpEvent(Context currentContext)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_POWER_ON, 0,0,-1);
 #endif
    if (privateIsEventAvailable())
+      {
       privatePumpEvent(currentContext);
+   }
    checkTimer(currentContext);
 #ifdef ENABLE_DEMO
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
 #endif
 sleep:
    Sleep(1); // avoid 100% cpu
+   return ok;
 }
 
 bool isEventAvailable()
@@ -94,8 +101,9 @@ void pumpEvents(Context currentContext)
 {
    if (keepRunning)
       do
-      {
-         pumpEvent(currentContext);
+      {            
+         if (!pumpEvent(currentContext))
+            break;
       } while (isEventAvailable() && keepRunning);
 
    if (!keepRunning && !appExitThrown)
