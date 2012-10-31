@@ -406,7 +406,6 @@ public class BigDecimal implements Comparable
     * @return a BigDecimal whose value is the remainder
     * @throws InvalidNumberException 
     * @throws IllegalArgumentException 
-    * @throws ArithmeticException 
     * @throws ArithmeticException
     *            if val == 0
     */
@@ -592,7 +591,7 @@ public class BigDecimal implements Comparable
    /**
     * Returns the String representation of this BigDecimal, using scientific notation if necessary. The following steps
     * are taken to generate the result: 1. the BigInteger unscaledValue's toString method is called and if
-    * <code>scale == 0<code> is returned.
+    * <code>scale == 0</code> is returned.
     * 2. an <code>int adjExp</code> is created which is equal to the negation of <code>scale</code> plus the number of
     * digits in the unscaled value, minus one. 3. if <code>scale >= 0 && adjExp >= -6</code> then we represent this
     * BigDecimal without scientific notation. A decimal is added if the scale is positive and zeros are prepended as
