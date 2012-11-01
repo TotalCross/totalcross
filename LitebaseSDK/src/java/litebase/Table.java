@@ -2587,7 +2587,9 @@ class Table
            	      intArray[0] = ((values[i].asBlob.length > sizes[i])? sizes[i] : values[i].asBlob.length);
            	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
            	   }
-        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)
+           	   // juliana@265_2: corrected a problem where a row could be wrongly deleted by recovering a table when an update was done and the 
+               // column which was of type blob remained null on Java SE and BlackBerry.
+        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asInt != -1)
         	      {
         	         intArray[0] = vOlds[i].asInt;
         	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
