@@ -94,6 +94,11 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
+   
+   /** Defines the total transition time. Defaults to 1000 (1 second).
+    * @since TotalCross 2.0 
+    */
+   public static int TRANSITION_TIME = 1000;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -176,11 +181,12 @@ public class Container extends Control
       {
          try
          {
+            int ini0 = Vm.getTimeStamp();
             Image screen1 = MainWindow.getScreenShot();
             screen1.lockChanges();
             int w = totalcross.sys.Settings.screenWidth;
             int h = totalcross.sys.Settings.screenHeight;
-            int n = Math.min(w,h)/2;
+            int remainingFrames = Math.min(w,h)/2;
             int mx = w/2;
             int my = h/2;
             double incX=1,incY=1;
@@ -189,14 +195,13 @@ public class Container extends Control
              else
                incY = (double)h/w;
             Graphics g = MainWindow.mainWindowInstance.getGraphics();
-            int i0,iinc,step = Math.max(1,n/30);
-            Image s0,s1;
-            if (transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE)
-               {i0 = n; iinc = -step; s0 = screen1; s1 = screen0;}
-            else
-               {i0 = 0; iinc =  step; s0 = screen0; s1 = screen1;}
-            for (int i =i0; n >= 0; i+=iinc, n -= step)
+            int step=1;
+            boolean isClose = transitionEffect == TRANSITION_CLOSE;
+            Image s0 = isClose ? screen1 : screen0;
+            Image s1 = isClose ? screen0 : screen1;
+            for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
             {
+               int ini = Vm.getTimeStamp();
                g.clearClip();
                g.drawImage(s0,0,0);
                int minx = (int)(mx - i*incX);
@@ -206,6 +211,20 @@ public class Container extends Control
                g.setClip(minx,miny,maxx-minx,maxy-miny);
                g.drawImage(s1,0,0);
                Window.updateScreen();
+               int frameElapsed = Vm.getTimeStamp()-ini;
+               int totalElapsed = Vm.getTimeStamp()-ini0;
+               int remainingTime = TRANSITION_TIME - totalElapsed;
+               if (remainingTime <= 0)
+                  break;
+               if (frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+               {
+                  Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
+                  step = 1;
+               }
+               else
+               {
+                  step = frameElapsed * remainingFrames / remainingTime;
+               }
             }
          }
          catch (Throwable e) {}
