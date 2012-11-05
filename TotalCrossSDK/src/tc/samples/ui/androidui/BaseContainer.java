@@ -30,10 +30,13 @@ public class BaseContainer extends Container
    {
       try
       {
-         setForeColor(0xBFCFFF);
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-         if (isMainMenu) backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
+         if (isMainMenu) 
+         {
+            backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
+            setForeColor(0xBFCFFF);
+         }
          
          if (infoImg == null)
             infoImg = new Image("images/ic_dialog_info.png");
