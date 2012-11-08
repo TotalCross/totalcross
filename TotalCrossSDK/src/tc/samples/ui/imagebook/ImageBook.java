@@ -304,6 +304,10 @@ public class ImageBook extends MainWindow
          gc.setRowsPerPage(LINES_PER_PAGE);
          addCells();
          repaintNow();
+         
+         Control[] cc = gc.getChildren();
+         ScrollContainer sc = (ScrollContainer)cc[1];
+         cc = null;
       }
       catch (Exception ee)
       {

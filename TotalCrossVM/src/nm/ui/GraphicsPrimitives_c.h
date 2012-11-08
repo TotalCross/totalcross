@@ -19,7 +19,7 @@
 #define TRANSITION_CLOSE 2
 
 #ifdef __gl2_h_
-extern int appW,appH;
+extern int32 appW,appH,glLastShiftY,desiredLastShiftY;
 extern GLfloat ftransp[16], f255[256];
 extern GLfloat *glcoords, *glcolors;
 
@@ -1054,6 +1054,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          // draws the char, a row at a time
          if (Graphics_useOpenGL(g))
          {
+            int ty = glLastShiftY - screen.shiftY;
             glC = glcolors;
             glV = glcoords;
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)
@@ -1071,7 +1072,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                   *glC++ = ftransp[transparency];
                   // vertices
                   *glV++ = x;
-                  *glV++ = y;
+                  *glV++ = y + ty;
                }
             }
             if (glC != glcolors) // flush vertices buffer
@@ -1999,7 +2000,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    screen.shiftY = shiftY;
 
-#ifndef __gl2_h_ // in opengl there's no temporary buffer
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {

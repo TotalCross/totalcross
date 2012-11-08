@@ -48,6 +48,7 @@ static void checkGlError(const char* op, int line)
 #endif
 
 #ifdef ANDROID
+static void setProjectionMatrix(GLfloat w, GLfloat h);
 static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
@@ -57,7 +58,7 @@ static bool surfaceWillChange;
 static void destroyEGL();
 
 VoidPs* imgTextures;
-int realAppH,appW,appH;
+int32 realAppH,appW,appH,glLastShiftY;
 GLfloat ftransp[16], f255[256];
 int32 flen;
 GLfloat* glcoords;//[flen*2]; x,y
@@ -138,7 +139,6 @@ static GLuint shadeProgram;
 static GLuint shadePosition;
 static GLuint shadeColor;
 
-
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
    GLint ret=1;               
@@ -188,18 +188,29 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 bool initGLES(); // in iOS, implemented in mainview.m
 void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
 
-#ifdef ANDROID
+#ifdef ANDROID             
+int ignoreNext;
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
-{                               
-   ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
+{                    
+   if (!screen.extension)           
+      screen.extension = newX(ScreenSurfaceEx);
+
+   if (surface == null) // passed null when the surface is destroyed
+   {       
+      if (width == -999)
+      {
+         ignoreNext = 5;
+         glLastShiftY = height == 0 ? 0 : appH - height;
+         debug("changing sip. appH: %d, heigth: %d, glLastShiftY: %d",appH,height,glLastShiftY);
+      }
+      else
+         surfaceWillChange = true; // block all screen updates
+      return;
+   }  
+   debug("nativeInitSize called");
+   glLastShiftY = 0;
    appW = width;
    appH = height;
-   
-   if (surface == null) // passed null when the surface is destroyed
-   {
-      surfaceWillChange = true; // block all screen updates
-      return;
-   }         
    surfaceWillChange = false;
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
@@ -257,6 +268,8 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
+   y += glLastShiftY - screen.shiftY;
+   
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
    shcoords[3] = shcoords[5] = y+h;
@@ -294,6 +307,8 @@ void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelCon
    setCurrentProgram(shadeProgram);
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
+
+   y += glLastShiftY - screen.shiftY;
    
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -384,6 +399,8 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
 
+   dstY += glLastShiftY - screen.shiftY;
+
    // destination coordinates
    coords[0] = coords[6] = dstX;
    coords[1] = coords[3] = dstY+h;
@@ -440,6 +457,7 @@ void flushPixels()
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
       int32 lastRGBA = ~*pixcolors;
       int32 x,y,w,h,x2,y2;
+      int32 ty = glLastShiftY - screen.shiftY;
       for (i = 0; i < n; i++)
       {  
          // color
@@ -452,10 +470,11 @@ void flushPixels()
          // coord
          x = *pixcoords++;
          y = *pixcoords++;
+         y += glLastShiftY - screen.shiftY;
          if (x & IS_DIAGONAL)
          {                    
             x2 = *pixcoords++;
-            y2 = *pixcoords++;
+            y2 = *pixcoords++ + ty;
             coords[0] = x & ~IS_DIAGONAL;
             coords[1] = y;
             coords[2] = x2;
@@ -530,26 +549,6 @@ void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
    add2pipe(x,y,w,h,rgb,a);
 }
 
-static int32 glLastShiftY;
-static void setProjectionMatrix(GLfloat w, GLfloat h)
-{       
-   GLfloat t = glLastShiftY, b = h;
-   
-   GLfloat mat[16] =
-   {
-      2.0/w, 0.0, 0.0, -1.0,
-      0.0, 2.0/(t-b), (t+b)/(t-b), 1.0,
-      0.0, 0.0, -1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0
-   };
-   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   glViewport(0, 0, w, h); GL_CHECK_ERROR
-}
-
-
 typedef union
 {
    struct{ GLubyte r, g, b, a; };
@@ -594,6 +593,8 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
       {glClearClip(); GL_CHECK_ERROR}
    else
    {
+      y1 += glLastShiftY - screen.shiftY;
+      y2 += glLastShiftY - screen.shiftY;
       glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
       if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
       if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
@@ -615,6 +616,22 @@ void flushAll()
 {
    flushPixels();
    glFlush(); GL_CHECK_ERROR
+}
+
+static void setProjectionMatrix(GLfloat w, GLfloat h)
+{                              
+   GLfloat mat[16] =
+   {
+      2.0/w, 0.0, 0.0, -1.0,
+      0.0, -2.0/h, 0.0, 1.0,
+      0.0, 0.0, -1.0, 0.0,
+      0.0, 0.0, 0.0, 1.0
+   };
+   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   glViewport(0, 0, w, h); GL_CHECK_ERROR
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -728,6 +745,7 @@ void privateScreenChange(int32 w, int32 h)
 {
    appW = w;
    appH = h;                           
+   debug("screen change %d,%d",w,h);
    clearPixels();
    setProjectionMatrix(w,h); 
 }
@@ -778,6 +796,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 void graphicsUpdateScreenIOS(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
+   if (ignoreNext > 0) {ignoreNext--; debug("ignoring %d, glLastShiftY: %d, shiftY: %d",ignoreNext,glLastShiftY,screen->shiftY); return;}
    if (surfaceWillChange) {clearPixels(); return;}
    if (pixcolors != (int32*)glcolors) flushPixels();
 #ifdef ANDROID
@@ -789,9 +808,5 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
    glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
-   if (glLastShiftY != screen->shiftY)
-   {
-      glLastShiftY = screen->shiftY;
-      setProjectionMatrix(appW,appH);
-   }
+   debug("glLastShiftY: %d, shiftY: %d", glLastShiftY,screen->shiftY);
 }

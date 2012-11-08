@@ -260,6 +260,21 @@ public class Loader extends Activity
             }
          }
          else
+         if (command.equalsIgnoreCase("kingsoft"))
+         {
+            File f = new File(args);
+            if (f.exists()) 
+            {
+               Intent intent = new Intent();
+               intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               intent.setAction(android.content.Intent.ACTION_VIEW);
+               intent.setClassName("cn.wps.moffice_eng", "cn.wps.moffice.documentmanager.PreStartActivity");
+               Uri uri = Uri.fromFile(f);
+               intent.setData(uri);
+               startActivity(intent);
+            }
+         }
+         else
          if (command.equalsIgnoreCase("viewer"))
          {
             if (args.toLowerCase().endsWith(".pdf"))

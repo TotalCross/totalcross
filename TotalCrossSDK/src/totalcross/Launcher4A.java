@@ -202,18 +202,20 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       if (sipVisible) // sip changed?
       {
+         instance.nativeInitSize(null,-999,h); // signal vm that the surface will change
          if (rotated) // close the sip if a rotation occurs
             setSIP(SIP_HIDE);
-         return;
       }
-      
-      android.view.Surface surface = holder.getSurface();
-      if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
+      else
       {
-         lastSurface = surface;
-         lastScreenW = w;
-         lastScreenH = h;
-         sendScreenChangeEvent();
+         android.view.Surface surface = holder.getSurface();
+         if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
+         {
+            lastSurface = surface;
+            lastScreenW = w;
+            lastScreenH = h;
+            sendScreenChangeEvent();
+         }
       }
    }
 
@@ -546,6 +548,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       switch (sipOption)
       {
          case SIP_HIDE:
+            instance.nativeInitSize(null,-999,0); // signal vm that the surface will change
             sipVisible = false;
             if (Loader.isFullScreen)
                setLoaderFullScreen(true);
