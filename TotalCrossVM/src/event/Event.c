@@ -80,9 +80,7 @@ static bool pumpEvent(Context currentContext)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_POWER_ON, 0,0,-1);
 #endif
    if (privateIsEventAvailable())
-      {
       privatePumpEvent(currentContext);
-   }
    checkTimer(currentContext);
 #ifdef ENABLE_DEMO
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
