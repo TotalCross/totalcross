@@ -2,11 +2,11 @@
  *  TotalCross Software Development Kit                                          *
  *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
- * *
+ *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
  *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- * *
+ *                                                                               *
  *********************************************************************************/
 
 #include "gfx_ex.h"
@@ -189,7 +189,8 @@ bool initGLES(); // in iOS, implemented in mainview.m
 void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
 
 #ifdef ANDROID             
-int ignoreNext;
+int32 desiredLastShiftY;
+bool setShiftYonNextUpdateScreen;
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {                    
    if (!screen.extension)           
@@ -199,16 +200,15 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {       
       if (width == -999)
       {
-         ignoreNext = 5;
-         glLastShiftY = height == 0 ? 0 : appH - height;
-         debug("changing sip. appH: %d, heigth: %d, glLastShiftY: %d",appH,height,glLastShiftY);
+//         debug("changing sip. appH: %d, heigth: %d, glLastShiftY: %d",appH,height,glLastShiftY);
+         desiredLastShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
+         setShiftYonNextUpdateScreen = true;
       }
       else
          surfaceWillChange = true; // block all screen updates
       return;
    }  
-   debug("nativeInitSize called");
-   glLastShiftY = 0;
+   desiredLastShiftY = glLastShiftY = 0;
    appW = width;
    appH = height;
    surfaceWillChange = false;
@@ -745,7 +745,6 @@ void privateScreenChange(int32 w, int32 h)
 {
    appW = w;
    appH = h;                           
-   debug("screen change %d,%d",w,h);
    clearPixels();
    setProjectionMatrix(w,h); 
 }
@@ -793,10 +792,11 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 #endif
 }
 
+void setTimerInterval(int32 t);
+
 void graphicsUpdateScreenIOS(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
-   if (ignoreNext > 0) {ignoreNext--; debug("ignoring %d, glLastShiftY: %d, shiftY: %d",ignoreNext,glLastShiftY,screen->shiftY); return;}
    if (surfaceWillChange) {clearPixels(); return;}
    if (pixcolors != (int32*)glcolors) flushPixels();
 #ifdef ANDROID
@@ -808,5 +808,9 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
    glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
-   debug("glLastShiftY: %d, shiftY: %d", glLastShiftY,screen->shiftY);
+   if (setShiftYonNextUpdateScreen)
+   {
+      setShiftYonNextUpdateScreen = false;
+      glLastShiftY = desiredLastShiftY;
+   }
 }

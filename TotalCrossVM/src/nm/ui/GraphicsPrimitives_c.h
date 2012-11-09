@@ -2000,6 +2000,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    screen.shiftY = shiftY;
 
+#ifndef __gl2_h_
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
