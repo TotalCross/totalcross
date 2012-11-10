@@ -19,7 +19,7 @@
 #define TRANSITION_CLOSE 2
 
 #ifdef __gl2_h_
-extern int32 appW,appH,glLastShiftY,desiredLastShiftY;
+extern int32 appW,appH,glShiftY,desiredglShiftY;
 extern GLfloat ftransp[16], f255[256];
 extern GLfloat *glcoords, *glcolors;
 
@@ -944,7 +944,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    fcB = fc.b;
 
 #ifdef __gl2_h_
-   flushPixels();
+   flushPixels(1);
 #endif
 
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
@@ -1054,7 +1054,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          // draws the char, a row at a time
          if (Graphics_useOpenGL(g))
          {
-            int ty = glLastShiftY - screen.shiftY;
+            int ty = glShiftY;
             glC = glcolors;
             glV = glcoords;
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)
@@ -1852,7 +1852,7 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define BITMAP_PTR(p, dline, pitch)      (((uint8*)p) + (dline * pitch))
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
-int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
+int32 *shiftYfield, *shiftHfield, *lastShiftYfield, *needsPaint, lastShiftY=-1;
 static bool firstUpdate = true;
 
 #ifdef darwin
@@ -1931,6 +1931,8 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 }
 #endif
 
+int32 desiredScreenShiftY;
+
 // not used with opengl
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
@@ -1954,7 +1956,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 #endif
 
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
-   {
+   {              
+      needsPaint = getStaticFieldInt(window, "needsPaint");
       shiftYfield = getStaticFieldInt(window, "shiftY");
       shiftHfield = getStaticFieldInt(window, "shiftH");
       lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
@@ -1998,9 +2001,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          currentContext->dirtyY2 = currentContext->dirtyY1 + min32(currentContext->dirtyY2-(currentContext->dirtyY1+shiftY), shiftH);
       }
    }
+   
+#ifdef __gl2_h_
+   desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
+#else
    screen.shiftY = shiftY;
-
-#ifndef __gl2_h_
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -2764,7 +2769,7 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
    PixelConv pc;
    pc.a = 255;      
 #ifdef __gl2_h_
-   flushPixels();
+   flushPixels(2);
    glSetLineWidth(2);
    for (i = 0; i < numSteps; i++)
    {
@@ -2776,7 +2781,7 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
       sy = startY+i;
       drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
    }
-   flushPixels();
+   flushPixels(3);
    glSetLineWidth(1);
    currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #else
@@ -2911,6 +2916,7 @@ static bool checkScreenPixels()
    return screen.pixels != null;
 }
 
+void setShiftYgl();
 void updateScreen(Context currentContext)
 {
 #ifdef darwin
@@ -2942,6 +2948,9 @@ void updateScreen(Context currentContext)
       flushAll();
 #endif
    UNLOCKVAR(screen);
+#ifdef __gl2_h_
+   setShiftYgl();
+#endif   
 }
 
 void graphicsDestroyPrimitives()
