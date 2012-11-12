@@ -30,6 +30,8 @@ static void glDrawPixelG(Object g, int32 xx, int32 yy, int32 color, int32 alpha)
    if (Graphics_clipX1(g) <= xx && xx <= Graphics_clipX2(g) && Graphics_clipY1(g) <= yy && yy <= Graphics_clipY2(g))
       glDrawPixel(xx,yy,color,alpha);
 }
+#define graphicsLock(screenSurface, on) true
+#define NO_GRAPHICS_LOCK_NEEDED
 
 #endif
 

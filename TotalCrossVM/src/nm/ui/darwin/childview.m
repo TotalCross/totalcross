@@ -34,11 +34,12 @@ bool setupGL(int width, int height);
 - (void)setScreenValues: (void*)scr
 {
    ScreenSurface screen = gscreen = scr;
-   int scale = ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ([UIScreen mainScreen].scale == 2.0)) ?2:1;
+   int scale = 1;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ([UIScreen mainScreen].scale == 2.0)) ?2:1;
    screen->screenW = self.frame.size.width * scale;
    screen->screenH = self.frame.size.height * scale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
+   screen->pixels = (uint8*)1;
 }
 
 - (void)drawRect:(CGRect)frame
@@ -71,17 +72,6 @@ bool setupGL(int width, int height);
       }
    }
    clientW = w;
-   // CGContext: 6.5s; CGLayer: 3.5s
-/*   CGSize s = CGSizeMake(w,h);
-   CGContextRef context = UIGraphicsGetCurrentContext();
-   CGLayerRef layer = CGLayerCreateWithContext(context, s, NULL);
-   
-   CGContextRef layerContext = CGLayerGetContext(layer);
-   CGContextTranslateCTM(layerContext, 0, h-shiftY);
-   CGContextScaleCTM(layerContext, 1, -1);
-   CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
-   CGContextDrawLayerAtPoint(context, CGPointZero, layer);
-   CGLayerRelease(layer);*/
 }
 
 - (void)graphicsSetup
@@ -110,22 +100,6 @@ bool setupGL(int width, int height);
 {
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
    glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
-   {
-   /*ScreenSurface screen = (ScreenSurface)vscreen;
-   int dirtyX1,dirtyY1,dirtyX2,dirtyY2;
-   getDirtyFromContext(context, &dirtyX1,&dirtyY1,&dirtyX2,&dirtyY2);
-   
-   shiftY = screen->shiftY;
-   
-   CGRect r = CGRectMake(dirtyX1,dirtyY1,dirtyX2-dirtyX1,dirtyY2-dirtyY1);
-   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
-                              [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
-   [redrawInv setTarget:self];
-   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
-   [redrawInv setArgument:&r atIndex:2];
-   [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];*/
-   }
 }    
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event

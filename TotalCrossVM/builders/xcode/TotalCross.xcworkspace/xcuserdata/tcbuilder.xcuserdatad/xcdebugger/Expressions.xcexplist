@@ -11,6 +11,14 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "-[ChildView invalidateScreen:]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "tcSettings.screenWidthPtr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
          <PersistentStrings>
             <PersistentString
@@ -33,6 +41,9 @@
                value = "htNativeProcAddresses.size">
             </PersistentString>
          </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView setScreenValues:]:childview.m">
       </ContextState>
    </ContextStates>
 </VariablesViewState>

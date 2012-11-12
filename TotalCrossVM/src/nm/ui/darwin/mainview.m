@@ -307,6 +307,8 @@ static bool callingCamera;
 void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
 
+void iosStartup(int w, int h);
+
 bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
@@ -316,6 +318,7 @@ bool initGLES(ScreenSurface screen)
    DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
    [window makeKeyAndVisible];
+   iosStartup(rect.size.width,rect.size.height);   
    
    [ DEVICE_CTX->_childview setScreenValues: screen ];
    screen->pixels = (void*)1;

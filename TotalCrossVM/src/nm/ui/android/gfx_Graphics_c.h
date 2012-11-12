@@ -53,9 +53,9 @@ static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
-static bool surfaceWillChange;
 #endif
 static void destroyEGL();
+static bool surfaceWillChange;
 
 VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
@@ -185,13 +185,13 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    return p;
 }
 
-bool initGLES(); // in iOS, implemented in mainview.m
+bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
 void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
 
-#ifdef ANDROID           
 void setTimerInterval(int32 t);  
 int32 desiredglShiftY;
 bool setShiftYonNextUpdateScreen;
+#ifdef ANDROID           
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {                    
    if (!screen.extension)           
@@ -224,10 +224,19 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    if (lastWindow && lastWindow != window)
    {  
       destroyEGL();
-      initGLES();
+      initGLES(&screen);
       recreateTextures(imgTextures);
    }
    lastWindow = window;
+}
+#else
+void iosStartup(int w, int h)
+{
+    desiredglShiftY = glShiftY = 0;         
+    setShiftYonNextUpdateScreen = true;
+    appW = w;
+    appH = h;
+    surfaceWillChange = false;
 }
 #endif
 
@@ -364,7 +373,7 @@ void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int
    if (!pt)
       return;
 
-   if (!textureAlreadyCreated) {glGenTextures(1, textureId); GL_CHECK_ERROR}
+   if (!textureAlreadyCreated) {glGenTextures(1, (GLuint*)textureId); GL_CHECK_ERROR}
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
    if (!textureAlreadyCreated)
@@ -393,7 +402,7 @@ void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)
 {         
-   glDeleteTextures(1,textureId); GL_CHECK_ERROR
+   glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
    *textureId = 0;                               
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
@@ -694,7 +703,7 @@ bool setupGL(int width, int height)
 }
 
 #ifdef ANDROID
-bool initGLES()
+bool initGLES(ScreenSurface /*screen*/unused)
 {
    int32 i;
    const EGLint attribs[] =
@@ -764,7 +773,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   return initGLES();
+   return initGLES(screen);
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
@@ -793,8 +802,10 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    else
    {
       if (screen->extension)
-          free(screen->extension);
+         free(screen->extension);
       deviceCtx = screen->extension = NULL;
+      xfree(glcoords);
+      xfree(glcolors);
    }
 #endif
 }
@@ -802,6 +813,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
+#ifdef ANDROID           
    if (setShiftYonNextUpdateScreen && needsPaint != null)
    {       
       setShiftYonNextUpdateScreen = false;
@@ -810,6 +822,7 @@ void setShiftYgl()
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
       setTimerInterval(1);      
    }
+#endif    
 }
 extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS(ScreenSurface screen);

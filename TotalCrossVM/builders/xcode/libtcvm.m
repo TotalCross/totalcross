@@ -17,8 +17,7 @@
 + (NSInteger) startVM:(Context*)context appName:(char *)appName
 {
     int32 ret = startVM(appName, context);
-    if (ret == 0)
-       tczLoad(*context, "LitebaseLib.tcz");
+    if (ret == 0) tczLoad(*context, "LitebaseLib.tcz");
     return ret;
 }
 

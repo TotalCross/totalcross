@@ -82,7 +82,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_refresh_iiiiiif"), &tugG_refresh_iiiiiif);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawVistaRect_iiiiiiii"), &tugG_drawVistaRect_iiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_draw3dRect_iiiibbbI"), &tugG_draw3dRect_iiiibbbI);
-   htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillVistaRect_iiiibbI"), &tugG_fillVistaRect_iiiibbI);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillVistaRect_iiiiibb"), &tugG_fillVistaRect_iiiiibb);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawArrow_iiibbi"), &tugG_drawArrow_iiibbi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawImage_iii"), &tugG_drawImage_iii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillEllipseGradient_iiii"), &tugG_fillEllipseGradient_iiii);
