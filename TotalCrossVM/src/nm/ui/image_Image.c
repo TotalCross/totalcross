@@ -55,8 +55,8 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
 {
    Object thisObj = p->obj[0];
-   Pixel from = makePixelRGB(p->i32[0]);
-   Pixel to = makePixelRGB(p->i32[1]);
+   Pixel from = makePixelARGB(p->i32[0]);
+   Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -143,16 +143,14 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 {
 #ifdef __gl2_h_    
    Object thisObj = p->obj[0];
-   applyChanges(thisObj);
+   applyChanges(thisObj,true);
 #endif    
 }
 //////////////////////////////////////////////////////////////////////////
-void glDeleteTexture(int32* textureId);
 TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
 {  
-#ifdef __gl2_h_   
-   Object thisObj = p->obj[0];
-   glDeleteTexture(&(Image_textureId(thisObj)));
+#ifdef __gl2_h_                         
+   freeTexture(p->obj[0],true);
 #endif   
 }
 

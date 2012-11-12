@@ -48,7 +48,8 @@ public class GridContainer extends Container
    public static final int VERTICAL_ORIENTATION = 1;
    
    private int orientation, cols, rows, rpp, pageCount;
-   private ScrollContainer sc;
+   /** The ScrollContainer used in this control. */
+   public ScrollContainer sc;
    private Cell[] cells;
    private ArrowButton btFirst, btLast;
       

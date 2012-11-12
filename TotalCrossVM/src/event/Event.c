@@ -55,10 +55,14 @@ extern bool wokeUp();
 static int32 nextAutoOffTick;
 #endif
 
-static void pumpEvent(Context currentContext)
-{
+static bool pumpEvent(Context currentContext)
+{          
+   bool ok = true;   
    if (currentContext != mainContext) // only pump events on the mainContext
+   {
+      ok = false;
       goto sleep;
+   }
 #ifdef WINCE 
    {
     int32 ts;
@@ -83,6 +87,7 @@ static void pumpEvent(Context currentContext)
 #endif
 sleep:
    Sleep(1); // avoid 100% cpu
+   return ok;
 }
 
 bool isEventAvailable()
@@ -94,8 +99,9 @@ void pumpEvents(Context currentContext)
 {
    if (keepRunning)
       do
-      {
-         pumpEvent(currentContext);
+      {            
+         if (!pumpEvent(currentContext))
+            break;
       } while (isEventAvailable() && keepRunning);
 
    if (!keepRunning && !appExitThrown)

@@ -185,66 +185,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
-   private static int firstOrientationSize;
-   static boolean surfaceChangedCalled;
+   private android.view.Surface lastSurface;
    
-   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
+   public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
-      nativeInitSize(holder.getSurface(),w,h);
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
-      //PixelFormat pf = new PixelFormat(); - android returns 5
-      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
-      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (!surfaceChangedCalled) 
-      {
-         surfaceChangedCalled = true;
-         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
-         if (Build.VERSION.SDK_INT >= 13)
-         {
-            // if first try, check if the value was already cached
-            int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
-            {
-               screenSize = temp;
-               //AndroidUtils.debug("restoring size from cache: "+screenSize);
-               firstOrientationSize = 1;
-            }
-            else
-            {
-               // not yet cached. first try? store the size and cache it
-               if (firstOrientationSize == 0)
-               {
-                  //AndroidUtils.debug("@@@@ first: "+screenSize);
-                  firstOrientationSize = screenSize;
-                  sendOrientationChange(true);
-                  return;
-               }
-               //AndroidUtils.debug("@@@@ second: "+screenSize);
-               if (firstOrientationSize > screenSize)
-                  screenSize = firstOrientationSize;
-               AndroidUtils.setSavedScreenSize(screenSize);
-               sendOrientationChange(false); // restore orientation to what user wants
-            }
-         }
-         if (screenSize == 0)
-         {
-            screenSize = screenSize0;
-            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
-         }
-         //nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
-         
-         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-         // for this second chance and ignore the first one.
-
-         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
-         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
-         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
-//         if (Loader.isFullScreen && h != screenHeight) return; 
-      }
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -254,40 +202,42 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       if (sipVisible) // sip changed?
       {
+         instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
          if (rotated) // close the sip if a rotation occurs
             setSIP(SIP_HIDE);
-         return;
       }
-      
-      if (w != lastScreenW || h != lastScreenH)
+      else
       {
-         lastScreenW = w;
-         lastScreenH = h;
-         eventThread.invokeInEventThread(false, new Runnable()
+         instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
+         android.view.Surface surface = holder.getSurface();
+         if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
          {
-            public void run()
-            {
-               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
-               rDirty.left = rDirty.top = 0;
-               rDirty.right = lastScreenW;
-               rDirty.bottom = lastScreenH;
-               DisplayMetrics metrics = getResources().getDisplayMetrics();
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-            }
-         });
+            lastSurface = surface;
+            lastScreenW = w;
+            lastScreenH = h;
+            sendScreenChangeEvent();
+         }
       }
    }
 
-   private void sendOrientationChange(boolean invert)
+   private void sendScreenChangeEvent()
    {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putBoolean("invert",invert);
-      b.putInt("type",Loader.INVERT_ORIENTATION);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
+      eventThread.invokeInEventThread(false, new Runnable()
+      {
+         public void run()
+         {
+            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
+            deviceFontHeight = (int)new TextView(getContext()).getTextSize();
+            rDirty.left = rDirty.top = 0;
+            rDirty.right = lastScreenW;
+            rDirty.bottom = lastScreenH;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            sendCloseSIPEvent(); // makes first screen rotation work
+         }
+      });
    }
-
+   
    public void surfaceCreated(SurfaceHolder holder)
    {
       // here is where everything starts
@@ -296,10 +246,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          eventThread = new TCEventThread(this);
          eventThread.popTime = 20;
       }
+      else
+      {
+         lastSurface = holder.getSurface();
+         sendScreenChangeEvent();
+      }
    }
 
    public void surfaceDestroyed(SurfaceHolder holder)
    {
+      instance.nativeInitSize(null,0,0); // signal vm that the surface will change
    }
 
    private static final int PEN_DOWN  = 1;
@@ -345,13 +301,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean hardwareKeyboardIsVisible;
    
-   
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-/*      if (oldh < h)
-         updateScreen(0,0,w,h,TRANSITION_NONE);
-*/   }
+   }
 
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
@@ -444,43 +397,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       return true;
    }
-
-   static void drawScreen()
-   {
-   }
-
-   static void transitionEffectChanged(int type)
-   {
-   }
-   
-   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
-   {
-/*      if (!appPaused)
-      try
-      {
-         //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
-            return;
-         
-         switch (transitionEffect)
-         {
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-               animt.startTransition(transitionEffect);
-               // no break!
-            case TRANSITION_NONE:
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               drawScreen();
-               break;
-         }
-         //int ela = (int)(System.currentTimeMillis() - ini);
-         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
-      }
-      catch (Throwable t)
-      {
-         AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-*/   }
 
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.

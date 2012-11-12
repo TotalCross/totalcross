@@ -14,14 +14,25 @@
 #ifdef __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
 #define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))
-void glDrawPixel(int32 x, int32 y, int32 rgb);
-void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb);
-void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb);
-void glDrawPixels(int32 n);
+void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
+void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
+void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a);
+void glDrawPixels(int32 n, int32 rgb);
 int32 glGetPixel(int32 x, int32 y);
+void glDeleteTexture(Object img, int32* textureId, bool removeFromList);
+void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool removeFromList);
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
-void applyChanges(Object obj);
+void applyChanges(Object obj, bool updateList);
+void freeTexture(Object obj, bool updateList);
 bool checkGLfloatBuffer(Context c, int32 n);
+void flushPixels();
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
+void glClearClip();
+void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
+void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
+void glSetLineWidth(int32 w);
+void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
+void flushAll();
 #else
 #define Graphics_forePixel(o)      makePixelRGB(Graphics_foreColor(o))
 #define Graphics_backPixel(o)      makePixelRGB(Graphics_backColor(o))
@@ -612,11 +623,10 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p) // totalcross/ui/gfx/Graphics native private void fill3dRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
    Object g = p->obj[0];
-   if (p->obj[1])
-      fillVistaRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], (bool)p->i32[4], (bool)p->i32[5], p->obj[1]);
+   fillVistaRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], makePixelRGB(p->i32[4]), (bool)p->i32[5], (bool)p->i32[6]);
 }                   
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawArrow_iiibbi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
@@ -678,7 +688,10 @@ TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native public static void fadeScreen(int fadeValue);
-{
+{                    
+#ifdef __gl2_h_
+   glFillRect(0,0,appW,appH,0,p->i32[0]);
+#else   
    //int32 ini = getTimeStamp();
    if (graphicsLock(&screen, true))
    {
@@ -718,6 +731,7 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
       graphicsLock(&screen, false);
    }                          
    //debug("elapsed %d ms",getTimeStamp()-ini);
+#endif   
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
@@ -747,6 +761,12 @@ TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Grap
    Object g = p->obj[0];
    drawCylindricShade(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
 }                     
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+   Object g = p->obj[0];
+   fillShadedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], makePixelRGB(p->i32[6]), makePixelRGB(p->i32[7]), p->i32[8]);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "gfx_Graphics_test.h"

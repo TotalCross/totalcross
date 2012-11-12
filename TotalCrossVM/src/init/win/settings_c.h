@@ -265,10 +265,24 @@ static void GetSerialNumberPocketPC2002(CharP buf) // see http://msdn.microsoft.
     // Break the Platform ID down into 2-digit hexadecimal numbers
     // and append them to the Preset ID. This will result in a
     // string-formatted Device ID
-    c += 24;
-    for (i = PlatformIDOffset; i < (PlatformIDOffset + PlatformIDSize); i++, c += 2)
-        xstrprintf(c,"%02X", (int32)(OutputBuffer[i] & 0xFF));
-    *c = 0;
+    if ((PlatformIDSize*2 + 24) < 128) // buffer length is 128
+    {
+       c += 24;
+       for (i = PlatformIDOffset; i < (PlatformIDOffset + PlatformIDSize); i++, c += 2)
+           xstrprintf(c,"%02X", (int32)(OutputBuffer[i] & 0xFF));
+       *c = 0;
+    }
+    else
+    {
+       int32 charLen = xstrlen(&OutputBuffer[PlatformIDOffset]);
+       int32 wcharLen = JCharPLen(&OutputBuffer[PlatformIDOffset]);
+       if (charLen == 1 && wcharLen > 1 && wcharLen < 100)
+          JCharP2CharPBuf((JCharP) &OutputBuffer[PlatformIDOffset], wcharLen, buf + 24);
+       else if (charLen > 1 && charLen < 100)
+          xstrcpy(buf + 24, &OutputBuffer[PlatformIDOffset]);
+       else
+          buf[23] = 0; // ignore PlatformID if it's too large.
+    }
 }
 
 static void GetSerialNumberPocketPC2000(CharP out) // see http://www.pocketpcdn.com/articles/serial_number.html

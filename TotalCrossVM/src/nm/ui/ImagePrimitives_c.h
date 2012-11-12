@@ -11,6 +11,9 @@
 
 #include <math.h>
 
+void applyChanges(Object obj, bool updateList);
+void freeTexture(Object obj, bool updateList);
+
 static void setCurrentFrame(Object obj, int32 nr)
 {
    int32 y,width,widthOfAllFrames;
@@ -306,8 +309,8 @@ static void changeColors(Object obj, Pixel from, Pixel to)
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
    for (; len-- > 0; pixels++)
-      if ((*pixels & 0xFFFFFF) == from)
-         *pixels = (*pixels & 0xFF000000) | to; // keep alpha unchanged
+      if (*pixels == from)
+         *pixels = to;
    if (frameCount != 1)
    {
       Image_currentFrame(obj) = 2;
@@ -642,17 +645,35 @@ void setTransparentColor(Object obj, Pixel color)
    }
 }
 
-
-void glLoadTexture(int32* textureId, Pixel *pixels, int32 width, int32 height);
-void applyChanges(Object obj);
-void applyChanges(Object obj)
+void applyChanges(Object obj, bool updateList)
 {
    int32 frameCount = Image_frameCount(obj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
-   Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   glLoadTexture(&(Image_textureId(obj)), pixels, width, Image_height(obj));
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj); 
+   if (pixelsObj)
+   {
+      Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+      int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+      glLoadTexture(obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+   }
    Image_changed(obj) = false;
+}
+
+void freeTexture(Object img, bool updateList)
+{                                      
+   glDeleteTexture(img,&(Image_textureId(img)), updateList);
+}
+
+void recreateTextures(VoidPs* imgTextures) // called by opengl when the application changes the opengl surface
+{
+   VoidPs* current = imgTextures;
+   if (current)
+      do
+      {    
+         Object img = (Object)current->value;
+         glDeleteTexture(img,&(Image_textureId(img)),false);
+         applyChanges(img,false);
+         current = current->next;
+      } while (imgTextures != current);
 }
 
 static bool nativeEquals(Object thisObj, Object otherObj)

@@ -15,13 +15,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -39,9 +38,12 @@ public class Container extends Control
    private int []fourColors = new int[4];
    private Vector childControls;
    
-   /** Set the type of background of this Container. To disable the background, set the 
+   /** Sets the type of background of this Container. To disable the background, set the 
     * <code>transparentBackground</code> of the Control class to true. This field is used when
     * transparentBackground is set to false (default).
+    * 
+    * If the transparent background doesn't work, try setting
+    * <code>alwaysEraseBackground = true</code>.
     * 
     * @see #BACKGROUND_SHADED
     * @see #BACKGROUND_SOLID
@@ -65,6 +67,10 @@ public class Container extends Control
    static public final int BACKGROUND_SOLID = 0;
    /** used in the backgroundStyle field */
    static public final int BACKGROUND_SHADED = 1;
+   /** used in the backgroundStyle field. The bright color must be the fore color, and the darker color, the back color
+    * @since TotalCross 2.0 
+    */
+   static public final int BACKGROUND_CYLINDRIC_SHADED = 2;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -88,6 +94,11 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
+   
+   /** Defines the total transition time. Defaults to 1000 (1 second).
+    * @since TotalCross 2.0 
+    */
+   public static int TRANSITION_TIME = 1000;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -149,20 +160,78 @@ public class Container extends Control
    {
       nextTransitionEffect = t;
       if (t != TRANSITION_NONE)
-         transitionEffectChanged(t);
+         try
+         {
+            screen0 = MainWindow.getScreenShot();
+            screen0.lockChanges();
+         }
+         catch (Throwable e) {}
    }
 
-   public static int getNextTransitionEffect()
+   static Image screen0;
+
+   static void applyTransitionEffect()
    {
-      int ret = nextTransitionEffect;
+      int transitionEffect = nextTransitionEffect;
       nextTransitionEffect = Container.TRANSITION_NONE;
-      return ret;
-   }
+      if (transitionEffect == -1)
+         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
 
-   static void transitionEffectChanged(int t)
-   {
+      if (screen0 != null) // only when transitionEffect is not NONE
+      {
+         try
+         {
+            int ini0 = Vm.getTimeStamp();
+            Image screen1 = MainWindow.getScreenShot();
+            screen1.lockChanges();
+            int w = totalcross.sys.Settings.screenWidth;
+            int h = totalcross.sys.Settings.screenHeight;
+            int remainingFrames = Math.min(w,h)/2;
+            int mx = w/2;
+            int my = h/2;
+            double incX=1,incY=1;
+            if (w > h)
+               incX = (double)w/h;
+             else
+               incY = (double)h/w;
+            Graphics g = MainWindow.mainWindowInstance.getGraphics();
+            int step=1;
+            boolean isClose = transitionEffect == TRANSITION_CLOSE;
+            Image s0 = isClose ? screen1 : screen0;
+            Image s1 = isClose ? screen0 : screen1;
+            for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
+            {
+               int ini = Vm.getTimeStamp();
+               g.clearClip();
+               g.drawImage(s0,0,0);
+               int minx = (int)(mx - i*incX);
+               int miny = (int)(my - i*incY);
+               int maxx = (int)(mx + i*incX);
+               int maxy = (int)(my + i*incY);
+               g.setClip(minx,miny,maxx-minx,maxy-miny);
+               g.drawImage(s1,0,0);
+               Window.updateScreen();
+               int frameElapsed = Vm.getTimeStamp()-ini;
+               int totalElapsed = Vm.getTimeStamp()-ini0;
+               int remainingTime = TRANSITION_TIME - totalElapsed;
+               if (remainingTime <= 0)
+                  break;
+               if (frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+               {
+                  Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
+                  step = 1;
+               }
+               else
+               {
+                  step = frameElapsed * remainingFrames / remainingTime;
+               }
+            }
+         }
+         catch (Throwable e) {}
+         screen0 = null;
+         Vm.gc();
+      }
    }
-   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01
@@ -531,6 +600,9 @@ public class Container extends Control
                break;
             case BACKGROUND_SHADED:
                g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
+               break;
+            case BACKGROUND_CYLINDRIC_SHADED:
+               g.drawCylindricShade(foreColor,backColor,0,0,width,height);
                break;
          }
       }
@@ -956,5 +1028,12 @@ public class Container extends Control
          if (cc.asContainer != null)
             cc.asContainer.setFocusTraversable(b);
       }
+   }
+   
+   /** Called when this container has been swapped into the Window and the swap is done.
+    * @since TotalCross 2.0
+    */
+   public void onSwapFinished()
+   {
    }
 }

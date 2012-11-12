@@ -36,7 +36,7 @@ typedef union
 {
    struct
    {
-      uint8 a,b,g,r; // a not used
+      uint8 a,b,g,r;
    };
    Pixel pixel;
 } PixelConv;

@@ -59,18 +59,13 @@ extern jmethodID jgetHeight;
 extern TCHAR exeName[MAX_PATHNAME];
 #endif
 
-// window.c
-#ifdef ANDROID
-extern jmethodID jtransitionEffectChanged;
-#endif
-
 // graphicsprimitives.c
 extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
-extern int32* containerNextTransitionEffectPtr;
 extern TScreenSurface screen;
 extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
+extern int32* vistaFadeStepP;
 extern bool callingScreenChange;
 
 // mem.c

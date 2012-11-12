@@ -26,7 +26,6 @@ import java.util.*;
 
 import android.app.*;
 import android.content.*;
-import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
@@ -155,7 +154,6 @@ public class Loader extends Activity
    public static final int LEVEL5 = 5;
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
-   public static final int INVERT_ORIENTATION = 8;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -185,12 +183,6 @@ public class Loader extends Activity
       setTitle(tczname);
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      // in android 3.2, the size is retrieved as excluding the taskbar, so we have to rotate in both directions and get the total screen size. this value is cached
-      if (Build.VERSION.SDK_INT >= 13 && AndroidUtils.getSavedScreenSize() == -1) // android 3.2 has a bug and we have to change the layout to landscape and portrait and measure the screen width in both 
-      {
-         boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-         setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-      }
       
       achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
@@ -222,15 +214,6 @@ public class Loader extends Activity
                break;
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
-               break;
-            case INVERT_ORIENTATION:
-               if (!b.getBoolean("invert"))
-                  setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-               else
-               {
-                  boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-                  setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-               }
                break;
             case FULLSCREEN:
             {
@@ -274,6 +257,21 @@ public class Loader extends Activity
             catch (IOException e) 
             {
                AndroidUtils.handleException(e,false);
+            }
+         }
+         else
+         if (command.equalsIgnoreCase("kingsoft"))
+         {
+            File f = new File(args);
+            if (f.exists()) 
+            {
+               Intent intent = new Intent();
+               intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               intent.setAction(android.content.Intent.ACTION_VIEW);
+               intent.setClassName("cn.wps.moffice_eng", "cn.wps.moffice.documentmanager.PreStartActivity");
+               Uri uri = Uri.fromFile(f);
+               intent.setData(uri);
+               startActivity(intent);
             }
          }
          else
@@ -344,7 +342,6 @@ public class Loader extends Activity
    
    public void onConfigurationChanged(Configuration config)
    {
-      // TODO change the Settings.virtualKeyboard to true when newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
       super.onConfigurationChanged(config);
       Launcher4A.hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
    }

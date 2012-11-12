@@ -1229,8 +1229,10 @@ public final class Graphics
          if (vertical)
          {
             drawLine(startX + leftOffset, startY+i, endX - rightOffset, startY+i);
-            drawFadedPixel(endX - rightOffset+1, startY+i, fc);
-            drawFadedPixel(startX+leftOffset-1, startY+i, fc);
+            if (rightOffset != 0)
+               drawFadedPixel(endX - rightOffset+1, startY+i, fc);
+            if (leftOffset != 0)
+               drawFadedPixel(startX+leftOffset-1, startY+i, fc);
          }
          else
          {
@@ -1383,80 +1385,63 @@ public final class Graphics
       foreColor = leftColor|alpha;   drawLine(x,y1,x,y2-1,foreColor);
    }
 
-   private static Hashtable htVistaColors = new Hashtable(83);
-   private static int[] lastVistaColors; // speedup
-   private static int lastVistaColor=-1;
-
-   /** Gets a 11-level gradient color array used to draw the Vista user interface style. 
-    */
-   public static int[] getVistaColors(int c) // guich@573_6
-   {
-      int []vistaColors = (int[])htVistaColors.get(c);
-      if (vistaColors == null)
-      {
-         int origC = c;
-         int step = UIColors.vistaFadeStep;
-         vistaColors = new int[11];
-         for (int p = 0; p <= 10; p++)
-         {
-            vistaColors[p] = c;
-            c = Color.darker(c, p == 4 ? (step+step) : step);
-         }
-         htVistaColors.put(origC, vistaColors);
-      }
-      return vistaColors;
-   }
-
    /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
     */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
-      int []vistaColors = (back == lastVistaColor && back != -1) ? lastVistaColors : (lastVistaColors = getVistaColors(lastVistaColor=back));
-      int dim = rotate ? width : height;
-      int y0 = rotate ? x : y;
-      int hh = rotate ? x+dim : y+dim;
-      dim <<= 16;
-      int incY = dim/10;
-      int lineH = (incY>>16)+1;
-      int lineY=0;
-      // now paint the shaded area
-      for (int c=0; lineY < dim; c++, lineY += incY)
+      int step = UIColors.vistaFadeStep;
+      int s = rotate ? width : height;
+      int mid = s * 5 / 11;
+      int ini1 = back, end1 = Color.darker(ini1,3*step); 
+      int ini2 = Color.darker(end1,step), end2 = Color.darker(end1,step*7);
+      if (rotate)
       {
-         backColor = vistaColors[invert ? 10-c : c] | alpha;
-         int yy = y0+(lineY>>16);
-         int k = hh - yy;
-         if (!rotate)
-            fillRect(x,yy,width,k < lineH ? k : lineH);
+         fillShadedRect(x,y,mid,height,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+         fillShadedRect(x+mid,y,width-mid,height,!invert,rotate,invert?ini1:ini2,invert?end1:end2,100);
+      }
+      else
+      {
+         if (invert)
+         {                                                 
+            fillShadedRect(x,y,width,mid,true,rotate,end2,ini2,100);
+            fillShadedRect(x,y+mid,width,height-mid,true,rotate,end1,ini1,100);
+         }
          else
-            fillRect(yy,y,k < lineH ? k : lineH, height);
+         {
+            fillShadedRect(x,y,width,mid,true,rotate,ini1,end1,100);
+            fillShadedRect(x,y+mid,width,height-mid,true,rotate,ini2,end2,100);
+         }
       }
    }
 
-   /** Fills a shaded rectangle. Used to draw many Android user interface style controls */
+   /** Fills a shaded rectangle. Used to draw many Android user interface style controls
+    * @factor Ranges from 0 to 100 
+    */
    public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor) // guich@573_6
    {
       int dim = rotate ? width : height, dim0 = dim;
       int y0 = rotate ? x : y;
       int hh = rotate ? x+dim : y+dim;
       dim <<= 16;
-      if (height == 0) return;
-      int incY = dim/height;
-      int lineH = (incY>>16)+1;
-      int lineY=0;
+      if (dim0 == 0) return;
+      int inc = dim/dim0;
+      int lineS = (inc>>16)+1;
+      int line0=0;
       int lastF=-1;
       // now paint the shaded area
-      for (int c=0; lineY < dim; c++, lineY += incY)
+      for (int c=0; line0 < dim; c++, line0 += inc)
       {
          int i = c >= dim0 ? dim0-1 : c;
          int f = (invert ? dim0-1-i : i)*factor/dim0;
          if (f != lastF) // colors repeat often
             backColor = Color.interpolate(c1, c2, lastF = f) | alpha;
-         int yy = y0+(lineY>>16);
+         int yy = y0+(line0>>16);
          int k = hh - yy;
+         if (k > lineS) k = lineS;
          if (!rotate)
-            fillRect(x,yy,width,k < lineH ? k : lineH);
+            fillRect(x,yy,width,k);
          else
-            fillRect(yy,y,k < lineH ? k : lineH, height);
+            fillRect(yy,y,k,height);
       }
    }
 
@@ -1788,7 +1773,7 @@ public final class Graphics
             int dstIdx = pdst;
             if (isSrcScreen)
                for (i=width; --i >= 0;)
-                  dst[dstIdx++] = pixels[srcIdx++];
+                  dst[dstIdx++] = pixels[srcIdx++] | 0xFF000000;
             else
                for (i=width; --i >= 0; dstIdx++)
                {
@@ -2883,14 +2868,14 @@ public final class Graphics
          int rr = (red+i*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          int gg = (green+i*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          int bb = (blue+i*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
+         foreColor = (rr << 16) | (gg << 8) | bb | alpha;
          int sx = startX+i, sy = startY+i;
          drawRect(sx,sy,endX-i-sx,endY-i-sy);
          int ii = i-8;
          rr = (red+ii*redInc >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
          gg = (green+ii*greenInc >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
          bb = (blue+ii*blueInc >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-         foreColor = backColor = (rr << 16) | (gg << 8) | bb | alpha;
+         foreColor = (rr << 16) | (gg << 8) | bb | alpha;
          int i2 = i/8;
          drawLine(sx-i2,sy+i2,sx+i2,sy-i2);
          sx = endX-i; drawLine(sx-i2,sy-i2,sx+i2,sy+i2);
@@ -2908,6 +2893,8 @@ public final class Graphics
    
    /** Apply a 16-bit Floyd-Steinberg dithering on the give region of the surface.
     * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * 
+    * In OpenGL platforms, does not work if the surface is the screen (in other words, works only for images).
     * @since TotalCross 1.53
     */
    public void dither(int x, int y, int w, int h)

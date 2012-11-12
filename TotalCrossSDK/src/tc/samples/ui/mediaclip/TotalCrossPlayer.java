@@ -92,7 +92,7 @@ public class TotalCrossPlayer extends MainWindow
             return f.isDir() || f.getPath().toLowerCase().endsWith(".wav");
          }
       });
-      fcb.mountTree("device/", File.isCardInserted(2) ? 2 : 1);
+      fcb.mountTree("device/");
       fcb.popup();
       return fcb.getAnswer();
    }
@@ -170,7 +170,7 @@ public class TotalCrossPlayer extends MainWindow
                try
                {
                   String path = edFilePathPlay.getText();
-                  file = new File(path.length() == 0 ? "foo" : path, File.READ_WRITE, File.isCardInserted(2) ? 2 : 1);
+                  file = new File(path.length() == 0 ? "foo" : path, File.READ_WRITE);
                   media = new MediaClip(file);
                }
                catch (FileNotFoundException feof)

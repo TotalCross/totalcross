@@ -16,6 +16,7 @@
 
 package totalcross.game;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -168,22 +169,23 @@ public class Animation extends Control
    /** Called by the system to draw the animation. **/
    public void onPaint(Graphics gfx)
    {
-      // fdie@400_51 : save animation background
-      if (background == null)
-      {
-         // guich@tc100: on a screen rotation, we would have to re-get the background!
-         try
+      // fdie@400_51 : save animation background - no need in OpenGL, since the screen is fully painted at each frame
+      if (!Settings.isOpenGL)
+         if (background == null)
          {
-            background = new Image(width, height);
-            // screen -> buffer
-            background.getGraphics().copyRect(parent, x, y, width, height, 0, 0);
+            // guich@tc100: on a screen rotation, we would have to re-get the background!
+            try
+            {
+               background = new Image(width, height);
+               // screen -> buffer
+               background.getGraphics().copyRect(parent, x, y, width, height, 0, 0);
+            }
+            catch (ImageException e)
+            {
+            }            
          }
-         catch (ImageException e)
-         {
-         }            
-      }
-      else if (background != null)
-         gfx.drawImage(background,0,0);
+         else if (background != null)
+            gfx.drawImage(background,0,0);
 
       // frame lookup table, for special animations
       if (multiFramesImage)

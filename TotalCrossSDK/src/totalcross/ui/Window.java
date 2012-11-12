@@ -1035,7 +1035,7 @@ public class Window extends Container
             {
                case HORIZONTAL_GRADIENT:
                case VERTICAL_GRADIENT:
-                  gg.drawRoundGradient(0, 0, width,hh, 0, 0, 0, 0, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor, borderStyle == VERTICAL_GRADIENT);
+                  gg.fillShadedRect(0, 0, width,hh, true, borderStyle == HORIZONTAL_GRADIENT, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor,100);
                   break;
                case TAB_BORDER:
                case TAB_ONLY_BORDER:
@@ -1331,18 +1331,18 @@ public class Window extends Container
          mainSwapContainer = newContainer;
       else
          isHighlighting = Settings.keyboardFocusTraversable; // guich@573_17
-      // remove the last container
-      if (lastSwappedContainer != null)
-         remove(lastSwappedContainer);
-      // returning back to the main one?
-      if (newContainer == null)
-         newContainer = mainSwapContainer;
       // add the new container.
       if (newContainer.transitionEffect != TRANSITION_NONE)
          setNextTransitionEffect(newContainer.transitionEffect);
       else
       if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
          setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
+      // remove the last container
+      if (lastSwappedContainer != null)
+         remove(lastSwappedContainer);
+      // returning back to the main one?
+      if (newContainer == null)
+         newContainer = mainSwapContainer;
       lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
@@ -1351,10 +1351,12 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
+      applyTransitionEffect();
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
+      newContainer.onSwapFinished();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the size of the title if any plus the size of the border.

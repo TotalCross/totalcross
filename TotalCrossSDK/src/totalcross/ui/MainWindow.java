@@ -636,12 +636,19 @@ public class MainWindow extends Window implements totalcross.MainClass
       int h = Settings.screenHeight;
       Image img = new Image(w,h);
       Graphics gimg = img.getGraphics();
+      enableUpdateScreen = false;
+      repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
+      enableUpdateScreen = true;
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)
       {
          gscr.getRGB(buf, 0,0,y,w,1);
          gimg.setRGB(buf, 0,0,y,w,1);
-      }      
+      }
+      if (!Settings.isOpenGL)
+         img.setTransparentColor(-1);
+      else
+         img.applyChanges();
       return img;
    }
 }

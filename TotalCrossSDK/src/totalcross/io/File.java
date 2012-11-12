@@ -1140,7 +1140,6 @@ public class File extends RandomAccessStream
     * 
     * @param dir
     * @param recursive
-    * @return
     * @throws IOException
     */
    public static String[] listFiles(String dir, boolean recursive) throws IOException

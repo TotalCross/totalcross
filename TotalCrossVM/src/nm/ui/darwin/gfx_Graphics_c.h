@@ -25,7 +25,7 @@ void privateFullscreen             (bool on);
 void privateScreenChange           (int32 w, int32 h);
 bool graphicsStartup               (ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface   (ScreenSurface screen);
-void graphicsUpdateScreen          (Context currentContext, ScreenSurface screen, int32 transitionEffect);
+void graphicsUpdateScreen          (Context currentContext, ScreenSurface screen);
 void graphicsDestroy               (ScreenSurface screen, bool isScreenChange);
 bool graphicsLock                  (ScreenSurface screen, bool on);
 

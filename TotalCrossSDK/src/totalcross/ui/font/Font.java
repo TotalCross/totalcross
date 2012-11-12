@@ -84,6 +84,9 @@ public final class Font
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
       else
+      if (Settings.isIOS() && Settings.deviceFontHeight != 0)
+         fontSize = Settings.deviceFontHeight;
+      else
          switch (w)
          {
             // some predefined device screen sizes

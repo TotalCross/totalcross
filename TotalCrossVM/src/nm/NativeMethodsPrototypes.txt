@@ -36,6 +36,7 @@ TC_API void tuiI_applyColor2_i(NMParams p);
 TC_API void tuiI_setTransparentColor_i(NMParams p);
 TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_freeTexture(NMParams p);
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
@@ -77,7 +78,7 @@ TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p);
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p);
 TC_API void tugG_drawArrow_iiibbi(NMParams p);
 TC_API void tugG_drawImage_iii(NMParams p);
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p);
@@ -111,7 +112,6 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
-TC_API void tuC_transitionEffectChanged_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -570,6 +570,10 @@ TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native pri
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
 }
@@ -734,7 +738,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -867,10 +871,6 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2291,6 +2291,11 @@ TESTCASE(tuiI_freeTexture) // totalcross/ui/image/Image native private void free
    TEST_SKIP;
    finish: ;
 }
+TESTCASE(tugG_fillShadedRect_iiiibbiii) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tugG_dither_iiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
    TEST_SKIP;
@@ -2496,7 +2501,7 @@ TESTCASE(tugG_draw3dRect_iiiibbbI) // totalcross/ui/gfx/Graphics native public v
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_fillVistaRect_iiiibbI) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TESTCASE(tugG_fillVistaRect_iiiiibb) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
    TEST_SKIP;
    finish: ;
@@ -2662,11 +2667,6 @@ TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public static void setSI
    finish: ;
 }
 TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuC_transitionEffectChanged_i) // totalcross/ui/Container native static void transitionEffectChanged(int t);
 {
    TEST_SKIP;
    finish: ;

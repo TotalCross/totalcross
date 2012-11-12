@@ -3353,6 +3353,30 @@ Please notice this is the only option that does not require a main class
 \end_layout
 
 \begin_layout Standard
+To create a library, you must end your 
+\family typewriter
+.jar
+\family default
+ name with 
+\family typewriter
+lib
+\family default
+ or 
+\family typewriter
+Lib
+\family default
+, such as 
+\family typewriter
+xxxlib.jar
+\family default
+ or 
+\family typewriter
+xxxLib.jar
+\family default
+.
+\end_layout
+
+\begin_layout Standard
 However, if you use this option to deploy an application, the 
 \family typewriter
 .jar/.zip
@@ -4572,8 +4596,11 @@ install.exe
 \family default
  lines followed by the file name (which is searched in the classpath and
  in current folder).
- Files prefixed with [G] are placed in the same folder of the TCVM, and
- 
+ Files prefixed with 
+\family typewriter
+[G]
+\family default
+ are placed in the same folder of the TCVM, and 
 \family typewriter
 [L]
 \family default
@@ -7674,6 +7701,24 @@ Class.newInstance()
 
 \begin_layout FieldList
 \labelwidthstring 0
+IntHashtable.DuplicatedKeyException Exception thrown when 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is set to 
+\family typewriter
+false
+\family default
+ in an 
+\family typewriter
+IntHashtable
+\family default
+ and one tries to add a repeated key.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 InvalidDateException Represents a date that is invalid.
  
 \end_layout
@@ -7915,12 +7960,178 @@ NullPointerException Thrown when a
 null
 \family default
  object has being used in the last operation.
- 
 \end_layout
 
 \end_deeper
 \end_deeper
 \end_deeper
+\begin_layout Chapter
+Exit Codes
+\end_layout
+
+\begin_layout Standard
+When the VM exits, it returns an exit code.
+ Obviously, this chapter only concerns TotalCross applications running on
+ Windows 32, Windows CE/Mobile, Palm OS, iOS, and Android since on Java
+ SE and BlackBerry the TotalCross VM is not used.
+ 
+\end_layout
+
+\begin_layout Standard
+The codes and their description are:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+100 If it was not possible to initialize the application current context.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+101 If it was not possible to load 
+\family typewriter
+TCBase.tcz
+\family default
+.
+ 
+\family typewriter
+TCBase.tcz
+\family default
+ was not found or is corrupted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+102 If it was not possible to initialize the event handler.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+104 If it was not possible to load the application 
+\family typewriter
+.tcz
+\family default
+.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+105 If the 
+\family typewriter
+Settings
+\family default
+ class could not be loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+106 If it is not possible to run multiple instances of the application and
+ the application is already running.
+ This only happens on Windows 32 and Windows CE.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+107 It it was not possible to initialize the graphics before the 
+\family typewriter
+MainWindow
+\family default
+ settings is loaded.
+ One of the most common errors.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+108 If it was not possible to retrive the settings.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+109 If it was not possible to initialize the graphics after the 
+\family typewriter
+MainWindow
+\family default
+ settings is loaded.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+111 If the class 
+\family typewriter
+ras.ActivationClient
+\family default
+ can' t be loaded or an exception occurs when loading it during the activation
+ check.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+112 If the method 
+\family typewriter
+getInstance()
+\family default
+ can't be loaded from the class 
+\family typewriter
+ras.ActivationClient
+\family default
+ during the activation check.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+113 If the method 
+\family typewriter
+getInstance()
+\family default
+ during the activation check throws an exception.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+114 If the method 
+\family typewriter
+isActivatedSilent()
+\family default
+ can't be loaded from the class 
+\family typewriter
+ras.
+\begin_inset Newline newline
+\end_inset
+
+ActivationClient
+\family default
+ during the activation process.
+ Its most probable cause is the corruption of the 
+\family typewriter
+TCBase.tcz
+\family default
+ file.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+115 If an error occurs when loading the TotalCross libraries.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+116 If the main class could not be loaded (has thrown an exception, was
+ not found or is corrupted).
+\end_layout
+
 \begin_layout Part
 USER INTERFACE
 \end_layout
@@ -17099,7 +17310,7 @@ totalcross.ui.
 \begin_inset Newline newline
 \end_inset
 
- or ulatorBox
+ CalculatorBox
 \family default
  is the one popped up.
  You can change the calculator to a numeric box for a specific edit by making
@@ -44839,15 +45050,19 @@ Image is a rectangular image, which you can draw into or copy to a surface
 Graphics
 \family default
  object).
- They are always 24bpp, and TotalCross supports only the PNG and JPEG formats
+ They are always 24 bpp, and TotalCross supports only the PNG and JPEG formats
  when running on the TCVM.
 \end_layout
 
 \begin_layout Standard
 However, you may still use GIF and BMP files on your application, because
  these formats are also supported when running on Java, and the TotalCross
- deployer automatically converts those files to 24bpp PNG files, which are
- then packaged with your application (along with any other required resources).
+ deployer automatically converts those files to 24 bpp PNG files, which
+ are then packaged with your application (along with any other required
+ resources).
+ The deployed PNG may contain transparency information which is correctly
+ handled.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -44856,7 +45071,8 @@ However, you may still use GIF and BMP files on your application, because
 Image
 \family default
  objects cannot be directly added to the user interface because they are
- not controls (i.e.
+ not controls (i.
+ e.
  the 
 \family typewriter
 Image
@@ -44883,7 +45099,47 @@ Button
 \end_layout
 
 \begin_layout Standard
-Image constructors:
+Some transformation methods return a new instance of this image while others
+ apply to the current instance.
+ To preserve an image with a single frame, use 
+\family typewriter
+getFrameInstance(0)
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+TotalCross does not support grayscale PNG with alpha-channel.
+ Convert the image to true-color with alpha-channel and it will work fine
+ (the only backdraw is that the new image will be bigger).
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Image
+\family default
+ constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -44907,6 +45163,49 @@ Image
  object with the given width and height.
  The new image has the same color depth and color map of the default drawing
  surface.
+ Here is an example of use: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img = new Image(100,100);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+g.backColor = Color.WHITE;
+\end_layout
+
+\begin_layout Plain Layout
+
+g.fillRect(25,25,50,50);
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics screenG = getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+screenG.drawImage(img,CENTER,CENTER);  
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -44921,6 +45220,136 @@ Image
 \family default
  object from the given byte array, which must specify the whole image, including
  its headers.
+ Use only JPEG or PNG images on the devices (GIF and BMP are supported on
+ the desktop only).
+ Here is a code example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// create the image and fill it with something
+\end_layout
+
+\begin_layout Plain Layout
+
+Image img = new Image(160,160);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i =0; i < 16; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	g.backColor = Color.getRGB(10*i,10*i,10*i);
+\end_layout
+
+\begin_layout Plain Layout
+
+	g.fillRect(i*10,0,10,160);
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\begin_layout Plain Layout
+
+// save the bmp in a byte stream
+\end_layout
+
+\begin_layout Plain Layout
+
+ByteArrayStream bas = new ByteArrayStream(4096);
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(bas);
+\end_layout
+
+\begin_layout Plain Layout
+
+int totalBytesWritten = img.createBmp(ds);
+\end_layout
+
+\begin_layout Plain Layout
+
+// parse the saved bmp
+\end_layout
+
+\begin_layout Plain Layout
+
+Image im = new Image(bas.getBuffer()); // Caution! the buffer may be greater
+ than totalBytesWritten, but when parsing theres no problem.
+\end_layout
+
+\begin_layout Plain Layout
+
+if (im.getWidth() > 0) // successfully parsed?
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	getGraphics().drawImage(im,CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.sleep(2000);
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100line%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Caution: if reading a JPEG file, the original array contents will be changed!
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -44930,7 +45359,19 @@ Image(String
 \end_inset
 
 path) Attempts to read the contents of the file specified by the given path,
- creating an image object from the bytes read.
+ creating an 
+\family typewriter
+Image
+\family default
+ object from the bytes read.
+ The path given is the path to the image file.
+ The file must be in 2, 16, 256, 24 bpp color compressed (RLE) or uncompressed
+ BMP bitmap format, a PNG file, a GIF file, or a JPEG file.
+ If the image cannot be loaded, an 
+\family typewriter
+ImageException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout FieldList
@@ -44944,6 +45385,11 @@ s) Attempts to read the contents of the given stream, and create an
 Image
 \family default
  object from the bytes read.
+ Loads a BMP, JPEG, GIF, or PNG image from a stream.
+ Note that GIF and BMP are supported only on the desktop.
+ Note that all the bytes of the given stream will be fetched, even those
+ bytes that may follow the image.
+ 
 \end_layout
 
 \begin_deeper
@@ -44972,6 +45418,76 @@ The usage of this last constructor with connection oriented streams (like
 \end_layout
 
 \end_deeper
+\begin_layout Standard
+
+\family typewriter
+Image
+\family default
+ public attributes (omitting the ones from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+transparentColor Sets the transparent pixel of this image.
+ Used in many controls.
+ Note that you can set it to -1 to make the image use the background color.
+ Note also that this value is not used by the system, but the controls (e.
+ g.: 
+\family typewriter
+Button
+\family default
+) use the value stored here to set the background color when going to draw
+ a transparent image.
+ The value that will be 
+\family typewriter
+NO_TRANSPARENT_COLOR
+\family default
+ when image has no transparent color.
+ It defaults to 
+\family typewriter
+Color.WHITE
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+comment A textual description stored in the PNG image.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+useAlpha 
+\family typewriter
+true
+\family default
+ if this image has an alpha-channel for transparency (higher 8 bits).
+ Important: if 
+\family typewriter
+useAlpha
+\family default
+ is 
+\family typewriter
+true
+\family default
+, 
+\family typewriter
+transparentColor
+\family default
+ must be set to -1, otherwise, many 
+\family typewriter
+Graphics
+\family default
+ methods will not work.
+ Also, the only operation that works with alpha-channel is 
+\family typewriter
+Graphics.DRAW_PAINT
+\family default
+; all other drawing operations ignore the alpha channel.
+ 
+\end_layout
+
 \begin_layout Itemize
 If you want to check if a specific file is supported by the platform at
  runtime, you may use the static method 
@@ -44979,6 +45495,9 @@ If you want to check if a specific file is supported by the platform at
 Image.isSupported(String filename)
 \family default
 .
+ PNG or JPEG are always supported.
+ GIF and BMP are supported on JavaSE only.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -44986,11 +45505,16 @@ To retrieve the image dimensions, you may use the methods
 \family typewriter
 getWidth()
 \family default
- and 
+ and
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 getHeight()
 \family default
 .
+ You can check if the image is ok by comparing these values with zero.
 \end_layout
 
 \begin_layout Itemize
@@ -45010,9 +45534,19 @@ Graphics
 You may change all pixels of the same color by another color with the method
  
 \family typewriter
-changeColors(int from, int to)
+changeColors (int from, int to)
 \family default
 .
+ The current value of the transparent color is not changed.
+ Using this routine, you can change the colors to any other you want.
+ Note this replaces a single solid color by another solid color.
+ If you want to change a gradient or colorize an image, use the 
+\family typewriter
+applyColor(int color)
+\family default
+ method instead, which applies the given color RGB values to all pixels
+ of this image, preserving the transparent color and alpha channel, if set.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -45053,7 +45587,7 @@ setFrameCount (int n)
 \end_layout
 
 \begin_layout Standard
-The image's frame count cannot be changed if their value is already higher
+The image's frame count cannot be changed if its value is already higher
  than 1.
  In this case, the 
 \family typewriter
@@ -45063,7 +45597,7 @@ setFrameCount()
 \end_layout
 
 \begin_layout Standard
-The following methods should be used only on multi-frame images.
+The following methods should be used only on multi-framed images.
 \end_layout
 
 \begin_layout FieldList
@@ -45117,7 +45651,7 @@ nextFrame()
 \family typewriter
 prevFrame()
 \family default
- treat the multi-frame image as a circular list, looping back to the first
+ treat the multi-framed image as a circular list, looping back to the first
  frame if moving forward from the last frame, or to the last frame if moving
  backwards from the first frame.
 \end_layout
@@ -45156,6 +45690,8 @@ int
 
 newHeight) Returns a scaled instance of this image.
  The arguments are the new dimensions for this image in pixels.
+ The algorithm used is the replicate scale: not good quality, but fast.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45175,6 +45711,13 @@ double
 scaleY) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
+ The algorithm used is the replicate scale: not good quality, but fast.
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45199,12 +45742,30 @@ int
 \begin_inset space ~
 \end_inset
 
-backColor) Returns a scaled instance of this image.
+backColor) Returns a scaled instance of the image using the area averaging
+ algorithm.
  Transparent pixels are replaced by 
 \family typewriter
 backColor
 \family default
 , which produces a smooth border.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.getSmoothScaledInstance(200,200, getBackColor());
+\end_layout
+
+\end_inset
+
+On device and JavaSE it uses a Catmull-rom resampling, and on Blackberry
+ it uses an area-average resampling.
+ The reason is that the Catmull-rom consumes more memory and is also slower
+ than the area-average, although the final result is much better.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45232,11 +45793,29 @@ int
 backColor) Returns a scaled instance of this image.
  The new dimensions are calculated based on this image's dimensions and
  the given proportions.
- Transparent pixels are replaced by 
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ The transparent pixels are replaced by 
 \family typewriter
 backColor
 \family default
 , which produces a smooth border.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.smoothScaledBy(0.75,0.75, getBackColor()); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -45262,6 +45841,47 @@ int
 \end_inset
 
 fillColor) Returns a rotated and/or scaled version of this image.
+ A new 
+\family typewriter
+Image
+\family default
+ object is returned which will render the image at the specified scale ratio
+ and rotation angle.
+ After rotation, the empty parts of the rectangular area of the resulting
+ image are filled with the fill color.
+ If color is -1, then the fill color is the transparent color, or white
+ if none.
+ The new image will probably have a different size of the original image.
+ In multi-framed images, each image is rotated/scaled independently.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+scale
+\family default
+ is a number greater than or equal to 0 stating the percentage of scaling
+ to be performed.
+ 100 is not scaling, 200 doubles the size, 50 shrinks the image by 2.
+ 
+\family typewriter
+angle
+\family default
+ is the rotation angle, expressed in trigonometric degrees and 
+\family typewriter
+fillColor
+\family default
+ is the fill color (-1 indicates the transparent color of this image or
+ 
+\family typewriter
+Color.WHITE
+\family default
+ if the 
+\family typewriter
+transparentColor
+\family default
+ was not set).
 \end_layout
 
 \begin_deeper
@@ -45315,6 +45935,23 @@ byte
 
 contrast) Returns a touched-up instance of this image with the specified
  brightness and contrast.
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+brightness
+\family default
+ is a number between -128 and 127 stating the desired level of brightness.
+ 127 is the highest brightness level (white image), while -128 is no brightness
+ (darkest image).
+ 
+\family typewriter
+contrast
+\family default
+ is a number between -128 and 127 stating the desired level of contrast.
+ 127 is the highest contrast level, while -128 is no contrast.
+ 
 \end_layout
 
 \begin_deeper
@@ -45368,6 +46005,133 @@ Images with anti-aliased borders produce better results because of the extra
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+smoothScaledFixedAspectRatio(int
+\begin_inset space ~
+\end_inset
+
+newSize,boolean
+\begin_inset space ~
+\end_inset
+
+isHeight,int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns the scaled instance using fixed aspect ratio for this
+ image, given the scale arguments.
+ The given values must be 
+\family typewriter
+> 0
+\family default
+.
+ This method is useful to resize an image, specifying only one of its sides:
+ the width or the height.
+ The other side is computed to keep the aspect ratio.
+ 
+\family typewriter
+newSize
+\family default
+ is the new size (width or height) for the image, if 
+\family typewriter
+isHeight
+\family default
+ is 
+\family typewriter
+true
+\family default
+, 
+\family typewriter
+newSize
+\family default
+ is considered as the new height of the image; if 
+\family typewriter
+false
+\family default
+, 
+\family typewriter
+newSize
+\family default
+ is considered the new width of the image, and 
+\family typewriter
+backColor
+\family default
+ is the background color to be used as transparent pixel (for PNG images
+ with alpha-channel, use -1).
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Image img2 = img.smoothScaledFixed(fmH, true, -1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFadedInstance(int
+\begin_inset space ~
+\end_inset
+
+backColor) Creates a faded instance of the image, interpolating all pixels
+ with the given background color.
+ The pixels that match the transparent color will not be changed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFrameInstance(int
+\begin_inset space ~
+\end_inset
+
+frame) In a multi-framed image, returns a copy of the given frame.
+ In a single-framed image, gets a copy of the image.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+smoothScaledFromResolution(int
+\begin_inset space ~
+\end_inset
+
+originalRes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+backColor) Returns a smooth scaled instance of this image with a fixed aspect
+ ratio based on the given resolution (which is the resolution that you used
+ to MAKE the image).
+ The target size is computed as 
+\family typewriter
+image_size*min(screen_size)/original_resolution
+\family default
+.
+ 
+\family typewriter
+originalRes
+\family default
+ is the original resolution that the image was developed for (it's a good
+ idea to create images for 320x320 and then scale them down) and 
+\family typewriter
+backColor
+\family default
+ is the background color.
+ 
+\end_layout
+
 \begin_layout Standard
 And finally, to save your 
 \family typewriter
@@ -45382,7 +46146,31 @@ createPng(Stream
 \begin_inset space ~
 \end_inset
 
-s) Attempts to write this image as a 24bpp PNG file on the given stream.
+s) Attempts to write this image as a 24 bpp PNG file on the given stream
+ (if 
+\family typewriter
+useAlpha
+\family default
+ is 
+\family typewriter
+true
+\family default
+, it saves as 32 bpp).
+ If you're sending the PNG through a stream but not saving it to a 
+\family typewriter
+PDBFile
+\family default
+, you can use this method.
+ If you're going to save it to a 
+\family typewriter
+PDBFile
+\family default
+, then you must use the 
+\family typewriter
+saveTo()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -45399,12 +46187,287 @@ String
 \begin_inset space ~
 \end_inset
 
-name) Writes this image as a 24bpp PNG file on the currently selected record
+name) Writes this image as a 24 bpp PNG file on the currently selected record
  of the given 
 \family typewriter
 PDBFile
 \family default
 , using the given name.
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The stored image size is limited to near 64 Kb.
+ Note that a stored image size has no relation to its size in pixels.
+ For example, a 1300x1200 completely-white PNG file takes 7 Kb of storage
+ size but 6 MB of RAM when loaded.
+ 
+\end_layout
+
+\begin_layout Itemize
+The 
+\family typewriter
+PDBFile
+\family default
+ can save multiple images, but the record must be prefixed with the image's
+ name and must be sorted.
+ 
+\end_layout
+
+\begin_layout Itemize
+This method finds the exact place where to insert the PNG and puts it there.
+ 
+\end_layout
+
+\begin_layout Itemize
+If you want to create a PNG to be transfered by a stream to serial or socket
+ then you must use the method 
+\family typewriter
+createPng()
+\family default
+ instead.
+ 
+\end_layout
+
+\begin_layout Itemize
+If a record with this name already exists, it will be replaced.
+ 
+\end_layout
+
+\begin_layout Itemize
+The name is always converted to lowercase and the method makes sure that
+ PNG is appended to it.
+ 
+\end_layout
+
+\begin_layout Itemize
+To get the list of images in a PDBFile, just do a 
+\family typewriter
+readString()
+\family default
+ at the beginning of each record.
+ 
+\end_layout
+
+\begin_layout Itemize
+To retrieve the image, use the 
+\family typewriter
+loadFrom(PDBFile cat, String name)
+\family default
+ method.
+\end_layout
+
+\begin_layout Standard
+Here is a sample code: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// create the image and paint over it
+\end_layout
+
+\begin_layout Plain Layout
+
+Image img = new Image(100,100);
+\end_layout
+
+\begin_layout Plain Layout
+
+Graphics g = img.getGraphics();
+\end_layout
+
+\begin_layout Plain Layout
+
+g.backColor = Color.getRGB(100,150,200);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.fillRect(25,25,50,50);
+\end_layout
+
+\begin_layout Plain Layout
+
+g.foreColor = Color.WHITE;
+\end_layout
+
+\begin_layout Plain Layout
+
+g.drawCircle(50,50,20);  // create the PDBFile to save the image.
+ You must change CRTR to match your apps creator ID
+\end_layout
+
+\begin_layout Plain Layout
+
+String pdbName = "images.CRTR.TYPE";
+\end_layout
+
+\begin_layout Plain Layout
+
+PDBFile pdb = new PDBFile(pdbName, PDBFile.CREATE);
+\end_layout
+
+\begin_layout Plain Layout
+
+img.saveTo(pdb, "boxcircle.png");
+\end_layout
+
+\begin_layout Plain Layout
+
+pdb.close();  // load the previously created image
+\end_layout
+
+\begin_layout Plain Layout
+
+PDBFile pdb = new PDBFile(pdbName, PDBFile.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+add(new ImageControl(Image.loadFrom(pdb,"boxcircle.png")),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+pdb.close();  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here's a code that lists the images in a PDB (saved using this method).
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public static String[] list(PDBFile cat) throws IOException  
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	DataStream ds = new DataStream(cat);
+\end_layout
+
+\begin_layout Plain Layout
+
+	int n = cat.getRecordCount();
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] names = new String[n];
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i =0; i < n; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		cat.setRecordPos(i);
+\end_layout
+
+\begin_layout Plain Layout
+
+		names[i] = ds.readString();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	return names;
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Some other 
+\family typewriter
+Image
+\family default
+ public methods (omitting the ones from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPixels() Used only on the desktop to get the image's pixels; NOT AVAILABLE
+ on the device (it will throw a 
+\family typewriter
+NoSuchMethodError
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getX(),
+\begin_inset space ~
+\end_inset
+
+getY() Returns 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+o) Returns 
+\family typewriter
+true
+\family default
+ if the given 
+\family typewriter
+Image
+\family default
+ object has the same size and RGB pixels of the original one.
+ The alpha-channel is ignored.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+applyColor2(int
+\begin_inset space ~
+\end_inset
+
+color) Applies the given color RGB values to all pixels of this image, preservin
+g the transparent color and alpha channel, if set.
+ This method is used to colorize the Android buttons.
 \end_layout
 
 \begin_layout Standard
@@ -45707,7 +46770,8 @@ public void onEvent(Event event)
 
 \end_inset
 
-
+Note that it will work in the same way on desktop or on device.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -46021,10 +47085,28 @@ th
 \end_inset
 
 , 2999.
-\end_layout
-
-\begin_layout Standard
-It also provides constants and methods for date manipulation and comparison.
+ It checks to make sure that the dates that are instanciated or changed
+ exist and if they don't an exception (
+\family typewriter
+InvalidDateException
+\family default
+) is thrown.
+ It provides methods to advance the date backwards and forwards by increments
+ of day, week, and month.
+ It provides comparisons 
+\family typewriter
+=
+\family default
+,
+\family typewriter
+>
+\family default
+,
+\family typewriter
+<
+\family default
+.
+ It also provides constants and methods for date manipulation and comparison.
 \end_layout
 
 \begin_layout Standard
@@ -46181,108 +47263,6 @@ Date.DECEMBER
 \end_inset
 
 
-\begin_inset space \hspace{}
-\length 20line%
-\end_inset
-
-
-\begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Days of week
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.SUNDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.MONDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.TUESDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.WEDNESDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.THURSDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.FRIDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Date.SATURDAY
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Itemize
@@ -46358,7 +47338,20 @@ sentYear)
 \family typewriter
 Date
 \family default
- object using the given values.
+ object using the given values, where 
+\family typewriter
+sentDay
+\family default
+ must be an integer between 1 and the last day in the month, 
+\family typewriter
+sentMonth
+\family default
+ must be an integer between 1 and 12, and 
+\family typewriter
+sentYear
+\family default
+ must be an integer between 1000 and 2999.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -46384,7 +47377,7 @@ strDate
 Settings.dateFormat
 \family default
 ).
- The date separator can be any non-number character, the constructor auto-detect
+ The date separator can be any non-number character; the constructor auto-detect
 s what character is being used as separator.
 \end_layout
 
@@ -46427,7 +47420,19 @@ dateFormat
 \family typewriter
 Settings.DATE_XXX
 \family default
- constants.
+ constants, where
+\family typewriter
+ DATE_MDY
+\family default
+ stands for month, day, and year format, 
+\family typewriter
+DATE_DMY
+\family default
+ stands for day, year, and month format, and 
+\family typewriter
+DATE_YMD
+\family default
+ stands for year, month, and day format.
 \end_layout
 
 \begin_layout FieldList
@@ -46505,6 +47510,15 @@ advanceMonth(boolean
 \end_inset
 
 direction) Changes the date to the beginning of the next or previous month.
+ The static variables 
+\family typewriter
+Date.FORWARD
+\family default
+ or 
+\family typewriter
+Date.BACKWARD
+\family default
+ instructs the method to either move to the next or previous month.
 \end_layout
 
 \begin_layout FieldList
@@ -46520,6 +47534,15 @@ advanceWeek(boolean
 \end_inset
 
 direction) Changes the date to the beginning of the next or previous week.
+ The static variables 
+\family typewriter
+Date.FORWARD
+\family default
+ or 
+\family typewriter
+Date.BACKWARD
+\family default
+ instructs the method to either move to the next or previous week.
 \end_layout
 
 \begin_layout FieldList
@@ -46529,6 +47552,70 @@ setToday() Sets this
 Date
 \family default
  object to the current day.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Sets the date fields to the given ones and returns an integer in the
+ format 
+\family typewriter
+YYYYMMDD
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+set(String
+\begin_inset space ~
+\end_inset
+
+strDate,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dateFormat) Sets the date fields by parsing the given string, and using
+ the given 
+\family typewriter
+dateFormat
+\family default
+.
+ If you want to use the default date format, use 
+\family typewriter
+Settings.dateFormat
+\family default
+.
+ Trailing spaces are skipped.
+ It returns an integer in the format 
+\family typewriter
+YYYYMMDD
+\family default
+.
 \end_layout
 
 \end_deeper
@@ -46741,6 +47828,51 @@ month) Returns the number of days in the given month of the set year.
 
 \begin_layout FieldList
 \labelwidthstring 0
+getDaysInMonth(int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Static method which returns the number of days in the passed month
+ and year.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getMonthName(int
+\begin_inset space ~
+\end_inset
+
+m) Returns the string representation of the month passed, that is 
+\family typewriter
+monthNames[m]
+\family default
+ if 
+\family typewriter
+Date.
+ JANUARY <= m
+\family default
+ and 
+\family typewriter
+m <= Date.DECEMBER
+\family default
+.
+ It returns an empty string if 
+\family typewriter
+m
+\family default
+ is out of the valid bounds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 getGregorianDay() Returns the number of days since the January 1
 \begin_inset script superscript
 
@@ -46751,6 +47883,16 @@ st
 \end_inset
 
  of the epoch year 1000.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isLeapYear(int
+\begin_inset space ~
+\end_inset
+
+year) Checks if the year is a leap year.
+ 
 \end_layout
 
 \end_deeper
@@ -46771,13 +47913,145 @@ Settings.dateFormat
 
 \begin_layout FieldList
 \labelwidthstring 0
-getDate() Returns a string representation of the date using the current
- device settings (see 
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year) Formats the date specified with the 
 \family typewriter
-Settings.
- dateFormat
+Settings.dateFormat
 \family default
-).
+, zero padded.
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+separator) Formats the date specified with 
+\family typewriter
+Settings.dateFormat
+\family default
+, zero padded, and using the given separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+month,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+year,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dateFormat) Formats the date specified with the 
+\family typewriter
+dateFormat
+\family default
+ parameter, zero padded.
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+formatDate(int
+\begin_inset space ~
+\end_inset
+
+day,int
+\begin_inset space ~
+\end_inset
+
+month,int
+\begin_inset space ~
+\end_inset
+
+year,byte
+\begin_inset space ~
+\end_inset
+
+dateFormat,String
+\begin_inset space ~
+\end_inset
+
+dateSeparator) Formats the date specified with the 
+\family typewriter
+dateFormat
+\family default
+ parameter, zero padded, and using the given separator.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -46789,6 +48063,11 @@ Settings.
  dateFormat
 \family default
 ).
+ The date separator used is 
+\family typewriter
+Settings.dateSeparator
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -46803,6 +48082,34 @@ format) Returns a string representation of the date using the given format,
 Settings.DATE_XXX
 \family default
  constants.
+ The date separator used is 
+\family typewriter
+Settings.
+\begin_inset Newline newline
+\end_inset
+
+dateSeparator
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(byte
+\begin_inset space ~
+\end_inset
+
+dateFormat,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+separator) Returns the date in a string format and using the given format
+ and separator.
+ 
 \end_layout
 
 \end_deeper
@@ -46910,6 +48217,29 @@ Settings.DATE_XXX
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+The 
+\family typewriter
+Date
+\family default
+ class has the field 
+\family typewriter
+monthNames
+\family default
+, which is the month names used in some routines.
+ You can localize it if you wish.
+ Its default value is: 
+\family typewriter
+{"", "January", "February", "March", "April", "May", "June", "July", "August",
+ "September",
+\begin_inset Newline newline
+\end_inset
+
+"October", "November", "December"}
+\family default
+.
+\end_layout
+
 \begin_layout Standard
 Sample code:
 \end_layout
@@ -47030,7 +48360,7 @@ Vector
 \family typewriter
 Vector
 \family default
- can dynamically grow as needed.
+ can dynamically grow as needed, but it never shrinks.
  If the array never needs to be increased, an array should be used.
 \end_layout
 
@@ -47051,7 +48381,7 @@ remove()
 \family typewriter
 retrieve()
 \family default
- or 
+, or 
 \family typewriter
 replace()
 \family default
@@ -47078,7 +48408,11 @@ To avoid this performance issue, TotalCross'
 \family typewriter
 Vector
 \family default
- implementation allows public access to its internal array.
+ implementation allows public access to its internal array (
+\family typewriter
+items
+\family default
+).
  However, to guarantee the Vector's integrity
 \emph on
  you must only access it to retrieve (get) or replace (set) elements, and
@@ -47092,7 +48426,67 @@ You may also use a
 \family typewriter
 Vector
 \family default
- as a stack, which feature is better explained below.
+ as a stack, whose feature is better explained below.
+\end_layout
+
+\begin_layout Standard
+Here is an example showing a vector being used: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+Vector vec = new Vector();
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.addElement(obj1);
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.addElement(obj2);
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.insertElementAt(obj3, 3);
+\end_layout
+
+\begin_layout Plain Layout
+
+vec.removeElementAt(2);
+\end_layout
+
+\begin_layout Plain Layout
+
+if (vec.size() > 5)
+\end_layout
+
+\begin_layout Plain Layout
+
+   ...
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -47106,7 +48500,7 @@ Vector
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-Vector() Default constructor, creates a 
+Vector() Default constructor, which creates a 
 \family typewriter
 Vector
 \family default
@@ -47124,7 +48518,10 @@ size) Creates a
 \family typewriter
 Vector
 \family default
- with the given size, which cannot be negative (minimum size is 0).
+ with the given size, which is the initial size of the vector's internal
+ object array and cannot be negative (the minimum size is 0).
+ The vector will grow as needed when objects are added.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -47142,6 +48539,12 @@ Vector
 Vector
 \family default
  size.
+ Note that the given array must not have 
+\family typewriter
+null
+\family default
+ elements.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -47198,11 +48601,35 @@ addElement(Object
 \begin_inset space ~
 \end_inset
 
-obj) Adds a reference to the given object to the end of this 
+obj) Adds a reference to the given object to the end of the 
 \family typewriter
 Vector
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElements(Object[]
+\begin_inset space ~
+\end_inset
+
+objects) Adds an array of objects at the end of the vector.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElementsNotNull(Object[]
+\begin_inset space ~
+\end_inset
+
+objects) Adds an array of objects at the end of the vector (
+\family typewriter
+null
+\family default
+ objects are skipped).
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -47226,6 +48653,13 @@ Vector
 \family default
 , shifting elements with index greater or equal to the specified index to
  have an index one greater than it had previously.
+ If 
+\family typewriter
+index
+\family default
+ is less than 0 or above the number of elements, the object is inserted
+ at the end.
+ 
 \end_layout
 
 \end_deeper
@@ -47269,6 +48703,13 @@ removeAllElements() Removes all elements from this
 Vector
 \family default
 , reseting its length to 0.
+ Note that this method sets all items in this vector to 
+\family typewriter
+null
+\family default
+, so, if you had directly assigned an array to this vector, all items inside
+ it will be nulled.
+ 
 \end_layout
 
 \end_deeper
@@ -47297,7 +48738,7 @@ int
 
 startIndex) Returns the index of the given object, or -1 if the object is
  not found.
- The array is searched using a 
+ The array is searched using an 
 \family typewriter
 O(n)
 \family default
@@ -47336,7 +48777,7 @@ isEmpty() Returns
 \family typewriter
 true
 \family default
- if this 
+ if the 
 \family typewriter
 Vector
 \family default
@@ -47345,7 +48786,7 @@ Vector
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this 
+size() Returns the number of elements in the 
 \family typewriter
 Vector
 \family default
@@ -47358,7 +48799,7 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this 
+newSize) Sets the size of the 
 \family typewriter
 Vector
 \family default
@@ -47377,12 +48818,17 @@ Vector
 \family typewriter
 newSize
 \family default
- and greater are discarded.
+ and greater are discarded (set to 
+\family typewriter
+null
+\family default
+).
+ The new size can't be negative.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this 
+qsort() Sorts the elements of the 
 \family typewriter
 Vector
 \family default
@@ -47429,7 +48875,7 @@ String
 \end_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-toObjectArray() Returns an array of objects containing all elements of this
+toObjectArray() Returns an array of objects containing all elements of the
  
 \family typewriter
 Vector
@@ -47461,7 +48907,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-If the first element of this 
+If the first element of the 
 \family typewriter
 Vector
 \family default
@@ -47495,11 +48941,76 @@ String[]
 \end_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-dump() Dumps the contents of this 
+dump() Dumps the contents of the 
 \family typewriter
 Vector
 \family default
 , returning a string representation of it.
+ If the number of elements is big, it can take a lot of memory! 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the items of the vector separated by comma in a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(String
+\begin_inset space ~
+\end_inset
+
+separator) Returns the items of the vector separated by the given string
+ 
+\family typewriter
+separator
+\family default
+ in a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(Object[]
+\begin_inset space ~
+\end_inset
+
+out) Copies the items of the vector into the given array, which must have
+ at least the current size of the vector.
+ If the output vector is greater than the current size, the remaining positions
+ will remain unchanged.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+contains(Object
+\begin_inset space ~
+\end_inset
+
+o) Returns 
+\family typewriter
+true
+\family default
+ if the vector contains the specified element.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reverse() Reverses the order of the elements in the vector.
+ In a vector with 
+\family typewriter
+n
+\family default
+ elements, the element of index 0 is moved to the index 
+\family typewriter
+n-1
+\family default
+, the element of index 1 is moved to the index 
+\family typewriter
+n-2
+\family default
+, and so on.
  
 \end_layout
 
@@ -47519,7 +49030,7 @@ push(Object
 \begin_inset space ~
 \end_inset
 
-obj) Pushes an item onto the top of this stack.
+obj) Pushes an item onto the top of the stack.
  It actually just calls the method 
 \family typewriter
 addElement()
@@ -47529,19 +49040,59 @@ addElement()
 
 \begin_layout FieldList
 \labelwidthstring 0
-pop() Removes the object at the top of this stack, returning that object.
+pop() Removes the object at the top of the stack, returning that object.
  
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-peek() Returns the object the object at the top of this stack without removing
- it.
+pop(int
+\begin_inset space ~
+\end_inset
+
+n) Pops 
+\family typewriter
+n
+\family default
+ last elements from the stack.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+peek() Returns the object at the top of the stack without removing it.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+peek(int
+\begin_inset space ~
+\end_inset
+
+n) Returns the 
+\family typewriter
+n
+\family default
+-last object, without removing it.
+ Note that 
+\family typewriter
+peek(0)
+\family default
+ is the same of 
+\family typewriter
+peek()
+\family default
+.
+ 
+\family typewriter
+n
+\family default
+ is how many elements to get from the top and must be a positive number.
 \end_layout
 
 \end_deeper
 \begin_layout Standard
-Although the 
+Although 
 \family typewriter
 Vector
 \family default
@@ -47559,7 +49110,7 @@ If you can estimate the number of elements, you can create the
 \family typewriter
 Vector
 \family default
- with enough room for them:
+ object with enough room for them:
 \end_layout
 
 \begin_deeper
@@ -47605,7 +49156,7 @@ If you know the exact number of elements, you can create an array and initialize
 \family typewriter
 Vector
 \family default
- with this array:
+ object with this array:
 \end_layout
 
 \begin_deeper
@@ -47745,7 +49296,11 @@ IntVector
 \family typewriter
 Vector
 \family default
-: It also allows public access to its internal array, but 
+: it also allows public access to its internal array (
+\family typewriter
+items
+\family default
+), but 
 \emph on
 you must only access it to retrieve (get) or replace (set) elements, and
  never to insert, remove, or resize the buffer
@@ -47796,7 +49351,7 @@ size) Creates an
 \family typewriter
 IntVector
 \family default
- with the given size, which cannot be negative (minimum size is 0).
+ with the given size, which MUST BE greater than 0.
 \end_layout
 
 \begin_layout FieldList
@@ -47871,11 +49426,25 @@ addElement(int
 \begin_inset space ~
 \end_inset
 
-item) Adds the given integer to the end of this 
+item) Adds the given integer to the end of the 
 \family typewriter
 intVector
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElements(int[]
+\begin_inset space ~
+\end_inset
+
+elements) Appends an array of integers at the end of the 
+\family typewriter
+intVector
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -47898,6 +49467,13 @@ IntVector
 \family default
 , shifting elements with index greater or equal to the specified index to
  have an index one greater than it had previously.
+ If 
+\family typewriter
+index
+\family default
+ is less than 0 or above the number of elements, the new item is inserted
+ at the end.
+ 
 \end_layout
 
 \end_deeper
@@ -47940,7 +49516,7 @@ removeAllElements() Removes all elements from this
 \family typewriter
 IntVector
 \family default
-, reseting its length to 0.
+, reseting its length to 0 and setting all elements to 0.
 \end_layout
 
 \end_deeper
@@ -47969,7 +49545,7 @@ int
 
 startIndex) Returns the index of the given integer, or -1 if the integer
  is not found.
- The array is searched using a 
+ The array is searched using an 
 \family typewriter
 O(n)
 \family default
@@ -48004,7 +49580,11 @@ IntVector
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-isEmpty() Returns true if this 
+isEmpty() Returns 
+\family typewriter
+true
+\family default
+ if the 
 \family typewriter
 IntVector
 \family default
@@ -48013,7 +49593,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-size() Returns the number of elements in this 
+size() Returns the number of elements in the 
 \family typewriter
 IntVector
 \family default
@@ -48022,7 +49602,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-qsort() Sorts the elements of this 
+qsort() Sorts the elements of the 
 \family typewriter
 IntVector
 \family default
@@ -48031,7 +49611,7 @@ IntVector
 
 \begin_layout FieldList
 \labelwidthstring 0
-toIntArray() Returns an array of integers containing all elements of this
+toIntArray() Returns an array of integers containing all elements of the
  
 \family typewriter
 IntVector
@@ -48063,7 +49643,7 @@ Vector.toObjectArray()
 \family typewriter
 toIntArray()
 \family default
- does not returns 
+ does not return 
 \family typewriter
 null
 \family default
@@ -48087,12 +49667,12 @@ setSize(int
 \begin_inset space ~
 \end_inset
 
-newSize) Sets the size of this 
+newSize) Sets the size of the 
 \family typewriter
 IntVector
 \family default
 .
- If the new size is greater than the current size, new items equals to zero
+ If the new size is greater than the current size, new items equal to zero
  are added to the end of the 
 \family typewriter
 IntVector
@@ -48103,7 +49683,52 @@ IntVector
 \family typewriter
 newSize
 \family default
- and greater are discarded.
+ and greater are discarded (set to 0).
+ The new size can't be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(int[]
+\begin_inset space ~
+\end_inset
+
+out) Copies the items of the vector into the given array, which MUST have
+ at least the current size of this vector.
+ If the out vector is greater than the current size, the remaining positions
+ will remain unchanged.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+contains(int
+\begin_inset space ~
+\end_inset
+
+v) Returns 
+\family typewriter
+true
+\family default
+ if the vector contains the specified element.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reverse() Reverses the order of the elements in the vector.
+ In a vector with 
+\family typewriter
+n
+\family default
+ elements, the element of index 0 is moved to the index 
+\family typewriter
+n-1
+\family default
+, the element of index 1 is moved to the index 
+\family typewriter
+n-2
+\family default
+, and so on.
+ 
 \end_layout
 
 \end_deeper
@@ -48122,7 +49747,7 @@ push(int
 \begin_inset space ~
 \end_inset
 
-item) Pushes an item onto the top of this stack.
+item) Pushes an item onto the top of the stack.
  It actually just calls the method 
 \family typewriter
 addElement()
@@ -48132,7 +49757,7 @@ addElement()
 
 \begin_layout FieldList
 \labelwidthstring 0
-pop() Removes the item at the top of this stack, returning that integer.
+pop() Removes the item at the top of the stack, returning that integer.
  
 \end_layout
 
@@ -48142,13 +49767,13 @@ pop(int
 \begin_inset space ~
 \end_inset
 
-howMany) Removes the desired number of items from the top of this stack.
+howMany) Removes the desired number of items from the top of the stack.
  Unlike the previous method, nothing is returned.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-peek() Returns the item at the top of this stack without removing it.
+peek() Returns the item at the top of the stack without removing it.
 \end_layout
 
 \end_deeper
@@ -48189,7 +49814,7 @@ As an alternative, you may use the
 \family typewriter
 IntVector
 \family default
- as a a real bit array using the provided methods and save a lot of memory.
+ as a real bit array using the provided methods and save a lot of memory.
  But there is a drawback: the internal array does not grow by itself when
  you try to access an index bigger than the array's size.
  So you must make sure the 
@@ -48225,6 +49850,10 @@ IntVector
 \family default
  is large enough to hold the given number of bits.
  You should always call this method before using it as a bit array.
+ After that, you can safely use the two methods below.
+ This must be done because those methods do not check the bounds of the
+ array.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48241,7 +49870,11 @@ boolean
 \begin_inset space ~
 \end_inset
 
-on) Sets the bit at the given index if on is 
+on) Sets the bit at the given index if 
+\family typewriter
+on
+\family default
+ is 
 \family typewriter
 true
 \family default
@@ -48329,7 +49962,7 @@ bitVector.ensureBits(40000); // First we make sure the array is large enough.
 
 \begin_layout Plain Layout
 
-// This time our array uses only 8000 bytes.
+// This time our array uses only 1251 bytes.
 \end_layout
 
 \begin_layout Plain Layout
@@ -48354,7 +49987,7 @@ Hashtable
 \begin_layout Standard
 This class implements a hash table, which is a data structure that associates
  keys with values.
- It's primary operation is a lookup: given a key, find the corresponding
+ It's primary operation is a lookup: given a key, finds the corresponding
  value.
  It works by transforming the key into a hash using the method 
 \family typewriter
@@ -48375,7 +50008,40 @@ Hash tables should be used when the number of search operations greatly
 \begin_layout Standard
 Any non-null object can be used as a key or as a value, optionally, you
  can provide your own hash code instead of providing a key from which the
- hash code will be calculated..
+ hash code will be calculated.
+\end_layout
+
+\begin_layout Standard
+An instance of 
+\family typewriter
+Hashtable
+\family default
+ has two parameters that affect its efficiency: its 
+\emph on
+capacity
+\emph default
+ and its 
+\emph on
+load factor
+\emph default
+.
+ The load factor should be between 0.0 and 1.0.
+ When the number of entries in the hash table exceeds the product of the
+ load factor and the current capacity, the capacity is increased by calling
+ the 
+\family typewriter
+rehash()
+\family default
+ method.
+ Larger load factors use memory more efficiently, at the expense of larger
+ expected time per lookup.
+ 
+\end_layout
+
+\begin_layout Standard
+If many entries are to be made into a hash table, creating it with a sufficientl
+y large capacity may allow the entries to be inserted more efficiently than
+ letting it perform automatic rehashing as needed to grow the table.
 \end_layout
 
 \begin_layout Itemize
@@ -48383,7 +50049,36 @@ Any non-null object can be used as a key or as a value, optionally, you
 \family typewriter
 Hashtable
 \family default
- has two important constructors:
+ has two public fields:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+collisions Computes the number of collisions for a set of inserts.
+ You must zero this each time you want to compute it.
+ Keep in mind that the lower collisions is better, but don't waste too much
+ memory if its too high.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+allowDuplicateKeys Setting this to 
+\family typewriter
+true
+\family default
+ will allow the hashtable to have more than one key with the same value.
+ In this case, the methods will always return the first matching key.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Hashtable
+\family default
+ has four constructors:
 \end_layout
 
 \begin_deeper
@@ -48394,7 +50089,16 @@ Hashtable(int
 \end_inset
 
 initialCapacity) Creates an empty hash table with the specified initial
- capacity.
+ capacity and default load factor of 
+\family typewriter
+0.75f
+\family default
+.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
 \end_layout
 
 \begin_deeper
@@ -48419,6 +50123,8 @@ initialCapacity
 \family default
 's value should be the final number of entries in the hash table to avoid
  rehashing.
+ The hash table will grow if necessary, but using a number near or above
+ the final size can improve performance.
 \end_layout
 
 \end_inset
@@ -48427,6 +50133,29 @@ initialCapacity
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+loadFactor) Creates a new, empty hashtable with the specified initial capacity
+ and the specified load factor, which must be between 0.0 and 1.0.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 Hashtable(String
@@ -48445,11 +50174,153 @@ key = value
 n
 \family default
 ).
+ This aids the task of creating resource bundles to add localization to
+ your application.
+ For example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// save these two lines in a file named EN.txt:  
+\end_layout
+
+\begin_layout Plain Layout
+
+Message = Message  
+\end_layout
+
+\begin_layout Plain Layout
+
+TestMsg = This is a test  
+\end_layout
+
+\begin_layout Plain Layout
+
+Exit = Exit  
+\end_layout
+
+\begin_layout Plain Layout
+
+// save these other two in a file named PT.txt:  
+\end_layout
+
+\begin_layout Plain Layout
+
+Message = Mensagem 
+\end_layout
+
+\begin_layout Plain Layout
+
+TestMsg = Isso e um teste 
+\end_layout
+
+\begin_layout Plain Layout
+
+Exit = Sair 
+\end_layout
+
+\end_inset
+
+The TotalCross deployer will include the two files referenced below in the
+ 
+\family typewriter
+.tcz
+\family default
+ file.
+ Now, when your program starts, you can do:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String txt = idiom == EN? "EN.txt" : "PT.txt";
+\end_layout
+
+\begin_layout Plain Layout
+
+byte[] b = Vm.getFile(txt);
+\end_layout
+
+\begin_layout Plain Layout
+
+Hashtable res = new Hashtable(new String(b,0,b.length));
+\end_layout
+
+\begin_layout Plain Layout
+
+new MessageBox(res.get("Message"), res.get("TestMsg"), new String[]{res.get("Exit")
+}).popupNonBlocking();
+\end_layout
+
+\end_inset
+
+Note that the keys are case sensitive, and that all strings are trimmed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Hashtable(Object[]
+\begin_inset space ~
+\end_inset
+
+keys,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+values) Creates a 
+\family typewriter
+Hashtable
+\family default
+ with the given keys and values.
+ The values can be two things: 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+An 
+\family typewriter
+Object
+\family default
+ array (
+\family typewriter
+Object[]
+\family default
+).
+ In this case, the number of keys and values must match.
+ 
+\end_layout
+
+\begin_layout Enumerate
+A single 
+\family typewriter
+Object
+\family default
+.
+ This object is set as value to all keys.
+ 
+\end_layout
+
+\begin_layout Standard
+The values parameter cannot be 
+\family typewriter
+null
+\family default
+.
+ 
 \end_layout
 
 \end_deeper
+\end_deeper
 \begin_layout Itemize
-The insert a new entry on the hash table:
+To insert a new entry on the hash table:
 \end_layout
 
 \begin_deeper
@@ -48468,6 +50339,23 @@ Object
 \end_inset
 
 value) Maps the given value to the hash code of the given key.
+ Neither the key nor the value can be 
+\family typewriter
+null
+\family default
+.
+ The value can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
+ It returns the previous value of the specified key in the hash table, or
+ 
+\family typewriter
+null
+\family default
+ if it did not have one.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48485,12 +50373,52 @@ Object
 \end_inset
 
 value) Maps the given value to the given hash.
+ The value can't be 
+\family typewriter
+null
+\family default
+ and can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
+ It returns the previous value of the specified key in the hash table, or
+ 
+\family typewriter
+null
+\family default
+ if it did not have one.
+\begin_inset Newline newline
+\end_inset
+
+This method receives a hash code instead of the object.
+ You MUST use the 
+\family typewriter
+get(int)
+\family default
+ method to retrieve the value, otherwise you will get a 
+\family typewriter
+NullPointerException
+\family default
+, because no key is stored using this method.
+ 
 \end_layout
 
 \begin_layout Standard
 If the given hash (or key's hash code) already exists in the hash table,
- the old value will be replaced by the given value and the put method will
- return the old value.
+ the old value will be replaced by the given value (unless 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+true
+\family default
+) and the 
+\family typewriter
+put()
+\family default
+ method will return the old value.
  Otherwise, a 
 \family typewriter
 null
@@ -48518,8 +50446,38 @@ get(Object
 \begin_inset space ~
 \end_inset
 
-key) Returns the value to which the specified key is mapped in this hash
+key) Returns the value to which the specified key is mapped in the hash
  table.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified key is mapped in
+ the hash table.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48528,8 +50486,94 @@ get(int
 \begin_inset space ~
 \end_inset
 
-hash) Returns the value to which the specified hash is mapped in this hash
+hash) Returns the value to which the specified hash is mapped in the hash
  table.
+ Caution: since you're passing an integer instead of an object, if there
+ are two objects that map to the same key, this method will always return
+ the first one only.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(int
+\begin_inset space ~
+\end_inset
+
+hash,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified hash is mapped in
+ the hash table.
+ Caution: since you're passing an integer instead of an object, if there
+ are two objects that map to the same key, this method will always return
+ the first one only.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getString(Object
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key is mapped in this hash
+ table as a string.
+ If the item is a string, a cast is made, otherwise, the 
+\family typewriter
+toString()
+\family default
+ method is called.
+ It returns 
+\family typewriter
+null
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getString(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+defaultValue) Returns the value to which the specified key is mapped in
+ the hash table as a string.
+ If the item is a atring, a cast is made, otherwise, the 
+\family typewriter
+toString()
+\family default
+ method is called.
+ It returns 
+\family typewriter
+defaultValue
+\family default
+ if the key is not mapped to any value in the hash table.
+ 
 \end_layout
 
 \end_deeper
@@ -48544,7 +50588,13 @@ getKeys() Returns a
 \family typewriter
 Vector
 \family default
- with all the keys in this hash table.
+ with all the keys in the hash table.
+ The order is the same of the 
+\family typewriter
+getValues()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48553,7 +50603,12 @@ getValues() Returns a
 \family typewriter
 Vector
 \family default
- with all the values in this hash table.
+ with all the values in the hash table.
+ The order is the same of the 
+\family typewriter
+getKeys()
+\family default
+ method.
 \end_layout
 
 \begin_layout FieldList
@@ -48566,7 +50621,84 @@ separator) Returns a
 \family typewriter
 Vector
 \family default
- with all the key/value pairs in the form key + separator + value.
+ with all the key/value pairs in the form 
+\family typewriter
+key + separator + value
+\family default
+.
+ Each vector's element can safely be casted to string and separator sould
+ be 
+\family typewriter
+:
+\family default
+, 
+\family typewriter
+=
+\family default
+, etc.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyInto(Hashtable
+\begin_inset space ~
+\end_inset
+
+target) Copies the keys and values of the hash table into the given target
+ hash table.
+ Note that the target hash table is not cleared; you should do that by yourself.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dumpKeysValues(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,vString
+\begin_inset space ~
+\end_inset
+
+keyvalueSeparator,String
+\begin_inset space ~
+\end_inset
+
+lineSeparator) Dumps the keys and values into the given 
+\family typewriter
+StringBuffer
+\family default
+, where 
+\family typewriter
+keyvalueSeparator
+\family default
+ is the separator between the key and the value (e.
+ g.
+ 
+\family typewriter
+:
+\family default
+) and 
+\family typewriter
+lineSeparator
+\family default
+ is the separator placed after each key+value pair (e.
+ g.
+ 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+).
+ The last separator is cut from the 
+\family typewriter
+StringBuffer
+\family default
+.
+ 
 \end_layout
 
 \end_deeper
@@ -48575,25 +50707,94 @@ The method
 \family typewriter
 size()
 \family default
- returns the number of keys in this hash table.
+ returns the number of keys in the hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use 
+To remove a key and its corresponding value from the hash table, use:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+
 \family typewriter
-remove(Object key)
+remove(Object
 \family default
-.
+
+\begin_inset space ~
+\end_inset
+
+
+\family typewriter
+key)
+\family default
+ Removes the key (and its corresponding value) from the hash table.
+ This method does nothing if the key is not in the hash table.
+ It returns the value to which the key had been mapped in the hash table,
+ or 
+\family typewriter
+null
+\family default
+ if the key did not have a mapping.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+remove(int
+\begin_inset space ~
+\end_inset
+
+hash) Removes the key (and its corresponding value) from the hash table.
+ This method does nothing if the key is not in the hash table.
+ It returns the value to which the key had been mapped in the hash table,
+ or 
+\family typewriter
+null
+\family default
+ if the key did not have a mapping.
+\end_layout
+
+\end_deeper
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use 
+To clear the hash table, removing all its entries, use 
 \family typewriter
 clear()
 \family default
 .
 \end_layout
 
+\begin_layout Itemize
+The Hashtable class has a nested class called 
+\family typewriter
+Hashtable.Entry
+\family default
+.
+ It has the following public fields:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+hash The hash code of a key.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+key A key in the hash table.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The value mapped to this key.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+next Another entry in the hash table.
+\end_layout
+
+\end_deeper
 \begin_layout Standard
 This example creates a hash table of numbers.
  It uses the name of the numbers as keys:
@@ -48668,11 +50869,56 @@ This class implements a hash table where both the keys and values inserted
 \end_layout
 
 \begin_layout Itemize
+Its public fields are similar to the ones from 
+\family typewriter
+Hashtable
+\family default
+.
+ In 
+\family typewriter
+allowDuplicateKeys
+\family default
+, set it to 
+\family typewriter
+false
+\family default
+ to throw a 
+\family typewriter
+IntHashtable.DuplicatedKeyException
+\family default
+ if you add a key that already exists.
+ It's very unusually to have two objects with same key, but it can occur.
+ This is good to improve the program's correctness.
+ 
+\end_layout
+
+\begin_layout Itemize
+It also has an 
+\family typewriter
+Entry
+\family default
+ nested class.
+ However, diferently from 
+\family typewriter
+Hashtable
+\family default
+, it does not have the field 
+\family typewriter
+hash
+\family default
+ and 
+\family typewriter
+key
+\family default
+ is an integer instead of an object.
+\end_layout
+
+\begin_layout Itemize
 
 \family typewriter
 IntHashtable
 \family default
- has an important constructor:
+ has two constructor:
 \end_layout
 
 \begin_deeper
@@ -48683,8 +50929,39 @@ IntHashtable(int
 \end_inset
 
 initialCapacity) Creates an empty hash table with the specified initial
- capacity, which should be the final number of entries in the hash table
- to avoid rehashing.
+ capacity and default load factor of 
+\family typewriter
+0.75f
+\family default
+.
+ The initial capacity must be the number of elements you think the hash
+ table will end with.
+ The hash table will grow if necessary, but using a number near or above
+ the final size can improve performance.
+ If 
+\family typewriter
+initialCapacity
+\family default
+ is zero, it is changed to 5.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IntHashtable(int
+\begin_inset space ~
+\end_inset
+
+initialCapacity,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+loadFactor) Same as above but receiving a load factor which must be between
+ 0.0 and 1.0.
 \end_layout
 
 \end_deeper
@@ -48710,11 +50987,75 @@ int
 value) Maps the given value to the given key.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+put(Object
+\begin_inset space ~
+\end_inset
+
+key,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value) Takes out the hash code from the given key object (
+\family typewriter
+object.hashCode()
+\family default
+) and calls the previous method.
+ To increase safeness, set 
+\family typewriter
+allowDuplicateKeys
+\family default
+ to 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Standard
 If the given hash (or key's hash code) already exists in the hash table,
- the old value will be replaced by the given value and the put method will
- return the old value.
+ the old value will be replaced by the given value (unless 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+true
+\family default
+) and the 
+\family typewriter
+put()
+\family default
+ method will return the old value (or the object hash code when inserting
+ an object).
  Otherwise, the given value will be returned.
+ If 
+\family typewriter
+allowDuplicateKeys
+\family default
+ is 
+\family typewriter
+false
+\family default
+ and a duplicated key is inserted, 
+\family typewriter
+IntHashtable.DuplicatedKeyException
+\family default
+ is thrown.
+\begin_inset Newline newline
+\end_inset
+
+The value can be retrieved by calling the 
+\family typewriter
+get()
+\family default
+ method with a key that is equal to the original key.
 \end_layout
 
 \end_deeper
@@ -48739,6 +51080,31 @@ get(int
 
 key) Returns the value to which the specified key is mapped in this hash
  table.
+ It throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+get(Object
+\begin_inset space ~
+\end_inset
+
+key) Returns the value to which the specified key hash code (
+\family typewriter
+key.hashCode()
+\family default
+) is mapped in this hash table.
+ It throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48813,7 +51179,13 @@ getKeys() Returns an
 \family typewriter
 IntVector
 \family default
- with all the keys in this hash table.
+ with all the keys in the hash table.
+ The order is the same of the 
+\family typewriter
+getValues()
+\family default
+ method.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -48822,7 +51194,13 @@ getValues() Returns an
 \family typewriter
 IntVector
 \family default
- with all the values in this hash table.
+ with all the values in the hash table.
+ The order is the same of the 
+\family typewriter
+getKeys()
+\family default
+ method.
+ 
 \end_layout
 
 \end_deeper
@@ -48841,6 +51219,8 @@ pos
 ArrayIndexOutOfBoundsException
 \family default
  is thrown if the given position is out of range.
+ Note that the first key has no relation with the smallest key.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -48848,23 +51228,44 @@ The method
 \family typewriter
 size()
 \family default
- returns the number of keys in this hash table.
+ returns the number of keys in the hash table.
 \end_layout
 
 \begin_layout Itemize
-To remove a key and its corresponding value from this hash table, use 
+To remove a key and its corresponding value from the hash table, use 
 \family typewriter
 remove(int key)
 \family default
 .
+ This method throws an 
+\family typewriter
+ElementNotFoundException
+\family default
+ when the key was not found.
 \end_layout
 
 \begin_layout Itemize
-To clear this hash table, removing all its entries, use 
+To clear the hash table, removing all its entries, use 
 \family typewriter
 clear()
 \family default
 .
+\end_layout
+
+\begin_layout Itemize
+The method 
+\family typewriter
+incrementValue(int key, int amount)
+\family default
+ increments the value of a key by the given amount.
+ If the key doesn't exist, a new one is created with the amount.
+ Otherwise, its value is changed by the amount.
+ This method is useful to use an 
+\family typewriter
+IntHashtable
+\family default
+ as a multi counter.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -48960,6 +51361,110 @@ catch(ElementNotFoundException e)
 
 \end_layout
 
+\begin_layout Standard
+Another example is to count the number of collisions so that it is possible
+ to chose the best 
+\family typewriter
+IntHashtable
+\family default
+ size (a similar code can be used for 
+\family typewriter
+Hashtable
+\family default
+):
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+int max = 0xFFFFFFF;
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int h = 5; ; h++)  
+\end_layout
+
+\begin_layout Plain Layout
+
+{     
+\end_layout
+
+\begin_layout Plain Layout
+
+	IntHashtable ht = new IntHashtable(h);
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("nbsp".hashCode(),' ');
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("shy".hashCode(),'-');
+\end_layout
+
+\begin_layout Plain Layout
+
+	ht.put("quot".hashCode(),'"');
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+     
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (ht.collisions < max)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.debug("h: "+h+" colli: "+ht.collisions);
+\end_layout
+
+\begin_layout Plain Layout
+
+		max = ht.collisions;
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (max == 0)
+\end_layout
+
+\begin_layout Plain Layout
+
+			break;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Properties
 \end_layout
@@ -48981,6 +51486,95 @@ The properties can be saved and loaded to/from a
 DataStream
 \family default
 .
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Properties props = new Properties();
+\end_layout
+
+\begin_layout Plain Layout
+
+File file;
+\end_layout
+
+\begin_layout Plain Layout
+
+if (existe_arquivo(arquivo))
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	file = new File(arquivo, File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+	props.load(new DataStream(file));
+\end_layout
+
+\begin_layout Plain Layout
+
+	file.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+}         
+\end_layout
+
+\begin_layout Plain Layout
+
+props.put(propriedade,new Properties.Str(valor));
+\end_layout
+
+\begin_layout Plain Layout
+
+file = new File(arquivo, File.CREATE);
+\end_layout
+
+\begin_layout Plain Layout
+
+props.save(new DataStream(file));
+\end_layout
+
+\begin_layout Plain Layout
+
+file.close();      
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+To avoid that the 
+\family typewriter
+load()
+\family default
+ method gets into an infinite loop if the file is empty or corrupted, the
+ constant 
+\family typewriter
+MAX_PROPS
+\family default
+ limits the number of properties to 1000.
+ If you are saving more than 1000 properties, just change this maximum value.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -49042,7 +51636,7 @@ Properties.Value
 \begin_inset space ~
 \end_inset
 
-v) Maps the given value to the given key in this 
+v) Maps the given value to the given key in the 
 \family typewriter
 Properties
 \family default
@@ -49055,7 +51649,7 @@ get(String
 \begin_inset space ~
 \end_inset
 
-key) Returns the value which the given key is mapped to in this 
+key) Returns the value whose key is mapped to in the 
 \family typewriter
 Properties
 \family default
@@ -49095,9 +51689,30 @@ Vector
 
 \begin_layout FieldList
 \labelwidthstring 0
-clear() Clears this 
+clear() Clears the 
 \family typewriter
 Properties
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dumpKeysValues(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,String
+\begin_inset space ~
+\end_inset
+
+keyvalueSeparator,String
+\begin_inset space ~
+\end_inset
+
+lineSeparator) Similar to 
+\family typewriter
+Hashtable.dumpKeysValues()
 \family default
 .
 \end_layout
@@ -49127,6 +51742,42 @@ Properties
 DataStream
 \family default
 .
+ Before calling this method, be sure that there's something to be read (i.
+ e., that the file is not empty), to improve efficiency.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+load(DataStream
+\begin_inset space ~
+\end_inset
+
+ds,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+cleanBeforeLoad) Load all 
+\family typewriter
+Properties
+\family default
+ from the given 
+\family typewriter
+DataStream
+\family default
+.
+ If 
+\family typewriter
+cleanBeforeLoad
+\family default
+ is 
+\family typewriter
+true
+\family default
+, the contents of the object will be cleared before reading from the stream.
  
 \end_layout
 
@@ -49166,7 +51817,8 @@ toString()
 \end_layout
 
 \begin_layout Itemize
-The following classes are already implemented in the SDK:
+The following classes (and their field definition) are already implemented
+ in the SDK:
 \end_layout
 
 \begin_deeper
@@ -49182,6 +51834,95 @@ boolean
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+B
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+boolean
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+boolean
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns 
+\family typewriter
+1
+\family default
+ if value is 
+\family typewriter
+true
+\family default
+; 
+\family typewriter
+0
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the integer 1231 if the object represents 
+\family typewriter
+true
+\family default
+ and returns the integer 1237 if the object represents 
+\family typewriter
+false
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Returns 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Boolean
+\family default
+ object that represents the same 
+\family typewriter
+boolean
+\family default
+ value as the current object.
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -49194,6 +51935,246 @@ double
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(D).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+double
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+double
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code for the 
+\family typewriter
+Properties.Double
+\family default
+ object.
+ The result is the exclusive OR of the two halves of the 
+\family typewriter
+long
+\family default
+ integer bit representation, exactly as produced by the method 
+\family typewriter
+doubleToLongBits(double)
+\family default
+, of the primitive 
+\family typewriter
+double
+\family default
+ value represented by the object.
+ That is, the hash code is the value of the expression: 
+\family typewriter
+(int) (v ˆ (v >>> 32))
+\family default
+ where 
+\family typewriter
+v
+\family default
+ is defined by: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+long v = Convert.doubleToLongBits(this.value); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Double
+\family default
+ object that represents a 
+\family typewriter
+double
+\family default
+ that has the same value as the 
+\family typewriter
+double
+\family default
+ represented by the original object.
+ For this purpose, two 
+\family typewriter
+double
+\family default
+ values are considered to be the same if and only if the method 
+\family typewriter
+doubleToLongBits(double)
+\family default
+ returns the identical 
+\family typewriter
+long
+\family default
+ value when applied to each.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note that, in most cases, for two instances of class 
+\family typewriter
+Properties.Double
+\family default
+, 
+\family typewriter
+d1
+\family default
+ and 
+\family typewriter
+d2
+\family default
+, the value of 
+\family typewriter
+d1.equals(d2)
+\family default
+ is 
+\family typewriter
+true
+\family default
+ if and only if 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+Convert.doubleToLongBits(d1.value) ==
+\begin_inset Newline newline
+\end_inset
+
+Convert.doubleToLongBits(d2.value)
+\family default
+ also has the value 
+\family typewriter
+true
+\family default
+.
+ However, there are two exceptions: 
+\begin_inset Newline newline
+\end_inset
+
+If 
+\family typewriter
+d1
+\family default
+ and 
+\family typewriter
+d2
+\family default
+ both represent 
+\family typewriter
+Convert.DOUBLE_NAN_BITS
+\family default
+, then the 
+\family typewriter
+equals()
+\family default
+ method returns 
+\family typewriter
+true
+\family default
+, even though 
+\family typewriter
+Convert.doubleToLongBits(Convert.
+\begin_inset Newline newline
+\end_inset
+
+DOUBLE_NAN_BITS) == Convert.doubleToLongBits(Convert.
+\begin_inset Newline newline
+\end_inset
+
+DOUBLE_NAN_BITS)
+\family default
+ has the value 
+\family typewriter
+false
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+If 
+\family typewriter
+d1
+\family default
+ represents 
+\family typewriter
++0.0
+\family default
+ while 
+\family typewriter
+d2
+\family default
+ represents 
+\family typewriter
+-0.0
+\family default
+, or vice versa, the equal test has the value 
+\family typewriter
+false
+\family default
+, even though 
+\family typewriter
++0.0==-0.0
+\family default
+ has the value 
+\family typewriter
+true
+\family default
+.
+ This definition allows hash tables to operate properly.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -49206,6 +52187,90 @@ int
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+I
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+int
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+int
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code value for the object, equal to the primitive
+ 
+\family typewriter
+int
+\family default
+ value represented by the 
+\family typewriter
+Properties.Int
+\family default
+ object.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Int
+\family default
+ object that contains the same 
+\family typewriter
+int
+\family default
+ value as the original object.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -49218,6 +52283,94 @@ long
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+L
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+long
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+value The 
+\family typewriter
+long
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the value number (
+\family typewriter
+Convert.toString(value)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a hash code for the 
+\family typewriter
+Properties.Long
+\family default
+ object.
+ The result is the exclusive OR of the two halves of the primitive 
+\family typewriter
+long
+\family default
+ value held by the object.
+ That is, the hash code is the value of the expression: 
+\family typewriter
+(int) (this.value ˆ (this.value >>> 32))
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+Properties.Long
+\family default
+ object that contains the same 
+\family typewriter
+long
+\family default
+ value as the original object.
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 
 \family typewriter
@@ -49230,6 +52383,77 @@ String
 .
 \end_layout
 
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+type Equals to 
+\family typewriter
+TYPE 
+\family default
+(
+\family typewriter
+S
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+typeStr Equals to 
+\family typewriter
+String
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns 
+\family typewriter
+value
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the hash code of the enclosed string value (
+\family typewriter
+value.hashCode()
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\begin_inset space ~
+\end_inset
+
+obj) Compares one object against another specified object.
+ The result is 
+\family typewriter
+true
+\family default
+ if and only if the argument is not 
+\family typewriter
+null
+\family default
+ and is a 
+\family typewriter
+String
+\family default
+ object, or another 
+\family typewriter
+Properties.Str
+\family default
+ object, that represents the same sequence of characters as the original
+ object.
+ 
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Section
 Random
@@ -49252,6 +52476,56 @@ ran0()
 \family default
  isn't that great – there are much better generators out there -- but it
  is fast and has low memory consumption, and it will do the job.
+\end_layout
+
+\begin_layout Standard
+Here's a sample of how to use the Random class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Random r = new Random(0x1234); // the use of the same key is sometimes desirable
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+for (...) 
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	int nextRandomInt = r.between(0,10);
+\end_layout
+
+\begin_layout Plain Layout
+
+	char nextRandomChar = r.between('a','z');
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
@@ -49279,7 +52553,16 @@ seed) Creates a
 Random
 \family default
  object using the given seed.
- The only reasonable seeds are between 0 and 231 inclusive.
+ The only reasonable seeds are between 0 and 2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+31
+\end_layout
+
+\end_inset
+
+ inclusive.
  If a negative value is received, its absolute value will be used.
 \end_layout
 
@@ -49300,11 +52583,25 @@ n) Returns a random integer in the range
 [0, n)
 \family default
 .
+ 
+\family typewriter
+n
+\family default
+ must be 
+\family typewriter
+> 0
+\family default
+; otherwise, -1 is returned.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-nextDouble() Returns a random double in the half-open range 
+nextDouble() Returns a random 
+\family typewriter
+double
+\family default
+ in the half-open range 
 \family typewriter
 [0, 1)
 \family default
@@ -49327,6 +52624,26 @@ int
 \end_inset
 
 e) Returns a random integer in the given region.
+ E.
+ g.
+ : 
+\family typewriter
+rand(1, 10)
+\family default
+ returns a random integer in the range of 1 to 10, inclusive.
+ Note that if 
+\family typewriter
+s == e
+\family default
+, it will return in the range 
+\family typewriter
+s
+\family default
+ and 
+\family typewriter
+e+1
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -49344,7 +52661,20 @@ char
 \end_inset
 
 e) Returns a random character in the given region.
- 
+ E.
+ g.: 
+\family typewriter
+between('a', 'e')
+\family default
+ returns a random character between 
+\family typewriter
+a
+\family default
+ and 
+\family typewriter
+e
+\family default
+, inclusive.
 \end_layout
 
 \end_deeper
@@ -49509,6 +52839,7 @@ You may get or set the logger default settings with these static methods:
 \labelwidthstring 0
 getDefaultSeparator() Returns the string used as initial message separator,
  which is used by new loggers.
+ A separator is a string that separates two log messages.
 \end_layout
 
 \begin_layout FieldList
@@ -49542,7 +52873,7 @@ The logger level may be one of the above message levels, or any composition
 \family typewriter
 OR
 \family default
-ed together.
+'ed together.
  You may also use one of the following constants:
 \end_layout
 
@@ -49577,7 +52908,8 @@ getLogger(String
 \begin_inset space ~
 \end_inset
 
-name) Returns the logger with the given name.
+name) Returns the logger with the given name, keeping its level and output
+ handlers unchanged.
  If the logger does not exist, it will be created and stored for future
  use.
 \end_layout
@@ -49596,9 +52928,15 @@ int
 \begin_inset space ~
 \end_inset
 
-level) Returns the logger with the given name, setting the specified level.
+level) Returns the logger with the given name, setting the specified level
+ and keeping the output handlers unchanged.
  If the logger does not exist, it will be created and stored for future
  use.
+ If 
+\family typewriter
+level == -1
+\family default
+, it won't be changed.
 \end_layout
 
 \begin_layout FieldList
@@ -49628,6 +52966,15 @@ outputStream) Returns the logger with the given name, setting the level
  handlers.
  If the logger does not exist, it will be created and stored for future
  use.
+ If 
+\family typewriter
+level == -1
+\family default
+ or 
+\family typewriter
+outputStream == null
+\family default
+, it won't be changed.
 \end_layout
 
 \begin_layout FieldList
@@ -49637,22 +52984,31 @@ getGlobalLogger() Returns the global anonymous logger (
 name == null
 \family default
 ).
+ Notice that the name can't be null in the above methods.
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-After getting a Logger instance, you may get or set its settings:
+After getting a 
+\family typewriter
+Logger
+\family default
+ instance, you may get or set its settings:
 \end_layout
 
 \begin_deeper
 \begin_layout FieldList
 \labelwidthstring 0
-getName() Returns the name of this logger.
+getName() Returns the name of the logger or 
+\family typewriter
+null
+\family default
+, if the logger is the global anonymous logger.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getSeparator() Returns the string used by this logger to separate log messages.
+getSeparator() Returns the string used by the logger to separate log messages.
 \end_layout
 
 \begin_layout FieldList
@@ -49661,12 +53017,26 @@ setSeparator(String
 \begin_inset space ~
 \end_inset
 
-separator) Sets the separator to be used by this logger.
+separator) Sets the separator to be used by the logger.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getLevel() Returns the current level of this logger.
+getLevel() Returns the current level of the logger, which is an integer
+ number representing the current logger level.
+ To check if the logger is set to log a specific type of message (
+\family typewriter
+SEVERE
+\family default
+, 
+\family typewriter
+WARNING
+\family default
+, etc), just check if the level 
+\family typewriter
+OR
+\family default
+'ed with the message level is different from zero.
 \end_layout
 
 \begin_layout FieldList
@@ -49675,12 +53045,77 @@ setLevel(int
 \begin_inset space ~
 \end_inset
 
-level) Sets the current level of this logger.
+level) Sets the current level of the logger.
+ 
+\family typewriter
+level
+\family default
+ should be a composition of one or more of the message types constants (
+\family typewriter
+FINEST
+\family default
+, 
+\family typewriter
+FINER
+\family default
+, 
+\family typewriter
+FINE
+\family default
+, 
+\family typewriter
+CONFIG
+\family default
+, 
+\family typewriter
+INFO
+\family default
+, 
+\family typewriter
+WARNING
+\family default
+, or 
+\family typewriter
+SEVERE
+\family default
+), 
+\family typewriter
+OFF
+\family default
+, if you want to disable all logging, or 
+\family typewriter
+ALL
+\family default
+, if you want to enable all logging.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSeparator() Gets the string used to separate two log messages, that is,
+ the string written after each log message.
+ A separator can be 
+\family typewriter
+
+\backslash
+n
+\family default
+ (newline), white spaces, etc.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSeparator(String
+\begin_inset space ~
+\end_inset
+
+separator) Sets the string used to separate two log messages.
+ 
 \end_layout
 
 \end_deeper
 \begin_layout Itemize
-You must add a output handler to a logger, which is a stream object that
+You must add an output handler to a logger, which is a stream object that
  will receive the log messages.
  A logger may have multiple output handlers.
 \end_layout
@@ -49692,13 +53127,17 @@ addOutputHandler(Stream
 \begin_inset space ~
 \end_inset
 
-output) Adds an output stream to this logger's output handler set.
- Does nothing if the given stream was previously added to this logger.
+output) Adds an output stream to the logger's output handler set.
+ It does nothing if the given stream was previously added to this logger.
+ This means that every logged message (depending on the current logger level)
+ will be written to this new stream.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getOutputHandlers() Get the output handlers associated with this logger.
+getOutputHandlers() Gets the output handlers associated with the logger,
+ returning an array of all registered output handlers.
 \end_layout
 
 \begin_layout FieldList
@@ -49707,7 +53146,12 @@ removeOutputHandler(Stream
 \begin_inset space ~
 \end_inset
 
-output) Removes an output handler from this logger's output handler set.
+output) Removes an output handler from the logger's output handler set.
+ It return 
+\family typewriter
+true
+\family default
+ if, and only if, the stream was successfully removed.
 \end_layout
 
 \begin_layout Standard
@@ -49771,6 +53215,15 @@ params) Logs a
 FINER
 \family default
  message reporting a method entry.
+ A record with message
+\family typewriter
+ ENTRY
+\family default
+, log level 
+\family typewriter
+FINER
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \begin_layout FieldList
@@ -49792,6 +53245,15 @@ sourceMethod) Logs a
 FINER
 \family default
  message reporting a method return.
+ A record with message
+\family typewriter
+ RETURN
+\family default
+, log level 
+\family typewriter
+FINER
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \begin_layout FieldList
@@ -49821,6 +53283,15 @@ thrown) Logs a
 SEVERE
 \family default
  message reporting an exception being thrown.
+ A record with message
+\family typewriter
+ THROW
+\family default
+, log level 
+\family typewriter
+SEVERE
+\family default
+, and the given parameters are logged.
 \end_layout
 
 \end_deeper
@@ -49854,6 +53325,15 @@ boolean
 prependInfo) Logs the given message, using the given level.
  The last argument is a flag indicating whether this log message must be
  prepended with the current date and time, level string, logger name, etc.
+ It will throw a 
+\family typewriter
+NullPointerException
+\family default
+ if one or more registered output handler streams are 
+\family typewriter
+null
+\family default
+ or the logger has been disposed.
 \end_layout
 
 \end_deeper
@@ -49863,7 +53343,7 @@ Or one of the convenience methods, which are actually just calls to the
 \family typewriter
 log()
 \family default
- using the given message, the appropriate level and the 
+ using the given message, the appropriate level, and the 
 \family typewriter
 prependInfo
 \family default
@@ -49871,8 +53351,8 @@ prependInfo
 \end_layout
 
 \begin_deeper
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 config(String
@@ -49888,8 +53368,8 @@ CONFIG
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 info(String
@@ -49905,8 +53385,8 @@ INFO
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 fine(String
@@ -49922,8 +53402,8 @@ FINE
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 finer(String
@@ -49939,8 +53419,8 @@ FINER
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 finest(String
@@ -49956,8 +53436,8 @@ FINEST
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 warning(String
@@ -49973,8 +53453,8 @@ WARNING
  message.
 \end_layout
 
-\begin_layout Labeling
-\labelwidthstring warning(String.message)0
+\begin_layout FieldList
+\labelwidthstring 0
 
 \family typewriter
 severe(String
@@ -50041,13 +53521,2562 @@ You shouldn't (and in fact you can't) dispose the global logger.
 \family typewriter
 dispose()
 \family default
- for the global logger does not discards it, only adds an useless method
+ for the global logger does not discard it, only adds an useless method
  call to your code.
 \end_layout
 
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+BigDecimal
+\end_layout
+
+\begin_layout Standard
+Arbitrary-precision signed decimal numbers.
+ A 
+\family typewriter
+BigDecimal
+\family default
+ consists of an arbitrary precision integer unscaled value and a 32-bit
+ integer scale.
+ If zero or positive, the scale is the number of digits to the right of
+ the decimal point.
+ If negative, the unscaled value of the number is multiplied by ten to the
+ power of the negation of the scale.
+ The value of the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ is therefore 
+\family typewriter
+unscaledValue × 10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+-scale
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BigDecimal
+\family default
+ class provides operations for arithmetic, scale manipulation, rounding,
+ comparison, hashing, and format conversion.
+ The 
+\family typewriter
+toString()
+\family default
+ method provides a canonical representation of a 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BigDecimal
+\family default
+ class gives its user complete control over rounding behavior.
+ If no rounding mode is specified and the exact result cannot be represented,
+ an exception is thrown; otherwise, calculations can be carried out to a
+ chosen precision and rounding mode.
+\end_layout
+
+\begin_layout Standard
+Since the same numerical value can have different representations (with
+ different scales), the rules of arithmetic and rounding must specify both
+ the numerical result and the scale used in the result's representation.
+ In general the rounding modes and precision setting determine how operations
+ return results with a limited number of digits when the exact result has
+ more digits (perhaps infinitely many in the case of division) than the
+ number of digits returned.
+ 
+\end_layout
+
+\begin_layout Standard
+For all arithmetic operators, the operation is carried out as though an
+ exact intermediate result were first calculated and then rounded to the
+ number of digits specified by the precision setting (if necessary), using
+ the selected rounding mode.
+ If the exact result is not returned, some digit positions of the exact
+ result are discarded.
+ When rounding increases the magnitude of the returned result, it is possible
+ for a new digit position to be created by a carry propagating to a leading
+ "9" digit.
+ For example, rounding the value 999.9 to three digits rounding up would
+ be numerically equal to one thousand, represented as 100×10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+.
+ In such cases, the new "1" is the leading digit position of the returned
+ result.
+ 
+\end_layout
+
+\begin_layout Standard
+Besides a logical exact result, each arithmetic operation has a preferred
+ scale for representing a result.
+ The preferred scale for each operation is listed in the table below.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Operation
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Preferred Scale of Result
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+max(addend.scale(), augend.scale())
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Subtract
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+max(minuend.scale(), subtrahend.scale())
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Multiply
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+multiplier.scale() + multiplicand.scale()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Divide
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+dividend.scale() - divisor.scale()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+These scales are the ones used by the methods which return exact arithmetic
+ results; except that an exact divide may have to use a larger scale since
+ the exact result may have more digits.
+ For example, 1/32 is 0.03125.
+ 
+\end_layout
+
+\begin_layout Standard
+Before rounding, the scale of the logical exact intermediate result is the
+ preferred scale for that operation.
+ If the exact numerical result cannot be represented in precision digits,
+ rounding selects the set of digits to return and the scale of the result
+ is reduced from the scale of the intermediate result to the least scale
+ which can represent the precision digits actually returned.
+ If the exact result can be represented with at most precision digits, the
+ representation of the result with the scale closest to the preferred scale
+ is returned.
+ In particular, an exactly representable quotient may be represented in
+ fewer than precision digits by removing trailing zeros and decreasing the
+ scale.
+ For example, rounding to three digits using the floor rounding mode, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+19/100 = 0.19 // integer=19, scale=2 
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+but 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+21/110 = 0.190 // integer=190, scale=3
+\family default
+ 
+\end_layout
+
+\begin_layout Standard
+Note that for add, subtract, and multiply, the reduction in scale will equal
+ the number of digit positions of the exact result which are discarded.
+ If the rounding causes a carry propagation to create a new high-order digit
+ position, an additional digit of the result is discarded than when no new
+ digit position is created.
+ 
+\end_layout
+
+\begin_layout Standard
+Other methods may have slightly different rounding semantics.
+ For example, the result of the 
+\family typewriter
+pow()
+\family default
+ method using the specified algorithm can occasionally differ from the rounded
+ mathematical result by more than one unit in the last place, one ulp.
+ 
+\end_layout
+
+\begin_layout Standard
+Two types of operations are provided for manipulating the scale of a 
+\family typewriter
+BigDecimal
+\family default
+: scaling/rounding operations and decimal point motion operations.
+ Scaling/rounding operations (
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+setScale()
+\family default
+) return a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is approximately (or exactly) equal to that of the operand,
+ but whose scale or precision is the specified value; that is, they increase
+ or decrease the precision of the stored number with minimal effect on its
+ value.
+ Decimal point motion operations (
+\family typewriter
+movePointLeft()
+\family default
+ and 
+\family typewriter
+movePointRight()
+\family default
+) return a 
+\family typewriter
+BigDecimal
+\family default
+ created from the operand by moving the decimal point a specified distance
+ in the specified direction.
+ 
+\end_layout
+
+\begin_layout Standard
+All methods and constructors for this class throw 
+\family typewriter
+NullPointerException
+\family default
+ when passed a 
+\family typewriter
+null
+\family default
+ object reference for any input parameter.
+ 
+\end_layout
+
+\begin_layout Standard
+If you need numerical precision, you need to use this class when dealing
+ with floating point numbers.
+ 
+\end_layout
+
+\begin_layout Standard
+Computers don't deal properly with decimals.
+ As you already know, data is represented internaly using the binary format.
+\end_layout
+
+\begin_layout Standard
+The number 4, for instance, is represented by 100 (
+\family typewriter
+1x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+
+ + 0x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+
+ + 0x2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+
+ = 4
+\family default
+).
+\end_layout
+
+\begin_layout Standard
+How to represent a number smaller than 1? Each decimal digit after the dot
+ represents the values 
+\family typewriter
+1/2
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-1
+\end_layout
+
+\end_inset
+
+
+\family default
+), 
+\family typewriter
+1/4
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-2
+\end_layout
+
+\end_inset
+
+
+\family default
+), 
+\family typewriter
+1/8
+\family default
+ (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+-3
+\end_layout
+
+\end_inset
+
+
+\family default
+), and so on.
+\end_layout
+
+\begin_layout Standard
+Therefore, the numbers 4.25, 4.5, and 4.75 are represented in binary like this,
+ respectively: 100,01, 100,10, and 100,11.
+\end_layout
+
+\begin_layout Standard
+This is very poor to represent decimals.
+ Trying to represent 0.3 in binary results in an infinite binary number,
+ because 0.3 = 0.25 + 0.03125 + 0.009765635...
+\end_layout
+
+\begin_layout Standard
+To bypass the problem, the calculations are done with many decimal digits
+ and then the result is rounded.
+ This explains why 
+\family typewriter
+double
+\family default
+ and 
+\family typewriter
+float
+\family default
+ calculations are not precise.
+ Some processors use 50 bits, which is good enough for many applications.
+ However, it is not an infinite number of bits, which is needed to represent
+ some numbers, such as 0.3.
+ 
+\end_layout
+
+\begin_layout Standard
+A correct example to use this class is the following:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public static BigDecimal newBigDecimal(String value) throws InvalidNumberExcepti
+on
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return new BigDecimal(value.replace(Settings.decimalSeparator, '.'));
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+public static String toPlainString(BigDecimal value)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	return value.toPlainString().replace('.', Settings.decimalSeparator);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num1 = newBigDecimal("5.912");
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num2 = newBigDecimal("0.01");
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal num3 = num1.multiply(num2).setScale(4, BigDecimal.ROUND_HALF_EVEN);
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug("Resultado: "+toPlainString(num3)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If you are getting a value typed by the user in a text box, DON'T CONVERT
+ IT TO DOUBLE! You must create a 
+\family typewriter
+BigDecimal
+\family default
+ directly.
+\end_layout
+
+\begin_layout Standard
+That is, the following code is WRONG:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+double d = Convert.toDouble(edValor.getText());
+\end_layout
+
+\begin_layout Plain Layout
+
+BigDecimal b = new BigDecimal(d);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When you convert the number to double, you LOSE PRECISION.
+ The correct code is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+BigDecimal b = new BigDecimal(edValor.getText()); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following constants:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZERO The constant zero as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ONE The constant one as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TEN The constant ten as a 
+\family typewriter
+BigDecimal
+\family default
+ with scale zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UP Rounding mode to round away from zero.
+ Always increments the digit prior to a nonzero discarded fraction.
+ Note that this rounding mode never decreases the magnitude of the calculated
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_DOWN Rounding mode to round towards zero.
+ Never increments the digit prior to a discarded fraction (i.
+ e., truncates).
+ Note that this rounding mode never increases the magnitude of the calculated
+ value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_CEILING Rounding mode to round towards positive infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+; if negative, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this rounding mode never decreases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_FLOOR Rounding mode to round towards negative infinity.
+ If the 
+\family typewriter
+BigDecimal
+\family default
+ is positive, behave as for 
+\family typewriter
+ROUND_DOWN
+\family default
+; if negative, behave as for 
+\family typewriter
+ROUND_UP
+\family default
+.
+ Note that this rounding mode never increases the calculated value.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_UP Rounding mode to round towards "nearest neighbor" unless both
+ neighbors are equidistant, in which case round up.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+>= 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ Note that this is the rounding mode that most of us were taught in grade
+ school.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_DOWN Rounding mode to round towards "nearest neighbor" unless
+ both neighbors are equidistant, in which case round down.
+ Behaves as for 
+\family typewriter
+ROUND_UP
+\family default
+ if the discarded fraction is 
+\family typewriter
+> 0.5
+\family default
+; otherwise, behaves as for 
+\family typewriter
+ROUND_DOWN
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_HALF_EVEN Rounding mode to round towards the "nearest neighbor" unless
+ both neighbors are equidistant, in which case, round towards the even neighbor.
+ Behaves as for 
+\family typewriter
+ROUND_HALF_UP
+\family default
+ if the digit to the left of the discarded fraction is odd; behaves as for
+ 
+\family typewriter
+ROUND_HALF_DOWN
+\family default
+ if it's even.
+ Note that this is the rounding mode that minimizes cumulative error when
+ applied repeatedly over a sequence of calculations.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ROUND_UNNECESSARY Rounding mode to assert that the requested operation has
+ an exact result, hence no rounding is necessary.
+ If this rounding mode is specified on an operation that yields an inexact
+ result, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ which represents the number given by the parameter.
+ If its value is invalid, the method throws an 
+\family typewriter
+InvalidNumberException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Constructs a new 
+\family typewriter
+BigDecimal 
+\family default
+whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is zero.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Constructs a new 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+num
+\family default
+ and whose scale is zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+num
+\family default
+ and whose scale is 
+\family typewriter
+scale
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigDecimal(double
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+num) Constructs a 
+\family typewriter
+BigDecimal
+\family default
+ which represents the number given by the parameter.
+ If the number represents infinity values or NaN (not a number), it will
+ throw an 
+\family typewriter
+InvalidNumberException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Static method similar to 
+\family typewriter
+BigDecimal(long val)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Static method that creates a new 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is 
+\family typewriter
+val
+\family default
+ and whose scale is 
+\family typewriter
+scale
+\family default
+.
+ It will throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if the value is 
+\family typewriter
+NaN
+\family default
+ or infinite
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(double
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Static method that returns a new 
+\family typewriter
+BigDecimal
+\family default
+ constructed from the 
+\family typewriter
+BigDecimal(String)
+\family default
+ constructor using the 
+\family typewriter
+Convert.toString(double)
+\family default
+ method to obtain the string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Adds two 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The scales need to be lined up, that is, the one which has the smaller
+ scale must be multiplied by a power of ten so that both scales are equal.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+subtract(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Executes a subtraction using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The scales also need to be lined up.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multiply(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Multiplies two 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The unscaled values are multipled and the scales are added.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+newScale,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one passed as parameter.
+ If the rounding mode is invalid or it is necessary to round the resulting
+ value (has a nonterminating decimal expansion) and the rounding mode passed
+ is 
+\family typewriter
+ROUND_UNNECESSARY
+\family default
+, an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one from the original object.
+ If the rounding mode is invalid or it is necessary to round the resulting
+ value and the rounding mode passed is 
+\family typewriter
+ROUND_UNNECESSARY
+\family default
+, an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+divisor) Executes a division using 
+\family typewriter
+BigDecimal
+\family default
+s.
+ The resulting scale will be the one from the original object.
+ If it is necessary to round the resulting value an exception will be thrown.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remainder(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the remainder in the quotient 
+\family typewriter
+this / val
+\family default
+.
+ This is obtained by 
+\family typewriter
+subtract(divideToIntegralValue(val).multiply(val))
+\family default
+.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divideAndRemainder(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ array, the first element of which is the integer part of 
+\family typewriter
+this / val
+\family default
+, and the second element of which is the remainder of that quotient.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divideToIntegralValue(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the integer part of the quotient 
+\family typewriter
+this / val
+\family default
+.
+ The preferred scale is 
+\family typewriter
+this.scale - val.scale
+\family default
+.
+ The divisor can't be zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+compareTo(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns 0 if the two values represent the same number, -1 if 
+\family typewriter
+this < val
+\family default
+, and 1 if 
+\family typewriter
+val > this
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+o) Returns 
+\family typewriter
+true
+\family default
+ if 
+\family typewriter
+o
+\family default
+ is a 
+\family typewriter
+BigDecimal
+\family default
+, both scales are equal and their comparison (
+\family typewriter
+this.compare To((BigDecimal)o
+\family default
+) returns 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns a XOR between the integer part of the object and its
+ scale.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+max(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this > val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+min(BigDecimal
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this < val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+movePointRight(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Multiplies the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ by 
+\family typewriter
+10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+n
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+movePointLeft(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Divides the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+ by 
+\family typewriter
+10
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+n
+\end_layout
+
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+signum() Returns the sign of the number represented by the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scale() Returns the scale of the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+unscaledValue() Returns the unscaled value of the 
+\family typewriter
+BigDecimal
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+abs() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is the modulus of the original one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+negate() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose unscaled value is the negation of the original one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+plus() Returns the 
+\family typewriter
+BigDecimal
+\family default
+ unchanged.
+ This is included for symmetry with the method 
+\family typewriter
+negate()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+precision() Returns the precision of the 
+\family typewriter
+BigDecimal
+\family default
+ (the number of digits in the unscaled value).
+ The precision of a zero value is 1.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ using scientific notation if necessary.
+ The following steps are taken to generate the result: 
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+the 
+\family typewriter
+BigInteger
+\family default
+ 
+\family typewriter
+unscaledValue
+\family default
+'s 
+\family typewriter
+toString()
+\family default
+ method is called and if 
+\family typewriter
+scale == 0
+\family default
+, this string is returned.
+ 
+\end_layout
+
+\begin_layout Enumerate
+An integer 
+\family typewriter
+adjExp
+\family default
+ is created, which is equal to the negation of scale plus the number of
+ digits in the unscaled value, minus one.
+ 
+\end_layout
+
+\begin_layout Enumerate
+If 
+\family typewriter
+scale >= 0 && adjExp >= -6
+\family default
+, then we represent the 
+\family typewriter
+BigDecimal
+\family default
+ without scientific notation.
+ A decimal is added if the scale is positive and zeros are prepended as
+ necessary.
+\end_layout
+
+\begin_layout Enumerate
+If scale is negative or 
+\family typewriter
+adjExp
+\family default
+ is less than -6, we use scientific notation.
+ If the unscaled value has more than one digit, a decimal is inserted after
+ the first digit, the character 
+\family typewriter
+E
+\family default
+ is appended and 
+\family typewriter
+adjExp
+\family default
+ is appended.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+toEngineeringString() Returns the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ using engineering notation if necessary.
+ This is similar to 
+\family typewriter
+toString()
+\family default
+ but when exponents are used, the exponent is made to be a multiple of 3
+ such that the integer part is between 1 and 999.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toPlainString() Returns a string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ without using scientific notation.
+ Zeros may be added to the end of the string.
+ For example, an unscaled value of 1234 and a scale of -3 would result in
+ the string 1234000, but the 
+\family typewriter
+toString()
+\family default
+ method would return 
+\family typewriter
+1.234E+6
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toBigInteger() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ Any fractional part will be discarded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toBigIntegerExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+, throwing an 
+\family typewriter
+ArithmeticException
+\family default
+ if the conversion is not exact.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+intValue() Returns an integer from the conversion of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+stripTrailingZeros() Returns a 
+\family typewriter
+BigDecimal
+\family default
+ which is numerically equal to the original 
+\family typewriter
+BigDecimal
+\family default
+ but with no trailing zeros in the representation.
+ For example, if the 
+\family typewriter
+BigDecimal
+\family default
+ has 
+\family typewriter
+[unscaledValue, scale] = [6313000, 4]
+\family default
+ this method returns a 
+\family typewriter
+BigDecimal
+\family default
+ with 
+\family typewriter
+[unscaledValue, scale] = [6313, 1]
+\family default
+.
+ As another example, 
+\family typewriter
+[12400, -2]
+\family default
+ would become
+\family typewriter
+ [124, -4]
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+longValue() Returns a 
+\family typewriter
+long
+\family default
+ from the conversion of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+doubleValue() Converts the string representation of the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+double
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setScale(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale) Changes the scale.
+ If rounding is necessary, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setScale(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+scale,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+roundingMode) Changes the scale.
+ If rounding is necessary and 
+\family typewriter
+roundingMode == ROUND_UNNECESSARY
+\family default
+, an 
+\family typewriter
+ArithmeticException
+\family default
+ is thrown.
+ It will also be thrown if 
+\family typewriter
+scale < 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+scaleByPowerOfTen(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose numerical value is the numerical value of the original 
+\family typewriter
+BigDecimal
+\family default
+ multiplied by 10 to the power of 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pow(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigDecimal
+\family default
+ whose value is the original value to the power of 
+\family typewriter
+n
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ulp() Returns the size of a unit in the last place of the 
+\family typewriter
+BigDecimal
+\family default
+.
+ This returns a 
+\family typewriter
+BigDecimal
+\family default
+ with 
+\family typewriter
+[unscaledValue, scale] = [1, scale]
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+longValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+long
+\family default
+ value.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if rounding or overflow occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+intValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into an integer by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into an 
+\family typewriter
+int
+\family default
+.
+ It will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into an 
+\family typewriter
+int
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shortValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a 
+\family typewriter
+short
+\family default
+ by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into a 
+\family typewriter
+short
+\family default
+.
+ It will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into a 
+\family typewriter
+short
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+byteValueExact() Converts the 
+\family typewriter
+BigDecimal
+\family default
+ into a byte by first calling 
+\family typewriter
+longValueExact()
+\family default
+ and then checking that the 
+\family typewriter
+long
+\family default
+ returned from that method fits into a byte.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if the 
+\family typewriter
+BigDecimal
+\family default
+ has a fractional part or is too large to fit into a byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+compareTo(Object
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+other) Just calls 
+\family typewriter
+compareTo((BigDecimal)other)
+\family default
+.
+\end_layout
+
+\begin_layout Section
+BigInteger
+\end_layout
+
+\begin_layout Standard
+This class represent arbitrary-precision integers.
+ All operations behave as if 
+\family typewriter
+BigIntegers
+\family default
+ were represented in two's-complement notation (like Java's primitive integer
+ types).
+ 
+\family typewriter
+BigInteger
+\family default
+ provides analogues to all of Java's primitive integer operators.
+ Additionally, 
+\family typewriter
+BigInteger
+\family default
+ provides operations for modular arithmetic, GCD calculation, primality
+ testing, prime generation, bit manipulation, and a few other miscellaneous
+ operations.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of arithmetic operations exactly mimic those of Java's integer
+ arithmetic operators, as defined in The Java Language Specification.
+ For example, division by zero throws an 
+\family typewriter
+ArithmeticException
+\family default
+, and division of a negative by a positive yields a negative (or zero) remainder.
+ All of the details in the specification concerning overflow are ignored,
+ as 
+\family typewriter
+BigIntegers
+\family default
+ are made as large as necessary to accommodate the results of an operation.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of shift operations extend those of Java's shift operators to
+ allow for negative shift distances.
+ A right-shift with a negative shift distance results in a left shift, and
+ vice-versa.
+ The unsigned right shift operator (>>>) is omitted, as this operation makes
+ little sense in combination with the "infinite word size" abstraction provided
+ by this class.
+ 
+\end_layout
+
+\begin_layout Standard
+Semantics of bitwise logical operations exactly mimic those of Java's bitwise
+ integer operators.
+ The binary operators (and, or, xor) implicitly perform sign extension on
+ the shorter of the two operands prior to performing the operation.
+ 
+\end_layout
+
+\begin_layout Standard
+Comparison operations perform signed integer comparisons, analogous to those
+ performed by Java's relational and equality operators.
+ 
+\end_layout
+
+\begin_layout Standard
+Modular arithmetic operations are provided to compute residues, perform
+ exponentiation, and compute multiplicative inverses.
+ These methods always return a non-negative result, between 0 and (modulus
+ - 1), inclusive.
+ 
+\end_layout
+
+\begin_layout Standard
+Bit operations operate on a single bit of the two's-complement representation
+ of their operand.
+ If necessary, the operand is sign-extended so that it contains the designated
+ bit.
+ None of the single-bit operations can produce a 
+\family typewriter
+BigInteger
+\family default
+ with a different sign from the 
+\family typewriter
+BigInteger
+\family default
+ being operated on, as they affect only a single bit, and the "infinite
+ word size" abstraction provided by this class ensures that there are infinitely
+ many "virtual sign bits" preceding each 
+\family typewriter
+BigInteger
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Most methods and constructors in this class throw 
+\family typewriter
+NullPointerException
+\family default
+ when passed a 
+\family typewriter
+null
+\family default
+ object reference for any input parameter.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ZERO The constant zero as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ONE The constant one as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TEN The constant ten as a 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+radix) Translates the string representation of a 
+\family typewriter
+BigInteger
+\family default
+ in the specified radix into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The string representation consists of an optional minus sign followed by
+ a sequence of one or more digits in the specified radix.
+ The string may not contain any extraneous characters (whitespace, for example).
+ If so, an 
+\family typewriter
+InvalidNumberException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(String
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Translates the decimal string representation of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The string representation consists of an optional minus sign followed by
+ a sequence of one or more decimal digits.
+ The String may not contain any extraneous characters (whitespace, for example).
+ If so, an 
+\family typewriter
+InvalidNumberException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(byte[]
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Translates a byte array containing the two's-complement binary representati
+on of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The input array is assumed to be in big-endian byte-order: the most significant
+ byte is in the zero
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+ element.
+ This method will throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if the byte array is 
+\family typewriter
+null
+\family default
+ or its size is 0.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+signum,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+byte[]
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+magnitude) Translates the sign-magnitude representation of a 
+\family typewriter
+BigInteger
+\family default
+ into a 
+\family typewriter
+BigInteger
+\family default
+.
+ The sign is represented as an integer 
+\family typewriter
+signum
+\family default
+ value: -1 for negative, 0 for zero, or 1 for positive.
+ The magnitude is a byte array in big-endian byte-order: the most significant
+ byte is in the zero
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+ element.
+ A zero-length magnitude array is permissible, and will result in in a 
+\family typewriter
+BigInteger
+\family default
+ value of 0, whether signum is -1, 0 or 1.
+ This method will throw an 
+\family typewriter
+NumberFormatException
+\family default
+ if 
+\family typewriter
+signum
+\family default
+ is not one of the three legal values (-1, 0, and 1), signum is 0 and magnitude
+ contains one or more non-zero bytes, or the byte array is 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+numBits,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Constructs a randomly generated 
+\family typewriter
+BigInteger
+\family default
+, uniformly distributed over the range 0 to (
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+numBits
+\end_layout
+
+\end_inset
+
+ - 1
+\family default
+), inclusive.
+ The uniformity of the distribution assumes that a fair source of random
+ bits is provided in 
+\family typewriter
+rnd
+\family default
+.
+ Note that this constructor always constructs a non-negative 
+\family typewriter
+BigInteger
+\family default
+.
+ The number of bits can't be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BigInteger(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+bitLength,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+certainty,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Constructs a randomly generated positive 
+\family typewriter
+BigInteger
+\family default
+ that is probably prime, with the specified 
+\family typewriter
+bitLength
+\family default
+.
+ It is recommended that the 
+\family typewriter
+probablePrime
+\family default
+ method be used in preference to this constructor unless there is a compelling
+ need to specify a certainty.
+ The certainty is a measure of the uncertainty that the caller is willing
+ to tolerate.
+ The probability that the new 
+\family typewriter
+BigInteger
+\family default
+ represents a prime number will exceed (
+\family typewriter
+1 - 1/2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+certainty
+\end_layout
+
+\end_inset
+
+
+\family default
+).
+ The execution time of this constructor is proportional to the value of
+ this parameter.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+probablePrime(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+bitLength,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+Random
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+rnd) Returns a 
+\family typewriter
+BigInteger
+\family default
+ that is 
+\family typewriter
+bitLength
+\family default
+ bits long with a probability < 
+\family typewriter
+2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+-100
+\end_layout
+
+\end_inset
+
+
+\family default
+ of being composite.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+bitLength < 2
+\family default
+.
 \end_layout
 
 \begin_layout Chapter

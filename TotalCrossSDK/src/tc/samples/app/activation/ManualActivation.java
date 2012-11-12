@@ -126,7 +126,7 @@ public class ManualActivation extends MainWindow
          else
             drive = drive.substring(0,3);
       }
-      fc.mountTree(drive,0);
+      fc.mountTree(drive);
       fc.defaultButton = 1;
       //fc.initialPath = ;
       fc.popup();

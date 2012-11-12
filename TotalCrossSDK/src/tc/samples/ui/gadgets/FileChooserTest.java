@@ -26,7 +26,7 @@ public class FileChooserTest extends Container
                {
                   FileChooserBox fcb = new FileChooserBox(null);
                   fcb.multipleSelection = ch.isChecked(); // guich@tc115_4
-                  fcb.mountTree("device/",1);
+                  fcb.mountTree("device/");
                   fcb.popup();
                   String s = fcb.getAnswer();
                   if (s == null)
@@ -51,7 +51,7 @@ public class FileChooserTest extends Container
             try
             {
                String s = l.getText();
-               new File(s,File.DONT_OPEN,1).delete();
+               new File(s,File.DONT_OPEN).delete();
             }
             catch (Exception ee)
             {
