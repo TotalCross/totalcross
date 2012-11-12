@@ -55542,7 +55542,7 @@ BigInteger
 \end_layout
 
 \begin_layout Standard
-This class represent arbitrary-precision integers.
+This class represents arbitrary-precision integers.
  All operations behave as if 
 \family typewriter
 BigIntegers
@@ -55567,8 +55567,12 @@ BigInteger
 \begin_layout Standard
 Semantics of arithmetic operations exactly mimic those of Java's integer
  arithmetic operators, as defined in The Java Language Specification.
- For example, division by zero throws an 
+ For example, division by zero throws an
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 ArithmeticException
 \family default
 , and division of a negative by a positive yields a negative (or zero) remainder.
@@ -55753,7 +55757,7 @@ BigInteger
 .
  The string representation consists of an optional minus sign followed by
  a sequence of one or more decimal digits.
- The String may not contain any extraneous characters (whitespace, for example).
+ The string may not contain any extraneous characters (whitespace, for example).
  If so, an 
 \family typewriter
 InvalidNumberException
@@ -55855,14 +55859,14 @@ th
 \end_inset
 
  element.
- A zero-length magnitude array is permissible, and will result in in a 
+ A zero-length magnitude array is permissible, and will result in a 
 \family typewriter
 BigInteger
 \family default
  value of 0, whether signum is -1, 0 or 1.
  This method will throw an 
 \family typewriter
-NumberFormatException
+InvalidNumberException
 \family default
  if 
 \family typewriter
@@ -56079,6 +56083,1345 @@ bitLength < 2
 .
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+isProbablePrime(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+certainty) Returns 
+\family typewriter
+true
+\family default
+ if the 
+\family typewriter
+BigInteger
+\family default
+ is probably prime, 
+\family typewriter
+false
+\family default
+ if it's definitely composite.
+ If
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+certainty <= 0
+\family default
+, 
+\family typewriter
+true
+\family default
+ is returned.
+ 
+\family typewriter
+certainty
+\family default
+ is a measure of the uncertainty that the caller is willing to tolerate:
+ if the call returns 
+\family typewriter
+true
+\family default
+ the probability that the 
+\family typewriter
+BigInteger
+\family default
+ is prime exceeds (
+\family typewriter
+1 - 1/2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+certainty
+\end_layout
+
+\end_inset
+
+
+\family default
+).
+ The execution time of this method is proportional to the value of this
+ parameter.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+valueOf(long
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Static method that returns a (possibly-shared) 
+\family typewriter
+BigInteger
+\family default
+ with a given long value.
+ This "static factory method" is provided in preference to a (
+\family typewriter
+long
+\family default
+) constructor because it allows for reuse of frequently used 
+\family typewriter
+BigInteger
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+signum() Returns the signum function of the 
+\family typewriter
+BigInteger
+\family default
+.
+ Returns: -1, 0, or 1 as the value of the 
+\family typewriter
+BigInteger
+\family default
+ is negative, zero, or positive.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+compareTo(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Compares the current 
+\family typewriter
+BigInteger
+\family default
+ with the specified 
+\family typewriter
+BigInteger
+\family default
+.
+ This method is provided in preference to individual methods for each of
+ the six boolean comparison operators (
+\family typewriter
+<
+\family default
+, 
+\family typewriter
+==
+\family default
+, 
+\family typewriter
+>
+\family default
+, 
+\family typewriter
+>=
+\family default
+, 
+\family typewriter
+!=
+\family default
+, 
+\family typewriter
+<=
+\family default
+).
+ The suggested idiom for performing these comparisons is: (
+\family typewriter
+x.compareTo(y) <op> 0
+\family default
+), where 
+\family typewriter
+<op>
+\family default
+ is one of the six comparison operators.
+ It returns -1, 0, or 1 as the original 
+\family typewriter
+BigInteger
+\family default
+ is numerically less than, equal to, or greater than 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+max(Big
+\family typewriter
+Integer
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this > val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+min(Big
+\family typewriter
+Integer
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) If 
+\family typewriter
+this < val
+\family default
+, returns 
+\family typewriter
+this
+\family default
+; otherwise, returns 
+\family typewriter
+val
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+add(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this + val
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+subtract(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this - val
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+multiply(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this * val
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divide(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this / val
+\family default
+).
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+val == 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+remainder(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this % val
+\family default
+).
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+val == 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+divideAndRemainder(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns an array of two 
+\family typewriter
+BigInteger
+\family default
+s containing (
+\family typewriter
+this / val
+\family default
+) followed by (
+\family typewriter
+this % val
+\family default
+).
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+val == 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+abs() Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is the absolute value of the original 
+\family typewriter
+BigInteger
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+negate() Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+-this
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mod(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+m) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this mod m
+\family default
+).
+ This method differs from remainder in that it always returns a non-negative
+ 
+\family typewriter
+BigInteger
+\family default
+.
+ It will throw an 
+\family typewriter
+ArithmeticException
+\family default
+ if 
+\family typewriter
+val <= 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pow(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+exponent) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+exponent
+\end_layout
+
+\end_inset
+
+
+\family default
+).
+ Note that 
+\family typewriter
+exponent
+\family default
+ is an integer rather than a 
+\family typewriter
+BigInteger
+\family default
+.
+ The integer can't negative since this would cause the operation to yield
+ a non-integer value.
+ Passing an 
+\family typewriter
+exponent < 0
+\family default
+ causes the throwing of an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+modInverse(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+m) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+-1
+\end_layout
+
+\end_inset
+
+ mod m
+\family default
+).
+ This method will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if
+\family typewriter
+ m <= 0
+\family default
+ or the 
+\family typewriter
+BigInteger
+\family default
+ has no multiplicative inverse 
+\family typewriter
+mod m
+\family default
+ (that is, the 
+\family typewriter
+BigInteger
+\family default
+ is not relatively prime to 
+\family typewriter
+m
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+modPow(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+exponent,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+m) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+exponent
+\end_layout
+
+\end_inset
+
+ mod m
+\family default
+).
+ It will throw an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ArithmeticException
+\family default
+ if 
+\family typewriter
+m <= 0
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gcd(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is the greatest common divisor of 
+\family typewriter
+abs(this)
+\family default
+ and 
+\family typewriter
+abs( val)
+\family default
+.
+ Returns 0 if 
+\family typewriter
+this==0 && val==0
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shiftLeft(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this << n
+\family default
+).
+ The shift distance, 
+\family typewriter
+n
+\family default
+, may be negative, in which case this method performs a right shift (computes
+ 
+\family typewriter
+floor(this * 2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+n
+\end_layout
+
+\end_inset
+
+)
+\family default
+.) 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+shiftRight(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is (
+\family typewriter
+this >> n
+\family default
+).
+ Sign extension is performed.
+ The shift distance, 
+\family typewriter
+n
+\family default
+, may be negative, in which case this method performs a left shift (computes
+ 
+\family typewriter
+floor(this / 2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+n
+\end_layout
+
+\end_inset
+
+)
+\family default
+.) 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns the decimal string representation of the 
+\family typewriter
+BigInteger
+\family default
+.
+ A minus sign is prepended if appropriate (this representation is compatible
+ with the constructor which only receives a string as a parameter, and allows
+ for string concatenation with Java's 
+\family typewriter
++
+\family default
+ operator).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+radix) Returns the string representation of the 
+\family typewriter
+BigInteger
+\family default
+ in the given radix.
+ If the radix is outside the range, it will throw an 
+\family typewriter
+IllegalArgumentException
+\family default
+.
+ A minus sign is prepended if appropriate (this representation is compatible
+ with the constructor which receives a string and a radix as a parameter).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toStringBuffer(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+radix,
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+StringBuffer
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+sb) Similar to the above method, except that it receives a 
+\family typewriter
+StringBuffer
+\family default
+ which will contain the resulting string characters.
+ Use this to avoid a lot of string creation.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+intValue() Converts the 
+\family typewriter
+BigInteger
+\family default
+ to an 
+\family typewriter
+int
+\family default
+.
+ This conversion is analogous to a narrowing primitive conversion from 
+\family typewriter
+long
+\family default
+ to 
+\family typewriter
+int
+\family default
+ as defined in the Java Language Specification: if the 
+\family typewriter
+BigInteger
+\family default
+ is too big to fit in an 
+\family typewriter
+int
+\family default
+, only the low-order 32 bits are returned.
+ Note that this conversion can lose information about the overall magnitude
+ of the 
+\family typewriter
+BigInteger
+\family default
+ value as well as return a result with the opposite sign.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+longValue() Converts the 
+\family typewriter
+BigInteger
+\family default
+ to a 
+\family typewriter
+long
+\family default
+.
+ This conversion is analogous to a narrowing primitive conversion from 
+\family typewriter
+long
+\family default
+ to 
+\family typewriter
+int
+\family default
+ as defined in the Java Language Specification: if the 
+\family typewriter
+BigInteger
+\family default
+ is too big to fit in a 
+\family typewriter
+long
+\family default
+, only the low-order 64 bits are returned.
+ Note that this conversion can lose information about the overall magnitude
+ of the 
+\family typewriter
+BigInteger
+\family default
+ value as well as return a result with the opposite sign.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+doubleValue() Converts the 
+\family typewriter
+BigInteger
+\family default
+ to a 
+\family typewriter
+double
+\family default
+.
+ This conversion is similar to the narrowing primitive conversion from double
+ to float defined in the Java Language Specification: if the 
+\family typewriter
+BigInteger
+\family default
+ has too great a magnitude to represent as a double, it will be converted
+ to
+\family typewriter
+ Convert.DOUBLE_
+\begin_inset Newline newline
+\end_inset
+
+NEGATIVE_INFINITY_VALUE
+\family default
+ or 
+\family typewriter
+Convert.DOUBLE_POSITIVE_INFINITY_VALUE
+\family default
+ as appropriate.
+ Note that even when the return value is finite, this conversion can lose
+ information about the precision of the 
+\family typewriter
+BigInteger
+\family default
+ value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+hashCode() Returns the hash code for the 
+\family typewriter
+BigInteger
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+equals(Object
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+x) Compares the 
+\family typewriter
+BigInteger
+\family default
+ with the specified object for equality.
+ It returns 
+\family typewriter
+true
+\family default
+ if and only if the specified object is a 
+\family typewriter
+BigInteger
+\family default
+ whose value is numerically equal to the original 
+\family typewriter
+BigInteger
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bitLength() Returns the number of bits in the minimal two's-complement represent
+ation of the 
+\family typewriter
+BigInteger
+\family default
+, excluding a sign bit.
+ For positive 
+\family typewriter
+BigInteger
+\family default
+s, this is equivalent to the number of bits in the ordinary binary representatio
+n (computes 
+\family typewriter
+(ceil(log
+\begin_inset script subscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+2
+\end_layout
+
+\end_inset
+
+(this < 0 ? -this : this+1)))
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toByteArray() Returns a byte array containing the two's-complement representatio
+n of the 
+\family typewriter
+BigInteger
+\family default
+.
+ The byte array will be in big-endian byte-order: the most significant byte
+ is in the zero
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+th
+\end_layout
+
+\end_inset
+
+ element.
+ The array will contain the minimum number of bytes required to represent
+ the 
+\family typewriter
+BigInteger
+\family default
+, including at least one sign bit, which is 
+\family typewriter
+ceil((this.bitLength() + 1)/8)
+\family default
+ (this representation is compatible with the constructor which receives
+ an array of bytes).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+and(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is 
+\family typewriter
+this & val
+\family default
+ (logical bit-wise 
+\family typewriter
+and
+\family default
+).
+ This method returns a negative 
+\family typewriter
+BigInteger
+\family default
+ if and only if 
+\family typewriter
+this
+\family default
+ and 
+\family typewriter
+val
+\family default
+ are both negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+or(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is 
+\family typewriter
+this | val
+\family default
+ (logical bit-wise 
+\family typewriter
+or
+\family default
+).
+ This method returns a negative 
+\family typewriter
+BigInteger
+\family default
+ if and only if either 
+\family typewriter
+this
+\family default
+ or 
+\family typewriter
+val
+\family default
+ is negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+xor(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is 
+\family typewriter
+this ^ val
+\family default
+ (logical bit-wise exclusive 
+\family typewriter
+or
+\family default
+).
+ This method returns a negative 
+\family typewriter
+BigInteger
+\family default
+ if and only if exactly one of 
+\family typewriter
+this
+\family default
+ and 
+\family typewriter
+val
+\family default
+ are negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+not() Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is 
+\family typewriter
+~this
+\family default
+ (logical bit-wise negation).
+ This method returns a negative value if and only if the 
+\family typewriter
+BigInteger
+\family default
+ is non-negative.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+andNot(BigInteger
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+val) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is 
+\family typewriter
+this & ~val
+\family default
+.
+ This method, which is equivalent to 
+\family typewriter
+and(val.not())
+\family default
+, is provided as a convenience for masking operations.
+ This method returns a negative 
+\family typewriter
+BigInteger
+\family default
+ if and only if 
+\family typewriter
+this
+\family default
+ is negative and 
+\family typewriter
+val
+\family default
+ is positive.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+clearBit(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is equivalent to the original 
+\family typewriter
+BigInteger
+\family default
+ with the designated bit cleared (computes 
+\family typewriter
+this & ~(1<<n)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBit(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is equivalent to the original 
+\family typewriter
+BigInteger
+\family default
+ with the designated bit set (computes 
+\family typewriter
+this | (1<<n)
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+testBit(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns 
+\family typewriter
+true
+\family default
+ if and only if the designated bit is set (computes 
+\family typewriter
+(this & (1<<n)) != 0
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flipBit(int
+\family typewriter
+
+\begin_inset space ~
+\end_inset
+
+
+\family default
+n) Returns a 
+\family typewriter
+BigInteger
+\family default
+ whose value is equivalent to the original 
+\family typewriter
+BigInteger
+\family default
+ with the designated bit flipped (computes 
+\family typewriter
+this ^ (1<<n)
+\family default
+).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLowestSetBit() Returns the index of the rightmost (lowest-order) one
+ bit in the 
+\family typewriter
+BigInteger
+\family default
+ (the number of zero bits to the right of the rightmost one bit).
+ Returns -1 if the 
+\family typewriter
+BigInteger
+\family default
+ contains no one bits (computes 
+\family typewriter
+this==0? -1 : log
+\begin_inset script subscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+2
+\end_layout
+
+\end_inset
+
+(this & -this)
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bitCount() Count one bits in a 
+\family typewriter
+BigInteger
+\family default
+.
+ If argument is negative, count zero bits instead.
+\end_layout
+
 \begin_layout Chapter
 totalcross.sys
 \end_layout
@@ -56216,11 +57559,24 @@ millis
 
 \end_deeper
 \begin_layout Itemize
+Time has a constant called 
+\family typewriter
+SECONDS_PER_DAY
+\family default
+, which obviously represents the number of seconds in a day, being equal
+ to 
+\family typewriter
+24 * 3600
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
 
 \family typewriter
 Time
 \family default
- has four constructors:
+ has six constructors:
 \end_layout
 
 \begin_deeper
@@ -56343,6 +57699,28 @@ YYYYMMDDHHMMSS
 
 \begin_layout FieldList
 \labelwidthstring 0
+Time(int
+\begin_inset space ~
+\end_inset
+
+yyyymmdd,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+hhmmssmmm) Constructs a 
+\family typewriter
+Time
+\family default
+ object from the given date and time values.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 Time(String
 \begin_inset space ~
 \end_inset
@@ -56374,7 +57752,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Please notice the last two constructors do not include the milliseconds,
+Please notice the last three constructors do not include the milliseconds,
  so the field 
 \family typewriter
 millis
@@ -56388,6 +57766,83 @@ millis
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+Time(String
+\begin_inset space ~
+\end_inset
+
+time,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasYear,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasMonth,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasDay,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasHour,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasMinute,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+hasSeconds) Constructs a 
+\family typewriter
+Time
+\family default
+ object, parsing the string and placing the fields depending on the flags
+ that were set, using 
+\family typewriter
+Settings.timeSeparator
+\family default
+ as spliter.
+ The number of parts must match the number of 
+\family typewriter
+true
+\family default
+ flags, or an 
+\family typewriter
+ArrayIndexOutOfBoundsException
+\family default
+ will be thrown.
+ AM/PM is supported.
+ 
+\end_layout
+
 \begin_layout Standard
 \begin_inset Box Shadowbox
 position "t"
@@ -56409,7 +57864,7 @@ Time
 \family default
  fields values, not even on the constructors.
  However, the default constructor will never initialize an object with invalid
- values, and the last constructor may throw an 
+ values, and the last two constructors may throw an 
 \family typewriter
 InvalidNumberException
 \family default
@@ -56422,6 +57877,20 @@ InvalidNumberException
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+Finally, 
+\family typewriter
+Time
+\family default
+ has the following methods:
+\end_layout
+
+\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+update() Updates the internal fields with the current timestamp.
+\end_layout
+
 \begin_layout FieldList
 \labelwidthstring 0
 equals(Object
@@ -56441,7 +57910,7 @@ true
 \family typewriter
 null
 \family default
- and its a 
+ and it's a 
 \family typewriter
 Time
 \family default
@@ -56479,17 +57948,122 @@ YYYYMMDDTHH:MM:SS
 
 \begin_layout FieldList
 \labelwidthstring 0
-toString() Converts this 
+toString() Returns the time in format specified in 
 \family typewriter
-Time
+totalcross.sys.Settings
 \family default
- object to a string using the date format specified in 
+ (does NOT include the date neither the milliseconds).
+ To return the date, use the class 
 \family typewriter
-Settings.dateFormat
+totalcross.util.
+\begin_inset Newline newline
+\end_inset
+
+Date
 \family default
 .
+ So, to get a string with the date and time, use: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Time t = new Time(); 
 \end_layout
 
+\begin_layout Plain Layout
+
+String dateAndTime = new Date(t) + " " + t;
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString(String
+\begin_inset space ~
+\end_inset
+
+timeSeparator) Similar to the above method except that it uses the specified
+ separator.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+dump(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+timeSeparator,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+includeMillis) Dumps the time into the given 
+\family typewriter
+StringBuffer
+\family default
+, using the given separator and including the millileconds if asked by the
+ user.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isValid() Returns 
+\family typewriter
+true
+\family default
+ if the time is valid.
+ Note that the date part is NOT checked; only hour, minute, second, and
+ millis are checked against valid ranges.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+inc(int
+\begin_inset space ~
+\end_inset
+
+hours,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+minutes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+seconds) Increments or decrements the fields below.
+ Note that this method does NOT update the day/month/year fields.
+ The parameters can be positive (to increment), zero (to keep it), or negative
+ (to decrement).
+ 
+\end_layout
+
+\end_deeper
 \begin_layout Section
 CharacterConvert
 \end_layout
@@ -56520,6 +58094,23 @@ Convert.setDefaultConverter()
 CharacterConverter
 \family default
  class (better look at the implementation to know what to pass on).
+ For example, if you created a class named 
+\family typewriter
+Iso88592CharacterConverter
+\family default
+, call 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Convert.setDefaultConverter("Iso88592"); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -56544,6 +58135,62 @@ System.out.println("" + sun.io.ByteToCharConverter.getDefault());
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+This class only has a public default constructor and the following methods
+ (excluding some fields from its superclass):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bytes2chars(byte[]
+\begin_inset space ~
+\end_inset
+
+bytes,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Converts the given byte array range to a char array.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chars2bytes(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Converts the given char array range to a byte array.
+ 
 \end_layout
 
 \begin_layout Section
