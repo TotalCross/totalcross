@@ -406,73 +406,80 @@ public class CalculatorBox extends Window
 
    private void compute(int selectedIndex) throws Exception
    {
-      switch (selectedIndex)
+      try
       {
-         case -3: // %
-            if (edNumber.getLength() > 0)
-            {
-               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
-               if (last == null) // compute % of the visible number only
-                  last = showResult(d2/100);
-               else // apply the % to the previous number
+         switch (selectedIndex)
+         {
+            case -3: // %
+               if (edNumber.getLength() > 0)
+               {
+                  double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
+                  if (last == null) // compute % of the visible number only
+                     last = showResult(d2/100);
+                  else // apply the % to the previous number
+                  {
+                     double d1 = Convert.toDouble(last);
+                     double res = d1 * d2 / 100;
+                     showResult(res); // keep last
+                  }
+               }
+               return;
+            case -2: // =
+            case 0: // +
+            case 1: // -
+            case 2: // *
+            case 3: // /
+            case 4: // ^
+               if (last == null && edNumber.getLength() == 0)
+               {
+                  pbgOp.clear();
+                  return;
+               }
+               if (last != null && lastSel != -1)
                {
                   double d1 = Convert.toDouble(last);
-                  double res = d1 * d2 / 100;
-                  showResult(res); // keep last
+                  double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
+                  double res=0;
+                  switch (lastSel)
+                  {
+                     case 0: res = d1 + d2; break;
+                     case 1: res = d1 - d2; break;
+                     case 2: res = d1 * d2; break;
+                     case 4: res = Math.pow(d1, d2); break;
+                     case 3: 
+                        if (d2 == 0)
+                           new MessageBox("Error","Division by 0").popup();
+                        else 
+                           res = d1 / d2; 
+                        break;
+                  }
+                  showResult(res);
+                  if (selectedIndex == -2)
+                     pbgOp.clear();
                }
-            }
-            return;
-         case -2: // =
-         case 0: // +
-         case 1: // -
-         case 2: // *
-         case 3: // /
-         case 4: // ^
-            if (last == null && edNumber.getLength() == 0)
-            {
-               pbgOp.clear();
-               return;
-            }
-            if (last != null && lastSel != -1)
-            {
-               double d1 = Convert.toDouble(last);
-               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
-               double res=0;
-               switch (lastSel)
+               if (edNumber.getLength() == 0)
                {
-                  case 0: res = d1 + d2; break;
-                  case 1: res = d1 - d2; break;
-                  case 2: res = d1 * d2; break;
-                  case 4: res = Math.pow(d1, d2); break;
-                  case 3: 
-                     if (d2 == 0)
-                        new MessageBox("Error","Division by 0").popup();
-                     else 
-                        res = d1 / d2; 
-                     break;
+                  last = null;
+                  clearNext = false;
                }
-               showResult(res);
-               if (selectedIndex == -2)
-                  pbgOp.clear();
-            }
-            if (edNumber.getLength() == 0)
-            {
-               last = null;
-               clearNext = false;
-            }
-            else
-            {
-               last = unformat(edNumber.getTextWithoutMask());
-               if (last.endsWith("."))
+               else
                {
-                  last = last.substring(0,last.length()-1);
-                  edNumber.setText(last);
+                  last = unformat(edNumber.getTextWithoutMask());
+                  if (last.endsWith("."))
+                  {
+                     last = last.substring(0,last.length()-1);
+                     edNumber.setText(last);
+                  }
+                  clearNext = true;
                }
-               clearNext = true;
-            }
-            break;
+               break;
+         }
+         lastSel = selectedIndex == -2 ? -1 : selectedIndex;
       }
-      lastSel = selectedIndex == -2 ? -1 : selectedIndex;
+      catch (InvalidNumberException ine)
+      {
+         new MessageBox("Message","Overflow or underflow error!");
+      }
    }
 
    private static String unformat(String s)
