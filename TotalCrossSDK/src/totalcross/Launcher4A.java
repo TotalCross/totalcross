@@ -549,7 +549,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       switch (sipOption)
       {
          case SIP_HIDE:
-            //instance.nativeInitSize(null,-999,0); // signal vm that the surface will change
             sipVisible = false;
             if (Loader.isFullScreen)
                setLoaderFullScreen(true);

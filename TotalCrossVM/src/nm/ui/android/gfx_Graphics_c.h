@@ -53,12 +53,12 @@ static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
-static bool surfaceWillChange;
 #endif
 static void destroyEGL();
+static bool surfaceWillChange;
 
 VoidPs* imgTextures;
-int32 realAppH,appW,appH,glLastShiftY;
+int32 realAppH,appW,appH,glShiftY;
 GLfloat ftransp[16], f255[256];
 int32 flen;
 GLfloat* glcoords;//[flen*2]; x,y
@@ -185,12 +185,13 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
    return p;
 }
 
-bool initGLES(); // in iOS, implemented in mainview.m
+bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
 void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
 
-#ifdef ANDROID             
-int32 desiredLastShiftY;
+void setTimerInterval(int32 t);  
+int32 desiredglShiftY;
 bool setShiftYonNextUpdateScreen;
+#ifdef ANDROID           
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {                    
    if (!screen.extension)           
@@ -199,16 +200,22 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    if (surface == null) // passed null when the surface is destroyed
    {       
       if (width == -999)
-      {
-//         debug("changing sip. appH: %d, heigth: %d, glLastShiftY: %d",appH,height,glLastShiftY);
-         desiredLastShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
-         setShiftYonNextUpdateScreen = true;
+      {                
+         if (needsPaint != null)
+         {
+            //debug("changing sip. appH: %d, heigth: %d, glShiftY: %d",appH,height,glShiftY);
+            desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
+            setShiftYonNextUpdateScreen = true;
+            *needsPaint = true; // schedule a screen paint to update the shiftY values
+            setTimerInterval(1);      
+         }
       }
       else
          surfaceWillChange = true; // block all screen updates
       return;
    }  
-   desiredLastShiftY = glLastShiftY = 0;
+   desiredglShiftY = glShiftY = 0;         
+   setShiftYonNextUpdateScreen = true;
    appW = width;
    appH = height;
    surfaceWillChange = false;
@@ -217,10 +224,19 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    if (lastWindow && lastWindow != window)
    {  
       destroyEGL();
-      initGLES();
+      initGLES(&screen);
       recreateTextures(imgTextures);
    }
    lastWindow = window;
+}
+#else
+void iosStartup(int w, int h)
+{
+    desiredglShiftY = glShiftY = 0;         
+    setShiftYonNextUpdateScreen = true;
+    appW = w;
+    appH = h;
+    surfaceWillChange = false;
 }
 #endif
 
@@ -263,12 +279,12 @@ static void initShade()
 
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(4);
    setCurrentProgram(shadeProgram);
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
-   y += glLastShiftY - screen.shiftY;
+   y += glShiftY;
    
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -303,12 +319,12 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 
 void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur)
 {                
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(5);
    setCurrentProgram(shadeProgram);
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
 
-   y += glLastShiftY - screen.shiftY;
+   y += glShiftY;
    
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -357,7 +373,7 @@ void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int
    if (!pt)
       return;
 
-   if (!textureAlreadyCreated) {glGenTextures(1, textureId); GL_CHECK_ERROR}
+   if (!textureAlreadyCreated) {glGenTextures(1, (GLuint*)textureId); GL_CHECK_ERROR}
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
    if (!textureAlreadyCreated)
@@ -386,7 +402,7 @@ void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)
 {         
-   glDeleteTextures(1,textureId); GL_CHECK_ERROR
+   glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
    *textureId = 0;                               
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
@@ -395,11 +411,11 @@ void glDeleteTexture(Object img, int32* textureId, bool updateList)
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {         
    GLfloat* coords = texcoords;
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(6);
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
 
-   dstY += glLastShiftY - screen.shiftY;
+   dstY += glShiftY;
 
    // destination coordinates
    coords[0] = coords[6] = dstX;
@@ -444,7 +460,7 @@ static void clearPixels()
    pixcolors = (int32*)glcolors;
 }
 
-void flushPixels()
+void flushPixels(int q)
 {         
    if (pixcolors != (int32*)glcolors)
    {
@@ -457,7 +473,7 @@ void flushPixels()
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
       int32 lastRGBA = ~*pixcolors;
       int32 x,y,w,h,x2,y2;
-      int32 ty = glLastShiftY - screen.shiftY;
+      int32 ty = glShiftY;
       for (i = 0; i < n; i++)
       {  
          // color
@@ -470,7 +486,7 @@ void flushPixels()
          // coord
          x = *pixcoords++;
          y = *pixcoords++;
-         y += glLastShiftY - screen.shiftY;
+         y += ty;
          if (x & IS_DIAGONAL)
          {                    
             x2 = *pixcoords++;
@@ -508,7 +524,7 @@ static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
    bool isPixel = (x & IS_PIXEL) != 0;
    if ((pixcoords+(isPixel ? 2 : 4)) > pixEnd)
-      flushPixels();
+      flushPixels(7);
    *pixcoords++ = x;
    *pixcoords++ = y;
    if (!isPixel)
@@ -558,7 +574,7 @@ typedef union
 int32 glGetPixel(int32 x, int32 y)
 {                
    glpixel gp;
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(8);
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
@@ -569,7 +585,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    PixelConv pc;
    glpixel gp;
    int32 i;
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(9);
    for (; height-- > 0; srcY++,dstPixels += pitch)
    {
       glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels); GL_CHECK_ERROR
@@ -593,8 +609,8 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
       {glClearClip(); GL_CHECK_ERROR}
    else
    {
-      y1 += glLastShiftY - screen.shiftY;
-      y2 += glLastShiftY - screen.shiftY;
+      y1 += glShiftY;
+      y2 += glShiftY;
       glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
       if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
       if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
@@ -614,7 +630,7 @@ void glClearClip()
 
 void flushAll()
 {
-   flushPixels();
+   flushPixels(10);
    glFlush(); GL_CHECK_ERROR
 }
 
@@ -687,7 +703,7 @@ bool setupGL(int width, int height)
 }
 
 #ifdef ANDROID
-bool initGLES()
+bool initGLES(ScreenSurface /*screen*/unused)
 {
    int32 i;
    const EGLint attribs[] =
@@ -757,7 +773,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   return initGLES();
+   return initGLES(screen);
 }
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
@@ -786,31 +802,42 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    else
    {
       if (screen->extension)
-          free(screen->extension);
+         free(screen->extension);
       deviceCtx = screen->extension = NULL;
+      xfree(glcoords);
+      xfree(glcolors);
    }
 #endif
 }
 
 void setTimerInterval(int32 t);
-
+void setShiftYgl()
+{
+#ifdef ANDROID           
+   if (setShiftYonNextUpdateScreen && needsPaint != null)
+   {       
+      setShiftYonNextUpdateScreen = false;
+      glShiftY = desiredglShiftY - desiredScreenShiftY;     // set both at once
+      screen.shiftY = desiredScreenShiftY;
+      *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
+      setTimerInterval(1);      
+   }
+#endif    
+}
+extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
    if (surfaceWillChange) {clearPixels(); return;}
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (pixcolors != (int32*)glcolors) flushPixels(11);
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);
 #else
    graphicsUpdateScreenIOS(screen);
 #endif
+   // erase buffer with keyboard's background color
    PixelConv gray;
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
    glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
-   if (setShiftYonNextUpdateScreen)
-   {
-      setShiftYonNextUpdateScreen = false;
-      glLastShiftY = desiredLastShiftY;
-   }
 }

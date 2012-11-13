@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "UIGadgets"
+#define APPNAME "UIGadgets"
 
 -(void) initApp
 {
@@ -57,6 +57,7 @@
 #endif
     [tcvm startVM:&context appName:(char*)name];
     [Litebase fillNativeProcAddressesLB];
+    NSLog(@"**** SEM LITEBASE ****s");
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
