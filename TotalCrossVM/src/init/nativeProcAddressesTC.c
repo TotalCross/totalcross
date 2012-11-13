@@ -41,6 +41,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setTransparentColor_i"), &tuiI_setTransparentColor_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCylindricShade_iiiiii"), &tugG_drawCylindricShade_iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawWindowBorder_iiiiiiiiii"), &tugG_drawWindowBorder_iiiiiiiiii);
