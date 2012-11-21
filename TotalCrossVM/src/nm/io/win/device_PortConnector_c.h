@@ -105,7 +105,13 @@ static Err portConnectorCreate(PortHandle* portConnectorRef, VoidP receiveBuffer
    }
 
    if (buf[0] == 0) // not yet set on default above?
-      xprintf(buf, TEXT("COM%d:"), number);
+   {
+      // HOWTO: Specify Serial Ports Larger than COM9 - http://support.microsoft.com/kb/115831/en-us
+      if (number < 10)
+         xprintf(buf, TEXT("COM%d:"), number);
+      else
+         xprintf(buf, TEXT("\\\\.\\COM%d"), number);
+   }
 
    if ((h = CreateFile(buf, GENERIC_READ|GENERIC_WRITE, 0, null, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_WRITE_THROUGH, null)) == INVALID_HANDLE_VALUE)
       return GetLastError();
