@@ -34,7 +34,7 @@ import totalcross.sys.*;
  * fc.add(new Radio("Probably Yes"));
  * fc.add(new Radio("Probably No"));
  * fc.add(new Radio("Maybe"));
- * add(fc, LEFT,AFTER,FILL,PREFERRED);
+ * add(fc, LEFT,AFTER,PARENTSIZE+100,PREFERRED);
  * </pre>
  * 
  * All controls must be added before calling setRect.
