@@ -58269,6 +58269,43 @@ setDefaultConverter(String name)
 charConverter
 \family default
  field.
+ Use like 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Convert.setDefaultConverter("UTF8");
+\end_layout
+
+\end_inset
+
+to change all bytes_to_char and char_to_bytes operations to use UTF8 instead.
+ Issuing 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Convert.setDefaultConverter("");
+\end_layout
+
+\end_inset
+
+sets back the default encoder.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the given encoder was found; 
+\family typewriter
+false
+\family default
+, otherwise.
+ If not found, the encoder is reseted to the default one (ISO 8859-1).
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -58299,6 +58336,35 @@ s) Converts the given string to
 int
 \family default
 .
+ The number may be prefixed with 0's.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toShort(String
+\begin_inset space ~
+\end_inset
+
+s) Convert a string to the 
+\family typewriter
+short
+\family default
+ type.
+ Note that this method is slower than 
+\family typewriter
+(short)Convert.toInt()
+\family default
+.
+ However, it will throw an 
+\family typewriter
+InvalidNumberException
+\family default
+ if the number is out of the 
+\family typewriter
+short
+\family default
+ range.
 \end_layout
 
 \begin_layout FieldList
@@ -59413,6 +59479,128 @@ n
 >>
 \family default
 ), bits that would have been lost are reinserted in order at the left.
+\end_layout
+
+\begin_layout Subsection
+Another Useful Constants
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CRLF Equals to 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CRLF_BYTES Equals to 
+\family typewriter
+{'
+\backslash
+r','
+\backslash
+n'}
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MAX_SHORT_VALUE The maximum short value: 32767.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MIN_SHORT_VALUE The minimum short value: -32768.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MIN_INT_VALUE The minimum int value: -2147483648.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MAX_INT_VALUE The maximum int value: 2147483647.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MIN_LONG_VALUE The minimum long value: -9223372036854775808.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MAX_LONG_VALUE The maximum long value: 9223372036854775807.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MAX_DOUBLE_VALUE The maximum double value: 9.007199254740992E15.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MIN_DOUBLE_VALUE The minimum double value: 1.1102230246251565E-16.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MAX_DOUBLE_DIGITS The maximum number of digits in a double value, used when
+ formatting to string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DOUBLE_POSITIVE_INFINITY_VALUE The 
+\family typewriter
+double
+\family default
+ that represents a positive infinity.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DOUBLE_NEGATIVE_INFINITY_VALUE The 
+\family typewriter
+double
+\family default
+ that represents a negative infinity.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DOUBLE_POSITIVE_INFINITY_BITS The 
+\family typewriter
+long
+\family default
+ whose bits represent a positive infinity.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DOUBLE_NEGATIVE_INFINITY_BITS The 
+\family typewriter
+long
+\family default
+ whose bits represent a negative infinity.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DOUBLE_NAN_BITS The 
+\family typewriter
+long
+\family default
+ whose bits represent a Not a Number (NaN).
+ 
 \end_layout
 
 \begin_layout Section
