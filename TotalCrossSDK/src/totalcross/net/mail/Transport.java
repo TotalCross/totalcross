@@ -66,6 +66,8 @@ public abstract class Transport extends Service
     */
    public static void send(Message message, MailSession session) throws MessagingException, AuthenticationException
    {
+      if (message.recipients == null || message.recipients.isEmpty())
+         throw new MessagingException("Cannot send a message without recipients!");
       String host = session.getNotNull(MailSession.SMTP_HOST).toString();
       int connectionTimeout = ((Properties.Int) session.getNotNull(MailSession.SMTP_CONNECTIONTIMEOUT)).value;
       int timeout = ((Properties.Int) session.getNotNull(MailSession.SMTP_TIMEOUT)).value;
