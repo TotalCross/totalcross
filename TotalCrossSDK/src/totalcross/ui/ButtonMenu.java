@@ -430,7 +430,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    /** Returns the preferred width as if all images were in a single row. */
    public int getPreferredWidth()
    {
-      return getPreferredWidth(images.length);
+      return getPreferredWidth(names != null ? names.length : images.length);
    }
    
    /** Returns the preferred width for the given number of columns. */
