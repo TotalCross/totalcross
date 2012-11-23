@@ -182,8 +182,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       this.names = names;
       prefBtnW = 0;
       btns = null;
-      resetSetPositions();
-      removeAll();
       initUI();
    }
    
