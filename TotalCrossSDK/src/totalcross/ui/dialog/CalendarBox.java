@@ -115,8 +115,9 @@ public class CalendarBox extends Window
       int btnH = btnCancel.getPreferredHeight();
       Button.commonGap = 0;
 
-      lYear = new Label(Settings.screenWidth <= 320 ? yearMonth[0].substring(0,1) : yearMonth[0]);
-      lMonth = new Label(Settings.screenWidth <= 320 ? yearMonth[1].substring(0,1) : yearMonth[1]);
+      int labelGap = Settings.screenWidth <= 320 ? 3 : 0;
+      lYear = new Label(Settings.screenWidth <= 320 ? yearMonth[0].substring(0,1) : yearMonth[0],CENTER);
+      lMonth = new Label(Settings.screenWidth <= 320 ? yearMonth[1].substring(0,1) : yearMonth[1],CENTER);
       lYear.setFont(mini);
       lMonth.setFont(mini);
       
@@ -125,7 +126,7 @@ public class CalendarBox extends Window
       int pbgW = uiAndroid ? (Math.min(fmH*16,Math.min(Settings.screenWidth,Settings.screenHeight))-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
       int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
-      int titleW = 4*arrowW + lYear.getPreferredWidth() + lMonth.getPreferredWidth() + captionW; // guich@tc130: avoid problems if title is too small
+      int titleW = 4*arrowW + labelGap*4 + lYear.getPreferredWidth() + lMonth.getPreferredWidth() + captionW; // guich@tc130: avoid problems if title is too small
 
       setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
@@ -149,10 +150,10 @@ public class CalendarBox extends Window
       int yb = (titleGap+titleFont.fm.height-labH)/2;
       
       add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
-      add(lYear,AFTER,CENTER_OF,PREFERRED,SAME);
+      add(lYear,AFTER,CENTER_OF,PREFERRED+labelGap*2,SAME);
       add(btnYearNext,AFTER,yb, bw, PREFERRED);
       add(btnMonthNext,RIGHT-2,yb, bw, PREFERRED);
-      add(lMonth,BEFORE,CENTER_OF,PREFERRED,SAME);
+      add(lMonth,BEFORE,CENTER_OF,PREFERRED+labelGap*2,SAME);
       add(btnMonthPrev,BEFORE,yb, bw, PREFERRED);
 
       // change title alignment to use the area available between the buttons
