@@ -116,10 +116,6 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
-#ifdef ANDROID
-extern int32 deviceFontHeight;
-#endif
-
 bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ)
 {
    xstrcpy(mainClassName, mainClassNameP);
@@ -131,11 +127,6 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#elif defined(ANDROID)
-   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
-#endif
-#if defined(darwin) || defined(ANDROID)
-   *tcSettings.isOpenGL = true;
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
@@ -244,6 +235,10 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
+#if defined(ANDROID) || defined(darwin)
+    *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+    *tcSettings.isOpenGL = true;
+#endif
 }
 
 TC_API bool getDataPath(CharP storeInto)

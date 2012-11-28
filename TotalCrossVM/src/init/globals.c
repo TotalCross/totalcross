@@ -30,7 +30,9 @@ bool dontPostOnChar;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
 bool appPaused;                         
-int32 deviceFontHeight;
+#endif
+#if defined(ANDROID) || defined(darwin)
+int32 deviceFontHeight,iosScale;
 #endif
 
 // GoogleMaps.c

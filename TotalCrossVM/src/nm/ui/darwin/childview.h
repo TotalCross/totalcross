@@ -34,7 +34,7 @@
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
 - (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen;
+- (void)updateScreen;
 - (void)graphicsSetup;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;

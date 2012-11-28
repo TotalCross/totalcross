@@ -318,7 +318,6 @@ bool initGLES(ScreenSurface screen)
    DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
    [window makeKeyAndVisible];
-   iosStartup(rect.size.width,rect.size.height);   
    
    [ DEVICE_CTX->_childview setScreenValues: screen ];
    screen->pixels = (void*)1;
@@ -329,9 +328,14 @@ void graphicsSetupIOS()
 {
    [DEVICE_CTX->_childview graphicsSetup];
 }
-void graphicsUpdateScreenIOS(ScreenSurface screen)
+void graphicsUpdateScreenIOS()
 {                
-   [DEVICE_CTX->_childview invalidateScreen:screen];
+   [DEVICE_CTX->_childview updateScreen];
+}
+void graphicsScreenWillRotate()
+{                
+   CGRect r;
+   [DEVICE_CTX->_childview drawRect:r];
 }
 
 //////////////// interface to mainview methods ///////////////////

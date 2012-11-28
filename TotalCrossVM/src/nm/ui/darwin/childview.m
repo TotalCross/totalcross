@@ -11,6 +11,8 @@ int realAppH;
 extern int appW,appH;
 void Sleep(int ms);
 extern BOOL callingScreenChange;
+void checkGlError(const char* op, int line);
+
 
 + (Class)layerClass 
 {
@@ -31,15 +33,18 @@ bool setupGL(int width, int height);
    return self; 
 }
 
+extern int32 deviceFontHeight,iosScale;
+
 - (void)setScreenValues: (void*)scr
 {
    ScreenSurface screen = gscreen = scr;
-   int scale = 1;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ([UIScreen mainScreen].scale == 2.0)) ?2:1;
-   screen->screenW = self.frame.size.width * scale;
-   screen->screenH = self.frame.size.height * scale;
+   iosScale = [UIScreen mainScreen].scale;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ( == 2.0)) ?2:1;
+   screen->screenW = self.frame.size.width * iosScale;
+   screen->screenH = self.frame.size.height * iosScale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
+   if (iosScale == 2) deviceFontHeight = 38;
 }
 
 - (void)drawRect:(CGRect)frame
@@ -56,12 +61,10 @@ bool setupGL(int width, int height);
    {
       int temp = w; w = h; h = temp;
    }
-   if (w != clientW)
+//   if (w != clientW)
    {
       realAppH = h;
-      //if (cgImage != null) CGImageRelease(cgImage);
-      //cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
-      if (clientW != 0)
+  //    if (clientW != 0)
       {
          callingScreenChange = true;
          [self setScreenValues: gscreen];
@@ -69,6 +72,10 @@ bool setupGL(int width, int height);
            @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
          while (callingScreenChange)
             Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
+         w = self.frame.size.width;
+         h = self.frame.size.height;
+         //appW = w;
+         //appH = h;
       }
    }
    clientW = w;
@@ -82,11 +89,11 @@ bool setupGL(int width, int height);
    glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
    ok = [EAGLContext setCurrentContext:glcontext];
    // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
-   glGenFramebuffers(1, &defaultFramebuffer);
-   glGenRenderbuffers(1, &colorRenderbuffer);
-   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
-   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
+   glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
+   glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR
+   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
+   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
 
    [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer];
    int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -96,7 +103,7 @@ bool setupGL(int width, int height);
    glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
    realAppH = appH;
 }
-- (void)invalidateScreen:(void*)vscreen
+- (void)updateScreen
 {
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
    glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
@@ -117,8 +124,8 @@ bool setupGL(int width, int height);
          [ (MainView*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
-           [NSNumber numberWithInt:(int)point.x], @"x",
-           [NSNumber numberWithInt:(int)point.y], @"y", nil]
+           [NSNumber numberWithInt:(int)point.x * iosScale], @"x",
+           [NSNumber numberWithInt:(int)point.y * iosScale], @"y", nil]
           ];
       }
    }

@@ -122,7 +122,7 @@ void mainEventLoop(Context currentContext)
    onRestore = getMethod(OBJ_CLASS(mainClass), true, "onRestore", 0);
 
 #ifdef darwin
-    graphicsSetupIOS();
+    graphicsSetupIOS(); // start the opengl context in the same thread of the events
 #endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");

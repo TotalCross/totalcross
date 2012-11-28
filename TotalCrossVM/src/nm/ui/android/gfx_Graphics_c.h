@@ -18,7 +18,7 @@
 #define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 #endif
 
-static void checkGlError(const char* op, int line)
+void checkGlError(const char* op, int line)
 {
    GLint error;
    int c=0;
@@ -39,13 +39,6 @@ static void checkGlError(const char* op, int line)
       c++;
    }
 }
-
-#if 1
-//#define GL_CHECK_ERROR debug("%s (%d)",__FILE__,__LINE__);
-#define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
-#else
-#define GL_CHECK_ERROR 
-#endif
 
 #ifdef ANDROID
 static void setProjectionMatrix(GLfloat w, GLfloat h);
@@ -228,15 +221,6 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       recreateTextures(imgTextures);
    }
    lastWindow = window;
-}
-#else
-void iosStartup(int w, int h)
-{
-    desiredglShiftY = glShiftY = 0;         
-    setShiftYonNextUpdateScreen = true;
-    appW = w;
-    appH = h;
-    surfaceWillChange = false;
 }
 #endif
 
@@ -825,7 +809,7 @@ void setShiftYgl()
 #endif    
 }
 extern int32 desiredScreenShiftY;
-void graphicsUpdateScreenIOS(ScreenSurface screen);
+void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
    if (surfaceWillChange) {clearPixels(); return;}
@@ -833,7 +817,7 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface);
 #else
-   graphicsUpdateScreenIOS(screen);
+   graphicsUpdateScreenIOS();
 #endif
    // erase buffer with keyboard's background color
    PixelConv gray;
