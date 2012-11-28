@@ -729,43 +729,6 @@ int16 fread16(FILE* f)
    return i;
 }
 
-static FILE* updateFile(FILE* fin, CharP name)
-{                                      
-#if defined(ANDROID) || defined(darwin) || (defined(WIN32) && !defined(WINCE))
-   char update[MAX_PATHNAME];
-   FILE* fu;
-   xstrprintf(update, "%s.upd", name);
-   fu = fopen(update, "rb");
-   if (fu != null)
-   {
-      fclose(fin); // close original file
-      fclose(fu);  // close update file
-#ifdef WIN32
-      remove(name);
-#else
-      unlink(name); // delete original file
-#endif
-      rename(update,name); // rename update into original
-      fin = fopen(name, "rb");
-#ifdef ANDROID // copy the file as .bak
-      uint8* buf = xmalloc(2048);
-      if (buf)
-      {  
-         int32 n;
-         xstrprintf(update, "%s.bak", name);
-         fu = fopen(update,"wb");
-         while ((n = fread(buf, 1, 2048, fin)) > 0)
-            fwrite(buf,1,n,fu);
-         fclose(fu);
-         fseek(fin,0,SEEK_SET);
-         xfree(buf);
-      }      
-#endif      
-   }
-#endif   
-   return fin;
-}
-
 FILE* findFile(CharP name, CharP pathOut)
 {
    FILE* f;
@@ -833,7 +796,6 @@ FILE* findFile(CharP name, CharP pathOut)
 
    if (f != null)
    {
-      f = updateFile(f, fullName); // check if there's a copy of the file available and replace it
       if (pathOut != null)
          xstrcpy(pathOut,fullName);
    }

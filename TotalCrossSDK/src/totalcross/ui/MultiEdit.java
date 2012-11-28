@@ -463,13 +463,23 @@ public class MultiEdit extends Container implements Scrollable
    private void calculateFirst() // guich@320_28: completely redesigned - guich@581_6: highly optimized
    {
       StringBuffer chars = this.chars; // cache
+      int charsLen = chars.length();
       int i=0, originalLineCount = numberTextLines;
       first.removeAllElements();
       first.addElement(0); // in line 0, the first char is always 0
       int tw = textRect.width;
       int n = chars.length();
       for (int pos = 0; pos < n; pos++)
-         first.addElement(pos = Convert.getBreakPos(fm, chars, pos == 0 || chars.charAt(pos-1) < ' ' ? pos : pos-1, tw, true)); // guich@tc113_37: when parsing "Update of /pcvsroot/LitebaseSDK/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
+      {
+         if (pos == 0 || chars.charAt(pos-1) < ' ') // guich@tc113_37: when parsing "Update of /pcvsroot/LitebaseSDK/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
+         {
+            first.addElement(pos = Convert.getBreakPos(fm, chars, pos, tw, true));
+            if (pos < charsLen && chars.charAt(pos) != ' ') // if last char is a space, don't show it at begining of next line
+               pos--;
+         }
+         else
+            first.addElement(pos = Convert.getBreakPos(fm, chars, pos-1, tw, true));
+      }
       if (n == 0 || chars.charAt(n-1) == ENTER)
          first.addElement(n);
       numberTextLines = first.size()-1;

@@ -173,7 +173,7 @@ public class Spinner extends Control implements Runnable
             slot0++;
             repaintNow();
          }
-         Vm.safeSleep(120);
+         Vm.sleep(120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
    }
 }
