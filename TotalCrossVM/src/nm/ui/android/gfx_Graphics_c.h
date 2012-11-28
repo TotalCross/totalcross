@@ -40,6 +40,13 @@ void checkGlError(const char* op, int line)
    }
 }
 
+#if 1
+//#define GL_CHECK_ERROR debug("%s (%d)",__FILE__,__LINE__);
+#define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
+#else
+#define GL_CHECK_ERROR 
+#endif
+
 #ifdef ANDROID
 static void setProjectionMatrix(GLfloat w, GLfloat h);
 static ANativeWindow *window,*lastWindow;
