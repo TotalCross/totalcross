@@ -823,7 +823,7 @@ public class Control extends GfxSurface
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
-         if (Settings.platform.equals(Settings.ANDROID))
+         if (Settings.isOpenGL)
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
             if (MainWindow.isMainThread())
