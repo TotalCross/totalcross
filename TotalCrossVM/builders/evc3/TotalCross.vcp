@@ -63,7 +63,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/TotalCrossVMS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/TotalCrossVMS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /force
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Release HPC2000"
@@ -86,7 +86,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Release HPC211"
 
@@ -108,7 +108,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Release POCKETPC"
 
@@ -131,7 +131,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE MIPS) Release POCKETPC"
 
@@ -153,7 +153,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE SH3) Release POCKETPC"
 
@@ -175,7 +175,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"
 
@@ -207,8 +207,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"
@@ -240,8 +240,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"
 
@@ -272,8 +272,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"
 
@@ -304,8 +304,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
@@ -336,8 +336,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Noras POCKETPC"
 
@@ -369,8 +369,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"
@@ -402,8 +402,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/MIPS/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Noras HPC2000"
 
@@ -434,8 +434,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC2000/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE ARM) Noras HPC211"
 
@@ -466,8 +466,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/HPC211/ARM/tcvm.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "TotalCross - Win32 (WCE SH3) Noras POCKETPC"
 
@@ -498,8 +498,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.64 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.66 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/wince/POCKETPC/SH3/tcvm.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ENDIF 
 

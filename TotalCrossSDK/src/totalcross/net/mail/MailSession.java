@@ -18,8 +18,8 @@ package totalcross.net.mail;
 
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
+import totalcross.net.Socket;
 import totalcross.util.Properties;
-import totalcross.util.Properties.Value;
 
 /**
  * Used to store properties used by the messaging API.
@@ -69,13 +69,13 @@ import totalcross.util.Properties.Value;
  * <TR>
  * <TD>mail.smtp.connectiontimeout</TD>
  * <TD>int</TD>
- * <TD>Socket connection timeout value in milliseconds. Default is infinite timeout.</TD>
+ * <TD>Socket connection timeout value in milliseconds. Default is 5000 milliseconds.</TD>
  * </TR>
  * 
  * <TR>
  * <TD>mail.smtp.timeout</TD>
  * <TD>int</TD>
- * <TD>Socket I/O timeout value in milliseconds. Default is infinite timeout.</TD>
+ * <TD>Socket I/O timeout value in milliseconds. Default is 2000 milliseconds.</TD>
  * </TR>
  * 
  * <TR>
@@ -191,9 +191,9 @@ public class MailSession extends Properties
    public static final String SMTP_HOST = "mail.smtp.host";
    /** The SMTP server port to connect to, if the connect() method doesn't explicitly specify one. Defaults to 25. */
    public static final String SMTP_PORT = "mail.smtp.port";
-   /** Socket connection timeout value in milliseconds. Default is infinite timeout. */
+   /** Socket connection timeout value in milliseconds. Default is 2000 milliseconds. */
    public static final String SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
-   /** Socket I/O timeout value in milliseconds. Default is infinite timeout. */
+   /** Socket I/O timeout value in milliseconds. Default is 5000 milliseconds. */
    public static final String SMTP_TIMEOUT = "mail.smtp.timeout";
    /**
     * Email address to use for SMTP MAIL command. This sets the envelope return address. Defaults to msg.getFrom()[0] or
@@ -234,8 +234,8 @@ public class MailSession extends Properties
    protected MailSession()
    {
       super();
-      put(SMTP_CONNECTIONTIMEOUT, new Int(0));
-      put(SMTP_TIMEOUT, new Int(0));
+      put(SMTP_CONNECTIONTIMEOUT, new Int(Socket.DEFAULT_OPEN_TIMEOUT));
+      put(SMTP_TIMEOUT, new Int(Socket.DEFAULT_WRITE_TIMEOUT));
       put(SMTP_STARTTLS, new Boolean(false));
       put(SMTP_STARTTLS_REQUIRED, new Boolean(false));
       put(SMTP_PORT, new Int(25));

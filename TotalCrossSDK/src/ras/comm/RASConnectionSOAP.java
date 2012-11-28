@@ -44,6 +44,7 @@ public class RASConnectionSOAP extends RASConnection
          if (Settings.appVersion != null)
             userDefinedParams.put("Settings.appVersion", Settings.appVersion);
          userDefinedParams.put("Settings.activationId", Settings.activationId);
+         userDefinedParams.put("Settings.imei", Settings.imei != null ? Settings.imei : "");
       }
       this.openTimeout = openTimeout;
       this.readWriteTimeout = readWriteTimeout;

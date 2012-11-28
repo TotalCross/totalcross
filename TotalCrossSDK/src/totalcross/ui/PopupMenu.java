@@ -78,6 +78,11 @@ public class PopupMenu extends Window
     */
    public boolean enableSearch;
    
+   /** Set to false BEFORE popping up the window to disable the Cancel button.
+    * @since TotalCross 1.65
+    */
+   public boolean enableCancel = true;
+   
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
    {
@@ -181,8 +186,9 @@ public class PopupMenu extends Window
             add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,fmH*2);
             sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
          }
-         add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? sc2 : null);
+         if (enableCancel)
+            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
+         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
          list.setBackColor(Color.WHITE);
          list.addContainers(containers);
          repositionOnHeight();
@@ -199,12 +205,12 @@ public class PopupMenu extends Window
    {
       if (containers == null) return;
       int hh = containers[containers.length-1].getY2();
-      int hm = list.y+hh+cancel.height+fmH;
+      int hm = list.y+hh+(cancel==null?0:cancel.height)+fmH;
       if (this.height > hm)
       {
          list.height = hh+fmH/3;
          setRect(CENTER,CENTER,KEEP,hm);
-         cancel.setRect(KEEP,BOTTOM-fmH/3,KEEP,KEEP);
+         if (cancel != null) cancel.setRect(KEEP,BOTTOM-fmH/3,KEEP,KEEP);
       }
    }
    
@@ -268,7 +274,7 @@ public class PopupMenu extends Window
             if (enableSearch && event.target == pbgSearch && pbgSearch.getSelectedIndex() != -1)
                search(pbgSearch.getSelectedItem().charAt(0));
             else
-            if (event.target == cancel)
+            if (cancel != null && event.target == cancel)
             {
                selected = -1;
                unpop();

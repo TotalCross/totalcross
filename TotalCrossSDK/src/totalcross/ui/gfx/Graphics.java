@@ -2317,11 +2317,11 @@ public final class Graphics
    {
       int numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0, c=0;
       // intermediate terms to speed up loop
-      int t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-      int t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-      int t7 = rx*t5, t8 = t7<<1, t9 = 0;
-      int d1 = t2 - t7 + (t4>>1);    // error terms
-      int d2 = (t1>>1) - t8 + t5;
+      long t1 = (long)rx*rx, t2 = t1<<1, t3 = t2<<1;
+      long t4 = (long)ry*ry, t5 = t4<<1, t6 = t5<<1;
+      long t7 = (long)rx*t5, t8 = t7<<1, t9 = 0;
+      long d1 = t2 - t7 + (t4>>1);    // error terms
+      long d2 = (t1>>1) - t8 + t5;
       int x = rx, y = 0; // ellipse points
       if (rx < 0 || ry < 0) // guich@501_13
          return;
@@ -2449,11 +2449,11 @@ public final class Graphics
       boolean sameR = rx == lastRX && ry == lastRY;
       if (!sameC || !sameR)
       {
-         int t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-         int t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-         int t7 = rx*t5, t8 = t7<<1, t9 = 0;
-         int d1 = t2 - t7 + (t4>>1);    // error terms
-         int d2 = (t1>>1) - t8 + t5;
+         long t1 = (long)rx*rx, t2 = t1<<1, t3 = t2<<1;
+         long t4 = (long)ry*ry, t5 = t4<<1, t6 = t5<<1;
+         long t7 = (long)rx*t5, t8 = t7<<1, t9 = 0;
+         long d1 = t2 - t7 + (t4>>1);    // error terms
+         long d2 = (t1>>1) - t8 + t5;
          int x = rx, y = 0; // ellipse points
 
          if (sameR)

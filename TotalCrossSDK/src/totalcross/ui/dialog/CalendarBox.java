@@ -23,6 +23,8 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -47,7 +49,15 @@ public class CalendarBox extends Window
    private PushButtonGroup pbgDays;
    private String []tempDays = new String[42];
    private StringBuffer sb = new StringBuffer(20);
+   private Label lYear,lMonth;
+   private String[] myMonthNames;
 
+   /** Defines the array length of year window. If array length is 20, and current year is 2010, the
+    * list goes from 2000 to 2019.
+    * @since TotalCross 1.66
+    */
+   public static int YEAR_ARRAY_LENGTH = 20;
+   
    /** True if the user had canceled without selecting */
    public boolean canceled;
 
@@ -92,7 +102,7 @@ public class CalendarBox extends Window
       Font mini = font.adjustedBy(-4);
       int labH = bold.fm.height;
       int arrowW = uiAndroid ? 2 * labH / 3 : labH / 2;
-      Label l1,l2,l;
+      Label l;
 
       Button.commonGap = 2;
       btnToday = new Button(todayClearCancel[0]);
@@ -104,17 +114,18 @@ public class CalendarBox extends Window
       int btnH = btnCancel.getPreferredHeight();
       Button.commonGap = 0;
 
-      l1 = new Label(Settings.screenWidth <= 320 ? yearMonth[0].substring(0,1) : yearMonth[0]);
-      l2 = new Label(Settings.screenWidth <= 320 ? yearMonth[1].substring(0,1) : yearMonth[1]);
-      l1.setFont(mini);
-      l2.setFont(mini);
+      int labelGap = Settings.screenWidth <= 320 ? 3 : 0;
+      lYear = new Label(Settings.screenWidth <= 320 ? yearMonth[0].substring(0,1) : yearMonth[0],CENTER);
+      lMonth = new Label(Settings.screenWidth <= 320 ? yearMonth[1].substring(0,1) : yearMonth[1],CENTER);
+      lYear.setFont(mini);
+      lMonth.setFont(mini);
       
       pbgDays.insideGap = fm.charWidth('@')-2;
       pbgDays.setFont(font);
       int pbgW = uiAndroid ? (Math.min(fmH*16,Math.min(Settings.screenWidth,Settings.screenHeight))-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
       int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
-      int titleW = 4*arrowW + l1.getPreferredWidth() + l2.getPreferredWidth() + captionW; // guich@tc130: avoid problems if title is too small
+      int titleW = 4*arrowW + labelGap*4 + lYear.getPreferredWidth() + lMonth.getPreferredWidth() + captionW; // guich@tc130: avoid problems if title is too small
 
       setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
@@ -138,10 +149,10 @@ public class CalendarBox extends Window
       int yb = (titleGap+titleFont.fm.height-labH)/2;
       
       add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
-      add(l1,AFTER,CENTER_OF,PREFERRED,SAME);
+      add(lYear,AFTER,CENTER_OF,PREFERRED+labelGap*2,SAME);
       add(btnYearNext,AFTER,yb, bw, PREFERRED);
       add(btnMonthNext,RIGHT-2,yb, bw, PREFERRED);
-      add(l2,BEFORE,CENTER_OF,PREFERRED,SAME);
+      add(lMonth,BEFORE,CENTER_OF,PREFERRED+labelGap*2,SAME);
       add(btnMonthPrev,BEFORE,yb, bw, PREFERRED);
 
       // change title alignment to use the area available between the buttons
@@ -171,9 +182,9 @@ public class CalendarBox extends Window
          add(l, xx+r.x+(r.width-l.getPreferredWidth())/2, hh);
       }
 
-      l1.transparentBackground = l2.transparentBackground = true;
-      l1.setForeColor(backColor);
-      l2.setForeColor(backColor);
+      lYear.transparentBackground = lMonth.transparentBackground = true;
+      lYear.setForeColor(backColor);
+      lMonth.setForeColor(backColor);
       btnToday.setBackColor(UIColors.calendarAction);
       btnClear.setBackColor(UIColors.calendarAction);
       btnCancel.setBackColor(UIColors.calendarAction);
@@ -244,71 +255,134 @@ public class CalendarBox extends Window
 
    public void onEvent(Event event)
    {
-      switch (event.type)
+      try
       {
-         case KeyEvent.SPECIAL_KEY_PRESS:
-            KeyEvent ke = (KeyEvent)event;
-            if (ke.key == SpecialKeys.KEYBOARD_ABC || ke.key == SpecialKeys.KEYBOARD_123) // closes this window without selecting any day
-            {
-               day = sentDay; // guich@tc100
-               unpop();
-            }
-            else
-            if (ke.isDownKey()) // guich@tc122_47: here to below
-               incYear(false);
-            else
-            if (ke.isUpKey())
-               incYear(true);
-            else
-            if (ke.isNextKey())
-               incMonth(true);
-            else
-            if (ke.isPrevKey())
-               incMonth(false);
-            break;
-         case ControlEvent.PRESSED:
-            if (event.target == btnToday)
-            {
-               setSelectedDate(null);
-               day = sentDay; // guich@401_14
-               unpop();  // guich@401_14
-            } else
-            if (event.target == btnClear)
-            {
-               day = -1;
-               unpop();
-            } else
-            if (event.target == btnCancel)
-            {
-               canceled = true;
-               unpop();
-            }
-            else
-            if (event.target == pbgDays && pbgDays.getSelectedIndex() >= 0)
-            {
-               try
+         switch (event.type)
+         {
+            case KeyEvent.SPECIAL_KEY_PRESS:
+               KeyEvent ke = (KeyEvent)event;
+               if (ke.key == SpecialKeys.KEYBOARD_ABC || ke.key == SpecialKeys.KEYBOARD_123) // closes this window without selecting any day
                {
-                  Date date = new Date(Convert.toInt(pbgDays.getSelectedItem()),month,year);
-                  day = date.getDay();
-                  unpop(); // closes this window
-               } catch (Exception ide) {day = -1;}
-            }
-            else
-            if (event.target == btnMonthNext)
-               incMonth(true);
-            else
-            if (event.target == btnMonthPrev)
-               incMonth(false);
-            else
-            if (event.target == btnYearNext)
-               incYear(true);
-            else
-            if (event.target == btnYearPrev)
-               incYear(false);
-            break;
+                  day = sentDay; // guich@tc100
+                  unpop();
+               }
+               else
+               if (ke.isDownKey()) // guich@tc122_47: here to below
+                  incYear(false);
+               else
+               if (ke.isUpKey())
+                  incYear(true);
+               else
+               if (ke.isNextKey())
+                  incMonth(true);
+               else
+               if (ke.isPrevKey())
+                  incMonth(false);
+               break;
+            case ControlEvent.PRESSED:
+               if (event.target == btnToday)
+               {
+                  setSelectedDate(null);
+                  day = sentDay; // guich@401_14
+                  unpop();  // guich@401_14
+               } else
+               if (event.target == btnClear)
+               {
+                  day = -1;
+                  unpop();
+               } else
+               if (event.target == btnCancel)
+               {
+                  canceled = true;
+                  unpop();
+               }
+               else
+               if (event.target == pbgDays && pbgDays.getSelectedIndex() >= 0)
+               {
+                  try
+                  {
+                     Date date = new Date(Convert.toInt(pbgDays.getSelectedItem()),month,year);
+                     day = date.getDay();
+                     unpop(); // closes this window
+                  } catch (Exception ide) {day = -1;}
+               }
+               else
+               if (event.target == btnMonthNext)
+                  incMonth(true);
+               else
+               if (event.target == btnMonthPrev)
+                  incMonth(false);
+               else
+               if (event.target == btnYearNext)
+                  incYear(true);
+               else
+               if (event.target == btnYearPrev)
+                  incYear(false);
+               break;
+            case PenEvent.PEN_UP:
+               if (event.target == lMonth)
+               {
+                  if (myMonthNames == null) // monthNames have a initial month with spaces, so we remove it.
+                  {
+                     myMonthNames = new String[12];
+                     for (int i = 0; i < 12; i++) myMonthNames[i] = Date.monthNames[i+1];
+                  }
+                  int sel = showPopup(yearMonth[1].toUpperCase(),myMonthNames,month-1);
+                  if (sel >= 0)
+                  {
+                     month = sel+1;
+                     updateDays();
+                  }
+               }
+               else
+               if (event.target == lYear)
+               {
+                  String[] yy = new String[YEAR_ARRAY_LENGTH];
+                  int sel = -1;
+                  for (int i = 0; i < yy.length; i++)
+                  {
+                     int y = year-yy.length/2+i;
+                     yy[i] = String.valueOf(y);
+                     if (y == year)
+                        sel = i;
+                  }
+                  sel = showPopup(yearMonth[0].toUpperCase(),yy,sel);
+                  if (sel >= 0)
+                  {
+                     year = Convert.toInt(yy[sel]);
+                     updateDays();
+                  }
+               }
+         }
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
       }
    }
    
+   private int showPopup(String title, String[] items, int sel) throws IOException, ImageException
+   {
+      if (uiAndroid)
+      {
+         PopupMenu pm = new PopupMenu(title,items);
+         pm.setSelectedIndex(sel);
+         pm.popup();
+         return pm.getSelectedIndex();
+      }
+      else
+      {
+         ComboBoxDropDown cb = new ComboBoxDropDown(new ListBox(items));
+         cb.fullHeight = true;
+         cb.lb.setSelectedIndex(sel);
+         Rect r = getClientRect();
+         r.x += this.x; r.y += this.y;
+         cb.setRect(r);
+         cb.popup();
+         return cb.lb.getSelectedIndex();
+      }
+   }
+
    private void incMonth(boolean inc)
    {
       if (inc)
