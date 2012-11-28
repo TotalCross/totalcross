@@ -222,6 +222,13 @@ public class Loader extends Activity
                Window w = getWindow();
                if (setAndHide)
                {
+                  try // for galaxy tab2 bar
+                  {
+                     java.lang.reflect.Method m = View.class.getMethod("setSystemUiVisibility", new Class[]{Integer.class});
+                     final int SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2;
+                     m.invoke(Launcher4A.instance, new Integer(SYSTEM_UI_FLAG_HIDE_NAVIGATION));
+                  }
+                  catch (Exception e) {}
                   imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0, Launcher4A.instance.siprecv);
                   w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                   w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
