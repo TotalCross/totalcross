@@ -234,25 +234,12 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "374442920.043908"
+         timestampString = "374777234.973574"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "80"
-         endingLineNumber = "80"
+         startingLineNumber = "87"
+         endingLineNumber = "87"
          landmarkName = "-graphicsSetup"
-         landmarkType = "5">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "Yes"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "374442920.043908"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "102"
-         endingLineNumber = "102"
-         landmarkName = "-invalidateScreen:"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -260,11 +247,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "372019626.445849"
+         timestampString = "374522603.704121"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "24"
-         endingLineNumber = "24"
+         startingLineNumber = "26"
+         endingLineNumber = "26"
          landmarkName = "-init:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -273,26 +260,13 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/android/gfx_Graphics_c.h"
-         timestampString = "374442734.714181"
+         timestampString = "374523031.470465"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "405"
-         endingLineNumber = "405"
+         startingLineNumber = "389"
+         endingLineNumber = "389"
          landmarkName = "glDeleteTexture(Object img, int32* textureId, bool updateList)"
          landmarkType = "7">
-      </FileBreakpoint>
-      <FileBreakpoint
-         shouldBeEnabled = "No"
-         ignoreCount = "0"
-         continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "372026777.152691"
-         startingColumnNumber = "9223372036854775807"
-         endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "36"
-         endingLineNumber = "36"
-         landmarkName = "-setScreenValues:"
-         landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"
@@ -311,25 +285,38 @@
          shouldBeEnabled = "Yes"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "374442920.043908"
+         filePath = "../../src/nm/ui/android/gfx_Graphics_c.h"
+         timestampString = "374523052.217058"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "93"
-         endingLineNumber = "93"
-         landmarkName = "-graphicsSetup"
-         landmarkType = "5">
+         startingLineNumber = "30"
+         endingLineNumber = "30"
+         landmarkName = "checkGlError(const char* op, int line)"
+         landmarkType = "7">
       </FileBreakpoint>
       <FileBreakpoint
-         shouldBeEnabled = "No"
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "../../src/init/startup.c"
+         timestampString = "374523384.606262"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "533"
+         endingLineNumber = "533"
+         landmarkName = "startProgram()"
+         landmarkType = "7">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "372026744.713989"
+         timestampString = "374775224.684542"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "38"
-         endingLineNumber = "38"
+         startingLineNumber = "40"
+         endingLineNumber = "40"
          landmarkName = "-setScreenValues:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -337,13 +324,13 @@
          shouldBeEnabled = "No"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/childview.m"
-         timestampString = "372026786.984971"
+         filePath = "TotalCross/AppDelegate.m"
+         timestampString = "374776089.390711"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "39"
-         endingLineNumber = "39"
-         landmarkName = "-setScreenValues:"
+         startingLineNumber = "72"
+         endingLineNumber = "72"
+         landmarkName = "-application:didChangeStatusBarOrientation:"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -351,11 +338,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nm/ui/android/gfx_Graphics_c.h"
-         timestampString = "374442715.308536"
+         timestampString = "374777135.744692"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "680"
-         endingLineNumber = "680"
+         startingLineNumber = "664"
+         endingLineNumber = "664"
          landmarkName = "setupGL(int width, int height)"
          landmarkType = "7">
       </FileBreakpoint>
@@ -363,14 +350,14 @@
          shouldBeEnabled = "Yes"
          ignoreCount = "0"
          continueAfterRunningActions = "No"
-         filePath = "../../src/nm/ui/darwin/mainview.m"
-         timestampString = "374442833.026319"
+         filePath = "../../src/nm/ui/darwin/childview.m"
+         timestampString = "374777228.354465"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "321"
-         endingLineNumber = "321"
-         landmarkName = "initGLES()"
-         landmarkType = "7">
+         startingLineNumber = "75"
+         endingLineNumber = "75"
+         landmarkName = "-drawRect:"
+         landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>
    <SymbolicBreakpoints>
