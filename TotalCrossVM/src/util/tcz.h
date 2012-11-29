@@ -55,7 +55,7 @@ struct TTCZFileHeader // common members to all instances
 struct TTCZFile
 {
    TCZFileHeader header; // common properties
-   uint8 buf[MAX_PATHNAME];
+   uint8 buf[512];
    z_stream zs;
    int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
    Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
