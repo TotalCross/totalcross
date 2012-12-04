@@ -644,7 +644,7 @@ public class Edit extends Control
          if (mode == CURRENCY && isMaskedEdit) // correct the number if this is a numeric edit
          {
             if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1)
-               throw new IllegalArgumentException(s+". In CURRENCY mode, setText must receive an unmasked parameter");
+               s = Convert.replace(s,".","").replace(',','.');
 
             dot = s.indexOf('.');
             decimals = len - dot - 1;

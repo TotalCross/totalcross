@@ -66,16 +66,18 @@ public abstract class Transport extends Service
     */
    public static void send(Message message, MailSession session) throws MessagingException, AuthenticationException
    {
-      String host = session.get(MailSession.SMTP_HOST).toString();
-      int connectionTimeout = ((Properties.Int) session.get(MailSession.SMTP_CONNECTIONTIMEOUT)).value;
-      int timeout = ((Properties.Int) session.get(MailSession.SMTP_TIMEOUT)).value;
-      boolean tlsEnabled = ((Properties.Boolean) session.get(MailSession.SMTP_STARTTLS)).value;
+      if (message.recipients == null || message.recipients.isEmpty())
+         throw new MessagingException("Cannot send a message without recipients!");
+      String host = session.getNotNull(MailSession.SMTP_HOST).toString();
+      int connectionTimeout = ((Properties.Int) session.getNotNull(MailSession.SMTP_CONNECTIONTIMEOUT)).value;
+      int timeout = ((Properties.Int) session.getNotNull(MailSession.SMTP_TIMEOUT)).value;
+      boolean tlsEnabled = ((Properties.Boolean) session.getNotNull(MailSession.SMTP_STARTTLS)).value;
 
       int port = tlsEnabled ?
-            ((Properties.Int) session.get(MailSession.SMTP_SSL_PORT)).value :
-            ((Properties.Int) session.get(MailSession.SMTP_PORT)).value;
-      String user = session.get(MailSession.SMTP_USER).toString();
-      String password = session.get(MailSession.SMTP_PASS).toString();
+            ((Properties.Int) session.getNotNull(MailSession.SMTP_SSL_PORT)).value :
+            ((Properties.Int) session.getNotNull(MailSession.SMTP_PORT)).value;
+      String user = session.getNotNull(MailSession.SMTP_USER).toString();
+      String password = session.getNotNull(MailSession.SMTP_PASS).toString();
 
       try
       {

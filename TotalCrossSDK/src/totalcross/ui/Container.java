@@ -39,9 +39,12 @@ public class Container extends Control
    private int []fourColors = new int[4];
    private Vector childControls;
    
-   /** Set the type of background of this Container. To disable the background, set the 
+   /** Sets the type of background of this Container. To disable the background, set the 
     * <code>transparentBackground</code> of the Control class to true. This field is used when
     * transparentBackground is set to false (default).
+    * 
+    * If the transparent background doesn't work, try setting
+    * <code>alwaysEraseBackground = true</code>.
     * 
     * @see #BACKGROUND_SHADED
     * @see #BACKGROUND_SOLID
@@ -445,6 +448,8 @@ public class Container extends Control
          onColorsChanged(false);
          for (Control child = children; child != null; child = child.next)
             child.setEnabled(enabled);
+         esce.update(this);
+         postEvent(esce);
          Window.needsPaint = true; // now the controls have different l&f for disabled states
       }
    }

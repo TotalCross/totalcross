@@ -1067,11 +1067,11 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
    int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
    PixelConv c;
    // intermediate terms to speed up loop
-   int32 t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-   int32 t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-   int32 t7 = rx*t5, t8 = t7<<1, t9 = 0L;
-   int32 d1 = t2 - t7 + (t4>>1);    // error terms
-   int32 d2 = (t1>>1) - t8 + t5;
+   int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
+   int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
+   int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;
+   int64 d1 = t2 - t7 + (t4>>1);    // error terms
+   int64 d2 = (t1>>1) - t8 + t5;
    int32 x = rx;      // ellipse points
    int32 y = 0;       // ellipse points
    if (rx < 0 || ry < 0) // guich@501_13
@@ -1407,11 +1407,11 @@ static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, i
    {
       // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
       // intermediate terms to speed up loop
-      int32 t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-      int32 t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-      int32 t7 = rx*t5, t8 = t7<<1, t9 = 0L;
-      int32 d1 = t2 - t7 + (t4>>1);    // error terms
-      int32 d2 = (t1>>1) - t8 + t5;
+      int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
+      int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
+      int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;
+      int64 d1 = t2 - t7 + (t4>>1);    // error terms
+      int64 d2 = (t1>>1) - t8 + t5;
       int32 x = rx;                 // ellipse points
       int32 y = 0;                  // ellipse points
 
@@ -2886,8 +2886,7 @@ void updateScreen(Context currentContext)
 {
 #ifdef darwin   
    if (callingScreenChange) return;
-#endif      
-#ifdef ANDROID
+#elif defined ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);
@@ -2901,9 +2900,13 @@ void updateScreen(Context currentContext)
       {
          if (transitionEffect == -1)
             transitionEffect = TRANSITION_NONE;
+#ifdef darwin            
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
+#endif
          graphicsUpdateScreen(currentContext, &screen, transitionEffect);
+#ifdef darwin            
          LOCKVAR(screen);     
+#endif         
       }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       currentContext->dirtyX1 = screen.screenW;

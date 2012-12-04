@@ -23,9 +23,6 @@ typedef HRESULT (__stdcall *DMProcessConfigXMLProc)( LPCWSTR , DWORD , LPWSTR* )
 
 #define NATIVE_CONNECTION HANDLE
 
-boolean isWifiActive();
-bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn);
-
 #include "..\..\io\device\win\RadioDevice_c.h"
 
 TCHARP parseArgs(TCHARP line, TCHARP argument, TCHARP argValue)
@@ -57,6 +54,9 @@ static ConnMgrEstablishConnectionSyncProc _ConnMgrEstablishConnectionSync = null
 static ConnMgrMapURLProc _ConnMgrMapURL = null;
 static ConnMgrReleaseConnectionProc _ConnMgrReleaseConnection = null;
 static ConnMgrMapConRefProc _ConnMgrMapConRef = null;
+
+boolean isWifiActive();
+bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn);
 #endif
 
 static Err CmGprsConfigure(Context currentContext, TCHARP szConnCfg)
@@ -64,13 +64,17 @@ static Err CmGprsConfigure(Context currentContext, TCHARP szConnCfg)
 #if defined (WINCE)
    TCHAR xml[1024];
    LPWSTR out;
-   Err err = 0;
+   Err err = NO_ERROR;
    TCHAR apn[32];
    TCHAR username[32];
    TCHAR password[32];
    TCHAR domain[32];
 
-   if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
+   if (!isWindowsMobile || *tcSettings.romVersionPtr < 300)
+      throwException(currentContext, RuntimeException, "Device not recognized as Windows Mobile");
+   else if (!_DMProcessConfigXML)
+      throwException(currentContext, RuntimeException, "Operation not supported by the device.");
+   else
    {
       if (szConnCfg != null)
       {
@@ -79,18 +83,18 @@ static Err CmGprsConfigure(Context currentContext, TCHARP szConnCfg)
          parseArgs(szConnCfg, TEXT("password"), password);
          parseArgs(szConnCfg, TEXT("domain"), domain);
       }
-      if (*apn == *username == *password == *domain == 0)
-         return NO_ERROR;
-      _stprintf(xml, TEXT("<wap-provisioningdoc><characteristic type=\"CM_GPRSEntries\"><characteristic type=\"%s\"><parm name=\"DestId\" value=\"{436EF144-B4FB-4863-A041-8F905A62C572}\"/><parm name=\"UserName\" value=\"%s\"/><parm name=\"Password\" value=\"%s\"/><parm name=\"Domain\" value=\"%s\"/><characteristic type=\"DevSpecificCellular\"><parm name=\"GPRSInfoValid\" value=\"1\"/><parm name=\"GPRSInfoAccessPointName\" value=\"%s\"/></characteristic></characteristic></characteristic></wap-provisioningdoc>"), TEXT("TotalCrossGPRS"), username, password, domain, apn);
+      if (!(*apn == *username == *password == *domain == 0))
+      {
+         _stprintf(xml, TEXT("<wap-provisioningdoc><characteristic type=\"CM_GPRSEntries\"><characteristic type=\"%s\"><parm name=\"DestId\" value=\"{436EF144-B4FB-4863-A041-8F905A62C572}\"/><parm name=\"UserName\" value=\"%s\"/><parm name=\"Password\" value=\"%s\"/><parm name=\"Domain\" value=\"%s\"/><characteristic type=\"DevSpecificCellular\"><parm name=\"GPRSInfoValid\" value=\"1\"/><parm name=\"GPRSInfoAccessPointName\" value=\"%s\"/></characteristic></characteristic></characteristic></wap-provisioningdoc>"), TEXT("TotalCrossGPRS"), username, password, domain, apn);
 
-      if ((err = _DMProcessConfigXML((LPCWSTR) xml, 0x0001, &out)) == S_OK &&
-          (err = _DMProcessConfigXML((LPCWSTR) TEXT("<wap-provisioningdoc><characteristic type=\"CM_Planner\"><characteristic type=\"PreferredConnections\"><parm name=\"{436EF144-B4FB-4863-A041-8F905A62C572}\" value=\"TotalCrossGPRS\"/></characteristic></characteristic></wap-provisioningdoc>"), 0x0001, &out)) == S_OK &&
-          (err = _DMProcessConfigXML((LPCWSTR) TEXT("<wap-provisioningdoc><characteristic type=\"CM_ProxyEntries\"><characteristic type=\"HTTP-{ADB0B001-10B5-3F39-27C6-9742E785FCD4}\"><parm name=\"SrcId\" value=\"{ADB0B001-10B5-3F39-27C6-9742E785FCD4}\"/><parm name=\"DestId\" value=\"{436EF144-B4FB-4863-A041-8F905A62C572}\"/><parm name=\"Enable\" value=\"1\"/><parm name=\"Proxy\" value=\"new-inet:1159\"/><parm name=\"Type\" value=\"0\"/></characteristic></characteristic></wap-provisioningdoc>"), 0x0001, &out)) == S_OK)
-          err = NO_ERROR;
-      return err;
+         if ((err = _DMProcessConfigXML((LPCWSTR) xml, 0x0001, &out)) == S_OK &&
+             (err = _DMProcessConfigXML((LPCWSTR) TEXT("<wap-provisioningdoc><characteristic type=\"CM_Planner\"><characteristic type=\"PreferredConnections\"><parm name=\"{436EF144-B4FB-4863-A041-8F905A62C572}\" value=\"TotalCrossGPRS\"/></characteristic></characteristic></wap-provisioningdoc>"), 0x0001, &out)) == S_OK &&
+             (err = _DMProcessConfigXML((LPCWSTR) TEXT("<wap-provisioningdoc><characteristic type=\"CM_ProxyEntries\"><characteristic type=\"HTTP-{ADB0B001-10B5-3F39-27C6-9742E785FCD4}\"><parm name=\"SrcId\" value=\"{ADB0B001-10B5-3F39-27C6-9742E785FCD4}\"/><parm name=\"DestId\" value=\"{436EF144-B4FB-4863-A041-8F905A62C572}\"/><parm name=\"Enable\" value=\"1\"/><parm name=\"Proxy\" value=\"new-inet:1159\"/><parm name=\"Type\" value=\"0\"/></characteristic></characteristic></wap-provisioningdoc>"), 0x0001, &out)) == S_OK)
+             err = NO_ERROR;
+      }
    }
-   throwException(currentContext, RuntimeException, "Device not recognized as Windows Mobile");
-   return NO_ERROR; // Avoid throwing a second exception.
+
+   return err;
 #else
    return -1;
 #endif
@@ -128,7 +132,8 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
 
       // search registry for preferred connection
       if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Comm\\ConnMgr\\Providers\\{7C4B7A38-5FF7-4bc1-80F6-5DA7870BB1AA}\\Connections"), 0, 0, &regKey)) != NO_ERROR)
-         goto regError;
+         if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("SOFTWARE\\Microsoft\\ConnMgr\\Providers\\{7C4B7A38-5FF7-4bc1-80F6-5DA7870BB1AA}\\Connections"), 0, 0, &regKey)) != NO_ERROR)
+            goto regError;
 
       for (i = 0 ; err == NO_ERROR ; i++)
       {
@@ -141,7 +146,7 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
               && (value == 1))
             {
                //flsobral: also check the DestId to make sure we are getting an Internet connection. Needed for brazillian carrier "Claro", which doesn't make any other distinction between GPRS, MMS or Video connections.   
-               if (tcscmp(destid, TEXT("{0DAEA92E-2917-4C6C-9E23-F2BCAA13DA07}")) != 0 || _ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK)
+               if (tcscmp(destid, TEXT("{0DAEA92E-2917-4C6C-9E23-F2BCAA13DA07}")) != 0 || (_ConnMgrMapConRef && _ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK))
                   value = 0;
             }
             if (subKey != null)
@@ -398,7 +403,7 @@ static void CmLoadResources(Context currentContext)
          _ConnMgrReleaseConnection = (ConnMgrReleaseConnectionProc) GetProcAddress(cellcoreDll, TEXT("ConnMgrReleaseConnection"));
          _ConnMgrMapConRef = (ConnMgrMapConRefProc) GetProcAddress(cellcoreDll, TEXT("ConnMgrMapConRef"));
 
-         if (!_DMProcessConfigXML || !_ConnMgrEstablishConnectionSync || !_ConnMgrMapURL || !_ConnMgrReleaseConnection || !_ConnMgrMapConRef)
+         if (!_ConnMgrEstablishConnectionSync || !_ConnMgrMapURL || !_ConnMgrReleaseConnection)
             throwException(currentContext, RuntimeException, "Could not load the required procedures for the ConnectionManager");
       }
    }
@@ -411,6 +416,7 @@ static void CmReleaseResources()
 
 static boolean CmIsAvailable(int type)
 {
+#if defined (WINCE)
    switch (type)
    {
       case CM_CRADLE:
@@ -443,8 +449,12 @@ static boolean CmIsAvailable(int type)
 
       default: return false; // flsobral@120: default now is false.
    }
+#else
+	return false;
+#endif
 }
 
+#if defined (WINCE)
 boolean isWifiActive()
 {
    HKEY regKey = null;
@@ -549,3 +559,4 @@ bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn)
    }
    return false;
 }
+#endif
