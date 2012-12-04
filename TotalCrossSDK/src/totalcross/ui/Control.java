@@ -974,6 +974,7 @@ public class Control extends GfxSurface
       event.consumed = false; // set to false again bc some controls reuse event objects
    }
 
+   protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    /** Sets if this control can or not accept events.
      * It changes the appearance of many controls to indicate they are disabled.
      */
@@ -983,6 +984,8 @@ public class Control extends GfxSurface
       {
          this.enabled = enabled;
          onColorsChanged(false);
+         esce.update(this);
+         postEvent(esce);
          Window.needsPaint = true; // now the controls have different l&f for disabled states
       }
    }
@@ -1428,6 +1431,21 @@ public class Control extends GfxSurface
       addListener(Listener.HIGHLIGHT, listener);
    }
    
+   /** Adds a listener for enabled state changes.
+    */
+   public void addEnabledStateListener(EnabledStateChangeListener listener)
+   {
+      addListener(Listener.ENABLED, listener);
+   }
+   
+   /** Removes a listener for enabled state changes.
+    * @since TotalCross 1.67
+    */
+   public void removeEnabledStateListener(EnabledStateChangeListener listener)
+   {
+      removeListener(Listener.ENABLED, listener);
+   }
+
    /** Removes a listener for Pen events.
     * @see totalcross.ui.event.PenListener
     * @since TotalCross 1.22
@@ -1551,6 +1569,7 @@ public class Control extends GfxSurface
             case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
             case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
             case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
+            case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
          }
       }
    }
