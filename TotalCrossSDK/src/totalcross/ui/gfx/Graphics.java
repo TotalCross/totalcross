@@ -1171,7 +1171,6 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is drawn from x to x+w-1.
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void drawRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1210,7 +1209,6 @@ public final class Graphics
     * @param width width of the rectangle. the rectangle is filled from x to x+w-1.
     * @param height height of the rectangle. the rectangle is filled from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be adjusted to the minimum of both values.
-    * @deprecated 
     */
    public void fillRoundRect(int x, int y, int width, int height, int r)
    {
@@ -1394,7 +1392,6 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1441,7 +1438,6 @@ public final class Graphics
     * @param height height of the rectangle. the rectangle is drawn from y to y+h-1.
     * @param top true if the top corners will be hatched
     * @param bottom true if the bottom corners will be hatched
-    * @deprecated 
     */
    public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom)
    {
@@ -1693,7 +1689,6 @@ public final class Graphics
      * everytime you change the enabled state or the fore/back colors. This can
      * be easily achieved if you extend the onColorsChanged method
      * (but don't forget to call super.onColorsChanged).
-     * @deprecated 
      */
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
@@ -1723,7 +1718,6 @@ public final class Graphics
    }
 
    /** Draws a shaded rectangle. 
-    * @deprecated 
     */
    public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor) // guich@573_6
    {
@@ -1763,7 +1757,6 @@ public final class Graphics
    }
 
    /** Fills a shaded rectangle. Used to draw many Vista user interface style controls 
-    * @deprecated 
     */
    public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate) // guich@573_6
    {
@@ -1830,7 +1823,6 @@ public final class Graphics
     * @see #R3D_RAISED
     * @see #R3D_CHECK
     * @see #R3D_SHADED
-    * @deprecated 
     */
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {
@@ -2775,11 +2767,11 @@ public final class Graphics
    {
       int numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0, c=0;
       // intermediate terms to speed up loop
-      int t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-      int t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-      int t7 = rx*t5, t8 = t7<<1, t9 = 0;
-      int d1 = t2 - t7 + (t4>>1);    // error terms
-      int d2 = (t1>>1) - t8 + t5;
+      long t1 = (long)rx*rx, t2 = t1<<1, t3 = t2<<1;
+      long t4 = (long)ry*ry, t5 = t4<<1, t6 = t5<<1;
+      long t7 = (long)rx*t5, t8 = t7<<1, t9 = 0;
+      long d1 = t2 - t7 + (t4>>1);    // error terms
+      long d2 = (t1>>1) - t8 + t5;
       int x = rx, y = 0; // ellipse points
       if (rx < 0 || ry < 0) // guich@501_13
          return;
@@ -2907,11 +2899,11 @@ public final class Graphics
       boolean sameR = rx == lastRX && ry == lastRY;
       if (!sameC || !sameR)
       {
-         int t1 = rx*rx, t2 = t1<<1, t3 = t2<<1;
-         int t4 = ry*ry, t5 = t4<<1, t6 = t5<<1;
-         int t7 = rx*t5, t8 = t7<<1, t9 = 0;
-         int d1 = t2 - t7 + (t4>>1);    // error terms
-         int d2 = (t1>>1) - t8 + t5;
+         long t1 = (long)rx*rx, t2 = t1<<1, t3 = t2<<1;
+         long t4 = (long)ry*ry, t5 = t4<<1, t6 = t5<<1;
+         long t7 = (long)rx*t5, t8 = t7<<1, t9 = 0;
+         long d1 = t2 - t7 + (t4>>1);    // error terms
+         long d2 = (t1>>1) - t8 + t5;
          int x = rx, y = 0; // ellipse points
 
          if (sameR)

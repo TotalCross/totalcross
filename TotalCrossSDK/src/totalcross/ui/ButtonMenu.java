@@ -172,6 +172,26 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       this.disposition = disposition;
    }
    
+   /** Changes all the buttons to the given parameters. If you don't want to set the images or the names, pass null
+    * in the proper place. Calls onFontChanged and initUI to reset the buttons. 
+    * @since TotalCross 1.66
+    */
+   public void replaceWith(Image[] images, String[] names)
+   {
+      this.images = images;
+      this.names = names;
+      prefBtnW = 0;
+      if (btns != null && btns[0].isChildOf(this)) // if button was already added to this container, remove it (may occur during rotation)
+         for (int i = btns.length; --i >= 0;) 
+         {
+            Button b = btns[i];
+            b.removePressListener(this);
+            b.getParent().remove(b);
+         }
+      btns = null;
+      reposition();
+   }
+   
    /** Creates and resizes all Button and images. For better performance, call setFont for this control BEFORE
     * calling add or setRect (this is a general rule for all other controls as well).
     */
@@ -256,9 +276,9 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    {
       if (super.sbH != null && super.sbH instanceof ScrollPosition) ((ScrollPosition)super.sbH).barColor = pressedColor != -1 ? pressedColor : foreColor;
       if (super.sbV != null && super.sbV instanceof ScrollPosition) ((ScrollPosition)super.sbV).barColor = pressedColor != -1 ? pressedColor : foreColor;
+      if (btns != null && btns[0].isChildOf(this)) // if button was already added to this container, remove it (may occur during rotation)
+         for (int i = btns.length; --i >= 0;) btns[i].getParent().remove(btns[i]);
       if (prefBtnW == 0) onFontChanged();
-      if (btns != null && btns[0].parent == this) // if button was already added to this container, remove it (may occur during rotation
-         for (int i = btns.length; --i >= 0;) remove(btns[i]);
       if (spacer != null)
       {
          remove(spacer);
@@ -430,7 +450,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    /** Returns the preferred width as if all images were in a single row. */
    public int getPreferredWidth()
    {
-      return getPreferredWidth(images.length);
+      return getPreferredWidth(names != null ? names.length : images.length);
    }
    
    /** Returns the preferred width for the given number of columns. */

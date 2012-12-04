@@ -31,10 +31,10 @@ public final class Settings
    * version value of 400. A beta 0.81 VM will have version 81.
    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */
-   public static int version = 165;
+   public static int version = 166;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.65";
+   public static String versionStr = "1.66";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -222,7 +222,6 @@ public final class Settings
    public static final byte Flat = 2;
    /** Defines a Windows Vista user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat or Android
     */
    public static final byte Vista = 3; // guich@573_6
    /** Defines an Android user interface style. Used in the uiStyle member.

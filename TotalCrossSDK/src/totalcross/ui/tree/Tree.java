@@ -1010,6 +1010,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
             if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
                scScrolled = isScrolling = true;
          }
+         de.consumed = true; // guich@tc166: if inside a TabbedContainer, prevent it from scrolling
       }
    }
    public void penDragEnd(DragEvent e) {}
