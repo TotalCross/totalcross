@@ -307,8 +307,6 @@ static bool callingCamera;
 void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
 
-void iosStartup(int w, int h);
-
 bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
@@ -334,8 +332,7 @@ void graphicsUpdateScreenIOS()
 }
 void graphicsScreenWillRotate()
 {                
-   CGRect r;
-   [DEVICE_CTX->_childview drawRect:r];
+   [DEVICE_CTX->_childview onRotate];
 }
 
 //////////////// interface to mainview methods ///////////////////

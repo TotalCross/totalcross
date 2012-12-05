@@ -228,8 +228,6 @@ void storeSettings(bool quittingApp) // guich@230_22
 
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
-   int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
-
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
    *tcSettings.screenWidthInDPIPtr = hRes;
