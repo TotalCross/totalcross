@@ -222,7 +222,6 @@ public final class Settings
    public static final byte Flat = 2;
    /** Defines a Windows Vista user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat or Android
     */
    public static final byte Vista = 3; // guich@573_6
    /** Defines an Android user interface style. Used in the uiStyle member.
