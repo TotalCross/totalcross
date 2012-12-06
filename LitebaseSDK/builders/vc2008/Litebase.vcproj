@@ -1546,10 +1546,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.tab.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c"
 				>
 			</File>
