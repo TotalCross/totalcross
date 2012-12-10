@@ -62,7 +62,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
    bool appliedComposedIndex,
         isLeft = false;
    uint8 columns[MAXIMUMS + 1];
-   int8 operators[MAXIMUMS + 1];
+   uint8 operators[MAXIMUMS + 1];
    SQLBooleanClauseTree* curTree;
    SQLBooleanClauseTree* leftTree;
    SQLBooleanClauseTree* rightTree;
@@ -134,7 +134,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                      getBranchProperties(leftTree, columns, operators, indexesValueTree, count, fieldsCount);
 
                      // Limitation; Composed index only for EQUALS. A composed index can't be applied if the column is not part of the index.
-                     if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1) 
+                     if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == 255) 
                      {
                         count = 0;
                         break; // Doesn't apply the composed index.
@@ -155,7 +155,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                         getBranchProperties(rightTree, columns, operators, indexesValueTree, count, fieldsCount);
                         
                         // Limitation: composed index only for EQUALS.
-                        if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1)  
+                        if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == 255)  
                         {
                            count = 0;
                            break; // Doesn't apply the composed index.

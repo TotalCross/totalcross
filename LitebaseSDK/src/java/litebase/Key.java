@@ -271,8 +271,7 @@ class Key
          {
             // juliana@230_26: solved a possible index corruption when doing updates on indices with repetition.
             int lastPos = 0, 
-                lastRecord = -1,
-                lastNext;
+                lastRecord = -1;
             NormalFile fvalues = indexAux.fvalues;
             byte[] valueBuf = driver.valueBuf;
             
@@ -291,15 +290,13 @@ class Key
                   }
                   else // The value removed is not the last one.
                   {
-                     lastNext = tempVal.next;
                      fvalues.setPos(lastPos);
-                     Value.save(fvalues, valueBuf, lastRecord, lastNext);
+                     Value.save(fvalues, valueBuf, lastRecord, tempVal.next);
                      return REMOVE_VALUE_ALREADY_SAVED;
                   }
                }
                idx = tempVal.next;
                lastRecord = tempVal.record;
-               lastNext = tempVal.next;
                lastPos = pos;
             }
             

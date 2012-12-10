@@ -61,7 +61,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    char buffer[DBNAME_SIZE];
    CharP sourcePath = table->sourcePath;
    XFile* fnodes = &index->fnodes;
-   XFile* fvalues = index->fvalues;
+   XFile* fvalues;
 
    index->numberColumns = numberColumns;
    index->table = table;
@@ -1334,7 +1334,7 @@ bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTa
 {
    TRACE("writeSortRecord")
    PlainDB* plainDB = &origTable->db;
-   int16* offsets = origTable->columnOffsets;
+   uint16* offsets = origTable->columnOffsets;
    int8* types = origTable->columnTypes;
    uint8* origNulls = origTable->columnNulls;
    uint8* tempNulls = tempTable->columnNulls;

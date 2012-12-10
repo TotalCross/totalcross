@@ -1022,8 +1022,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                                         duplicateByteArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
                                                                                         NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
 	   goto error; // juliana@223_14: solved possible memory problems.
-
-   count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
    if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
@@ -1084,7 +1082,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
    
    prevRecord = record2 = newSQLValues(i, heap);
-   numOfBytes = NUMBEROFBYTES(count);
    nullsPrevRecord = tempTable1->columnNulls;
    writeDelayed = aggFunctionExist || groupByClause;
 
@@ -1904,7 +1901,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
             }
             else // Verifies if the column name in the field list is ambiguous.
             {
-               rsTableAux = rsTable = null;
+               rsTable = null;
                foundFirst = false;
                currentTable = auxTable = null;
                
@@ -2089,7 +2086,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    int32* rsSizes = rsTable->columnSizes;
    int16* items = rs2TableColIndexes? rs2TableColIndexes : null;
 	int32 countSelectedField = selectClause->fieldsCount, // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
-         i = countSelectedField, 
+         i, 
          j,
          totalRecords = 0,
          rowSize = tempDB->rowSize,
@@ -2390,7 +2387,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
                {
                   if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
                   {
-                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition && whereClause)
                      {
                         whereClause->resultSet = resultSet;
                         return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
@@ -2668,14 +2665,11 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
          colIndex,
          sqlAggFunction, 
          colType;
-   double doubleVal;
    SQLValue* aggValue;
    SQLValue* value;
 
    while (--i >= 0) // Performs the calculation of the aggregation functions.
    {
-      doubleVal = 0;
-
       if (!aggFunctionsCodes[i])
       {
          groupCountCols[i]++;
