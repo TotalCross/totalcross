@@ -2857,17 +2857,6 @@ static bool startupGraphics(int16 appTczAttr) // there are no threads running at
    return graphicsStartup(&screen, appTczAttr);
 }
 
-#ifdef darwin
-static Object constPixels;
-char* createPixelsBuffer(int width, int height) // called from childview.m
-{
-   if (constPixels != null)
-      return constPixels;
-   constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
-   return ARRAYOBJ_START(constPixels);
-}
-#endif
-
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
@@ -2881,7 +2870,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
       if (screen.mainWindowPixels == null)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
-      *screenObj = screen.mainWindowPixels = constPixels;
+//      *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
 #else
 

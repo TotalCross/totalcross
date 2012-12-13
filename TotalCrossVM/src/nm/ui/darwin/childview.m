@@ -6,7 +6,6 @@
 
 static ScreenSurface gscreen;
 int getTimeStamp();
-char* createPixelsBuffer(int width, int height);
 int realAppH;
 extern int appW,appH;
 void Sleep(int ms);
