@@ -199,8 +199,10 @@ static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
 {
    JNIEnv* env = getJNIEnv();
    jmethodID getHostAddressMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "getHostAddress", "(Ljava/lang/String;)Ljava/lang/String;");
-   jstring jHostName = (*env)->NewString(env, (jchar*) hostName, xstrlen(hostName));
+   JCharP jhostName = CharP2JCharP(hostName,-1);
+   jstring jHostName = (*env)->NewString(env, (jchar*) jhostName, xstrlen(hostName));
    jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnectionManager4A, getHostAddressMethod, jHostName);
+   xfree(jhostName);
    if (jString != null)
    {
       jstring2CharP(jString, hostAddress);
@@ -214,8 +216,10 @@ static Err CmGetHostName(CharP hostAddress, CharP hostName)
 {
    JNIEnv* env = getJNIEnv();
    jmethodID getHostNameMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "getHostName", "(Ljava/lang/String;)Ljava/lang/String;");
-   jstring jHostAddress = (*env)->NewString(env, (jchar*) hostAddress, xstrlen(hostAddress));
+   JCharP jhostAddress = CharP2JCharP(hostAddress,-1);
+   jstring jHostAddress = (*env)->NewString(env, (jchar*) jhostAddress, xstrlen(hostAddress));
    jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnectionManager4A, getHostNameMethod, jHostAddress);
+   xfree(jhostAddress);
    if (jString != null)              
    {
       jstring2CharP(jString, hostName);
