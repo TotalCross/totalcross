@@ -1,4 +1,4 @@
-export TARGET=iphone:4.3
+export TARGET=iphone:5.1
 GO_EASY_ON_ME = 1
 
 type ?= demo

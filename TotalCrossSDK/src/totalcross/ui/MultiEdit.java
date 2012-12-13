@@ -463,25 +463,18 @@ public class MultiEdit extends Container implements Scrollable
    private void calculateFirst() // guich@320_28: completely redesigned - guich@581_6: highly optimized
    {
       StringBuffer chars = this.chars; // cache
-      int charsLen = chars.length();
       int i=0, originalLineCount = numberTextLines;
       first.removeAllElements();
       first.addElement(0); // in line 0, the first char is always 0
       int tw = textRect.width;
       int n = chars.length();
-      for (int pos = 0; pos < n; pos++)
+      int pos = 0;
+      for (; pos < n; pos++)
       {
-         if (pos == 0 || chars.charAt(pos-1) < ' ') // guich@tc113_37: when parsing "Update of /pcvsroot/LitebaseSDK/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
-         {
-            first.addElement(pos = Convert.getBreakPos(fm, chars, pos, tw, true));
-            if (pos < charsLen && chars.charAt(pos) != ' ') // if last char is a space, don't show it at begining of next line
-               pos--;
-         }
-         else
-            first.addElement(pos = Convert.getBreakPos(fm, chars, pos-1, tw, true));
+         int pos0 = pos == 0 || chars.charAt(pos-1) < ' ' ? pos : pos-1; // guich@tc113_37: when parsing "Update of /pcvsroot/LitebaseSDK/src/native/parser", it was breaking in the first /, but in the next loop iteration, it was skipping the first /, and, thus, computing a character less
+         first.addElement(pos = Convert.getBreakPos(fm, chars, pos0, tw, true)); // guich@tc166: we'll take care of the initial space/ENTER during drawing 
       }
-      if (n == 0 || chars.charAt(n-1) == ENTER)
-         first.addElement(n);
+      first.addElement(n);
       numberTextLines = first.size()-1;
       //try {for (i =0; i <= numberTextLines; i++) Vm.debug("first["+i+"]: "+first.items[i]+" '"+chars.charAt(first.items[i])+"'");} catch (Exception e) {Vm.debug("first["+i+"]: "+first.items[i]);}
 
@@ -798,6 +791,7 @@ public class MultiEdit extends Container implements Scrollable
                            newInsertPos++;
                            if (newInsertPos > len) newInsertPos = len;
                            if (numberTextLines > rowCount)
+<<<<<<< HEAD
                            {
                               if ((firstToDraw + rowCount) < (first.size() - 1)) // guich@550_5: avoid AAOBE
                                  while (newInsertPos >= first.items[firstToDraw + rowCount])
@@ -806,6 +800,14 @@ public class MultiEdit extends Container implements Scrollable
                                     sb.setValue(sb.getValue() + 1);
                                  }
                            }
+=======
+                              while ((firstToDraw + rowCount) <= numberTextLines && newInsertPos > first.items[firstToDraw + rowCount])
+                              {
+                                 firstToDraw++;
+                                 forceDrawAll = true;
+                                 sb.setValue(sb.getValue() + 1);
+                              }
+>>>>>>> origin/develop
                            charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
                            break;
                         case SpecialKeys.DOWN:
@@ -826,7 +828,7 @@ public class MultiEdit extends Container implements Scrollable
                               else
                                  z1.y += hLine;
                               int line = firstToDraw + (z1.y - textRect.y) / hLine;
-                              if (chars.charAt(newInsertPos) == ENTER && first.items[line + 1] - first.items[line] == 1)
+                              if (newInsertPos < len && chars.charAt(newInsertPos) == ENTER && first.items[line + 1] - first.items[line] == 1)
                                  newInsertPos++;
                               else
                                  newInsertPos = zToCharPos(z1);
@@ -1169,6 +1171,7 @@ public class MultiEdit extends Container implements Scrollable
             if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
             g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
          }
+<<<<<<< HEAD
       }
       int i;
       int h = textRect.y;
@@ -1188,6 +1191,32 @@ public class MultiEdit extends Container implements Scrollable
          {
             g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
             g.backColor = back0;
+=======
+         int i = firstToDraw;
+         int h = textRect.y;
+         int dh = textRect.y + fm.ascent;
+         int maxh = h + textRect.height;
+         g.foreColor = fColor;
+         g.backColor = back0;
+         int last = numberTextLines - 1;
+         int len = chars.length();
+         for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+         {
+            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
+            int k = first.items[i];
+            int k2 = first.items[i + 1];
+            if (len > 0 && k < len && k != k2)
+            {
+               if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
+                  k++;
+               g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+            }
+            if (drawDots)
+            {
+               g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
+               g.backColor = back0;
+            }
+>>>>>>> origin/develop
          }
       }
 
