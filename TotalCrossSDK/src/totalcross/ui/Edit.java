@@ -154,7 +154,7 @@ public class Edit extends Control
    public String keyboardTitle;
    
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
-    * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
+    * Set to -1 to disable it; defaults to 1500 (1.5 seconds) in pen devices, -1 in finger devices (because in these devices . Also affects MultiEdit.
     * @since TotalCross 1.3
     */
    public static int clipboardDelay = 1500;
@@ -1135,13 +1135,13 @@ public class Edit extends Control
                {
                   draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
-                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+/*                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
                      {
                         event.consumed = true;
                         break;
                      }
-               }
+*/               }
                event.consumed=true;     //astein@230_5: prevent blinking cursor event from propagating
             }
             return;
