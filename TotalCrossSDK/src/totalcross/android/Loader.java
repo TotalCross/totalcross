@@ -299,7 +299,18 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            if (args.toLowerCase().endsWith(".pdf"))
+            String argl = args.toLowerCase();
+            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
+               intent.putExtra("file",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
+            if (argl.endsWith(".pdf"))
             {
                File pdfFile = new File(args);
                if(pdfFile.exists()) 
