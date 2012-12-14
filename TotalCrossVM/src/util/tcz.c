@@ -311,8 +311,9 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
       {
          volatile Heap cpHeap = heapCreate();
          IF_HEAP_ERROR(cpHeap)
-         {
-            alert("Error when loading constant pool of file\n%s", tczName);
+         {                                                                 
+            alert("Please run the program again (104)");
+            debug("Error when loading constant pool of file\n%s", tczName);
             heapDestroy(cpHeap);
             t->header->cp = null; // already destroyed
             tczClose(t);
