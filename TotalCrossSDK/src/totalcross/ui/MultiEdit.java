@@ -791,23 +791,11 @@ public class MultiEdit extends Container implements Scrollable
                            newInsertPos++;
                            if (newInsertPos > len) newInsertPos = len;
                            if (numberTextLines > rowCount)
-<<<<<<< HEAD
-                           {
-                              if ((firstToDraw + rowCount) < (first.size() - 1)) // guich@550_5: avoid AAOBE
-                                 while (newInsertPos >= first.items[firstToDraw + rowCount])
-                                 {
-                                    firstToDraw++;
-                                    sb.setValue(sb.getValue() + 1);
-                                 }
-                           }
-=======
                               while ((firstToDraw + rowCount) <= numberTextLines && newInsertPos > first.items[firstToDraw + rowCount])
                               {
                                  firstToDraw++;
-                                 forceDrawAll = true;
                                  sb.setValue(sb.getValue() + 1);
                               }
->>>>>>> origin/develop
                            charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
                            break;
                         case SpecialKeys.DOWN:
@@ -1171,9 +1159,8 @@ public class MultiEdit extends Container implements Scrollable
             if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
             g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
          }
-<<<<<<< HEAD
       }
-      int i;
+      int i = firstToDraw;
       int h = textRect.y;
       int dh = textRect.y + fm.ascent;
       int maxh = h + textRect.height;
@@ -1181,42 +1168,21 @@ public class MultiEdit extends Container implements Scrollable
       g.backColor = back0;
       int last = numberTextLines - 1;
       int len = chars.length();
-      for (i = firstToDraw; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
       {
          //if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
          int k = first.items[i];
          int k2 = first.items[i + 1];
-         g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+         if (len > 0 && k < len && k != k2)
+         {
+            if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
+               k++;
+            g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+         }
          if (drawDots)
          {
             g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
             g.backColor = back0;
-=======
-         int i = firstToDraw;
-         int h = textRect.y;
-         int dh = textRect.y + fm.ascent;
-         int maxh = h + textRect.height;
-         g.foreColor = fColor;
-         g.backColor = back0;
-         int last = numberTextLines - 1;
-         int len = chars.length();
-         for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
-         {
-            if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-            int k = first.items[i];
-            int k2 = first.items[i + 1];
-            if (len > 0 && k < len && k != k2)
-            {
-               if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
-                  k++;
-               g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
-            }
-            if (drawDots)
-            {
-               g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
-               g.backColor = back0;
-            }
->>>>>>> origin/develop
          }
       }
 
