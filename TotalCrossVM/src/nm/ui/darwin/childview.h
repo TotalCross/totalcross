@@ -21,19 +21,14 @@
 {
    int lastEventTS;
    int shiftY;
-   int clientW;
    int lastOrientation;
    UIViewController* controller;
-//   CGDataProviderRef provider;
-//   CGImageRef cgImage;
-   char* screenBuffer;
-//   CGColorSpaceRef colorSpace;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
 }
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
-- (void)drawRect:(CGRect)frame;
+- (void)onRotate;
 - (void)updateScreen;
 - (void)graphicsSetup;
 

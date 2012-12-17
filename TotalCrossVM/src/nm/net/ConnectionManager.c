@@ -13,9 +13,7 @@
 
 #include "Net.h"
 
-#if defined (PALMOS)
- #include "palm/ConnectionManager_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/ConnectionManager_c.h"
 #elif defined (ANDROID)
  #include "android/ConnectionManager_c.h"
@@ -145,16 +143,16 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
       if (err != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
    }
-#elif defined(PALMOS)
-   Err err;
-   if ((err = CmClose()) != NO_ERROR)
-      throwExceptionWithCode(p->currentContext, IOException, err);
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
 {
+<<<<<<< HEAD
+#if defined (WINCE) || defined (ANDROID)
+=======
 #if defined(PALMOS) || defined (WIN32) || defined (ANDROID)
+>>>>>>> origin/develop
    Object hostName = p->obj[0];
    CharP szHostName = null;
    char szHostAddress[40];
@@ -181,7 +179,11 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
 {
+<<<<<<< HEAD
+#if defined (WINCE) || defined (ANDROID)
+=======
 #if defined(PALMOS) || defined (WIN32) || defined (ANDROID)
+>>>>>>> origin/develop
    Object hostAddress = p->obj[0];
    CharP szHostAddress = null;
    char szHostName[128];
@@ -208,7 +210,11 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHost() throws totalcross.net.UnknownHostException;
 {
+<<<<<<< HEAD
+#if defined(WINCE) || defined(WIN32) || defined(ANDROID)
+=======
 #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+>>>>>>> origin/develop
    char szHostAddress[16];
 
    if (CmGetLocalHost(szHostAddress) != NO_ERROR)

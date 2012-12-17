@@ -6,7 +6,6 @@
 
 static ScreenSurface gscreen;
 int getTimeStamp();
-char* createPixelsBuffer(int width, int height);
 int realAppH;
 extern int appW,appH;
 void Sleep(int ms);
@@ -28,7 +27,7 @@ bool setupGL(int width, int height);
    if (self != nil )
    {
       [self setOpaque:YES];
-      //  self.contentScaleFactor = [UIScreen mainScreen].scale;
+      self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
    }  
    return self; 
 }
@@ -37,7 +36,7 @@ extern int32 deviceFontHeight,iosScale;
 
 - (void)setScreenValues: (void*)scr
 {
-   ScreenSurface screen = gscreen = scr;
+   ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
    iosScale = [UIScreen mainScreen].scale;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ( == 2.0)) ?2:1;
    screen->screenW = self.frame.size.width * iosScale;
    screen->screenH = self.frame.size.height * iosScale;
@@ -47,38 +46,23 @@ extern int32 deviceFontHeight,iosScale;
    if (iosScale == 2) deviceFontHeight = 38;
 }
 
-- (void)drawRect:(CGRect)frame
+- (void)onRotate
 {
-   // when rotated, the UIViewController still thinks that we want to draw it horizontally, so we invert the size.
-   int orientation = [[UIDevice currentDevice] orientation];
-   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationFaceUp)
-      orientation = lastOrientation;
-   lastOrientation = orientation;
-   bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
-   int w = self.frame.size.width;
-   int h = self.frame.size.height;
-   if (landscape && w < h)
-   {
-      int temp = w; w = h; h = temp;
-   }
-//   if (w != clientW)
-   {
-      realAppH = h;
-  //    if (clientW != 0)
-      {
-         callingScreenChange = true;
-         [self setScreenValues: gscreen];
-         [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
-           @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
-         while (callingScreenChange)
-            Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
-         w = self.frame.size.width;
-         h = self.frame.size.height;
-         //appW = w;
-         //appH = h;
-      }
-   }
-   clientW = w;
+   int scale = iosScale;
+   int barH = 20*scale;
+   int w = self.frame.size.width *scale;
+   int h = self.frame.size.height*scale;
+   appW = h > w ? w : w+barH;
+   realAppH = appH = h > w ? h : h-barH;
+   callingScreenChange = true;
+   [self setScreenValues: gscreen];
+   [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
+     @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
+   while (callingScreenChange)
+      Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
+   ScreenSurface screen = gscreen;
+   screen->screenW = appW;
+   screen->screenH = appH;
 }
 
 - (void)graphicsSetup
@@ -100,13 +84,13 @@ extern int32 deviceFontHeight,iosScale;
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
    setupGL(gscreen->screenW,gscreen->screenH);
-   glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
+   glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
    realAppH = appH;
 }
 - (void)updateScreen
 {
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
-   glClearColor(1,1,1,1); glClear(GL_COLOR_BUFFER_BIT);
+   glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
 }    
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event

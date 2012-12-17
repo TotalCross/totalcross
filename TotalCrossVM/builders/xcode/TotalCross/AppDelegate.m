@@ -57,7 +57,7 @@
 #endif
     [tcvm startVM:&context appName:(char*)name];
     [Litebase fillNativeProcAddressesLB];
-    NSLog(@"**** SEM LITEBASE ****s");
+    NSLog(@"**** SEM LITEBASE ****");
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
