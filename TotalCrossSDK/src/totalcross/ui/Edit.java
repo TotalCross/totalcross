@@ -1127,8 +1127,7 @@ public class Edit extends Control
             }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
-               Window w = getParentWindow();
-               if (w == null || w != Window.topMost) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
+               if (!isTopMost()) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
                   focusOut();
                else
                if (parent != null)
@@ -1501,7 +1500,7 @@ public class Edit extends Control
          postPressedEvent(); // guich@tc113_1
 
       insertPos = newInsertPos;
-      if (getParentWindow() == Window.topMost) // guich@tc124_24: prevent screen updates when we're not the topmost window
+      if (isTopMost()) // guich@tc124_24: prevent screen updates when we're not the topmost window
       {
          if (redraw)
          {
