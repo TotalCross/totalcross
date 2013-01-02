@@ -62,9 +62,7 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "71"
-         endingLineNumber = "71"
-         landmarkName = "initAll()"
-         landmarkType = "7">
+         endingLineNumber = "71">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"
@@ -295,7 +293,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "72"
          endingLineNumber = "72"
-         landmarkName = "-application:didFinishLaunchingWithOptions:"
+         landmarkName = "-application:didChangeStatusBarFrame:"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
