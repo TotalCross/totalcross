@@ -12,8 +12,7 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
-import tc.tools.deployer.ipa.MachObjectFile;
-import tc.tools.deployer.ipa.MobileProvision;
+import tc.tools.deployer.ipa.*;
 import tc.tools.deployer.ipa.blob.*;
 import com.dd.plist.*;
 import de.schlichtherle.truezip.file.TFile;
@@ -150,7 +149,7 @@ public class InvalidateIPA
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file
-      byte[] updatedInfoPlist = rootDict.toXMLPropertyList().getBytes("UTF-8");
+      byte[] updatedInfoPlist = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(rootDict);
       infoPlist.input(new ByteArrayInputStream(updatedInfoPlist));
 
       // provision
@@ -208,7 +207,7 @@ public class InvalidateIPA
       root.put("rules", rules);
 
       TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
-      bundleResourceSpecificationFile.input(new ByteArrayInputStream(root.toXMLPropertyList().getBytes("UTF-8")));
+      bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
 
       NSDictionary files = new NSDictionary();
       SHA1Digest digest = new SHA1Digest();
@@ -227,7 +226,7 @@ public class InvalidateIPA
       root.put("files", files);
       root.put("rules", rules);
 
-      byte[] rootBytes = root.toXMLPropertyList().getBytes();
+      byte[] rootBytes = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root);
       TFile codeResources = new TFile((TFile) ipaContents.get("_CodeSignature"), "CodeResources");
       codeResources.input(new ByteArrayInputStream(rootBytes));
 
