@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "UIGadgets"
+#define APPNAME "UIGadgets"
 
 -(void) initApp
 {
