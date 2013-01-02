@@ -52,9 +52,9 @@ void Sleep(int ms);
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
    kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
-   kbd.autocorrectionType = UITextAutocorrectionTypeNo;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
+   [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
 }
 
