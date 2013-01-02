@@ -707,8 +707,10 @@ void rsGetByName(NMParams p, int32 type)
       TC_throwNullArgumentException(p->currentContext, "colName");
    else if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1;
-      rsPrivateGetByIndex(p, type);
+      if ((p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1) >= 0)
+         rsPrivateGetByIndex(p, type);
+      else // juliana@266_2: corrected exception message when an unknown column name was passed to a ResultSet method.
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NAME), colName);
    }
 }
 
