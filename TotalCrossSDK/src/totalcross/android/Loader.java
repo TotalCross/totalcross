@@ -18,20 +18,21 @@
 
 package totalcross.android;
 
+import totalcross.*;
+import totalcross.android.compat.*;
+
+import java.io.*;
+import java.util.*;
+
 import android.app.*;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
-import java.io.*;
-import java.util.*;
-import android.content.pm.ActivityInfo;
-
-import totalcross.*;
-import totalcross.android.compat.*;
 
 public class Loader extends Activity
 {
@@ -75,7 +76,6 @@ public class Loader extends Activity
       }
       catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
       {
-         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
       catch (Throwable t)
@@ -165,6 +165,7 @@ public class Loader extends Activity
       runningVM = true;
       Hashtable<String,String> ht = AndroidUtils.readVMParameters();
       String tczname = tcz = ht.get("tczname");
+      boolean isSingleAPK = false;
       if (tczname == null)
       {
          // this is a single apk. get the app name from the package
@@ -176,6 +177,7 @@ public class Loader extends Activity
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
             totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
+            isSingleAPK = true;
          }
       }
       String appPath = ht.get("apppath");
@@ -191,11 +193,13 @@ public class Loader extends Activity
          setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
       }
       
+      // start the vm
       achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
-      setContentView(new Launcher4A(this, tczname, appPath, cmdline));
+      setContentView(new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK));
       onMainLoop = true;
    }
+   
    
    class EventHandler extends Handler 
    {

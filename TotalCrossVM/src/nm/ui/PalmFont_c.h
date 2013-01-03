@@ -93,12 +93,15 @@ static FontFile findFontFile(char* fontName)
    return null;
 }
 
+#ifdef ANDROID
+int32 callFindTCZ(CharP name);
+#endif
+
 FontFile loadFontFile(char *fontName)
 {
    FontFile ff;
    TCZFile tcz;
-   FILE* f;
-   char fullpath[MAX_PATHNAME];
+   char fullName[150];
 
    IF_HEAP_ERROR(fontsHeap)
    {
@@ -110,12 +113,29 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-      f = findFile(fontName,fullpath);
+#ifdef ANDROID      
+      int32 idx = callFindTCZ(fontName);
+      if (idx >= 0)
+         xstrcpy(fullName, fontName);
+      else
+      {
+         xstrprintf(fullName,"%s.tcz",fontName); // append a tcz to the font name
+         idx = callFindTCZ(fullName);
+      }
+      if (idx < 0 && 'a' <= fontName[0] && fontName[0] <= 'z')
+      {
+         fontName[0] = toUpper(fontName[0]); // the user may have created the font with uppercase, like Arial
+         return loadFontFile(fontName);
+      }
+      if (idx >= 0)
+      {
+         tcz = tczOpen(fullName,true);
+#else
+      FILE* f = findFile(fontName,null);
       if (f == null)
       {
-         char fullName[150];
          xstrprintf(fullName,"%s.tcz",fontName); // append a tcz to the font name
-         f = findFile(fullName,fullpath);
+         f = findFile(fullName,null);
       }
       #ifndef WIN32 // win32 file system is not case sensitive
       if (f == null && 'a' <= fontName[0] && fontName[0] <= 'z')
@@ -126,7 +146,8 @@ FontFile loadFontFile(char *fontName)
       #endif
       if (f != null)
       {
-         tcz = tczOpen(f,fullpath,null);
+         tcz = tczOpen(f,null);
+#endif
          if (tcz != null)
          {
             ff = newXH(FontFile, fontsHeap);

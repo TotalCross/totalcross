@@ -19,7 +19,7 @@
 #endif
 #include "../zlib/zlib.h"
 
-#define TCZ_VERSION 107
+#define TCZ_VERSION 110
 #define ATTR_HAS_MAINCLASS  1 // if false, it is a library-only module
 #define ATTR_HAS_MAINWINDOW 2
 #define ATTR_LIBRARY 4
@@ -30,6 +30,7 @@
 #define ATTR_WINDOWSIZE_480X640 128
 #define ATTR_WINDOWSIZE_600X800 256
 
+#define TCZ_BUFFER_SIZE 4096
 typedef struct TTCZFile TTCZFile;
 typedef TTCZFile* TCZFile;
 
@@ -43,8 +44,13 @@ struct TTCZFileHeader // common members to all instances
    Int32Array uncompressedSizes;
    int16 version;
    int16 attr; // see ATTR_xxx above
-   char path[MAX_PATHNAME];
+#ifdef ANDROID
+   int32 apkIdx; // index in java's array
+#else      
+   FILE* fin;
+#endif   
    int32 instanceCount;
+   int32 realFilePos; // the current seek position
    ConstantPool cp; // this is the Global constant pool that came in this tcz file
    Heap hheap;
 };
@@ -55,12 +61,11 @@ struct TTCZFileHeader // common members to all instances
 struct TTCZFile
 {
    TCZFileHeader header; // common properties
-   uint8 buf[512];
-   z_stream zs;
+   uint8 buf[TCZ_BUFFER_SIZE];
    int32 expectedFilePos; // the expected seek position (may change if several instances are processing the same file)
    Heap tempHeap; // can be assigned by the user to branch to an error handler if something wrong happens
-   //bool eof; // true when end of file was reached
    int32 uncompressedSize;
+   z_stream zs;
 };
 
 /// Reads a number of bytes from the given tcz. Returns the number of bytes read, if the end of file has been reached
@@ -81,7 +86,11 @@ void tczClose(TCZFile tcz);
 TCZFile tczFindName(TCZFile tcz, CharP name);
 /// Opens a tcz file from the given FILE. Use only if there's no constant pools in the file, otherwise, use tczLoad.
 /// fileName may be null for font files.
-TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName);
+#ifdef ANDROID
+TCZFile tczOpen(CharP fileName, bool isFont);
+#else
+TCZFile tczOpen(FILE* fin, CharP fileName);
+#endif
 /// Loads a TotalCross library with the given tcz name. If there's a constant pool in the file,
 /// it is loaded too. Also binds the tcz to the list of open tczs. There's no need to close the returned tcz instance.
 /// VERY IMPORTANT: the tczName parameter MUST BE a temporary buffer, NEVER a constant string, because it may be changed
