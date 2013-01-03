@@ -43,7 +43,10 @@ void freeResultSet(ResultSet* resultSet)
    // Only frees the select clause if it is not from a prepared statement, which might be used again.
    if (resultSet->selectClause && !resultSet->isPrepared)
       heapDestroy(resultSet->selectClause->heap);
-
+   
+   // juliana@263_3: corrected a bug where a new result set data could overlap an older result set data if both were related to the same table.
+   xfree(resultSet->allRowsBitmap);
+   
    heapDestroy(resultSet->heap); // Frees the structure
 }
 
@@ -704,8 +707,10 @@ void rsGetByName(NMParams p, int32 type)
       TC_throwNullArgumentException(p->currentContext, "colName");
    else if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1;
-      rsPrivateGetByIndex(p, type);
+      if ((p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1) >= 0)
+         rsPrivateGetByIndex(p, type);
+      else // juliana@266_2: corrected exception message when an unknown column name was passed to a ResultSet method.
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NAME), colName);
    }
 }
 
@@ -1369,7 +1374,7 @@ Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 
       int32 type = table->columnTypes[index];
       SQLValue* value = table->defaultValues[index];  
       DoubleBuf buffer;
-      CharP valueCharP;     
+      CharP valueCharP = "";     
                 
       if (!value) // No default value, returns null.
          return null;

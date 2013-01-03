@@ -80,7 +80,13 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	updateStmt->paramIndexes = (uint8*)TC_heapAlloc(heap, i);
 	updateStmt->paramDefined = (uint8*)TC_heapAlloc(heap, i);
 
-	i = updateStmt->nValues;
+   // juliana@262_1: now it is not allowed duplicated fields in an update statement.
+   if ((i = updateStmt->nValues) >= table->columnCount)
+   {
+      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), "");
+      return null;
+   }    
+
    while (--i >= 0)
    {
       // juliana@230_40: rowid cannot be an update field.
@@ -293,13 +299,12 @@ void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index)
 {
    TRACE("setUpdateRecord")
    int32 i = updateStmt->paramIndexes[index];
-   SQLValue* record;
    
    // It is not necessary to re-alocate a record value.
    if (updateStmt->record[i])
-	   xmemzero(record = updateStmt->record[i], sizeof(SQLValue));
+	   xmemzero(updateStmt->record[i], sizeof(SQLValue));
    else
-      record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
+      updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
 
    // Sets the values of the parameter in its list.
    updateStmt->paramDefined[index] = true;

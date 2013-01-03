@@ -476,7 +476,10 @@ class SQLBooleanClauseTree
                      rightTree = auxTree;
                      indexRs = leftIndex;
                   }
-                  bothAreIdentifier = true;
+                  
+                  // juliana@263_2: corrected a very old bug in a join with comparision between two fields of the same table.
+                  if (leftIndex != rightIndex) 
+                     bothAreIdentifier = true;
                }
                else
                   indexRs = clause.fieldList[left.operandType == SQLElement.OP_IDENTIFIER ? lIdx : rIdx].indexRs;

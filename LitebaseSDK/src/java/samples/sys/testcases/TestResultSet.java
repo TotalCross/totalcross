@@ -411,65 +411,85 @@ public class TestResultSet extends TestCase
       
       // getStrings() with parameter beginning in the first record. 
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(4, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the second record. 
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the third record. 
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the fourth record. 
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       

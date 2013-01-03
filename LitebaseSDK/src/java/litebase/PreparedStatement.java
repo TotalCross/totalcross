@@ -148,7 +148,7 @@ public class PreparedStatement
             SQLColumnListClause orderByClause = selectStmt.orderByClause,
                                 groupByClause = selectStmt.groupByClause;
             SQLResultSetField[] fieldList;
-            byte[] vi;
+            short[] vi; // juliana@226_1
             int n;
             
             if (orderByClause != null)
@@ -157,9 +157,9 @@ public class PreparedStatement
                fieldList = orderByClause.fieldList;
             
                // Saves the order by clause if there's no backup yet.
-               vi = orderByClause.fieldTableColIndexesBak = new byte[n];
+               vi = orderByClause.fieldTableColIndexesBak = new short[n]; // juliana@226_1
                while (--n >= 0)
-                  vi[n] = (byte)fieldList[n].tableColIndex;
+                  vi[n] = (short)fieldList[n].tableColIndex; // juliana@226_1
             }
             
             // juliana@226_14: corrected a bug that would make a prepared statement with group by not work correctly after the first execution.
@@ -169,9 +169,9 @@ public class PreparedStatement
                fieldList = groupByClause.fieldList;
             
                // Saves the order by clause if there's no backup yet.
-               vi = groupByClause.fieldTableColIndexesBak = new byte[n];
+               vi = groupByClause.fieldTableColIndexesBak = new short[n]; // juliana@226_1
                while (--n >= 0)
-                  vi[n] = (byte) fieldList[n].tableColIndex;
+                  vi[n] = (short)fieldList[n].tableColIndex; // juliana@226_1
             }
             if ((whereClause = selectStmt.whereClause) != null)
                whereClause.expressionTreeBak = whereClause.expressionTree.cloneTree(null);
@@ -273,7 +273,7 @@ public class PreparedStatement
       {
          int n = columnListClause.fieldList.length;
          SQLResultSetField[] fieldList = columnListClause.fieldList;
-         byte[] vi = columnListClause.fieldTableColIndexesBak;
+         short[] vi = columnListClause.fieldTableColIndexesBak;
          
          while (--n >= 0)
             fieldList[n].tableColIndex = vi[n];

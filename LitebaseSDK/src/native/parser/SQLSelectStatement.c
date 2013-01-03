@@ -300,6 +300,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
    heap = heapCreate();
    IF_HEAP_ERROR(heap)
    {
+finish:
       heapDestroy(heap);
       if (!*rsBaseTable->name) // juliana@223_14: solved possible memory problems.
          freeTable(context, rsBaseTable, false, true);
@@ -321,7 +322,11 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
    if (rsBaseTable->answerCount >= 0)
    {
       bag->answerCount = rsBaseTable->answerCount;
-      bag->allRowsBitmap = rsBaseTable->allRowsBitmap;
+      
+      // juliana@263_3: corrected a bug where a new result set data could overlap an older result set data if both were related to the same table.
+      if (!(bag->allRowsBitmap = (uint8*)xmalloc(rsBaseTable->allRowsBitmapLength)))
+         goto finish;
+      xmemmove(bag->allRowsBitmap, rsBaseTable->allRowsBitmap, rsBaseTable->allRowsBitmapLength); 
    }
 
    if ((resultSet = TC_createObject(context, "litebase.ResultSet")))
@@ -1017,8 +1022,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                                         duplicateByteArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
                                                                                         NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
 	   goto error; // juliana@223_14: solved possible memory problems.
-
-   count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
    if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
@@ -1079,7 +1082,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
    
    prevRecord = record2 = newSQLValues(i, heap);
-   numOfBytes = NUMBEROFBYTES(count);
    nullsPrevRecord = tempTable1->columnNulls;
    writeDelayed = aggFunctionExist || groupByClause;
 
@@ -1899,7 +1901,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
             }
             else // Verifies if the column name in the field list is ambiguous.
             {
-               rsTableAux = rsTable = null;
+               rsTable = null;
                foundFirst = false;
                currentTable = auxTable = null;
                
@@ -2084,7 +2086,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    int32* rsSizes = rsTable->columnSizes;
    int16* items = rs2TableColIndexes? rs2TableColIndexes : null;
 	int32 countSelectedField = selectClause->fieldsCount, // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
-         i = countSelectedField, 
+         i, 
          j,
          totalRecords = 0,
          rowSize = tempDB->rowSize,
@@ -2385,7 +2387,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
                {
                   if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
                   {
-                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition && whereClause)
                      {
                         whereClause->resultSet = resultSet;
                         return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
@@ -2599,7 +2601,7 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                   switch (booleanTreeEvaluateJoin(context, rightTree, rsList, totalRs, heap)) // Verifies the right branch.
                   {
                      case VALIDATION_RECORD_NOT_OK: 
-                        return VALIDATION_RECORD_NOT_OK;
+                        return VALIDATION_RECORD_INCOMPLETE_OK; // juliana@263_1: corrected a very old bug in a join with OR.
                      case VALIDATION_RECORD_INCOMPLETE: 
                         return VALIDATION_RECORD_INCOMPLETE;
                      case VALIDATION_RECORD_OK:
@@ -2663,14 +2665,11 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
          colIndex,
          sqlAggFunction, 
          colType;
-   double doubleVal;
    SQLValue* aggValue;
    SQLValue* value;
 
    while (--i >= 0) // Performs the calculation of the aggregation functions.
    {
-      doubleVal = 0;
-
       if (!aggFunctionsCodes[i])
       {
          groupCountCols[i]++;

@@ -253,6 +253,11 @@ class Table
    byte[] allRowsBitmap; // juliana@230_14
    
    /**
+    * An array of only one integer to convert to a byte array.
+    */
+   private int[] oneInt = new int[1];
+   
+   /**
     * Verifies if the index already exists.
     *
     * @param columnNumbers The columns that are part of this index.
@@ -2034,7 +2039,7 @@ class Table
                      switch (booleanTreeEvaluateJoin(list, rightTree)) // Verifies the right branch.
                      {
                         case VALIDATION_RECORD_NOT_OK:
-                           return VALIDATION_RECORD_NOT_OK;
+                           return VALIDATION_RECORD_INCOMPLETE_OK; // juliana@263_1: corrected a very old bug in a join with OR.
                         case VALIDATION_RECORD_INCOMPLETE:
                            return VALIDATION_RECORD_INCOMPLETE;
                         case VALIDATION_RECORD_OK:
@@ -2558,7 +2563,7 @@ class Table
       
       if (version == Table.VERSION)
       {
-         int[] intArray = new int[1];
+         int[] intArray = oneInt;
          
          i = n;
          while (--i > 0) 
@@ -2583,7 +2588,9 @@ class Table
            	      intArray[0] = ((values[i].asBlob.length > sizes[i])? sizes[i] : values[i].asBlob.length);
            	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
            	   }
-        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)
+           	   // juliana@265_2: corrected a problem where a row could be wrongly deleted by recovering a table when an update was done and the 
+               // column which was of type blob remained null on Java SE and BlackBerry.
+        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asInt != -1)
         	      {
         	         intArray[0] = vOlds[i].asInt;
         	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
