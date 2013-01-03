@@ -65,6 +65,9 @@ public class AndroidUtils
                }
                f.close();
             }
+            catch (FileNotFoundException fnfe)
+            {
+            }
             catch (Exception e)
             {
                handleException(e,false);
@@ -258,7 +261,7 @@ public class AndroidUtils
          String dir = main.getPackageResourcePath();
          fos.write(dir.getBytes()); // full path including apk name
          fos.close();
-         debug("writting \""+dir+"\" into "+txt);
+         //debug("writting \""+dir+"\" into "+txt);
       }
       catch (Exception e)
       {
@@ -336,6 +339,9 @@ public class AndroidUtils
                ht.put(key,value);
             }
             dis.close();
+         }
+         catch (FileNotFoundException fnfe)
+         {
          }
          catch (Exception e)
          {
