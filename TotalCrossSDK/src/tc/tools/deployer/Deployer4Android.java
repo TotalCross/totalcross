@@ -512,13 +512,6 @@ public class Deployer4Android
       zos.write(all);
    }
 
-   private void copyStream(InputStream in, OutputStream out) throws Exception
-   {
-      int n;
-      while ((n = in.read(buf)) > 0)
-         out.write(buf, 0, n);
-   }
-   
    private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
@@ -558,7 +551,6 @@ public class Deployer4Android
          // tcz's name must match the lowercase sharedid
          if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
             name = targetTCZ+".tcz";
-         zos.putNextEntry(new ZipEntry(name));
          FileInputStream fis;
          try
          {
@@ -568,8 +560,21 @@ public class Deployer4Android
          {
             fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
          }
-         copyStream(fis, zos);
+         byte[] bytes = new byte[fis.available()];
+         fis.read(bytes);
          fis.close();
+         ZipEntry zze = new ZipEntry(name);
+         if (name.endsWith(".tcz")) // tcz files will be stored without compression so they can be read directly
+         {
+            CRC32 crc = new CRC32();
+            crc.update(bytes); 
+            zze.setCrc(crc.getValue());
+            zze.setMethod(ZipEntry.STORED);
+            zze.setCompressedSize(bytes.length);
+            zze.setSize(bytes.length);
+         }            
+         zos.putNextEntry(zze);
+         zos.write(bytes);
          zos.closeEntry();
       }
       zos.close();

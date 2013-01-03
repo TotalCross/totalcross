@@ -1693,4 +1693,13 @@ public class Control extends GfxSurface
             return true;
       return false;
    }
+   
+   /** Returns true of the parent window is the top most one. 
+    * @since TotalCross 1.66
+    */
+   public boolean isTopMost()
+   {
+      Window w = getParentWindow();
+      return w != null && w == Window.topMost;
+   }
 }
