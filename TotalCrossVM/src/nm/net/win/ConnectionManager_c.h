@@ -23,9 +23,6 @@ typedef HRESULT (__stdcall *DMProcessConfigXMLProc)( LPCWSTR , DWORD , LPWSTR* )
 
 #define NATIVE_CONNECTION HANDLE
 
-boolean isWifiActive();
-bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn);
-
 #include "..\..\io\device\win\RadioDevice_c.h"
 
 TCHARP parseArgs(TCHARP line, TCHARP argument, TCHARP argValue)
@@ -57,6 +54,9 @@ static ConnMgrEstablishConnectionSyncProc _ConnMgrEstablishConnectionSync = null
 static ConnMgrMapURLProc _ConnMgrMapURL = null;
 static ConnMgrReleaseConnectionProc _ConnMgrReleaseConnection = null;
 static ConnMgrMapConRefProc _ConnMgrMapConRef = null;
+
+boolean isWifiActive();
+bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn);
 #endif
 
 static Err CmGprsConfigure(Context currentContext, TCHARP szConnCfg)
@@ -416,6 +416,7 @@ static void CmReleaseResources()
 
 static boolean CmIsAvailable(int type)
 {
+#if defined (WINCE)
    switch (type)
    {
       case CM_CRADLE:
@@ -448,8 +449,12 @@ static boolean CmIsAvailable(int type)
 
       default: return false; // flsobral@120: default now is false.
    }
+#else
+	return false;
+#endif
 }
 
+#if defined (WINCE)
 boolean isWifiActive()
 {
    HKEY regKey = null;
@@ -554,3 +559,4 @@ bool RasLookup(RASCONNSTATE state, TCHARP szDeviceType, RASCONN* rasConn)
    }
    return false;
 }
+#endif

@@ -154,7 +154,7 @@ public class Edit extends Control
    public String keyboardTitle;
    
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
-    * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
+    * Set to -1 to disable it; defaults to 1500 (1.5 seconds) in pen devices, -1 in finger devices (because in these devices . Also affects MultiEdit.
     * @since TotalCross 1.3
     */
    public static int clipboardDelay = 1500;
@@ -1127,21 +1127,20 @@ public class Edit extends Control
             }
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
-               Window w = getParentWindow();
-               if (w == null || w != Window.topMost) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
+               if (!isTopMost()) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
                   focusOut();
                else
                if (parent != null)
                {
                   draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
-                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+/*                  if (editable && enabled && lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())
                      {
                         event.consumed = true;
                         break;
                      }
-               }
+*/               }
                event.consumed=true;     //astein@230_5: prevent blinking cursor event from propagating
             }
             return;
@@ -1501,7 +1500,7 @@ public class Edit extends Control
          postPressedEvent(); // guich@tc113_1
 
       insertPos = newInsertPos;
-      if (getParentWindow() == Window.topMost) // guich@tc124_24: prevent screen updates when we're not the topmost window
+      if (isTopMost()) // guich@tc124_24: prevent screen updates when we're not the topmost window
       {
          if (redraw)
          {

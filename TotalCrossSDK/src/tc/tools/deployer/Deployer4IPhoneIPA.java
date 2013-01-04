@@ -152,7 +152,7 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file
-      byte[] updatedInfoPlist = rootDict.toXMLPropertyList().getBytes("UTF-8");
+      byte[] updatedInfoPlist = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(rootDict);
       infoPlist.input(new ByteArrayInputStream(updatedInfoPlist));
 
       /** PROCESS CERTIFICATE **/
@@ -259,7 +259,7 @@ public class Deployer4IPhoneIPA
          metadata.put("bundleVersion", DeploySettings.appVersion);
 
       TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
-      iTunesMetadata.input(new ByteArrayInputStream(metadata.toXMLPropertyList().getBytes("UTF-8")));
+      iTunesMetadata.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(metadata)));
    }
 
    private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException
@@ -288,7 +288,7 @@ public class Deployer4IPhoneIPA
        root.put("rules", rules);
        
        TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
-       bundleResourceSpecificationFile.input(new ByteArrayInputStream(root.toXMLPropertyList().getBytes("UTF-8")));
+       bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
        
        NSDictionary files = new NSDictionary();
        SHA1Digest digest = new SHA1Digest();
@@ -307,7 +307,7 @@ public class Deployer4IPhoneIPA
        root.put("files", files);
        root.put("rules", rules);
        
-       byte[] rootBytes = root.toXMLPropertyList().getBytes();
+       byte[] rootBytes = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root);
        TFile codeResources = new TFile((TFile) ipaContents.get("_CodeSignature"), "CodeResources");
        codeResources.input(new ByteArrayInputStream(rootBytes));
        

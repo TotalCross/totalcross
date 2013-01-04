@@ -215,6 +215,10 @@ public class Bar extends Container
                }
                break;
             }
+            case KeyEvent.ACTION_KEY_PRESS:
+               selected = appId;
+               parent.postPressedEvent();
+               break;
          }
       }
    }

@@ -448,6 +448,8 @@ public class Container extends Control
          onColorsChanged(false);
          for (Control child = children; child != null; child = child.next)
             child.setEnabled(enabled);
+         esce.update(this);
+         postEvent(esce);
          Window.needsPaint = true; // now the controls have different l&f for disabled states
       }
    }
