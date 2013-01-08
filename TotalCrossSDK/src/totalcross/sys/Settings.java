@@ -76,7 +76,9 @@ public final class Settings
    /** Field that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
    public static boolean onJavaSE;
-   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000. In desktop, return the oldest version of the destination platform where TotalCross can run. */
+   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000. 
+    * For Android, returns the <a href='http://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels'>api level</a>. 
+    */
    public static int romVersion = 0x02000000;
    
    /** Underlying platform is Java. To be used with the <code>platform</code> member. */
