@@ -181,6 +181,9 @@ Hashtable htNativeProcAddresses;
 
 // tcz.c
 VoidPs* openTCZs;
+#ifdef ANDROID
+jmethodID jreadTCZ, jfindTCZ;
+#endif
 
 // event.c
 bool appExitThrown;

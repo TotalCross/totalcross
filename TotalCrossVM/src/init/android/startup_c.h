@@ -97,6 +97,8 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jappTitleH        = (*env)->GetStaticFieldID (env, applicationClass, "appTitleH", "I");
    jclipboard        = (*env)->GetStaticMethodID(env, applicationClass, "clipboard", "(Ljava/lang/String;)Ljava/lang/String;");
    jhardwareKeyboardIsVisible = (*env)->GetStaticFieldID (env, applicationClass, "hardwareKeyboardIsVisible", "Z");
+   jfindTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "findTCZ", "(Ljava/lang/String;)I");
+   jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
