@@ -91,7 +91,7 @@ public final class Settings4A
       // platform
       String v = Build.VERSION.RELEASE;
       double vd = 0;
-      while (vd == 0)
+      while (vd == 0 && v.length() > 0)
          try
          {
             vd = Double.valueOf(v);            
