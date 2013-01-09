@@ -76,8 +76,8 @@ public final class Settings
    /** Field that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
    public static boolean onJavaSE;
-   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000. 
-    * For Android, returns the <a href='http://developer.android.com/guide/topics/manifest/uses-sdk-element.html#ApiLevels'>api level</a>. 
+   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000.
+    * For Android, returns the version in decimal number (E.G.: 3.16 is returned as 316). 
     */
    public static int romVersion = 0x02000000;
    
