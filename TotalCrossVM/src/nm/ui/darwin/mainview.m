@@ -20,38 +20,34 @@ int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
 
-@implementation SSize
-
-- (id)set:(CGSize)size
-{
-   ssize = size;
-   return self;
-}
-
-- (CGSize)get
-{
-   return ssize;
-}
-
-@end
-
-//--------------------------------------------------------------------------------------------------------
-
-@implementation MainView
+@implementation MainViewController
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
+   NSLog(@"view should auto rotate");
    [UIView setAnimationsEnabled:NO];
    [self destroySIP];
    return YES;
 }
-
-- (void)viewDidLoad
+- (void)viewWillLayoutSubviews
 {
-   [super viewDidLoad];
-   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
-   [self initEvents];
-   self.view = child_view;
+   NSLog(@"view will layout subviews");
+}
+- (void)viewWillAppear:(BOOL)animated    // Called when the view is about to made visible. Default does nothing
+{
+   NSLog(@"view will appear");
+}
+- (void)viewDidAppear:(BOOL)animated     // Called when the view has been fully transitioned onto the screen. Default does nothing
+{
+   NSLog(@"view did appear");
+}
+
+- (void)loadView
+{
+   NSLog(@"load view");
+   self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
 
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
@@ -60,19 +56,6 @@ void Sleep(int ms);
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
    [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
-}
-
-- (void)initEvents
-{
-   //_lock = [[NSLock alloc] init];
-
-   [[NSNotificationCenter defaultCenter] addObserver:self
-      selector:@selector (keyboardDidShow:)
-      name: UIKeyboardDidShowNotification object:nil];
- 
-   [[NSNotificationCenter defaultCenter] addObserver:self 
-      selector:@selector (keyboardDidHide:)
-      name: UIKeyboardDidHideNotification object:nil];
 }
 
 - (void)destroySIP
@@ -301,6 +284,11 @@ static bool callingCamera;
    });
 }
 
+- (int) gpsUpdateLocation
+{
+   return 0;
+}
+
 //--------------------------------------------------------------------------------------------------------
 
 @end
@@ -313,11 +301,10 @@ bool initGLES(ScreenSurface screen)
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds];
+   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
    DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
+   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
    [window makeKeyAndVisible];
-   
    [ DEVICE_CTX->_childview setScreenValues: screen ];
    screen->pixels = (void*)1;
    return true;
@@ -366,7 +353,7 @@ void iphone_gpsStop()
 }
 int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double *veloc, double* pdop, double* dir, double* lat, double* lon)
 {   
-   MainView* mw = DEVICE_CTX->_mainview;
+   MainViewController* mw = DEVICE_CTX->_mainview;
    *flags = 0;
    if (mw->locationManager == NULL)
       return 1;

@@ -11,26 +11,16 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "-[ChildView invalidateScreen:]:childview.m">
-         <PersistentStrings>
-            <PersistentString
-               value = "tcSettings.screenWidthPtr">
-            </PersistentString>
-         </PersistentStrings>
+         contextName = "-[ChildView initWithFrame:]:childview.m">
       </ContextState>
       <ContextState
-         contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
-         <PersistentStrings>
-            <PersistentString
-               value = "htNativeProcAddresses">
-            </PersistentString>
-         </PersistentStrings>
+         contextName = "-[MainViewController viewDidAppear:]:mainview.m">
       </ContextState>
       <ContextState
-         contextName = "-[ChildView drawRect:]:childview.m">
+         contextName = "-[ChildView updateScreen]:childview.m">
          <PersistentStrings>
             <PersistentString
-               value = "self.pitch">
+               value = "window">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -43,7 +33,42 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "-[ChildView invalidateScreen:]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "tcSettings.screenWidthPtr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView drawRect:]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.pitch">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "htNativeProcAddresses">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "-[ChildView setScreenValues:]:childview.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView init:]:childview.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView graphicsSetup]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.layer">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
    </ContextStates>
 </VariablesViewState>

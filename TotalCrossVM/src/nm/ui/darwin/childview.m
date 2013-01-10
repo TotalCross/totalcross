@@ -24,12 +24,9 @@ bool setupGL(int width, int height);
 {                                    
    controller = ctrl;
    self = [ super init ];
-   if (self != nil )
-   {
-      [self setOpaque:YES];
-      self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
-   }  
-   return self; 
+   [self setOpaque:YES];
+   self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
+   return self;
 }
 
 extern int32 deviceFontHeight,iosScale;
@@ -56,8 +53,7 @@ extern int32 deviceFontHeight,iosScale;
    realAppH = appH = h > w ? h : h-barH;
    callingScreenChange = true;
    [self setScreenValues: gscreen];
-   [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
-     @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
+   [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];
    while (callingScreenChange)
       Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
    ScreenSurface screen = gscreen;
@@ -84,17 +80,21 @@ extern int32 deviceFontHeight,iosScale;
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
    setupGL(gscreen->screenW,gscreen->screenH);
-   glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
+   glClearColor(1,0,1,1);
+   glClear(GL_COLOR_BUFFER_BIT);
    realAppH = appH;
 }
 - (void)updateScreen
 {
+   NSLog(@"update screen %d %d %d %d",(int)self.frame.origin.x,(int)self.frame.origin.y,(int)self.frame.size.width,(int)self.frame.size.height);
+   [self.layer display];
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
    glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
-}    
+}
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
 {
+   NSLog(@"event generated");
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
@@ -105,7 +105,7 @@ extern int32 deviceFontHeight,iosScale;
             return;
          lastEventTS = ts;
          CGPoint point = [touch locationInView: self];
-         [ (MainView*)controller addEvent:
+         [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
            [NSNumber numberWithInt:(int)point.x * iosScale], @"x",
