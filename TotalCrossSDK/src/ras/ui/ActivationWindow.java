@@ -86,7 +86,7 @@ public class ActivationWindow extends Window
 
    public void onEvent(Event e)
    {
-      if (e.type == TimerEvent.TRIGGERED && startTimer.triggered)
+      if (e.type == TimerEvent.TRIGGERED && startTimer != null && startTimer.triggered)
       {
          removeTimer(startTimer);
          try

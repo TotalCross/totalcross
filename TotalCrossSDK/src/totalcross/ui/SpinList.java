@@ -348,7 +348,7 @@ public class SpinList extends Control
 	 	   	break;
 	      }
  		   case TimerEvent.TRIGGERED:
- 		      if (hadParentScrolled())
+ 		      if (hadParentScrolled() || !isTopMost())
  		         stopTimer();
  		      else
             if (timer.triggered && tick++ > timerInitialDelay)

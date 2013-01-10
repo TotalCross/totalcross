@@ -38,7 +38,7 @@ public final class Settings
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 9;
+   public static int buildNumber = 14;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -75,7 +75,9 @@ public final class Settings
    /** Field that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
    public static boolean onJavaSE;
-   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000. In desktop, return the oldest version of the destination platform where TotalCross can run. */
+   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000.
+    * For Android, returns the version in decimal number (E.G.: 3.16 is returned as 316). 
+    */
    public static int romVersion = 0x02000000;
    
    /** Underlying platform is Java. To be used with the <code>platform</code> member. */

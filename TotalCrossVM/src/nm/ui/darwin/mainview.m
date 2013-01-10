@@ -58,6 +58,7 @@ void Sleep(int ms);
    kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
+   [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
 }
 

@@ -560,7 +560,7 @@ public class MultiEdit extends Container implements Scrollable
          {
             case TimerEvent.TRIGGERED:
                Window w;
-               if (blinkTimer != null && ((w=getParentWindow()) == null || w != Window.topMost)) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
+               if (blinkTimer != null && !isTopMost()) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
                {
                   focusOut();
                   event.consumed = true;

@@ -26,6 +26,7 @@ import java.util.*;
 
 import android.app.*;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
@@ -75,7 +76,6 @@ public class Loader extends Activity
       }
       catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
       {
-         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
       catch (Throwable t)
@@ -164,6 +164,7 @@ public class Loader extends Activity
       runningVM = true;
       Hashtable<String,String> ht = AndroidUtils.readVMParameters();
       String tczname = tcz = ht.get("tczname");
+      boolean isSingleAPK = false;
       if (tczname == null)
       {
          // this is a single apk. get the app name from the package
@@ -175,6 +176,7 @@ public class Loader extends Activity
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
             totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
+            isSingleAPK = true;
          }
       }
       String appPath = ht.get("apppath");
@@ -184,11 +186,13 @@ public class Loader extends Activity
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
       
+      // start the vm
       achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
-      setContentView(new Launcher4A(this, tczname, appPath, cmdline));
+      setContentView(new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK));
       onMainLoop = true;
    }
+   
    
    class EventHandler extends Handler 
    {
@@ -382,6 +386,7 @@ public class Loader extends Activity
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
          try {Thread.sleep(100);} catch (Exception e) {}
+      Launcher4A.closeTCZs();
       //Level5.getInstance().destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.
