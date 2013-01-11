@@ -30,7 +30,8 @@
 - (void)setScreenValues:(void*)screen;
 - (void)onRotate;
 - (void)updateScreen;
-- (void)graphicsSetup;
+- (void)createGLcontext;
+- (void)setCurrentGLcontext;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
