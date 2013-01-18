@@ -381,6 +381,7 @@ public class Loader extends Activity
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
          try {Thread.sleep(100);} catch (Exception e) {}
+      Launcher4A.closeTCZs();
       //Level5.getInstance().destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.

@@ -634,11 +634,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (eventThread.running) // only in situation 2 
          canQuit = false;
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
-      // close the tczs
-      RandomAccessFile lastRAF = null;
-      for (int i = 0, n = tczs.size(); i < n; i++)
-         if (tczs.get(i).raf != lastRAF)
-            try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
    
    public static boolean eventIsAvailable()
@@ -1392,4 +1387,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   public static void closeTCZs()
+   {
+      // close the tczs
+      RandomAccessFile lastRAF = null;
+      for (int i = 0, n = tczs.size(); i < n; i++)
+         if (tczs.get(i).raf != lastRAF)
+            try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
+   }
 }

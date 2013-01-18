@@ -89,7 +89,18 @@ public final class Settings4A
 	   Context ctx = Launcher4A.instance.getContext();
 	   String id1,id2;
       // platform
-      romVersion = Build.VERSION.SDK_INT;    
+      String v = Build.VERSION.RELEASE;
+      double vd = 0;
+      while (vd == 0 && v.length() > 0)
+         try
+         {
+            vd = Double.valueOf(v);            
+         }
+         catch (Exception e)
+         {
+            v = v.substring(0,v.length()-1);
+         }
+      romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16    
       deviceId = Build.MANUFACTURER + " " + Build.MODEL;
       
       // userName
