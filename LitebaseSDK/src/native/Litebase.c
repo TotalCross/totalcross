@@ -111,6 +111,10 @@ LB_API void LibClose()
    muFree(&memoryUsage); // Destroys memory usage hash table.
    TC_htFree(&reserved, null); // Destroys the reserved words hash table.
    
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   TC_htFree(&htFiles, null); // Destroys the files hash table.
+#endif
+
    // Destroy the mutexes.
    DESTROY_MUTEX(parser);
    DESTROY_MUTEX(log);
@@ -146,9 +150,19 @@ bool initVars(OpenParams params)
 
    if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
     || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+    || !(htFiles = TC_htNew(500, null)).items // Allocates a hash table for the open files.
+#endif
+
     || !initLex()) // Initializes the lex structures.
    {
       TC_htFree(&htCreatedDrivers, null);
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      TC_htFree(&htFiles, null);
+#endif
+
       TC_htFree(&reserved, null);
       muFree(&memoryUsage);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
@@ -1527,8 +1541,13 @@ TESTCASE(LibClose)
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);   
+   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10); 
 
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   ASSERT1_EQUALS(Null, htFiles.items);
+   ASSERT1_EQUALS(Null, htFiles.heap);
+   ASSERT2_EQUALS(I32, htFiles.size, 0);
+#endif
 finish : ;
 }
 
@@ -1628,6 +1647,14 @@ TESTCASE(LibOpen)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   ASSERT1_EQUALS(NotNull, htFiles.items);
+   ASSERT1_EQUALS(Null, htFiles.heap);
+   ASSERT2_EQUALS(I32, htFiles.size, 0);
+   ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 499);
+   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 500);
+#endif
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
@@ -2425,6 +2452,14 @@ TESTCASE(initVars)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   ASSERT1_EQUALS(NotNull, htFiles.items);
+   ASSERT1_EQUALS(Null, htFiles.heap);
+   ASSERT2_EQUALS(I32, htFiles.size, 0);
+   ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 499);
+   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 500);
+#endif
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);

@@ -22,6 +22,11 @@
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
+// The hash table for the Litebase files.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+extern Hashtable htFiles; 
+#endif
+
 // Globals for the parser.
 extern Hashtable reserved;              // Table containing the reserved words.
 extern MemoryUsageHT memoryUsage;       // Indicates how much memory a select sql command uses in its temporary .db.

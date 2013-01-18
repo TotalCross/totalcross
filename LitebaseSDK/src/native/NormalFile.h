@@ -142,4 +142,17 @@ bool flushCache(Context context, XFile* xFile);
  */
 void fileError(Context context, int32 errorCode, CharP fileName);
 
+/**
+ * Opens a disk file to store tables.
+ *
+ * @param xFile A pointer to the normal file structure.
+ * @param fullPath The full path (path + file name) where the file will be opened.
+ * @param mode Indicates if the file must be created or just opened. 
+ * @param slot The slot being used on palm or -1 for the other devices. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool openFile(XFile* xFile, TCHARP fullPath, int32 mode, int32* slot);
+
+bool 
+
 #endif
