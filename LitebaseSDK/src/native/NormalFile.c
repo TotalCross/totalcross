@@ -268,15 +268,15 @@ bool nfClose(Context context, XFile* xFile)
    {
       // Flushes the cache if necessary and frees it.
       if (xFile->cacheIsDirty) 
-         ret = !flushCache(context, xFile);
+         flushCache(context, xFile);
       
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret |= lbfileClose(&xFile->file)))
+      if ((ret = lbfileClose(&xFile->file)))
          fileError(context, ret, xFile->name);
    
       fileInvalidate(xFile->file);
@@ -286,7 +286,7 @@ bool nfClose(Context context, XFile* xFile)
    XFilesRemove(xFiles, xFile, null);
 #endif
 
-   return !ret;
+   return !context->thrownException;
 }
 
 /** 
@@ -312,7 +312,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
 #endif
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret |= lbfileDelete(&xFile->file, buffer, slot, true)))
+   if ((ret = lbfileDelete(&xFile->file, buffer, slot, true)))
       fileError(context, ret, xFile->name);
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
@@ -321,7 +321,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    XFilesRemove(xFiles, xFile, null);
 #endif
 
-   return !ret;
+   return !context->thrownException;
 }
 
 /**
