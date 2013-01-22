@@ -142,17 +142,26 @@ bool flushCache(Context context, XFile* xFile);
  */
 void fileError(Context context, int32 errorCode, CharP fileName);
 
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
 /**
- * Opens a disk file to store tables.
+ * Opens a disk file to store tables and put it in the files list.
  *
+ * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
- * @param fullPath The full path (path + file name) where the file will be opened.
  * @param mode Indicates if the file must be created or just opened. 
- * @param slot The slot being used on palm or -1 for the other devices. 
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool openFile(XFile* xFile, TCHARP fullPath, int32 mode, int32* slot);
+int32 openFile(Context context, XFile* xFile, int32 mode);
 
-bool 
+/**
+ * Reopens a file if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 reopenFileIfNeeded(Context context, XFile* xFile);
+#endif
 
 #endif

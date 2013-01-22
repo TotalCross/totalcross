@@ -18,9 +18,9 @@
 // Globas for driver creation.
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
-// The hash table for the Litebase files.
+// The list of table files currently opened.
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-Hashtable htFiles; 
+XFiles* xFiles; 
 #endif
 
 // Globals for the parser.

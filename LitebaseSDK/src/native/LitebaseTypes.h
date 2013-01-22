@@ -45,6 +45,13 @@ typedef void (*tiPDBF_listPDBs_iiFunc)(NMParams p);
  */
 TC_DeclareList(Object); 
 
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+/**
+ * The list of table files currently opened.
+ */
+TC_DeclareList(XFile);
+#endif
+
 // Typedefs for using Litebase file.
 typedef struct XFile XFile;
 typedef struct Key Key;
@@ -163,6 +170,14 @@ struct XFile
 	 * The file name, which is empty for a memory file.
 	 */
    char name[DBNAME_SIZE]; 
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   /**
+    * The file full path;
+    */
+   char fullPath[MAX_PATH + 1];
+#endif
+
 };
 
 /** 

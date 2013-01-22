@@ -91,6 +91,8 @@
 #define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
 #endif
 
+#define MAX_OPEN_FILES_CODE 24 // Error code when the maximum open files is reached on platforms based on Linux.
+
 // Available operand types. 
 #define OP_NONE                0 // No operator.
 #define OP_BOOLEAN_AND         1 // Boolean operator AND.

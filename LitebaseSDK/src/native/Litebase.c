@@ -22,7 +22,14 @@ bool ranTests;
 /**
  * A list of objects used to hold prepared statements that uses a specific table.
  */
-TC_ImplementList(Object); 
+TC_ImplementList(Object);
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+/**
+ * The list of table files currently opened.
+ */
+TC_ImplementList(XFile);
+#endif
 
 /**
  * Loads the necessary data when using Litebase for the first time.

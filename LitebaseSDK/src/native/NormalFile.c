@@ -58,7 +58,12 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
       xFile->dontFlush = true;
       
    // Creates the file or opens it and gets its size.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   xstrcpy(xFile->fullPath, fullPath);
+   if ((ret = openFile(context, xFile, buffer, isCreation? CREATE_EMPTY : READ_WRITE))
+#else
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
+#endif
     || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
       fileError(context, ret, name);
@@ -138,6 +143,12 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 	TRACE("nfGrowTo")
    int32 ret;
 
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
    if ((ret = lbfileSetSize(&xFile->file, newSize)))
@@ -206,15 +217,31 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
    getFullFileName(xFile->name, sourcePath, oldPath);
    getFullFileName(newName, sourcePath, newPath);
 
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    // Renames and reopens the file.
    if ((ret = lbfileRename(xFile->file, slot, oldPath, newPath, true))
     || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
    {
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+error:
+#endif
+
       fileError(context, ret, xFile->name);
       return false;
    }
 
    xstrcpy(xFile->name, newName);
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   xstrcpy(xFile->fullPath, newPath);
+#endif
+
    return true;
 }
 
@@ -230,30 +257,36 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
-   bool retFlush = true;
+
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      fileError(context, ret, xFile->name);
+#endif
 
    if (fileIsValid(xFile->file))
    {
       // Flushes the cache if necessary and frees it.
       if (xFile->cacheIsDirty) 
-         ret &= flushCache(context, xFile);
+         ret = !flushCache(context, xFile);
       
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret = lbfileClose(&xFile->file)))
-      {
+      if ((ret |= lbfileClose(&xFile->file)))
          fileError(context, ret, xFile->name);
-         fileInvalidate(xFile->file);
-         return false;
-      }
+   
       fileInvalidate(xFile->file);
-      return !ret && retFlush;
    }
-   return true;
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   XFilesRemove(xFiles, xFile, null);
+#endif
+
+   return !ret;
 }
 
 /** 
@@ -270,17 +303,25 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
 {
 	TRACE("nfRemove")
    TCHAR buffer[MAX_PATHNAME]; 
-   int32 ret;
+   int32 ret = 0;
+
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      fileError(context, ret, xFile->name);
+#endif
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret = lbfileDelete(&xFile->file, buffer, slot, true)))
-   {
+   if ((ret |= lbfileDelete(&xFile->file, buffer, slot, true)))
       fileError(context, ret, xFile->name);
-      return false;
-   }
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
-   return true;
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   XFilesRemove(xFiles, xFile, null);
+#endif
+
+   return !ret;
 }
 
 /**
@@ -310,9 +351,20 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
          return false;
 		}
 
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    // Reads data from the file.
    if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, (CharP)xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+error:
+#endif
+
       fileError(context, ret, xFile->name);
       return false;
    }
@@ -337,6 +389,12 @@ bool flushCache(Context context, XFile* xFile)
 	TRACE("flushCache")
    int32 written,
          ret;
+
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
 
    if ((ret = lbfileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = lbfileWriteBytes(xFile->file, 
                          (CharP)&xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
@@ -375,3 +433,58 @@ void fileError(Context context, int32 errorCode, CharP fileName)
    xstrcpy(&errorMsg[errorCode + 1], fileName);
    TC_throwExceptionNamed(context, "litebase.DriverException", errorMsg);
 }
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+/**
+ * Opens a disk file to store tables and put it in the files list.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @param mode Indicates if the file must be created or just opened. 
+ * @return The error code if an error occurred or zero if the function succeeds.
+ * @throws OutOfMemoryError If a memory allocation fails.
+ */
+int32 openFile(Context context, XFile* xFile, int32 mode)
+{
+   XFiles* lastAdded;
+   int32 ret;
+
+   // Tries to close one or more files if there are too many open files to open the new file. 
+   while ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, -1)) == MAX_OPEN_FILES_CODE)
+      if ((lastAdded = xFiles->prev))
+      {
+         if ((ret = lbfileClose(lastAdded->value->file)))
+            break; 
+         xFiles->prev = lastAdded->prev;
+         lastAdded->prev->next = list;          
+         fileInvalidate(lastAdded->value->file);
+         xfree(lastAdded);
+      }
+
+   if (ret) // If another error occurs, returns the error code.
+      return ret;
+
+   // Puts the file pointer in the files list and returns with no error code.
+   if (!XFilesAdd(xFiles, xFile, null))
+   {
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+      return 1;
+   }
+   return 0;
+}
+
+/**
+ * Reopens a file if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 reopenFileIfNeeded(Context context, XFile* xFile)
+{
+   if (!fileIsValid(xFile->file))
+      return openFile(context, xFile, READ_WRITE);
+   return 0;
+}
+#endif
+
