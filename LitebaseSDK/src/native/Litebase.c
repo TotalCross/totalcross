@@ -119,7 +119,7 @@ LB_API void LibClose()
    TC_htFree(&reserved, null); // Destroys the reserved words hash table.
    
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   TC_htFree(&htFiles, null); // Destroys the files hash table.
+   XFilesDestroy(xFiles); // Destroys the files list.
 #endif
 
    // Destroy the mutexes.
@@ -157,11 +157,6 @@ bool initVars(OpenParams params)
 
    if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
     || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.
-
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-    || !(htFiles = TC_htNew(500, null)).items // Allocates a hash table for the open files.
-#endif
-
     || !initLex()) // Initializes the lex structures.
    {
       TC_htFree(&htCreatedDrivers, null);
