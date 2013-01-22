@@ -1361,6 +1361,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return -1;
    }
 
+   public static String listTCZs()
+   {
+      StringBuilder sb = new StringBuilder(128);
+      sb.append(tczs.get(0).name);
+      for (int i = 1, n = tczs.size(); i < n; i++)
+         sb.append(",").append(tczs.get(i).name);
+      return sb.toString();
+   }
+   
    public static int findTCZ(String tcz)
    {
       for (int i = 0, n = tczs.size(); i < n; i++)

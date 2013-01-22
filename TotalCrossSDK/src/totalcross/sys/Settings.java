@@ -34,12 +34,12 @@ public final class Settings
    public static int version = 168;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.68";
+   public static String versionStr = "1.681";
     
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 15;
+   public static int buildNumber = 16;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY

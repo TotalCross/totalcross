@@ -165,6 +165,9 @@ jmethodID jvmFuncI,jvmExec;
 
 // utils.c
 int32 firstTS;
+#ifdef ANDROID
+jmethodID jlistTCZs;
+#endif
 
 // debug.c
 CharP debugstr;
