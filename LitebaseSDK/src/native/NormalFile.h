@@ -142,7 +142,7 @@ bool flushCache(Context context, XFile* xFile);
  */
 void fileError(Context context, int32 errorCode, CharP fileName);
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
 /**
  * Opens a disk file to store tables and put it in the files list.
  *

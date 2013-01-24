@@ -24,13 +24,6 @@ bool ranTests;
  */
 TC_ImplementList(Object);
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-/**
- * The list of table files currently opened.
- */
-TC_ImplementList(XFile);
-#endif
-
 /**
  * Loads the necessary data when using Litebase for the first time.
  *
@@ -117,10 +110,6 @@ LB_API void LibClose()
    TC_htFreeContext(TC_getMainContext(), &htCreatedDrivers, (VisitElementContextFunc)freeLitebase); // Flushs pending data and closes all tables. 
    muFree(&memoryUsage); // Destroys memory usage hash table.
    TC_htFree(&reserved, null); // Destroys the reserved words hash table.
-   
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   XFilesDestroy(xFiles); // Destroys the files list.
-#endif
 
    // Destroy the mutexes.
    DESTROY_MUTEX(parser);
@@ -155,16 +144,14 @@ bool initVars(OpenParams params)
    TC_getProcAddress = (getProcAddressFunc)params->getProcAddress;
    initTCVMLib();
 
+#ifdef POSIX
+   xmemzero(
+
    if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
     || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.
     || !initLex()) // Initializes the lex structures.
    {
       TC_htFree(&htCreatedDrivers, null);
-
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-      TC_htFree(&htFiles, null);
-#endif
-
       TC_htFree(&reserved, null);
       muFree(&memoryUsage);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
@@ -1441,7 +1428,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 		fileError(context, ret, sourcePath);
 		return 0;
 	}
-#elif !defined(WINCE) // WIN32, POSIX, ANDROID
+#elif !defined(WINCE) // WIN32 and POSIX
    // Creates the path folder if it does not exist; it can't be empty.
    if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
@@ -1544,12 +1531,6 @@ TESTCASE(LibClose)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10); 
-
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   ASSERT1_EQUALS(Null, htFiles.items);
-   ASSERT1_EQUALS(Null, htFiles.heap);
-   ASSERT2_EQUALS(I32, htFiles.size, 0);
-#endif
 finish : ;
 }
 
@@ -1649,14 +1630,6 @@ TESTCASE(LibOpen)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   ASSERT1_EQUALS(NotNull, htFiles.items);
-   ASSERT1_EQUALS(Null, htFiles.heap);
-   ASSERT2_EQUALS(I32, htFiles.size, 0);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 499);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 500);
-#endif
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
@@ -2300,7 +2273,7 @@ TESTCASE(checkApppath)
    xstrcpy(path, "\\"); 
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
    ASSERT2_EQUALS(Sz, sourcePath, "/");
-#if !defined(ANDROID) && !defined(POSIX)
+#if !defined(POSIX)
 	xstrcpy(path, "\\temp\\tables");
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path)); 
    ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/");
@@ -2454,14 +2427,6 @@ TESTCASE(initVars)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   ASSERT1_EQUALS(NotNull, htFiles.items);
-   ASSERT1_EQUALS(Null, htFiles.heap);
-   ASSERT2_EQUALS(I32, htFiles.size, 0);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 499);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 500);
-#endif
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);

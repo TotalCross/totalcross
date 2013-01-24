@@ -19,8 +19,8 @@
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
 // The list of table files currently opened.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-XFiles* xFiles; 
+#ifdef POSIX
+XFilesListP filesLists; 
 #endif
 
 // Globals for the parser.

@@ -45,13 +45,6 @@ typedef void (*tiPDBF_listPDBs_iiFunc)(NMParams p);
  */
 TC_DeclareList(Object); 
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-/**
- * The list of table files currently opened.
- */
-TC_DeclareList(XFile);
-#endif
-
 // Typedefs for using Litebase file.
 typedef struct XFile XFile;
 typedef struct Key Key;
@@ -171,16 +164,56 @@ struct XFile
 	 */
    char name[DBNAME_SIZE]; 
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    /**
     * The file full path;
     */
    char fullPath[MAX_PATH + 1];
 #endif
-
 };
 
-/** 
+#ifdef POSIX
+typedef struct XFilesListP XFilesListP
+
+/**
+ * List of currently opened Litebase files.  
+ */
+struct XFilesList
+{
+   /**
+    * A Litebase file.
+    */
+   XFile* xFile;
+
+   /**
+    * The previous file of the list.
+    */
+   uint16 prev;
+
+   /**
+    * The next file of the list.
+    */
+   uint16 next;
+};
+
+/**
+ * Pointer to a list of currently opened Litebase files.
+ */
+struct XFilesListP
+{
+   /**
+    * An array with the list of files.
+    */
+   XFilesList[MAX_OPEN_FILES];
+
+   /**
+    * The index of the fist file of the list.
+    */
+   int32 head; 
+};
+#endif
+
+/**
  * This structure represents the key of a record. It may be any of the SQL types defined here.
  */
 struct Key

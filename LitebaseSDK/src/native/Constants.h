@@ -91,7 +91,13 @@
 #define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
 #endif
 
-#define MAX_OPEN_FILES_CODE 24 // Error code when the maximum open files is reached on platforms based on Linux.
+#ifdef ANDROID
+#define MAX_OPEN_FILES 512
+#elif defined DARWIN
+#define MAX_OPEN_FILES 128
+#elif defined POSIX
+#define MAX_OPEN_FILES 1024
+#endif 
 
 // Available operand types. 
 #define OP_NONE                0 // No operator.

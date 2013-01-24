@@ -23,8 +23,8 @@
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
 // The list of table files currently opened.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-extern XFiles* xFiles; 
+#ifdef POSIX
+extern XFilesListP filesList; 
 #endif
 
 // Globals for the parser.

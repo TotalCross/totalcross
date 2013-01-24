@@ -58,9 +58,9 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
       xFile->dontFlush = true;
       
    // Creates the file or opens it and gets its size.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   xstrcpy(xFile->fullPath, fullPath);
-   if ((ret = openFile(context, xFile, buffer, isCreation? CREATE_EMPTY : READ_WRITE))
+#ifdef POSIX
+   xstrcpy(xFile->fullPath, buffer);
+   if ((ret = openFile(context, xFile, isCreation? CREATE_EMPTY : READ_WRITE))
 #else
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
 #endif
@@ -144,7 +144,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
    int32 ret;
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -155,7 +155,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
       goto error;
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
-#if !defined(POSIX) && !defined(ANDROID)
+#if !defined(POSIX)
    if (newSize - xFile->size > 0) // juliana@230_18: removed possible garbage in table files.
    {
       uint8 zeroBuf[1024];
@@ -218,7 +218,7 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
    getFullFileName(newName, sourcePath, newPath);
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -228,7 +228,7 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
     || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
    {
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
 error:
 #endif
 
@@ -238,7 +238,7 @@ error:
 
    xstrcpy(xFile->name, newName);
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    xstrcpy(xFile->fullPath, newPath);
 #endif
 
@@ -259,7 +259,7 @@ bool nfClose(Context context, XFile* xFile)
    int32 ret = 0;
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       fileError(context, ret, xFile->name);
 #endif
@@ -282,8 +282,8 @@ bool nfClose(Context context, XFile* xFile)
       fileInvalidate(xFile->file);
    }
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   XFilesRemove(xFiles, xFile, null);
+#ifdef POSIX
+   TC_XFilePsRemove(xFilePs, xFile);
 #endif
 
    return !context->thrownException;
@@ -306,7 +306,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    int32 ret = 0;
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       fileError(context, ret, xFile->name);
 #endif
@@ -317,8 +317,8 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-   XFilesRemove(xFiles, xFile, null);
+#ifdef POSIX
+   TC_XFilePsRemove(xFilePs, xFile);
 #endif
 
    return !context->thrownException;
@@ -352,7 +352,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
 		}
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -361,7 +361,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
    if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, (CharP)xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
 error:
 #endif
 
@@ -391,7 +391,7 @@ bool flushCache(Context context, XFile* xFile)
          ret;
 
 // Some files might have been closed if the maximum number of opened files was reached.
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -403,7 +403,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
+#ifdef POSIX 
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif
@@ -434,7 +434,7 @@ void fileError(Context context, int32 errorCode, CharP fileName)
    TC_throwExceptionNamed(context, "litebase.DriverException", errorMsg);
 }
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
 /**
  * Opens a disk file to store tables and put it in the files list.
  *
@@ -446,17 +446,17 @@ void fileError(Context context, int32 errorCode, CharP fileName)
  */
 int32 openFile(Context context, XFile* xFile, int32 mode)
 {
-   XFiles* lastAdded;
+   XFilePs* lastAdded;
    int32 ret;
 
    // Tries to close one or more files if there are too many open files to open the new file. 
-   while ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, -1)) == MAX_OPEN_FILES_CODE)
-      if ((lastAdded = xFiles->prev))
+   while ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, null)) == MAX_OPEN_FILES_CODE)
+      if ((lastAdded = xFilePs->prev))
       {
-         if ((ret = lbfileClose(lastAdded->value->file)))
+         if ((ret = lbfileClose(&lastAdded->value->file)))
             break; 
-         xFiles->prev = lastAdded->prev;
-         lastAdded->prev->next = list;          
+         xFilePs->prev = lastAdded->prev;
+         lastAdded->prev->next = xFilePs;          
          fileInvalidate(lastAdded->value->file);
          xfree(lastAdded);
       }
@@ -465,7 +465,7 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
       return ret;
 
    // Puts the file pointer in the files list and returns with no error code.
-   if (!XFilesAdd(xFiles, xFile, null))
+   if (!TC_XFilePsAdd(xFilePs, xFile, null))
    {
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       return 1;
