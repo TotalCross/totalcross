@@ -13,6 +13,7 @@
 
 package tc.tools.converter;
 
+import tc.*;
 import tc.tools.converter.bytecode.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -62,7 +63,7 @@ public final class J2TC implements JConstants, TCConstants
    {
       jc.className = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(jc.className);
       //  if xxx is the current class, compile it if and only if not exist a class xxx4D
-      boolean isBB = isBlackberry(jc.className);
+      boolean isBB = isBlackberry(jc.className) || Deploy.isOnlyBB();
       boolean has4D = htAddedClasses.exists(jc.className+"4D.class");
       if (!isBB && !has4D)
       {
@@ -79,6 +80,7 @@ public final class J2TC implements JConstants, TCConstants
          bytes = tcbasz.toByteArray();
       }
       else
+      if (!Deploy.isOnlyBB())
          Utils.println(isBB ? ("Skipping 4B class: "+jc.className) : ("Replacing "+jc.className+" by its 4D"));
    }
 
