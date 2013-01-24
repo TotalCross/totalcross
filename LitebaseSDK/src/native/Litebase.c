@@ -136,12 +136,14 @@ bool initVars(OpenParams params)
 #ifdef POSIX
    int32 i = MAX_OPEN_FILES;
    XFilesList* list = filesList.list;
+   XFilesList* element;
    filesList.head = null;
    filesList.count = 0;
    while (--i >= 0)
    {
-      list[i].xFile = null;
-      list[i].next = list[i].prev = null;
+      element = &list[i];
+      element->xFile = null;
+      element->next = element->prev = null;
    }
 #endif
 
