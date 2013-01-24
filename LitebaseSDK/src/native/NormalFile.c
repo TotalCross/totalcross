@@ -283,7 +283,7 @@ bool nfClose(Context context, XFile* xFile)
    }
 
 #ifdef POSIX
-   TC_XFilePsRemove(xFilePs, xFile);
+   removeFileFromList(xFile);
 #endif
 
    return !context->thrownException;
@@ -318,7 +318,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    xfree(xFile->cache);
 
 #ifdef POSIX
-   TC_XFilePsRemove(xFilePs, xFile);
+   removeFileFromList(xFile);
 #endif
 
    return !context->thrownException;
@@ -442,34 +442,41 @@ void fileError(Context context, int32 errorCode, CharP fileName)
  * @param xFile A pointer to the normal file structure.
  * @param mode Indicates if the file must be created or just opened. 
  * @return The error code if an error occurred or zero if the function succeeds.
- * @throws OutOfMemoryError If a memory allocation fails.
  */
 int32 openFile(Context context, XFile* xFile, int32 mode)
 {
-   XFilePs* lastAdded;
    int32 ret;
-
-   // Tries to close one or more files if there are too many open files to open the new file. 
-   while ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, null)) == MAX_OPEN_FILES_CODE)
-      if ((lastAdded = xFilePs->prev))
-      {
-         if ((ret = lbfileClose(&lastAdded->value->file)))
-            break; 
-         xFilePs->prev = lastAdded->prev;
-         lastAdded->prev->next = xFilePs;          
-         fileInvalidate(lastAdded->value->file);
-         xfree(lastAdded);
-      }
-
-   if (ret) // If another error occurs, returns the error code.
-      return ret;
-
-   // Puts the file pointer in the files list and returns with no error code.
-   if (!TC_XFilePsAdd(xFilePs, xFile, null))
+   XFilesList* list = filesList.list;
+   XFilesList* element;
+   
+   if (filesList.count < MAX_OPEN_FILES)  // There is space in the list.
    {
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return 1;
+      element = &list[filesList.count++];
+      element->xFile = xFile;
+      
+      if (!filesList.head)
+         filesList.head = element->next = element->prev = element;
+      else
+      {
+         XFilesList* head = element->next = filesList.head;
+         element->prev = head->prev;
+         head->prev->next = element;
+         head->prev = element;
+         filesList.head = element;  
+      }
    }
+   else // No space: the last used file must be removed from the list and closed.
+   {
+      element = filesList.head->prev;
+      if ((ret = lbfileClose(&element->xFile->file)))
+         return ret;
+      fileInvalidate(element->xFile->file);
+      if ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, null)))
+         return ret;
+      element->xFile = xFile;
+      filesList.head = element;
+   }
+
    return 0;
 }
 
@@ -482,9 +489,49 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
  */
 int32 reopenFileIfNeeded(Context context, XFile* xFile)
 {
-   if (!fileIsValid(xFile->file))
-      return openFile(context, xFile, READ_WRITE);
-   return 0;
+   if (fileIsValid(xFile->file)) 
+   {
+      XFilesList* head = filesList.head;
+      XFilesList* element = head;
+            
+      // If the file is open, it is in the list and must be put in its front.
+      while (element->xFile != xFile) 
+         element = element->next;
+
+      if (element != head) // If the file is in the head of the list, does nothing.
+      {
+         element->prev->next = element->next;
+         element->next->prev = element->prev;
+         element->next = head;
+         head->prev = element;
+         filesList.head = element;
+      }
+      return 0;
+   }
+   else
+      return openFile(context, xFile, READ_WRITE); // If the file was closed, reopens it.
+}
+
+/**
+ * Removes a file from the file list, which is open.
+ *
+ * @param xFile A pointer to the normal file structure.
+ */
+void removeFileFromList(XFile* xFile)
+{
+   XFilesList* head = filesList.head;
+   XFilesList* element = head;
+   
+   while (element->xFile != xFile) // Finds the file.
+      element = element->next;
+   element->prev->next = element->next;
+   element->next->prev = element->prev;
+
+   if (element == head) // If the file is in the head, the head becomes the next element of the list.
+      filesList.head = element->next;
+
+   // The last element of the array is moved to the position of the removed file.
+   xmemmove(element, &filesList.list[--filesList.count], sizeof(XFilesList));
 }
 #endif
 

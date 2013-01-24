@@ -173,7 +173,8 @@ struct XFile
 };
 
 #ifdef POSIX
-typedef struct XFilesListP XFilesListP
+typedef struct XFilesList XFilesList;
+typedef struct XFilesListP XFilesListP;
 
 /**
  * List of currently opened Litebase files.  
@@ -186,14 +187,14 @@ struct XFilesList
    XFile* xFile;
 
    /**
-    * The previous file of the list.
-    */
-   uint16 prev;
-
-   /**
     * The next file of the list.
     */
-   uint16 next;
+   XFilesList* next;
+
+   /**
+    * The previous file of the list.
+    */
+   XFilesList* prev;
 };
 
 /**
@@ -202,14 +203,19 @@ struct XFilesList
 struct XFilesListP
 {
    /**
-    * An array with the list of files.
+    * An array with the used to store the list of Litebase files.
     */
-   XFilesList[MAX_OPEN_FILES];
+   XFilesList list[MAX_OPEN_FILES];
 
    /**
     * The index of the fist file of the list.
     */
-   int32 head; 
+   XFilesList* head; 
+
+   /**
+    * The number of positions used.
+    */
+   int32 count;
 };
 #endif
 

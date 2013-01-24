@@ -125,11 +125,24 @@ LB_API void LibClose()
  */
 bool initVars(OpenParams params)
 {
-   Context context = params->currentContext;
+   Context context = params->currentContext; 
 
 #ifdef PALMOS // It is necessary to get the application id for mutex on Palm.   
    getApplicationIdFunc getApplicationId = params->getProcAddress(null, "getApplicationId");
 	int32 applicationId = getApplicationId();
+#endif
+
+// Initializes the list of Litebase opened files.
+#ifdef POSIX
+   int32 i = MAX_OPEN_FILES;
+   XFilesList* list = filesList.list;
+   filesList.head = null;
+   filesList.count = 0;
+   while (--i >= 0)
+   {
+      list[i].xFile = null;
+      list[i].next = list[i].prev = null;
+   }
 #endif
 
    // Initializes the mutexes.
@@ -143,9 +156,6 @@ bool initVars(OpenParams params)
    // Initializes the TCVM functions needed by Litebase.
    TC_getProcAddress = (getProcAddressFunc)params->getProcAddress;
    initTCVMLib();
-
-#ifdef POSIX
-   xmemzero(
 
    if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
     || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.

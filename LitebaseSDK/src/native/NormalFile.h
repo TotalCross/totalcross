@@ -150,7 +150,6 @@ void fileError(Context context, int32 errorCode, CharP fileName);
  * @param xFile A pointer to the normal file structure.
  * @param mode Indicates if the file must be created or just opened. 
  * @return The error code if an error occurred or zero if the function succeeds.
- * @throws OutOfMemoryError If a memory allocation fails.
  */
 int32 openFile(Context context, XFile* xFile, int32 mode);
 
@@ -162,6 +161,13 @@ int32 openFile(Context context, XFile* xFile, int32 mode);
  * @return The error code if an error occurred or zero if the function succeeds.
  */
 int32 reopenFileIfNeeded(Context context, XFile* xFile);
+
+/**
+ * Removes a file from the file list.
+ *
+ * @param xFile A pointer to the normal file structure.
+ */
+void removeFileFromList(XFile* xFile);
 #endif
 
 #endif
