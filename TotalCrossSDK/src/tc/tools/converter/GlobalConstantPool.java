@@ -210,8 +210,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          htI32.put(v,v);           // put it in the hashtable (used in put)
          vI32.addElement(v);       // add it to the vector (used in get)
          v.index = htI32.size(); // set the index and return it
-         if (v.index >= 65530 && !Deploy.isOnlyBB())
-            throw new ConverterException(limitReached1+"int constants"+limitReached2);
+         if (v.index >= 65530)
+         {
+            if (Deploy.isOnlyBB())
+               v.index = 65529;
+            else
+               throw new ConverterException(limitReached1+"int constants"+limitReached2);
+         }
       }
       return v.index; // return the current index if it was already put
    }
@@ -227,8 +232,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          vI64.addElement(v);       // add it to the vector (used in get)
          v.index = htI64.size(); // set the index and return it
          lCount++;
-         if (v.index >= 65530 && !Deploy.isOnlyBB())
-            throw new ConverterException(limitReached1+"long constants"+limitReached2);
+         if (v.index >= 65530)
+         {
+            if (Deploy.isOnlyBB())
+               v.index = 65529;
+            else
+               throw new ConverterException(limitReached1+"long constants"+limitReached2);
+         }
       }
       return v.index; // return the current index if it was already put
    }
@@ -244,8 +254,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          vDbl.addElement(v);       // add it to the vector (used in get)
          v.index = htDbl.size(); // set the index and return it
          dCount++;
-         if (v.index >= 65530 && !Deploy.isOnlyBB())
-            throw new ConverterException(limitReached1+"double constants"+limitReached2);
+         if (v.index >= 65530)
+         {
+            if (Deploy.isOnlyBB())
+               v.index = 65529;
+            else
+               throw new ConverterException(limitReached1+"double constants"+limitReached2);
+         }
       }
       return v.index; // return the current index if it was already put
    }
@@ -360,8 +375,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       TCValue i = new TCValue(value, POOL_MTD);
       htMtd.put(i,i);
       i.index = vMtd.size(); // before adding - index 0 was already added
-      if (i.index >= 4095 && !Deploy.isOnlyBB())
-         throw new ConverterException(limitReached1+"methods"+limitReached2);
+      if (i.index >= 4095)
+      {
+         if (Deploy.isOnlyBB())
+            i.index = 4094;
+         else
+            throw new ConverterException(limitReached1+"methods"+limitReached2);
+      }
       vMtd.addElement(i);
       // store the array with all parameters in the unused asObj
       int[] all = new int[plen+2];
@@ -407,11 +427,21 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       TCValue i = new TCValue(value, type);
       ht.put(i,i);
       i.index = v.size(); // before adding - index 0 was already added
-      if (type == POOL_SF && i.index >= 32700 && !Deploy.isOnlyBB())
-         throw new ConverterException(limitReached1+"static fields"+limitReached2);
-      if (type == POOL_IF && i.index >= 4095 && !Deploy.isOnlyBB())
-         throw new ConverterException(limitReached1+"instance fields"+limitReached2);
-
+      if (type == POOL_SF && i.index >= 32700)
+      {
+         if (Deploy.isOnlyBB())
+            i.index = 32699;
+         else
+            throw new ConverterException(limitReached1+"static fields"+limitReached2);
+      }
+      if (type == POOL_IF && i.index >= 4095)
+      {
+         if (Deploy.isOnlyBB())
+            i.index = 4094;
+         else
+            throw new ConverterException(limitReached1+"instance fields"+limitReached2);
+      }
+         
       v.addElement(i);
       // store the class and field index as a single int32
       int c = putCls(className);
@@ -438,8 +468,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (value.startsWith("totalcross.lang."))
          value = totalcross.sys.Convert.replace(value, "totalcross.lang.", "java.lang.");
       int idx = put(value, POOL_CLS, htCls, vCls);
-      if (idx >= 4095 && checkLimit && !Deploy.isOnlyBB()) // guich@tc110_23: corrected limit
-         throw new ConverterException(limitReached1+"class references"+limitReached2);
+      if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
+      {
+         if (Deploy.isOnlyBB())
+            idx = 4094;
+         else
+            throw new ConverterException(limitReached1+"class references"+limitReached2);
+      }
       return idx;
    }
 
@@ -452,8 +487,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          return ((TCValue)htCls.get(value)).index;
 
       int idx = put(value, POOL_CLS, htCls, vCls);
-      if (idx >= 4095 && checkLimit && !Deploy.isOnlyBB()) // guich@tc110_23: corrected limit
-         throw new ConverterException(limitReached1+"identifiers"+limitReached2);
+      if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
+      {
+         if (Deploy.isOnlyBB())
+            idx = 4094;
+         else
+            throw new ConverterException(limitReached1+"identifiers"+limitReached2);
+      }
       return idx;
    }
 
@@ -466,8 +506,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          return ((TCValue)htMtdFld.get(value)).index;
 
       int idx = put(value, POOL_SYM, htMtdFld, vMtdFld);
-      if (idx > 32700 && checkLimit && !Deploy.isOnlyBB()) // guich@tc110_23: corrected limit
-         throw new ConverterException(limitReached1+"identifiers"+limitReached2);
+      if (idx > 32700 && checkLimit) // guich@tc110_23: corrected limit
+      {
+         if (Deploy.isOnlyBB())
+            idx = 32699;
+         else
+            throw new ConverterException(limitReached1+"identifiers"+limitReached2);
+      }
       return idx;
    }
 
