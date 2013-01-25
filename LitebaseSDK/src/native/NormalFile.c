@@ -273,10 +273,10 @@ bool nfClose(Context context, XFile* xFile)
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret = lbfileClose(&xFile->file)))
+      if ((ret |= lbfileClose(&xFile->file)))
          fileError(context, ret, xFile->name);
    
       fileInvalidate(xFile->file);
@@ -286,7 +286,7 @@ bool nfClose(Context context, XFile* xFile)
    removeFileFromList(xFile);
 #endif
 
-   return !context->thrownException;
+   return !ret;
 }
 
 /** 
@@ -312,7 +312,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
 #endif
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret = lbfileDelete(&xFile->file, buffer, slot, true)))
+   if ((ret |= lbfileDelete(&xFile->file, buffer, slot, true)))
       fileError(context, ret, xFile->name);
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
@@ -321,7 +321,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    removeFileFromList(xFile);
 #endif
 
-   return !context->thrownException;
+   return !ret;
 }
 
 /**
