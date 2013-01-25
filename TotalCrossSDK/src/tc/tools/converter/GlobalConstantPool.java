@@ -76,7 +76,8 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       "ant\n" +
       "ren out.jar SalesForce.jar\n" +
       "java tc.Deploy SalesForce.jar -all\n\n" +
-      "Note that all this can be do from a single ANT script, if you are proficient in ANT.\n";
+      "Note that all this can be do from a single ANT script, if you are proficient in ANT.\n\n" +
+      "Note also that this limitation will not be applied if you run tc.Deploy only for BlackBerry, using -bb option.\n";
 
    private static TCValue temp = new TCValue();
    private static final String DefaultConstants[]  =
