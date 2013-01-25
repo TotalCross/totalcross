@@ -445,16 +445,20 @@ void fileError(Context context, int32 errorCode, CharP fileName)
  */
 int32 openFile(Context context, XFile* xFile, int32 mode)
 {
-   int32 ret;
    XFilesList* list = filesList.list;
    XFilesList* element;
    
    if (filesList.count < MAX_OPEN_FILES)  // There is space in the list.
    {
-      element = &list[filesList.count++];
+      // Finds an empty space.
+      int32 i = -1;
+      while (list[++i].xFile);
+
+      element = &list[i];
       element->xFile = xFile;
+      xFile->position = i;
       
-      if (!filesList.head)
+      if (!filesList.count)
          filesList.head = element->next = element->prev = element;
       else
       {
@@ -464,20 +468,21 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
          head->prev = element;
          filesList.head = element;  
       }
+      filesList.count++;
    }
    else // No space: the last used file must be removed from the list and closed.
    {
+      int32 ret;
+
       element = filesList.head->prev;
       if ((ret = lbfileClose(&element->xFile->file)))
          return ret;
       fileInvalidate(element->xFile->file);
-      if ((ret = lbfileCreate(&xFile->file, xFile->fullPath, mode, null)))
-         return ret;
       element->xFile = xFile;
       filesList.head = element;
    }
 
-   return 0;
+   return lbfileCreate(&xFile->file, xFile->fullPath, mode, null);
 }
 
 /**
@@ -495,15 +500,19 @@ int32 reopenFileIfNeeded(Context context, XFile* xFile)
       XFilesList* element = head;
             
       // If the file is open, it is in the list and must be put in its front.
-      while (element->xFile != xFile) 
-         element = element->next;
+      element = &filesList.list[xFile->posList];
 
       if (element != head) // If the file is in the head of the list, does nothing.
       {
-         element->prev->next = element->next;
-         element->next->prev = element->prev;
-         element->next = head;
-         head->prev = element;
+         if (filesList.count > 2)
+         {
+            element->prev->next = element->next;
+            element->next->prev = element->prev;
+            element->next = head;
+            element->prev = head->prev;
+            head->prev->next = element;
+            head->prev = element;
+         }         
          filesList.head = element;
       }
       return 0;
@@ -522,16 +531,18 @@ void removeFileFromList(XFile* xFile)
    XFilesList* head = filesList.head;
    XFilesList* element = head;
    
-   while (element->xFile != xFile) // Finds the file.
-      element = element->next;
-   element->prev->next = element->next;
-   element->next->prev = element->prev;
+   element = &filesList.list[xFile->posList];
+   if (filesList.count > 2)
+   {
+      element->prev->next = element->next;
+      element->next->prev = element->prev;
+   }
 
    if (element == head) // If the file is in the head, the head becomes the next element of the list.
       filesList.head = element->next;
 
-   // The last element of the array is moved to the position of the removed file.
-   xmemmove(element, &filesList.list[--filesList.count], sizeof(XFilesList));
+   element->xFile = null;
+   filesList.count--;
 }
 #endif
 

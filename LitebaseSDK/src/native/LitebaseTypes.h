@@ -169,6 +169,11 @@ struct XFile
     * The file full path;
     */
    char fullPath[MAX_PATH + 1];
+
+   /**
+    * The position in the files list.
+    */ 
+   int32 posList;
 #endif
 };
 
