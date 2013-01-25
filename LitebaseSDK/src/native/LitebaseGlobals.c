@@ -20,7 +20,7 @@ Hashtable htCreatedDrivers; // The hash table for the created connections with L
 
 // The list of table files currently opened.
 #ifdef POSIX
-XFilesListP filesList; 
+XFilesList filesList; 
 #endif
 
 // Globals for the parser.

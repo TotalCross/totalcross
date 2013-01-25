@@ -404,8 +404,8 @@ bool flushCache(Context context, XFile* xFile)
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
 #ifdef POSIX 
-   if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
-      goto error;
+   //if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
+   //   goto error;
 #endif
 
    return true;
@@ -444,42 +444,28 @@ void fileError(Context context, int32 errorCode, CharP fileName)
  * @return The error code if an error occurred or zero if the function succeeds.
  */
 int32 openFile(Context context, XFile* xFile, int32 mode)
-{
-   XFilesList* list = filesList.list;
-   XFilesList* element;
-   
+{  
    if (filesList.count < MAX_OPEN_FILES)  // There is space in the list.
    {
-      // Finds an empty space.
-      int32 i = -1;
-      while (list[++i].xFile);
-
-      element = &list[i];
-      element->xFile = xFile;
-      xFile->position = i;
-      
-      if (!filesList.count)
-         filesList.head = element->next = element->prev = element;
-      else
-      {
-         XFilesList* head = element->next = filesList.head;
-         element->prev = head->prev;
-         head->prev->next = element;
-         head->prev = element;
-         filesList.head = element;  
-      }
-      filesList.count++;
+      filesList.list[filesList.count++] = xFile;
+      xFile->timeStamp = TC_getTimeStamp();
    }
    else // No space: the last used file must be removed from the list and closed.
    {
-      int32 ret;
+      int32 ret = MAX_OPEN_FILES,
+            minStamp,
+            oldest = 0;
+      XFile** list = filesList.list;
 
-      element = filesList.head->prev;
-      if ((ret = lbfileClose(&element->xFile->file)))
+      xFile->timeStamp = minStamp = TC_getTimeStamp();
+      while (--ret > 0)
+         if (list[ret]->timeStamp < minStamp)
+            minStamp = list[oldest = ret]->timeStamp;
+
+      if ((ret = lbfileClose(&list[oldest]->file)))
          return ret;
-      fileInvalidate(element->xFile->file);
-      element->xFile = xFile;
-      filesList.head = element;
+      fileInvalidate(list[oldest]->file);
+      list[oldest] = xFile;
    }
 
    return lbfileCreate(&xFile->file, xFile->fullPath, mode, null);
@@ -494,27 +480,9 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
  */
 int32 reopenFileIfNeeded(Context context, XFile* xFile)
 {
-   if (fileIsValid(xFile->file)) 
+   if (fileIsValid(xFile->file)) // If the file is opened, just updates its time stamp.
    {
-      XFilesList* head = filesList.head;
-      XFilesList* element = head;
-            
-      // If the file is open, it is in the list and must be put in its front.
-      element = &filesList.list[xFile->posList];
-
-      if (element != head) // If the file is in the head of the list, does nothing.
-      {
-         if (filesList.count > 2)
-         {
-            element->prev->next = element->next;
-            element->next->prev = element->prev;
-            element->next = head;
-            element->prev = head->prev;
-            head->prev->next = element;
-            head->prev = element;
-         }         
-         filesList.head = element;
-      }
+      xFile->timeStamp = TC_getTimeStamp();
       return 0;
    }
    else
@@ -528,21 +496,11 @@ int32 reopenFileIfNeeded(Context context, XFile* xFile)
  */
 void removeFileFromList(XFile* xFile)
 {
-   XFilesList* head = filesList.head;
-   XFilesList* element = head;
-   
-   element = &filesList.list[xFile->posList];
-   if (filesList.count > 2)
-   {
-      element->prev->next = element->next;
-      element->next->prev = element->prev;
-   }
+   int32 i = filesList.count;
+   XFile** list = filesList.list;
 
-   if (element == head) // If the file is in the head, the head becomes the next element of the list.
-      filesList.head = element->next;
-
-   element->xFile = null;
-   filesList.count--;
+   while (--i >= 0 && xFile != list[i]);
+   list[i] = list[--filesList.count];
 }
 #endif
 

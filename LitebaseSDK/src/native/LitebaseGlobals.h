@@ -24,7 +24,7 @@ extern Hashtable htCreatedDrivers; // The hash table for the created connections
 
 // The list of table files currently opened.
 #ifdef POSIX
-extern XFilesListP filesList; 
+extern XFilesList filesList; 
 #endif
 
 // Globals for the parser.

@@ -134,17 +134,7 @@ bool initVars(OpenParams params)
 
 // Initializes the list of Litebase opened files.
 #ifdef POSIX
-   int32 i = MAX_OPEN_FILES;
-   XFilesList* list = filesList.list;
-   XFilesList* element;
-   filesList.head = null;
-   filesList.count = 0;
-   while (--i >= 0)
-   {
-      element = &list[i];
-      element->xFile = null;
-      element->next = element->prev = null;
-   }
+   xmemzero(&filesList, sizeof(XFilesList));
 #endif
 
    // Initializes the mutexes.

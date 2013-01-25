@@ -171,51 +171,24 @@ struct XFile
    char fullPath[MAX_PATH + 1];
 
    /**
-    * The position in the files list.
+    * The timestamp of the last time the file was used.
     */ 
-   int32 posList;
+   int32 timeStamp;
 #endif
 };
 
 #ifdef POSIX
 typedef struct XFilesList XFilesList;
-typedef struct XFilesListP XFilesListP;
-
-/**
- * List of currently opened Litebase files.  
- */
-struct XFilesList
-{
-   /**
-    * A Litebase file.
-    */
-   XFile* xFile;
-
-   /**
-    * The next file of the list.
-    */
-   XFilesList* next;
-
-   /**
-    * The previous file of the list.
-    */
-   XFilesList* prev;
-};
 
 /**
  * Pointer to a list of currently opened Litebase files.
  */
-struct XFilesListP
+struct XFilesList
 {
    /**
     * An array with the used to store the list of Litebase files.
     */
-   XFilesList list[MAX_OPEN_FILES];
-
-   /**
-    * The index of the fist file of the list.
-    */
-   XFilesList* head; 
+   XFile* list[MAX_OPEN_FILES];
 
    /**
     * The number of positions used.
