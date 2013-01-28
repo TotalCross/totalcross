@@ -276,7 +276,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
 
    if (plainDB)
    {
-      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file))
+      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file) || plainDB->db.cache)
       {
 			if (*plainDB->name)
          {
@@ -298,7 +298,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
          }
          ret &= plainDB->close(context, &plainDB->db); // Closes .db.
       }
-		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file)) // Closes .dbo if it's open.
+		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file) || plainDB->dbo.cache) // Closes .dbo if it's open.
          ret &= plainDB->close(context, &plainDB->dbo);
    }
    return ret;
