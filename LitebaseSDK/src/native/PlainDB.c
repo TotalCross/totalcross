@@ -318,9 +318,9 @@ bool plainRemove(Context context, PlainDB* plainDB, CharP sourcePath, int32 slot
 	TRACE("plainRemove")
    bool ret = true;
 
-	if (fileIsValid(plainDB->db.file))
+	if (fileIsValid(plainDB->db.file) || plainDB->db.cache)
       ret = nfRemove(context, &plainDB->db, sourcePath, slot);
-   if (fileIsValid(plainDB->dbo.file))
+   if (fileIsValid(plainDB->dbo.file) || plainDB->dbo.cache)
       ret &= nfRemove(context, &plainDB->dbo, sourcePath, slot);
 
    return ret;
