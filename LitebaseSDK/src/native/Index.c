@@ -668,6 +668,20 @@ bool indexDeleteAllRows(Context context, Index* index)
    XFile* fnodes = &index->fnodes;
    XFile* fvalues = index->fvalues;
 
+// Some files might have been closed if the maximum number of opened files was reached.
+#ifdef POSIX
+   if ((i = reopenFileIfNeeded(context, fnodes)))
+   {
+      fileError(context, i, fnodes->name);
+      return false;
+   }
+   if (fvalues && (i = reopenFileIfNeeded(context, fvalues)))
+   {
+      fileError(context, i, fvalues->name);
+      return false;
+   }
+#endif
+
    // It is faster truncating a file than re-creating it again. 
    if ((i = lbfileSetSize(&fnodes->file, 0)))
    {
