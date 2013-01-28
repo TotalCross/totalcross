@@ -61,7 +61,12 @@ extern int32 deviceFontHeight,iosScale;
    screen->screenH = appH;
 }
 
-- (void)graphicsSetup
+- (void)setCurrentGLcontext
+{
+   [EAGLContext setCurrentContext:glcontext];
+}
+
+- (void)createGLcontext
 {
    bool ok;
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
@@ -87,14 +92,12 @@ extern int32 deviceFontHeight,iosScale;
 - (void)updateScreen
 {
    NSLog(@"update screen %d %d %d %d",(int)self.frame.origin.x,(int)self.frame.origin.y,(int)self.frame.size.width,(int)self.frame.size.height);
-   [self.layer display];
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
    glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
 }
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   NSLog(@"event generated");
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];

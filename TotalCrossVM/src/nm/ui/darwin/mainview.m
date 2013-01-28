@@ -24,27 +24,13 @@ void Sleep(int ms);
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-   NSLog(@"view should auto rotate");
    [UIView setAnimationsEnabled:NO];
    [self destroySIP];
    return YES;
 }
-- (void)viewWillLayoutSubviews
-{
-   NSLog(@"view will layout subviews");
-}
-- (void)viewWillAppear:(BOOL)animated    // Called when the view is about to made visible. Default does nothing
-{
-   NSLog(@"view will appear");
-}
-- (void)viewDidAppear:(BOOL)animated     // Called when the view has been fully transitioned onto the screen. Default does nothing
-{
-   NSLog(@"view did appear");
-}
 
 - (void)loadView
 {
-   NSLog(@"load view");
    self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
@@ -306,13 +292,14 @@ bool initGLES(ScreenSurface screen)
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
    [window makeKeyAndVisible];
    [ DEVICE_CTX->_childview setScreenValues: screen ];
+   [DEVICE_CTX->_childview createGLcontext];
    screen->pixels = (void*)1;
    return true;
 }
 
 void graphicsSetupIOS()
 {
-   [DEVICE_CTX->_childview graphicsSetup];
+   [DEVICE_CTX->_childview setCurrentGLcontext];
 }
 void graphicsUpdateScreenIOS()
 {                
