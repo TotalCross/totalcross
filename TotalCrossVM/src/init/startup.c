@@ -135,6 +135,27 @@ static bool loadLibraries(Context currentContext, CharP path, bool first)
       heapDestroy(h);
       return false;
    }
+#ifdef ANDROID // guich@tc1681 - for Android, search TCZs only inside the apk 
+   JNIEnv* env = getJNIEnv();
+   jstring jret = (*env)->CallStaticObjectMethod(env, applicationClass, jlistTCZs);
+   int jlen = (*env)->GetStringUTFLength(env, jret);
+   CharP ret = heapAlloc(h,jlen+1), p = ret;
+   jstring2CharP(jret, ret); // tcz files are comma-separated
+   (*env)->DeleteLocalRef(env, jret);
+   while (1)
+   {
+      CharP sep = strchr(p,',');
+      if (sep)
+         *sep = 0;
+      if (xstrstr(p,"lib.tcz") || xstrstr(p,"Lib.tcz"))
+         if (tczLoad(currentContext, p) == null)
+            break;
+      if (!sep) // reached end
+         break;
+      p = sep+1;
+   }
+   err = jlen > 0 ? NO_ERROR : 1;
+#else
    CharP2TCHARPBuf(path, searchPath);
    err = listFiles(searchPath,0,&files,&count,h, LF_RECURSIVE);
    if (err == NO_ERROR && count > 0)
@@ -157,10 +178,7 @@ static bool loadLibraries(Context currentContext, CharP path, bool first)
          files = files->next;
       } while (files != head);
    }
-#ifdef ANDROID // load also Litebase libraries
-   if (first)
-      tczLoad(currentContext, "LitebaseLib.tcz");
-#endif
+#endif   
    heapDestroy(h);
    if (err != NO_ERROR && first)
       alert("Problem when loading TotalCross libraries (%X)",err);
@@ -489,7 +507,7 @@ jumpArgument:
          if (!parseScreenBounds(DEFAULT_BOUNDS, &defScrX, &defScrY, &defScrW, &defScrH))
             return exitProgram(110);
 #endif
-#if !defined (darwin) || defined (THEOS) // we load libraries in the application's path too (guich@tc139: all platforms except palm)
+#if !defined(ANDROID) && !defined (PALMOS) && !defined (darwin) || defined (THEOS) // we load libraries in the application's path too (guich@tc139: all platforms except palm)
       loadLibraries(currentContext, appPath, false);
 #endif      
       // 0. Initialize tcSettings structure

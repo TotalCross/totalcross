@@ -184,9 +184,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
          }
       }
    }
-
    closedir(dir);
-
    return NO_ERROR;
 }
 
