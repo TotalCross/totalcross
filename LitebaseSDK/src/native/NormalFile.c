@@ -445,6 +445,7 @@ void fileError(Context context, int32 errorCode, CharP fileName)
  */
 int32 openFile(Context context, XFile* xFile, int32 mode)
 {  
+   LOCKVAR(files);
    if (filesList.count < MAX_OPEN_FILES)  // There is space in the list.
    {
       filesList.list[filesList.count++] = xFile;
@@ -463,11 +464,14 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
             minStamp = list[oldest = ret]->timeStamp;
 
       if ((ret = lbfileClose(&list[oldest]->file)))
+      {
+         UNLOCKVAR(files);
          return ret;
+      }
       fileInvalidate(list[oldest]->file);
-      list[oldest] = xFile;
+      list[oldest] = xFile;      
    }
-
+   UNLOCKVAR(files);
    return lbfileCreate(&xFile->file, xFile->fullPath, mode, null);
 }
 
@@ -496,11 +500,15 @@ int32 reopenFileIfNeeded(Context context, XFile* xFile)
  */
 void removeFileFromList(XFile* xFile)
 {
-   int32 i = filesList.count;
-   XFile** list = filesList.list;
+   int32 i;
+   XFile** list;
 
+   LOCKVAR(files);
+   i = filesList.count;
+   list = filesList.list;
    while (--i >= 0 && xFile != list[i]);
    list[i] = list[--filesList.count];
+   UNLOCKVAR(files);
 }
 #endif
 
