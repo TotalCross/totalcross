@@ -141,6 +141,7 @@ bool initVars(OpenParams params)
 	SETUP_MUTEX;
    INIT_MUTEX(parser);
    INIT_MUTEX(log);
+   INIT_MUTEX(files);
 
    memoryUsage.items = null;
    reserved.items = null;

@@ -60,6 +60,7 @@ extern TCClass loggerClass;             // Logger
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
 extern DECLARE_MUTEX(log);    // Mutex for logging.
+extern DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 
 // rnovais@568_10 @570_1 
 extern int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1];  // Aggregate functions table. 

@@ -185,6 +185,7 @@ TCClass loggerClass;             // Logger
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.
 DECLARE_MUTEX(log);    // Mutex for logging.
+DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 
 // rnovais@568_10 @570_1 juliana@226_5
 // Aggregate functions table.
