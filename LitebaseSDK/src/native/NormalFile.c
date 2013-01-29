@@ -67,6 +67,11 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
     || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
       fileError(context, ret, name);
+
+#ifdef POSIX
+      removeFileFromList(xFile);
+#endif
+      
       if (fileIsValid(xFile->file))
          lbfileClose(&xFile->file);
       return false;
@@ -507,7 +512,11 @@ void removeFileFromList(XFile* xFile)
    i = filesList.count;
    list = filesList.list;
    while (--i >= 0 && xFile != list[i]);
-   list[i] = list[--filesList.count];
+   if (i >= 0)
+   {
+      list[i] = list[--filesList.count];
+      list[filesList.count] = null;
+   }
    UNLOCKVAR(files);
 }
 #endif

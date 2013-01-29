@@ -1459,6 +1459,11 @@ free:
             plainDB->rowInc = DEFAULT_ROW_INC;
             plainDB->rowCount = remain;
             heapDestroy(heap);
+
+#ifdef POSIX
+            removeFileFromList(&newdbo);
+#endif
+
          }
          else // If no rows will remain, just deletes everyone.
          {
