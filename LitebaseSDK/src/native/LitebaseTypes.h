@@ -168,7 +168,7 @@ struct XFile
    /**
     * The file full path;
     */
-   char fullPath[MAX_PATH + 1];
+   char fullPath[MAX_PATHNAME + 1];
 
    /**
     * The timestamp of the last time the file was used.
