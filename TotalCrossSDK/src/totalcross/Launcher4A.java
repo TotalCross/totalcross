@@ -634,11 +634,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (eventThread.running) // only in situation 2 
          canQuit = false;
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
-      // close the tczs
-      RandomAccessFile lastRAF = null;
-      for (int i = 0, n = tczs.size(); i < n; i++)
-         if (tczs.get(i).raf != lastRAF)
-            try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
    
    public static boolean eventIsAvailable()
@@ -1366,6 +1361,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return -1;
    }
 
+   public static String listTCZs()
+   {
+      StringBuilder sb = new StringBuilder(128);
+      sb.append(tczs.get(0).name);
+      for (int i = 1, n = tczs.size(); i < n; i++)
+         sb.append(",").append(tczs.get(i).name);
+      return sb.toString();
+   }
+   
    public static int findTCZ(String tcz)
    {
       for (int i = 0, n = tczs.size(); i < n; i++)
@@ -1392,4 +1396,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   public static void closeTCZs()
+   {
+      // close the tczs
+      RandomAccessFile lastRAF = null;
+      for (int i = 0, n = tczs.size(); i < n; i++)
+         if (tczs.get(i).raf != lastRAF)
+            try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
+   }
 }
