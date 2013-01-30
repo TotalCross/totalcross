@@ -45,7 +45,7 @@ TC_API void tuzZE_setTime_l(NMParams p) // totalcross/util/zip/ZipEntry native p
                                  | systemTime.wHour << 11
                                  | systemTime.wMinute << 5
                                  | systemTime.wSecond >> 1;
-#elif defined (POSIX) || defined (ANDROID) || defined (DARWIN)
+#elif defined (POSIX) || defined (ANDROID) || defined (darwin)
    time_t fileTimeLocal = time / 1000; // milliseconds -> seconds
    struct tm* systemTime;
 
@@ -91,7 +91,7 @@ TC_API void tuzZE_getTime(NMParams p) // totalcross/util/zip/ZipEntry native pub
          p->retL = -1;
       else
          p->retL = tmp * 1000;
-#elif defined (POSIX) || defined (ANDROID) || defined (DARWIN)
+#elif defined (POSIX) || defined (ANDROID) || defined (darwin)
       struct tm systemTime;
       
       systemTime.tm_year = (((dostime >> 25) & 0x7f) + 80);
