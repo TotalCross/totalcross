@@ -93,7 +93,7 @@
 
 #ifdef ANDROID
 #define MAX_OPEN_FILES 512
-#elif defined DARWIN
+#elif defined darwin
 #define MAX_OPEN_FILES 128
 #elif defined POSIX
 #define MAX_OPEN_FILES 1024
