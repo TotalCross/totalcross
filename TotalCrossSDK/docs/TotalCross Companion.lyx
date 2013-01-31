@@ -4585,7 +4585,19 @@ Optionally, you can create a
 \family typewriter
 install.exe
 \family default
- or to the cab files.
+, to the cab files, to the 
+\family typewriter
+.apk
+\family default
+,
+\family typewriter
+ 
+\family default
+to the 
+\family typewriter
+.ipa
+\family default
+, etc.
  The file must have a set of 
 \family typewriter
 [G]
@@ -4605,12 +4617,16 @@ install.exe
 [L]
 \family default
  in the application's folder.
- If the file ends with a slash, indicating that its a path, all files inside
+ If the file ends with a slash, indicating that it's a path, all files inside
  that path will be added.
 \end_layout
 
 \begin_layout Standard
-The possible pkg files are: 
+The possible 
+\family typewriter
+.pkg
+\family default
+ files are: 
 \family typewriter
 palm.pkg
 \family default
@@ -4643,6 +4659,116 @@ win32.pkg
 all.pkg
 \family default
  for all platforms.
+ The files for 
+\family typewriter
+palm.pkg
+\family default
+ must be 
+\family typewriter
+.pdb
+\family default
+s, whereas the files for the other platforms must be 
+\family typewriter
+.tcz
+\family default
+s.
+ All adicional needed files must be listed in the 
+\family typewriter
+.pkg
+\family default
+ file and the main program should be deployed as if it used only one file.
+\end_layout
+
+\begin_layout Standard
+Example: suppose program 
+\family typewriter
+A.jar
+\family default
+ needs two libraries named 
+\family typewriter
+BLib.jar
+\family default
+ and 
+\family typewriter
+CLib.jar
+\family default
+.
+ Then you must deploy each one to create a 
+\family typewriter
+.tcz
+\family default
+ and create a 
+\family typewriter
+.pkg
+\family default
+ with the following lines:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+[L] BLib.tcz
+\end_layout
+
+\begin_layout Plain Layout
+
+[L] CLib.tcz
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For Palm, you must add the 
+\family typewriter
+.pdb
+\family default
+s.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+[L] BLib.pdb
+\end_layout
+
+\begin_layout Plain Layout
+
+[L] CLib.pdb
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, you deploy your application doing, for instance:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+java tc.Deploy A.jar -all
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -14222,6 +14348,32 @@ Image
 \family default
 , and the source is the control where the image is.
  
+\end_layout
+
+\begin_layout Subsection
+EnabledStateChangeEvent
+\end_layout
+
+\begin_layout Standard
+An event generated when the enabled status of a control changes.
+ This will occur when the method 
+\family typewriter
+setEnabled()
+\family default
+ is issued.
+\end_layout
+
+\begin_layout Subsubsection
+Constructor
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+EnabledStateChangeEvent() Constructs an empty 
+\family typewriter
+EnabledStateChangeEvent
+\family default
+.
 \end_layout
 
 \begin_layout Section
