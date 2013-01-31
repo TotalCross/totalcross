@@ -232,16 +232,25 @@ public class Level5Impl extends Level5
       setResponse(sock != null,null);
    }
 
-   private static String formatAddress(String s)
+   private static String formatAddress(String s) // 000780885D13 -> 00:07:80:88:5D:13
    {
-      char[] out = new char[17];
-      for (int j = 0, i = 0, k = 0; j < 6; j++)
+      try
       {
-         out[k++] = s.charAt(i++); 
-         out[k++] = s.charAt(i++); 
-         if (j < 5) out[k++] = ':';
+         char[] out = new char[17];
+         for (int j = 0, i = 0, k = 0; j < 6; j++)
+         {
+            out[k++] = s.charAt(i++); 
+            out[k++] = s.charAt(i++); 
+            if (j < 5) out[k++] = ':';
+         }
+         return new String(out);
       }
-      return new String(out);
+      catch (StringIndexOutOfBoundsException sioobe)
+      {
+         println("Error formatting address '"+s+"'");
+         AndroidUtils.handleException(sioobe,false);
+         return s;
+      }
    }
 
    private void btMakeDiscoverable()
