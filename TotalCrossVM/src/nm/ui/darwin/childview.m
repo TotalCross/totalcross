@@ -26,6 +26,7 @@ bool setupGL(int width, int height);
    self = [ super init ];
    [self setOpaque:YES];
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
+   [self setBackgroundColor: UIColor.blueColor];
    return self;
 }
 
@@ -46,19 +47,16 @@ extern int32 deviceFontHeight,iosScale;
 - (void)onRotate
 {
    int scale = iosScale;
-   int barH = 20*scale;
-   int w = self.frame.size.width *scale;
-   int h = self.frame.size.height*scale;
-   appW = h > w ? w : w+barH;
-   realAppH = appH = h > w ? h : h-barH;
+   CGRect rl = self.bounds;
+   int w = rl.size.width *scale;
+   int h = rl.size.height*scale;
+   gscreen->screenW = appW = w;
+   gscreen->screenH = realAppH = appH = h;
    callingScreenChange = true;
-   [self setScreenValues: gscreen];
+   //[self setScreenValues: gscreen];
    [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];
    while (callingScreenChange)
       Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
-   ScreenSurface screen = gscreen;
-   screen->screenW = appW;
-   screen->screenH = appH;
 }
 
 - (void)setCurrentGLcontext
@@ -68,11 +66,10 @@ extern int32 deviceFontHeight,iosScale;
 
 - (void)createGLcontext
 {
-   bool ok;
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
    glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-   ok = [EAGLContext setCurrentContext:glcontext];
+   [self setCurrentGLcontext];
    // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
    glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
    glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR
@@ -85,15 +82,13 @@ extern int32 deviceFontHeight,iosScale;
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
    setupGL(gscreen->screenW,gscreen->screenH);
-   glClearColor(1,0,1,1);
+   glClearColor(1,1,1,1);
    glClear(GL_COLOR_BUFFER_BIT);
    realAppH = appH;
 }
 - (void)updateScreen
 {
-   NSLog(@"update screen %d %d %d %d",(int)self.frame.origin.x,(int)self.frame.origin.y,(int)self.frame.size.width,(int)self.frame.size.height);
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];
-   glClearColor(1,0,1,1); glClear(GL_COLOR_BUFFER_BIT);
 }
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event

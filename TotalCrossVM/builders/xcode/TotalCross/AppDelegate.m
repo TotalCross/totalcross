@@ -61,15 +61,10 @@
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [self initApp];
-}
-
-void graphicsScreenWillRotate();
-- (void)application:(UIApplication *)application didChangeStatusBarFrame:(CGRect)oldStatusBarFrame
-{
-    graphicsScreenWillRotate();
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

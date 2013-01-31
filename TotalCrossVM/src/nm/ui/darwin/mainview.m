@@ -29,6 +29,15 @@ void Sleep(int ms);
    return YES;
 }
 
+bool firstLayout = true;
+- (void)viewWillLayoutSubviews
+{
+   if (!firstLayout)
+      [child_view onRotate];
+   else
+      firstLayout = false;
+}
+
 - (void)loadView
 {
    self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
@@ -43,6 +52,23 @@ void Sleep(int ms);
    [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
 }
+
+bool initGLES(ScreenSurface screen)
+{
+   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
+   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   // initialize the screen bitmap with the full width and height
+   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
+   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
+   [window setBackgroundColor: UIColor.greenColor];
+   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   [window makeKeyAndVisible];
+   [DEVICE_CTX->_childview setScreenValues: screen];
+   [DEVICE_CTX->_childview createGLcontext];
+   screen->pixels = (void*)1;
+   return true;
+}
+
 
 - (void)destroySIP
 {
@@ -282,21 +308,6 @@ static bool callingCamera;
 void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
 
-bool initGLES(ScreenSurface screen)
-{
-   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
-   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
-   // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
-   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
-   [window makeKeyAndVisible];
-   [ DEVICE_CTX->_childview setScreenValues: screen ];
-   [DEVICE_CTX->_childview createGLcontext];
-   screen->pixels = (void*)1;
-   return true;
-}
-
 void graphicsSetupIOS()
 {
    [DEVICE_CTX->_childview setCurrentGLcontext];
@@ -304,10 +315,6 @@ void graphicsSetupIOS()
 void graphicsUpdateScreenIOS()
 {                
    [DEVICE_CTX->_childview updateScreen];
-}
-void graphicsScreenWillRotate()
-{                
-   [DEVICE_CTX->_childview onRotate];
 }
 
 //////////////// interface to mainview methods ///////////////////

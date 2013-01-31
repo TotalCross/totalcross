@@ -638,7 +638,14 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   glViewport(0, 0, w, h); GL_CHECK_ERROR
+#ifdef darwin
+    int fw,fh;
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &fw);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &fh);
+    glViewport(0, 0, fw, fh); GL_CHECK_ERROR
+#else
+    glViewport(0, 0, w, h); GL_CHECK_ERROR
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -751,7 +758,7 @@ static void destroyEGL()
 void privateScreenChange(int32 w, int32 h)
 {
    appW = w;
-   appH = h;                           
+   appH = h;
    clearPixels();
    setProjectionMatrix(w,h); 
 }
