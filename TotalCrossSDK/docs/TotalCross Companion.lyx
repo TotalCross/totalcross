@@ -1258,6 +1258,11 @@ totalcross.*
 \family default
  base classes and deploy tools, and it should be added to the classpath
  of your chosen IDE.
+ Note that 
+\family typewriter
+TCFont.tcz
+\family default
+ is needed to run an application on Java.
 \end_layout
 
 \begin_layout Itemize
@@ -1271,6 +1276,14 @@ totalcross.*
 \family default
  base classes and fonts, to be used if you want to run the application in
  a browser.
+ This one is greater in size than 
+\family typewriter
+tc.jar
+\family default
+ because of the fonts.
+ That is, it is not necessary to add 
+\family typewriter
+TCFont.tcz.
 \end_layout
 
 \begin_layout Itemize
@@ -16007,6 +16020,588 @@ robotName The name of the robot that was running.
 \begin_layout FieldList
 \labelwidthstring 0
 failureReason The reason of the failure, if any.
+ 
+\end_layout
+
+\begin_layout Section
+Listener Interfaces
+\end_layout
+
+\begin_layout Standard
+This subsection lists and describes the interfaces used to add listeners
+ to use the delegation event model.
+ 
+\end_layout
+
+\begin_layout Subsection
+EnabledStateChangeListener
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to enable/disable states.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+
+enabledStateChange(EnabledStateChangeEvent
+\begin_inset space ~
+\end_inset
+
+e) Indicates that the state has changed.
+\end_layout
+
+\begin_layout Subsection
+
+FocusListener
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to focus events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusIn(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+ControlEvent.FOCUS_IN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusOut(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+ControlEvent.FOCUS_OUT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+GridListener
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to grid events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridSelected(GridEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+GridEvent.SELECTED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridCheckChanged(GridEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+GridEvent.CHECK_CHANGED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridTextChanged(GridEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+GridEvent.TEXT_CHANGED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout Subsection
+
+HighlightListener
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to highlight events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightIn(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+ControlEvent.HIGHLIGHT_IN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightOut(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) 
+\family typewriter
+A ControlEvent.HIGHLIGHT_OUT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout Subsection
+
+KeyListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to key events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keyPressed(KeyEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+KeyEvent.KEY_PRESS
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+actionkeyPressed(KeyEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) An 
+\family typewriter
+KeyEvent.ACTION_KEY_PRESS
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+specialkeyPressed(KeyEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+KeyEvent.SPECIAL_KEY_PRESS
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+ListContainerListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to 
+\family typewriter
+ListContainer
+\family default
+ events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemSelected(ListContainerEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) An 
+\family typewriter
+ListContainerEvent.ITEM_SELECTED_EVENT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+leftImageClicked(ListContainerEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) An 
+\family typewriter
+ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rightImageClicked(ListContainerEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) An 
+\family typewriter
+ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+MouseListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to mouse move events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseMove(MouseEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+MouseEvent.MOUSE_MOVE
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseIn(MouseEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+MouseEvent.MOUSE_IN
+\family default
+ event was dispatched when the mouse was going into a control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseOut(MouseEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+MouseEvent.MOUSE_OUT
+\family default
+ event was dispatched when the mouse was going out of a control.
+ 
+\end_layout
+
+\begin_layout Subsection
+
+PenListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to pen events.
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDown(PenEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+PenEvent.PEN_DOWN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penUp(PenEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+PenEvent.PEN_UP
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDrag(DragEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDragStart(DragEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG_START
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDragEnd(DragEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG_END
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+PressListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to press events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+controlPressed(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+TimerListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to timer events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timerTriggered(TimerEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+TimerEvent.TRIGGERED
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+
+WindowListener 
+\end_layout
+
+\begin_layout Standard
+
+Interface used to listen to window events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+windowClosed(ControlEvent
+
+\begin_inset space ~
+\end_inset
+
+
+\lang english
+e) A 
+\family typewriter
+ControlEvent.WINDOW_CLOSED
+\family default
+ event was dispatched.
  
 \end_layout
 
