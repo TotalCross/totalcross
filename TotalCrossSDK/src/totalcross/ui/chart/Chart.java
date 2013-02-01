@@ -43,7 +43,7 @@ public class Chart extends Control
    */
    public static final int GRADIENT_HORIZONTAL = 2; // guich@tc110_20
 
-   /** Indicates a horizontal gradient.
+   /** Indicates a vertical gradient.
     * @see #type
     */
    public static final int GRADIENT_VERTICAL = 4; // guich@tc110_20
