@@ -16047,7 +16047,6 @@ Method
 
 \begin_layout FieldList
 \labelwidthstring 0
-
 enabledStateChange(EnabledStateChangeEvent
 \begin_inset space ~
 \end_inset
@@ -16056,12 +16055,10 @@ e) Indicates that the state has changed.
 \end_layout
 
 \begin_layout Subsection
-
 FocusListener
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to focus events.
  
 \end_layout
@@ -16073,12 +16070,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 focusIn(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 ControlEvent.FOCUS_IN
@@ -16090,12 +16084,9 @@ ControlEvent.FOCUS_IN
 \begin_layout FieldList
 \labelwidthstring 0
 focusOut(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 ControlEvent.FOCUS_OUT
@@ -16104,12 +16095,10 @@ ControlEvent.FOCUS_OUT
 \end_layout
 
 \begin_layout Subsection
-
 GridListener
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to grid events.
  
 \end_layout
@@ -16121,12 +16110,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 gridSelected(GridEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 GridEvent.SELECTED_EVENT
@@ -16138,12 +16124,9 @@ GridEvent.SELECTED_EVENT
 \begin_layout FieldList
 \labelwidthstring 0
 gridCheckChanged(GridEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 GridEvent.CHECK_CHANGED_EVENT
@@ -16155,12 +16138,9 @@ GridEvent.CHECK_CHANGED_EVENT
 \begin_layout FieldList
 \labelwidthstring 0
 gridTextChanged(GridEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 GridEvent.TEXT_CHANGED_EVENT
@@ -16170,12 +16150,10 @@ GridEvent.TEXT_CHANGED_EVENT
 \end_layout
 
 \begin_layout Subsection
-
 HighlightListener
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to highlight events.
  
 \end_layout
@@ -16187,12 +16165,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 highlightIn(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 ControlEvent.HIGHLIGHT_IN
@@ -16204,12 +16179,9 @@ ControlEvent.HIGHLIGHT_IN
 \begin_layout FieldList
 \labelwidthstring 0
 highlightOut(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) 
 \family typewriter
 A ControlEvent.HIGHLIGHT_OUT
@@ -16219,12 +16191,10 @@ A ControlEvent.HIGHLIGHT_OUT
 \end_layout
 
 \begin_layout Subsection
-
 KeyListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to key events.
  
 \end_layout
@@ -16236,12 +16206,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 keyPressed(KeyEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 KeyEvent.KEY_PRESS
@@ -16252,12 +16219,9 @@ KeyEvent.KEY_PRESS
 \begin_layout FieldList
 \labelwidthstring 0
 actionkeyPressed(KeyEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) An 
 \family typewriter
 KeyEvent.ACTION_KEY_PRESS
@@ -16269,12 +16233,9 @@ KeyEvent.ACTION_KEY_PRESS
 \begin_layout FieldList
 \labelwidthstring 0
 specialkeyPressed(KeyEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 KeyEvent.SPECIAL_KEY_PRESS
@@ -16283,12 +16244,10 @@ KeyEvent.SPECIAL_KEY_PRESS
 \end_layout
 
 \begin_layout Subsection
-
 ListContainerListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to 
 \family typewriter
 ListContainer
@@ -16304,12 +16263,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 itemSelected(ListContainerEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) An 
 \family typewriter
 ListContainerEvent.ITEM_SELECTED_EVENT
@@ -16320,12 +16276,9 @@ ListContainerEvent.ITEM_SELECTED_EVENT
 \begin_layout FieldList
 \labelwidthstring 0
 leftImageClicked(ListContainerEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) An 
 \family typewriter
 ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT
@@ -16337,12 +16290,9 @@ ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT
 \begin_layout FieldList
 \labelwidthstring 0
 rightImageClicked(ListContainerEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) An 
 \family typewriter
 ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT
@@ -16351,12 +16301,10 @@ ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT
 \end_layout
 
 \begin_layout Subsection
-
 MouseListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to mouse move events.
  
 \end_layout
@@ -16368,12 +16316,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 mouseMove(MouseEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 MouseEvent.MOUSE_MOVE
@@ -16385,12 +16330,9 @@ MouseEvent.MOUSE_MOVE
 \begin_layout FieldList
 \labelwidthstring 0
 mouseIn(MouseEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 MouseEvent.MOUSE_IN
@@ -16402,12 +16344,9 @@ MouseEvent.MOUSE_IN
 \begin_layout FieldList
 \labelwidthstring 0
 mouseOut(MouseEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 MouseEvent.MOUSE_OUT
@@ -16417,12 +16356,10 @@ MouseEvent.MOUSE_OUT
 \end_layout
 
 \begin_layout Subsection
-
 PenListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to pen events.
 \end_layout
 
@@ -16433,12 +16370,9 @@ Methods
 \begin_layout FieldList
 \labelwidthstring 0
 penDown(PenEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 PenEvent.PEN_DOWN
@@ -16450,12 +16384,9 @@ PenEvent.PEN_DOWN
 \begin_layout FieldList
 \labelwidthstring 0
 penUp(PenEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 PenEvent.PEN_UP
@@ -16467,12 +16398,9 @@ PenEvent.PEN_UP
 \begin_layout FieldList
 \labelwidthstring 0
 penDrag(DragEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 PenEvent.PEN_DRAG
@@ -16484,12 +16412,9 @@ PenEvent.PEN_DRAG
 \begin_layout FieldList
 \labelwidthstring 0
 penDragStart(DragEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 PenEvent.PEN_DRAG_START
@@ -16501,12 +16426,9 @@ PenEvent.PEN_DRAG_START
 \begin_layout FieldList
 \labelwidthstring 0
 penDragEnd(DragEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 PenEvent.PEN_DRAG_END
@@ -16515,12 +16437,10 @@ PenEvent.PEN_DRAG_END
 \end_layout
 
 \begin_layout Subsection
-
 PressListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to press events.
 \end_layout
 
@@ -16531,12 +16451,9 @@ Method
 \begin_layout FieldList
 \labelwidthstring 0
 controlPressed(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 ControlEvent.PRESSED
@@ -16545,12 +16462,10 @@ ControlEvent.PRESSED
 \end_layout
 
 \begin_layout Subsection
-
 TimerListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to timer events.
 \end_layout
 
@@ -16561,12 +16476,9 @@ Method
 \begin_layout FieldList
 \labelwidthstring 0
 timerTriggered(TimerEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 TimerEvent.TRIGGERED
@@ -16575,12 +16487,10 @@ TimerEvent.TRIGGERED
 \end_layout
 
 \begin_layout Subsection
-
 WindowListener 
 \end_layout
 
 \begin_layout Standard
-
 Interface used to listen to window events.
 \end_layout
 
@@ -16591,12 +16501,9 @@ Method
 \begin_layout FieldList
 \labelwidthstring 0
 windowClosed(ControlEvent
-
 \begin_inset space ~
 \end_inset
 
-
-\lang english
 e) A 
 \family typewriter
 ControlEvent.WINDOW_CLOSED
@@ -40523,59 +40430,575 @@ totalcross.ui.
  chart
 \family default
 .
- For more details, please check the JavaDocs.
+ 
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
+\begin_layout Section
 Chart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 The base class of all 
 \family typewriter
 Chart
 \family default
  classes.
+ This class has the following constants and public attributes, constructor,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IS_3D Indicates if a chart is a 3D chart (1).
+ The default is 2D (0).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_HORIZONTAL Indicates a horizontal gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_VERTICAL Indicates a vertical gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_DARK Indicates a dark gradient.
+ The default is a bright gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_INVERT Indicates to invert the gradient direction.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
+\begin_layout FieldList
+\labelwidthstring 0
+type The chart type.
+ The values can be 
 \family typewriter
+OR
+\family default
+'ed together.
+ It applies to column and pie charts.
+ For example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ chart.type = Chart.IS_3D | Chart.GRADIENT_HORIZONTAL | Chart.GRADIENT_DARK;
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+series The series that are currently added to this chart.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showTitle Flag to indicate whether the title must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showLegend Flag to indicate whether the legend must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showCategories Flag to indicate whether the categories must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showYValues Flag to indicate whether the Y values must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showVGrids Flag to indicate whether the X grids must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showHGrids Flag to indicate whether the Y grids must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+xDecimalPlaces The number of decimal places to show the data of the X axis.
+ It defaults to 3.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yDecimalPlaces The number of decimal places to show the data of the Y axis.
+ It defaults to 3.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+legendPosition The position of the legend.
+ Can be one of: 
+\family typewriter
+RIGHT
+\family default
+ (default), 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+TOP
+\family default
+, or 
+\family typewriter
+BOTTOM
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+legendPerspective Perspective distance for the legend.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Chart() Default constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTitle(String
+\begin_inset space ~
+\end_inset
+
+title) Sets this chart's title.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTitle() Returns the chart's title.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setXAxis(double
+\begin_inset space ~
+\end_inset
+
+min,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+max,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+steps) Sets the X axis as a value axis given the minimum (its origin) and
+ the maximum values to be used, and the number of subdivisions (steps) of
+ the axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setXAxis(String[]
+\begin_inset space ~
+\end_inset
+
+categories) Sets the X axis as a category axis.
+ The parameter is the categories' names.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setYAxis(double
+\begin_inset space ~
+\end_inset
+
+min,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+max,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+steps) Similar to 
+\family typewriter
+setXAxis(double min, double max, int steps)
+\family default
+.
+\end_layout
+
+\begin_layout Section
 ColumnChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
-A vertical column chart.
+This is a a vertical column chart.
+ Below are shown some screenshots taken from CharTest:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_016.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveH Perspective horizontal distance.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveV Perspective vertical distance.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+ColumnChart(String[]
+\begin_inset space ~
+\end_inset
 
+categories) Creates a new 2D column chart.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColumnChart(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+categories) Creates a new column chart, where 
 \family typewriter
+type
+\family default
+ is 2D (0) or 3D (1).
+\end_layout
+
+\begin_layout Section
+PointLineChart
+\end_layout
+
+\begin_layout Standard
+Abstract class used by points and line charts, extended by 
+\family typewriter
+LineChart
+\family default
+ and 
+\family typewriter
+XYChart
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showLines Flag to indicate whether the lines connecting points must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showPoints Flag to indicate whether the points must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pointR The radious of each point (in pixels).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lineThickness The line thickness.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PointLineChart() The default constructor.
+\end_layout
+
+\begin_layout Section
 LineChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 This class represents a line chart.
+ Below are shown some screenshots taken from CharTest:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_009.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_010.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor (excluding some fields from
+ its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+LineChart(String[]
+\begin_inset space ~
+\end_inset
+
+categories) Creates a new line chart.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
+\begin_layout Section
 PieChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 A simple pie chart.
  
@@ -40591,43 +41014,679 @@ legendValueSuffix
 \family default
  to 
 \family typewriter
-"%"
+%
 \family default
 , the value displayed will be the percentage instead of the serie's value.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-PointLineChart
+\begin_layout Standard
+Below are shown some screenshots taken from CharTest:
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
-Abstract class used by points and line charts.
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_011.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_012.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_013.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_014.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_015.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructor (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+distanceOfSelectedPie Specifies the distance that the selected pie will
+ be placed from the rest of the pie.
+ Defaults to 10.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-XYChart 
+\begin_layout FieldList
+\labelwidthstring 0
+selectedSeries Specifies the selected pie.
+ 
 \end_layout
 
-\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+legendValueSuffix The suffix used in the legend to display the values, e.g.:
+ 
+\family typewriter
+%
+\family default
+.
+ Defaults to blank.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showValuesOnLegend Set to 
+\family typewriter
+true
+\family default
+ to show the values in the legend.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveH Perspective horizontal distance.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveV Perspective vertical distance.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PieChart() Creates a new pie chart.
+ 
+\family typewriter
+Chart.yDecimalPlaces
+\family default
+ defines the number of decimal places used to display the value in the legend.
+ 
+\end_layout
+
+\begin_layout Section
+XYChart
+\end_layout
+
 \begin_layout Standard
 
 \family typewriter
 XYChart
 \family default
  is a scatter chart.
+ Here is an example of how to use it, together with a screenshot of the
+ application.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.chart.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.event.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.gfx.Color;
+\end_layout
+
+\begin_layout Plain Layout
+
+public class ChartTest2 extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	static
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		Settings.useNewFont = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	XYChart chart;
+\end_layout
+
+\begin_layout Plain Layout
+
+	Check showTitle, showHGrids, showVGrids, showYValues;
+\end_layout
+
+\begin_layout Plain Layout
+
+	ComboBox legendPosition;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public ChartTest2()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Chart Test 2", TAB_ONLY_BORDER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showTitle = new Check("Title"), LEFT, TOP + 2);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(legendPosition = new ComboBox(new String[]{"Legend","Right","Left","Top","
+Bottom"}), AFTER + 2, SAME,PREFERRED,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showYValues = new Check("YValues"), AFTER+2, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showHGrids = new Check("HGrids"), LEFT, AFTER + 2);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showVGrids = new Check("VGrids"), AFTER + 2, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		legendPosition.setSelectedIndex(0);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Ruler(),LEFT,AFTER+1);
+\end_layout
+
+\begin_layout Plain Layout
+
+		double[] months = new double[]{100, 200, 300, 400};
+\end_layout
+
+\begin_layout Plain Layout
+
+		(chart = new XYChart()).series.addElement(new Series("Rice", months, new
+ double[] {100, 102, 104, 106}, Color.YELLOW));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.series.addElement(new Series("Beans", months, new double[] {150, 155,
+ 159, 164}, Color.GREEN));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.series.addElement(new Series("Oil", months, new double[] {130, 137,
+ 143, 150}, Color.RED));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.lineThickness = 2;
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setTitle("Sales Projection");
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setYAxis(0, 200, 10);
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setXAxis(0, 400, 10);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(chart, LEFT, AFTER+2, FILL,FILL);
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setBackColor(Color.darker(backColor,16));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.yDecimalPlaces = 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.legendPerspective = 6;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (e.type == ControlEvent.PRESSED && (e.target instanceof Check || e.target
+ instanceof ComboBox))
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showTitle = showTitle.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showLegend = legendPosition.getSelectedIndex() != 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.legendPosition = getLegendPosition();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showHGrids = showHGrids.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showVGrids = showVGrids.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showYValues = showYValues.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			repaint();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	private int getLegendPosition()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		switch (legendPosition.getSelectedIndex())
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 2: return LEFT;
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 3: return TOP;
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 4: return BOTTOM;
+\end_layout
+
+\begin_layout Plain Layout
+
+			default: return RIGHT;
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_017.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor (excluding some fields from
+ its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XYChart() Creates a new XY (scatter) chart.
+\end_layout
+
+\begin_layout Section
+Series
+\end_layout
+
+\begin_layout Standard
+An auxiliar class containing the series of data that will be shown in the
+ charts.
+ This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+name The series' name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+xValues The series' values for the X axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yValues The series' values for the Y axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+color The color to be used when drawing the series on a chart.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Series(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+yValues,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+color) Creates a new category series.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Series(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+xValues,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+yValues,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+color) Creates a new series.
  
 \end_layout
 
-\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+
+\end_layout
+
 \begin_layout Chapter
 The Window class
 \end_layout
