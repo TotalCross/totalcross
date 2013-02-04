@@ -74470,6 +74470,11 @@ session) The same as above except that it uses the given instance of
 MailSession
 \family default
 .
+ If the message has no recipients, a 
+\family typewriter
+MessagingException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout FieldList
@@ -74479,6 +74484,11 @@ sendMessage(Message
 \end_inset
 
 message) Sends a message.
+ If the message has no recipients, a 
+\family typewriter
+MessagingException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout Section
