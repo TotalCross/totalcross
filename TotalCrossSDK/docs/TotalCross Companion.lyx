@@ -64763,6 +64763,37 @@ totalcross.io.device.RadioDevice
  provides access to the device's radios and information about their status.
 \end_layout
 
+\begin_layout Standard
+The classes related to PDB files (
+\family typewriter
+PDBFile
+\family default
+, 
+\family typewriter
+ObjectPDBFile
+\family default
+, 
+\family typewriter
+PDBStream
+\family default
+, 
+\family typewriter
+ResizeRecord
+\family default
+, 
+\family typewriter
+RemotePDBFile
+\family default
+, and 
+\family typewriter
+RemotePDBRecord
+\family default
+) are ommited because they are inefficient on all platforms except on Palm
+ OS, a platform which is not recommended anymore.
+ Unless you need to develop a TotalCross program only for Palm and will
+ never use another platform, don't use PDB files.
+\end_layout
+
 \begin_layout Chapter
 Stream
 \end_layout
@@ -64781,6 +64812,8 @@ Stream
 \begin_layout FieldList
 \labelwidthstring 0
 close() Closes this stream, releasing any resources associated to it.
+ Once closed a connection is no longer valid.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -64869,6 +64902,125 @@ IOException
 \end_layout
 
 \begin_layout Standard
+This class has also a default public constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf) Writes bytes to the stream.
+ Returns the number of bytes actually written or throws an 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(String
+\begin_inset space ~
+\end_inset
+
+string) Writes the string to the stream as a byte array.
+ Returns the number of bytes actually written or throws an 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ The string is written as-is, nothing is placed before or after it (that
+ is, its length is not included).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb) Writes the given 
+\family typewriter
+StringBuffer
+\family default
+ as a byte array, retrieved using 
+\family typewriter
+Convert.getBytes()
+\family default
+.
+ The behavior is similar to the above method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+skipBytes(int
+\begin_inset space ~
+\end_inset
+
+n) Skips over and discards 
+\family typewriter
+n
+\family default
+ bytes of data from the stream.
+ The 
+\family typewriter
+skip()
+\family default
+ method may, for a variety of reasons, end up skipping over some smaller
+ number of bytes, possibly 0.
+ This may result from any of a number of conditions; reaching end of file
+ before 
+\family typewriter
+n
+\family default
+ bytes have been skipped is only one possibility.
+ The actual number of bytes skipped is returned.
+ If 
+\family typewriter
+n
+\family default
+ is negative, no bytes are skipped, but this may vary among some implementations
+ of 
+\family typewriter
+skipBytes()
+\family default
+ in classes that inherit them (like 
+\family typewriter
+File
+\family default
+ and 
+\family typewriter
+PDBFile
+\family default
+).
+ 
+\begin_inset Newline newline
+\end_inset
+
+The skip method of this class uses a static byte array, repeatedly reading
+ into it until 
+\family typewriter
+n
+\family default
+ bytes have been read or the end of the stream has been reached.
+ Subclasses are encouraged to provide a more efficient implementation of
+ this method.
+ For instance, the implementation may depend on the ability to seek.
+ 
+\end_layout
+
+\begin_layout Standard
 
 \family typewriter
 Stream
@@ -64921,6 +65073,11 @@ BufferedStream
 \begin_layout Standard
 We'll first look into this last group, which provides easier and more efficient
  ways of reading and writing data.
+\end_layout
+
+\begin_layout Standard
+You should always chech the return of the methods to see if the written
+ or read number of bytes are the expected one.
 \end_layout
 
 \begin_layout Chapter
@@ -64978,12 +65135,76 @@ DataStreamLE
  class instead.
 \end_layout
 
+\begin_layout Standard
+Here is a sample:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(9600, 0);
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(port);
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.writeString("Hello");
+\end_layout
+
+\begin_layout Plain Layout
+
+int status = ds.readUnsignedByte();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (status == 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeString("Pi");
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeDouble(3.14);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+port.close();   
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
 
 \family typewriter
 DataStream
 \family default
- has only one constructor:
+ has two constructors:
 \end_layout
 
 \begin_deeper
@@ -64994,6 +65215,29 @@ DataStream(Stream
 \end_inset
 
 stream) Creates a data stream which wraps the given stream.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+ensureWrite) The same as above but if the second parameter is 
+\family typewriter
+true
+\family default
+, write operations are blocked until all the requested data is written to
+ the underlying stream.
+ 
 \end_layout
 
 \end_deeper
@@ -65015,6 +65259,8 @@ readByte() Reads a
 byte
 \family default
 .
+ The returned value will range from -128 to 127.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65041,6 +65287,13 @@ byte
 int
 \family default
 .
+ The returned value will range from 0 to 255.
+ Use 
+\family typewriter
+writeByte()
+\family default
+ to write the unsigned byte.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65057,7 +65310,7 @@ byte
 \family typewriter
 int
 \family default
-, which value should be between 0 and 255.
+, whose value must be between 0 and 255.
 \end_layout
 
 \end_deeper
@@ -65075,6 +65328,16 @@ readBoolean() Reads a byte as a
 boolean
 \family default
 .
+ 
+\family typewriter
+true
+\family default
+ is returned if the byte is not zero; 
+\family typewriter
+false
+\family default
+, otherwise.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65088,6 +65351,15 @@ bool) Writes a
 boolean
 \family default
  as a byte.
+ 
+\family typewriter
+true
+\family default
+ values are written as 1 and 
+\family typewriter
+false
+\family default
+ values as 0.
 \end_layout
 
 \end_deeper
@@ -65135,6 +65407,7 @@ readShort() Reads two bytes as a
 short
 \family default
 .
+ The returned value will range from -32768 to 32767.
 \end_layout
 
 \begin_layout FieldList
@@ -65148,6 +65421,17 @@ short
 int
 \family default
 .
+ The returned value will range from 0 to 65535.
+ 
+\family typewriter
+Use writeShort()
+\family default
+ to write the unsigned 
+\family typewriter
+short
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65178,7 +65462,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-There's only one method to write 
+There's only one method to write a 
 \family typewriter
 short
 \family default
@@ -65210,6 +65494,32 @@ readInt() Reads four bytes as an
 int
 \family default
 .
+ The returned value will range from -2147483648 to 2147483647.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readUnsignedInt() Reads four bytes as an unsigned 
+\family typewriter
+int
+\family default
+, returning its value as a 
+\family typewriter
+long
+\family default
+.
+ The returned value will range from 0 to 4294967295.
+ 
+\family typewriter
+Use writeLong()
+\family default
+ to write the unsigned 
+\family typewriter
+int
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65343,6 +65653,85 @@ short
 
 \begin_layout FieldList
 \labelwidthstring 0
+readChars(int
+\begin_inset space ~
+\end_inset
+
+len) Reads an array of 
+\family typewriter
+char
+\family default
+s with the given length.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Reads an array of 
+\family typewriter
+char
+\family default
+s with the given length to the given array of 
+\family typewriter
+char
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Reads 
+\family typewriter
+count
+\family default
+ 
+\family typewriter
+char
+\family default
+s from the stream to the given array of 
+\family typewriter
+char
+\family default
+s, starting from index 
+\family typewriter
+start
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 writeChars(char[]
 \begin_inset space ~
 \end_inset
@@ -65371,7 +65760,121 @@ s, placing its length in the first two bytes as an unsigned
 \family typewriter
 short
 \family default
- (limited to 65,535 characters).
+ (limited to 65,535 characters), where 
+\family typewriter
+start
+\family default
+ is the start index of the array and 
+\family typewriter
+len
+\family default
+ is the length to be written or -1 if it is to write the whole 
+\family typewriter
+char
+\family default
+ array.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+lenSize) Writes the given 
+\family typewriter
+char
+\family default
+ array, writting the length as an 
+\family typewriter
+int
+\family default
+,
+\family typewriter
+ 
+\family default
+as a 
+\family typewriter
+short
+\family default
+, as a byte, or don't writting the length, depending on the number of bytes
+ given (4,2,1,0).
+ If the size to be written is greater than a non-zero 
+\family typewriter
+lenSize
+\family default
+, an 
+\family typewriter
+IOException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeChars(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Writes the string as a 
+\family typewriter
+char
+\family default
+ array.
+ The characters are read using the 
+\family typewriter
+charAt()
+\family default
+ method from the 
+\family typewriter
+String
+\family default
+ class.
+ This method is faster than the other 
+\family typewriter
+writeChars()
+\family default
+ method on blackberry, but slower on other devices.
+ The 
+\family typewriter
+char
+\family default
+ array size is limited to 65535 characters.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65417,7 +65920,23 @@ s, placing its length in the first four bytes as an
 \family typewriter
 int
 \family default
- (limited to +2,147,483,647 characters).
+ (limited to 
+\begin_inset Newline newline
+\end_inset
+
++2,147,483,647 characters), where 
+\family typewriter
+start
+\family default
+ is the start index of the array and 
+\family typewriter
+len
+\family default
+ is the length to be written or -1 if it is to write the whole 
+\family typewriter
+char
+\family default
+ array.
 \end_layout
 
 \begin_layout Standard
@@ -65439,6 +65958,13 @@ String
 short
 \family default
  (limited to 65,535 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65468,7 +65994,17 @@ String
 \family typewriter
 int
 \family default
- (limited to +2,147,483,647 characters).
+ (limited to 
+\begin_inset Newline newline
+\end_inset
+
++2,147,483,647 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -65490,8 +66026,23 @@ int
 
 \begin_layout FieldList
 \labelwidthstring 0
-readCString() Reads a C-style (null terminated) string.
- (no implicit limit).
+readCString() Reads a C-style (null terminated) string (no implicit limit).
+ This format is commonly used by other applications.
+ Note that if you're creating your own stream, choose 
+\family typewriter
+readString()
+\family default
+ instead of 
+\family typewriter
+readCString()
+\family default
+, because 
+\family typewriter
+readCString()
+\family default
+ is MUCH slower.
+ Also, this method does not handle correctly unicode characters.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65502,6 +66053,13 @@ writeCString(String
 
 s) Writes a C-style (null terminated) string.
  (no implicit limit).
+ This means that all the characters of the string are written out, followed
+ by a 
+\family typewriter
+NULL
+\family default
+ (0) character.
+ This format is commonly used by other applications.
 \end_layout
 
 \begin_layout Standard
@@ -65524,6 +66082,12 @@ s – each character is cast from/to byte, and requires 1 byte instead of
 \labelwidthstring 0
 readSmallString() Reads a small string, where its length is stored in the
  first byte as an unsigned byte (limited to 255 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -65538,11 +66102,48 @@ s) Writes a small string, placing its length in the first byte as an unsigned
 
 \begin_layout FieldList
 \labelwidthstring 0
+writeSmallString8(String
+\begin_inset space ~
+\end_inset
+
+s) Writes a small string taking each character as a byte.
+ To read it, use 
+\family typewriter
+readString()
+\family default
+.
+ The maximum allowed length is 65536.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 readFixedString(int
 \begin_inset space ~
 \end_inset
 
-length) Reads a fixed length string (limited to +2,147,483,647 characters).
+length) Reads a fixed length string from the stream.
+ The given number of characters are read and converted to a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeFixedString(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Writes a fixed length string to the stream.
+ If the given string is longer than the given length, it will be truncated
+ and if it is shorter, it will be padded with spaces.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -65567,30 +66168,10 @@ char
 \begin_inset space ~
 \end_inset
 
-pad) Writes a fixed length string (limited to +2,147,483,647 characters).
- If the given string is longer than the given length, it is truncated; If
- shorter, it is padded with the given 
-\family typewriter
-char
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-writeFixedString(String
-\begin_inset space ~
-\end_inset
-
-s,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-length) Same as the above, but shorter strings are padded with spaces.
+pad) Writes a fixed length string to the stream.
+ If the given string is longer than the given length, it will be truncated
+ and if it is shorter, it will be padded the given pad character.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -65602,7 +66183,7 @@ String
 \end_layout
 
 \begin_layout Standard
-The methods may be used to handle 
+The methods below may be used to handle 
 \family typewriter
 String
 \family default
@@ -65672,6 +66253,32 @@ s, where its size is stored in the first two bytes as an unsigned
 short
 \family default
 .
+ If the length is zero, an empty array is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readStringArray(int
+\begin_inset space ~
+\end_inset
+
+size) Reads an array of 
+\family typewriter
+String
+\family default
+s, where its size is given as a parameter.
+ If the length is zero, an empty array is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -65710,7 +66317,7 @@ Object
 \family default
 s that implements the interface 
 \family typewriter
-Storable,
+Storable
 \family default
  may have its internal state persisted or retrieved directly using the following
  methods:
@@ -65728,7 +66335,7 @@ Storable
 \family default
  interface and was written using 
 \family typewriter
-writeObject()
+writeObject ()
 \family default
 .
 \end_layout
@@ -65813,6 +66420,27 @@ buf) Same as
 writeBytes(buf, 0, buf.length)
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the stream.
+ This just calls the 
+\family typewriter
+close()
+\family default
+ method of the attached stream, thus closing it.
+ Usually, this method may never be called.
+ Remember that closing a stream twice may throw an 
+\family typewriter
+IOException
+\family default
+, so if you call this close method, don't call the base 
+\family typewriter
+Stream
+\family default
+'s.
+ 
 \end_layout
 
 \begin_deeper

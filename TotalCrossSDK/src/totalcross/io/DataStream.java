@@ -91,9 +91,9 @@ public class DataStream extends Stream
    } 
 
    /**
-    * Closes the stream. This just call the close method of the attached stream,
+    * Closes the stream. This just calls the close method of the attached stream,
     * thus closing it. Usually, this method may never be called. Remember that closing
-    * a stream twice will throw an IOException, so if you call this close method, don't
+    * a stream twice might throw an IOException, so if you call this close method, don't
     * call the base Stream's.
     *
     * @throws totalcross.io.IOException
@@ -116,7 +116,7 @@ public class DataStream extends Stream
    }
 
    /**
-    * Reads a boolean from the stream as a byte. True is returned if the byte is
+    * Reads a byte from the stream as a boolean. True is returned if the byte is
     * not zero, false if it is.
     *
     * @return the boolean value read.

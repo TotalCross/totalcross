@@ -42,7 +42,7 @@ public abstract class Stream extends Connection
    public abstract int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException;
 
    /**
-    * Writes bytes to the stream. Returns the number of bytes actually written or -1 if an error prevented the write
+    * Writes bytes to the stream. Returns the number of bytes actually written or throws an <code>IOException</code> if an error prevented the write
     * operation from occurring.
     * 
     * @param buf
@@ -57,7 +57,7 @@ public abstract class Stream extends Connection
    public abstract int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException;
 
    /**
-    * Writes bytes to the stream. Returns the number of bytes actually written or -1 if an error prevented the write
+    * Writes bytes to the stream. Returns the number of bytes actually written or throws an <code>IOException</code> if an error prevented the write
     * operation from occurring.
     * 
     * @param buf
@@ -73,7 +73,7 @@ public abstract class Stream extends Connection
    }
 
    /**
-    * Writes bytes to the stream. Returns the number of bytes actually written or -1 if an error prevented the write
+    * Writes the string to the stream as a byte array. Returns the number of bytes actually written or throws an <code>IOException</code> if an error prevented the write
     * operation from occurring.<br>
     * The String is written as-is, nothing is placed before or after it.
     * 
