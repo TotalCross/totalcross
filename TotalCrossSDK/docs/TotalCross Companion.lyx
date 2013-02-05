@@ -1258,6 +1258,11 @@ totalcross.*
 \family default
  base classes and deploy tools, and it should be added to the classpath
  of your chosen IDE.
+ Note that 
+\family typewriter
+TCFont.tcz
+\family default
+ is needed to run an application on Java.
 \end_layout
 
 \begin_layout Itemize
@@ -1271,6 +1276,14 @@ totalcross.*
 \family default
  base classes and fonts, to be used if you want to run the application in
  a browser.
+ This one is greater in size than 
+\family typewriter
+tc.jar
+\family default
+ because of the fonts.
+ That is, it is not necessary to add 
+\family typewriter
+TCFont.tcz.
 \end_layout
 
 \begin_layout Itemize
@@ -16007,6 +16020,495 @@ robotName The name of the robot that was running.
 \begin_layout FieldList
 \labelwidthstring 0
 failureReason The reason of the failure, if any.
+ 
+\end_layout
+
+\begin_layout Section
+Listener Interfaces
+\end_layout
+
+\begin_layout Standard
+This subsection lists and describes the interfaces used to add listeners
+ to use the delegation event model.
+ 
+\end_layout
+
+\begin_layout Subsection
+EnabledStateChangeListener
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to enable/disable states.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+enabledStateChange(EnabledStateChangeEvent
+\begin_inset space ~
+\end_inset
+
+e) Indicates that the state has changed.
+\end_layout
+
+\begin_layout Subsection
+FocusListener
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to focus events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusIn(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+ControlEvent.FOCUS_IN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+focusOut(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+ControlEvent.FOCUS_OUT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+GridListener
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to grid events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridSelected(GridEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+GridEvent.SELECTED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridCheckChanged(GridEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+GridEvent.CHECK_CHANGED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+gridTextChanged(GridEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+GridEvent.TEXT_CHANGED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout Subsection
+HighlightListener
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to highlight events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightIn(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+ControlEvent.HIGHLIGHT_IN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+highlightOut(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) 
+\family typewriter
+A ControlEvent.HIGHLIGHT_OUT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout Subsection
+KeyListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to key events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keyPressed(KeyEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+KeyEvent.KEY_PRESS
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+actionkeyPressed(KeyEvent
+\begin_inset space ~
+\end_inset
+
+e) An 
+\family typewriter
+KeyEvent.ACTION_KEY_PRESS
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+specialkeyPressed(KeyEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+KeyEvent.SPECIAL_KEY_PRESS
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+ListContainerListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to 
+\family typewriter
+ListContainer
+\family default
+ events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+itemSelected(ListContainerEvent
+\begin_inset space ~
+\end_inset
+
+e) An 
+\family typewriter
+ListContainerEvent.ITEM_SELECTED_EVENT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+leftImageClicked(ListContainerEvent
+\begin_inset space ~
+\end_inset
+
+e) An 
+\family typewriter
+ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+rightImageClicked(ListContainerEvent
+\begin_inset space ~
+\end_inset
+
+e) An 
+\family typewriter
+ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+MouseListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to mouse move events.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseMove(MouseEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+MouseEvent.MOUSE_MOVE
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseIn(MouseEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+MouseEvent.MOUSE_IN
+\family default
+ event was dispatched when the mouse was going into a control.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+mouseOut(MouseEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+MouseEvent.MOUSE_OUT
+\family default
+ event was dispatched when the mouse was going out of a control.
+ 
+\end_layout
+
+\begin_layout Subsection
+PenListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to pen events.
+\end_layout
+
+\begin_layout Subsubsection
+Methods
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDown(PenEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+PenEvent.PEN_DOWN
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penUp(PenEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+PenEvent.PEN_UP
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDrag(DragEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDragStart(DragEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG_START
+\family default
+ event was dispatched.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+penDragEnd(DragEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+PenEvent.PEN_DRAG_END
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+PressListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to press events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+controlPressed(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+ControlEvent.PRESSED
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+TimerListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to timer events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+timerTriggered(TimerEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+TimerEvent.TRIGGERED
+\family default
+ event was dispatched.
+\end_layout
+
+\begin_layout Subsection
+WindowListener 
+\end_layout
+
+\begin_layout Standard
+Interface used to listen to window events.
+\end_layout
+
+\begin_layout Subsubsection
+Method
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+windowClosed(ControlEvent
+\begin_inset space ~
+\end_inset
+
+e) A 
+\family typewriter
+ControlEvent.WINDOW_CLOSED
+\family default
+ event was dispatched.
  
 \end_layout
 
@@ -39928,59 +40430,575 @@ totalcross.ui.
  chart
 \family default
 .
- For more details, please check the JavaDocs.
+ 
 \end_layout
 
-\begin_layout Itemize
-
-\family typewriter
+\begin_layout Section
 Chart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 The base class of all 
 \family typewriter
 Chart
 \family default
  classes.
+ This class has the following constants and public attributes, constructor,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IS_3D Indicates if a chart is a 3D chart (1).
+ The default is 2D (0).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_HORIZONTAL Indicates a horizontal gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_VERTICAL Indicates a vertical gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_DARK Indicates a dark gradient.
+ The default is a bright gradient.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+GRADIENT_INVERT Indicates to invert the gradient direction.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
+\begin_layout FieldList
+\labelwidthstring 0
+type The chart type.
+ The values can be 
 \family typewriter
+OR
+\family default
+'ed together.
+ It applies to column and pie charts.
+ For example:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ chart.type = Chart.IS_3D | Chart.GRADIENT_HORIZONTAL | Chart.GRADIENT_DARK;
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+series The series that are currently added to this chart.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showTitle Flag to indicate whether the title must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showLegend Flag to indicate whether the legend must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showCategories Flag to indicate whether the categories must be painted.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showYValues Flag to indicate whether the Y values must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showVGrids Flag to indicate whether the X grids must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showHGrids Flag to indicate whether the Y grids must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+xDecimalPlaces The number of decimal places to show the data of the X axis.
+ It defaults to 3.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yDecimalPlaces The number of decimal places to show the data of the Y axis.
+ It defaults to 3.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+legendPosition The position of the legend.
+ Can be one of: 
+\family typewriter
+RIGHT
+\family default
+ (default), 
+\family typewriter
+LEFT
+\family default
+, 
+\family typewriter
+TOP
+\family default
+, or 
+\family typewriter
+BOTTOM
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+legendPerspective Perspective distance for the legend.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Chart() Default constructor.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setTitle(String
+\begin_inset space ~
+\end_inset
+
+title) Sets this chart's title.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getTitle() Returns the chart's title.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setXAxis(double
+\begin_inset space ~
+\end_inset
+
+min,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+max,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+steps) Sets the X axis as a value axis given the minimum (its origin) and
+ the maximum values to be used, and the number of subdivisions (steps) of
+ the axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setXAxis(String[]
+\begin_inset space ~
+\end_inset
+
+categories) Sets the X axis as a category axis.
+ The parameter is the categories' names.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setYAxis(double
+\begin_inset space ~
+\end_inset
+
+min,
+\begin_inset space ~
+\end_inset
+
+double
+\begin_inset space ~
+\end_inset
+
+max,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+steps) Similar to 
+\family typewriter
+setXAxis(double min, double max, int steps)
+\family default
+.
+\end_layout
+
+\begin_layout Section
 ColumnChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
-A vertical column chart.
+This is a a vertical column chart.
+ Below are shown some screenshots taken from CharTest:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_001.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_002.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_003.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_004.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_005.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_016.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveH Perspective horizontal distance.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveV Perspective vertical distance.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout FieldList
+\labelwidthstring 0
+ColumnChart(String[]
+\begin_inset space ~
+\end_inset
 
+categories) Creates a new 2D column chart.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ColumnChart(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+String[]
+\begin_inset space ~
+\end_inset
+
+categories) Creates a new column chart, where 
 \family typewriter
+type
+\family default
+ is 2D (0) or 3D (1).
+\end_layout
+
+\begin_layout Section
+PointLineChart
+\end_layout
+
+\begin_layout Standard
+Abstract class used by points and line charts, extended by 
+\family typewriter
+LineChart
+\family default
+ and 
+\family typewriter
+XYChart
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showLines Flag to indicate whether the lines connecting points must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showPoints Flag to indicate whether the points must be painted.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+pointR The radious of each point (in pixels).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+lineThickness The line thickness.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PointLineChart() The default constructor.
+\end_layout
+
+\begin_layout Section
 LineChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 This class represents a line chart.
+ Below are shown some screenshots taken from CharTest:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_006.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_007.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_008.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_009.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_010.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor (excluding some fields from
+ its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+LineChart(String[]
+\begin_inset space ~
+\end_inset
+
+categories) Creates a new line chart.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
+\begin_layout Section
 PieChart
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
 A simple pie chart.
  
@@ -39996,43 +41014,679 @@ legendValueSuffix
 \family default
  to 
 \family typewriter
-"%"
+%
 \family default
 , the value displayed will be the percentage instead of the serie's value.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-PointLineChart
+\begin_layout Standard
+Below are shown some screenshots taken from CharTest:
 \end_layout
 
-\begin_deeper
 \begin_layout Standard
-Abstract class used by points and line charts.
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_011.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_012.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_013.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_014.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_015.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public attributes and constructor (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+distanceOfSelectedPie Specifies the distance that the selected pie will
+ be placed from the rest of the pie.
+ Defaults to 10.
  
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-XYChart 
+\begin_layout FieldList
+\labelwidthstring 0
+selectedSeries Specifies the selected pie.
+ 
 \end_layout
 
-\begin_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+legendValueSuffix The suffix used in the legend to display the values, e.g.:
+ 
+\family typewriter
+%
+\family default
+.
+ Defaults to blank.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+showValuesOnLegend Set to 
+\family typewriter
+true
+\family default
+ to show the values in the legend.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveH Perspective horizontal distance.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+perspectiveV Perspective vertical distance.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PieChart() Creates a new pie chart.
+ 
+\family typewriter
+Chart.yDecimalPlaces
+\family default
+ defines the number of decimal places used to display the value in the legend.
+ 
+\end_layout
+
+\begin_layout Section
+XYChart
+\end_layout
+
 \begin_layout Standard
 
 \family typewriter
 XYChart
 \family default
  is a scatter chart.
+ Here is an example of how to use it, together with a screenshot of the
+ application.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import totalcross.sys.Settings;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.chart.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.event.*;
+\end_layout
+
+\begin_layout Plain Layout
+
+import totalcross.ui.gfx.Color;
+\end_layout
+
+\begin_layout Plain Layout
+
+public class ChartTest2 extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	static
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		Settings.useNewFont = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	XYChart chart;
+\end_layout
+
+\begin_layout Plain Layout
+
+	Check showTitle, showHGrids, showVGrids, showYValues;
+\end_layout
+
+\begin_layout Plain Layout
+
+	ComboBox legendPosition;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public ChartTest2()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		super("Chart Test 2", TAB_ONLY_BORDER);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showTitle = new Check("Title"), LEFT, TOP + 2);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(legendPosition = new ComboBox(new String[]{"Legend","Right","Left","Top","
+Bottom"}), AFTER + 2, SAME,PREFERRED,SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showYValues = new Check("YValues"), AFTER+2, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showHGrids = new Check("HGrids"), LEFT, AFTER + 2);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(showVGrids = new Check("VGrids"), AFTER + 2, SAME);
+\end_layout
+
+\begin_layout Plain Layout
+
+		legendPosition.setSelectedIndex(0);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(new Ruler(),LEFT,AFTER+1);
+\end_layout
+
+\begin_layout Plain Layout
+
+		double[] months = new double[]{100, 200, 300, 400};
+\end_layout
+
+\begin_layout Plain Layout
+
+		(chart = new XYChart()).series.addElement(new Series("Rice", months, new
+ double[] {100, 102, 104, 106}, Color.YELLOW));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.series.addElement(new Series("Beans", months, new double[] {150, 155,
+ 159, 164}, Color.GREEN));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.series.addElement(new Series("Oil", months, new double[] {130, 137,
+ 143, 150}, Color.RED));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.lineThickness = 2;
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setTitle("Sales Projection");
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setYAxis(0, 200, 10);
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setXAxis(0, 400, 10);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(chart, LEFT, AFTER+2, FILL,FILL);
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.setBackColor(Color.darker(backColor,16));
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.yDecimalPlaces = 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+		chart.legendPerspective = 6;
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (e.type == ControlEvent.PRESSED && (e.target instanceof Check || e.target
+ instanceof ComboBox))
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showTitle = showTitle.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showLegend = legendPosition.getSelectedIndex() != 0;
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.legendPosition = getLegendPosition();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showHGrids = showHGrids.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showVGrids = showVGrids.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			chart.showYValues = showYValues.isChecked();
+\end_layout
+
+\begin_layout Plain Layout
+
+			repaint();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	private int getLegendPosition()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		switch (legendPosition.getSelectedIndex())
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 2: return LEFT;
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 3: return TOP;
+\end_layout
+
+\begin_layout Plain Layout
+
+			case 4: return BOTTOM;
+\end_layout
+
+\begin_layout Plain Layout
+
+			default: return RIGHT;
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="1" columns="1">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename companion_resources/images/chart_017.png
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructor (excluding some fields from
+ its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XYChart() Creates a new XY (scatter) chart.
+\end_layout
+
+\begin_layout Section
+Series
+\end_layout
+
+\begin_layout Standard
+An auxiliar class containing the series of data that will be shown in the
+ charts.
+ This class has the following public attributes and constructors (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+name The series' name.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+xValues The series' values for the X axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yValues The series' values for the Y axis.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+color The color to be used when drawing the series on a chart.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Series(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+yValues,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+color) Creates a new category series.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Series(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+xValues,
+\begin_inset space ~
+\end_inset
+
+double[]
+\begin_inset space ~
+\end_inset
+
+yValues,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+color) Creates a new series.
  
 \end_layout
 
-\end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+
+\end_layout
+
 \begin_layout Chapter
 The Window class
 \end_layout
@@ -63109,6 +64763,37 @@ totalcross.io.device.RadioDevice
  provides access to the device's radios and information about their status.
 \end_layout
 
+\begin_layout Standard
+The classes related to PDB files (
+\family typewriter
+PDBFile
+\family default
+, 
+\family typewriter
+ObjectPDBFile
+\family default
+, 
+\family typewriter
+PDBStream
+\family default
+, 
+\family typewriter
+ResizeRecord
+\family default
+, 
+\family typewriter
+RemotePDBFile
+\family default
+, and 
+\family typewriter
+RemotePDBRecord
+\family default
+) are ommited because they are inefficient on all platforms except on Palm
+ OS, a platform which is not recommended anymore.
+ Unless you need to develop a TotalCross program only for Palm and will
+ never use another platform, don't use PDB files.
+\end_layout
+
 \begin_layout Chapter
 Stream
 \end_layout
@@ -63127,6 +64812,8 @@ Stream
 \begin_layout FieldList
 \labelwidthstring 0
 close() Closes this stream, releasing any resources associated to it.
+ Once closed a connection is no longer valid.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63215,6 +64902,125 @@ IOException
 \end_layout
 
 \begin_layout Standard
+This class has also a default public constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf) Writes bytes to the stream.
+ Returns the number of bytes actually written or throws an 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(String
+\begin_inset space ~
+\end_inset
+
+string) Writes the string to the stream as a byte array.
+ Returns the number of bytes actually written or throws an 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ The string is written as-is, nothing is placed before or after it (that
+ is, its length is not included).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(StringBuffer
+\begin_inset space ~
+\end_inset
+
+sb) Writes the given 
+\family typewriter
+StringBuffer
+\family default
+ as a byte array, retrieved using 
+\family typewriter
+Convert.getBytes()
+\family default
+.
+ The behavior is similar to the above method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+skipBytes(int
+\begin_inset space ~
+\end_inset
+
+n) Skips over and discards 
+\family typewriter
+n
+\family default
+ bytes of data from the stream.
+ The 
+\family typewriter
+skip()
+\family default
+ method may, for a variety of reasons, end up skipping over some smaller
+ number of bytes, possibly 0.
+ This may result from any of a number of conditions; reaching end of file
+ before 
+\family typewriter
+n
+\family default
+ bytes have been skipped is only one possibility.
+ The actual number of bytes skipped is returned.
+ If 
+\family typewriter
+n
+\family default
+ is negative, no bytes are skipped, but this may vary among some implementations
+ of 
+\family typewriter
+skipBytes()
+\family default
+ in classes that inherit them (like 
+\family typewriter
+File
+\family default
+ and 
+\family typewriter
+PDBFile
+\family default
+).
+ 
+\begin_inset Newline newline
+\end_inset
+
+The skip method of this class uses a static byte array, repeatedly reading
+ into it until 
+\family typewriter
+n
+\family default
+ bytes have been read or the end of the stream has been reached.
+ Subclasses are encouraged to provide a more efficient implementation of
+ this method.
+ For instance, the implementation may depend on the ability to seek.
+ 
+\end_layout
+
+\begin_layout Standard
 
 \family typewriter
 Stream
@@ -63267,6 +65073,11 @@ BufferedStream
 \begin_layout Standard
 We'll first look into this last group, which provides easier and more efficient
  ways of reading and writing data.
+\end_layout
+
+\begin_layout Standard
+You should always chech the return of the methods to see if the written
+ or read number of bytes are the expected one.
 \end_layout
 
 \begin_layout Chapter
@@ -63324,12 +65135,76 @@ DataStreamLE
  class instead.
 \end_layout
 
+\begin_layout Standard
+Here is a sample:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(9600, 0);
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(port);
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.writeString("Hello");
+\end_layout
+
+\begin_layout Plain Layout
+
+int status = ds.readUnsignedByte();
+\end_layout
+
+\begin_layout Plain Layout
+
+if (status == 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeString("Pi");
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeDouble(3.14);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+port.close();   
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Itemize
 
 \family typewriter
 DataStream
 \family default
- has only one constructor:
+ has two constructors:
 \end_layout
 
 \begin_deeper
@@ -63340,6 +65215,29 @@ DataStream(Stream
 \end_inset
 
 stream) Creates a data stream which wraps the given stream.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+ensureWrite) The same as above but if the second parameter is 
+\family typewriter
+true
+\family default
+, write operations are blocked until all the requested data is written to
+ the underlying stream.
+ 
 \end_layout
 
 \end_deeper
@@ -63361,6 +65259,8 @@ readByte() Reads a
 byte
 \family default
 .
+ The returned value will range from -128 to 127.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63387,6 +65287,13 @@ byte
 int
 \family default
 .
+ The returned value will range from 0 to 255.
+ Use 
+\family typewriter
+writeByte()
+\family default
+ to write the unsigned byte.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63403,7 +65310,7 @@ byte
 \family typewriter
 int
 \family default
-, which value should be between 0 and 255.
+, whose value must be between 0 and 255.
 \end_layout
 
 \end_deeper
@@ -63421,6 +65328,16 @@ readBoolean() Reads a byte as a
 boolean
 \family default
 .
+ 
+\family typewriter
+true
+\family default
+ is returned if the byte is not zero; 
+\family typewriter
+false
+\family default
+, otherwise.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63434,6 +65351,15 @@ bool) Writes a
 boolean
 \family default
  as a byte.
+ 
+\family typewriter
+true
+\family default
+ values are written as 1 and 
+\family typewriter
+false
+\family default
+ values as 0.
 \end_layout
 
 \end_deeper
@@ -63481,6 +65407,7 @@ readShort() Reads two bytes as a
 short
 \family default
 .
+ The returned value will range from -32768 to 32767.
 \end_layout
 
 \begin_layout FieldList
@@ -63494,6 +65421,17 @@ short
 int
 \family default
 .
+ The returned value will range from 0 to 65535.
+ 
+\family typewriter
+Use writeShort()
+\family default
+ to write the unsigned 
+\family typewriter
+short
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63524,7 +65462,7 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-There's only one method to write 
+There's only one method to write a 
 \family typewriter
 short
 \family default
@@ -63556,6 +65494,32 @@ readInt() Reads four bytes as an
 int
 \family default
 .
+ The returned value will range from -2147483648 to 2147483647.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readUnsignedInt() Reads four bytes as an unsigned 
+\family typewriter
+int
+\family default
+, returning its value as a 
+\family typewriter
+long
+\family default
+.
+ The returned value will range from 0 to 4294967295.
+ 
+\family typewriter
+Use writeLong()
+\family default
+ to write the unsigned 
+\family typewriter
+int
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63689,6 +65653,85 @@ short
 
 \begin_layout FieldList
 \labelwidthstring 0
+readChars(int
+\begin_inset space ~
+\end_inset
+
+len) Reads an array of 
+\family typewriter
+char
+\family default
+s with the given length.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Reads an array of 
+\family typewriter
+char
+\family default
+s with the given length to the given array of 
+\family typewriter
+char
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Reads 
+\family typewriter
+count
+\family default
+ 
+\family typewriter
+char
+\family default
+s from the stream to the given array of 
+\family typewriter
+char
+\family default
+s, starting from index 
+\family typewriter
+start
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 writeChars(char[]
 \begin_inset space ~
 \end_inset
@@ -63717,7 +65760,121 @@ s, placing its length in the first two bytes as an unsigned
 \family typewriter
 short
 \family default
- (limited to 65,535 characters).
+ (limited to 65,535 characters), where 
+\family typewriter
+start
+\family default
+ is the start index of the array and 
+\family typewriter
+len
+\family default
+ is the length to be written or -1 if it is to write the whole 
+\family typewriter
+char
+\family default
+ array.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeChars(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+lenSize) Writes the given 
+\family typewriter
+char
+\family default
+ array, writting the length as an 
+\family typewriter
+int
+\family default
+,
+\family typewriter
+ 
+\family default
+as a 
+\family typewriter
+short
+\family default
+, as a byte, or don't writting the length, depending on the number of bytes
+ given (4,2,1,0).
+ If the size to be written is greater than a non-zero 
+\family typewriter
+lenSize
+\family default
+, an 
+\family typewriter
+IOException
+\family default
+ will be thrown.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeChars(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Writes the string as a 
+\family typewriter
+char
+\family default
+ array.
+ The characters are read using the 
+\family typewriter
+charAt()
+\family default
+ method from the 
+\family typewriter
+String
+\family default
+ class.
+ This method is faster than the other 
+\family typewriter
+writeChars()
+\family default
+ method on blackberry, but slower on other devices.
+ The 
+\family typewriter
+char
+\family default
+ array size is limited to 65535 characters.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63763,7 +65920,23 @@ s, placing its length in the first four bytes as an
 \family typewriter
 int
 \family default
- (limited to +2,147,483,647 characters).
+ (limited to 
+\begin_inset Newline newline
+\end_inset
+
++2,147,483,647 characters), where 
+\family typewriter
+start
+\family default
+ is the start index of the array and 
+\family typewriter
+len
+\family default
+ is the length to be written or -1 if it is to write the whole 
+\family typewriter
+char
+\family default
+ array.
 \end_layout
 
 \begin_layout Standard
@@ -63785,6 +65958,13 @@ String
 short
 \family default
  (limited to 65,535 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63814,7 +65994,17 @@ String
 \family typewriter
 int
 \family default
- (limited to +2,147,483,647 characters).
+ (limited to 
+\begin_inset Newline newline
+\end_inset
+
++2,147,483,647 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -63836,8 +66026,23 @@ int
 
 \begin_layout FieldList
 \labelwidthstring 0
-readCString() Reads a C-style (null terminated) string.
- (no implicit limit).
+readCString() Reads a C-style (null terminated) string (no implicit limit).
+ This format is commonly used by other applications.
+ Note that if you're creating your own stream, choose 
+\family typewriter
+readString()
+\family default
+ instead of 
+\family typewriter
+readCString()
+\family default
+, because 
+\family typewriter
+readCString()
+\family default
+ is MUCH slower.
+ Also, this method does not handle correctly unicode characters.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63848,6 +66053,13 @@ writeCString(String
 
 s) Writes a C-style (null terminated) string.
  (no implicit limit).
+ This means that all the characters of the string are written out, followed
+ by a 
+\family typewriter
+NULL
+\family default
+ (0) character.
+ This format is commonly used by other applications.
 \end_layout
 
 \begin_layout Standard
@@ -63870,6 +66082,12 @@ s – each character is cast from/to byte, and requires 1 byte instead of
 \labelwidthstring 0
 readSmallString() Reads a small string, where its length is stored in the
  first byte as an unsigned byte (limited to 255 characters).
+ If the length is zero, an empty string is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -63884,11 +66102,48 @@ s) Writes a small string, placing its length in the first byte as an unsigned
 
 \begin_layout FieldList
 \labelwidthstring 0
+writeSmallString8(String
+\begin_inset space ~
+\end_inset
+
+s) Writes a small string taking each character as a byte.
+ To read it, use 
+\family typewriter
+readString()
+\family default
+.
+ The maximum allowed length is 65536.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 readFixedString(int
 \begin_inset space ~
 \end_inset
 
-length) Reads a fixed length string (limited to +2,147,483,647 characters).
+length) Reads a fixed length string from the stream.
+ The given number of characters are read and converted to a string.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeFixedString(String
+\begin_inset space ~
+\end_inset
+
+s,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Writes a fixed length string to the stream.
+ If the given string is longer than the given length, it will be truncated
+ and if it is shorter, it will be padded with spaces.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -63913,30 +66168,10 @@ char
 \begin_inset space ~
 \end_inset
 
-pad) Writes a fixed length string (limited to +2,147,483,647 characters).
- If the given string is longer than the given length, it is truncated; If
- shorter, it is padded with the given 
-\family typewriter
-char
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-\labelwidthstring 0
-writeFixedString(String
-\begin_inset space ~
-\end_inset
-
-s,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-length) Same as the above, but shorter strings are padded with spaces.
+pad) Writes a fixed length string to the stream.
+ If the given string is longer than the given length, it will be truncated
+ and if it is shorter, it will be padded the given pad character.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -63948,7 +66183,7 @@ String
 \end_layout
 
 \begin_layout Standard
-The methods may be used to handle 
+The methods below may be used to handle 
 \family typewriter
 String
 \family default
@@ -64018,6 +66253,32 @@ s, where its size is stored in the first two bytes as an unsigned
 short
 \family default
 .
+ If the length is zero, an empty array is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readStringArray(int
+\begin_inset space ~
+\end_inset
+
+size) Reads an array of 
+\family typewriter
+String
+\family default
+s, where its size is given as a parameter.
+ If the length is zero, an empty array is returned.
+ 
+\family typewriter
+null
+\family default
+ is never returned.
 \end_layout
 
 \begin_layout FieldList
@@ -64056,7 +66317,7 @@ Object
 \family default
 s that implements the interface 
 \family typewriter
-Storable,
+Storable
 \family default
  may have its internal state persisted or retrieved directly using the following
  methods:
@@ -64074,7 +66335,7 @@ Storable
 \family default
  interface and was written using 
 \family typewriter
-writeObject()
+writeObject ()
 \family default
 .
 \end_layout
@@ -64159,6 +66420,27 @@ buf) Same as
 writeBytes(buf, 0, buf.length)
 \family default
 .
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the stream.
+ This just calls the 
+\family typewriter
+close()
+\family default
+ method of the attached stream, thus closing it.
+ Usually, this method may never be called.
+ Remember that closing a stream twice may throw an 
+\family typewriter
+IOException
+\family default
+, so if you call this close method, don't call the base 
+\family typewriter
+Stream
+\family default
+'s.
+ 
 \end_layout
 
 \begin_deeper
@@ -72816,6 +75098,11 @@ session) The same as above except that it uses the given instance of
 MailSession
 \family default
 .
+ If the message has no recipients, a 
+\family typewriter
+MessagingException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout FieldList
@@ -72825,6 +75112,11 @@ sendMessage(Message
 \end_inset
 
 message) Sends a message.
+ If the message has no recipients, a 
+\family typewriter
+MessagingException
+\family default
+ will be thrown.
 \end_layout
 
 \begin_layout Section
