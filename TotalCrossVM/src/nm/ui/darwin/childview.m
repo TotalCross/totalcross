@@ -52,6 +52,7 @@ extern int32 deviceFontHeight,iosScale;
    int h = rl.size.height*scale;
    gscreen->screenW = appW = w;
    gscreen->screenH = realAppH = appH = h;
+   [self createGLcontext];
    callingScreenChange = true;
    //[self setScreenValues: gscreen];
    [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];
@@ -68,8 +69,16 @@ extern int32 deviceFontHeight,iosScale;
 {
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
-   glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-   [self setCurrentGLcontext];
+   if (glcontext == null)
+   {
+      glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+      [self setCurrentGLcontext];
+   }
+   else
+   {
+      glDeleteFramebuffers(1, &defaultFramebuffer);
+      glDeleteRenderbuffers(1, &colorRenderbuffer);
+   }
    // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
    glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
    glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR

@@ -22,6 +22,22 @@ void Sleep(int ms);
 
 @implementation MainViewController
 
+bool initGLES(ScreenSurface screen)
+{
+   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
+   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   // initialize the screen bitmap with the full width and height
+   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
+   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
+   [window setBackgroundColor: UIColor.greenColor];
+   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   [window makeKeyAndVisible];
+   [DEVICE_CTX->_childview setScreenValues: screen];
+   [DEVICE_CTX->_childview createGLcontext];
+   screen->pixels = (void*)1;
+   return true;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    [UIView setAnimationsEnabled:NO];
@@ -52,23 +68,6 @@ bool firstLayout = true;
    [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
 }
-
-bool initGLES(ScreenSurface screen)
-{
-   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
-   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
-   // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
-   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   [window setBackgroundColor: UIColor.greenColor];
-   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
-   [window makeKeyAndVisible];
-   [DEVICE_CTX->_childview setScreenValues: screen];
-   [DEVICE_CTX->_childview createGLcontext];
-   screen->pixels = (void*)1;
-   return true;
-}
-
 
 - (void)destroySIP
 {
