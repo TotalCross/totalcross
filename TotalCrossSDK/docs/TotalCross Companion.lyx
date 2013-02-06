@@ -66594,8 +66594,11 @@ This difference is easily noticeable when dealing with external connections,
 \end_layout
 
 \begin_layout Standard
-You may also use a byte array stream with data stream to ensure you received
- enough data before handling it.
+You may also use a 
+\family typewriter
+ByteArrayStream
+\family default
+ with data stream to ensure you received enough data before handling it.
 \end_layout
 
 \begin_layout Standard
@@ -66652,9 +66655,12 @@ if (bas.available() >= 4) // do we have at least 4 bytes available?
 \end_layout
 
 \begin_layout Standard
-The byte array stream is usually used as a read-only or write-only buffer,
- because its internal cursor is advanced every time a read or write operation
- is performed.
+The 
+\family typewriter
+ByteArrayStream
+\family default
+ is usually used as a read-only or write-only buffer, because its internal
+ cursor is advanced every time a read or write operation is performed.
  However, you may use methods like 
 \family typewriter
 setPos()
@@ -66692,7 +66698,7 @@ ByteArrayStream
 \family typewriter
 ByteArrayStream
 \family default
- has two constructors:
+ has three constructors:
 \end_layout
 
 \begin_layout FieldList
@@ -66701,8 +66707,11 @@ ByteArrayStream(byte[]
 \begin_inset space ~
 \end_inset
 
-buffer) Creates a byte array stream, using the given byte array, which may
- not be empty, as the internal buffer.
+buffer) Creates a 
+\family typewriter
+ByteArrayStream
+\family default
+, using the given byte array, which may not be empty, as the internal buffer.
  More often used to create read-only buffers.
 \end_layout
 
@@ -66712,9 +66721,37 @@ ByteArrayStream(int
 \begin_inset space ~
 \end_inset
 
-size) Creates a byte array stream, with a newly created (empty) internal
- byte array of the given size.
+size) Creates a 
+\family typewriter
+ByteArrayStream
+\family default
+, with a newly created (empty) internal byte array of the given size.
  More often used to create write-only buffers.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+ByteArrayStream(byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Creates a 
+\family typewriter
+ByteArrayStream
+\family default
+ where 
+\family typewriter
+len
+\family default
+ is the length to read from the buffer.
 \end_layout
 
 \begin_layout Standard
@@ -66732,8 +66769,11 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Although the internal buffer is a private field, you may create a byte array
- stream with your own byte array or use methods like 
+Although the internal buffer is a private field, you may create a 
+\family typewriter
+ByteArrayStream
+\family default
+ with your own byte array or use methods like 
 \family typewriter
 getBuffer()
 \family default
@@ -66759,6 +66799,12 @@ null
 \labelwidthstring 0
 getBuffer() Returns a reference to the internal buffer.
  The actual length of the buffer may differ from the current buffer size.
+ Use the 
+\family typewriter
+getPos()
+\family default
+ method to get the correct value.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -66830,6 +66876,9 @@ start
 count
 \family default
  positions.
+ It returns the number of bytes actually read or -1 if the end of the base
+ stream was reached (if applicable to the base stream).
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -66883,8 +66932,8 @@ Manipulating the internal array:
 
 \begin_layout FieldList
 \labelwidthstring 0
-count() Returns the current cursor position in the buffer – the number of
- bytes read in read-only, or the number of bytes written in a write-only.
+getPos() Returns the current cursor position in the buffer – the number
+ of bytes read in read-only, or the number of bytes written in a write-only.
 \end_layout
 
 \begin_layout FieldList
@@ -66930,6 +66979,10 @@ count
  bytes from the current position.
  A positive value moves the cursor forward, while a negative value moves
  the cursor backwards.
+ The cursor cannot be placed outside the stream limits, stopping at position
+ 0 when moving backwards, or at the last position of the stream, when moving
+ forward.
+ 
 \begin_inset Newline newline
 \end_inset
 
@@ -67025,8 +67078,8 @@ true
 \family default
 , it also copies the contents of the current buffer to the new buffer, starting
  from 0 to the current cursor position.
- If the given size if equals or smaller than the marked position of the
- buffer, nothing is changed.
+ If the given size is equal or smaller than the marked position of the buffer,
+ nothing is changed.
 \end_layout
 
 \begin_layout FieldList
@@ -67119,7 +67172,7 @@ The argument
 bufSize
 \family default
  specifies a minimum size for the internal buffer – therefore, if its value
- is equals or lower than the size of the buffer, it is not resized (i.e.
+ is equal or lower than the size of the buffer, it is not resized (i.e.
  you cannot use it to shrink the buffer).
  Otherwise, the buffer will be resized to match the given value.
 \begin_inset Newline newline
@@ -67166,10 +67219,10 @@ After
 \family typewriter
 readFully()
 \family default
- finishes reading to the internal buffer, it marks the current cursor position
- and sets the cursor to the first position of the array, so you may read
- from the buffer without going past the number of bytes actually available
- for reading.
+ finishes reading from the internal buffer, it marks the current cursor
+ position and sets the cursor to the first position of the array, so you
+ may read from the buffer without going past the number of bytes actually
+ available for reading.
 \end_layout
 
 \end_inset

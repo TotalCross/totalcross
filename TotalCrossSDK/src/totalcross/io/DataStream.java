@@ -829,7 +829,7 @@ public class DataStream extends Stream
    }
    
    /** Writes the String as a char array. The chars are read using the charAt method from the String class.
-    * This is method is faster than the other writeChars method on blackberry, but slower on other devices. 
+    * This method is faster than the other writeChars method on blackberry, but slower on other devices. 
     * <p>The char array size is limited to 65535 characters.
     * @param s The String to be written. Must not be null!
     * @param len The maximum number of chars to be written. Must be less than the String's length.
@@ -956,7 +956,7 @@ public class DataStream extends Stream
    }
 
    /**
-    * Read a small String. The length must have been written as a single byte before the byte array. If it was 0, an
+    * Read a small String. If the length is 0, an
     * empty String is returned.
     * <p>
     * The String size is limited to 255 characters.
