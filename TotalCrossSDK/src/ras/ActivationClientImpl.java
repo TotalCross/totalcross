@@ -288,8 +288,17 @@ final class ActivationClientImpl extends ActivationClient
             isActivated();
 
             // And finally, delete the activation request packet
-            PDBFile pdbFile = new PDBFile(PDBFILE_TCRAS_REQUEST, PDBFile.READ_WRITE);
-            pdbFile.delete();
+            String dataPath = Settings.dataPath;
+            Settings.dataPath = null;
+            try
+            {
+               PDBFile pdbFile = new PDBFile(PDBFILE_TCRAS_REQUEST, PDBFile.READ_WRITE);
+               pdbFile.delete();
+            }
+            finally
+            {
+               Settings.dataPath = dataPath;
+            }
          }
       }
       catch (Exception e)
@@ -418,28 +427,45 @@ final class ActivationClientImpl extends ActivationClient
       byte[] enc = aesEncrypt(bas.toByteArray());
 
       // Write encrypted data to the pdb file so it can be easily installed
-      PDBFile pdb = new PDBFile(pdbFile, PDBFile.CREATE_EMPTY);
-      pdb.addRecord(enc.length);
-      pdb.writeBytes(enc, 0, enc.length);
-      pdb.setAttributes(PDBFile.DB_ATTR_BACKUP); // guich@tc113_7
-      pdb.close();
+      String dataPath = Settings.dataPath;
+      Settings.dataPath = null;
+      try
+      {
+         PDBFile pdb = new PDBFile(pdbFile, PDBFile.CREATE_EMPTY);
+         pdb.addRecord(enc.length);
+         pdb.writeBytes(enc, 0, enc.length);
+         pdb.setAttributes(PDBFile.DB_ATTR_BACKUP); // guich@tc113_7
+         pdb.close();
+      }
+      finally
+      {
+         Settings.dataPath = dataPath;
+      }
    }
 
    private Packet readPacket(String pdbFile) throws IOException, CommException, CryptoException
    {
       // Read encrypted data from the pdb file
-      PDBFile pdb = new PDBFile(pdbFile, PDBFile.READ_WRITE);
-      pdb.setRecordPos(0);
-      byte[] enc = new byte[pdb.getRecordSize()];
-      pdb.readBytes(enc, 0, enc.length);
-      pdb.close();
+      String dataPath = Settings.dataPath;
+      Settings.dataPath = null;
+      try
+      {
+         PDBFile pdb = new PDBFile(pdbFile, PDBFile.READ_WRITE);
+         pdb.setRecordPos(0);
+         byte[] enc = new byte[pdb.getRecordSize()];
+         pdb.readBytes(enc, 0, enc.length);
+         pdb.close();
+         // Decrypt data
+         byte[] dec = aesDecrypt(enc);
 
-      // Decrypt data
-      byte[] dec = aesDecrypt(enc);
-
-      // Read packet
-      ByteArrayStream bas = new ByteArrayStream(dec);
-      return RASConnection.connect(bas).receive();
+         // Read packet
+         ByteArrayStream bas = new ByteArrayStream(dec);
+         return RASConnection.connect(bas).receive();
+      }
+      finally
+      {
+         Settings.dataPath = dataPath;
+      }
    }
 
    private byte[] readKey() throws IOException, CryptoException
