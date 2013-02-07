@@ -25,8 +25,8 @@ bool setupGL(int width, int height);
    controller = ctrl;
    self = [ super init ];
    [self setOpaque:YES];
+   self.contentMode = UIViewContentModeCenter;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
-   [self setBackgroundColor: UIColor.blueColor];
    return self;
 }
 
@@ -36,33 +36,29 @@ extern int32 deviceFontHeight,iosScale;
 {
    ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
    iosScale = [UIScreen mainScreen].scale;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ( == 2.0)) ?2:1;
-   screen->screenW = self.frame.size.width * iosScale;
-   screen->screenH = self.frame.size.height * iosScale;
+   screen->screenW = self.bounds.size.width *iosScale;
+   screen->screenH = self.bounds.size.height*iosScale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
    if (iosScale == 2) deviceFontHeight = 38;
 }
 
-- (void)onRotate
-{
-   int scale = iosScale;
-   CGRect rl = self.bounds;
-   int w = rl.size.width *scale;
-   int h = rl.size.height*scale;
-   gscreen->screenW = appW = w;
-   gscreen->screenH = realAppH = appH = h;
-   [self createGLcontext];
-   callingScreenChange = true;
-   //[self setScreenValues: gscreen];
-   [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];
-   while (callingScreenChange)
-      Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
-}
-
 - (void)setCurrentGLcontext
 {
    [EAGLContext setCurrentContext:glcontext];
+}
+
+- (void)onRotate
+{
+   gscreen->screenW =            appW = self.bounds.size.width *iosScale;
+   gscreen->screenH = realAppH = appH = self.bounds.size.height*iosScale;
+   [self createGLcontext]; // recreate buffers at the new screen layout
+   callingScreenChange = true;
+   [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
+                                                [NSNumber numberWithInt:appW], @"width", [NSNumber numberWithInt:appH], @"height", nil] ];
+   while (callingScreenChange)
+      Sleep(10); // let the event be processed
 }
 
 - (void)createGLcontext

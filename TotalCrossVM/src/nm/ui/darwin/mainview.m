@@ -29,7 +29,6 @@ bool initGLES(ScreenSurface screen)
    // initialize the screen bitmap with the full width and height
    CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
    DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   [window setBackgroundColor: UIColor.greenColor];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
@@ -46,10 +45,20 @@ bool initGLES(ScreenSurface screen)
 }
 
 bool firstLayout = true;
-- (void)viewWillLayoutSubviews
+- (void)viewDidLayoutSubviews
 {
    if (!firstLayout)
+   {
+      // at this moment, ios will try to resize the current rendering buffer, placing it at the screen.
+      // the screen is updated when we reach GraphicsPrimitives_c.h / updateScreen
+      // so, before we actually update the screen, leading to a strange effect
+      // we just paint out screen now with black.
+      glClearColor(0,0,0,1);
+      glClear(GL_COLOR_BUFFER_BIT);
+      [child_view updateScreen];
+      // rotate the screen
       [child_view onRotate];
+   }
    else
       firstLayout = false;
 }
@@ -304,7 +313,6 @@ static bool callingCamera;
 
 @end
 
-void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
 
 void graphicsSetupIOS()

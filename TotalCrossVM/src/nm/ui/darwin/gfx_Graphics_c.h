@@ -28,8 +28,6 @@ bool graphicsCreateScreenSurface   (ScreenSurface screen);
 void graphicsUpdateScreen          (Context currentContext, ScreenSurface screen);
 void graphicsDestroy               (ScreenSurface screen, bool isScreenChange);
   
-extern void orientationChanged     (); // called by the UI
-
 #ifdef __cplusplus
 };
 #endif

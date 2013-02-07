@@ -25,7 +25,6 @@ typedef id Context;
 typedef int  (*StartVMProc)             (char* args, Context context);
 typedef void (*NotifyStopVMProc)        ();
 typedef int  (*StartProgramProc)        (Context context);
-typedef void (*OrientationChangedProc)  ();
 
 typedef void *dlHandle;
 
@@ -35,7 +34,6 @@ static char *cmdLine;
 {
    int startupRC;
    StartProgramProc fStartProgram;
-   OrientationChangedProc fOrientationChanged;
    dlHandle tcvm;
    Context context;
 }
@@ -50,7 +48,6 @@ static char *cmdLine;
 {
 	[super init];
     fStartProgram = NULL;
-    fOrientationChanged = NULL;
 	return self;
 }
 
@@ -113,8 +110,6 @@ static char *cmdLine;
       [ self fatalError: @"Cannot find the 'startVM' entry point" ];
       return;
    }
-
-   fOrientationChanged = (OrientationChangedProc)dlsym(tcvm, "orientationChanged");
 
    startupRC = fStartVM(cmdLine, &context);
 
