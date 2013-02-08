@@ -67281,6 +67281,45 @@ DONT_OPEN The path argument denotes either a directory or an archive that
 This mode may be used to perform operations that do not require the allocation
  of any resources, or to manipulate directories.
  In fact, it is the only mode that allows directory manipulation.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The 
+\family typewriter
+DONT_OPEN
+\family default
+ mode allows the 
+\family typewriter
+exists()
+\family default
+, 
+\family typewriter
+rename()
+\family default
+, 
+\family typewriter
+delete()
+\family default
+, 
+\family typewriter
+listFiles()
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+createDir()
+\family default
+, and 
+\family typewriter
+isDir()
+\family default
+ methods to be called without requiring the file to be open for reading
+ or writing.
+ 
 \end_layout
 
 \begin_deeper
@@ -67335,16 +67374,16 @@ IOException
 \begin_layout FieldList
 \labelwidthstring 0
 CREATE The given path denotes an archive that may not exist.
- If the archive does not exists, it is created and opened with read and
- write access, otherwise, it justs opens the existing file with read and
- write access.
+ If the archive does not exist, it is created and opened with read and write
+ access, otherwise, it justs opens the existing file with read and write
+ access.
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 READ_WRITE The given path denotes an archive to be opened with read and
  write access.
- The archive must exists, otherwise a 
+ The archive must exist, otherwise a 
 \family typewriter
 FileNotFoundException
 \family default
@@ -67406,6 +67445,17 @@ READ_ONLY Works only for files, must not be used for folders.
 \end_layout
 
 \begin_layout Standard
+There is a constant called 
+\family typewriter
+INVALID
+\family default
+, whose value is 0, which means an invalid file open mode.
+ This should not be used to open a file.
+ This is used by TotalCross to indicate that a file is invalid after closing
+ it.
+\end_layout
+
+\begin_layout Standard
 File constructors:
 \end_layout
 
@@ -67436,7 +67486,7 @@ slot) Creates a
 File
 \family default
  object with the given path, using the given mode (which should be one of
- the above constants) and the specified slot.
+ the above constants) and the specified slot used only on Palm OS.
 \end_layout
 
 \begin_layout FieldList
@@ -67519,11 +67569,18 @@ Windows 32 -
 \end_layout
 
 \begin_layout Itemize
-iPhone - 
+iOS - 
 \family typewriter
 /private/var/
 \family default
- (root of the big partition) 
+ (root of the big partition) in a installation using 
+\family typewriter
+.deb
+\family default
+ (on a jailbroken device) or in the documents folder of the application
+ in a installation using 
+\family typewriter
+.ipa
 \end_layout
 
 \begin_layout Itemize
@@ -67557,9 +67614,10 @@ device/
 \begin_layout Standard
 The argument slot specifies the index of the storage media to be used only
  for Palm OS.
- This parametes is ignored on all other platforms.
+ This parameter is ignored on all other platforms.
  Usually the value used will be 1, which defaults to the device's internal
  non-volatile memory.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -67568,6 +67626,9 @@ If the device has one or more slots for external storage medias (e.g.
  1 (e.g.
  if the device has one slot for a memory card, you may address it using
  the value 2).
+ Note that writing to a storage card can be much slower than writing to
+ the main internal non-volatile memory.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -67581,7 +67642,7 @@ You may also use the value -1 to access the storage media of higher index
 \end_layout
 
 \begin_layout Standard
-This may vary on some Palm devices, so use prefer using the
+This may vary on some Palm devices, so prefer using the
 \family typewriter
  Settings.nvfsVolume
 \family default
@@ -67615,14 +67676,34 @@ for (int i = 0; i < 10; i++)
 \end_layout
 
 \begin_layout Standard
-To access the card in Android devices, prefix the path with 
+The method 
+\family typewriter
+isCardInserted(int slot)
+\family default
+ also works on Android, but its parameter is ignored.
+\end_layout
+
+\begin_layout Standard
+To access the card on Android devices, prefix the path with 
 \family typewriter
 /sdcard
 \family default
 .
  Be sure that the card is NOT MOUNTED (being used by the desktop), otherwise
  your application will not have access to it.
- 
+ Some android devices have more than one sdcard, an internal and an external
+ ones.
+ On such devices, 
+\family typewriter
+/sdcard
+\family default
+ is the internal one; to find the external path, you must get into the device
+ because there's no API to get it.
+ For example, on Galaxy devices, it is 
+\family typewriter
+/mnt/extSdCard
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -67667,9 +67748,14 @@ File
 \end_layout
 
 \begin_layout Standard
+Also, avoid using accentuated characters in the file name because it may
+ not work on some devices.
+\end_layout
+
+\begin_layout Standard
 Depending on the target file type (directory or archive) and the used open
  mode, some methods may not be used, or have a different behavior.
- Using a method under the wrong circumstances will result in an 
+ Using a method under the wrong circumstances may result in an 
 \family typewriter
 IOException
 \family default
@@ -67681,7 +67767,8 @@ To clarify, we'll split the
 \family typewriter
 File
 \family default
- methods into the four categories below:
+ methods into the four categories below (some methods from its superclass
+ are omitted):
 \end_layout
 
 \begin_layout Itemize
@@ -67695,11 +67782,15 @@ Directory only methods – Can only be used with directories.
 
 \begin_layout Itemize
 Archive only methods – Can only be used with open archives (cannot be used
- with archives created in 
+ with 
+\family typewriter
+File
+\family default
+ objects created with the 
 \family typewriter
 DONT_OPEN
 \family default
-).
+ mode).
 \end_layout
 
 \begin_layout Itemize
@@ -67708,7 +67799,7 @@ Behavior depends on the file type – May be used with any file, but the method
 \end_layout
 
 \begin_layout Standard
-Archive and Directory methods:
+Archive and directory methods:
 \end_layout
 
 \begin_layout FieldList
@@ -67722,6 +67813,24 @@ true
 false
 \family default
 , otherwise.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (new File("dummy.txt").exists())
+\end_layout
+
+\begin_layout Plain Layout
+
+   ...
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
@@ -67750,6 +67859,12 @@ false
 
 \begin_layout FieldList
 \labelwidthstring 0
+getPath() Returns the file's path passed in the constructor.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 getParent() Returns a new 
 \family typewriter
 File
@@ -67758,7 +67873,7 @@ File
 \family typewriter
 null
 \family default
- if this file does not have a parent directory.
+ if this file does not have a parent directory (it's the root directory).
  The new file object is created in 
 \family typewriter
 DONT_OPEN
@@ -67781,6 +67896,25 @@ This operation closes the
 File
 \family default
  object, so you should not perform any operations after a rename.
+ You must give the full directory specification for the file to keep compatibili
+ty between all platforms.
+ Windows CE platform lets you move a file using 
+\family typewriter
+rename()
+\family default
+, while Palm OS does not let you move the file.
+ The file is automatically closed prior to renaming.
+ After this operation, the 
+\family typewriter
+File
+\family default
+ object is invalid.
+ It cannot be used in 
+\family typewriter
+READ_ONLY
+\family default
+ mode.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -67791,7 +67925,7 @@ delete() Removes the file from the file system.
 IOException
 \family default
  will be thrown.
- If the file does not exists, a 
+ If the file does not exist, a 
 \family typewriter
 FileNotFoundException
 \family default
@@ -67801,11 +67935,30 @@ FileNotFoundException
 
 This operation closes the file object, so you should not perform any operations
  after a delete.
+ The file could have been opened in any of the available modes, except for
+ 
+\family typewriter
+READ_ONLY
+\family default
+.
+ Example: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+new File("/my/file.c").delete(); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-close() Closes this 
+close() Closes the 
 \family typewriter
 File
 \family default
@@ -67842,6 +67995,21 @@ File
  object, so you should not perform any operations after a close.
 \end_layout
 
+\begin_layout FieldList
+\labelwidthstring 0
+isEmpty() If the object is a file, returns 
+\family typewriter
+true
+\family default
+ if the file has 0 bytes.
+ If it is a folder, returns 
+\family typewriter
+true
+\family default
+ if there are no files nor folders inside of it.
+ 
+\end_layout
+
 \begin_layout Standard
 Directory only methods:
 \end_layout
@@ -67850,11 +68018,153 @@ Directory only methods:
 \labelwidthstring 0
 createDir() Creates the directory named by this path, including any necessary
  but nonexistent parent directories.
+ It throws an 
+\family typewriter
+IOException
+\family default
+ if the file was closed, if it was open in anything else than 
+\family typewriter
+DONT_OPEN
+\family default
+, if the directory already exists, or if the directories could not be created.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deleteDir() Deletes a directory and all its subdirectories and files.
+ If you have problems trying to recreate the directory, be sure to call
+ 
+\family typewriter
+Vm.gc()
+\family default
+ after calling this method.
+ 
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
 listFiles() Returns an array of strings denoting the files in this directory.
+ The strings returned are the names of the files and directories contained
+ within this directory.
+ Paths are suffixed by a slash.
+ If the folder is empty, the method returns an empty array whereas if the
+ 
+\family typewriter
+File
+\family default
+ object is not a directory, 
+\family typewriter
+null
+\family default
+ is returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listFiles(String
+\begin_inset space ~
+\end_inset
+
+dir) Static method that returns a recursive list of all files inside the
+ given directory (including it).
+ The array is sorted upon return.
+ If the folder is empty, the method returns an empty array whereas if the
+ 
+\family typewriter
+File
+\family default
+ object is not a directory, 
+\family typewriter
+null
+\family default
+ is returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listFiles(String
+\begin_inset space ~
+\end_inset
+
+dir,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+recursive) Same as above but also lists the files in the subdirectories
+ if 
+\family typewriter
+recursive
+\family default
+ is 
+\family typewriter
+true
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCardVolume() Returns the volume file for the Windows CE and Pocket PC,
+ and BlackBerry devices.
+ On these devices, the volume has a special folder name, but since there's
+ no system call that informs this, we first try to find a registry variable
+ containing it.
+ If this variable is not found we must just test the existence of each folder,
+ returning the first one that exists.
+ You can set the 
+\family typewriter
+winceVols
+\family default
+ string array to the ones you want to be searched.
+ Its default value is 
+\family typewriter
+{"/Storage Card2/", "/Storage Card1/", "/SD Card/", "/Storage Card/", "/SD-MMCar
+d/", "/CF Card/"}
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCardSerialNumber(int
+\begin_inset space ~
+\end_inset
+
+slot) Returns the card serial number for the given slot.
+ This method only works on Palm OS.
+ 
+\family typewriter
+slot
+\family default
+ is the slot number, or -1 to use the last slot (which is usually an external
+ card if the device has such slot).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSlot() Returns the slot number passed in the constructor, or -1 if no
+ slot was given.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listRoots() Lists the root drives.
+ If there are no roots, returns 
+\family typewriter
+null
+\family default
+.
+ Works on Windows 32, Java, and BlackBerry platforms.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -67935,6 +68245,10 @@ off
 \labelwidthstring 0
 flush() Flushes the stream, forcing any buffered bytes to be written on
  the file.
+ This causes any pending data to be written to disk.
+ Calling this method too much may decrease the performance.
+ It has no effect on Java.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -67944,12 +68258,100 @@ setPos(int
 \end_inset
 
 pos) Moves the file pointer for read and write operations to the given position.
+ The position passed is an absolute position, in bytes, from the beginning
+ of the file.
+ To set the position to just after the end of the file, you can call: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+file.setPos(file.getSize()); 
+\end_layout
+
+\end_inset
+
+Note: if you plan to change the file size using 
+\family typewriter
+setPos()
+\family default
+, you must write something on the new size to effectively change the size.
+ For example, on some devices if you call 
+\family typewriter
+setPos()
+\family default
+ and then read (assuming that the new position is past the end of the file,
+ the read method will fail.
+ Here's a code that will change the size for sure: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+private static byte[] zeros = new byte[4096];
+\end_layout
+
+\begin_layout Plain Layout
+
+public void setSize(int newSize)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	int size = f.getSize();
+\end_layout
+
+\begin_layout Plain Layout
+
+	f.setPos(newSize - 1); // note: setPos(1) makes the file 2 bytes long (0,
+ 1)
+\end_layout
+
+\begin_layout Plain Layout
+
+	f.setPos(size);
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int dif = newSize - size, n = 0; dif > 0; dif -= n)
+\end_layout
+
+\begin_layout Plain Layout
+
+		n = f.writeBytes(zeros, 0, dif > zeros.length ? zeros.length : dif);
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout FieldList
 \labelwidthstring 0
-getAttributes() Gets this file attributes, returning the attributes constants
- ORed together (more information below).
+getAttributes() Gets the file attributes, returning the attributes constants
+ 
+\family typewriter
+OR
+\family default
+ed together (more information below).
+ The file must be opened in a mode different of 
+\family typewriter
+DONT_OPEN
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -67958,8 +68360,18 @@ setAttributes(int
 \begin_inset space ~
 \end_inset
 
-attr) Sets this file attributes with the given attributes constants ORed
- together (more information below).
+attr) Sets the opened file attributes with the given attributes constants
+ 
+\family typewriter
+OR
+\family default
+ed together (more information below).
+ The file must be opened in a mode different of 
+\family typewriter
+DONT_OPEN
+\family default
+.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -67970,6 +68382,11 @@ getTime(byte
 
 whichTime) Gets the time for the given time type constant (more information
  below).
+ The file must be opened in a mode different of 
+\family typewriter
+DONT_OPEN
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -67987,6 +68404,15 @@ Time
 \end_inset
 
 time) Sets the time for the given time type constant (more information below).
+ The file must be opened in a mode different of 
+\family typewriter
+DONT_OPEN
+\family default
+ and 
+\family typewriter
+READ_ONLY
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -68009,20 +68435,1119 @@ newSize
  to the current end of file.
 \end_layout
 
-\begin_layout Standard
-Behavior depends on the file type:
-\end_layout
-
 \begin_layout FieldList
 \labelwidthstring 0
-getSize() If the file is the root directory, returns the amount of free
- space available on this file system.
+getSize() If the file is a directory, returns the amount of free space available
+ on this file system.
  If the file is an open archive, returns its size.
- If the file is neither the root directory nor an open archive, an 
+ If the file is neither a directory nor an open archive, an 
 \family typewriter
 IOException
 \family default
  is thrown.
+ If the total amount is greater than 2 GB, 2 GB is returned.
+ Examples: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+int freeSpace; 
+\end_layout
+
+\begin_layout Plain Layout
+
+if (Settings.platform.equals("Win32") || Settings.platform.equals("Java"))
+\end_layout
+
+\begin_layout Plain Layout
+
+   freeSpace = new File("c:
+\backslash
+
+\backslash
+").getSize();
+\end_layout
+
+\begin_layout Plain Layout
+
+else if (Settings.platform.equals("PalmOS"))
+\end_layout
+
+\begin_layout Plain Layout
+
+   freeSpace = new File("
+\backslash
+
+\backslash
+", 1).getSize(); // hidden volume
+\end_layout
+
+\begin_layout Plain Layout
+
+else
+\end_layout
+
+\begin_layout Plain Layout
+
+   freeSpace = new File("
+\backslash
+
+\backslash
+").getSize(); // WinCE and Posix 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyTo(File
+\begin_inset space ~
+\end_inset
+
+dest) Copies the current file to the given one.
+ You must close both files after calling this method.
+ Here's a sample of how to copy a file: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File src = new File(srcFileName,File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+File dest = new File(destFileName,File.CREATE_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+src.copyTo(dest);
+\end_layout
+
+\begin_layout Plain Layout
+
+src.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+dest.close(); 
+\end_layout
+
+\end_inset
+
+This method is thread-safe.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+moveTo(File
+\begin_inset space ~
+\end_inset
+
+dest) Moves the current file to the given one (the original file is deleted).
+ You must explicitly close the destination file after this operation is
+ done.
+ Here's a sample of how to move a file: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File src = new File(srcFileName,File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+File dest = new File(destFileName,File.CREATE_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+src.moveTo(dest); 
+\end_layout
+
+\begin_layout Plain Layout
+
+// src.close(); - not needed! src was deleted
+\end_layout
+
+\begin_layout Plain Layout
+
+dest.close();
+\end_layout
+
+\end_inset
+
+This method is thread-safe.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copy(String
+\begin_inset space ~
+\end_inset
+
+src,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dst) A handy method to call 
+\family typewriter
+copyTo()
+\family default
+ creating two 
+\family typewriter
+File
+\family default
+ instances and closing them.
+ The target file is erased if it exists.
+ This method is thread-safe.
+ If you want to have more control, use the 
+\family typewriter
+copyTo()
+\family default
+ method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+move(String
+\begin_inset space ~
+\end_inset
+
+src,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dst) A handy method to call 
+\family typewriter
+moveTo()
+\family default
+ creating two 
+\family typewriter
+File
+\family default
+ instances and closing them.
+ The target file is erased if it exists.
+ This method is thread-safe.
+ If you want to have more control, use the other 
+\family typewriter
+moveTo()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chmod(int
+\begin_inset space ~
+\end_inset
+
+mod) Applies the given permissions to this file.
+ Works only on Unix-based operating systems: Linux, Android, and iOS.
+ On JDK 1.6, the first number (user) is applied to all groups.
+ Below you see a table with some chmod values (r = read, w = write, x =
+ execute).
+ 
+\begin_inset Tabular
+<lyxtabular version="3" rows="21" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Number
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Permission 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+--------- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+400
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+r-------- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+444
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+r--r--r-- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+600
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw------- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+620
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw--w---- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+640
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-r----- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+644
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-r--r-- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+645
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-r--r-x 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+646
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-r--rw- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+650
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-r-x--- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+660
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw---- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+661
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw---x 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+662
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw--w- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+663
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw--wx 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+664
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw-r-- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+666
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-rw-r-- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+700
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rwx------ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+750
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rwxr-x--- 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+755
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rwxr-xr-x 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+777
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rwxrwxrwx 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+The numbers represents a group of 3.
+ The first number is the permission for user, the second number for group,
+ and the third number for others.
+ These are the possible permission values for each number: 
+\begin_inset Tabular
+<lyxtabular version="3" rows="9" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Permission
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Binary
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Decimal
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+---
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+--x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+001
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+-w-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+010
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+-wx
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+011
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+r--
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+r-x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+101
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rw-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+110
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+rwx
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+111
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+Failing to change the permission returns -1.
+ Here's a sample: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+try
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	// testing in a folder
+\end_layout
+
+\begin_layout Plain Layout
+
+	File f = new File(Settings.appPath);
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(new Label("mods of appPath = "+f.chmod(-1)),CENTER,CENTER);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	// testing in a file
+\end_layout
+
+\begin_layout Plain Layout
+
+	String name = "test";
+\end_layout
+
+\begin_layout Plain Layout
+
+	f = new File(Settings.appPath+'/'+name,File.CREATE_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+	int m0 = f.chmod(777); // change it
+\end_layout
+
+\begin_layout Plain Layout
+
+	int m1 = f.chmod(-1); // retrieve the changed value
+\end_layout
+
+\begin_layout Plain Layout
+
+	add(new Label("mods of "+name+" = "+m0+" -> "+m1+" (777)"),CENTER,AFTER+5);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+catch (Exception ee)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	MessageBox.showException(ee,true);
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+The modifiers you want to set (mod) must be given in DECIMAL, or -1 to just
+ return the current ones.
+ It returns the modifiers that were set before you called this method (or
+ the current modifiers, if -1 is being passed).
+ Some platforms may return more than 3 digits, indicating extra attributes
+ (for example, if it's a file or a directory).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readAndClose() Reads the entire file into a byte array and closes itself.
+ A handy method that can be used like this: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+byte[] bytes = new File(...,File.READ_ONLY).readAndClose();
+\end_layout
+
+\end_inset
+
+The only drawback is that this method consumes lots of memory if the file
+ is big; use it carefully.
+ 
 \end_layout
 
 \begin_layout Section
@@ -68054,7 +69579,8 @@ ATTR_HIDDEN Hidden files are usually not listed on the file system.
 
 \begin_layout FieldList
 \labelwidthstring 0
-ATTR_READ_ONLY Archives marked as read only cannot open with write access.
+ATTR_READ_ONLY Archives marked as read only cannot be opened with write
+ access.
 \end_layout
 
 \begin_layout FieldList
@@ -68064,7 +69590,12 @@ ATTR_SYSTEM Archives marked as system are normally used only by the OS,
 \end_layout
 
 \begin_layout Standard
-However, these attributes are not supported by all platforms, and although
+These values are platform independent, and can be 
+\family typewriter
+OR
+\family default
+ed together.
+ However, these attributes are not supported by all platforms, and although
  you are not required to write platform specific code, you must be aware
  that you should not rely on certain attributes when writing cross-platform
  applications.
@@ -68072,6 +69603,12 @@ However, these attributes are not supported by all platforms, and although
 
 \begin_layout Standard
 Below you can see the archive attributes support for each platform:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring BlackBerry0
+Java The methods have no effect on any file when running on JDK, it only
+ checks if the object state and the received argument are valid.
 \end_layout
 
 \begin_layout Labeling
@@ -68109,10 +69646,17 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-Files in Palm OS must be opened with write access to have their attributes
+Files on Palm OS must be opened with write access to have their attributes
  changed, therefore, you cannot change the attributes of a read only file,
  because you're not allowed to open it with write access.
- A read only file cannot be changed, moved or deleted, only reading is allowed.
+ A read only file cannot be changed, moved, or deleted; only reading is
+ allowed.
+ Moreover, some devices do not allow this attribute to be changed after
+ it is first set.
+ This results in a read-only file that cannot be changed or deleted.
+ The only way to remove a file marked as read only is performing a hard
+ reset.
+ 
 \end_layout
 
 \end_inset
@@ -68161,6 +69705,41 @@ ATTR_READ_ONLY
 .
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring BlackBerry0
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+The attributes 
+\family typewriter
+ATTR_HIDDEN
+\family default
+ and 
+\family typewriter
+ATTR_ARCHIVE
+\family default
+ are not supported by Unix based systems.
+ Using them will not throw an exception, but it will have no effect on the
+ file.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 File times
 \end_layout
@@ -68177,7 +69756,11 @@ setTime()
 \family typewriter
 getTime()
 \family default
- to retrieve and change these attributes:
+ in the 
+\family typewriter
+whichTime
+\family default
+ parameter to retrieve and change these attributes:
 \end_layout
 
 \begin_layout FieldList
@@ -68208,6 +69791,23 @@ Unfortunately these operations are not fully supported by all platforms,
 
 \begin_layout Standard
 Below you can see the times attributes support for each platform:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring BlackBerry0
+Java 
+\family typewriter
+setTime()
+\family default
+ has no effect on any file when running on JDK, it only checks if the object
+ state and the received argument are valid.
+ 
+\family typewriter
+getTime()
+\family default
+ will always return the time of the last modification if the object state
+ and the received argument are valid.
+ 
 \end_layout
 
 \begin_layout Labeling
@@ -68304,6 +69904,89 @@ TIME_CREATED
 setTime()
 \family default
 .
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring BlackBerry0
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Unix based systems do not keep record of the file's creation time.
+ Attempting to change it will not thrown an exception, but it will have
+ no effect on the file.
+ Using the constant 
+\family typewriter
+TIME_CREATED
+\family default
+ will return the last time the file was changed, which is updated when changes
+ are made to the file's inode (owner, permissions, etc.), and also when the
+ contents of the file are modified.
+ The constant 
+\family typewriter
+TIME_MODIFIED
+\family default
+ returns the last time the contents of the file were modified.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, here is an example showing data being read from a file: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File file = new File("/temp/tempfile", File.READ_WRITE);
+\end_layout
+
+\begin_layout Plain Layout
+
+byte b[] = new byte[10];
+\end_layout
+
+\begin_layout Plain Layout
+
+file.readBytes(b, 0, 10);
+\end_layout
+
+\begin_layout Plain Layout
+
+file.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+file = new File("/temp/tempfile"); // opens in DONT_OPEN mode
+\end_layout
+
+\begin_layout Plain Layout
+
+file.delete(); 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter
