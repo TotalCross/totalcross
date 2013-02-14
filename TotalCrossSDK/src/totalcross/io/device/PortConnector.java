@@ -324,8 +324,7 @@ public class PortConnector extends Stream
 
 
    /**
-   * Writes to the port. Returns the number of bytes written or -1
-   * if an error prevented the write operation from occurring. If data
+   * Writes to the port. Returns the number of bytes written or throws an <code>IOException</code> if an error prevented the write operation from occurring. If data
    * can't be written to the port and flow control is on, the write
    * operation will time out and fail after approximately 2 seconds.
    * @param buf the byte array to write data from
