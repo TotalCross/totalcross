@@ -67232,6 +67232,429 @@ readFully()
 
 \end_deeper
 \begin_layout Chapter
+PortConnector
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+PortConnector
+\family default
+ accesses the device ports.
+ 
+\end_layout
+
+\begin_layout Standard
+This works on the devices and on JDK (in this case, it uses 
+\family typewriter
+javax.comm
+\family default
+, which must be installed separately).
+ 
+\end_layout
+
+\begin_layout Standard
+When a serial port is created, an attempt is made to open the port.
+ If the open attempt is successful, the port will remain open until 
+\family typewriter
+close()
+\family default
+ is called.
+ If 
+\family typewriter
+close()
+\family default
+ is never called, the port will be closed when the object is garbage collected.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is an example showing data being written and read from a serial port:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(0, 9600); 
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(port); 
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.writeCString("Hello...
+\backslash
+r
+\backslash
+n"); 
+\end_layout
+
+\begin_layout Plain Layout
+
+port.close();
+\end_layout
+
+\end_inset
+
+On JDK, you can define a file called 
+\family typewriter
+serial.properties
+\family default
+ with the number and ports to be used: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+DEFAULT=a 
+\end_layout
+
+\begin_layout Plain Layout
+
+IRCOMM=b 
+\end_layout
+
+\begin_layout Plain Layout
+
+SIR=c 
+\end_layout
+
+\begin_layout Plain Layout
+
+USB=d
+\end_layout
+
+\end_inset
+
+ If the file is not found, it will use 
+\family typewriter
+COM1
+\family default
+, 
+\family typewriter
+COM2
+\family default
+, 
+\family typewriter
+COM3
+\family default
+, and 
+\family typewriter
+COM4
+\family default
+, respectively.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DEFAULT Default Port (cradle).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IRCOMMIrCOMM Port (Serial Connection on top of IrDA Stack).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SIR SIR Port (Physical Layer of IrDA Stack).
+ Important! In order to access the SIR port on the Pocket PCs the following
+ has to be UNCHECKED: Settings/Connections/Beam/Receive all incoming beams
+ and select discoverable mode.
+ Note that Palm OS OMAP-based devices do NOT support SIR (aka raw IR); see
+ this: 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.alanjmcf.me.uk/comms/infrared/IrDA%20FAQ.html"
+
+\end_inset
+
+.
+ Note also that there's no handshaking support on SIR, and that not all
+ devices work with it.
+ Use IRCOMM instead when possible.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+USB USB Endpoint 2 Port.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BLUETOOTH Bluetooth: opens the built-in Bluetooth discovery dialog, then
+ establishes a Serial Port Profile (just serial emulation across Bluetooth,
+ using the RFComm BT layer) virtual serial port connection.
+ Note: on Windows CE, this maps to the Serial (port 0).
+ You must explicitly map your BlueTooth outside the program.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PARITY_NONE,
+\begin_inset space ~
+\end_inset
+
+PARITY_EVEN,
+\begin_inset space ~
+\end_inset
+
+PARITY_ODD Used in the constructors to define the parity.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTimeout Defines the write timeout, in milliseconds.
+ The default is 6 seconds.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readTimeout Defines the read timeout, in milliseconds.
+ The default is 6 seconds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readTries Set this to a value that will be used to keep trying to read further
+ while something is available.
+ If a series of bytes is returned in very few steps, this will make the
+ read stop after 
+\family typewriter
+readTries
+\family default
+ has reached zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+baudRate) Opens a port with settings of 8 bits, no parity and 1 stop bit.
+ These are the most commonly used port settings.
+ The 
+\family typewriter
+number
+\family default
+ parameter passed is the number of the port for devices with multiple ports.
+ Port number 0 defines the "default port" of a given type.
+ For Windows CE and Palm OS devices, you should pass 0 as the port number
+ to access the device's single serial or usb port.
+ On Windows 32 and Windows CE the port number is the number of the COM port.
+ For example, serial port 2 maps to "COM2:".
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,int
+\begin_inset space ~
+\end_inset
+
+baudRate,int
+\begin_inset space ~
+\end_inset
+
+bits,boolean
+\begin_inset space ~
+\end_inset
+
+parity,int
+\begin_inset space ~
+\end_inset
+
+stopBits) Similar to the above constructor, where 
+\family typewriter
+bits
+\family default
+ is the bits per char [5 to 8], 
+\family typewriter
+parity
+\family default
+ is 
+\family typewriter
+true
+\family default
+ for even parity or 
+\family typewriter
+false
+\family default
+ for no parity, and 
+\family typewriter
+stopBits
+\family default
+ is the number of stop bits.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Here is an example showing how to open the serial port of a Palm OS device
+ at 9600 baud with settings of 8 bits, no partity and one stop bit (8/N/1):
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(0, 9600, 8, false, 1);
+\end_layout
+
+\end_inset
+
+Here is an example of opening serial port COM2: on a Window 32 or Windows
+ CE device: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(2, 57600, 8, false, 1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,int
+\begin_inset space ~
+\end_inset
+
+baudRate,int
+\begin_inset space ~
+\end_inset
+
+bits,int
+\begin_inset space ~
+\end_inset
+
+parity,int
+\begin_inset space ~
+\end_inset
+
+stopBits) Same as above but in this constructor the parity type can be specified.
+ The value of the parameter can be 
+\family typewriter
+PARITY_NONE
+\family default
+, 
+\family typewriter
+PARITY_EVEN
+\family default
+, or 
+\family typewriter
+PARITY_ODD
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+No serial XON/XOFF flow control (commonly called software flow control)
+ is used and RTS/CTS flow control (commonly called hardware flow control)
+ is turn on by default on all platforms but Windows CE.
+ For Palm OS, 
+\family typewriter
+PARITY_ODD
+\family default
+ turns on XON/XOFF mode.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the port.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setFlowControl(boolean
+\begin_inset space ~
+\end_inset
+
+on) Turns RTS/CTS flow control (hardware flow control) on or off.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readCheck() Returns the number of bytes currently available to be read from
+ the port's queue.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Writes to the port.
+ Returns the number of bytes written or throws an 
+\family typewriter
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ If data can't be written to the port and flow control is on, the write
+ operation will time out and fail after approximately 2 seconds.
+ 
+\end_layout
+
+\begin_layout Chapter
 File
 \end_layout
 
