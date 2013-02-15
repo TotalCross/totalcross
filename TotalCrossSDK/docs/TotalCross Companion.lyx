@@ -6675,6 +6675,135 @@ Attention: the activation server that this webservice uses is our production
  In other words, be aware that your tests will consume a license.
 \end_layout
 
+\begin_layout Standard
+You can use this piece of code to control if a device has already been activated
+ so that you can control the devices your customers use.
+ It assumes the following strings as parameters: 
+\family typewriter
+imei
+\family default
+, 
+\family typewriter
+nserial
+\family default
+, and 
+\family typewriter
+platform
+\family default
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String filterImeiSerial;        
+\end_layout
+
+\begin_layout Plain Layout
+
+if (imei == null) imei = "";
+\end_layout
+
+\begin_layout Plain Layout
+
+if (nserial == null || nserial.equalsIgnoreCase("unknown")) nserial = "";
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+// On win32 the verification is harder, the serial number must be splitted
+ and checked with like if its pieces already exist.
+\end_layout
+
+\begin_layout Plain Layout
+
+if (plataform.equalsIgnoreCase("Win32") && !nserial.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] nn = nserial.split("-");
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and (nserial like '%"+nn[0]+"%'";
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i = 1; i < nn.length; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+		filterImeiSerial += " or nserial like '%"+nn[i]+"%'";
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial += ")";
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+else if (!imei.equals("") && !nserial.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and (imei='"+imei+"' and  nserial='"+nserial+"')";
+\end_layout
+
+\begin_layout Plain Layout
+
+else if (!imei.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and imei='"+imei+"'";
+\end_layout
+
+\begin_layout Plain Layout
+
+else 
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and nserial='"+nserial+"'";
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+rs = bd.executeQuery("select * from device where "+where); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter
 SuperWaba to TotalCross conversion
 \end_layout
@@ -79195,6 +79324,315 @@ tc.samples.crypto.signature.SignatureTest
 \family default
 .
  
+\end_layout
+
+\begin_layout Part
+BLUETOOTH PRINTERS
+\end_layout
+
+\begin_layout Chapterstar
+Overview
+\end_layout
+
+\begin_layout Standard
+This part describes classes to send commands to Bluetooth printers.
+ 
+\end_layout
+
+\begin_layout Chapter
+BluetoothPrinter
+\end_layout
+
+\begin_layout Standard
+Used as interface to printers that uses Bluetooth as default to communicate
+ with the device.
+\end_layout
+
+\begin_layout Standard
+Note: during tests, we found that some printers require to fill their buffer
+ to start printing.
+ So, if you have problems printing, try the following code after you instantiate
+ this class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+cp = new BluetoothPrinter(); 
+\end_layout
+
+\begin_layout Plain Layout
+
+cp.write(new byte[2048]); // fill the buffer 
+\end_layout
+
+\begin_layout Plain Layout
+
+cp.newLine(); 
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_8_SINGLE Used to print an image in single density with 8 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_8_DOUBLE Used to print an image in double density with 8 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_24_SINGLE Used to print an image in single density with 24 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_24_DOUBLE Used to print an image in double density with 24 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BluetoothPrinter() Creates a new 
+\family typewriter
+BluetoothPrinter
+\family default
+ instance, using 
+\family typewriter
+PortConnector.BLUETOOTH
+\family default
+ port at 57600 baud rate.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BluetoothPrinter(PortConnector
+\begin_inset space ~
+\end_inset
+
+con) Creates a new 
+\family typewriter
+BluetoothPrinter
+\family default
+ instance, using the given 
+\family typewriter
+PortConnector
+\family default
+ as bridge to the printer.
+ Note that the 
+\family typewriter
+PortConnector
+\family default
+ can use any port (including infrared), however, it is not guaranteed that
+ it will work with that port.
+ For example, IR does not work on Palm OS devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+write(byte[]
+\begin_inset space ~
+\end_inset
+
+data) Sends the given raw data to the printer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+ is converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value1) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+ and 
+\family typewriter
+value1
+\family default
+ are converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value1,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value2) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+, 
+\family typewriter
+value1
+\family default
+, and 
+\family typewriter
+value2
+\family default
+ are converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+print(String
+\begin_inset space ~
+\end_inset
+
+str) Prints the given string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+print(MonoImage
+\begin_inset space ~
+\end_inset
+
+img,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+imageMode) Prints the given 
+\family typewriter
+MonoImage
+\family default
+.
+ The possible modes are: 
+\family typewriter
+IMAGE_MODE_8_SINGLE
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IMAGE_MODE_8_DOUBLE
+\family default
+, 
+\family typewriter
+IMAGE_MODE_24_SINGLE
+\family default
+, 
+\family typewriter
+IMAGE_MODE_24_DOUBLE
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+IMPORTANT: the image height must be a multiple of the vertical density!
+ If it's not, a new image will be created, forcing the correct behaviour.
+\begin_inset Newline newline
+\end_inset
+
+In the image, only black pixels are written.
+ The maximum width for single density is 192, and for double density is
+ 384; the image is trimmed to fit these values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+newLine() Sends a new line to the printer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the printer 
+\family typewriter
+PortConnector
+\family default
+.
 \end_layout
 
 \begin_layout Part
