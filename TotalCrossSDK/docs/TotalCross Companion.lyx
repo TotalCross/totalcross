@@ -72822,6 +72822,16 @@ Conduit
 
 \begin_layout Labeling
 \labelwidthstring 00.00
+/ra Registers this conduit for WinCE and PalmOS devices.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00
+/ua Unregisters this conduit for WinCE and PalmOS devices.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00
 /c Shows the configuration panel (if available) for this conduit.
 \end_layout
 
@@ -72844,6 +72854,418 @@ To unregister:
 
 \family typewriter
 PainterConduit.exe /up
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+Conduit
+\family default
+ class is the conduit's MainWindow.
+ Two methods will be called at different times: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+doSync()
+\family default
+: when a synchronization begins.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+doConfig()
+\family default
+: when a setup (preferences) is asked by the user.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_WINCE Used internally to indicate that the target platform for
+ synchronization is Windows CE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_PALMOS Used internally to indicate that the target platform for
+ synchronization is Palm OS.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_ALL Used internally to indicate that the target platform for synchroni
+zation is Windows CE or Palm OS.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+syncTarget Defines the target platform for synchronization.
+ Note that changing this value has no effects.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Conduit(String
+\begin_inset space ~
+\end_inset
+
+conduitName,String
+\begin_inset space ~
+\end_inset
+
+targetApplicationId,String
+\begin_inset space ~
+\end_inset
+
+targetAppPath,byte
+\begin_inset space ~
+\end_inset
+
+style) Creates a conduit with a title and a border, where 
+\family typewriter
+targetApplicationId
+\family default
+ is the application ID on the device (this can't be null and must be four-charac
+ter long) and 
+\family typewriter
+targetAppPath
+\family default
+ is the path to be used on the device.
+ This is the only constructor that your 
+\family typewriter
+MainWindow
+\family default
+ class may call.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+log(String
+\begin_inset space ~
+\end_inset
+
+text) When synchronizing Palm OS devices, logs the given text on the HotSync
+ log.
+ When synchronizing Windows CE, the text is logged on the debug console
+ instead.
+ This is a static method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yield() Static method that lets the conduit manager take a breath.
+ This is important, because the connection between the device and the desktop
+ might be lost during long operations.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSyncingEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enable) Static method that enables or disables the conduit execution.
+ Note that disabling a conduit is NOT the same as unregistering.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isSyncingEnabled() Static method that returns whether the conduit is enabled
+ or not.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setConduitRect(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+w,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+h,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+config) Sets the conduit's position and size when it is opened.
+ 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ are the absolute position on the screen, where -1 is to use the default
+ value or -2 to center.
+ 
+\family typewriter
+w
+\family default
+ and 
+\family typewriter
+h
+\family default
+ are the window width and height, respectively.
+ If 
+\family typewriter
+config
+\family default
+ is 
+\family typewriter
+true
+\family default
+, you are passing the bounds for when the config is being called; if 
+\family typewriter
+false
+\family default
+, is is the bounds used when synchronizing.
+ You can remove the window from screen by using a x value like 10000.
+ Default values are -2, -2, 240, 320.
+ You should call this method in the 
+\family typewriter
+onRegister()
+\family default
+ method, inherited by your conduit.
+ This is a sample that sets the screen size to be the same of 
+\family typewriter
+/scr palmhi
+\family default
+ when running on the desktop: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+setConduitRect(-2,-2,320,320,false); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+RemoteFile
+\end_layout
+
+\begin_layout Standard
+Allows you to access a file on the device from the desktop during the conduit
+ synchronization.
+ It may only be used on files stored using a file system, therefore, it
+ cannot be used to handle files on the Palm OS internal memory.
+ But you may use it to handle files on the device's built-in memory or an
+ inserted external card.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has one default constructor and the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listFiles(String
+\begin_inset space ~
+\end_inset
+
+folder) Static method that lists the files contained in a folder.
+ The strings returned are the names of the files and directories contained
+ within the folder.
+ This method returns 
+\family typewriter
+null
+\family default
+ if the folder can't be read or if the operation fails.
+ Path names ends with 
+\family typewriter
+/
+\family default
+, so it is easy to distinguish them from a file.
+ On Palm OS, passing an empty string will return all installed cards.
+ The flash memory slot will be named builtin (which is usually slot 1).
+ Then, to copy to/from a slot, you must use 
+\family typewriter
+slot:/full_path_to_file
+\family default
+ (e.g.: 
+\family typewriter
+1:/dbs/myapp/MyPDBFile.pdb
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyToRemote(String
+\begin_inset space ~
+\end_inset
+
+srcFile,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dstFile) Copies a file from the desktop to the remote device, creating the
+ target folder if necessary.
+ 
+\family typewriter
+dstFile
+\family default
+ CANNOT be a folder name, but the target file name instead.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyFromRemote(String
+\begin_inset space ~
+\end_inset
+
+srcFile,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dstFile) Copies a file from the remote device to the desktop.
+ 
+\family typewriter
+dstFile
+\family default
+ CANNOT be a folder name, but the target file name instead.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+delete(String
+\begin_inset space ~
+\end_inset
+
+fileOrFolder) Deletes a remote file or an empty folder.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+exec(String
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+args,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+launchCode,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+wait) Remotely executes the specified command on the connected device.
+ Works only on Windows CE devices.
+ The arguments 
+\family typewriter
+launchCode
+\family default
+ and 
+\family typewriter
+wait
+\family default
+ are not used and their value is ignored.
+ However, they may be used in the future so the usage of default values
+ (0 and 
+\family typewriter
+false
+\family default
+, respectively) is recommended.
+ It returns 0 if successful; otherwise, a system specific error code is
+ returned.
+ 
 \end_layout
 
 \begin_layout Part
