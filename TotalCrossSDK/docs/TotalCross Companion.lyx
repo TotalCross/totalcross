@@ -64972,45 +64972,6 @@ totalcross.io
 \begin_layout Enumerate
 
 \family typewriter
-totalcross.io.device.PortConnector
-\family default
-: used to send and receive bytes via Serial Cradle, USB, IrComm, and Bluetooth.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-totalcross.io.File
-\family default
-: used to create files and manage directories.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-totalcross.io.ByteArrayStream
-\family default
-: a resizable buffer that can be used to feed data to a stream or to store
- data coming from a stream.
- It can be used to emulate a virtual stream.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-totalcross.io.DataStream
-\family default
- (and 
-\family typewriter
-DataStreamLE
-\family default
-): used to read/write primitive types and strings in Big Endian (default)
- or Little Endian format.
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
 totalcross.io.Stream
 \family default
 : is the main class of all classes inside the 
@@ -65030,6 +64991,54 @@ totalcross.io.Stream
 \family default
  in their constructor parameter.
  This allows you to combine different streams to meet your needs.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.DataStream
+\family default
+ (and 
+\family typewriter
+DataStreamLE
+\family default
+): used to read/write primitive types and strings in Big Endian (default)
+ or Little Endian format.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.BufferedStream
+\family default
+: offers a faster way to read and write data from streams in a buffered
+ manner.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.ByteArrayStream
+\family default
+: a resizable buffer that can be used to feed data to a stream or to store
+ data coming from a stream.
+ It can be used to emulate a virtual stream.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.device.PortConnector
+\family default
+: used to send and receive bytes via Serial Cradle, USB, IrComm, and Bluetooth.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.File
+\family default
+: used to create files and manage directories.
 \end_layout
 
 \begin_layout Enumerate
@@ -66770,6 +66779,209 @@ null
 \end_layout
 
 \end_deeper
+\begin_layout Chapter
+BufferedStream 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+BufferedStream
+\family default
+ offers a faster way to read and write data from streams in a buffered manner.
+ This is especially useful when reading or writing large amounts of data.
+ It works like the 
+\family typewriter
+CompressedByteArrayStream
+\family default
+, however it does not compresses the data like that one.
+ Here's a sample code: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public void writeLargeFile(String path, byte[] largeData) throws IOException
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	File f = new File(path, File.CREATE_EMPTY);
+\end_layout
+
+\begin_layout Plain Layout
+
+	BufferedStream bs = new BufferedStream(f, BufferedStream.WRITE, 4096);
+\end_layout
+
+\begin_layout Plain Layout
+
+	bs.writeBytes(largeData, 0, largeData.length);
+\end_layout
+
+\begin_layout Plain Layout
+
+	bs.close(); // important!
+\end_layout
+
+\begin_layout Plain Layout
+
+	f.close();
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+READ Used for opening this buffered stream for reading.
+ You can't use this mode to write data.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+WRITE Used for opening this buffered stream for writing.
+ You can't use this mode to read data.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BufferedStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+mode) Creates a new buffered stream given the underlying stream and the
+ mode (
+\family typewriter
+READ
+\family default
+ or 
+\family typewriter
+WRITE
+\family default
+) to use.
+ This constructor will use the default buffer size: 2048 bytes.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BufferedStream(Stream
+\begin_inset space ~
+\end_inset
+
+stream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+mode,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+bufferSize) Same as above but receives a buffer size.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() This method closes this stream, flushing any pending WRITE data.
+ It does NOT close the underlying stream.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setStream(Stream
+\begin_inset space ~
+\end_inset
+
+f) Changes the initial stream to the attached one.
+ Reusing a 
+\family typewriter
+BufferedStream
+\family default
+ throught this method can preserve memory.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getStream() Returns the stream attached to the 
+\family typewriter
+BufferedStream
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readLine() Reads a line of text from this socket.
+ Any char lower than space is considered a new line separator.
+ This method correctly handles newlines with 
+\family typewriter
+
+\backslash
+n
+\family default
+ or 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Note: this method is VERY slow since it reads a single character per time.
+ Consider using 
+\family typewriter
+LineReader
+\family default
+ instead.
+ 
+\end_layout
+
 \begin_layout Chapter
 ByteArrayStream
 \end_layout
