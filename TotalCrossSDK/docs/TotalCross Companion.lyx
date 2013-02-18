@@ -6690,7 +6690,9 @@ nserial
 \family typewriter
 platform
 \family default
-:
+.
+ You can use other parameters as filters to the query, such as a customer
+ unique identifier ID.
 \end_layout
 
 \begin_layout Standard
@@ -6796,7 +6798,8 @@ else
 
 \begin_layout Plain Layout
 
-rs = bd.executeQuery("select * from device where "+where); 
+rs = bd.executeQuery("select * from device where filterImeiSerial = "+filterImeiS
+erial); 
 \end_layout
 
 \end_inset
@@ -25327,6 +25330,159 @@ Grid
 \family default
  if you're using devices with big screens.
  
+\end_layout
+
+\begin_layout Standard
+Another example shows the correct way of increasing the size of a grid in
+ order to support rotation when there is a component below it which must
+ be shown or hidden.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+public class TCTestWin extends MainWindow
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Grid g;
+\end_layout
+
+\begin_layout Plain Layout
+
+	Button b1,b2;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void initUI()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b1 = new Button("Hide"),LEFT,TOP);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(b2 = new Button("Place hoder"),RIGHT,BOTTOM);
+\end_layout
+
+\begin_layout Plain Layout
+
+		add(g = new Grid(new String[]{"Caption"},null,null,false));
+\end_layout
+
+\begin_layout Plain Layout
+
+		setGridRect();
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	private void setGridRect()
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		g.resetSetPositions(); // let the new coordinates work during rotation
+\end_layout
+
+\begin_layout Plain Layout
+
+		g.setRect(LEFT,AFTER,FILL,b2.isVisible()? FILL-b2.getHeight() :  FILL,b1);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void onEvent(Event e)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		if (e.type == ControlEvent.PRESSED && e.target == b1)
+\end_layout
+
+\begin_layout Plain Layout
+
+		{
+\end_layout
+
+\begin_layout Plain Layout
+
+			b2.setVisible(!b2.isVisible());
+\end_layout
+
+\begin_layout Plain Layout
+
+			setGridRect();
+\end_layout
+
+\begin_layout Plain Layout
+
+		}
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
