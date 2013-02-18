@@ -23963,7 +23963,7 @@ public class MyProgram extends MainWindow
  and the vertical interval in pixel between two lines
 \end_layout
 
-\begin_layout Plain Layout
+\begin_layout 0lain Layout
 
 		mEdit = new MultiEdit("",3,1);
 \end_layout
@@ -79491,7 +79491,7 @@ Overview
 \end_layout
 
 \begin_layout Standard
-This part describes classes to send commands to Bluetooth printers.
+This part describes classes used to send commands to Bluetooth printers.
  
 \end_layout
 
@@ -79502,6 +79502,12 @@ BluetoothPrinter
 \begin_layout Standard
 Used as interface to printers that uses Bluetooth as default to communicate
  with the device.
+ Altough the class has this name, you can use any port a 
+\family typewriter
+PortConnector
+\family default
+ and your device and printer support, such as USB.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -79615,7 +79621,7 @@ BluetoothPrinter
 PortConnector
 \family default
  as bridge to the printer.
- Note that the 
+ Note that 
 \family typewriter
 PortConnector
 \family default
@@ -79789,6 +79795,232 @@ close() Closes the printer
 PortConnector
 \family default
 .
+\end_layout
+
+\begin_layout Chapter
+CitizenPrinter
+\end_layout
+
+\begin_layout Standard
+This class extends 
+\family typewriter
+BluetoothPrinter
+\family default
+ to send special Citizen-like commands to the printer.
+ Tested with Citizen CMP-10 thermal printer.
+ Similar to its superclass, the connection with the printer may use any
+ supported port, not necessarily Bluetooth.
+\end_layout
+
+\begin_layout Standard
+Instructions of how to setup the devices to work with the printer.
+ 
+\end_layout
+
+\begin_layout Enumerate
+First, run the self-test: turning the printer off, and pressing the LF +
+ ON button at the same time and then releasing the LF button.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Write down the last 2 bytes (4 letters) of the ADDRESS (e.g.: A4 08) 
+\end_layout
+
+\begin_layout Enumerate
+Discover the "Citizen Systems" printer with the PDA.
+ 
+\end_layout
+
+\begin_layout Enumerate
+When asked for the PIN (password), write the last 4 letters of the address
+ in UPPER CASE (e.g.: A408); if it fails, write it in lower case (e.g.: a408).
+ 
+\end_layout
+
+\begin_layout Enumerate
+That's it.
+ On some devices, you can choose to always use this printer as default bluetooth
+ device.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CitizenPrinter() Creates a new 
+\family typewriter
+CitizenPrinter
+\family default
+ instance, using 
+\family typewriter
+PortConnector.BLUETOOTH
+\family default
+ port at 57600 baud rate.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CitizenPrinter(PortConnector
+\begin_inset space ~
+\end_inset
+
+con) Creates a new 
+\family typewriter
+CitizenPrinter
+\family default
+ instance, using the given 
+\family typewriter
+PortConnector
+\family default
+ as bridge to the printer.
+ Note that 
+\family typewriter
+PortConnector
+\family default
+ can use any port (including infrared), however, it is not guaranteed that
+ it will work with that port.
+ For example, IR does not work on Palm OS devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setFont(boolean
+\begin_inset space ~
+\end_inset
+
+fontA,boolean
+\begin_inset space ~
+\end_inset
+
+bold,boolean
+\begin_inset space ~
+\end_inset
+
+doubleWidth,boolean
+\begin_inset space ~
+\end_inset
+
+doubleHeight,boolean
+\begin_inset space ~
+\end_inset
+
+underline) Sets the current font based on the given attributes.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSpaceWidth(int
+\begin_inset space ~
+\end_inset
+
+w) Sets the space character width, between 0 and 32.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setXPos(int
+\begin_inset space ~
+\end_inset
+
+x) Sets the absolute position to start printing.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+turnOff() Turns off the printer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+doubleLineHeight() Double-space line height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+singleLineHeight() Single-space line height.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setLineHeight(int
+\begin_inset space ~
+\end_inset
+
+n) User-defined line height (n / 203 inches height).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+bold(boolean
+\begin_inset space ~
+\end_inset
+
+on) Sets bold state.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRotation90(boolean
+\begin_inset space ~
+\end_inset
+
+on) Enables 90-degree rotation.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setRotation1800(boolean
+\begin_inset space ~
+\end_inset
+
+on) Enables 180-degree rotation.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setDensity(int
+\begin_inset space ~
+\end_inset
+
+n) Sets font density, between 0 and 5.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setHorizontalAlignment(int
+\begin_inset space ~
+\end_inset
+
+v) Sets the horizontal text alignment.
+ Use 
+\family typewriter
+Control.LEFT
+\family default
+, 
+\family typewriter
+Control.CENTER
+\family default
+, or 
+\family typewriter
+Control.RIGHT
+\family default
+.
+ 
 \end_layout
 
 \begin_layout Part

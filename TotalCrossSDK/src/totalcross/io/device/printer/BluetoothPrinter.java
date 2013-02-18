@@ -55,7 +55,7 @@ public class BluetoothPrinter
    }
    
    /** Creates a new BluetoothPrinter instance, using the given PortConnector as bridge to the printer.
-    * Note that the PortConnector can use any port (including infrared), however, it is not guaranteed 
+    * Note that PortConnector can use any port (including infrared), however, it is not guaranteed 
     * that it will work with that port. For example, IR does not work on Palm OS devices.
     */
    public BluetoothPrinter(PortConnector con) throws IOException
