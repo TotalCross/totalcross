@@ -6675,6 +6675,135 @@ Attention: the activation server that this webservice uses is our production
  In other words, be aware that your tests will consume a license.
 \end_layout
 
+\begin_layout Standard
+You can use this piece of code to control if a device has already been activated
+ so that you can control the devices your customers use.
+ It assumes the following strings as parameters: 
+\family typewriter
+imei
+\family default
+, 
+\family typewriter
+nserial
+\family default
+, and 
+\family typewriter
+platform
+\family default
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String filterImeiSerial;        
+\end_layout
+
+\begin_layout Plain Layout
+
+if (imei == null) imei = "";
+\end_layout
+
+\begin_layout Plain Layout
+
+if (nserial == null || nserial.equalsIgnoreCase("unknown")) nserial = "";
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+// On win32 the verification is harder, the serial number must be splitted
+ and checked with like if its pieces already exist.
+\end_layout
+
+\begin_layout Plain Layout
+
+if (plataform.equalsIgnoreCase("Win32") && !nserial.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	String[] nn = nserial.split("-");
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and (nserial like '%"+nn[0]+"%'";
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i = 1; i < nn.length; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+		filterImeiSerial += " or nserial like '%"+nn[i]+"%'";
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial += ")";
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+else if (!imei.equals("") && !nserial.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and (imei='"+imei+"' and  nserial='"+nserial+"')";
+\end_layout
+
+\begin_layout Plain Layout
+
+else if (!imei.equals(""))
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and imei='"+imei+"'";
+\end_layout
+
+\begin_layout Plain Layout
+
+else 
+\end_layout
+
+\begin_layout Plain Layout
+
+	filterImeiSerial = " and nserial='"+nserial+"'";
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+rs = bd.executeQuery("select * from device where "+where); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter
 SuperWaba to TotalCross conversion
 \end_layout
@@ -67232,6 +67361,429 @@ readFully()
 
 \end_deeper
 \begin_layout Chapter
+PortConnector
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+PortConnector
+\family default
+ accesses the device ports.
+ 
+\end_layout
+
+\begin_layout Standard
+This works on the devices and on JDK (in this case, it uses 
+\family typewriter
+javax.comm
+\family default
+, which must be installed separately).
+ 
+\end_layout
+
+\begin_layout Standard
+When a serial port is created, an attempt is made to open the port.
+ If the open attempt is successful, the port will remain open until 
+\family typewriter
+close()
+\family default
+ is called.
+ If 
+\family typewriter
+close()
+\family default
+ is never called, the port will be closed when the object is garbage collected.
+ 
+\end_layout
+
+\begin_layout Standard
+Here is an example showing data being written and read from a serial port:
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(0, 9600); 
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(port); 
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.writeCString("Hello...
+\backslash
+r
+\backslash
+n"); 
+\end_layout
+
+\begin_layout Plain Layout
+
+port.close();
+\end_layout
+
+\end_inset
+
+On JDK, you can define a file called 
+\family typewriter
+serial.properties
+\family default
+ with the number and ports to be used: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+DEFAULT=a 
+\end_layout
+
+\begin_layout Plain Layout
+
+IRCOMM=b 
+\end_layout
+
+\begin_layout Plain Layout
+
+SIR=c 
+\end_layout
+
+\begin_layout Plain Layout
+
+USB=d
+\end_layout
+
+\end_inset
+
+ If the file is not found, it will use 
+\family typewriter
+COM1
+\family default
+, 
+\family typewriter
+COM2
+\family default
+, 
+\family typewriter
+COM3
+\family default
+, and 
+\family typewriter
+COM4
+\family default
+, respectively.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DEFAULT Default Port (cradle).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IRCOMMIrCOMM Port (Serial Connection on top of IrDA Stack).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SIR SIR Port (Physical Layer of IrDA Stack).
+ Important! In order to access the SIR port on the Pocket PCs the following
+ has to be UNCHECKED: Settings/Connections/Beam/Receive all incoming beams
+ and select discoverable mode.
+ Note that Palm OS OMAP-based devices do NOT support SIR (aka raw IR); see
+ this: 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.alanjmcf.me.uk/comms/infrared/IrDA%20FAQ.html"
+
+\end_inset
+
+.
+ Note also that there's no handshaking support on SIR, and that not all
+ devices work with it.
+ Use IRCOMM instead when possible.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+USB USB Endpoint 2 Port.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BLUETOOTH Bluetooth: opens the built-in Bluetooth discovery dialog, then
+ establishes a Serial Port Profile (just serial emulation across Bluetooth,
+ using the RFComm BT layer) virtual serial port connection.
+ Note: on Windows CE, this maps to the Serial (port 0).
+ You must explicitly map your BlueTooth outside the program.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PARITY_NONE,
+\begin_inset space ~
+\end_inset
+
+PARITY_EVEN,
+\begin_inset space ~
+\end_inset
+
+PARITY_ODD Used in the constructors to define the parity.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTimeout Defines the write timeout, in milliseconds.
+ The default is 6 seconds.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readTimeout Defines the read timeout, in milliseconds.
+ The default is 6 seconds.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readTries Set this to a value that will be used to keep trying to read further
+ while something is available.
+ If a series of bytes is returned in very few steps, this will make the
+ read stop after 
+\family typewriter
+readTries
+\family default
+ has reached zero.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+baudRate) Opens a port with settings of 8 bits, no parity and 1 stop bit.
+ These are the most commonly used port settings.
+ The 
+\family typewriter
+number
+\family default
+ parameter passed is the number of the port for devices with multiple ports.
+ Port number 0 defines the "default port" of a given type.
+ For Windows CE and Palm OS devices, you should pass 0 as the port number
+ to access the device's single serial or usb port.
+ On Windows 32 and Windows CE the port number is the number of the COM port.
+ For example, serial port 2 maps to "COM2:".
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,int
+\begin_inset space ~
+\end_inset
+
+baudRate,int
+\begin_inset space ~
+\end_inset
+
+bits,boolean
+\begin_inset space ~
+\end_inset
+
+parity,int
+\begin_inset space ~
+\end_inset
+
+stopBits) Similar to the above constructor, where 
+\family typewriter
+bits
+\family default
+ is the bits per char [5 to 8], 
+\family typewriter
+parity
+\family default
+ is 
+\family typewriter
+true
+\family default
+ for even parity or 
+\family typewriter
+false
+\family default
+ for no parity, and 
+\family typewriter
+stopBits
+\family default
+ is the number of stop bits.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Here is an example showing how to open the serial port of a Palm OS device
+ at 9600 baud with settings of 8 bits, no partity and one stop bit (8/N/1):
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(0, 9600, 8, false, 1);
+\end_layout
+
+\end_inset
+
+Here is an example of opening serial port COM2: on a Window 32 or Windows
+ CE device: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+PortConnector port = new PortConnector(2, 57600, 8, false, 1); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+PortConnector(int
+\begin_inset space ~
+\end_inset
+
+number,int
+\begin_inset space ~
+\end_inset
+
+baudRate,int
+\begin_inset space ~
+\end_inset
+
+bits,int
+\begin_inset space ~
+\end_inset
+
+parity,int
+\begin_inset space ~
+\end_inset
+
+stopBits) Same as above but in this constructor the parity type can be specified.
+ The value of the parameter can be 
+\family typewriter
+PARITY_NONE
+\family default
+, 
+\family typewriter
+PARITY_EVEN
+\family default
+, or 
+\family typewriter
+PARITY_ODD
+\family default
+.
+\begin_inset Newline newline
+\end_inset
+
+No serial XON/XOFF flow control (commonly called software flow control)
+ is used and RTS/CTS flow control (commonly called hardware flow control)
+ is turn on by default on all platforms but Windows CE.
+ For Palm OS, 
+\family typewriter
+PARITY_ODD
+\family default
+ turns on XON/XOFF mode.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the port.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setFlowControl(boolean
+\begin_inset space ~
+\end_inset
+
+on) Turns RTS/CTS flow control (hardware flow control) on or off.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readCheck() Returns the number of bytes currently available to be read from
+ the port's queue.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Writes to the port.
+ Returns the number of bytes written or throws an 
+\family typewriter
+IOException
+\family default
+ if an error prevented the write operation from occurring.
+ If data can't be written to the port and flow control is on, the write
+ operation will time out and fail after approximately 2 seconds.
+ 
+\end_layout
+
+\begin_layout Chapter
 File
 \end_layout
 
@@ -72399,6 +72951,16 @@ Conduit
 
 \begin_layout Labeling
 \labelwidthstring 00.00
+/ra Registers this conduit for WinCE and PalmOS devices.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00
+/ua Unregisters this conduit for WinCE and PalmOS devices.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00
 /c Shows the configuration panel (if available) for this conduit.
 \end_layout
 
@@ -72421,6 +72983,418 @@ To unregister:
 
 \family typewriter
 PainterConduit.exe /up
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+Conduit
+\family default
+ class is the conduit's MainWindow.
+ Two methods will be called at different times: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+doSync()
+\family default
+: when a synchronization begins.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+doConfig()
+\family default
+: when a setup (preferences) is asked by the user.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_WINCE Used internally to indicate that the target platform for
+ synchronization is Windows CE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_PALMOS Used internally to indicate that the target platform for
+ synchronization is Palm OS.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TARGETING_ALL Used internally to indicate that the target platform for synchroni
+zation is Windows CE or Palm OS.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+syncTarget Defines the target platform for synchronization.
+ Note that changing this value has no effects.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+Conduit(String
+\begin_inset space ~
+\end_inset
+
+conduitName,String
+\begin_inset space ~
+\end_inset
+
+targetApplicationId,String
+\begin_inset space ~
+\end_inset
+
+targetAppPath,byte
+\begin_inset space ~
+\end_inset
+
+style) Creates a conduit with a title and a border, where 
+\family typewriter
+targetApplicationId
+\family default
+ is the application ID on the device (this can't be null and must be four-charac
+ter long) and 
+\family typewriter
+targetAppPath
+\family default
+ is the path to be used on the device.
+ This is the only constructor that your 
+\family typewriter
+MainWindow
+\family default
+ class may call.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+log(String
+\begin_inset space ~
+\end_inset
+
+text) When synchronizing Palm OS devices, logs the given text on the HotSync
+ log.
+ When synchronizing Windows CE, the text is logged on the debug console
+ instead.
+ This is a static method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+yield() Static method that lets the conduit manager take a breath.
+ This is important, because the connection between the device and the desktop
+ might be lost during long operations.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setSyncingEnabled(boolean
+\begin_inset space ~
+\end_inset
+
+enable) Static method that enables or disables the conduit execution.
+ Note that disabling a conduit is NOT the same as unregistering.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isSyncingEnabled() Static method that returns whether the conduit is enabled
+ or not.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setConduitRect(int
+\begin_inset space ~
+\end_inset
+
+x,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+y,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+w,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+h,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+config) Sets the conduit's position and size when it is opened.
+ 
+\family typewriter
+x
+\family default
+ and 
+\family typewriter
+y
+\family default
+ are the absolute position on the screen, where -1 is to use the default
+ value or -2 to center.
+ 
+\family typewriter
+w
+\family default
+ and 
+\family typewriter
+h
+\family default
+ are the window width and height, respectively.
+ If 
+\family typewriter
+config
+\family default
+ is 
+\family typewriter
+true
+\family default
+, you are passing the bounds for when the config is being called; if 
+\family typewriter
+false
+\family default
+, is is the bounds used when synchronizing.
+ You can remove the window from screen by using a x value like 10000.
+ Default values are -2, -2, 240, 320.
+ You should call this method in the 
+\family typewriter
+onRegister()
+\family default
+ method, inherited by your conduit.
+ This is a sample that sets the screen size to be the same of 
+\family typewriter
+/scr palmhi
+\family default
+ when running on the desktop: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+setConduitRect(-2,-2,320,320,false); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Chapter
+RemoteFile
+\end_layout
+
+\begin_layout Standard
+Allows you to access a file on the device from the desktop during the conduit
+ synchronization.
+ It may only be used on files stored using a file system, therefore, it
+ cannot be used to handle files on the Palm OS internal memory.
+ But you may use it to handle files on the device's built-in memory or an
+ inserted external card.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has one default constructor and the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listFiles(String
+\begin_inset space ~
+\end_inset
+
+folder) Static method that lists the files contained in a folder.
+ The strings returned are the names of the files and directories contained
+ within the folder.
+ This method returns 
+\family typewriter
+null
+\family default
+ if the folder can't be read or if the operation fails.
+ Path names ends with 
+\family typewriter
+/
+\family default
+, so it is easy to distinguish them from a file.
+ On Palm OS, passing an empty string will return all installed cards.
+ The flash memory slot will be named builtin (which is usually slot 1).
+ Then, to copy to/from a slot, you must use 
+\family typewriter
+slot:/full_path_to_file
+\family default
+ (e.g.: 
+\family typewriter
+1:/dbs/myapp/MyPDBFile.pdb
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyToRemote(String
+\begin_inset space ~
+\end_inset
+
+srcFile,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dstFile) Copies a file from the desktop to the remote device, creating the
+ target folder if necessary.
+ 
+\family typewriter
+dstFile
+\family default
+ CANNOT be a folder name, but the target file name instead.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+copyFromRemote(String
+\begin_inset space ~
+\end_inset
+
+srcFile,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+dstFile) Copies a file from the remote device to the desktop.
+ 
+\family typewriter
+dstFile
+\family default
+ CANNOT be a folder name, but the target file name instead.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+delete(String
+\begin_inset space ~
+\end_inset
+
+fileOrFolder) Deletes a remote file or an empty folder.
+ The method returns 
+\family typewriter
+true
+\family default
+ if the operation succeeds; 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+exec(String
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+args,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+launchCode,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+wait) Remotely executes the specified command on the connected device.
+ Works only on Windows CE devices.
+ The arguments 
+\family typewriter
+launchCode
+\family default
+ and 
+\family typewriter
+wait
+\family default
+ are not used and their value is ignored.
+ However, they may be used in the future so the usage of default values
+ (0 and 
+\family typewriter
+false
+\family default
+, respectively) is recommended.
+ It returns 0 if successful; otherwise, a system specific error code is
+ returned.
+ 
 \end_layout
 
 \begin_layout Part
@@ -78350,6 +79324,315 @@ tc.samples.crypto.signature.SignatureTest
 \family default
 .
  
+\end_layout
+
+\begin_layout Part
+BLUETOOTH PRINTERS
+\end_layout
+
+\begin_layout Chapterstar
+Overview
+\end_layout
+
+\begin_layout Standard
+This part describes classes to send commands to Bluetooth printers.
+ 
+\end_layout
+
+\begin_layout Chapter
+BluetoothPrinter
+\end_layout
+
+\begin_layout Standard
+Used as interface to printers that uses Bluetooth as default to communicate
+ with the device.
+\end_layout
+
+\begin_layout Standard
+Note: during tests, we found that some printers require to fill their buffer
+ to start printing.
+ So, if you have problems printing, try the following code after you instantiate
+ this class: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+cp = new BluetoothPrinter(); 
+\end_layout
+
+\begin_layout Plain Layout
+
+cp.write(new byte[2048]); // fill the buffer 
+\end_layout
+
+\begin_layout Plain Layout
+
+cp.newLine(); 
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors,
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_8_SINGLE Used to print an image in single density with 8 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_8_DOUBLE Used to print an image in double density with 8 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_24_SINGLE Used to print an image in single density with 24 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+IMAGE_MODE_24_DOUBLE Used to print an image in double density with 24 bpp.
+ Only the density is currently used for 
+\family typewriter
+MonoImage
+\family default
+s.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BluetoothPrinter() Creates a new 
+\family typewriter
+BluetoothPrinter
+\family default
+ instance, using 
+\family typewriter
+PortConnector.BLUETOOTH
+\family default
+ port at 57600 baud rate.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+BluetoothPrinter(PortConnector
+\begin_inset space ~
+\end_inset
+
+con) Creates a new 
+\family typewriter
+BluetoothPrinter
+\family default
+ instance, using the given 
+\family typewriter
+PortConnector
+\family default
+ as bridge to the printer.
+ Note that the 
+\family typewriter
+PortConnector
+\family default
+ can use any port (including infrared), however, it is not guaranteed that
+ it will work with that port.
+ For example, IR does not work on Palm OS devices.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+write(byte[]
+\begin_inset space ~
+\end_inset
+
+data) Sends the given raw data to the printer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+ is converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value1) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+ and 
+\family typewriter
+value1
+\family default
+ are converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+escape(int
+\begin_inset space ~
+\end_inset
+
+command,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value1,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value2) Sends an escape command to the printer.
+ 
+\family typewriter
+command
+\family default
+, 
+\family typewriter
+value1
+\family default
+, and 
+\family typewriter
+value2
+\family default
+ are converted to byte.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+print(String
+\begin_inset space ~
+\end_inset
+
+str) Prints the given string.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+print(MonoImage
+\begin_inset space ~
+\end_inset
+
+img,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+imageMode) Prints the given 
+\family typewriter
+MonoImage
+\family default
+.
+ The possible modes are: 
+\family typewriter
+IMAGE_MODE_8_SINGLE
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+IMAGE_MODE_8_DOUBLE
+\family default
+, 
+\family typewriter
+IMAGE_MODE_24_SINGLE
+\family default
+, 
+\family typewriter
+IMAGE_MODE_24_DOUBLE
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+IMPORTANT: the image height must be a multiple of the vertical density!
+ If it's not, a new image will be created, forcing the correct behaviour.
+\begin_inset Newline newline
+\end_inset
+
+In the image, only black pixels are written.
+ The maximum width for single density is 192, and for double density is
+ 384; the image is trimmed to fit these values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+newLine() Sends a new line to the printer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes the printer 
+\family typewriter
+PortConnector
+\family default
+.
 \end_layout
 
 \begin_layout Part
