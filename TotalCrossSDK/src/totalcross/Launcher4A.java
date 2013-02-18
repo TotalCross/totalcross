@@ -290,6 +290,45 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   static int lastH,lastW;
+   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
+   {
+      if (!appPaused)
+      try
+      {
+         //long ini = System.currentTimeMillis();
+         if (sScreenBitmap == null || camera != null)
+            return;
+         
+         switch (transitionEffect)
+         {
+            case TRANSITION_CLOSE:
+            case TRANSITION_OPEN:
+               animt.startTransition(transitionEffect);
+               // no break!
+            case TRANSITION_NONE:
+               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
+               drawScreen();
+               break;
+         }
+         //int ela = (int)(System.currentTimeMillis() - ini);
+         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
+         int w = instance.getWidth();
+         int h = instance.getHeight();
+         if (sipVisible && lastH != 0 && lastW == w && h > lastH && h > w) // ATENCAO: ATE CORRIGIR O BUG DE NAO DAR O SHIFT NA ROTACAO, DEIXAR O h > w
+         {
+            sendCloseSIPEvent();
+            sipVisible = false;
+         }
+         lastW = w;
+         lastH = h;
+      }
+      catch (Throwable t)
+      {
+         AndroidUtils.debug(Log.getStackTraceString(t));
+      }
+   }
+
    private void sendOrientationChange(boolean invert)
    {
       Message msg = loader.achandler.obtainMessage();
@@ -563,35 +602,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
    }
    
-   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
-   {
-      if (!appPaused)
-      try
-      {
-         //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
-            return;
-         
-         switch (transitionEffect)
-         {
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-               animt.startTransition(transitionEffect);
-               // no break!
-            case TRANSITION_NONE:
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               drawScreen();
-               break;
-         }
-         //int ela = (int)(System.currentTimeMillis() - ini);
-         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
-      }
-      catch (Throwable t)
-      {
-         AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-   }
-
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
