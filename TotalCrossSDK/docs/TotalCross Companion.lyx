@@ -80023,6 +80023,113 @@ Control.RIGHT
  
 \end_layout
 
+\begin_layout Chapter
+MonoImage
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+Image
+\family default
+ class that can be used to save 1-bpp images and print on monochromatic
+ printers.
+ Only black pixels are printed, non-black are ignored.
+ This class only has the following public constructors (excluding some fields
+ from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MonoImage(Image
+\begin_inset space ~
+\end_inset
+
+other) Makes a copy of the given image.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MonoImage(Stream
+\begin_inset space ~
+\end_inset
+
+s) Creates a 
+\family typewriter
+MonoImage
+\family default
+ read from the given 
+\family typewriter
+Stream
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MonoImage(byte[]
+\begin_inset space ~
+\end_inset
+
+fullDescription) Creates a 
+\family typewriter
+MonoImage
+\family default
+ based on the given full description.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MonoImage(int
+\begin_inset space ~
+\end_inset
+
+width,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+height) Creates a 
+\family typewriter
+MonoImage
+\family default
+ with the given width and height.
+ You can draw into it by retrieving the 
+\family typewriter
+Graphics
+\family default
+ using 
+\family typewriter
+getGraphics()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+MonoImage(String
+\begin_inset space ~
+\end_inset
+
+path) Creates a 
+\family typewriter
+MonoImage
+\family default
+, loading the given 
+\family typewriter
+.bmp
+\family default
+ file.
+ 
+\end_layout
+
 \begin_layout Part
 BARCODE SCANNER
 \end_layout
