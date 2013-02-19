@@ -1780,9 +1780,9 @@ tc/samples:
 \begin_layout Itemize
 
 \family typewriter
-totalcross
+totalcross:
 \family default
-: the sources files of the TotalCross API used on the desktop.
+ the sources files of the TotalCross API used on the desktop.
 \end_layout
 
 \begin_layout Section
@@ -65028,6 +65028,14 @@ totalcross.io.ByteArrayStream
 \begin_layout Enumerate
 
 \family typewriter
+totalcross.io.CompressedStream
+\family default
+: 
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
 totalcross.io.device.PortConnector
 \family default
 : used to send and receive bytes via Serial Cradle, USB, IrComm, and Bluetooth.
@@ -66849,8 +66857,8 @@ public void writeLargeFile(String path, byte[] largeData) throws IOException
 \end_layout
 
 \begin_layout Standard
-This class has the following constants, public attributes, constructors,
- and methods (excluding some fields from its superclasses):
+This class has the following constants, public constructors and methods
+ (excluding some fields from its superclasses):
 \end_layout
 
 \begin_layout FieldList
@@ -67728,6 +67736,689 @@ readFully()
 \end_layout
 
 \end_deeper
+\begin_layout Chapter
+CompressedByteArrayStream
+\end_layout
+
+\begin_layout Standard
+Creates a 
+\family typewriter
+CompressedByteArrayStream
+\family default
+, saving memory when reading and writting huge amount of data.
+ Arrays of 16000 bytes will be created and each byte array will be compressed
+ once filled and will be automatically decompressed on read.
+ This saves space but adds a slowdown to the process.
+ It is useful when transferring FTP files to/from the server.
+ 
+\end_layout
+
+\begin_layout Standard
+This class cannot be used for output AND input, but only for output OR input,
+ in an absolutely sequential mode (the 
+\family typewriter
+skipBytes()
+\family default
+ method is NOT implemented): you must write everything, then read everything.
+ To change the mode, use the 
+\family typewriter
+setMode(READ_MODE
+\family default
+ or 
+\family typewriter
+WRITE_MODE)
+\family default
+ method.
+ No check is made to see if you're in the right mode, but your program will
+ probably crash if you do it in the wrong one.
+ 
+\end_layout
+
+\begin_layout Standard
+Sample that transfers bytes to the server: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream cbas = new CompressedByteArrayStream(9); // default
+ mode is WRITE_MODE
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i = 0; i < 50000; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	cbas.writeLine("1234567890"); // already appends 
+\backslash
+r
+\backslash
+n
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.flush();
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.setMode(CompressedByteArrayStream.READ_MODE); // prepare for read
+\end_layout
+
+\begin_layout Plain Layout
+
+ftp.sendFile(cbas, "bigfile.txt", true); 
+\end_layout
+
+\begin_layout Plain Layout
+
+// if you want to send another one, just call
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.setMode(CompressedByteArrayStream.WRITE_MODE); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Sample that transfers bytes from the server: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream cbas = new CompressedByteArrayStream(9);
+\end_layout
+
+\begin_layout Plain Layout
+
+ftp.receiveFile("bigfile.txt", cbas);
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.flush();
+\end_layout
+
+\begin_layout Plain Layout
+
+String line;
+\end_layout
+
+\begin_layout Plain Layout
+
+while ((line = cbas.readLine()) != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	// do something with the line! 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here is another fully functional sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+int i;
+\end_layout
+
+\begin_layout Plain Layout
+
+String g = "1234567890";
+\end_layout
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream cbas = new CompressedByteArrayStream(9); // default
+ mode is WRITE_MODE
+\end_layout
+
+\begin_layout Plain Layout
+
+for (i = 0; i < 50000; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	cbas.writeLine(g); // already appends 
+\backslash
+r
+\backslash
+n
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.flush();
+\end_layout
+
+\begin_layout Plain Layout
+
+Vm.debug("size: " + cbas.getCompressedSize() + " -> " + cbas.getSize());
+\end_layout
+
+\begin_layout Plain Layout
+
+String s;
+\end_layout
+
+\begin_layout Plain Layout
+
+for (i = 0; (s = cbas.readLine()) != null; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	if (!g.equals(s))
+\end_layout
+
+\begin_layout Plain Layout
+
+		Vm.debug("error in " + i);
+\end_layout
+
+\begin_layout Plain Layout
+
+if (i != 50000)
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.debug("i differs!");
+\end_layout
+
+\begin_layout Plain Layout
+
+cbas.close(); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that, although the samples above use 
+\family typewriter
+writeLine()
+\family default
+ and 
+\family typewriter
+readLine()
+\family default
+, you can store any kind of data.
+ By attaching a 
+\family typewriter
+DataStream
+\family default
+ it's possible to read any data type from the stream.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream cbas = new CompressedByteArrayStream(5);
+\end_layout
+
+\begin_layout Plain Layout
+
+DataStream ds = new DataStream(cbas);
+\end_layout
+
+\begin_layout Plain Layout
+
+byte[] big = new byte[200000];
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// fill big with something
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.writeBytes(big);
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i = 0; i < 100000; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeInt(0x123456);
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeString("Michelle");
+\end_layout
+
+\begin_layout Plain Layout
+
+	ds.writeDouble(123.456d);
+\end_layout
+
+\begin_layout Plain Layout
+
+}  
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// well, now we do something with these!
+\end_layout
+
+\begin_layout Plain Layout
+
+int realSize = cbas.getSize(); // just for fun
+\end_layout
+
+\begin_layout Plain Layout
+
+int compressed = cbas.getCompressedSize(); // just for fun
+\end_layout
+
+\begin_layout Plain Layout
+
+ds.readBytes(big);
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int i = 0; i < 100000; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	int i = ds.readInt();
+\end_layout
+
+\begin_layout Plain Layout
+
+	String love = ds.readString(); // Michelle
+\end_layout
+
+\begin_layout Plain Layout
+
+	double d = ds.readDouble();
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Call the 
+\family typewriter
+close()
+\family default
+ method only when you're completely done in using it: all the internal buffers
+ will be released, and reading from it will crash your program.
+ Note that the 
+\family typewriter
+readLine()
+\family default
+ method will not work if there are any character with accentuation.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following constants, public attributes, constructors
+ and methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+READ_MODE Used in the 
+\family typewriter
+setMode()
+\family default
+ method.
+ Turns the mode into READ.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+WRITE_MODE Used in the 
+\family typewriter
+setMode()
+\family default
+ method.
+ Turns the mode into WRITE.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DESTRUCTIVE_READ_MODE Used in the 
+\family typewriter
+setMode()
+\family default
+ method.
+ Turns the mode into READ, and after reading each buffer, discards it, releasing
+ memory.
+ 
+\family typewriter
+CompressedByteArrayStream
+\family default
+ will not be able to read the buffer again.
+ This is useful when you download data and then want to read from it, releasing
+ memory on-demand.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+crlf Defines the line terminator, which is by default 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+.
+ To change it to a single 
+\family typewriter
+
+\backslash
+n
+\family default
+ use 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream.crlf = new byte[]{'
+\backslash
+n'};
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CompressedByteArrayStream(int
+\begin_inset space ~
+\end_inset
+
+compressionLevel) Creates a new 
+\family typewriter
+CompressedByteArrayStream
+\family default
+, using the given compression level (0 = no compression, 9 = max compression).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+CompressedByteArrayStream() Creates a new 
+\family typewriter
+CompressedByteArrayStream
+\family default
+ using the maximum compression level (9).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+flush() After everything was written, call this method to flush the internal
+ buffers and prepare the
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+CompressedByteArrayStream
+\family default
+ for read.
+ It is already called by 
+\family typewriter
+setMode()
+\family default
+ when it changes the modes.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setMode(int
+\begin_inset space ~
+\end_inset
+
+newMode) Changes the mode to the given one, calling 
+\family typewriter
+flush()
+\family default
+ if in write mode.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Deletes all internal buffers.
+ Do not try to use the object afterwards.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSize() Returns the real (uncompressed) size of data written.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getCompressedSize() Returns the compressed size of the data written.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Transfers 
+\family typewriter
+count
+\family default
+ bytes from the internal buffer to the given one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) This method writes to the byte array, expanding it if necessary.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readLine() Reads a string until the next control character (newline, enter,
+ tab, etc) is read.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readFully(Stream
+\begin_inset space ~
+\end_inset
+
+inputStream,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+retryCount,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+bufSize) Reads all data from the input stream into the buffer.
+ Note that 
+\family typewriter
+setMode(WRITE)
+\family default
+ is called prior to writting.
+ When returned, data is ready to be read.
+ In this method, 
+\family typewriter
+retryCount
+\family default
+ is the number of times to retry if no data is read (in remote connections,
+ use at least 5; for files, it can be 0), and 
+\family typewriter
+bufSize
+\family default
+ is the size of the buffer used to read data.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeLine(String
+\begin_inset space ~
+\end_inset
+
+s) Writes a line of text.
+ The 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+ line terminator is appended to the line.
+ You can avoid this by setting 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CompressedByteArrayStream.crlf = new byte[0]; 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readUntilNextChar(char
+\begin_inset space ~
+\end_inset
+
+c) Reads the buffer until the given character is found.
+ 
+\end_layout
+
 \begin_layout Chapter
 PortConnector
 \end_layout
