@@ -65028,9 +65028,47 @@ totalcross.io.ByteArrayStream
 \begin_layout Enumerate
 
 \family typewriter
-totalcross.io.CompressedStream
+totalcross.io.CompressedByteArrayStream
 \family default
-: 
+: creates a compressed byte array stream, saving memory when reading and
+ writting huge amount of data.
+ 
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.RandomAccessStream
+\family default
+: represents a stream that behaves like a large array of bytes and may be
+ randomly accessed.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.CRC32Stream
+\family default
+: computes CRC32 data checksum of a stream.
+ 
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.Connector
+\family default
+: used to open socket connections over CRADLE, WIFI, MDS, GPRS.
+ 
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.StreamConnectionNotifier
+\family default
+: base class for connection notifiers.
+ 
 \end_layout
 
 \begin_layout Enumerate
@@ -65047,6 +65085,29 @@ totalcross.io.device.PortConnector
 totalcross.io.File
 \family default
 : used to create files and manage directories.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+totalcross.io.LineReader
+\family default
+: used to read lines ending with 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+ (enter/linefeed) or 
+\family typewriter
+
+\backslash
+n
+\family default
+ (linefeed) from a stream.
+ 
 \end_layout
 
 \begin_layout Enumerate
@@ -68419,6 +68480,331 @@ c) Reads the buffer until the given character is found.
  
 \end_layout
 
+\begin_layout Standard
+
+\family typewriter
+CompressedByteArrayStream
+\family default
+ has an enclosed class called 
+\family typewriter
+DirectCharConverter
+\family default
+, which implements a 
+\family typewriter
+CharacterConverter
+\family default
+ that converts from 
+\family typewriter
+char[]
+\family default
+ to 
+\family typewriter
+byte[]
+\family default
+ which just casts the char to byte; thus, ignoring any non-ASCII character.
+ This class only has a default constructor and a public method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chars2bytes(char[]
+\begin_inset space ~
+\end_inset
+
+chars,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+length) Just casts the 
+\family typewriter
+char
+\family default
+ to 
+\family typewriter
+byte
+\family default
+; thus, ignoring any non-ASCII character.
+\end_layout
+
+\begin_layout Chapter
+RandomAccessStream 
+\end_layout
+
+\begin_layout Standard
+This class represents a stream that behaves like a large array of bytes
+ and may be randomly accessed.
+ This class has the following constants, one default constructor and public
+ methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SEEK_SET Beginning of file.
+ Used with 
+\family typewriter
+setPos()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SEEK_CUR Current position of the file pointer.
+ Used with 
+\family typewriter
+setPos()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+SEEK_END End of file.
+ Used with 
+\family typewriter
+setPos()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getPos() Returns the current offset in this stream in bytes, at which the
+ next read or write occurs.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPos(int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+origin) Sets the file pointer for read and write operations to a new position
+ defined by adding offset to a reference position specified by origin, which
+ must be 
+\family typewriter
+SEEK_SET
+\family default
+, 
+\family typewriter
+SEEK_CUR
+\family default
+, or 
+\family typewriter
+SEEK_END
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setPos(int
+\begin_inset space ~
+\end_inset
+
+pos) Sets the file pointer for read and write operations to the given position.
+ The position passed is an absolute position, in bytes, from the beginning
+ of the stream.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes this I/O connection, releasing any associated resources.
+ Once closed a connection is no longer valid.
+ 
+\end_layout
+
+\begin_layout Chapter
+CRC32Stream 
+\end_layout
+
+\begin_layout Standard
+Computes CRC32 data checksum of a stream.
+ The actual CRC32 algorithm is described in RFC 1952 (GZIP file format specifica
+tion version 4.3).
+ It can be used to get the CRC32 over a stream if used with input/output
+ streams.
+ It only has a default constructor, a public attribute, and the following
+ public methods (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+crcTable The fast CRC table.
+ Computed once when the CRC32 class is loaded.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Returns the CRC32 data checksum computed so far.
+ You can safely cast the 
+\family typewriter
+long
+\family default
+ result to 
+\family typewriter
+int
+\family default
+, but then the value may be negative.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset() Resets the CRC32 data checksum so a new CRC32 can be computed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() This method does nothing.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+update(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+off,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Updates the CRC32 with the values of the given buffer.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Computes the checksum for the bytes read from the attached stream.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+buf,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Computes the checksum for the given bytes, then write them to the
+ attached stream.
+ 
+\end_layout
+
+\begin_layout Chapter
+Connector
+\end_layout
+
+\begin_layout Standard
+Class used to open socket connections over CRADLE, WIFI, MDS, GPRS.
+ It only has a default constructor which does nothing and a public static
+ method:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+open(String
+\begin_inset space ~
+\end_inset
+
+url) Opens a new socket to the given url.
+ The socket will be opened using the first available network connection
+ in the following order: CRADLE, WIFI, MDS, GPRS.
+\end_layout
+
+\begin_layout Chapter
+StreamConnectionNotifier
+\end_layout
+
+\begin_layout Standard
+This is the base (abstract) class for connection notifiers.
+ It only has a default constructor which does nothing and two public methods
+ that must be implemented by its subclasses:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+accept() Returns a stream that represents a server side connection.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+close() Closes this I/O connection, releasing any associated resources.
+ Once closed a connection is no longer valid.
+\end_layout
+
 \begin_layout Chapter
 PortConnector
 \end_layout
@@ -71598,6 +71984,270 @@ file.delete();
 \end_inset
 
 
+\end_layout
+
+\begin_layout Chapter
+LineReader
+\end_layout
+
+\begin_layout Standard
+Class used to read lines ending with 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+ (enter/linefeed) or 
+\family typewriter
+
+\backslash
+n
+\family default
+ (linefeed) from a stream.
+ Consecutive newlines are skipped.
+ This class does not work well with multi-byte characters when the second
+ byte contains the delimiter or enter/linefeed.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a sample: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+LineReader reader = new LineReader(new File("text.txt",File.READ_WRITE));
+\end_layout
+
+\begin_layout Plain Layout
+
+String line; 
+\end_layout
+
+\begin_layout Plain Layout
+
+while ((line = reader.readLine()) != null) 
+\end_layout
+
+\begin_layout Plain Layout
+
+{ 
+\end_layout
+
+\begin_layout Plain Layout
+
+	// ...
+ do whatever you want with the line.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+Note that this class already uses a buffer for faster detection of the newline.
+ Don't use 
+\family typewriter
+LineReader
+\family default
+ with a 
+\family typewriter
+BufferedStream
+\family default
+, it's nonsense and it will throw a warning on the desktop.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors, attributes, and methods
+ (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+maxTries The number of times it tries to read more data if none is available.
+ Defaults to 10 if the 
+\family typewriter
+Stream
+\family default
+ is a 
+\family typewriter
+Socket
+\family default
+ or a 
+\family typewriter
+PortConnector
+\family default
+; 0, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+doTrim Set to 
+\family typewriter
+true
+\family default
+ to apply a trim in the string that is returned.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+returnEmptyLines Set to 
+\family typewriter
+true
+\family default
+ to receive empty lines (
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\backslash
+r
+\backslash
+n
+\family default
+ returns 
+\family typewriter
+"",""
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+LineReader(Stream
+\begin_inset space ~
+\end_inset
+
+f) Constructs a new 
+\family typewriter
+LineReader
+\family default
+ and sets 
+\family typewriter
+maxTries
+\family default
+ accordingly to the type of class: 10 if its a 
+\family typewriter
+Socket
+\family default
+ or a 
+\family typewriter
+PortConnector
+\family default
+; 0, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+LineReader(Stream
+\begin_inset space ~
+\end_inset
+
+f,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Same as above but receives the given buffer contents which are added
+ to the internal buffer to start reading from them.
+ The other parametes indicate where to start reading from the given buffer
+ and the size to be read.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setStream(Stream
+\begin_inset space ~
+\end_inset
+
+f) Change the initial 
+\family typewriter
+Stream
+\family default
+ to the attached one, and fetches some data.
+ Reusing a 
+\family typewriter
+LineReader
+\family default
+ throught this method can preserve memory.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getStream() Returns the 
+\family typewriter
+Stream
+\family default
+ attached to this 
+\family typewriter
+LineReader
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reuse() Moves the buffer to the beginning, in order to preserve the bytes
+ that were not read yet.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readMore() Reads more bytes from the stream.
+ If there's no data immediately to be read, waits 100ms and try again, up
+ to 
+\family typewriter
+maxTries
+\family default
+ times.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readLine() Returns the next line available on this stream or 
+\family typewriter
+null
+\family default
+ if none.
+ Empty lines are skipped by default.
+ 
 \end_layout
 
 \begin_layout Chapter

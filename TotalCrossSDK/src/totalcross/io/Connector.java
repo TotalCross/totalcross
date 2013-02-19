@@ -22,7 +22,7 @@ import totalcross.io.device.bluetooth.*;
 import totalcross.sys.*;
 
 /**
- * Class used to open socket connections over CRADLE, WIFI, MDS, GPRS.
+ * Used to open socket connections over CRADLE, WIFI, MDS, GPRS.
  */
 public class Connector
 {

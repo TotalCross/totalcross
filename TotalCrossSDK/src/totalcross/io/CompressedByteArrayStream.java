@@ -119,7 +119,7 @@ import totalcross.util.zip.*;
 
 public class CompressedByteArrayStream extends Stream
 {
-   /** Implements a CharacterConverter that from char[] to byte[] which just
+   /** Implements a CharacterConverter that converts from char[] to byte[] which just
     * casts the char to byte; thus, ignoring any non-ASCII character. */
    public static class DirectCharConverter extends CharacterConverter
    {
