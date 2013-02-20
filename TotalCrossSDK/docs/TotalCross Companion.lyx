@@ -65113,6 +65113,22 @@ n
 \begin_layout Enumerate
 
 \family typewriter
+totalcross.io.TokenReader
+\family default
+: Used to read an array of tokens in a line ending with 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+ (enter/linefeed) from a stream.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
 totalcross.io.device.gps.GPS 
 \family default
 retrieves GPS coordinates.
@@ -72247,6 +72263,687 @@ null
 \family default
  if none.
  Empty lines are skipped by default.
+\end_layout
+
+\begin_layout Chapter
+TokenReader
+\end_layout
+
+\begin_layout Standard
+This is a 
+\family typewriter
+LineReader
+\family default
+ subclass used to read an array of tokens in a line ending with 
+\family typewriter
+
+\backslash
+r
+\backslash
+n
+\family default
+ (enter/linefeed) from a stream.
+ Consecutive newlines are skipped.
+ This class does not work well with multi-byte characters when the second
+ byte contains the delimiter or enter/linefeed.
+ 
+\end_layout
+
+\begin_layout Standard
+The usual way to parse a CSV file is: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+LineReader reader = new LineReader(new File("text.txt",File.READ_WRITE));
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+String line;
+\end_layout
+
+\begin_layout Plain Layout
+
+String[] tokens;
+\end_layout
+
+\begin_layout Plain Layout
+
+while ((line = reader.readLine()) != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+	tokens = Convert.tokenizeString(line, "
+\backslash
+n,");   
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using this class takes less memory, because the line is read in tokens.
+ For example, suppose a line contains 200 chars, and splitting them contains
+ 10 tokens of 20 chars each.
+ Using the first approach (
+\family typewriter
+readline()
+\family default
+/
+\family typewriter
+tokenizeString()
+\family default
+), the 
+\family typewriter
+readline()
+\family default
+ will create a string with 200 chars, then that string will be tokenized
+ into 10 smaller strings of 20 chars each.
+\end_layout
+
+\begin_layout Standard
+Using this class, it will read the 10 tokens of 20 chars each directly,
+ no longer having to create the temporary string of 200 chars.
+ 
+\end_layout
+
+\begin_layout Standard
+The delimiter can be any character except for 
+\family typewriter
+
+\backslash
+r
+\family default
+ and 
+\family typewriter
+
+\backslash
+n
+\family default
+.
+ Note that two consecutive delimiters are considered a single token.
+ So 
+\family typewriter
+;a;;
+\family default
+ is returned as 
+\family typewriter
+{"","a","",""}
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Here's a sample that parses the input from a file: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+TokenReader reader = new TokenReader(new File("text.csv",File.READ_WRITE),
+ ',');
+\end_layout
+
+\begin_layout Plain Layout
+
+String[] tokens;
+\end_layout
+
+\begin_layout Plain Layout
+
+while ((tokens = reader.readTokens()) != null)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+   // ...
+ do whatever you want with the tokens.
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+ And here's another sample that parses from a String: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+String lines = "a;;;a;
+\backslash
+na;;;a; 
+\backslash
+nb;;b;b;b 
+\backslash
+nb;;b;b;b;
+\backslash
+nb
+\backslash
+nb;
+\backslash
+n;b
+\backslash
+n;
+\backslash
+n b ;
+\backslash
+n b 
+\backslash
+n b 
+\backslash
+n b 
+\backslash
+nb 
+\backslash
+n b";
+\end_layout
+
+\begin_layout Plain Layout
+
+String ll[] = Convert.tokenizeString(lines,'
+\backslash
+n');
+\end_layout
+
+\begin_layout Plain Layout
+
+TokenReader tk = new TokenReader(new ByteArrayStream(lines.getBytes()),';');
+\end_layout
+
+\begin_layout Plain Layout
+
+tk.doTrim = true;
+\end_layout
+
+\begin_layout Plain Layout
+
+String[] line;
+\end_layout
+
+\begin_layout Plain Layout
+
+for (int j =0; ((line = tk.readTokens()) != null); j++)
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.debug('"'+ll[j]+'"');
+\end_layout
+
+\begin_layout Plain Layout
+
+	for (int i =0; i < line.length; i++)
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.debug(i+": '"+line[i]+"'");
+\end_layout
+
+\begin_layout Plain Layout
+
+	Vm.debug("");
+\end_layout
+
+\begin_layout Plain Layout
+
+} 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The output is: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+"a;;;a;"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'a'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+2: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+3: 'a'
+\end_layout
+
+\begin_layout Plain Layout
+
+4: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"a;;;a; "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'a'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+2: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+3: 'a'
+\end_layout
+
+\begin_layout Plain Layout
+
+4: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"b;;b;b;b "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+2: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+3: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+4: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"b;;b;b;b;"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+2: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+3: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+4: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+5: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"b"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"b;"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+";b"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+1: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+";"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+" b ;"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+1: ''
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+" b "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"  b "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+" b  "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"b  "
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+"  b"
+\end_layout
+
+\begin_layout Plain Layout
+
+0: 'b'
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that this class already uses a buffer for faster detection of the newline
+ and delimiters.
+ Don't use 
+\family typewriter
+TokenReader
+\family default
+ with a 
+\family typewriter
+BufferedStream
+\family default
+, it's nonsense and it will throw a warning on the desktop, such as with
+ its superclass 
+\family typewriter
+LineReader
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TokenReader(Stream
+\begin_inset space ~
+\end_inset
+
+f,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+delimiter) Similar to 
+\family typewriter
+LineReader(Stream f, char delimiter)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+TokenReader(Stream
+\begin_inset space ~
+\end_inset
+
+f,
+\begin_inset space ~
+\end_inset
+
+char
+\begin_inset space ~
+\end_inset
+
+delimiter,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+len) Similar to 
+\family typewriter
+LineReader(Stream f, char delimiter,
+\family default
+ 
+\family typewriter
+byte[] buffer, int start, int len)
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readLine() Cannot be used; throws a 
+\family typewriter
+RuntimeException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readTokens() Returns the next tokens available in the stream or 
+\family typewriter
+null
+\family default
+ if none.
+ Empty lines are skipped.
  
 \end_layout
 
