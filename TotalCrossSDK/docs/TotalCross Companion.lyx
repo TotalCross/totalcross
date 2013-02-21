@@ -81729,7 +81729,451 @@ There is a sample for its use in
 tc.samples.crypto.signature.SignatureTest
 \family default
 .
+\end_layout
+
+\begin_layout Part
+BLUETOOTH
+\end_layout
+
+\begin_layout Chapterstar
+Overview
+\end_layout
+
+\begin_layout Standard
+This package describes the classes to use Bluetooth.
+\end_layout
+
+\begin_layout Chapter
+DataElement
+\end_layout
+
+\begin_layout Standard
+This class is defined by the JSR-82 specification Java™ APIs for Bluetooth™
+ Wireless Technology, Version 1.1.
+ It has the following public constructors and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataElement(int
+\begin_inset space ~
+\end_inset
+
+valueType) Creates a 
+\family typewriter
+DataElement
+\family default
+ whose 
+\family typewriter
+valueType
+\family default
+ must be: 
+\family typewriter
+DataElement.NULL
+\family default
+, 
+\family typewriter
+DataElement.
+ DATALT
+\family default
+, or 
+\family typewriter
+DataElement.DATSEQ
+\family default
+.
+ Passing another type to this constructor will raise an 
+\family typewriter
+IllegalArgumentException
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataElement(boolean
+\begin_inset space ~
+\end_inset
+
+bool) Creates a 
+\family typewriter
+DataElement
+\family default
+ whose 
+\family typewriter
+valueType
+\family default
+ is 
+\family typewriter
+DataElement.BOOL
+\family default
+ with the given boolean value.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataElement(int
+\begin_inset space ~
+\end_inset
+
+valueType,
+\begin_inset space ~
+\end_inset
+
+long
+\begin_inset space ~
+\end_inset
+
+value) Creates a 
+\family typewriter
+DataElement
+\family default
+ whose 
+\family typewriter
+valueType
+\family default
+ must be: 
+\family typewriter
+DataElement.U_INT_1
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataElement.U_INT_2
+\family default
+, 
+\family typewriter
+DataElement.U_INT_4
+\family default
+, 
+\family typewriter
+DataElement.INT_1
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataElement.INT_2
+\family default
+, 
+\family typewriter
+DataElement.INT_4
+\family default
+, or 
+\family typewriter
+DataElement.INT_8
+\family default
+.
+ Passing another type to this constructor will raise an 
+\family typewriter
+IllegalArgumentException
+\family default
+.
+ Moreover, the size of the value must be withing its type range.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+DataElement(int
+\begin_inset space ~
+\end_inset
+
+valueType,
+\begin_inset space ~
+\end_inset
+
+Object
+\begin_inset space ~
+\end_inset
+
+value) Creates a 
+\family typewriter
+DataElement
+\family default
+ whose 
+\family typewriter
+valueType
+\family default
+ must be: 
+\family typewriter
+DataElement.URL
+\family default
+ and 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataElement.STRING
+\family default
+ (the value must be a 
+\family typewriter
+String
+\family default
+), 
+\family typewriter
+DataElement.UUID
+\family default
+ (the value must be a 
+\family typewriter
+UUID
+\family default
+), 
+\family typewriter
+DataElement.INT_16
+\family default
+ and 
+\family typewriter
+DataElement.UINT_16
+\family default
+ (the value must be a byte array with length 16), or 
+\family typewriter
+DataElement.UINT_8
+\family default
+ (the value must be a byte array with length 8).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addElement(DataElement
+\begin_inset space ~
+\end_inset
+
+elem) The element which will receive 
+\family typewriter
+elem
+\family default
  
+\family typewriter
+valueType
+\family default
+ must be 
+\family typewriter
+DataElement.DATSEQ
+\family default
+ or 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataElement.DATALT
+\family default
+.
+ Moreover, 
+\family typewriter
+elem
+\family default
+ can't be 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+insertElementAt(DataElement
+\begin_inset space ~
+\end_inset
+
+elem,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+index) The element which will receive 
+\family typewriter
+elem
+\family default
+ 
+\family typewriter
+valueType
+\family default
+ must be 
+\family typewriter
+DataElement.DATSEQ
+\family default
+ or 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DataElement.DATALT
+\family default
+.
+ Moreover, 
+\family typewriter
+elem
+\family default
+ can't be 
+\family typewriter
+null
+\family default
+ and the index must be within the total number of elements range.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getSize() The element 
+\family typewriter
+valueType
+\family default
+ must be 
+\family typewriter
+DataElement.DATSEQ
+\family default
+ or 
+\family typewriter
+DataElement.DATALT
+\family default
+.
+ It returns the number of sub-elements it has.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+removeElement(DataElement
+\begin_inset space ~
+\end_inset
+
+elem) The element whose sub-element 
+\family typewriter
+elem
+\family default
+ is to be removed 
+\family typewriter
+valueType
+\family default
+ must be 
+\family typewriter
+DataElement.
+ DATSEQ
+\family default
+ or 
+\family typewriter
+DataElement.DATALT
+\family default
+.
+ Moreover, 
+\family typewriter
+elem
+\family default
+ can't be 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getDataType() Returns 
+\family typewriter
+valueType
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getLong() Returns the value if 
+\family typewriter
+valueType
+\family default
+ is one out of: 
+\family typewriter
+DataElement.U_INT_1
+\family default
+, 
+\family typewriter
+DataElement.
+ U_INT_2
+\family default
+, 
+\family typewriter
+DataElement.U_INT_4
+\family default
+, 
+\family typewriter
+DataElement.INT_1
+\family default
+, 
+\family typewriter
+DataElement.INT_2
+\family default
+,
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DataElement.INT_4
+\family default
+, or 
+\family typewriter
+DataElement.INT_8
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBoolean() Returns the boolean value if 
+\family typewriter
+valueType
+\family default
+ is 
+\family typewriter
+DataElement.BOOL
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Returns a copy of the value if 
+\family typewriter
+valueType
+\family default
+ is one out of: 
+\family typewriter
+DataElement.URL
+\family default
+, 
+\family typewriter
+DataElement.
+ STRING
+\family default
+, 
+\family typewriter
+DataElement.UUID
+\family default
+, 
+\family typewriter
+DataElement.INT_16
+\family default
+, 
+\family typewriter
+DataElement.UINT_16
+\family default
+, or
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DataElement.UINT_8
+\family default
+.
 \end_layout
 
 \begin_layout Part
@@ -82391,7 +82835,7 @@ Overview
 \begin_layout Standard
 The 
 \family typewriter
-Scanner
+totalcross.io.device.Scanner
 \family default
  class allows the usage of the barcode reader of some of the most popular
  scanners.
