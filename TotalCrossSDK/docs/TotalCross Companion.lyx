@@ -82439,6 +82439,4118 @@ on.
 TotalCross also supports the Opticon H16 bluetooth scanner.
 \end_layout
 
+\begin_layout Standard
+Scanner access is only available when running on a native TotalCross VM;
+ it is not supported when running on Java.
+ It is, though, emulated on Java: a popup dialog will ask you for a barcode
+ symbol which will be returned every time the 
+\family typewriter
+getData()
+\family default
+ method is called.
+ 
+\end_layout
+
+\begin_layout Standard
+Since there is only one scanner per device, the 
+\family typewriter
+Scanner
+\family default
+ class is static.
+ Activating the scanner causes the physical scanner to be powered, and enables
+ the trigger.
+ Deactivating the scanner removes the power from the scanner and prevents
+ scans from taking place.
+ The scanner should always be deactivated at the end of processing to prevent
+ excessive battery drain.
+ 
+\end_layout
+
+\begin_layout Standard
+When the scanner is activated, scan events will appear in the 
+\family typewriter
+MainWindow
+\family default
+'s 
+\family typewriter
+onEvent()
+\family default
+ method.
+ The scan events will contain a string describing either the item scanned
+ or a battery error.
+ Deactivating the scanner prevents scan events from being delivered.
+ 
+\end_layout
+
+\begin_layout Standard
+You can change this behaviour on some devices by calling 
+\family typewriter
+setContinuousScanning(
+\begin_inset Newline newline
+\end_inset
+
+false)
+\family default
+, which will cause each call to 
+\family typewriter
+activate()
+\family default
+ to only allow a single scan.
+ 
+\end_layout
+
+\begin_layout Standard
+Since barcodes can have many formats, this class includes a method to register
+ the barcode types with the scanner.
+ These types must each be individually set as parameters to the scanner.
+ After all the parameter types have been set, the 
+\family typewriter
+commitBarcodeParams()
+\family default
+ method must be called to register the parameters with the scanner.
+ Once this is done the scanner is able to decode the specified barcode types.
+ 
+\end_layout
+
+\begin_layout Standard
+A typical processing sequence is given below: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (!Scanner.activate() 
+\end_layout
+
+\begin_layout Plain Layout
+
+ || !Scanner.setBarcodeParam(Scanner.BARCODABAR, true)
+\end_layout
+
+\begin_layout Plain Layout
+
+ || !Scanner.setBarcodeParam(Scanner.BARBOOKLAND_EAN, true)
+\end_layout
+
+\begin_layout Plain Layout
+
+ || !Scanner.commitBarcodeParams()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	return; 
+\end_layout
+
+\begin_layout Plain Layout
+
+...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+if (!Scanner.deactivate()) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	return;
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To make a Symbol MC3000 work with the I2OF5 barcode, you must call: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// MUST BE CALLED *** BEFORE *** SCANNER.ACTIVATE !!!!
+\end_layout
+
+\begin_layout Plain Layout
+
+Scanner.setParam(Scanner.WAITING_TIME_PARAM, 0, 3000); // 3rd parameter must
+ be something > 0!
+\end_layout
+
+\begin_layout Plain Layout
+
+if (Scanner.activate())
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	Scanner.setBarcodeParam(Scanner.BARI2OF5, true);
+\end_layout
+
+\begin_layout Plain Layout
+
+	Scanner.setBarcodeLength(Scanner.BARI2OF5, 2, 8, 8);
+\end_layout
+
+\begin_layout Plain Layout
+
+	...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has one default constructor and the following public attributes
+ and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isActive Indicates whether the scanner is active or not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+continousScanning Flag which can be set to 
+\family typewriter
+false
+\family default
+ so 
+\family typewriter
+activate()
+\family default
+ only performs one scan.
+\begin_inset Newline newline
+\end_inset
+
+Note: the Symbol Scanner API differs on Palm and PocketPC (the Java emulation
+ works the same as PocketPC).
+ On Palm activating the scanner will allow the user to scan any number of
+ barcodes until the scanner is deactivated.
+ On Java/PocketPC activating the scanner only schedules a single scan.
+ 
+\begin_inset Newline newline
+\end_inset
+
+We obviously need this class to behave in the same way on both platforms.
+ Rather than forcing one choice on the user, the 
+\family typewriter
+continuousScanning
+\family default
+ flag allows the user to choose which mode they want.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+listener Set this listener to send all 
+\family typewriter
+Scanner
+\family default
+ events to its 
+\family typewriter
+onEvent()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+activate() Activate the scanner.
+ Returns 
+\family typewriter
+true
+\family default
+ if the scanner could be activated; 
+\family typewriter
+false
+\family default
+, otherwise.
+ (A 
+\family typewriter
+false
+\family default
+ condition may arise if batteries have run too low, or if the unit does
+ not have the scan library installed.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBarcodeParam(int
+\begin_inset space ~
+\end_inset
+
+barcodeType,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+enable) Sets a scanner parameter defining whether a barcode format will
+ be used in scanning.
+ Choose from one of the barcode types given below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="48" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Symbol
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+HandHeld
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SocketScan
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARBOOKLAND_EAN
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_AUSPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_AUSTRALIAN_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARCODABAR
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_AZTEC 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_AZTEC 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARCODE11
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_BPO 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_AZTEC_MESA 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARCODE128
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CANPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_BOOKLAND_EAN 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARCODE39
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CHINAPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_BRITISH_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARCODE93
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODABAR 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CANADIAN_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARD2OF5 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODABLOCK 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODABAR 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BAREAN13 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE11 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODABLOCK 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BAREAN8 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE128 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE11 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARI2OF5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE16K 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE128 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARISBT128 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE32 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE39 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARMSI_PLESSEY 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE39 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE39_FULL_ASCII 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARTRIOPTICCODE39
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE49 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE49 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARUCC_EAN128 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_CODE93 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_CODE93 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARUPCA
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_COMPOSITE 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_DATAMATRIX_CODE 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARUPCE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_COUPONCODE 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_DISCRETE_2_5 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARUPCE1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_DATAMATRIX 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_DUTCH_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BARUPCEANCOUPONCODE 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_DUTCHPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_EAN_13 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_EAN13 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_EAN_8 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_EAN8 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_IATA_2_5 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_IATA25 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_INTERLEAVED_2_5 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_IDTAG 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_ISBT 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_INT25 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_JAPANESE_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_ISBT 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_MATRIX_2_5 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_JAPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_MAXICODE 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_KOREAPOST 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_MICROPDF 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_LABEL 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_MSI_PLESSEY 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_MATRIX25 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_OCR 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_MAXICODE 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_PDF 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_MICROPDF 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_QR_CODE 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_MSI 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_RSS14 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_OCR 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_TLCODE39 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_PDF417 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_TRIOPTIC_CODE39 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_PLANET 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_UCC_EAN_128 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_PLESSEY 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_UPC_A 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_POSICODE 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_UPC_E
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_POSTNET 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_UPC_E0 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_QR 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_UPC_E1 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_RSS 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_US_PLANET_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_STRT25 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SOCKET_US_POSTNET_POSTAL 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_TELEPEN 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_TLCODE39 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_TRIOPTIC 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_UPCA 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_UPCE0 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_UPCE1 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+HH_USPS4CB
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setParam(int
+\begin_inset space ~
+\end_inset
+
+type,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+barcodeType,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+value) Sets a parameter for the barcode.
+ You can use the constants below to know which parameter to set, and also
+ the values below for their values.
+ Be careful because some functions may require also the barcode type.
+ With Datalogic scanners, the SECOND parameter is not used (always pass
+ 0 to it); and don't forget to call the 
+\family typewriter
+commitBarcodeParams()
+\family default
+ method.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Parameters for Datalogic scanners:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_TIMEOUT
+\family default
+: scanning timeout, expressed in terms of milliseconds 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_BEEPER_DURATION
+\family default
+: beeper duration on a barcode event, expressed in terms of milliseconds
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_BEEPER_FREQUENCY
+\family default
+: beeper frequency on a barcode event, expressed in terms of hertz 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_LED_NUM_OF_PULSES
+\family default
+: how many pulses we blink the led on a barcode event 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_LED_PULSE_DURATION
+\family default
+: duration of each pulse on a barcode event, expressed in terms of milliseconds
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_CONTINUOUS_MODE
+\family default
+: disable/enable the scanning continous mode, the scanning doesn't stop
+ on a barcode event 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_KEYBOARD_EMULATION
+\family default
+: disable/enable the keyborad emulation, all scanned data are translated
+ to keyboard events 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_SOFT_TRIGGER
+\family default
+: disable/enable the soft trigger functions; if enabled, allows the scanner
+ to read, even if the scan button is not pressed 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_SCAN_ALWAYS_ENABLED
+\family default
+: if enabled, allows the scanner to read, even if the 
+\family typewriter
+active()
+\family default
+ function has not been called.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_SCAN_PARAM_BEEPER_TYPE
+\family default
+: beeper type, dual-tone (0), monotone (1) 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_BCD_PARAM_PREAMBLE_STRING
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_POSTAMBLE_STRING
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_BARCODE_SYMBOLOGY_IDENTIFIER
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_NO_IDENTIFIER
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_DATALOGIC_IDENTIFIER_AT_BEGINNING
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_DATALOGIC_IDENTIFIER_AT_END
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_AIM_IDENTIFIER_AT_BEGINNING
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+4 - 
+\family typewriter
+BCD_PARAM_AIM_IDENTIFIER_AT_END
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_BCD_PARAM_LINEAR_CODE_SEVERITY
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_MIN_SEVERITY
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_LOW_SEVERITY
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_MID_SEVERITY
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_HIGH_SEVERITY
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+4 - 
+\family typewriter
+BCD_PARAM_MAX_SEVERITY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_QUIET_ZONE_TYPE
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_MIN_QUIET_ZONE
+\family default
+, 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_STANDARD_QUIET_ZONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_CIP_CONVERSION
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_STANDARD
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_STANDARD_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_STANDARD_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_FULL_ASCII_CONVERSION
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_FULL_ASCII_CHECK_DIGIT
+\family default
+: Possible values:
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+DL_BCD_PARAM_CODE_39_FULL_ASCII_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_CODE_32_CONVERSION
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_CODE_32_CHECK_DIGITT
+\family default
+: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_CODE_32_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_39_CODE_32_REMOVE_A
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INTERLEAVED
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INTERLEAVED_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INTERLEAVED_CHECK_DIGIT_TRANSMISSION
+\family default
+:Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INDUSTRIAL
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INDUSTRIAL_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_INDUSTRIAL_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_MATRIX
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_MATRIX_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_25_MATRIX_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_PLESSEY_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODABAR_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_STANDARD
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_STANDARD_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_STANDARD_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_EAN
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_EAN_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_EAN_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11_CHECK_DIGIT_TYPE
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_11_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93_CHECK_DIGIT_TYPE
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_93_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI_MIN_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI_MAX_TEXT_LENGTH
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI_CHECK_DIGIT_TYPE
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_MSI_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_UPC_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_UPC_SUPPLEMENTAL_REDUNDANCY
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_UPC_SUPPLEMENTAL_2
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_UPC_SUPPLEMENTAL_5
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_UPC_SUPPLEMENTAL_AUTODISCRIMINATE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_A
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_A_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_A_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_A_TO_EAN_13
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_E
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_E_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_E_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_UPC_E_CONVERSION_TYPE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_8
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_8_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_8_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_8_TO_EAN_13
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_13
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_13_CHECK_DIGIT
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_EAN_13_CHECK_DIGIT_TRANSMISSION
+\family default
+: Possible values: 
+\begin_inset Newline newline
+\end_inset
+
+0 -
+\family typewriter
+ BCD_PARAM_CODE_CHECK_C
+\family default
+ 
+\begin_inset Newline newline
+\end_inset
+
+1 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+2 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_C_AND_K
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+3 - 
+\family typewriter
+BCD_PARAM_CODE_CHECK_NONE
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_EAN_FIRST_GROUP_SEPARATOR
+\begin_inset Newline newline
+\end_inset
+
+DL_BCD_PARAM_CODE_128_EAN_GROUP_SEPARATOR_BYTE
+\begin_inset Newline newline
+\end_inset
+
+
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+Parameters for all scanners:
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+TRIGGERING_PARAM
+\begin_inset Newline newline
+\end_inset
+
+LINEAR_SECURITY_LEVEL_PARAM
+\begin_inset Newline newline
+\end_inset
+
+SUPPLEMENTALS_PARAM
+\begin_inset Newline newline
+\end_inset
+
+TRANSMIT_CHECKDIGIT_PARAM
+\begin_inset Newline newline
+\end_inset
+
+PREAMBLE_PARAM
+\begin_inset Newline newline
+\end_inset
+
+MSI_PLESSEY_CHECKDIGIT_PARAM
+\begin_inset Newline newline
+\end_inset
+
+MSI_PLESSEY_OPTIONS_PARAM
+\begin_inset Newline newline
+\end_inset
+
+MSI_PLESSEY_ALGORITHMS_PARAM
+\begin_inset Newline newline
+\end_inset
+
+TRANSMIT_CODEID_PARAM
+\begin_inset Newline newline
+\end_inset
+
+SCAN_DATA_TRANSMISSION_PARAM
+\begin_inset Newline newline
+\end_inset
+
+SCAN_ANGLE_PARAM
+\begin_inset Newline newline
+\end_inset
+
+WAITING_TIME_PARAM
+\family default
+: to be used on Windows CE only.
+ Sets the time that the scanner thread will wait for a beam.
+ if value is 
+\family typewriter
+<= 0
+\family default
+, it waits FOREVER.
+ Otherwise, waits for the given number of milisseconds.
+ MUST BE CALLED BEFORE ACTIVATING THE SCANNER!!!
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+For Symbol scanners, there are the following valid values:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+// triggering modes
+\end_layout
+
+\begin_layout Plain Layout
+
+#define LEVEL                                       0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define PULSE                                       0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+#define HOST                                        0x08
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Linear code type security
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SECURITY_LEVEL0                             0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SECURITY_LEVEL1                             0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SECURITY_LEVEL2                             0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SECURITY_LEVEL3                             0x03
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SECURITY_LEVEL4                             0x04
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// UPC/EAN Supplementals
+\end_layout
+
+\begin_layout Plain Layout
+
+#define IGNORE_SUPPLEMENTALS                        0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DECODE_SUPPLEMENTALS                        0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define AUTODISCRIMINATE_SUPPLEMENTALS              0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Transmit Check Digit options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DO_NOT_TRANSMIT_CHECK_DIGIT                 0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define TRANSMIT_CHECK_DIGIT                        0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Preamble options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define NO_PREAMBLE                                 0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SYSTEM_CHARACTER                            0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SYSTEM_CHARACTER_COUNTRY_CODE               0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// CheckDigit verification options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DISABLE_CHECK_DIGIT                         0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define USS_CHECK_DIGIT                             0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define OPCC_CHECK_DIGIT                            0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// MSI Plessey checkdigit options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define ONE_CHECK_DIGIT                             0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define TWO_CHECK_DIGITS                            0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// MSI Plessey check digit algorithms
+\end_layout
+
+\begin_layout Plain Layout
+
+#define MOD10_MOD11                                 0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define MOD10_MOD10                                 0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Transmit Code ID Character options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define AIM_CODE_ID_CHARACTER                       0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SYMBOL_CODE_ID_CHARACTER                    0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Scan data transmission formats
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DATA_AS_IS                                  0x00
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DATA_SUFFIX1                                0x01
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DATA_SUFFIX2                                0x02
+\end_layout
+
+\begin_layout Plain Layout
+
+#define DATA_SUFFIX1_SUFFIX2                        0x03
+\end_layout
+
+\begin_layout Plain Layout
+
+#define PREFIX_DATA                                 0x04
+\end_layout
+
+\begin_layout Plain Layout
+
+#define PREFIX_DATA_SUFFIX1                         0x05
+\end_layout
+
+\begin_layout Plain Layout
+
+#define PREFIX_DATA_SUFFIX2                         0x06
+\end_layout
+
+\begin_layout Plain Layout
+
+#define PREFIX_DATA_SUFFIX1_SUFFIX2                 0x07
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+// Scan angle options
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SCAN_ANGLE_WIDE                             0xB6
+\end_layout
+
+\begin_layout Plain Layout
+
+#define SCAN_ANGLE_NARROW                           0xB5  
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+commitBarcodeParams() Commits the barcode parameters to the scanner.
+ Returns 
+\family typewriter
+true
+\family default
+ if the operation is successful and 
+\family typewriter
+false
+\family default
+, otherwise.
+ Not used on the Windows CE platform.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBarcodeLength(int
+\begin_inset space ~
+\end_inset
+
+barcodeType,int
+\begin_inset space ~
+\end_inset
+
+lengthType,int
+\begin_inset space ~
+\end_inset
+
+min,int
+\begin_inset space ~
+\end_inset
+
+max) Sets the length of a barcode where 
+\family typewriter
+barcodeType
+\family default
+ is one of the 
+\family typewriter
+BARxxxx
+\family default
+ constants listed above and 
+\family typewriter
+lengthType
+\family default
+ can be 0 (variables 
+\family typewriter
+length
+\family default
+, 
+\family typewriter
+min
+\family default
+, and 
+\family typewriter
+max
+\family default
+ are ignored), 1 (
+\family typewriter
+length = min
+\family default
+), 2 (
+\family typewriter
+length = min || length = max
+\family default
+), 3 (
+\family typewriter
+min <= length <= max
+\family default
+).
+ Careful: in Motorola Scanners, 
+\family typewriter
+min
+\family default
+ and 
+\family typewriter
+max
+\family default
+ must be used in inverted order due to a bug in the MOTOROLA API.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getData() Gets the decoded string of what has been scanned.
+ If an error occurs a 
+\family typewriter
+null
+\family default
+ string will be returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getScanManagerVersion() Gets the scan manager version as an hexadecimal
+ string.
+ If an error occurs or if this method is called before the scanner is initialize
+d, a 
+\family typewriter
+null
+\family default
+ string will be returned.
+ On Java it returns 
+\family typewriter
+Scanner emulation
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getScanPortDriverVersion() Gets the Scanner Port Driver version as an hexadecima
+l string.
+ If an error occurs, this method is called on Java, or if this method is
+ called before the scanner is initialized, a 
+\family typewriter
+null
+\family default
+ string will be returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deactivate() Deactivates the scanner.
+ Returns 
+\family typewriter
+true
+\family default
+ if the operation is successful and 
+\family typewriter
+false
+\family default
+, otherwise.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+isPassive() Returns 
+\family typewriter
+true
+\family default
+ if this scanner is a passive one.
+ Passive scanners must be triggered programatically, using the 
+\family typewriter
+trigger()
+\family default
+ method.
+ Currently, all SocketCom scanners are passive, and all others are not.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+trigger() Triggers the scanner for passive scanners.
+ The barcode will be returned in the 
+\family typewriter
+ScanEvent
+\family default
+ event.
+ 
+\end_layout
+
 \begin_layout Part
 OPTIMIZATION TRICKS
 \end_layout
