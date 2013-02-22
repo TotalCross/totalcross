@@ -277,7 +277,7 @@ TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getS
       }
       else
       if (mode == DONT_OPEN)
-         throwException(p->currentContext, IOException, "File is not a root directory.");
+         throwException(p->currentContext, IOException, "The file can't be open in the DONT_OPEN mode to get its size.");
       else
       {
          fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
