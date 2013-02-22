@@ -174,7 +174,7 @@ public class BufferedStream extends Stream
          stream.writeBytes(buffer, 0, pos);
    }
 
-   /** Change the initial Stream to the attached one.
+   /** Changes the initial Stream to the attached one.
     * Reusing a BufferedStream throught this method can preserve memory.
     * @since TotalCross 1.23
     */
@@ -185,7 +185,7 @@ public class BufferedStream extends Stream
       size = mode == READ ? 0 : buffer.length;
    }
    
-   /** Returns the Stream attached to this LineReader.
+   /** Returns the Stream attached to this BufferedStream.
     * @since TotalCross 1.23
     */
    public Stream getStream()
@@ -194,11 +194,11 @@ public class BufferedStream extends Stream
    }
 
    /**
-    * Reads a line of text from this socket. Any char lower than space
+    * Reads a line of text from this BufferedStream. Any char lower than space
     * is considered a new line separator. This method correctly handles newlines
     * with \\n or \\r\\n.
     * <br><br>Note: this method is VERY slow since it reads a single character per time. Consider using 
-    * new LineReader(socket) instead.
+    * LineReader instead.
     *
     * @return the read line or <code>null</code> if nothing was read.
     * @throws totalcross.io.IOException
