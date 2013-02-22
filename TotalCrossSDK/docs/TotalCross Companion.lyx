@@ -83268,6 +83268,66 @@ NOT_DISCOVERABLE
  
 \end_layout
 
+\begin_layout Chapter
+RemoteDevice 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+RemoteDevice
+\family default
+ class represents a remote Bluetooth device.
+ It provides basic information about a remote device including the device's
+ Bluetooth address and its friendly name.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getFriendlyName() Returns the name of the device.
+ The Bluetooth specification calls this name the "Bluetooth device name"
+ or the "user-friendly name".
+ It returns 
+\family typewriter
+null
+\family default
+ if the Bluetooth system does not support this feature; if the local device
+ is able to contact the remote device, the result will never be 
+\family typewriter
+null
+\family default
+.
+ If the remote device does not have a name then an empty string will be
+ returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBluetoothAddress() Retrieves the Bluetooth address of this device.
+ The Bluetooth address will be 12 characters long.
+ Valid characters are 0-9 and A-F.
+ This method will never return 
+\family typewriter
+null
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Returns a string representation of the object in the format 
+\family typewriter
+address - friendlyName
+\family default
+.
+ 
+\end_layout
+
 \begin_layout Part
 BLUETOOTH PRINTERS
 \end_layout
