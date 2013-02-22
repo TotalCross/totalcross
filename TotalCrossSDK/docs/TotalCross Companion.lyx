@@ -6693,6 +6693,10 @@ platform
 .
  You can use other parameters as filters to the query, such as a customer
  unique identifier ID.
+ This example is specially important when activating desktop machines, since
+ it has no hardware serial number (its value is created by TotalCross using
+ some machine device identifiers).
+ 
 \end_layout
 
 \begin_layout Standard
@@ -82480,6 +82484,787 @@ getMinorDeviceClass() Retrieves the minor device class.
 getServiceClasses() Retrieves the major service classes.
  A device may have multiple major service classes.
  When this occurs, the major service classes are bitwise OR'ed together.
+ 
+\end_layout
+
+\begin_layout Chapter
+DiscoveryAgent
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+DiscoveryAgent
+\family default
+ class provides methods to perform device and service discovery.
+ A local device must have only one 
+\family typewriter
+DiscoveryAgent
+\family default
+ object.
+ This object must be retrieved by a call to 
+\family typewriter
+getDiscoveryAgent()
+\family default
+ on the 
+\family typewriter
+LocalDevice
+\family default
+ object.
+ 
+\end_layout
+
+\begin_layout Standard
+This class uses the interface 
+\family typewriter
+DiscoveryListener
+\family default
+, which allows an application to receive device discovery and service discovery
+ events.
+ This interface provides four methods, two for discovering devices and two
+ for discovering services.
+ These methods are described below:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+deviceDiscovered(RemoteDevice
+\begin_inset space ~
+\end_inset
+
+btDevice,
+\begin_inset space ~
+\end_inset
+
+DeviceClass
+\begin_inset space ~
+\end_inset
+
+cod) Called when a device is found during an inquiry.
+ An inquiry searches for devices that are discoverable.
+ The same device may be returned multiple times.
+ 
+\family typewriter
+btDevice
+\family default
+ is the device that was found during the inquiry and 
+\family typewriter
+cod
+\family default
+ is the service classes (major device class and minor device class) of the
+ remote device.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+inquiryCompleted(int
+\begin_inset space ~
+\end_inset
+
+discType) Called when an inquiry is completed.
+ 
+\family typewriter
+discType
+\family default
+ will be 
+\family typewriter
+INQUIRY_COMPLETED
+\family default
+ (0) if the inquiry ended normally or 
+\family typewriter
+INQUIRY_TERMINATED
+\family default
+ (5) if the inquiry was canceled by a call to 
+\family typewriter
+DiscoveryAgent.cancelInquiry()
+\family default
+.
+ 
+\family typewriter
+discType
+\family default
+ will be 
+\family typewriter
+INQUIRY_ERROR
+\family default
+ (7) if an error occurred while processing the inquiry causing the inquiry
+ to end abnormally.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+servicesDiscovered(int
+\begin_inset space ~
+\end_inset
+
+transID,
+\begin_inset space ~
+\end_inset
+
+ServiceRecord[]
+\begin_inset space ~
+\end_inset
+
+servRecord) Called when service(s) are found during a service search where
+ 
+\family typewriter
+transID
+\family default
+ is the transaction ID of the service search that is posting the result
+ and 
+\family typewriter
+servRecord
+\family default
+ is a list of services found during the search request.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+serviceSearchCompleted(int
+\begin_inset space ~
+\end_inset
+
+transID,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+respCode) Called when a service search is completed or was terminated because
+ of an error.
+ The following table describes when each 
+\family typewriter
+respCode
+\family default
+ will be used:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="40line%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+respCode
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Reason
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SERVICE_SEARCH_COMPLETED
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+if the service search completed normally
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SERVICE_SEARCH_TERMINATED
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+if the service search request was cancelled by a call to 
+\family typewriter
+DiscoveryAgent.
+ cancelServiceSearch()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SERVICE_SEARCH_ERROR
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+if an error occurred while processing the request
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SERVICE_SEARCH_NO_RECORDS
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+if no records were found during the service search
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SERVICE_SEARCH_DEVICE_NOT_REACHABLE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+if the device specified in the search request could not be reached or the
+ local device could not establish a connection to the remote device
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+DiscoveryAgent
+\family default
+ class itself has the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cancelInquiry(DiscoveryListener
+\begin_inset space ~
+\end_inset
+
+listener) Removes the device from inquiry mode.
+ An 
+\family typewriter
+inquiryCompleted()
+\family default
+ event will occur with a type of 
+\family typewriter
+INQUIRY_TERMINATED
+\family default
+ as a result of calling this method.
+ After receiving this event, no further 
+\family typewriter
+deviceDiscovered()
+\family default
+ events will occur as a result of this inquiry.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method will only cancel the inquiry if the listener provided is the
+ listener that started the inquiry.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is not implemented on Android.
+\begin_inset Newline newline
+\end_inset
+
+This method returns 
+\family typewriter
+true
+\family default
+ if the inquiry was canceled; otherwise, 
+\family typewriter
+false
+\family default
+ if the inquiry was not canceled or if the inquiry was not started using
+ 
+\family typewriter
+listener
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cancelServiceSearch(int
+\begin_inset space ~
+\end_inset
+
+transID) Cancels the service search transaction that has the specified transacti
+on ID.
+ The ID was assigned to the transaction by the method 
+\family typewriter
+searchServices()
+\family default
+.
+ A 
+\family typewriter
+serviceSearchCompleted()
+\family default
+ event with a discovery type of 
+\family typewriter
+SERVICE_SEARCH_TERMINATED
+\family default
+ will occur when this method is called.
+ After receiving this event, no further 
+\family typewriter
+servicesDiscovered()
+\family default
+ events will occur as a result of this search.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is not implemented on Android and Windows CE.
+\begin_inset Newline newline
+\end_inset
+
+This method returns 
+\family typewriter
+true
+\family default
+ if the service search transaction is terminated, else 
+\family typewriter
+false
+\family default
+ if 
+\family typewriter
+transID
+\family default
+ does not represent an active service search transaction.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+retrieveDevices(int
+\begin_inset space ~
+\end_inset
+
+option) Returns an array of Bluetooth devices that have either been found
+ by the local device during previous inquiry requests or been specified
+ as a pre-known device depending on the argument.
+ The list of previously found devices is maintained by the implementation
+ of this API.
+ (In other words, maintenance of the list of previously found devices is
+ an implementation detail).
+ A device can be set as a pre-known device in the Bluetooth Control Center.
+ Works on Android.
+ Pass 
+\family typewriter
+CACHED
+\family default
+ to list the unpaired devices that were found via a previous inquiry.
+ If no inquiries have been started, this will cause the method to return
+ 
+\family typewriter
+null
+\family default
+.
+ To return a list of the paired devices, pass 
+\family typewriter
+PREKNOWN
+\family default
+.
+ Note that paired devices may not be at reach at the moment.
+ Pre-known devices are specified in the BCC.
+ These are devices that are specified by the user as devices with which
+ the local device will frequently communicate.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+searchServices(int[]
+\begin_inset space ~
+\end_inset
+
+attrSet,UUID[]
+\begin_inset space ~
+\end_inset
+
+uuidSet,RemoteDevice
+\begin_inset space ~
+\end_inset
+
+btDev,DiscoveryListener
+\begin_inset space ~
+\end_inset
+
+discListener) Searches for services on a remote Bluetooth device that have
+ all the UUIDs specified in 
+\family typewriter
+uuidSet
+\family default
+.
+ Once the service is found, the attributes specified in 
+\family typewriter
+attrSet
+\family default
+ and the default attributes are retrieved.
+ The default attributes are 
+\family typewriter
+ServiceRecordHandle
+\family default
+ (
+\family typewriter
+0x0000
+\family default
+), 
+\family typewriter
+ServiceClassIDList
+\family default
+ (
+\family typewriter
+0x0001
+\family default
+), 
+\family typewriter
+ServiceRecordState
+\family default
+ (
+\family typewriter
+0x0002
+\family default
+), ServiceID (
+\family typewriter
+0x0003
+\family default
+), and 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ProtocolDescriptorList
+\family default
+ (
+\family typewriter
+0x0004
+\family default
+).
+ If 
+\family typewriter
+attrSet
+\family default
+ is 
+\family typewriter
+null
+\family default
+ then only the default attributes will be retrieved.
+ 
+\family typewriter
+attrSet
+\family default
+ does not have to be sorted in increasing order, but must only contain values
+ in the range 
+\family typewriter
+[0 - (2
+\begin_inset script superscript
+
+\begin_layout Plain Layout
+
+\family typewriter
+16
+\end_layout
+
+\end_inset
+
+-1)]
+\family default
+.
+ Moreover, 
+\family typewriter
+btDev
+\family default
+ is the remote Bluetooth device to search for services on and 
+\family typewriter
+discListener
+\family default
+ is the object that will receive events when services are discovered.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+attrSet
+\family default
+ and 
+\family typewriter
+uuidSet
+\family default
+ cannot contain duplicates, and 
+\family typewriter
+attrSet
+\family default
+ can be 
+\family typewriter
+null
+\family default
+ but not the other parameters or a 
+\family typewriter
+uuidSet
+\family default
+ member.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is not implemented on Android and returns the transaction ID
+ of the service search, which is a positive number.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+selectService(UUID
+\begin_inset space ~
+\end_inset
+
+uuid,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+security,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+master) Attempts to locate a service that contains 
+\family typewriter
+uuid
+\family default
+ in the 
+\family typewriter
+ServiceClassIDList
+\family default
+ of its service record.
+ This method will return a string that may be used in 
+\family typewriter
+Connector.open()
+\family default
+ to establish a connection to the service or 
+\family typewriter
+null
+\family default
+ if no service could be found with a UUID of 
+\family typewriter
+uuid
+\family default
+ in the 
+\family typewriter
+ServiceClassIDList
+\family default
+.
+ How the service is selected if there are multiple services with 
+\family typewriter
+uuid
+\family default
+ and which devices to search is implementation dependent.
+\begin_inset Newline newline
+\end_inset
+
+In this method, 
+\family typewriter
+security
+\family default
+ specifies the security requirements for a connection to the service and
+ is one out of: 
+\family typewriter
+ServiceRecord.NOAUTHENTICATE_NOENCRYPT
+\family default
+, 
+\family typewriter
+ServiceRecord.
+ AUTHENTICATE_NOENCRYPT
+\family default
+, or 
+\family typewriter
+ServiceRecord.AUTHENTICATE_ENCRYPT
+\family default
+, and 
+\family typewriter
+master
+\family default
+ determines if the client must be the master of the connection (
+\family typewriter
+true
+\family default
+ if the client must be the master or 
+\family typewriter
+false
+\family default
+ if the client can be the master or the slave).
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is not implemented on Android.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+startInquiry(int
+\begin_inset space ~
+\end_inset
+
+accessCode,
+\begin_inset space ~
+\end_inset
+
+DiscoveryListener
+\begin_inset space ~
+\end_inset
+
+listener) Places the device into inquiry mode.
+ The length of the inquiry is implementation dependent.
+ This method will search for devices with the specified inquiry access code.
+ Devices that responded to the inquiry are returned to the application via
+ the method 
+\family typewriter
+deviceDiscovered()
+\family default
+ of the interface 
+\family typewriter
+DiscoveryListener
+\family default
+.
+ The 
+\family typewriter
+cancelInquiry()
+\family default
+ method is called to stop the inquiry.
+ 
+\begin_inset Newline newline
+\end_inset
+
+The paramenter 
+\family typewriter
+accessCode
+\family default
+ is the type of inquiry to complete.
+ It must be 
+\family typewriter
+LIAC
+\family default
+ (the inquiry access code for Limited Dedicated Inquiry Access Code, whose
+ value is 
+\family typewriter
+0x9E8B00
+\family default
+, which is defined in the Bluetooth Assigned Numbers document, 
+\family typewriter
+GIAC
+\family default
+ (the inquiry access code for General/Unlimited Inquiry Access Code, whose
+ value is 
+\family typewriter
+0x9E8B33
+\family default
+, which is defined in the Bluetooth Assigned Numbers document, or in the
+ range 
+\family typewriter
+0x9E8B00
+\family default
+ to 
+\family typewriter
+0x9E8B3F
+\family default
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is not implemented on Android.
+\end_layout
+
+\begin_layout Standard
+This class also has the constant 
+\family typewriter
+NOT_DISCOVERABLE
+\family default
+, which takes the device out of discoverable mode.
+ The value of 
+\family typewriter
+NOT_DISCOVERABLE
+\family default
+ is 
+\family typewriter
+0x00
+\family default
+ (0).
  
 \end_layout
 
