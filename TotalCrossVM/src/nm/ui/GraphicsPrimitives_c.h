@@ -1855,7 +1855,9 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
 int32 *shiftYfield, *shiftHfield, *lastShiftYfield, *needsPaint, lastShiftY=-1;
+#ifndef __gl2_h_
 static bool firstUpdate = true;
+#endif
 
 #ifdef darwin
 static int32 lastAppHeightOnSipOpen;

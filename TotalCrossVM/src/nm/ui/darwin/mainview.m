@@ -36,7 +36,6 @@ bool initGLES(ScreenSurface screen)
    screen->pixels = (void*)1;
    return true;
 }
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    [UIView setAnimationsEnabled:NO];
@@ -44,10 +43,12 @@ bool initGLES(ScreenSurface screen)
    return YES;
 }
 
-bool firstLayout = true;
+static int lastOrientationIsPortrait = true;
 - (void)viewDidLayoutSubviews
 {
-   if (!firstLayout)
+   int orientation = [[UIDevice currentDevice] orientation];
+   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
+   if (lastOrientationIsPortrait != isPortrait)
    {
       // at this moment, ios will try to resize the current rendering buffer, placing it at the screen.
       // the screen is updated when we reach GraphicsPrimitives_c.h / updateScreen
@@ -59,8 +60,7 @@ bool firstLayout = true;
       // rotate the screen
       [child_view onRotate];
    }
-   else
-      firstLayout = false;
+   lastOrientationIsPortrait = isPortrait;
 }
 
 - (void)loadView
@@ -139,6 +139,8 @@ bool firstLayout = true;
    [_events addObject: event];
 }
 
+extern int32 iosScale;
+
 -(void) keyboardDidShow: (NSNotification *)notif
 {
    if (keyboardH != 0) 
@@ -148,7 +150,7 @@ bool firstLayout = true;
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = keyboardSize.height;
+   keyboardH = keyboardSize.height * iosScale;
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif

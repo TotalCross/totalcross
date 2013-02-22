@@ -36,3 +36,7 @@ void privateAlert(CharP cstr)
       [alert performSelectorOnMainThread:@selector(popup:) withObject: message waitUntilDone: YES];
 }
 
+void iphoneDebug(CharP s)
+{
+    NSLog(@"%s",s);
+}

@@ -820,6 +820,8 @@ void setShiftYgl()
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
       setTimerInterval(1);      
    }
+#else
+    glShiftY = -desiredScreenShiftY;
 #endif    
 }
 extern int32 desiredScreenShiftY;
