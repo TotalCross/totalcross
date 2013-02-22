@@ -50,7 +50,7 @@ public class Deploy
    
    public static boolean isOnlyBB()
    {
-      return platform == BUILD_BB;
+      return false;
    }
 
    public Deploy(String[] args)
