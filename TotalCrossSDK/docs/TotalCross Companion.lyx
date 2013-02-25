@@ -81747,6 +81747,27 @@ Overview
 This package describes the classes to use Bluetooth.
 \end_layout
 
+\begin_layout Standard
+In what follows, the classes 
+\family typewriter
+SerialPortClient
+\family default
+ and 
+\family typewriter
+SerialPortServer
+\family default
+ are not described since they are just simple subclasses of 
+\family typewriter
+Stream
+\family default
+ and 
+\family typewriter
+StreamConnectionNotifier
+\family default
+, respectively.
+ 
+\end_layout
+
 \begin_layout Chapter
 DataElement
 \end_layout
@@ -82198,8 +82219,18 @@ DeviceClass
 \end_layout
 
 \begin_layout Standard
-The Bluetooth Assigned Numbers document defines the service class, major
- device class, and minor device class.
+The Bluetooth Assigned Numbers document 
+\begin_inset Newline newline
+\end_inset
+
+(
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.bluetooth.org/assigned-numbers/sdp.htm"
+
+\end_inset
+
+) defines the service class, major device class, and minor device class.
  The table below provides some examples of possible return values and their
  meaning:
 \end_layout
@@ -83325,6 +83356,970 @@ toString() Returns a string representation of the object in the format
 address - friendlyName
 \family default
 .
+ 
+\end_layout
+
+\begin_layout Chapter
+ServiceRecord 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+ServiceRecord
+\family default
+ class describes characteristics of a Bluetooth service.
+ A 
+\family typewriter
+ServiceRecord
+\family default
+ object contains a set of service attributes, where each service attribute
+ is an (ID, value) pair.
+ A Bluetooth attribute ID is a 16-bit unsigned integer, and an attribute
+ value is a 
+\family typewriter
+DataElement
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The structure and use of service records is specified by the Bluetooth specifica
+tion in the Service Discovery Protocol (SDP) document.
+ Most of the Bluetooth Profile specifications also describe the structure
+ of the service records used by the Bluetooth services that conform to the
+ profile.
+ 
+\end_layout
+
+\begin_layout Standard
+An SDP Server maintains a Service Discovery Database (SDDB) of service records
+ that describe the services on the local device.
+ Remote SDP clients can use the SDP to query an SDP server for any service
+ records of interest.
+ A service record provides sufficient information to allow an SDP client
+ to connect to the Bluetooth service on the SDP server's device.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+ServiceRecord
+\family default
+s are made available to a client application via an argument of the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DiscoveryListener.servicesDiscovered(int, ServiceRecord[])
+\family default
+ method of the 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+DiscoveryListener
+\family default
+ interface.
+ 
+\family typewriter
+ServiceRecord
+\family default
+s are available to server applications via the method 
+\family typewriter
+LocalDevice.getRecord(Connection)
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+There might be many service attributes in a service record, and the SDP
+ protocol makes it possible to specify the subset of the service attributes
+ that an SDP client wants to retrieve from a remote service record.
+ The 
+\family typewriter
+ServiceRecord
+\family default
+ interface treats certain service attribute IDs as default IDs, and, if
+ present, these service attributes are automatically retrieved during service
+ searches.
+ 
+\end_layout
+
+\begin_layout Standard
+The Bluetooth Assigned Numbers document 
+\begin_inset Newline newline
+\end_inset
+
+(
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.bluetooth.org/assigned-numbers/sdp.htm"
+
+\end_inset
+
+) defines a large number of service attribute IDs.
+ Here is a subset of the most common service attribute IDs and their types.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="16" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="35line%">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute Name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute ID
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute Value Type
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceRecordHandle
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+32-bit unsigned integer
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceClassIDList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0001
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of UUIDs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceRecordState
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0002
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+32-bit unsigned integer
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceID
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0003
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+UUID
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ProtocolDescriptorList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0004
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of DATSEQ of 
+\end_layout
+
+\begin_layout Plain Layout
+UUID and optional parameters
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BrowseGroupList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0005
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of UUIDs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+LanguageBasedAttributeIDList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0006
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of DATSEQ triples
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceInfoTimeToLive
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0007
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+32-bit unsigned integer
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceAvailability
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0008
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8-bit unsigned integer
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+BluetoothProfileDescriptorList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0009
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of DATSEQ pairs
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+DocumentationURL
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x000A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+URL
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ClientExecutableURL
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x000B
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+URL
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+IconURL
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x000C
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+URL
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+VersionNumberList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0200
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DATSEQ of 16-bit unsigned integers
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceDatabaseState
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0201
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+32-bit unsigned integer
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following table lists the common string-valued attribute ID offsets
+ used in a 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ServiceRecord
+\family default
+.
+ These offsets must be added to a base value to obtain the actual service
+ ID (for more information, see the Service Discovery Protocol Specification
+ located in the Bluetooth Core Specification):
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute Name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute ID Offset
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Attribute Value Type
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceName
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+String
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ServiceDescription
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0001
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+String
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ProviderName
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+0x0002
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+String
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This class has the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getHostDevice() Returns the remote Bluetooth device that populated the 
+\family typewriter
+ServiceRecord
+\family default
+ with attribute values.
+ It is important to note that the Bluetooth device that provided the value
+ might not be reachable anymore, since it can move, turn off, or change
+ its security mode denying all further transactions.
+ It returns 
+\family typewriter
+null
+\family default
+ if the local device populated the 
+\family typewriter
+ServiceRecord
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeValue(int
+\begin_inset space ~
+\end_inset
+
+attrID) Returns the value of the service attribute ID provided it is present
+ in the service record, otherwise this method returns 
+\family typewriter
+null
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getConnectionURL() Returns a string including optional parameters that can
+ be used by a client to connect to the service described by the 
+\family typewriter
+ServiceRecord
+\family default
+.
+ The return value can be used as the first argument to 
+\family typewriter
+Connector.open()
+\family default
+.
+ In the case of a Serial Port 
+\family typewriter
+ServiceRecord
+\family default
+, this string might look like 
+\family typewriter
+btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true
+\family default
+, 
+\begin_inset Newline newline
+\end_inset
+
+where 
+\family typewriter
+0050CD00321B
+\family default
+ is the Bluetooth address of the device that provided the
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ServiceRecord
+\family default
+, 
+\family typewriter
+3
+\family default
+ is the RFCOMM server channel mentioned in the 
+\family typewriter
+ServiceRecord
+\family default
+, and there are three optional parameters related to security and master/slave
+ roles.
+ The method returns 
+\family typewriter
+null
+\family default
+ if the 
+\family typewriter
+ProtocolDescriptorList
+\family default
+ in the 
+\family typewriter
+ServiceRecord
+\family default
+ is not formatted according to the Bluetooth specification.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getConnectionURL(int
+\begin_inset space ~
+\end_inset
+
+requiredSecurity,
+\begin_inset space ~
+\end_inset
+
+boolean
+\begin_inset space ~
+\end_inset
+
+mustBeMaster) Same as above but has the parameters 
+\family typewriter
+requiredSecurity
+\family default
+ (determines whether authentication or encryption are required for a connection
+ and must be one out of 
+\family typewriter
+NOAUTHENTICATE_ NOENCRYPT
+\family default
+, 
+\family typewriter
+AUTHENTICATE_NOENCRYPT
+\family default
+, or 
+\family typewriter
+AUTHENTICATE_ENCRYPT
+\family default
+) and 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+mustBeMaster
+\family default
+ (
+\family typewriter
+true
+\family default
+ indicates that this device must play the role of master in connections
+ to the service and 
+\family typewriter
+false
+\family default
+ indicates that the local device is willing to be either the master or the
+ slave).
  
 \end_layout
 

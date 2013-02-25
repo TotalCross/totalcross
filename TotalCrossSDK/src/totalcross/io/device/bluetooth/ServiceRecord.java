@@ -41,7 +41,7 @@ package totalcross.io.device.bluetooth;
  * of the {@link totalcross.io.device.bluetooth.DiscoveryListener#servicesDiscovered} method
  * of the {@link totalcross.io.device.bluetooth.DiscoveryListener} interface. 
  * {@code ServiceRecords} are available to server applications via the method 
- * {@link totalcross.io.device.bluetooth.LocalDevice#getRecord(totalcross.io.Connection)} on {@link totalcross.io.device.bluetooth.LocalDevice}.
+ * {@link totalcross.io.device.bluetooth.LocalDevice#getRecord(totalcross.io.Connection)}.
  * <p>
  * There might be many service attributes in a service record, and the SDP 
  * protocol makes it possible to specify the subset of the service 
@@ -78,9 +78,7 @@ package totalcross.io.device.bluetooth;
  * The following table lists the common string-valued attribute ID offsets used in a 
  * {@code ServiceRecord}. These offsets must be added to a base value to obtain the actual 
  * service ID. (For more information, see the Service Discovery Protocol Specification 
- * located in the Bluetooth Core Specification at <a href=
- * "http://www.bluetooth.com/dev/specifications.asp">http://www.bluetooth.com/dev/specifications.asp
- * </a>).
+ * located in the Bluetooth Core Specification.
  * <p>
  * <TABLE BORDER=1> 
  * <TR><TH>Attribute Name</TH><TH>Attribute ID Offset</TH><TH>Attribute Value Type</TH></TR>
@@ -163,7 +161,7 @@ public class ServiceRecord
    }
 
    /**
-    * Returns a String including optional parameters that can be used by a client to connect to the service described by
+    * Returns a string including optional parameters that can be used by a client to connect to the service described by
     * this ServiceRecord. The return value can be used as the first argument to Connector.open(). In the case of a
     * Serial Port service record, this string might look like
     * "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true", where "0050CD00321B" is the Bluetooth
