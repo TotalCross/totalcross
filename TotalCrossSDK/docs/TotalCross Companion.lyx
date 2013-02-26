@@ -86091,6 +86091,235 @@ dlm) Call back to check if an attribute must be entered.
  
 \end_layout
 
+\begin_layout Section
+ContentHandler
+\end_layout
+
+\begin_layout Standard
+This class receives notification of the logical content of a document.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status collapsed
+
+\begin_layout Plain Layout
+Note: While in the SAX 2.0 spirit, this implementation is not fully compliant.
+ Speed and footprint took precedence over what the author judged being details.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is the main interface that most SAX applications implement: if the
+ application needs to be informed of basic parsing events, it implements
+ this interface and registers an instance with the XML reader using the
+ 
+\family typewriter
+XmlReader.setContentHandler(ContentHandler)
+\family default
+ method.
+ The XML reader uses the instance to report basic document-related events
+ like the start and end of elements and character data.
+\end_layout
+
+\begin_layout Standard
+The order of events in this interface is very important, and mirrors the
+ order of information in the document itself.
+ For example, all of an element's content (character data, processing instructio
+ns, and/or subelements) will appear, in order, between the 
+\family typewriter
+startElement()
+\family default
+ event and the corresponding 
+\family typewriter
+endElement()
+\family default
+ event.
+\end_layout
+
+\begin_layout Standard
+This abstract class has a public default constructor and the following public
+ methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+startElement(int
+\begin_inset space ~
+\end_inset
+
+tag,
+\begin_inset space ~
+\end_inset
+
+AttributeList
+\begin_inset space ~
+\end_inset
+
+atts) Receives notification of the beginning of an element.
+ The 
+\family typewriter
+XmlReader
+\family default
+ will invoke this method at the beginning of every element in the XML document;
+ there will be a corresponding 
+\family typewriter
+endElement ()
+\family default
+ event for every 
+\family typewriter
+startElement()
+\family default
+ event (even when the element is empty).
+ All of the element's content will be reported, in order, before the correspondi
+ng 
+\family typewriter
+endElement()
+\family default
+ event.
+ In this method, 
+\family typewriter
+tag
+\family default
+ is the tag identifier for the element and 
+\family typewriter
+atts
+\family default
+ is the attributes list attached to the element.
+ This method must be implemented by a 
+\family typewriter
+ContentHandler
+\family default
+ subclass.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+endElement(int
+\begin_inset space ~
+\end_inset
+
+tag) Receives notification of the end of an element.
+ The 
+\family typewriter
+XMLReader
+\family default
+ will invoke this method at the end of every element in the XML document.
+ This method must be implemented by a 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+ContentHandler
+\family default
+ subclass.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+characters(String
+\begin_inset space ~
+\end_inset
+
+s) Receives notification of character data.
+ The 
+\family typewriter
+XMLReader
+\family default
+ will call this method to report each chunk of character data.
+ This 
+\family typewriter
+XMLReader
+\family default
+ implementation return all contiguous character data in a single chunk.
+ The parameter 
+\family typewriter
+s
+\family default
+ is a string of characters from the XML document.
+ This method must be implemented by a 
+\family typewriter
+ContentHandler
+\family default
+ subclass.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+comment(String
+\begin_inset space ~
+\end_inset
+
+s) Receives notification of comment data.
+ The 
+\family typewriter
+XMLReader
+\family default
+ will call this method to report each chunk of comments.
+ This 
+\family typewriter
+XMLReader
+\family default
+ implementation returns all contiguous comment data in a single chunk.
+ This method in this class does nothing.
+ Therefore, if necessary its subclass must override it and do something.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+cdata(int
+\begin_inset space ~
+\end_inset
+
+tag,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+cdata) Receives notification of cdata.
+ The 
+\family typewriter
+XMLReader
+\family default
+ will call this method to report each chunk of cdata found during the parse.
+ This 
+\family typewriter
+XMLReader
+\family default
+ implementation returns all contiguous data in a single chunk, except for
+ the 
+\family typewriter
+<![CDATA[ and ]]>
+\family default
+ delimiters.
+ In this method, the parameter 
+\family typewriter
+cdata
+\family default
+ is unparsed data from the XML document.
+ This method in this class does nothing.
+ Therefore, if necessary its subclass must override it and do something.
+\end_layout
+
 \begin_layout Part
 BARCODE SCANNER
 \end_layout
