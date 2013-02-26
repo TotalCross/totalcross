@@ -1414,7 +1414,7 @@ public class Window extends Container
       {
          if (i == lastFade)
             Graphics.fadeScreen(fadeValue);
-         ((Window)items[i]).repaintNow();
+         if (items[i] != null) ((Window)items[i]).repaintNow();
       }
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
