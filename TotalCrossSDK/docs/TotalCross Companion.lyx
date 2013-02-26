@@ -85784,6 +85784,314 @@ MonoImage
 \end_layout
 
 \begin_layout Part
+XML
+\end_layout
+
+\begin_layout Chapterstar
+Overview
+\end_layout
+
+\begin_layout Standard
+The following chapter describes the 
+\family typewriter
+totalcross.xml
+\family default
+ packages and its subpackages.
+\end_layout
+
+\begin_layout Chapter
+totalcross.xml
+\end_layout
+
+\begin_layout Standard
+The root of the package 
+\family typewriter
+totalcross.xml
+\family default
+ has classes for tokenizing a XML file.
+ It has the following classes:
+\end_layout
+
+\begin_layout Section
+AttributeList
+\end_layout
+
+\begin_layout Standard
+This class describes the attributes attached to a start-tag.
+ Tags are case-insensitive.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+AttributeListIterator
+\family default
+ class provides an iterator over the components of each attribute in an
+ 
+\family typewriter
+AttributeList
+\family default
+ instance: 
+\end_layout
+
+\begin_layout Itemize
+the attribute name 
+\end_layout
+
+\begin_layout Itemize
+the unquoted value 
+\end_layout
+
+\begin_layout Itemize
+the quote, if one exist 
+\end_layout
+
+\begin_layout Standard
+This class has the following public fields, constructors and methods (excluding
+ some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+caseInsensitive Set to 
+\family typewriter
+true
+\family default
+ if you want the get/set methods to be case insensitive.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AttributeList() Creates a new 
+\family typewriter
+AttributeList
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+AttributeList(AttributeList
+\begin_inset space ~
+\end_inset
+
+source) Clones an 
+\family typewriter
+AttributeList
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+addAttribute(String
+\begin_inset space ~
+\end_inset
+
+attrName,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+attrValue,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dlm) Adds a new attribute to the 
+\family typewriter
+AttributeList
+\family default
+.
+ In this method, 
+\family typewriter
+attrValue
+\family default
+ is the unquoted value of the attribute and 
+\family typewriter
+dlm
+\family default
+ is the delimiter that started the attribute value (
+\family typewriter
+'
+\family default
+ or 
+\family typewriter
+"
+\family default
+, or 
+\family typewriter
+'
+\backslash
+0'
+\family default
+ if none).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeValue(String
+\begin_inset space ~
+\end_inset
+
+name) Gets the attribute value for a given name.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeValueAsInt(String
+\begin_inset space ~
+\end_inset
+
+name,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+defaultValue) Gets the attribute value for a given name as an integer.
+\end_layout
+
+\begin_layout Standard
+The internal class 
+\family typewriter
+AttributeListIterator
+\family default
+ is a class to iterate over each attribute of an
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+AttributeList
+\family default
+.
+ This class has a public default constructor and the following public methods:
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+next() Makes current the next attribute in the 
+\family typewriter
+AttributeList
+\family default
+.
+ It returns 
+\family typewriter
+true
+\family default
+ if the next attribute was activated, 
+\family typewriter
+false
+\family default
+ if there are no more attribute in the list.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeName() Gets the name of the current attribute or 
+\family typewriter
+null
+\family default
+ if no attribute is actually current.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeValue() Gets the unquoted value of the current attribute or
+ 
+\family typewriter
+null
+\family default
+ if no attribute is actually current.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValueDelimiter() Gets the quote surrounding the value of the current
+ attribute and returns: 
+\family typewriter
+
+\backslash
+'
+\family default
+, 
+\family typewriter
+
+\backslash
+"
+\family default
+, an empty string (the latter when no quote were surrounding the attribute
+ value), or 
+\family typewriter
+null
+\family default
+ if no attribute is actually current.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getAttributeAsString() Gets the attribute as a string, the value being surrounde
+d by single or double quotes if these were specified in the start-tag.
+\end_layout
+
+\begin_layout Standard
+Finally, 
+\family typewriter
+AttributeList
+\family default
+ has an internal Interface called 
+\family typewriter
+Filter
+\family default
+ which is an interface to filter each attribute before entering it in the
+ 
+\family typewriter
+AttributeList
+\family default
+.
+ A class implementing it must have the following method: 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+acceptAttribute(String
+\begin_inset space ~
+\end_inset
+
+attrName,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+attrValue,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dlm) Call back to check if an attribute must be entered.
+ 
+\end_layout
+
+\begin_layout Part
 BARCODE SCANNER
 \end_layout
 
