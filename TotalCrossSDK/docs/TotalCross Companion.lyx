@@ -85912,11 +85912,15 @@ Overview
 \end_layout
 
 \begin_layout Standard
-The following chapter describes the 
+The following chapters describes the 
 \family typewriter
 totalcross.xml
 \family default
- package.
+ and 
+\family typewriter
+totalcross.xml.rpc
+\family default
+ packages.
 \end_layout
 
 \begin_layout Chapter
@@ -88310,6 +88314,162 @@ cdata
  is unparsed data from the XML document.
  This method in this class does nothing.
  Therefore, if necessary its subclass must override it and do something.
+\end_layout
+
+\begin_layout Chapter
+totalcross.xml.rpc
+\end_layout
+
+\begin_layout Standard
+This chapter describes classes for a remote procedure call (RPC) client
+ that uses XML.
+ 
+\end_layout
+
+\begin_layout Section
+StandardHttpClient 
+\end_layout
+
+\begin_layout Standard
+This class provides client-side HTTP communication.
+ This class has the following attributes, public constructors, and methods:
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+htHeader The header contents, with both key and value lowercased.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+keepAlive Sets the keep-alive flag.
+ If this is 
+\family typewriter
+false
+\family default
+, the connection to the server will be closed at each execution.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+StandardHttpClient(String
+\begin_inset space ~
+\end_inset
+
+hostname,int
+\begin_inset space ~
+\end_inset
+
+port,String
+\begin_inset space ~
+\end_inset
+
+uri,int
+\begin_inset space ~
+\end_inset
+
+openTimeout,int
+\begin_inset space ~
+\end_inset
+
+readTimeout,int
+\begin_inset space ~
+\end_inset
+
+writeTimeout) Creates a 
+\family typewriter
+StandardHttpClient
+\family default
+ with the given parameters, where uri defaults to 
+\family typewriter
+/RPC2
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+StandardHttpClient(String
+\begin_inset space ~
+\end_inset
+
+hostname,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+port,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+uri) Same as above but setting the timeouts with the default 
+\family typewriter
+Socket
+\family default
+ ones.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setBasicAuthentication(String
+\begin_inset space ~
+\end_inset
+
+user,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+password) Base64 encodes the username and password given for basic server
+ authentication.
+ If one of the parameters is 
+\family typewriter
+null
+\family default
+, the authentication is disabled.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readLine() Reads a line from the socket, retrying up to four times, with
+ a 250 ms delay between the tries.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+execute(byte[]
+\begin_inset space ~
+\end_inset
+
+requestBody) Executes a HTTP request to the connected server where 
+\family typewriter
+requestBody
+\family default
+ is the contents of the HTTP request.
+ Headers are added appropriately by this method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+executeReturnBytes(byte[]
+\begin_inset space ~
+\end_inset
+
+requestBody) Executes a HTTP request to the connected server.
+ 
 \end_layout
 
 \begin_layout Part
