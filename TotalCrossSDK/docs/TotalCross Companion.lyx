@@ -87335,6 +87335,406 @@ count
 \end_layout
 
 \begin_layout Section
+XmlReadable
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+XmlReadable
+\family default
+ is an interface that abstracts any sequential resource that can be passed
+ to an 
+\family typewriter
+XmlReader
+\family default
+.
+ A class that implements this interface must have the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+readXml(XmlReader
+\begin_inset space ~
+\end_inset
+
+rdr) Reads the 
+\family typewriter
+XmlReadable
+\family default
+ through an 
+\family typewriter
+XmlReader
+\family default
+ parser, where 
+\family typewriter
+rdr
+\family default
+ is the 
+\family typewriter
+XmlReader
+\family default
+ that will report the SAX events.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBaseURI() Gets the base URI attached to the 
+\family typewriter
+XmlReadable
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCaseInsensitive(boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Pass 
+\family typewriter
+true
+\family default
+ if you want the 
+\family typewriter
+XmlReader
+\family default
+ attached object to be case insensitive.
+\end_layout
+
+\begin_layout Section
+XmlReadableSocket
+\end_layout
+
+\begin_layout Standard
+An 
+\family typewriter
+XmlReadableSocket
+\family default
+ implements 
+\family typewriter
+XmlReadable
+\family default
+ and has a 
+\family typewriter
+Socket
+\family default
+ stream that takes care of the HTTP headers and starts reading at the message
+ body.
+\end_layout
+
+\begin_layout Standard
+In addition to the interface methods, it has the following public constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadableSocket(URI
+\begin_inset space ~
+\end_inset
+
+uri) Constructs an 
+\family typewriter
+XmlReadableSocket
+\family default
+ with the given URI.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadableSocket(URI
+\begin_inset space ~
+\end_inset
+
+uri,
+\begin_inset space ~
+\end_inset
+
+HttpStream.Options
+\begin_inset space ~
+\end_inset
+
+options) Constructs an 
+\family typewriter
+XmlReadableSocket
+\family default
+ with the given URI and the given options.
+\end_layout
+
+\begin_layout Section
+XmlReadableByteArray 
+\end_layout
+
+\begin_layout Standard
+This class makes an 
+\family typewriter
+XmlReadable
+\family default
+ from a byte array.
+ It implements the interface methods and the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadableByteArray(byte[]
+\begin_inset space ~
+\end_inset
+
+source) Creates an 
+\family typewriter
+XmlReadableByteArray
+\family default
+ with a byte array.
+\end_layout
+
+\begin_layout Section
+XmlReadableFile 
+\end_layout
+
+\begin_layout Standard
+This class makes an 
+\family typewriter
+XmlReadable
+\family default
+ from a 
+\family typewriter
+File
+\family default
+ extending 
+\family typewriter
+XmlReadableByteArray
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Example: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+XmlReader rdr = new XmlReader();
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.setContentHandler(...);
+\end_layout
+
+\begin_layout Plain Layout
+
+File f = new File(...);
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.parse(new XmlReadableFile(f)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In addition to its superclass methods, it has the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadableFile(File
+\begin_inset space ~
+\end_inset
+
+f) Contructs an 
+\family typewriter
+XmlReadableFile
+\family default
+ with the file 
+\family typewriter
+f
+\family default
+, which can't be open with 
+\family typewriter
+DONT_OPEN
+\family default
+ mode.
+\end_layout
+
+\begin_layout Section
+XmlReadablePort 
+\end_layout
+
+\begin_layout Standard
+This class makes an 
+\family typewriter
+XmlReadable
+\family default
+ from a 
+\family typewriter
+PortConnector
+\family default
+ extending 
+\family typewriter
+XmlReadableByteArray
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+XmlReader rdr = new XmlReader();
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.setContentHandler(...);
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.parse(new XmlReadablePort(PortConnector.DEFAULT, 19200)); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In addition to its superclass methods, it has the following public constructors:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadablePort(int
+\begin_inset space ~
+\end_inset
+
+number,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+baudRate,
+\begin_inset space ~
+\end_inset
+
+URI
+\begin_inset space ~
+\end_inset
+
+baseURI) Constructor which receives a port number (on Windows, this is the
+ number of the COM port), a baud rate, and a URI.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadablePort(PortConnector
+\begin_inset space ~
+\end_inset
+
+port,
+\begin_inset space ~
+\end_inset
+
+URI
+\begin_inset space ~
+\end_inset
+
+baseURI) Similar to the above method but receives an already created 
+\family typewriter
+PortConnector
+\family default
+ instead.
+\end_layout
+
+\begin_layout Section
+XmlReadableString 
+\end_layout
+
+\begin_layout Standard
+This class makes an 
+\family typewriter
+XmlReadable
+\family default
+ from a 
+\family typewriter
+String
+\family default
+ extending 
+\family typewriter
+XmlReadableByteArray
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+XmlReader rdr = new XmlReader();
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.setContentHandler(...);
+\end_layout
+
+\begin_layout Plain Layout
+
+rdr.parse(new XmlReadableString("Hello World!")); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In addition to its superclass methods, it has the following public constructor:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlReadableString(String
+\begin_inset space ~
+\end_inset
+
+source) Constructor that receives a string that contains the XML readable
+ HTML.
+\end_layout
+
+\begin_layout Section
 AttributeList
 \end_layout
 
