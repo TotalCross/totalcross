@@ -76525,8 +76525,8 @@ The SOAP class
 
 \begin_layout Standard
 This class represents a SOAP message that, when executed, is sent to the
- server in a HTTP request .
- The server response is then received, processed and the answer made available.
+ server in a HTTP request.
+ The server response is then received, processed, and the answer made available.
 \end_layout
 
 \begin_layout Standard
@@ -76540,6 +76540,7 @@ SOAP
 \begin_layout FieldList
 \labelwidthstring 0
 prefix The prefix string used to start the request.
+ Note that it uses UTF-8, so unicode characters are not supported.
  Its default value is:
 \end_layout
 
@@ -76569,7 +76570,13 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+<soapenv:Envelope xmlns:soapenv="
+\end_layout
+
+\begin_layout Plain Layout
+
+\family typewriter
+http://schemas.xmlsoap.org/soap/envelope/"
 \begin_inset Newline newline
 \end_inset
 
@@ -76641,6 +76648,26 @@ true
 \family default
  enables debug mode, which writes XML parsing information on the DebugConsole
  (or the default error output when running on JDK).
+ You may also set 
+\family typewriter
+HttpStream.
+ debugHeader = true
+\family default
+.
+ Caution: don't use this on device because it increases a lot the memory
+ usage.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+disableEncoding The SOAP request will ask the server for GZip or ZLib encoded
+ response by default.
+ To disable encoding, set this field to 
+\family typewriter
+true
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -76677,7 +76704,7 @@ String
 \family typewriter
 uri)
 \family default
- – Creates a new SOAP request where 
+ Creates a new SOAP request where 
 \family typewriter
 mtd
 \family default
@@ -76686,6 +76713,9 @@ mtd
 uri
 \family default
  the address of the Web Service.
+ The default namespace will be used, along with an open timeout of 25 seconds,
+ and a read and write timeout of 60 seconds.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -76698,8 +76728,20 @@ SOAP
 
 \begin_layout FieldList
 \labelwidthstring 0
+wasCompressionUsed A flag that indicates if the SOAP connection was using
+ either GZip or ZLib.
+ This is a ready-only flag, set during the 
+\family typewriter
+execute()
+\family default
+ method, and changing its value has no effect.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
 alternativeReturnTag By default, the XML parser used by SOAP will recognize
- as an answer tag, any tags whose name ends with “result” or “return” (ignoring
+ as an answer tag any tags whose name ends with “result” or “return” (ignoring
  the case).
  This field, if set, specifies an alternative answer tag name, recognizing
  any XML element that ends with the specified value as an answer tag.
@@ -76721,12 +76763,12 @@ height_special "totalheight"
 status open
 
 \begin_layout Plain Layout
-The 
+
 \family typewriter
 alternativeReturnTag
 \family default
  IS CASE SENSITIVE, unlike the SOAP default tag names.
- Also, the 
+ Also, 
 \family typewriter
 alternativeReturnTag
 \family default
@@ -76746,6 +76788,8 @@ namespace String that identifies the service's namespace.
 \family typewriter
 http://schemas.xmlsoap.
  org/soap/
+\family default
+.
 \end_layout
 
 \begin_layout FieldList
@@ -76755,7 +76799,7 @@ openTimeout Specifies the connection open timeout value in milliseconds.
 \family typewriter
 DEFAULT_OPEN_TIMEOUT
 \family default
-.
+ (25 s).
 \end_layout
 
 \begin_layout FieldList
@@ -76765,7 +76809,17 @@ readTimeout Specifies the connection read timeout value in milliseconds.
 \family typewriter
 DEFAULT_READ_TIMEOUT
 \family default
-.
+ (60 s).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeTimeout Specifies the connection write timeout value in milliseconds.
+ Its default value is defined by the constant 
+\family typewriter
+DEFAULT_WRITE_TIMEOUT
+\family default
+ (60 s).
 \end_layout
 
 \begin_layout FieldList
@@ -76860,6 +76914,8 @@ setParam(<type> param)
 , you can safely assume there are four versions of this method, one for
  each type listed above.
  Other type of parameters can be passed using similar methods.
+ Unicode characters are not accepted because the default header uses UTF-8.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -76936,6 +76992,7 @@ String
 
 paramName) Sets a byte array in the method's argument order, identifying
  it with the given name.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -76966,6 +77023,7 @@ String
 \family default
  parameter in the method, identifying it with the given name and specifying
  its type as the given one.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -77004,19 +77062,11 @@ setObjectParam(String
 \begin_inset space ~
 \end_inset
 
-paramName,
+paramName,String[]
 \begin_inset space ~
 \end_inset
 
-String[]
-\begin_inset space ~
-\end_inset
-
-fieldNames,
-\begin_inset space ~
-\end_inset
-
-String[]
+fieldNames,String[]
 \begin_inset space ~
 \end_inset
 
@@ -77034,19 +77084,11 @@ setObjectArrayParam(String
 \begin_inset space ~
 \end_inset
 
-paramName,
+paramName,String[]
 \begin_inset space ~
 \end_inset
 
-String[]
-\begin_inset space ~
-\end_inset
-
-fieldNames,
-\begin_inset space ~
-\end_inset
-
-Vector
+fieldNames,Vector
 \begin_inset space ~
 \end_inset
 
@@ -77080,7 +77122,12 @@ execute()
 \family typewriter
 Object
 \family default
-, but it may return only three different values:
+, but it may return only three different values (the values may be escaped;
+ use 
+\family typewriter
+totalcross.ui.html.EscapeHtml.unescape()
+\family default
+ to convert it back):
 \end_layout
 
 \begin_deeper
@@ -77101,8 +77148,7 @@ String
 \family typewriter
 String
 \family default
- to the right type.
- (e.g.
+ to the right type (e.g.
  if you're expecting an int value, you can use 
 \family typewriter
 Convert.toInt()
@@ -77146,6 +77192,54 @@ String array
 \end_layout
 
 \end_deeper
+\begin_layout FieldList
+\labelwidthstring 0
+useProxy(String
+\begin_inset space ~
+\end_inset
+
+address,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+port,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+username,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+password) Sets the proxy settings to be used by the SOAP connection.
+ You may optionally set the username and password for basic proxy authorization.
+ Proxy authorization is disabled if either username or password is 
+\family typewriter
+null
+\family default
+.
+ In this method, 
+\family typewriter
+address
+\family default
+ is the proxy address port and 
+\family typewriter
+port
+\family default
+ is the proxy port.
+\end_layout
+
 \begin_layout Chapter
 HTTPS / SSL
 \end_layout
@@ -85822,7 +85916,7 @@ The following chapter describes the
 \family typewriter
 totalcross.xml
 \family default
- packages and its subpackages.
+ package.
 \end_layout
 
 \begin_layout Chapter
