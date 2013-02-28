@@ -500,13 +500,13 @@ public class XmlTokenizer
     * Method called when an empty-tag has been found.
     * <P>
     * This method is called just after all events related to the starting tag
-    * have been reported. The implied tagName is the one of the starting tag (<i>e.g.:</i>
-    * the most recently reported start-tag.)
+    * have been reported. The implied tag name is the one of the starting tag (<i>e.g.:</i>
+    * the most recently reported start tag.)
     * <P>
     * Derived class may override this method.
-    *
+    * <P> Example:
     * <PRE>
-    * Example:
+    * 
     *   &lt;FOO A=B&gt; generates:
     *   - foundStartTagName(&quot;FOO&quot;);
     *   - foundAttributeName(&quot;A&quot;);
@@ -520,7 +520,7 @@ public class XmlTokenizer
    }
 
    /**
-    * Method called when character data content has been found.
+    * Method called when a character data content has been found.
     * <P>
     * Derived class may override this method.
     *
@@ -536,14 +536,13 @@ public class XmlTokenizer
    }
 
    /**
-    * Method called when a character has been found in contents, this
-    * character resulting from a character reference resolution.
+    * Method called when a character has been found in the contents, which is resulting from a character reference resolution.
     * <P>
     * Derived class may override this method.
     *
     * @param charFound
     *           resolved character - if the character is invalid, this value
-    *           is set to '&#x5C;uffff', which is not a Unicode character.
+    *           is set to '&#x5C;uffff', which is not a unicode character.
     * @see XmlTokenizer#foundReference(byte[],int,int)
     */
    protected void foundCharacter(char charFound)
@@ -724,13 +723,13 @@ public class XmlTokenizer
    }
 
    /**
-    * Method called when the end of the input was found, and tokenization is
+    * Method called when the end of the input was found, and the tokenization is
     * about to end.
     * <P>
     * Derived class may override this method.
     *
     * @param count
-    *           count of bytes parsed
+    *           number of bytes parsed
     */
    protected void foundEndOfInput(int count)
    {

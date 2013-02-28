@@ -85976,7 +85976,11 @@ foundXxx()
 \end_layout
 
 \begin_layout Standard
-Typical invocation:
+Typical invocation taken from its dumb subclass 
+\family typewriter
+DumpXml
+\family default
+, ommited from this manual for obvious reasons:
 \end_layout
 
 \begin_layout Standard
@@ -86585,6 +86589,752 @@ foundReference()
 \end_layout
 
 \begin_layout Section
+XmlReader
+\end_layout
+
+\begin_layout Standard
+This class extends 
+\family typewriter
+XmlTokenizer
+\family default
+ and is used to read HTML or XML documents, reporting events to handlers
+ (for example, the class 
+\family typewriter
+ContentHandler
+\family default
+ described below).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note: While in the SAX 2.0 spirit, this implementation is not fully compliant.
+ Speed and footprint took precedence over what the author judged being details.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Unlike SAX, reporting tag names, like in 
+\family typewriter
+ContentHandler.startElement()
+\family default
+, passes an integral tag code rather than the name itself.
+ This is, again, for performance reasons.
+ Comparing integers vs.
+ string is notably more efficient and tag name comparison is heavily used
+ for XML applications.
+ 
+\end_layout
+
+\begin_layout Standard
+The tag code must uniquely identify the name of the tag.
+ The default implementation — see 
+\family typewriter
+getTagCode()
+\family default
+ — simply consists to hash the tag name.
+ It can be overriden to suit specific needs.
+ 
+\end_layout
+
+\begin_layout Standard
+Tag names should be translated to tag codes as soon are they are known,
+ when reading the DTD for instance, or computed in advance and saved into
+ a static correspondence table.
+\end_layout
+
+\begin_layout Standard
+This class has a public default constructor and the following public methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setCaseInsensitive(boolean
+\begin_inset space ~
+\end_inset
+
+caseInsensitive) Set to 
+\family typewriter
+true
+\family default
+ if you want the get/set methods of the 
+\family typewriter
+AttributeList
+\family default
+ to be case insensitive.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setContentHandler(ContentHandler
+\begin_inset space ~
+\end_inset
+
+cntHandler) Allows an application to register a content event cntHandler.
+ If the application does not register a content 
+\family typewriter
+ContentHandler
+\family default
+, all content events reported by the SAX parser will be silently ignored.
+ Applications may register a new or different 
+\family typewriter
+ContentHandler
+\family default
+ in the middle of a parse, and the SAX parser must begin using the new 
+\family typewriter
+ContentHandler
+\family default
+ immediately.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setAttributeListFilter(AttributeList.Filter
+\begin_inset space ~
+\end_inset
+
+filter) Sets an 
+\family typewriter
+AttributeList.Filter
+\family default
+ to filter the attribute entered in the 
+\family typewriter
+AttributeList
+\family default
+.
+ Set 
+\family typewriter
+null
+\family default
+ to remove the current filter.
+ It returns the previous 
+\family typewriter
+AttributeList.Filter
+\family default
+ or 
+\family typewriter
+null
+\family default
+ if none was set.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getContentHandler() Returns the current content 
+\family typewriter
+ContentHandler
+\family default
+ object or 
+\family typewriter
+null
+\family default
+ if none has been registered.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+parse(Stream
+\begin_inset space ~
+\end_inset
+
+input) Parses an XML document from a stream.
+ The application can use this method to instruct the XML reader to begin
+ parsing an XML document from reading a stream.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Here is the general contract for all 
+\family typewriter
+parse()
+\family default
+ methods.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Applications may not invoke this method while a parse is in progress (they
+ should create a new 
+\family typewriter
+XMLReader
+\family default
+ instead for each nested XML document).
+ Once a parse is complete, an application may reuse the same 
+\family typewriter
+XMLReader
+\family default
+ object, possibly with a different input source.
+ 
+\begin_inset Newline newline
+\end_inset
+
+During the parse, the 
+\family typewriter
+XMLReader
+\family default
+ will provide information about the XML document through the registered
+ event handlers.
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method is synchronous: it will not return until the parsing has ended.
+ If a client application wants to terminate the parsing early, it should
+ throw an exception.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+parse(Stream
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+start,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+end,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+pos) Parses an XML document from an already buffered stream.
+ Unlike the general method above, this method requires more arguments.
+ It should be used when the HTML document is embedded within an HTTP stream.
+ The parameter description is similar to the 
+\family typewriter
+XmlTokenizer(Stream input, byte[] buffer, int start, int end, int pos)
+\family default
+ one.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+parse(XmlReadable
+\begin_inset space ~
+\end_inset
+
+input) Parses an 
+\family typewriter
+XmlReadable
+\family default
+ Implementation.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note: This is just for conveniency.
+ It is more natural to write: 
+\family typewriter
+rdr.parse(doc)
+\family default
+ than 
+\family typewriter
+doc.readXml(rdr)
+\family default
+.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+parse(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Parses XML data from an array of bytes, offset and count.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setNewlineSignificant(boolean
+\begin_inset space ~
+\end_inset
+
+val) Enables or disables coalescing white spaces, according to HTML rules.
+ White spaces are any character less or equal to the ascii space (0x20).
+ 
+\begin_inset Newline newline
+\end_inset
+
+This method allows to process the contents of pre-formatted lines, such
+ as the contents of the 
+\family typewriter
+<PRE>
+\family default
+ tag.
+ When the parsing process starts, newlines are not significant.
+ Hence, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+setNewLineSignificant()
+\family default
+ must be called after the parsing has started.
+ For example, to make all newlines significant: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class MyXmlReader extends XmlReader
+\end_layout
+
+\begin_layout Plain Layout
+
+{
+\end_layout
+
+\begin_layout Plain Layout
+
+	public void foundStartOfInput(byte input[], int offset, int count)
+\end_layout
+
+\begin_layout Plain Layout
+
+	{
+\end_layout
+
+\begin_layout Plain Layout
+
+		setNewLineSignificant(true);
+\end_layout
+
+\begin_layout Plain Layout
+
+	}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note: this is a "stacked" call.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+setNewlineSignificant(true); // newlines are significant - stack is 1
+\end_layout
+
+\begin_layout Plain Layout
+
+setNewlineSignificant(true); // newlines are significant - stack is 2
+\end_layout
+
+\begin_layout Plain Layout
+
+setNewlineSignificant(false); // newlines are still significant - stack
+ is 1
+\end_layout
+
+\begin_layout Plain Layout
+
+setNewlineSignificant(false); // newlines are no more significant again
+ - stack is 0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundStartTagName(byte[]
+\begin_inset space ~
+\end_inset
+
+buffer,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Method called when a start tag has been found where 
+\family typewriter
+input
+\family default
+ is the byte array containing the name of the tag that started, 
+\family typewriter
+offset
+\family default
+ is the position of the first character of the tag name in the array, and
+ 
+\family typewriter
+count
+\family default
+ is the number of bytes the tag name is made of.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundEndTagName(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Method called when an end tag has been found.
+ The parameters description are similar to the above method.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundEndEmptyTag() Method called when an empty tag has been found.
+ This method is called just after all events related to the starting tag
+ have been reported.
+ The implied tag name is the one of the starting tag (e.g.: the most recently
+ reported start tag).
+\begin_inset Newline newline
+\end_inset
+
+Example: 
+\family typewriter
+<FOO A=B>
+\family default
+ generates: 
+\begin_inset Newline newline
+\end_inset
+
+
+\family typewriter
+foundStartTagName("FOO"); 
+\begin_inset Newline newline
+\end_inset
+
+foundAttributeName("A"); 
+\begin_inset Newline newline
+\end_inset
+
+foundAttributeValue("B"); 
+\begin_inset Newline newline
+\end_inset
+
+foundEndEmptyTag();
+\family default
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundCharacterData(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Method called when a character data content has been found.
+ The parameters description are similar to 
+\family typewriter
+foundStartTagName()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundCharacter(char
+\begin_inset space ~
+\end_inset
+
+charFound) Method called when a character has been found in the contents,
+ which is resulting from a character reference resolution.
+ If the character is invalid, this value is set to 
+\family typewriter
+
+\backslash
+uffff
+\family default
+, which is not a unicode character.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundAttributeName(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Method called when an attribute name has been found.
+ The parameters description are similar to 
+\family typewriter
+foundStartTagName()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundAttributeValue(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count,
+\begin_inset space ~
+\end_inset
+
+byte
+\begin_inset space ~
+\end_inset
+
+dlm) Method called when an attribute value has been found.
+ The parameters description are similar to 
+\family typewriter
+foundStartTagName()
+\family default
+ except for 
+\family typewriter
+dlm
+\family default
+, which is the delimiter that started the attribute value (
+\family typewriter
+'
+\family default
+ or 
+\family typewriter
+"
+\family default
+, or 
+\family typewriter
+'
+\backslash
+0'
+\family default
+ if none).
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundComment(byte[]
+\begin_inset space ~
+\end_inset
+
+input,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+offset,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+count) Method called when a comment has been found.
+ The parameters description are similar to 
+\family typewriter
+foundStartTagName()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+foundEndOfInput(int
+\begin_inset space ~
+\end_inset
+
+count) Method called when the end of the input was found and the tokenization
+ is about to end, where 
+\family typewriter
+count
+\family default
+ is the number of bytes parsed.
+\end_layout
+
+\begin_layout Section
 AttributeList
 \end_layout
 
@@ -86870,30 +87620,6 @@ ContentHandler
 \begin_layout Standard
 This class receives notification of the logical content of a document.
  
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100col%"
-special "none"
-height "1in"
-height_special "totalheight"
-status collapsed
-
-\begin_layout Plain Layout
-Note: While in the SAX 2.0 spirit, this implementation is not fully compliant.
- Speed and footprint took precedence over what the author judged being details.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
