@@ -43,7 +43,7 @@ CFG=Litebase - Win32 (WCE ARM) Debug
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Debug"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -87,7 +87,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -109,7 +109,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -124,7 +124,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.63 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.63 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/evc3/Litebase/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
@@ -132,7 +132,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -154,7 +154,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -184,7 +184,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -221,7 +221,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -255,7 +255,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -289,7 +289,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -323,7 +323,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
