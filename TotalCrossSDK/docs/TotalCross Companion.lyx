@@ -88671,6 +88671,258 @@ params
  
 \end_layout
 
+\begin_layout Section
+XmlRpcContentHandler 
+\end_layout
+
+\begin_layout Standard
+This class extends 
+\family typewriter
+ContentHandler
+\family default
+ and its methods are called by the XML parser used in 
+\family typewriter
+XmlRpcClient
+\family default
+.
+ This class has one default public constructor and the following public
+ attributes (excluding some fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+result Gets the object unmarshalled from the last XML-RPC response parsing.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+faultOccured Tells if a fault occurred during the parsing.
+\end_layout
+
+\begin_layout Section
+XmlRpcValue 
+\end_layout
+
+\begin_layout Standard
+This class is used to represent an XML-RPC value while a request is being
+ parsed.
+ This class has one default public constructor and the following public
+ attributes and methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+tag2code A hash table mapping tag type names and their codes, described
+ in 
+\family typewriter
+setType()
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getValue() Gets the corresponding object of the 
+\family typewriter
+XmlRpcValue
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+endElement(XmlRpcValue
+\begin_inset space ~
+\end_inset
+
+child) Notification that a new child element has been parsed.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+setType(int
+\begin_inset space ~
+\end_inset
+
+type) Sets the type of this value.
+ If it's a container, this creates the corresponding Java container.
+ 
+\family typewriter
+type
+\family default
+ can be one of the following constants: 
+\family typewriter
+STRING
+\family default
+, 
+\family typewriter
+INTEGER
+\family default
+, 
+\family typewriter
+BOOLEAN
+\family default
+, 
+\family typewriter
+DOUBLE
+\family default
+, 
+\family typewriter
+DATE
+\family default
+, 
+\family typewriter
+BASE64
+\family default
+, 
+\family typewriter
+STRUCT
+\family default
+, 
+\family typewriter
+ARRAY
+\family default
+, 
+\family typewriter
+LONG
+\family default
+, 
+\family typewriter
+VALUE
+\family default
+, 
+\family typewriter
+MEMBER
+\family default
+, 
+\family typewriter
+FAULT
+\family default
+, 
+\family typewriter
+METHODNAME
+\family default
+, 
+\family typewriter
+NAME
+\family default
+, and 
+\family typewriter
+I4
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+characterData(String
+\begin_inset space ~
+\end_inset
+
+cdata) Sets the character data for the element and interprets it according
+ to the element type.
+\end_layout
+
+\begin_layout Section
+XmlWriter
+\end_layout
+
+\begin_layout Standard
+This class correctly formats strings in XML syntax.
+ Currently only supports ISO-8859-1 encoding of XML.
+ This class has one default public constructor and the following methods:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+reset() Resets the 
+\family typewriter
+XmlWriter
+\family default
+ so it can be used again.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+write(String
+\begin_inset space ~
+\end_inset
+
+text) Writes the given text.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+toString() Gets this writer's contents as string (it already appends a 
+\family typewriter
+
+\backslash
+n
+\family default
+).
+ Consider using 
+\family typewriter
+getBytes()
+\family default
+ instead of this one.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+getBytes() Gets the 
+\family typewriter
+XmlWriter
+\family default
+ contents as a byte array (it already appends a 
+\family typewriter
+
+\backslash
+n
+\family default
+) .
+ All bytes that were written to the internal buffer are returned.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+startElement(String
+\begin_inset space ~
+\end_inset
+
+elem) Formats an opening XML tag, where 
+\family typewriter
+elem
+\family default
+ is the element of the opening tag.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+endElement(String
+\begin_inset space ~
+\end_inset
+
+elem) Formats a closing XML tag, where 
+\family typewriter
+elem
+\family default
+ is the element of the closing tag.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+chardata(String
+\begin_inset space ~
+\end_inset
+
+text) Formats cdata for XML.
+ 
+\end_layout
+
 \begin_layout Part
 BARCODE SCANNER
 \end_layout
