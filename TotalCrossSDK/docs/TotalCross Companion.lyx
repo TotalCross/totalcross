@@ -88472,6 +88472,205 @@ requestBody) Executes a HTTP request to the connected server.
  
 \end_layout
 
+\begin_layout Section
+CompressedHttpClient 
+\end_layout
+
+\begin_layout Standard
+This is a subclass of the above class and has a similar behavior, except
+ that it uses compression.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has two public constructors similar to its superclass constructors.
+ The only addicional public method is the following:
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+writeRequestHeader(int
+\begin_inset space ~
+\end_inset
+
+requestLength) Writes the headers for a HTTP request, adding the deflate
+ method as content-encoding.
+ 
+\end_layout
+
+\begin_layout Section
+XmlRpcClient
+\end_layout
+
+\begin_layout Standard
+This class is an 
+\family typewriter
+XmlReader
+\family default
+ and handles XML-RPCs to a server.
+ Its objects cannot be reused.
+ 
+\end_layout
+
+\begin_layout Standard
+This class has the following public constructors and method (excluding some
+ fields from its superclasses):
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcClient(String
+\begin_inset space ~
+\end_inset
+
+hostname,
+\begin_inset space ~
+\end_inset
+
+int
+\begin_inset space ~
+\end_inset
+
+port,
+\begin_inset space ~
+\end_inset
+
+String
+\begin_inset space ~
+\end_inset
+
+uri) Creates an 
+\family typewriter
+XmlRpcClient
+\family default
+ receiving 
+\family typewriter
+hostname
+\family default
+ (the server address to connect to), 
+\family typewriter
+port
+\family default
+ (the port on the server to connect to), and 
+\family typewriter
+uri
+\family default
+ (the connecting URI which defaults to 
+\family typewriter
+/RPC2
+\family default
+).
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcClient(String
+\begin_inset space ~
+\end_inset
+
+hostname,int
+\begin_inset space ~
+\end_inset
+
+port,String
+\begin_inset space ~
+\end_inset
+
+uri,boolean
+\begin_inset space ~
+\end_inset
+
+doCompression) Creates an 
+\family typewriter
+XmlRpcClient
+\family default
+ with compression if the given flag is 
+\family typewriter
+true
+\family default
+.
+ 
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcClient(String
+\begin_inset space ~
+\end_inset
+
+hostname,int
+\begin_inset space ~
+\end_inset
+
+port,String
+\begin_inset space ~
+\end_inset
+
+uri,int
+\begin_inset space ~
+\end_inset
+
+openTimeout,int
+\begin_inset space ~
+\end_inset
+
+readTimeout,int
+\begin_inset space ~
+\end_inset
+
+writeTimeout,boolean
+\begin_inset space ~
+\end_inset
+
+doCompression) Similar to the above constructor but not using the default
+ timeout values.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+XmlRpcClient(StandardHttpClient
+\begin_inset space ~
+\end_inset
+
+httpClient) Creates an 
+\family typewriter
+XmlRpcClient
+\family default
+ using a 
+\family typewriter
+StandardHttpClient
+\family default
+.
+\end_layout
+
+\begin_layout FieldList
+\labelwidthstring 0
+execute(String
+\begin_inset space ~
+\end_inset
+
+method,
+\begin_inset space ~
+\end_inset
+
+Vector
+\begin_inset space ~
+\end_inset
+
+params) Generates an XML-RPC request and sends it to the server.
+ It parses the result and returns the corresponding Java object, where 
+\family typewriter
+method
+\family default
+ is the remote procedure to call and 
+\family typewriter
+params
+\family default
+ are the parameters to the corresponding method.
+ 
+\end_layout
+
 \begin_layout Part
 BARCODE SCANNER
 \end_layout
