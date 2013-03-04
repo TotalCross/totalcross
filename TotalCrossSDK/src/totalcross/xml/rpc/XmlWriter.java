@@ -40,7 +40,7 @@ import totalcross.sys.*;
 // USA
 
 /**
- * Correctly formats Strings in xml syntax Currently only supports ISO-8859-1 encoding of XML.
+ * Correctly formats Strings in XML syntax. Currently only supports ISO-8859-1 encoding of XML.
  *
  * @version March 2006
  * @author Added to SuperWaba by Guich
@@ -74,7 +74,7 @@ public class XmlWriter
    }
 
    /**
-    * Gets this writer's contents as String (already appends a \n).
+    * Gets this writer's contents as string (already appends a \n).
     * Consider using getBytes() instead of this one.
     * 
     * @see #getBytes()
@@ -97,7 +97,7 @@ public class XmlWriter
    }
 
    /**
-    * Formats an opening xml tag
+    * Formats an opening XML tag
     *
     * @param elem
     *           The element of the opening tag
@@ -108,7 +108,7 @@ public class XmlWriter
    }
 
    /**
-    * Formats a closing xml tag
+    * Formats a closing XML tag
     *
     * @param elem
     *           The element of the closing tag
@@ -119,7 +119,7 @@ public class XmlWriter
    }
 
    /**
-    * Formats cdata for xml
+    * Formats cdata for XML
     *
     * @param text
     *           The character data to be formatted
