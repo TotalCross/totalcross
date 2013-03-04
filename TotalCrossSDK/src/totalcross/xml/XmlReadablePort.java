@@ -41,7 +41,7 @@ public class XmlReadablePort extends XmlReadableByteArray
     * Constructor
     *
     * @param number
-    *           port number. In Windows, this is the number of the COM port.
+    *           port number. On Windows, this is the number of the COM port.
     * @param baudRate
     *           baud rate
     * @param baseURI

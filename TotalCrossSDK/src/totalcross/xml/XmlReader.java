@@ -30,19 +30,19 @@ import totalcross.io.Stream;
     * author judged being details.</I>
     * </P>
     * <P>
-    * Versus SAX, reporting tag names, like in
+    * Unlike SAX, reporting tag names, like in
     * {@link ContentHandler#startElement}, passes an integral
     * <code><B>tag code</B></code> rather than the name itself.&nbsp; This
-    * is, again, for performance reasons.&nbsp; Comparing integers vs. string is
+    * is, again, for performance reasons.&nbsp; Comparing integers vs. strings is
     * notably more efficient and tag name comparison is heavily used for XML
-    * Applications.
+    * applications.
     * <P>
     * The <code>tag code</code> must uniquely identify the name of the
     * tag.&nbsp; The default implementation &mdash; see {@link #getTagCode} in
     * this code &mdash; simply consists to hash the tag name.&nbsp; It can be
     * overriden to suit specific needs.
     * <P>
-    * Tag names should be translated to tag codes as soon are they are known,
+    * Tag names should be translated to tag codes as soon as they are known,
     * when reading the DTD for instance, or computed in advance and saved into a
     * static correspondence table.&nbsp;
     *
@@ -110,7 +110,7 @@ public class XmlReader extends XmlTokenizer
        * @param filter
        *           AttributeList.Filter to set, or null if the current
        *           AttributeList filter must be removed
-       * @return previous AttributeList.Filter or 0 if none was set
+       * @return The previous AttributeList.Filter or null if none was set
        */
    public AttributeList.Filter setAttributeListFilter(AttributeList.Filter filter)
    {
@@ -147,8 +147,8 @@ public class XmlReader extends XmlTokenizer
        * document through the registered event handlers.
        * </p>
        * <p>
-       * This method is synchronous: it will not return until parsing has ended.
-       * If a client application wants to terminate parsing early, it should
+       * This method is synchronous: it will not return until the parsing has ended.
+       * If a client application wants to terminate the parsing early, it should
        * throw an exception.
        * </p>
        *
@@ -167,9 +167,9 @@ public class XmlReader extends XmlTokenizer
    }
 
     /**
-       * Parse an XML document from an already buffered Stream.
+       * Parse an XML document from an already buffered stream.
        * <P>
-       * Versus the general method above, this method requires more arguments.
+       * Unlike the general method above, this method requires more arguments.
        * It should be used when the HTML document is embedded within an HTTP
        * stream.
        * <P>
@@ -235,12 +235,12 @@ public class XmlReader extends XmlTokenizer
     /**
        * Enable or disable coalescing white spaces, according to HTML rules.
        * <P>
-       * White-spaces are any character less or equal to the ascii space (0x20)
+       * White spaces are any character less or equal to the ascii space (0x20).
        * <P>
        * This method allows to process the contents of pre-formatted lines, such
-       * as the contents of the &lt;PRE&gt; tag.&nbsp; When the parse starts,
+       * as the contents of the &lt;PRE&gt; tag.&nbsp; When the parsing process starts,
        * newlines are not significant.&nbsp; Hence, setNewLineSignificant must
-       * be called <b>after</b> the parse started.&nbsp; For example, to make
+       * be called <b>after</b> the parsing has started.&nbsp; For example, to make
        * all newlines significant:
        *
        * <PRE>
@@ -259,8 +259,9 @@ public class XmlReader extends XmlTokenizer
        *
        * <PRE>
        *
-       * setNewlineSignificant(true); // newlines are significant - stack is 1 setNewlineSignificant(true); // newlines
-       * are significant - stack is 2 setNewlineSignificant(false); // newlines are still significant - stack is 1
+       * setNewlineSignificant(true); // newlines are significant - stack is 1 
+       * setNewlineSignificant(true); // newlines are significant - stack is 2 
+       * setNewlineSignificant(false); // newlines are still significant - stack is 1
        * setNewlineSignificant(false); // newlines are no more significant again - stack is 0
        *
        *
