@@ -24,7 +24,7 @@ import totalcross.util.*;
 /**
 * This class describes the attributes attached to a start-tag. Tags are case-insensitive.
 * <P>
-* The <code>AttributeListIterator()</code> class provides an iterator over
+* The <code>AttributeListIterator</code> class provides an iterator over
 * the components of each attribute
 * in this </code>AttributeList</code> instance:
 * <UL>
@@ -127,7 +127,7 @@ public class AttributeList extends Hashtable
       return old;
    }
 
-   /** interface to filter each attribute before to enter it
+   /** interface to filter each attribute before entering it
    *   in this AttributeList
    */
    public interface Filter
@@ -144,7 +144,7 @@ public class AttributeList extends Hashtable
       boolean acceptAttribute(String attrName, String attrValue, byte dlm);
    }
 
-   /** class to iterate over each attribute if an AttributeList */
+   /** class to iterate over each attribute of an AttributeList */
    public class Iterator
    {
       private int current;
@@ -167,7 +167,7 @@ public class AttributeList extends Hashtable
       * Make current the next attribute in this AttributeList
       *
       * @return true if the next attribute was activated,
-      *         false if no more attribute in this list.
+      *         false if there are no more attribute in this list.
       */
       public final boolean next()
       {
@@ -235,9 +235,9 @@ public class AttributeList extends Hashtable
 
       /**
       * Get the attribute as a String, the value being surrounded by single
-      * or double quotes if these were specified on the start-tag.
+      * or double quotes if these were specified in the start-tag.
       *
-      * @return a String a described above.
+      * @return The string a described above.
       */
       public final String getAttributeAsString()
       {

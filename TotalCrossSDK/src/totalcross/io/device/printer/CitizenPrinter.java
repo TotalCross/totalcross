@@ -26,13 +26,12 @@ import totalcross.io.device.*;
  * <p>Instructions of how to setup the devices to work with the printer.
  * <ol> 
  * <li>First, run the self-test: turning the printer off, and pressing the LF + ON button at the same time and then releasing the LF button.
- * <li>Write down the last 2 bytes (4 letters) of the ADDRESS (E.G.: A4 08)
+ * <li>Write down the last 2 bytes (4 letters) of the ADDRESS (e.g.: A4 08)
  * <li>Discover the "Citizen Systems" printer with the PDA.
- * <li>When asked for the PIN (password), write the last 4 letters of the address in UPPER CASE (E.G.: A408); if it fails,
- * write it in lower case (E.G.: a408).
- * <li>That's it. In some devices, you can choose to always use this printer as default bluetooth device.
+ * <li>When asked for the PIN (password), write the last 4 letters of the address in UPPER CASE (e.g.: A408); if it fails,
+ * write it in lower case (e.g.: a408).
+ * <li>That's it. On some devices, you can choose to always use this printer as default Bluetooth device.
  * </ol>
- * You can add other commands by looking at <a href='http://www.totalcross.com/cmp10.pdf'>this</a> reference.
  */
 
 public class CitizenPrinter extends BluetoothPrinter
@@ -45,7 +44,7 @@ public class CitizenPrinter extends BluetoothPrinter
    }
    
    /** Creates a new CitizenPrinter instance, using the given PortConnector as bridge to the printer.
-    * Note that the PortConnector can use any port (including infrared), however, it is not guaranteed 
+    * Note that PortConnector can use any port (including infrared), however, it is not guaranteed 
     * that it will work with that port. For example, IR does not work on Palm OS devices.
     */
    public CitizenPrinter(PortConnector con) throws IOException
@@ -53,7 +52,7 @@ public class CitizenPrinter extends BluetoothPrinter
       super(con);
    }
    
-   /** Sets the current font based on the following attributes. */
+   /** Sets the current font based on the given attributes. */
    public void setFont(boolean fontA, boolean bold, boolean doubleWidth, boolean doubleHeight, boolean underline) throws IOException
    {
       escape('!', (fontA ? 0 : 1) | (bold ? (1 << 3) : 0) | (doubleHeight ? (1 << 4) : 0) | (doubleWidth ? (1 << 5) : 0) | (underline ? (1 << 7) : 0));
@@ -95,7 +94,7 @@ public class CitizenPrinter extends BluetoothPrinter
       escape('3', n);
    }
    
-   /** Set bold state. */
+   /** Sets bold state. */
    public void bold(boolean on) throws IOException
    {
       escape('E', on ? 1 : 0);
@@ -113,7 +112,7 @@ public class CitizenPrinter extends BluetoothPrinter
       escape('{', on ? 1 : 0);
    }
    
-   /** Set font density, between 0 and 5. */
+   /** Sets the font density, between 0 and 5. */
    public void setDensity(int n) throws IOException
    {
       escape('Y', n);

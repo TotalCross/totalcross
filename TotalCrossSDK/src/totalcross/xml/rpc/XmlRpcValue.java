@@ -148,7 +148,7 @@ public class XmlRpcValue
 
    /**
     * Set the type of this value.
-    * If it's a container, this creates the corresponding java container.
+    * If it's a container, this creates the corresponding Java container.
     *@param type
     * One of this class' public fields
     */

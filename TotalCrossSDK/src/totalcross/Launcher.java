@@ -787,6 +787,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                   toHeight = t;
                   screenResized(Settings.screenHeight,Settings.screenWidth,true);
                   key = 0;
+                  ignoreNextResize = true;
                }
                break;
             default: key = 0; break;
@@ -2244,10 +2245,18 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void componentShown(ComponentEvent arg0)
    {
-   }   public void componentResized(ComponentEvent ev)
+   }
+   boolean ignoreNextResize; // guich@tc168: ignore when using F9   public void componentResized(ComponentEvent ev)
    {
+      if (ignoreNextResize)
+      {
+         ignoreNextResize = false;
+         return;
+      }
       int w = frame.getWidth()-frame.insets.left-frame.insets.right;
       int h = frame.getHeight()-frame.insets.top-frame.insets.bottom;
+      w /= toScale; // guich@tc168: consider scale
+      h /= toScale;
       if (w < toWidth || h < toHeight)
          screenResized(w >= toWidth ? w : toWidth,h >= toHeight ? h : toHeight,true);
       else

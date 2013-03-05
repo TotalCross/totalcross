@@ -172,7 +172,7 @@ public class UUID
     * </p>
     * <p>
     * On the other hand, if <code>shortUUID</code> is <code>false</code>, then <code>uuidValue</code> represents a
-    * 128-bit UUID. Therefore, <code>uuidValue</code> may only be 32 character long
+    * 128-bit UUID. Therefore, <code>uuidValue</code> may only be 32 character long.
     * </p>
     * 
     * @param uuidValue
