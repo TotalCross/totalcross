@@ -1104,6 +1104,10 @@ target: build targets
 <target name="ftp" depends="ftp_demo_vms,ftp_sdk,ftp_javadoc" description="FTP the iphone sdk and javadoc" />
 
 <target name="buildBB_sdk" />
+<target name="buildBB_vms" />
+<target name="buildBB_vms_noras" />
 <target name="buildPalmOS5_sdk" />
+<target name="buildPalmOS5_vms" />
+<target name="buildPalmOS5_vms_noras" />
 
 </project>
