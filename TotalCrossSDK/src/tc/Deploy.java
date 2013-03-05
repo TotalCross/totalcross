@@ -234,6 +234,7 @@ public class Deploy
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
+      iht.put("palm"   .hashCode(), 0);
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)

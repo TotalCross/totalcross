@@ -25,8 +25,8 @@ import totalcross.net.HttpStream;
 import totalcross.net.URI;
 
 /**
- * An XmlReadableSocket HAS-A Socket stream that takes care of the HTTP
- * Headers and starts reading at the message-body.
+ * An XmlReadableSocket has a Socket stream that takes care of the HTTP
+ * headers and starts reading at the message body.
  */
 public class XmlReadableSocket extends HttpStream implements XmlReadable
 {
