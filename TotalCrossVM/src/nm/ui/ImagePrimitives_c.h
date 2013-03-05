@@ -645,6 +645,7 @@ void setTransparentColor(Object obj, Pixel color)
    }
 }
 
+#ifdef __gl2_h_                         
 void applyChanges(Object obj, bool updateList)
 {
    int32 frameCount = Image_frameCount(obj);
@@ -675,6 +676,7 @@ void recreateTextures(VoidPs* imgTextures) // called by opengl when the applicat
          current = current->next;
       } while (imgTextures != current);
 }
+#endif
 
 static bool nativeEquals(Object thisObj, Object otherObj)
 {
