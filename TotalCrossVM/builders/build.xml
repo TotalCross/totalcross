@@ -1106,7 +1106,6 @@ target: build targets
 <target name="buildBB_sdk" />
 <target name="buildBB_vms" />
 <target name="buildBB_vms_noras" />
-<target name="bb-codesign" />
 <target name="buildPalmOS5_sdk" />
 <target name="buildPalmOS5_vms" />
 <target name="buildPalmOS5_vms_noras" />

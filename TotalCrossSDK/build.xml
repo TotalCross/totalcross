@@ -589,4 +589,5 @@ target: samples
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
 
+<target name="bb-codesign" />
 </project>
