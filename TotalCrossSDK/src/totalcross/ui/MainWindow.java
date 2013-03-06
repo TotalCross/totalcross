@@ -510,9 +510,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          TimerEvent t = startTimer;
          startTimer = null; // removeTimer calls again onTimerTick, so we have to null out this before calling it
          removeTimer(t);
-         if (true)
-            Vm.debug("********************************* DEMOBOX REMOVED ***********************************");
-         else
          if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
             new DemoBox().popup();
