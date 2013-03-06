@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-#define APPNAME "AndroidUI"
+//#define APPNAME "LaudoMovel"
 
 -(void) initApp
 {
