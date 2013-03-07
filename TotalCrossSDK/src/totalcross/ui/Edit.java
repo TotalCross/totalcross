@@ -1197,6 +1197,7 @@ public class Edit extends Control
             if (editable && enabled)
             {
                KeyEvent ke = (KeyEvent)event;
+               if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
                {
                   popupKCC();
