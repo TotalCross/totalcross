@@ -91,7 +91,9 @@ public class BaseContainer extends Container
             }
          });
          
-         getParentWindow().addKeyListener(new KeyListener() 
+         Window w = getParentWindow();
+         w.callListenersOnAllTargets = true; // fixes problem if focus goes to another control
+         w.addKeyListener(new KeyListener() 
          {
             public void keyPressed(KeyEvent e)
             {
