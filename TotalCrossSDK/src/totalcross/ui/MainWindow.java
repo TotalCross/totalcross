@@ -642,10 +642,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          gscr.getRGB(buf, 0,0,y,w,1);
          gimg.setRGB(buf, 0,0,y,w,1);
       }
-      if (!Settings.isOpenGL)
-         img.setTransparentColor(-1);
-      else
+      if (Settings.isOpenGL)
          img.applyChanges();
+      else
+      if (Settings.onJavaSE)
+         img.setTransparentColor(-1);
       return img;
    }
 }
