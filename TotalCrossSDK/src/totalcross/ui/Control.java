@@ -221,8 +221,8 @@ public class Control extends GfxSurface
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
    
-   /** True means that EventListeners will be called without verifying that the event target is this. */
-   public boolean callListenersOnAllTargets = false;
+   /** True means that EventListeners for PenEvent and KeyEvent will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets;
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
@@ -1542,7 +1542,7 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && e instanceof PenEvent)) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;

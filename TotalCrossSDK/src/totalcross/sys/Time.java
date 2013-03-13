@@ -143,14 +143,18 @@ public final class Time
          hour += 12;
       }
          
-      String[] parts = Convert.tokenizeString(time, Settings.timeSeparator);
-      int idx = 0;
-      if (hasYear) year = Convert.toInt(parts[idx++]);
-      if (hasMonth) month = Convert.toInt(parts[idx++]);
-      if (hasDay) day = Convert.toInt(parts[idx++]);
-      if (hasHour) hour += Convert.toInt(parts[idx++]);
-      if (hasMinute) minute = Convert.toInt(parts[idx++]);
-      if (hasSeconds) second = Convert.toInt(parts[idx++]);
+      try
+      {
+         String[] parts = Convert.tokenizeString(time, Settings.timeSeparator);
+         int idx = 0;
+         if (hasYear) year = Convert.toInt(parts[idx++]);
+         if (hasMonth) month = Convert.toInt(parts[idx++]);
+         if (hasDay) day = Convert.toInt(parts[idx++]);
+         if (hasHour) hour += Convert.toInt(parts[idx++]);
+         if (hasMinute) minute = Convert.toInt(parts[idx++]);
+         if (hasSeconds) second = Convert.toInt(parts[idx++]);
+      }
+      catch (InvalidNumberException ine) {}
    }
 
    /** Returns the time in the format YYYYMMDDHHMMSS as a long value. It does

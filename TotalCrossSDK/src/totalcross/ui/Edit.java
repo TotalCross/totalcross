@@ -126,7 +126,6 @@ public class Edit extends Control
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
-   private int lastPenDown=-1;
    public boolean showKeyboardOnNextEvent;
    static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
@@ -777,7 +776,7 @@ public class Edit extends Control
          {
             int gg = gap;
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (hasBorder && uiAndroid)
             {
                try
@@ -1165,6 +1164,7 @@ public class Edit extends Control
             if (editable && enabled)
             {
                KeyEvent ke = (KeyEvent)event;
+               if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
                {
                   popupKCC();
@@ -1364,12 +1364,10 @@ public class Edit extends Control
                else
                   clearSelect = true;
             } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
-         	lastPenDown = event.timeStamp;
             break;
          }
          case PenEvent.PEN_DRAG:
          {
-            lastPenDown = -1;
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
             if (newInsertPos != insertPos && enabled)
@@ -1377,7 +1375,6 @@ public class Edit extends Control
             break;
          }
          case PenEvent.PEN_UP:
-            lastPenDown = -1;
             if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
             {
                if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
@@ -1461,7 +1458,6 @@ public class Edit extends Control
 
    private boolean showClipboardMenu()
    {
-      lastPenDown = -1;
       int idx = showClipboardMenu(this);
       if (0 <= idx && idx <= 3)
       {

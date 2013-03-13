@@ -510,9 +510,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          TimerEvent t = startTimer;
          startTimer = null; // removeTimer calls again onTimerTick, so we have to null out this before calling it
          removeTimer(t);
-         if (true)
-            Vm.debug("********************************* DEMOBOX REMOVED ***********************************");
-         else
          if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
             new DemoBox().popup();
@@ -645,10 +642,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          gscr.getRGB(buf, 0,0,y,w,1);
          gimg.setRGB(buf, 0,0,y,w,1);
       }
-      if (!Settings.isOpenGL)
-         img.setTransparentColor(-1);
-      else
+      if (Settings.isOpenGL)
          img.applyChanges();
+      else
+      if (Settings.onJavaSE)
+         img.setTransparentColor(-1);
       return img;
    }
 }
