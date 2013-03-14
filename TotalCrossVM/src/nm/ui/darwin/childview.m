@@ -49,6 +49,7 @@ extern int32 deviceFontHeight,iosScale;
    [EAGLContext setCurrentContext:glcontext];
 }
 
+bool iosRotated;
 - (void)onRotate
 {
    gscreen->screenW =            appW = self.bounds.size.width *iosScale;
@@ -59,6 +60,7 @@ extern int32 deviceFontHeight,iosScale;
                                                 [NSNumber numberWithInt:appW], @"width", [NSNumber numberWithInt:appH], @"height", nil] ];
    while (callingScreenChange)
       Sleep(10); // let the event be processed
+   iosRotated = true;
 }
 
 - (void)createGLcontext
