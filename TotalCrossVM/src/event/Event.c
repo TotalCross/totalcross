@@ -95,6 +95,11 @@ bool isEventAvailable()
    return privateIsEventAvailable();
 }
 
+#ifdef darwin
+extern bool iosRotated;
+void markWholeScreenDirty(Context currentContext);
+#endif
+
 void pumpEvents(Context currentContext)
 {
    if (keepRunning)
@@ -102,6 +107,14 @@ void pumpEvents(Context currentContext)
       {            
          if (!pumpEvent(currentContext))
             break;
+#ifdef darwin // fixed problem in ios when rotating with a popup window being shown
+          if (iosRotated)
+          {
+              iosRotated = false;
+              markWholeScreenDirty(currentContext);
+              updateScreen(currentContext);
+          }
+#endif
       } while (isEventAvailable() && keepRunning);
 
    if (!keepRunning && !appExitThrown)

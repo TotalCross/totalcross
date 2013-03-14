@@ -18,12 +18,12 @@
 #define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 #endif
 
-void checkGlError(const char* op, int line)
+bool checkGlError(const char* op, int line)
 {
    GLint error;
    int c=0;
    if (!op)
-      glGetError();
+      return glGetError() != 0;
    else
    for (error = glGetError(); error; error = glGetError())
    {
@@ -37,14 +37,16 @@ void checkGlError(const char* op, int line)
       }
       debug("glError %s at %s (%d)\n", msg, op, line);
       c++;
+      return true;
    }
+   return false;
 }
 
 #if 1
 //#define GL_CHECK_ERROR debug("%s (%d)",__FILE__,__LINE__);
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
 #else
-#define GL_CHECK_ERROR 
+#define GL_CHECK_ERROR 0
 #endif
 
 #ifdef ANDROID
@@ -186,7 +188,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(VoidPs* imgTextures); // imagePrimitives_c.h
+void recreateTextures(Context currentContext, VoidPs* imgTextures); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);  
 int32 desiredglShiftY;
@@ -225,7 +227,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {  
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(imgTextures);
+      recreateTextures(lifeContext,imgTextures);
    }
    lastWindow = window;
 }
@@ -355,7 +357,7 @@ void initTexture()
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
@@ -380,14 +382,21 @@ void glLoadTexture(Object img, int32* textureId, Pixel *pixels, int32 width, int
    if (textureAlreadyCreated)
    {
       glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
-      if (updateList)
-         imgTextures = VoidPsAdd(imgTextures, img, null);
+      bool err;
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      if (err)
+          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
+      else
+      {
+         if (updateList)
+            imgTextures = VoidPsAdd(imgTextures, img, null);
+         glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+      }
    }
-   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    xfree(pt0);
 }
 
