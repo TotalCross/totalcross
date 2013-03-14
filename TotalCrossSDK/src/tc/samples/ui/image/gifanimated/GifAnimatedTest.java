@@ -97,10 +97,11 @@ public class GifAnimatedTest extends MainWindow
          Image img = new Image(no ? "tc/samples/ui/image/gifanimated/wolf.gif" : "tc/samples/ui/image/gifanimated/alligator.gif");
          effect = cbEffect.getSelectedIndex();
          int ini = Vm.getTimeStamp();
+         double scale = Settings.isIOS() ? 1.5 : 2; // ios has less opengl memory
          switch (effect)
          {
-            case 1: img = img.scaledBy(2,2); break;
-            case 2: img = img.smoothScaledBy(2,2); break;
+            case 1: img = img.scaledBy(scale,scale); break;
+            case 2: img = img.smoothScaledBy(scale,scale); break;
             case 3: img = img.getRotatedScaledInstance(50,90, -1); break;
             case 4: img = img.getTouchedUpInstance((byte)50,(byte)100); break;
             case 5: img.changeColors(no ? 0xFFA5B500 : 0xFF31CE31, 0xFF0077E5); break;
@@ -108,6 +109,7 @@ public class GifAnimatedTest extends MainWindow
             case 7: img.applyColor(Color.RED); break;
             case 8: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight()); break;
          }
+         if (Settings.isOpenGL) img.applyChanges();
          int fim = Vm.getTimeStamp();
          lab.setText((fim-ini)+"ms");
          anim = new Animation(img, 200);
@@ -115,7 +117,7 @@ public class GifAnimatedTest extends MainWindow
          add(anim, CENTER,CENTER,PREFERRED,PREFERRED,btnNext);
          anim.start(Animation.LOOPS_UNLIMITED);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          MessageBox.showException(e, true);
       }
