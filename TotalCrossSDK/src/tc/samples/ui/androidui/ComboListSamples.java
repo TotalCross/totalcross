@@ -8,7 +8,7 @@ public class ComboListSamples extends BaseContainer
 {
    public ComboListSamples()
    {
-      helpMessage = "These are ComboBox and ListBox samples in the Android user interface style. Press back to go to the main menu.";
+      helpMessage = "These are ComboBox (without and with search enabled) and ListBox samples in the Android user interface style. Press back to go to the main menu.";
    }
    
    public void initUI()
@@ -22,17 +22,24 @@ public class ComboListSamples extends BaseContainer
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
          
-         Control c;
          String[] items = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Um","Dois","Tres","Quatro","Cinco","Seis","Sete","Oito","Nove","Dez"};
-         c = new ComboBox(items);
-         ((ComboBox)c).popupTitle = "Select the item";
-         c.setBackColor(Color.BRIGHT);
-         ((ComboBox)c).checkColor = Color.GREEN;
-         sc.add(c,LEFT,AFTER,FILL,PREFERRED+gap);
+         ComboBox cb = new ComboBox(items);
+         cb.popupTitle = "Select the item";
+         cb.enableSearch = false;
+         cb.setBackColor(Color.BRIGHT);
+         cb.checkColor = Color.GREEN;
+         sc.add(cb,LEFT,AFTER,FILL,PREFERRED+gap);
          
-         c = new ListBox(items);
-         c.setBackColor(SELCOLOR);
-         sc.add(c,LEFT,AFTER+gap,FILL,fmH*7+4);
+         String[] items2 = {"cyan","black","blue","bright","green","dark","magenta","orange","pink","red","white","yellow"};
+         cb = new ComboBox(items2);
+         cb.popupTitle = "Select the item";
+         cb.setBackColor(Color.BRIGHT);
+         cb.checkColor = Color.CYAN;
+         sc.add(cb,LEFT,AFTER+gap,FILL,PREFERRED+gap);
+
+         ListBox l = new ListBox(items);
+         l.setBackColor(SELCOLOR);
+         sc.add(l,LEFT,AFTER+gap,FILL,fmH*7+4);
          
          setInfo("Click Info button for help.");
       }
