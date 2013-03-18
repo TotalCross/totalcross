@@ -41,18 +41,18 @@ import totalcross.sys.*;
 
 public final class Color
 {
-   public static final int WHITE  = 0xFFFFFF;
-   public static final int BRIGHT = 0xBFBFBF;
-   public static final int DARK   = 0x7F7F7F;
-   public static final int BLACK  = 0x000000;
-   public static final int RED = 0xFF0000;
-   public static final int PINK = 0xFFAFAF;
-   public static final int ORANGE = 0xFFC800;
-   public static final int YELLOW = 0xFFFF00;
-   public static final int GREEN = 0x00FF00;
+   public static final int WHITE   = 0xFFFFFF;
+   public static final int BRIGHT  = 0xBFBFBF;
+   public static final int DARK    = 0x7F7F7F;
+   public static final int BLACK   = 0x000000;
+   public static final int RED     = 0xFF0000;
+   public static final int PINK    = 0xFFAFAF;
+   public static final int ORANGE  = 0xFFC800;
+   public static final int YELLOW  = 0xFFFF00;
+   public static final int GREEN   = 0x00FF00;
    public static final int MAGENTA = 0xFF00FF;
-   public static final int CYAN = 0x00FFFF;
-   public static final int BLUE = 0x0000FF;
+   public static final int CYAN    = 0x00FFFF;
+   public static final int BLUE    = 0x0000FF;
 
    /** Increase or decrease all RGB values by 96. To be used in the darker(step) and brighter(step) methods. */
    public static final int FULL_STEP = 96;

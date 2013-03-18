@@ -65,6 +65,11 @@ public class ComboBox extends Container
     */
    public String popupTitle;
    
+   /** Parameter passed to PopupMenu. Defauts to true.
+    * @see PopupMenu#enableSearch
+    */
+   public boolean enableSearch=true;
+   
    /** Set to false to don't use the PopupMenu when the user interface style is Android.
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
@@ -489,7 +494,7 @@ public class ComboBox extends Container
             {
                PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : " ",pop.lb.getItemsArray(), isMultiListBox);
                pm.makeUnmovable();
-               pm.enableSearch = true;
+               pm.enableSearch = enableSearch;
                pm.itemCount = pop.lb.size();
                pm.dataCol = pop.lb.dataCol;
                pm.checkColor = checkColor;

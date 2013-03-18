@@ -44,6 +44,7 @@ import totalcross.util.*;
  * A PRESSED event is sent when an item is selected.
  * 
  * Note: the colors must be set before the control's bounds are defined using setRect or add.
+ * 
  */
 
 public class PopupMenu extends Window
@@ -161,7 +162,8 @@ public class PopupMenu extends Window
             }
             if (cw == -1)
                cw = getClientRect().width - Math.abs(c.getLeftControlX()) - Math.abs(c.getRightControlX());
-            if (fm.stringWidth(s) <= cw)
+            int sw = fm.stringWidth(s);
+            if (sw <= cw)
                c.items = new String[]{"",s,""};
             else
             {
@@ -191,7 +193,7 @@ public class PopupMenu extends Window
          add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
          list.setBackColor(Color.WHITE);
          list.addContainers(containers);
-         repositionOnHeight();
+         repositionOnSize();
       }
       catch (Exception e)
       {
@@ -201,11 +203,12 @@ public class PopupMenu extends Window
       }
    }
    
-   private void repositionOnHeight()
+   private void repositionOnSize()
    {
       if (containers == null) return;
       int hh = containers[containers.length-1].getY2();
       int hm = list.y+hh+(cancel==null?0:cancel.height)+fmH;
+      
       if (this.height > hm)
       {
          list.height = hh+fmH/3;
@@ -217,7 +220,7 @@ public class PopupMenu extends Window
    public void reposition()
    {
       super.reposition();
-      repositionOnHeight();
+      repositionOnSize();
    }
 
    /** Selects the given index. */
@@ -245,7 +248,16 @@ public class PopupMenu extends Window
    protected void onPopup()
    {
       if (list == null)
-         setRect(CENTER,CENTER,SCREENSIZE+90,SCREENSIZE+90);
+      {
+         int maxW = Math.max(!enableCancel ? 0 : fm.stringWidth(cancelString), title == null ? 0 : titleFont.fm.stringWidth(title))+fmH*4;
+         for (int i = 0; i < itemCount; i++)
+         {
+            String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
+            int w = fm.stringWidth(s) + fmH*6;
+            if (w > maxW) maxW = w;
+         }
+         setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
+      }
       setSelectedIndex(desiredSelectedIndex);
       desiredSelectedIndex = -1;
    }
