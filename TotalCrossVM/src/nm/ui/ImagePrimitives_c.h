@@ -11,7 +11,7 @@
 
 #include <math.h>
 
-void applyChanges(Object obj, bool updateList);
+void applyChanges(Context currentContext, Object obj, bool updateList);
 void freeTexture(Object obj, bool updateList);
 
 static void setCurrentFrame(Object obj, int32 nr)
@@ -646,7 +646,7 @@ void setTransparentColor(Object obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
-void applyChanges(Object obj, bool updateList)
+void applyChanges(Context currentContext, Object obj, bool updateList)
 {
    int32 frameCount = Image_frameCount(obj);
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj); 
@@ -654,7 +654,7 @@ void applyChanges(Object obj, bool updateList)
    {
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-      glLoadTexture(obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+      glLoadTexture(currentContext, obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
    }
    Image_changed(obj) = false;
 }
@@ -664,7 +664,7 @@ void freeTexture(Object img, bool updateList)
    glDeleteTexture(img,&(Image_textureId(img)), updateList);
 }
 
-void recreateTextures(VoidPs* imgTextures) // called by opengl when the application changes the opengl surface
+void recreateTextures(Context currentContext, VoidPs* imgTextures) // called by opengl when the application changes the opengl surface
 {
    VoidPs* current = imgTextures;
    if (current)
@@ -672,7 +672,7 @@ void recreateTextures(VoidPs* imgTextures) // called by opengl when the applicat
       {    
          Object img = (Object)current->value;
          glDeleteTexture(img,&(Image_textureId(img)),false);
-         applyChanges(img,false);
+         applyChanges(currentContext, img,false);
          current = current->next;
       } while (imgTextures != current);
 }

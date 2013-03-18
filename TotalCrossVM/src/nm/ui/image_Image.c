@@ -143,7 +143,7 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 {
 #ifdef __gl2_h_    
    Object thisObj = p->obj[0];
-   applyChanges(thisObj,true);
+   applyChanges(p->currentContext,thisObj,true);
 #endif    
 }
 //////////////////////////////////////////////////////////////////////////

@@ -499,8 +499,11 @@ public class Image4D extends GfxSurface
    
    public void lockChanges()
    {
-      if (changed)
-         applyChanges();
-      pixels = pixelsOfAllFrames = null;
+      if (Settings.isOpenGL)
+      {
+         if (changed)
+            applyChanges();
+         pixels = pixelsOfAllFrames = null;
+      }
    }
 }

@@ -64,6 +64,11 @@ public class Radio extends Control
    private int cColor,bColor;
    private int textW;
    
+   /** Sets the text color of the check. Defaults to the foreground color. 
+    * @since TotalCross 2.0.
+    */
+   public int textColor = -1;
+   
    /** Set to the color of the check, if you want to make it different of the foreground color.
     * @since TotalCross 1.3
     */
@@ -411,7 +416,7 @@ public class Radio extends Control
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = cColor; // guich@tc120_55: use the foreground color
+      g.foreColor = textColor != -1 ? textColor : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 

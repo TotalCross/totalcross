@@ -120,7 +120,7 @@ Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
 Pixel makePixel(int32 r, int32 g, int32 b)
 {
    PixelConv p;
-   p.a = 0;
+   p.a = 0xFF;
    p.r = (uint8)(r & 0xFF);
    p.g = (uint8)(g & 0xFF);
    p.b = (uint8)(b & 0xFF);
@@ -129,7 +129,7 @@ Pixel makePixel(int32 r, int32 g, int32 b)
 Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
-   p.a = 0;
+   p.a = 0xFF;
    p.r = (uint8)((rgb >> 16) & 0xFF);
    p.g = (uint8)((rgb >> 8)  & 0xFF);
    p.b = (uint8)( rgb        & 0xFF);
@@ -282,7 +282,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       else
       {
          if (Image_changed(srcSurf))
-            applyChanges(srcSurf,true);
+            applyChanges(currentContext, srcSurf,true);
          int32 fc = Image_frameCount(srcSurf);
          int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
          glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
@@ -296,7 +296,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
       PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
       if (isSrcScreen)
-         while (count-- > 0)
+         for (;count != 0; pt++,ps++, count--)
          {
             pt->pixel = ps->pixel;
             pt->a = 0xFF;
