@@ -62,6 +62,9 @@ public class Container extends Control
    static public final byte BORDER_SIMPLE=5;
    /** used in the setBorderStyle method */
    static public final byte BORDER_TOP = 1;
+   /** used in the setBorderStyle method.
+    * @since TotalCross 2.0 */
+   static public final byte BORDER_ROUNDED = 6;
    
    /** used in the bckgroundStyle field */
    static public final int BACKGROUND_SOLID = 0;
@@ -78,6 +81,11 @@ public class Container extends Control
    public static final int TRANSITION_OPEN = 1;
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_CLOSE = 2;
+   
+   /** The color used in the border.
+    * @since TotalCross 2.0
+    */
+   public int borderColor = -1;
    
    /** Set the transition effect when this container appears on screen.
     * Defaults to Control.UPDATESCREEN_AT_ONCE, which means no transition effects.
@@ -583,7 +591,7 @@ public class Container extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP)
+      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED)
          Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
    }
 
@@ -614,13 +622,17 @@ public class Container extends Control
             break;
 
          case BORDER_TOP:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,0);
             break;
             
          case BORDER_SIMPLE:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,height);
+            break;
+            
+         case BORDER_ROUNDED:
+            g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),backColor,backColor,backColor,2,false);
             break;
 
          default:
