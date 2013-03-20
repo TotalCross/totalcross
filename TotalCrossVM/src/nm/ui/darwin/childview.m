@@ -60,6 +60,7 @@ bool iosRotated;
                                                 [NSNumber numberWithInt:appW], @"width", [NSNumber numberWithInt:appH], @"height", nil] ];
    while (callingScreenChange)
       Sleep(10); // let the event be processed
+   debug("marking iosRotated=true");
    iosRotated = true;
 }
 
