@@ -21,8 +21,6 @@ void vmSetAutoOff(bool enable); // vm_c.h
  #include "win/event_c.h"
 #elif defined(darwin)
  #include "darwin/event_c.h"
- extern bool iosRotated;
- void markWholeScreenDirty(Context currentContext);
 #elif defined(ANDROID)
  #include "android/event_c.h"
 #else
@@ -87,15 +85,6 @@ static bool pumpEvent(Context currentContext)
 #ifdef ENABLE_DEMO
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
 #endif
-#ifdef darwin // fixed problem in ios when rotating with a popup window being shown
-    if (iosRotated)
-    {
-        iosRotated = false;
-        markWholeScreenDirty(currentContext);
-        updateScreen(currentContext);
-        debug("marking rotated=false");
-    }
-#endif
 sleep:
  //  Sleep(1); // avoid 100% cpu
    return ok;
@@ -111,7 +100,6 @@ void pumpEvents(Context currentContext)
    if (keepRunning)
       do
       {
-          debug("pumpEvents");
          if (!pumpEvent(currentContext))
             break;
       } while (isEventAvailable() && keepRunning);
