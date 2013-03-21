@@ -701,8 +701,9 @@ bool setupGL(int width, int height)
     glEnable(GL_BLEND); GL_CHECK_ERROR // enable color alpha channel
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
-    for (i = 0; i <= 15; i++)
-        ftransp[i] = (GLfloat)((i<<4)|0xF) / (GLfloat)255;
+    for (i = 0; i < 14; i++)
+        ftransp[i+1] = (GLfloat)(i<<4) / (GLfloat)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
+    ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
 
