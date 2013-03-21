@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "LaudoMovel"
+//#define APPNAME "TCTestWin"
 
 -(void) initApp
 {
@@ -57,7 +57,6 @@
 #endif
     [tcvm startVM:&context appName:(char*)name];
     [Litebase fillNativeProcAddressesLB];
-    NSLog(@"**** SEM LITEBASE ****");
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
