@@ -1523,12 +1523,24 @@ public class Window extends Container
       c.postEvent(_controlEvent);
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Called when the screen is resized, probably caused by a rotation. */
+   /** Called when the screen is resized, probably caused by a rotation.
+    * ATTENTION: THIS CALL CANNOT BE BLOCKED OR THE SYSTEM WILL LOCK!
+    */
    public void screenResized()
    {
       enableUpdateScreen = false; requestFocus(); enableUpdateScreen = true; // if resize occured in an edit, remove the focus from it.
       rTitle = null; // guich@tc120_37
       reposition();
+      final TimerEvent te = topMost.addTimer(10);
+      topMost.addTimerListener(new TimerListener()
+      {
+         public void timerTriggered(TimerEvent e)
+         {
+            topMost.removeTimerListener(this);
+            topMost.removeTimer(te);
+            repaintActiveWindows();
+         }
+      });
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
