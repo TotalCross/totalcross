@@ -507,6 +507,19 @@ public class Window extends Container
       
       if (isPenEvent) // do all the pen event filtering here
       {
+         if (grabPenEvents != null) // guich@tc100 - guich@tc168: moved to here to prevent gaps when Whiteboard is inside a window
+         {
+            PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+            Control c = _focus;
+            while (c != null)
+            {
+               x -= c.x;
+               y -= c.y;
+               c = c.parent;
+            }
+            grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
+            return;
+         }
          if (type == PenEvent.PEN_DRAG && firstDrag) // discard first PEN_DRAG unless it exceeds the drag threshold
          {
             int absDeltaX = x > ptPenDownX ? x - ptPenDownX : ptPenDownX - x;
@@ -514,7 +527,7 @@ public class Window extends Container
             if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
-         if (grabPenEvents == null && type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
+         if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
             return;
          if (type == PenEvent.PEN_UP && cancelPenUp)
          {
@@ -600,19 +613,6 @@ public class Window extends Container
       
       Event event=null;
       boolean invokeMenu = false;
-      if (isPenEvent && grabPenEvents != null) // guich@tc100
-      {
-         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
-         Control c = _focus;
-         while (c != null)
-         {
-            x -= c.x;
-            y -= c.y;
-            c = c.parent;
-         }
-         grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
-         return;
-      }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
       if (isPenEvent) 
@@ -1414,7 +1414,7 @@ public class Window extends Container
       {
          if (i == lastFade)
             Graphics.fadeScreen(fadeValue);
-         ((Window)items[i]).repaintNow();
+         if (items[i] != null) ((Window)items[i]).repaintNow();
       }
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.

@@ -437,7 +437,7 @@ public class Grid extends Container implements Scrollable
             int line = py / lineH - 1;
             // finds the clicked column
             int col = getColFromX(px,false);
-            if (controls[col] != null && selectedLine >= 0 && controls[col] instanceof Edit) // show the edit
+            if (col != -1 && controls[col] != null && selectedLine >= 0 && controls[col] instanceof Edit) // show the edit
             {
                int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
                if (cc != null && !cc.isEnabled(line+row0, col))

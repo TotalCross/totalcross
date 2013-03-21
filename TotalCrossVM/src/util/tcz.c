@@ -14,6 +14,35 @@
 #include "tcvm.h"
 #include "tcz.h"
 
+#ifdef ANDROID // in Android, we use Java methods to read directly from the apk
+int32 callFindTCZ(CharP name)
+{
+   JNIEnv* env = getJNIEnv();
+   jstring jname = (*env)->NewStringUTF(env, (const char*)name);
+   int32 ret = (*env)->CallStaticIntMethod(env, applicationClass, jfindTCZ, jname);
+   (*env)->DeleteLocalRef(env, jname);
+   return ret;
+}
+
+// public static int loadDataFromAPK(String file, int ofs, byte[] buf)
+static int32 callReadTCZ(int32 apkIdx, uint8* buf, int32 offset, int32 length)
+{
+   JNIEnv* env = getJNIEnv();
+   jbyteArray jbytesP = (*env)->NewByteArray(env, length); // !!! temporary byte array has length: count-offset
+   jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
+   int32 ret;
+
+   ret = (*env)->CallStaticIntMethod(env, applicationClass, jreadTCZ, apkIdx, offset, jbytesP);
+   
+   if (ret > 0)
+      xmemmove(buf, jbytes, ret);
+   
+   (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
+   (*env)->DeleteLocalRef(env, jbytesP);
+   return ret;
+}
+#endif
+
 /**
     A tcz file has the following format:
     . version
@@ -38,11 +67,14 @@ void destroyTCZ() // no threads are running at this point
 static bool tczReadMore(TCZFile f)
 {
    int32 n;
-   FILE* fin = fopen(f->header->path, "rb");
-   fseek(fin, f->expectedFilePos, SEEK_SET);
-   n = fread(f->buf, 1, sizeof(f->buf), fin);
-   f->expectedFilePos += n;                        
-   fclose(fin);
+#ifdef ANDROID
+   n = callReadTCZ(f->header->apkIdx, f->buf, f->expectedFilePos, TCZ_BUFFER_SIZE);
+#else   
+   if (f->expectedFilePos != f->header->realFilePos) // if the file position has changed by some other instance, reposition it
+      fseek(f->header->fin, f->expectedFilePos, SEEK_SET);
+   n = fread(f->buf, 1, TCZ_BUFFER_SIZE, f->header->fin);
+#endif   
+   f->header->realFilePos = (f->expectedFilePos += n);
    if (n <= 0)
       return false; // no more data
    f->zs.next_in = f->buf;
@@ -121,6 +153,16 @@ int8 tczRead8(TCZFile f)
    return i;
 }
 
+#ifndef ANDROID
+static void tczFinalizer(Heap heap, void* bag)
+{
+   TCZFileHeader header = (TCZFileHeader)bag;
+   UNUSED(heap);
+   fclose(header->fin);
+   header->fin = null;
+}
+#endif
+
 static TCZFile tczNewInstance(TCZFile parent)
 {
    volatile Heap hheap = null;
@@ -142,7 +184,9 @@ static TCZFile tczNewInstance(TCZFile parent)
          goto error;
       ntcz->header = newXH(TCZFileHeader, hheap);
       ntcz->header->hheap = hheap;
-      //heapSetFinalizer(hheap, tczFinalizer, ntcz->header);
+#ifndef ANDROID
+      heapSetFinalizer(hheap, tczFinalizer, ntcz->header);
+#endif      
    }
    //debug("tczNewInstance tcz %d from header %d - %d",(int32)ntcz, (int32)ntcz->header, ntcz->header->instanceCount);
    ntcz->zs.opaque = ntcz->header->hheap;
@@ -208,14 +252,20 @@ TCZFile tczFindName(TCZFile tcz, CharP name) // locates the name and also positi
    ntcz = tczNewInstance(tcz);
    if (!ntcz)
       return null;
-
-   ntcz->expectedFilePos = ntcz->header->offsets[pos];
+   ntcz->header->realFilePos = ntcz->expectedFilePos = ntcz->header->offsets[pos];
+#ifndef ANDROID   
+   fseek(ntcz->header->fin, ntcz->expectedFilePos, SEEK_SET);
+#endif   
    ntcz->uncompressedSize = tcz->header->uncompressedSizes[pos];
    return ntcz;
 }
 
-/** Reads a TCZ file and place the informations in the public members available in this "class". */
-TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName)
+// Reads a TCZ file and place the informations in the public members available in this "class".
+#ifdef ANDROID
+TCZFile tczOpen(CharP fileName, bool isFont)
+#else
+TCZFile tczOpen(FILE* fin, CharP fileName)
+#endif
 {
    int32 baseOffset,n,i;
    CharPArray names;
@@ -224,16 +274,34 @@ TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName)
    int16 version, attr;
    volatile Heap heap;
    // assuming that current fin position is 0
+#ifdef ANDROID
+   uint8 header[8],*h = header;
+   int32 apkIdx = callFindTCZ(fileName);
+   if (apkIdx < 0)
+      return null;
+   n = callReadTCZ(apkIdx, h, 0, 8);
+   if (n < 0)
+      return null;
+   xmemmove(&version,h,2); h += 2;
+   xmemmove(&attr,h,2); h += 2;
+   xmemmove(&baseOffset,h,4);
+#else   
    version    = fread16(fin);
    attr       = fread16(fin);
    baseOffset = fread32(fin);
-   fclose(fin);
+#endif   
    if (version == 0)
    {
       alert("Invalid TCZ version.\nFile probably corrupted");
       return null;
    }
-   if (fileName != null && version != TCZ_VERSION) // guich@tc110_70: check for version mismatch. font files doesn't care if the tcz changed
+   if (
+#ifdef ANDROID
+      !isFont
+#else            
+      fileName != null 
+#endif      
+      && version != TCZ_VERSION) // guich@tc110_70: check for version mismatch. font files doesn't care if the tcz changed
    {
       alert("TCZ version mismatch for %s. Recompile and deploy your app with the new SDK.",fileName);
       return null;
@@ -243,8 +311,12 @@ TCZFile tczOpen(FILE* fin, CharP fullpath, CharP fileName)
    if (!tcz)
       return null;
 
-   tcz->expectedFilePos = 8;
-   xstrcpy(tcz->header->path, fullpath);
+   tcz->header->realFilePos = tcz->expectedFilePos = 8;
+#ifdef ANDROID
+   tcz->header->apkIdx = apkIdx;
+#else      
+   tcz->header->fin = fin;
+#endif   
    tcz->header->version = version;
    tcz->header->attr = attr;
    heap = tcz->tempHeap = tcz->header->hheap;
@@ -283,9 +355,10 @@ extern void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz
 
 TCZFile tczLoad(Context currentContext, CharP tczName)
 {
-   FILE* f;
+#ifndef ANDROID   
+   FILE* f;    
+#endif   
    volatile TCZFile t=null,t2=null;
-   char fullpath[MAX_PATHNAME];
 
 #ifdef PALMOS
    CharP dot;
@@ -293,8 +366,12 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
       *dot = 0;
 #endif
 
-   f = findFile(tczName,fullpath);
-   if (f != null && (t = tczOpen(f, fullpath, tczName)) != null)
+#ifdef ANDROID
+   if ((t = tczOpen(tczName, false)) != null)
+#else      
+   f = findFile(tczName,null);
+   if (f != null && (t = tczOpen(f, tczName)) != null)
+#endif      
    {
       VoidPs* temp;
       // enqueue the file in the TCZ list

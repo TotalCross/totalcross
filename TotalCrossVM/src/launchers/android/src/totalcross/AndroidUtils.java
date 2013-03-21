@@ -65,6 +65,9 @@ public class AndroidUtils
                }
                f.close();
             }
+            catch (FileNotFoundException fnfe)
+            {
+            }
             catch (Exception e)
             {
                handleException(e,false);
@@ -176,20 +179,19 @@ public class AndroidUtils
       String pack = appName.substring(0,appName.lastIndexOf('.'));
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");
       
-      boolean fullUpdate = false;
       InputStream is = file.createInputStream();
       is.skip(10); // check the date/time stored inside the zip header
       int zipDateTime = new DataInputStream(is).readInt();
       is.close();
       
+      writeApkName();
       if (configs.zipDateTime != zipDateTime)
       {
-         fullUpdate = true;
          configs.zipDateTime = zipDateTime;
          configs.save();
+         debug("Updating application "+pack+"...");
+         updateInstall(task);
       }
-      debug("Updating application "+pack+" "+(fullUpdate?"full...":"tczs..."));
-      updateInstall(task, !fullUpdate);
    }
    
    public static int getSavedScreenSize()
@@ -203,7 +205,7 @@ public class AndroidUtils
       configs.save();
    }
    
-   public static void updateInstall(StartupTask task, boolean onlyTCZ) throws Exception
+   public static void updateInstall(StartupTask task) throws Exception
    {
       long ini = System.currentTimeMillis();
       if (task != null)
@@ -217,8 +219,12 @@ public class AndroidUtils
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
-         if (onlyTCZ && !name.endsWith(".tcz")) // on partial update, get only the tcz files
+         if (name.endsWith(".tcz")) // tcz files are never unpacked
+         {
+            File f = new File(dataDir, name);
+            try {if (f.exists()) {f.delete(); debug("deleted old "+dataDir+"/"+name);}} catch (Exception e) {} // delete old tcz files
             continue;
+         }
          
          int slash = name.lastIndexOf('/');
          String path = dataDir;
@@ -244,6 +250,24 @@ public class AndroidUtils
       if (fim-ini > 2000) debug("Installation elapsed "+(fim-ini)+" ms");
    }
 
+   private static void writeApkName()
+   {
+      try
+      {
+         // create a file that informs the application's apk file path
+         String txt = pinfo.applicationInfo.dataDir+"/apkname.txt";
+         nativeCreateFile(txt);
+         FileOutputStream fos = new FileOutputStream(txt);
+         String dir = main.getPackageResourcePath();
+         fos.write(dir.getBytes()); // full path including apk name
+         fos.close();
+         //debug("writting \""+dir+"\" into "+txt);
+      }
+      catch (Exception e)
+      {
+         handleException(e,false);
+      }
+   }
    native private static void nativeCreateFile(String path);
 
    public static void handleException(Throwable e, boolean terminateProgram)
@@ -315,6 +339,9 @@ public class AndroidUtils
                ht.put(key,value);
             }
             dis.close();
+         }
+         catch (FileNotFoundException fnfe)
+         {
          }
          catch (Exception e)
          {

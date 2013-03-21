@@ -70,7 +70,7 @@ public class XmlRpcClient extends XmlReader
     * @param port
     *           The port on the server to connect to
     * @param uri
-    *           The connecting uri. Defaults to "/RPC2"
+    *           The connecting URI. Defaults to "/RPC2"
     * @throws XmlRpcException
     *            If the connection to the server was unsuccessful
     */

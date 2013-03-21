@@ -48,6 +48,12 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
+   private static int platform;
+   
+   public static boolean isOnlyBB()
+   {
+      return platform == BUILD_BB;
+   }
 
    public Deploy(String[] args)
    {
@@ -64,7 +70,7 @@ public class Deploy
 
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
-         int options = parseOptions(args);
+         int options = platform = parseOptions(args);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
