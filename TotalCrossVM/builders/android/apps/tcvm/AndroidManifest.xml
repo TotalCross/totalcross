@@ -7,7 +7,7 @@
     >
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
-        <activity android:name=".Loader" android:label="Loading application..." 
+        <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
         />
@@ -15,8 +15,14 @@
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
+        
+        
+        
+        
+        
+        
     </application>
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="10" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -39,6 +45,7 @@
     <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:glEsVersion="0x00020000"/>
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> 
 </manifest>

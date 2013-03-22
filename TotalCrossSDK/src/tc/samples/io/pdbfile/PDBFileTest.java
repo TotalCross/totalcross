@@ -31,11 +31,6 @@ import totalcross.util.*;
 
 public class PDBFileTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    static final String CREATOR_ID = Settings.applicationId;
    static final String TYPEC = "TEST";
    static final String PDBFILE_NAME = TYPEC + "." + CREATOR_ID + "." + TYPEC; // must use this format - or you will not be able to read this database from conduits

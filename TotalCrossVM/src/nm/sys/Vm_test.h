@@ -195,7 +195,7 @@ TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTime
 }
 TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-#if defined (WIN32) //|| (PALMOS)
+#if defined (WIN32)
    TNMParams p;
    Object currentTime;
    Object testTime;
@@ -259,29 +259,6 @@ TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(Strin
 #if 1
    TEST_CANNOT_RUN;
    // Vm.exec testcase cannot be created because there are no ways to sublaunch a process in most devices
-
-#elif defined (PALMOS)
-   TNMParams p;
-   Object obj[2];
-   int32 i32buf[2];
-
-   p.currentContext = currentContext;
-   p.obj = obj;
-   p.i32 = i32buf;
-
-   p.obj[0] = createStringObjectFromCharP("Filez", -1);
-   p.obj[1] = createStringObjectFromCharP("param1", -1);
-   p.i32[0] = sysAppLaunchCmdFind;
-   p.i32[1] = (int32)true;
-   tsV_exec_ssib(&p);
-   ASSERT2_EQUALS(I32, p.retI, 0);
-
-   p.obj[0] = createStringObjectFromCharP("Note Pad", -1);
-   p.obj[1] = createStringObjectFromCharP("param1", -1);
-   p.i32[0] = sysAppLaunchCmdNormalLaunch;
-   p.i32[1] = (int32)false;
-   tsV_exec_ssib(&p);
-   ASSERT2_EQUALS(I32, p.retI, 0);
 
 #elif defined(WIN32)
    TNMParams p;
@@ -348,27 +325,7 @@ TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(Strin
 }
 TESTCASE(tsV_setAutoOff_b) // totalcross/sys/Vm native public static void setAutoOff(boolean enable);
 {
-#ifdef PALMOS
-   TNMParams p;
-   int32 i32buf[1];
-
-   tzero(p);
-   p.currentContext = currentContext;
-   p.i32 = i32buf;
-
-   // Set the new auto off to 60 seconds
-   p.i32[0] = true;
-   tsV_setAutoOff_b(&p);
-   // check if the old value was > 0 (0 means: never sleep, and should not be the case for a PDA)
-   ASSERT_BETWEEN(I32, 1, oldAutoOffValue, 100000000);
-   // set the old value back again
-   p.i32[0] = false;
-   tsV_setAutoOff_b(&p);
-   // now, 0 must have been returned, since the auto-off is now disabled
-   ASSERT2_EQUALS(I32, 0, oldAutoOffValue);
-#else
    TEST_SKIP;
-#endif
    finish: ;
 }
 TESTCASE(tsV_sleep_i) // totalcross/sys/Vm native public static void sleep(int millis);

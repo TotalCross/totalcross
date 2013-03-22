@@ -132,7 +132,6 @@ public class Slider extends ScrollBar
 
    public void onPaint(Graphics g)
    {
-      //g.backColor=Color.RED; g.fillRect(0,0,width,height);
       g.backColor = sbColor;
       int bc = getBackColor(),p,s;
       s = Math.max(4, verticalBar ? (width/2) : (height/2));
@@ -162,11 +161,9 @@ public class Slider extends ScrollBar
             g.drawPolygon(barX, barY, 5);
             break;
          }
-         case Settings.PalmOS:
          case Settings.Flat:
-         case Settings.WinCE:
          {
-            int k = uiCE && s > 5 ? 2 : 1;
+            int k = 1;
             if (verticalBar)
             {
                g.draw3dRect(p,0,s,height, Graphics.R3D_RAISED, false, false, fourColors);
@@ -185,11 +182,6 @@ public class Slider extends ScrollBar
             g.foreColor = enabled ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
-            if (uiCE)
-            {
-               g.foreColor = fourColors[2];
-               g.drawPolyline(barX, barY, 3);
-            }
             break;
          }
       }

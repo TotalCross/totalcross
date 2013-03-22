@@ -19,7 +19,6 @@
 package totalcross.sys;
 
 import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -101,9 +100,9 @@ public final class Vm4D
       while (cur <= end)
       {
          millis = end - cur;
-         int s = millis > 100 ? 100 : millis;
+         int s = millis > 10 ? 10 : millis;
          sleep(s);
-         if (Event.isAvailable())
+         //if (Event.isAvailable()) // always call pumpEvents, otherwise a thread that use this method will not be able to update the screen
             Window.pumpEvents();
          cur = getTimeStamp();
       }

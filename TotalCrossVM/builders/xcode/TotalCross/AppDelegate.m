@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "UIGadgets"
+//#define APPNAME "TCTestWin"
 
 -(void) initApp
 {
@@ -60,6 +60,7 @@
     
     [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     [self initApp];

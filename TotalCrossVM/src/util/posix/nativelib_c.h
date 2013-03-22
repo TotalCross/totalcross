@@ -29,16 +29,6 @@
  #error "Undefined VM installation PATH"
 #endif
 
-#ifdef __SYMBIAN32__
-VoidP privateLoadLibrary(CharP libName)
-{}
-void privateUnloadLibrary(VoidP libPtr)
-{}
-VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
-{
-  return NULL;
-}
-#else
 static VoidP tryAt(CharP prefix, CharP prefix2, CharP lib)
 {     
    char fullpath[PATH_MAX];
@@ -90,4 +80,3 @@ VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 #endif
    return NULL;
 }
-#endif

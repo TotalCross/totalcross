@@ -40,9 +40,14 @@ TC_API void tuMW_exit_i(NMParams p) // totalcross/ui/MainWindow native public fi
    keepRunning = false;
 }
 //////////////////////////////////////////////////////////////////////////
+void setTimerInterval(int32 t)
+{
+   nextTimerTick = getTimeStamp() + t;
+}
+
 TC_API void tuMW_setTimerInterval_i(NMParams p) // totalcross/ui/MainWindow native void setTimerInterval(int n);
 {
-   nextTimerTick = getTimeStamp() + p->i32[0];
+   setTimerInterval(p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_getCommandLine(NMParams p) // totalcross/ui/MainWindow native public static String getCommandLine();

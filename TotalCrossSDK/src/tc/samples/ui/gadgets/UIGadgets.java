@@ -34,7 +34,6 @@ public class UIGadgets extends MainWindow
       Settings.applicationId = "UiGd";
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
       Settings.resizableWindow = true;
-      Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private MenuBar mbar;
@@ -45,20 +44,14 @@ public class UIGadgets extends MainWindow
       super("UI Gadgets", NO_BORDER);
       Settings.vibrateMessageBox = true; // guich@tc122_51
       if (Settings.appSettings != null) // user already selected a user interface style?
-         try {setUIStyle((byte)Convert.toInt(Settings.appSettings));} catch (InvalidNumberException ine) {}
+         try {setUIStyle((byte)Math.max(2,Convert.toInt(Settings.appSettings)));} catch (InvalidNumberException ine) {}
       switch (Settings.uiStyle)
       {
-         case Settings.PalmOS: 
-            setBorderStyle(TAB_ONLY_BORDER); 
-            break;
          case Settings.Flat: 
             gradientTitleStartColor = 0x0A246A;
             gradientTitleEndColor = 0xA6CAF0;
             titleColor = Color.WHITE;
             setBorderStyle(HORIZONTAL_GRADIENT);
-            break;
-         case Settings.WinCE:
-            setBorderStyle(RECT_BORDER);
             break;
          case Settings.Vista:
             gradientTitleStartColor = 0x0A246A;
@@ -88,13 +81,11 @@ public class UIGadgets extends MainWindow
          miShowKeys = new MenuItem("Show key codes", false),
       };
       String p = Settings.platform;
-      col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) || p.equals(Settings.BLACKBERRY) || Settings.isWindowsDevice() || p.equals(Settings.WIN32);
+      col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) || Settings.isWindowsDevice() || p.equals(Settings.WIN32);
          
       MenuItem col1[] =
       {
          new MenuItem("UIStyle"),
-         new MenuItem("WinCE"),
-         new MenuItem("PalmOS"),
          new MenuItem("Flat"),
          new MenuItem("Vista"),
          new MenuItem("Android"),
@@ -126,7 +117,7 @@ public class UIGadgets extends MainWindow
       };
       
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
-      mbar.getMenuItem(101+Settings.uiStyle).isEnabled = false; // disable the current style
+      mbar.getMenuItem(101+Settings.uiStyle-2).isEnabled = false; // disable the current style
       if (Settings.keyboardFocusTraversable) // if this is a penless device, set it as marked and disable
       {
          miPenless.isChecked = true;
@@ -147,8 +138,7 @@ public class UIGadgets extends MainWindow
       if (s != null && s.toLowerCase().startsWith("/t"))
          try {t = Convert.toInt(s.substring(2));} catch (InvalidNumberException ine) {}
       switchToTest(t);
-      if (Settings.uiStyle != Settings.PalmOS)
-         mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
+      mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
       mbar.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)
@@ -164,23 +154,21 @@ public class UIGadgets extends MainWindow
                case 101: 
                case 102: 
                case 103: 
-               case 104:
-               case 105:
-                  Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101);
+                  Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101+2);
                   new MessageBox("User Interface changed","Press close to quit the\nprogram, then call it again.").popup();
                   exit(0);
                   break;
-               case 107:
+               case 105:
                   Settings.keyboardFocusTraversable = miPenless.isChecked;
                   new MessageBox("Penless","Penless is now "+(miPenless.isChecked?"enabled":"disabled")+"\nduring this running instance").popup();
                   needsPaint = true;
                   break;
-               case 108:
+               case 106:
                   Settings.keyboardFocusTraversable = Settings.geographicalFocus = miPenless.isChecked = miGeoFocus.isChecked;
                   new MessageBox("Geographical focus","Geographical focus and penless are now\n"+(miGeoFocus.isChecked?"enabled":"disabled")+" during this running instance").popup();
                   needsPaint = true;
                   break;
-               case 110: 
+               case 108: 
                   Settings.unmovableSIP = Settings.virtualKeyboard = miUnmovableSIP.isChecked;
                   UIColors.shiftScreenColor = Color.getRGBEnsureRange(rand.between(0,255),rand.between(0,255),rand.between(0,255)); // random color
                   new MessageBox("Unmovable SIP",miUnmovableSIP.isChecked?"Now enabled":"Now disabled").popup();

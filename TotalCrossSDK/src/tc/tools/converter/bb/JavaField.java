@@ -94,15 +94,9 @@ public class JavaField implements JavaClassStructure
    {
       if (other == null)
          return false;
-      if (J2BB.compare(getName(), other.getName()) != 0)
-         return false;
       if (accessFlags != other.accessFlags)
          return false;
-
-      String s1 = J2BB.parseDescriptor(getDescriptor());
-      String s2 = J2BB.parseDescriptor(other.getDescriptor());
-
-      return J2BB.compare(s1, s2) == 0;
+      return true;
    }
 
    public int length()

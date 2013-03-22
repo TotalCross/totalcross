@@ -15,8 +15,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/errormsg_c.h"
-#elif defined(PALMOS)
- #include "palm/errormsg_c.h"
 #else
  #include "posix/errormsg_c.h"
 #endif

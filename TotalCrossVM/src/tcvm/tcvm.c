@@ -214,6 +214,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       {
 #ifdef ENABLE_TRACE
          TRACE("T %08d %X %X %05d - Cannot acquire context; owner=%X; usageCount=%d", getTimeStamp(), thread, context, ++context->ccon, context->usageOwner, context->usageCount);
+#else
+         debug("Cannot acquire context! Waiting to release...");
 #endif
          do
          {
@@ -222,6 +224,9 @@ TC_API TValue executeMethod(Context context, Method method, ...)
             LOCKVAR(context->usageLock);
          }
          while (context->usageOwner != null); // while this context is not released
+#ifndef ENABLE_TRACE
+         debug("Context released!");
+#endif
       }
       context->usageOwner = thread;
    }
@@ -592,15 +597,6 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
-#ifdef PALMOS
-               if (newMethod->ref) // external library?
-               {
-                  EnterLibrary(newMethod->ref)
-                  newMethod->boundNM(nmp); // call the method
-                  ExitLibrary()
-               }
-               else
-#endif
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here

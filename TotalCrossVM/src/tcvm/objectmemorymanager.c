@@ -893,7 +893,7 @@ void runFinalizers() // calls finalize of all objects in use
 }
 
 #ifndef ALTERNATIVE_GC
- #if defined(PALMOS) || defined(ANDROID) || defined(WINCE)
+ #if defined(ANDROID) || defined(WINCE)
   #define CRITICAL_SIZE 2*1024*1024
   #define USE_MAX_BLOCK true
  #else

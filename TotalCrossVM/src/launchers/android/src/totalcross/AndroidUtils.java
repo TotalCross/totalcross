@@ -194,17 +194,6 @@ public class AndroidUtils
       }
    }
    
-   public static int getSavedScreenSize()
-   {
-      return configs.saved_screen_size;
-   }
-
-   public static void setSavedScreenSize(int newValue)
-   {
-      configs.saved_screen_size = newValue;
-      configs.save();
-   }
-   
    public static void updateInstall(StartupTask task) throws Exception
    {
       long ini = System.currentTimeMillis();

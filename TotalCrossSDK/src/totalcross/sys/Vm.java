@@ -19,7 +19,6 @@ package totalcross.sys;
 
 import totalcross.*;
 import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -335,7 +334,7 @@ public final class Vm
          millis = end - cur;
          int s = millis > 100 ? 100 : millis;
          try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
-         if (Event.isAvailable())
+         //if (Event.isAvailable()) // always call pumpEvents, otherwise a thread that use this method will not be able to update the screen
             Window.pumpEvents();
          cur = getTimeStamp();
       }

@@ -27,11 +27,6 @@ import totalcross.ui.event.*;
 
 public class GpsTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    ComboBox cbCom,cbBaud;
    Container gpsCont;
    GPSView gps;

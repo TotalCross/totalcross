@@ -26,7 +26,7 @@ public class ImageAndTextButton extends Container
       Button btn;
       try
       {
-         Image img = new Image("imgbut.png").smoothScaledFromResolution(320, backColor);
+         Image img = new Image("imgbut.png").smoothScaledFromResolution(320);
          Font f = Font.getFont(true, Font.NORMAL_SIZE+2);
 
          add(new Label("Text with\nimage: "),LEFT+5,TOP+5);

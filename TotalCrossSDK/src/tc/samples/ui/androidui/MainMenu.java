@@ -58,7 +58,7 @@ public class MainMenu extends BaseContainer
       
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       menu.pressedColor = BKGCOLOR;
-      if (Math.max(Settings.screenWidth,Settings.screenHeight) >= 800)
+      if (Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30)
       {
          menu.borderGap = 100;
          menu.buttonHorizGap = menu.buttonVertGap = 200;
@@ -98,7 +98,7 @@ public class MainMenu extends BaseContainer
       if (itemInstances[idx] == null)
          itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
       itemInstances[idx].show();
-      if (itemClasses[idx] == ListContainerSamples.class) // this sample will change each time it is called
+      if (itemClasses[idx] == ListContainerSamples.class || itemClasses[idx] == ProgressBarSamples.class) // these samples will change each time it is called
          itemInstances[idx] = null;
    }
 }

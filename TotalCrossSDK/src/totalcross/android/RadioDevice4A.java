@@ -64,7 +64,7 @@ public class RadioDevice4A
       {
          case WIFI:
          {
-            WifiManager wifiMgr = (WifiManager) Launcher4A.getAppContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiMgr = (WifiManager) Launcher4A.loader.getSystemService(Context.WIFI_SERVICE);
             return wifiMgr.isWifiEnabled() ? RADIO_STATE_ENABLED : RADIO_STATE_DISABLED;
          }
          case PHONE:
@@ -87,7 +87,7 @@ public class RadioDevice4A
       switch (type)
       {
          case WIFI:
-            WifiManager wifiMgr = (WifiManager) Launcher4A.getAppContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiMgr = (WifiManager) Launcher4A.loader.getSystemService(Context.WIFI_SERVICE);
             wifiMgr.setWifiEnabled(state == RADIO_STATE_ENABLED);
             break;
          case PHONE:

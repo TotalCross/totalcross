@@ -137,15 +137,7 @@ public class JavaMethod implements JavaClassStructure
    {
       if (other == null)
          return false;
-      if (J2BB.compare(getName(), other.getName()) != 0)
-         return false;
       if (accessFlags != other.accessFlags)
-         return false;
-
-      String[] s1 = J2BB.tokenizeMethodDescriptor(getDescriptor());
-      String[] s2 = J2BB.tokenizeMethodDescriptor(other.getDescriptor());
-
-      if (J2BB.compare(s1, s2) != 0)
          return false;
 
       Vector v1 = getExceptions();

@@ -509,7 +509,7 @@ public class Label extends Control
             g.fillRect(0,0,width,height); // guich@200b4_120: make sure the label is painted with the correct color
          else
          {
-            g.drawRoundGradient(0,0,width, height, 0,0,0,0,firstGradientColor, secondGradientColor, backgroundType == VERTICAL_GRADIENT_BACKGROUND);
+            g.fillShadedRect(0,0,width, height, true, backgroundType == HORIZONTAL_GRADIENT_BACKGROUND,firstGradientColor, secondGradientColor,100);
             g.foreColor = invert ? backColor : fColor;
             g.backColor = invert ? fColor : backColor;
          }

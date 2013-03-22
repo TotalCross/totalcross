@@ -53,7 +53,7 @@ static ThreadHandle privateThreadGetCurrent()
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
-#if !defined(ANDROID) && !defined(__SYMBIAN32__) // TODO must find an alternative these platforms
+#if !defined(ANDROID)
    if (!threadDestroyingItself) pthread_cancel(h);
    void *ret;
    pthread_join(h, &ret); // wait child thread termination and get its exit code

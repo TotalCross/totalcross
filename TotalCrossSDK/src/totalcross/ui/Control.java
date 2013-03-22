@@ -171,7 +171,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
+   protected static boolean uiFlat,uiVista=true,uiAndroid;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -221,8 +221,8 @@ public class Control extends GfxSurface
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
    
-   /** True means that EventListeners will be called without verifying that the event target is this. */
-   public boolean callListenersOnAllTargets = false;
+   /** True means that EventListeners for PenEvent and KeyEvent will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets;
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
@@ -643,19 +643,9 @@ public class Control extends GfxSurface
 	            else
                   throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control "+toString());
 	         }
-	         else
-	         if (asWindow != null && !asWindow.highResPrepared)
-               throw new RuntimeException("The window '"+asWindow.title+"' is not prepared for high resolution devices! Set highResPrepared to true and test it in 320x320 resolution!");
             if (height < 0 || width < 0)
                throw new RuntimeException("Invalid resulting values in width,height for control "+toString()+": "+width+","+height); 
          }
-      }
-      if (asWindow != null && fmH > 11 && !asWindow.highResPrepared && width <= 160 && height <= 160) // guich@240_20 - guich@450_19: now we check if w/h are also lower than 160 (if it is, the user probably took care of this problem)
-      {
-         width  = width  * fmH / 11;
-         height = height * fmH / 11;
-         x = (Settings.screenWidth-width) >> 1;
-         y = (Settings.screenHeight-height) >> 1;
       }
 
       this.x = x;
@@ -821,14 +811,30 @@ public class Control extends GfxSurface
    /** Redraws the control immediately. If this control is a Window, the whole window area is
      * marked for repaint (useful if you're removing some controls from a container).
      * This method affects only this control, while the repaint method affects the whole screen.
+     * 
+     * If Window.enableUpdateScreen is true, the method returns immediately.
      * @since SuperWaba 2.0 beta 4 release 3
      * @see #repaint()
      */
    public void repaintNow()
    {
+      if (!Window.enableUpdateScreen)
+         return;
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
+         if (Settings.isOpenGL)
+         {
+            Window.needsPaint = true; // make sure the whole area is marked to be repainted
+            if (MainWindow.isMainThread())
+               Window.repaintActiveWindows();
+            else
+            {
+               MainWindow.mainWindowInstance.setTimerInterval(1);
+               Vm.safeSleep(1);
+            }
+         }
+         else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
@@ -1160,8 +1166,6 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm    = Settings.uiStyle == Settings.PalmOS;
-         uiCE      = Settings.uiStyle == Settings.WinCE;
          uiFlat    = Settings.uiStyle == Settings.Flat;
          uiAndroid = Settings.uiStyle == Settings.Android;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
@@ -1244,7 +1248,7 @@ public class Control extends GfxSurface
    {
       if (enableUpdateScreen)
       {
-         totalcross.Launcher.instance.updateScreen(Container.getNextTransitionEffect());
+         totalcross.Launcher.instance.updateScreen();
          Graphics.needsUpdate = false;
       }
    }
@@ -1538,7 +1542,7 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && e instanceof PenEvent)) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;

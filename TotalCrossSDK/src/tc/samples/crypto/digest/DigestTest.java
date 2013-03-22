@@ -29,11 +29,6 @@ import totalcross.ui.event.Event;
 
 public class DigestTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Edit edtInput;
    private ComboBox cboDigests;
    private Button btnGo;

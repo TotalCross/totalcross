@@ -28,11 +28,6 @@ import totalcross.net.*;
 
 public class RemoteExplorer extends MainWindow // TO BE FINISHED
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Button btGo;
    ComboBox cbCmd,cbLog;
    ListBox lbLocal,lbRemote;

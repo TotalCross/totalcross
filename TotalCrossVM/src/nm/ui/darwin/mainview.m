@@ -9,6 +9,10 @@
 #include "mainview.h"
 #include "gfx_ex.h"
 #import <QuartzCore/CALayer.h>
+#import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 #define LKLayer CALayer
 
 bool allowMainThread();
@@ -16,25 +20,22 @@ int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
 
-@implementation SSize
+@implementation MainViewController
 
-- (id)set:(CGSize)size
+bool initGLES(ScreenSurface screen)
 {
-   ssize = size;
-   return self;
+   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
+   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   // initialize the screen bitmap with the full width and height
+   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
+   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
+   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   [window makeKeyAndVisible];
+   [DEVICE_CTX->_childview setScreenValues: screen];
+   [DEVICE_CTX->_childview createGLcontext];
+   screen->pixels = (void*)1;
+   return true;
 }
-
-- (CGSize)get
-{
-   return ssize;
-}
-
-@end
-
-//--------------------------------------------------------------------------------------------------------
-
-@implementation MainView
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
    [UIView setAnimationsEnabled:NO];
@@ -42,12 +43,31 @@ void Sleep(int ms);
    return YES;
 }
 
-- (void)viewDidLoad
+static int lastOrientationIsPortrait = true;
+- (void)viewDidLayoutSubviews
 {
-   [super viewDidLoad];
-   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
-   [self initEvents];
-   self.view = child_view;
+   int orientation = [[UIDevice currentDevice] orientation];
+   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
+   if (lastOrientationIsPortrait != isPortrait)
+   {
+      // at this moment, ios will try to resize the current rendering buffer, placing it at the screen.
+      // the screen is updated when we reach GraphicsPrimitives_c.h / updateScreen
+      // so, before we actually update the screen, leading to a strange effect
+      // we just paint out screen now with black.
+      glClearColor(0,0,0,1);
+      glClear(GL_COLOR_BUFFER_BIT);
+      [child_view updateScreen];
+      // rotate the screen
+      [child_view onRotate];
+   }
+   lastOrientationIsPortrait = isPortrait;
+}
+
+- (void)loadView
+{
+   self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
 
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
@@ -56,19 +76,6 @@ void Sleep(int ms);
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
    [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
    [kbd setDelegate: self];
-}
-
-- (void)initEvents
-{
-   //_lock = [[NSLock alloc] init];
-
-   [[NSNotificationCenter defaultCenter] addObserver:self
-      selector:@selector (keyboardDidShow:)
-      name: UIKeyboardDidShowNotification object:nil];
- 
-   [[NSNotificationCenter defaultCenter] addObserver:self 
-      selector:@selector (keyboardDidHide:)
-      name: UIKeyboardDidHideNotification object:nil];
 }
 
 - (void)destroySIP
@@ -132,6 +139,8 @@ void Sleep(int ms);
    [_events addObject: event];
 }
 
+extern int32 iosScale;
+
 -(void) keyboardDidShow: (NSNotification *)notif
 {
    if (keyboardH != 0) 
@@ -141,7 +150,7 @@ void Sleep(int ms);
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = keyboardSize.height;
+   keyboardH = keyboardSize.height * iosScale;
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif
@@ -297,64 +306,24 @@ static bool callingCamera;
    });
 }
 
+- (int) gpsUpdateLocation
+{
+   return 0;
+}
+
 //--------------------------------------------------------------------------------------------------------
 
 @end
 
-void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
-void privateScreenChange(int32 w, int32 h) {}
 
-bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
+void graphicsSetupIOS()
 {
-   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
-   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
-   // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds];
-   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
-   [window makeKeyAndVisible];
-   
-   [ DEVICE_CTX->_childview updateScreen: screen ];
-   screen->pixels = (void*)1;
-   return true;
+   [DEVICE_CTX->_childview setCurrentGLcontext];
 }
-
-bool graphicsCreateScreenSurface(ScreenSurface screen)
-{
-   screen->extension = deviceCtx;
-   return true;
-}
-
-BOOL invalidated;
-void Sleep(int ms);
-
-void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
-{								  
-   ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
-   if (allowMainThread())
-   {
-      invalidated = FALSE;
-      [vw invalidateScreen:screen withContext:currentContext];
-      while (!invalidated) Sleep(10);
-   }      
-}
-
-void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
-{
-   if (isScreenChange)
-     screen->extension = NULL;
-   else
-   {
-      if (screen->extension)
-        free(screen->extension);
-     deviceCtx = screen->extension = NULL;
-   }
-}
-
-bool graphicsLock(ScreenSurface screen, bool on)
-{
-   return true;
+void graphicsUpdateScreenIOS()
+{                
+   [DEVICE_CTX->_childview updateScreen];
 }
 
 //////////////// interface to mainview methods ///////////////////
@@ -387,7 +356,7 @@ void iphone_gpsStop()
 }
 int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double *veloc, double* pdop, double* dir, double* lat, double* lon)
 {   
-   MainView* mw = DEVICE_CTX->_mainview;
+   MainViewController* mw = DEVICE_CTX->_mainview;
    *flags = 0;
    if (mw->locationManager == NULL)
       return 1;

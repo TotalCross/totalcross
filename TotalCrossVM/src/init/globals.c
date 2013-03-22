@@ -27,13 +27,12 @@ int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 uint8 keyIsDown[256];
 bool dontPostOnChar;
-#elif defined(PALMOS)
-bool isGETreo650;
-bool supportsDIA;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
 bool appPaused;                         
-int32 deviceFontHeight;
+#endif
+#if defined(ANDROID) || defined(darwin)
+int32 deviceFontHeight,iosScale;
 #endif
 
 // GoogleMaps.c
@@ -49,34 +48,24 @@ bool rebootOnExit;
 bool destroyingApplication;
 Object mainClass;  // the instance being executed
 bool isMainWindow;   // extends MainWindow ?
-#if defined PALMOS
-void *pealLoadLibrary68K, *pealUnloadLibrary68K, *pealGetProcAddress68K;
-#elif defined(ANDROID)
+#if defined(ANDROID)
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;
-#elif defined WIN32 || defined linux || defined __SYMBIAN32__
+#elif defined WIN32 || defined linux
 TCHAR exeName[MAX_PATHNAME];
-#endif
-
-// window.c
-#ifdef ANDROID
-jmethodID jtransitionEffectChanged;
 #endif
 
 // graphicsprimitives.c
 uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
-int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-#ifdef ANDROID
-jmethodID jupdateScreen;
-#endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+int32* vistaFadeStepP;
 bool callingScreenChange;
 
 // mem.c
@@ -154,7 +143,7 @@ jmethodID jgetSDCardPath;
 #endif
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
-#if !defined(PALMOS) && !defined(WIN32)
+#if !defined(WIN32)
 void *deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
         
@@ -226,18 +215,7 @@ Hashtable htSSLSocket;
 Heap heapSSLSocket;
 DECLARE_MUTEX(htSSL);
 
-#ifdef PALMOS
-// palm/Socket_c.h, ServerSocket_c.h
-VoidP gNETLink;
-// palm/media_Camera_c.h
-VoidP gpalmOneCameraLink;
-
-// palm/debug_c.h
-void *pealAlert68K;
-
-const void *gEmulStateP;
-Call68KFuncType *gCall68KFuncP;
-#elif defined ANDROID
+#ifdef ANDROID
 jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h

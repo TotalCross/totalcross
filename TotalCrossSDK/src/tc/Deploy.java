@@ -85,13 +85,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
@@ -244,6 +242,7 @@ public class Deploy
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
+      iht.put("palm"   .hashCode(), 0);
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)

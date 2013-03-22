@@ -7,7 +7,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.util.concurrent.*;
 
 public class ImageBook extends MainWindow
 {
@@ -15,7 +14,7 @@ public class ImageBook extends MainWindow
    
    static
    {
-      Settings.useNewFont = Settings.fingerTouch = true;
+      Settings.fingerTouch = true;
    }
    
    // saves the files that contains the images
@@ -50,7 +49,6 @@ public class ImageBook extends MainWindow
       int imgW,imgH;
       int lastIni,lastEnd;
       IOException ex;
-      Lock lock = new Lock();
       
       public ImageLoader(int max, int perpage, String[] arqs)
       {
@@ -98,7 +96,7 @@ public class ImageBook extends MainWindow
             f.readBytes(buf,0,s);
             f.close();
             img = new Image(buf);
-            img = FAST ? img.getScaledInstance(imgW,imgH) : img.getSmoothScaledInstance(imgW,imgH,Color.WHITE);
+            img = FAST ? img.getScaledInstance(imgW,imgH) : img.getSmoothScaledInstance(imgW,imgH);
          }
          catch (IOException ioe)
          {
@@ -166,7 +164,7 @@ public class ImageBook extends MainWindow
                   File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
                   imgq = new Image(f);
                   f.close();
-                  imgq = imgq.getSmoothScaledInstance(s,s,Color.WHITE);
+                  imgq = imgq.getSmoothScaledInstance(s,s);
                }
                img = imgq;
             }
@@ -306,6 +304,10 @@ public class ImageBook extends MainWindow
          gc.setRowsPerPage(LINES_PER_PAGE);
          addCells();
          repaintNow();
+         
+         Control[] cc = gc.getChildren();
+         ScrollContainer sc = (ScrollContainer)cc[1];
+         cc = null;
       }
       catch (Exception ee)
       {

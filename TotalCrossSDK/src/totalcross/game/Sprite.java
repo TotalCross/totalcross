@@ -194,24 +194,12 @@ public class Sprite
    private boolean multiFrame;
 
    /**
-    * The sprite drawOp. <br>
-    * if the drawOp is set to DRAW_SPRITE, the sprite is drawn and the background is not erased where the sprite image
-    * pixels have the transparent color. Valid values are DRAW_PAINT and DRAW_SPRITE.
-    * 
-    * @see totalcross.ui.gfx.Graphics
-    */
-   public int drawOp = Graphics.DRAW_PAINT;
-
-   /**
     * Speed in pixels used by the function towardPos.
     * 
     * @see #towardPos
     */
    public int speed = 8;
 
-   /** cached image transparency color */
-   protected int transColor;
-   protected int transpPixel;
    // cached double buffering with screen erasing
    protected boolean screenErased;
    /** set to false if this sprite never reaches the screen boundaries. Default is true. */
@@ -270,14 +258,6 @@ public class Sprite
       multiFrame = image.getFrameCount() > 1;
 
       this.image = image;
-      if (transColor != -1)
-      {
-         image.transparentColor = transColor;
-         this.transpPixel = image.transparentColor;
-         this.transColor = transColor; // deprecated!
-         drawOp = Graphics.DRAW_SPRITE;
-      }
-
       width = image.getWidth();
       height = image.getHeight();
       if (width <= 0 || height <= 0)
@@ -580,7 +560,7 @@ public class Sprite
          bgGfx.copyRect(surface, bgX - w2, bgY - h2, width, height, 0, 0);
       }
       // copy the sprite image to the graphic context
-      gfx.drawImage(image, centerX - w2, centerY - h2, drawOp, -1, doClip);
+      gfx.drawImage(image, centerX - w2, centerY - h2, doClip);
       if (multiFrame)
          image.nextFrame();
    }

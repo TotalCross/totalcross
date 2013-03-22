@@ -70,57 +70,14 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return true;
 }
 
-static void drawImageLine(ScreenSurface screen, DFBRegion *bounds, int32 minx, int32 miny, int32 maxx, int32 maxy)
-{
-   bounds->x1 = minx;
-   bounds->y1 = miny;
-   bounds->x2 = maxx;
-   bounds->y2 = maxy;
-   SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, bounds, DSFLIP_ONSYNC);
-}
-
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect) // screen's already locked
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // screen's already locked
 {                         
    DFBRegion bounds;
-   switch (transitionEffect)
-   {
-      case TRANSITION_NONE:
-         bounds.x1 = currentContext->dirtyX1;
-         bounds.y1 = currentContext->dirtyY1;
-         bounds.x2 = currentContext->dirtyX2;
-         bounds.y2 = currentContext->dirtyY2;
-         SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, &bounds, DSFLIP_ONSYNC);
-         break;
-      case TRANSITION_CLOSE:
-      case TRANSITION_OPEN:
-      {
-         int32 i0,iinc,i;
-         int32 w = screen->screenW;
-         int32 h = screen->screenH;
-         float incX=1,incY=1;
-         int32 n = min32(w,h);
-         int32 mx = w/2,ww=1,hh=1;
-         int32 my = h/2;
-         if (w > h)
-            {incX = (float)w/h; ww = (int)incX+1;}
-          else
-            {incY = (float)h/w; hh = (int)incY+1;}
-         i0 = transitionEffect == TRANSITION_CLOSE ? n : 0;
-         iinc = transitionEffect == TRANSITION_CLOSE ? -1 : 1;
-         for (i =i0; --n >= 0; i+=iinc)
-         {
-            int32 minx = (int32)(mx - i*incX);
-            int32 miny = (int32)(my - i*incY);
-            int32 maxx = (int32)(mx + i*incX);
-            int32 maxy = (int32)(my + i*incY);
-            drawImageLine(screen,&bounds,minx-ww,miny-hh,maxx+ww,miny+hh);
-            drawImageLine(screen,&bounds,minx-ww,miny-hh,minx+ww,maxy+hh);
-            drawImageLine(screen,&bounds,maxx-ww,miny-hh,maxx+ww,maxy+hh);
-            drawImageLine(screen,&bounds,minx-ww,maxy-hh,maxx+ww,maxy+hh);
-         }
-         break;
-      }
-   }
+   bounds.x1 = currentContext->dirtyX1;
+   bounds.y1 = currentContext->dirtyY1;
+   bounds.x2 = currentContext->dirtyX2;
+   bounds.y2 = currentContext->dirtyY2;
+   SCREEN_EX(screen)->primary->Flip(SCREEN_EX(screen)->primary, &bounds, DSFLIP_ONSYNC);
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)

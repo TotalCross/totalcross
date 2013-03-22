@@ -153,6 +153,11 @@ public class Chart extends Control
 
    private String[] seriesNames = new String[0];
    private Insets ci = new Insets();
+   
+   /** Defines a value that will be used as the y-value width.
+    * @since TotalCross 2.0 
+    */
+   public int yValuesSize;
 
    /**
     * Sets this chart's title
@@ -291,7 +296,7 @@ public class Chart extends Control
 
       if (showYValues)
       {
-         int yvalW = 0;
+         int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
          left += yvalW;
@@ -332,7 +337,7 @@ public class Chart extends Control
       }
 
       double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
-      double val = 0;
+      double val = xAxisMinValue;
 
       for (int i = 0; i <= xAxisSteps; i ++, val += inc)
       {
@@ -350,7 +355,7 @@ public class Chart extends Control
          }
       }
 
-      val = 0;
+      val = yAxisMinValue;
       // adjust the number of steps depending on the number's height
       int ySteps = yAxisSteps;
       while (showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
@@ -362,7 +367,7 @@ public class Chart extends Control
       {
          int pos = getYValuePos(val);
          if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues)
+         if (showYValues && pos != yAxisY1)
          {
             String s = Convert.toCurrencyString(val,yDecimalPlaces);
             g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);

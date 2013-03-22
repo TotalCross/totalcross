@@ -23,7 +23,7 @@ public class TabbedContainerWithImages extends Container
          final Check ch;
          final TabbedContainer tp;
          add(ch = new Check("Disable tabs 1 and 3"), LEFT,TOP+2);
-         tp = new TabbedContainer(images,0);
+         tp = new TabbedContainer(images);
          if (uiAndroid)
             tp.setBackColor(Color.darker(backColor,32));
          tp.activeTabBackColor = Color.ORANGE;
