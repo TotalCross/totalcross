@@ -337,7 +337,7 @@ public class Chart extends Control
       }
 
       double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
-      double val = 0;
+      double val = xAxisMinValue;
 
       for (int i = 0; i <= xAxisSteps; i ++, val += inc)
       {
@@ -355,7 +355,7 @@ public class Chart extends Control
          }
       }
 
-      val = 0;
+      val = yAxisMinValue;
       // adjust the number of steps depending on the number's height
       int ySteps = yAxisSteps;
       while (showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
