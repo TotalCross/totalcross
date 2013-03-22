@@ -85,13 +85,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
