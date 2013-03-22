@@ -153,6 +153,11 @@ public class Chart extends Control
 
    private String[] seriesNames = new String[0];
    private Insets ci = new Insets();
+   
+   /** Defines a value that will be used as the y-value width.
+    * @since TotalCross 2.0 
+    */
+   public int yValuesSize;
 
    /**
     * Sets this chart's title
@@ -291,7 +296,7 @@ public class Chart extends Control
 
       if (showYValues)
       {
-         int yvalW = 0;
+         int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
          left += yvalW;
