@@ -367,7 +367,7 @@ public class Chart extends Control
       {
          int pos = getYValuePos(val);
          if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues)
+         if (showYValues && pos != yAxisY1)
          {
             String s = Convert.toCurrencyString(val,yDecimalPlaces);
             g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
