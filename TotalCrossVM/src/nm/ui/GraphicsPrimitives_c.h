@@ -2542,33 +2542,79 @@ static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelC
 }
 
 // only supports horizontal and vertical lines
-static void drawLineA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, PixelConv color, int32 alpha)
+static void drawHLineA(Context currentContext, Object g, int32 x, int32 y, int32 width, PixelConv color, int32 alpha)
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
    {
-      x1 += Graphics_transX(g);
-      y1 += Graphics_transY(g);
-      x2 += Graphics_transX(g);
-      y2 += Graphics_transY(g);
-      if (x1 < Graphics_clipX1(g))
-         x1 = Graphics_clipX1(g);
-      if (x2 > Graphics_clipX2(g))
-         x2 = Graphics_clipX2(g);
-      if (y1 < Graphics_clipY1(g))
-         y1 = Graphics_clipY1(g);
-      if (y2 > Graphics_clipY2(g))
-         y2 = Graphics_clipY2(g);
-      glDrawLine(x1,y1,x2,y2,color.pixel,alpha);
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      /*
+      | line must lie inside y clip bounds, must not end before clip x1
+      | and must not start after clip x2
+      */
+      if (Graphics_clipY1(g) <= y && y < Graphics_clipY2(g) && Graphics_clipX1(g) <= (x+width) && x < Graphics_clipX2(g)) // NOPT
+      {
+         Pixel* pTgt;
+         if (x < Graphics_clipX1(g))           // line start before clip x1
+         {
+            width -= Graphics_clipX1(g)-x;
+            x = Graphics_clipX1(g);
+         }
+         if ((x+width) > Graphics_clipX2(g))   // line stops after clip x2
+            width = Graphics_clipX2(g)-x;
+   
+         if (width > 0)
+            glDrawLine(x,y,x+width,y,color.pixel,alpha);
+      }
    }
    else
+#endif                                             
+   {
+      int32 c = interpolate(color, getPixelConv(g, x, y), alpha);
+      drawHLine(currentContext, g, x,y,width,c,c);
+   }
+}
+
+static void drawVLineA(Context currentContext, Object g, int32 x, int32 y, int32 height, PixelConv color, int32 alpha)
+{
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+   {
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      /*
+      | line must lie inside x clip bounds, must not end before clip y1
+      | and must not start after clip y2
+      */
+      if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
+      {
+         Pixel * pTgt;
+         int32 pitch = Graphics_pitch(g);
+         uint32 n;
+         if (y < Graphics_clipY1(g))           // line start before clip y1
+         {
+            height -= Graphics_clipY1(g)-y;
+            y = Graphics_clipY1(g);
+         }
+         if ((y+height) > Graphics_clipY2(g))
+            height = Graphics_clipY2(g)-y;           // line stops after clip y2
+   
+         if (height > 0)
+            glDrawLine(x,y,x,y+height,color.pixel,alpha);
+      }
+   }
 #endif
-      drawLine(currentContext, g, x1,y1,x2,y2,interpolate(color, getPixelConv(g, x1, y1), alpha)); // bottom
+   else                                         
+   {
+      int32 c = interpolate(color, getPixelConv(g, x, y), alpha);
+      drawVLine(currentContext, g, x,y,height,c,c);
+   }
 }
 
 static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
-   int32 kx, ky, a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
+   int32 a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
    int32 y2 = yy+hh-1;
    int32 x2 = xx+ww-1;
    int32 x1l = xx+7;
@@ -2583,19 +2629,10 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
       a = windowBorderAlpha[thickness-1][i][0];
       if (a == OUT_BORDER || a == IN_BORDER)
          continue;
-      kx = x1l;
-      ky = yy+i;
-      drawLineA(currentContext, g, kx,ky,x2r,yy+i,borderColor, a); // top
-
-      ky = y2-i;
-      drawLineA(currentContext, g, kx,ky,x2r,y2-i,borderColor, a); // bottom
-
-      kx = xx+i;
-      ky = y1l;
-      drawLineA(currentContext, g, kx,ky,xx+i,y2r,borderColor, a); // left
-
-      kx = x2-i;
-      drawLineA(currentContext, g, kx,ky,x2-i,y2r,borderColor, a); // right
+      drawHLineA(currentContext, g, x1l,yy+i,x2r-x1l,borderColor, a); // top
+      drawHLineA(currentContext, g, x1l,y2-i,x2r-x1l,borderColor, a); // bottom
+      drawVLineA(currentContext, g, xx+i,y1l,y2r-y1l,borderColor, a); // left
+      drawVLineA(currentContext, g, x2-i,y1l,y2r-y1l,borderColor, a); // right
    }
    // round corners
    for (j = 0; j < 7; j++)
