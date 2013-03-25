@@ -18,6 +18,7 @@
 
 package totalcross.ui.chart;
 
+import totalcross.ui.*;
 import totalcross.ui.image.*;
 
 /** The series of data that will be shown in the charts. */
@@ -36,8 +37,13 @@ public class Series
    /** The color to be used when drawing this series on a chart */
    public int color;
    
-   /** An image that will be used in some chars, to be used instead of a circle. */
+   /** An image that will be used in some chars, to be used instead of a circle.
+    * @see #dotVAlign 
+    */
    public Image dot;
+   
+   /** The alignment of the dot image. Use CENTER (default), TOP or BOTTOM. */
+   public int dotVAlign = Control.CENTER;   
 
    /**
     * Creates a new category series
