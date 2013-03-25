@@ -485,7 +485,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getXValuePos(double value)
+   public int getXValuePos(double value)
    {
       return xAxisX1 + (int)Math.round((value - xAxisMinValue) / (xAxisMaxValue - xAxisMinValue) * (xAxisX2 - xAxisX1));
    }
@@ -499,7 +499,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getYValuePos(double value)
+   public int getYValuePos(double value)
    {
       return yAxisY1 - (int)Math.round((value - yAxisMinValue) / (yAxisMaxValue - yAxisMinValue) * (yAxisY1 - yAxisY2));
    }
