@@ -111,7 +111,6 @@ public abstract class PointLineChart extends Chart
                   {
                      int dy;
                      int h = s.dot.getHeight();
-                     System.out.println(c1.y+", "+h);
                      switch (s.dotVAlign)
                      {
                         case Control.TOP   : dy = c1.y-h; break;
