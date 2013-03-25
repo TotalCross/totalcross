@@ -109,7 +109,15 @@ public abstract class PointLineChart extends Chart
                   }
                   else
                   {
-                     g.drawImage(s.dot, c1.x-s.dot.getWidth()/2, c1.y-s.dot.getHeight()/2);
+                     int dy;
+                     int h = s.dot.getHeight();
+                     switch (s.dotVAlign)
+                     {
+                        case Control.TOP   : dy = h; break;
+                        case Control.BOTTOM: dy = -h; break;
+                        default: dy = h/2;
+                     }
+                     g.drawImage(s.dot, c1.x-s.dot.getWidth()/2, c1.y-dy);
                   }
                }
             }
