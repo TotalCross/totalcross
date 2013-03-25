@@ -2604,8 +2604,8 @@ static void drawVLineA(Context currentContext, Object g, int32 x, int32 y, int32
             glDrawLine(x,y,x,y+height,color.pixel,alpha);
       }
    }
-#endif
    else                                         
+#endif
    {
       int32 c = interpolate(color, getPixelConv(g, x, y), alpha);
       drawVLine(currentContext, g, x,y,height,c,c);
