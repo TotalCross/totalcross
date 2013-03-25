@@ -18,6 +18,8 @@
 
 package totalcross.ui.chart;
 
+import totalcross.ui.image.*;
+
 /** The series of data that will be shown in the charts. */
 
 public class Series
@@ -33,6 +35,9 @@ public class Series
 
    /** The color to be used when drawing this series on a chart */
    public int color;
+   
+   /** An image that will be used in some chars, to be used instead of a circle. */
+   public Image dot;
 
    /**
     * Creates a new category series
@@ -58,5 +63,20 @@ public class Series
       this.xValues = xValues;
       this.yValues = yValues;
       this.color = color;
+   }
+
+   /**
+    * Creates a new series
+    * @param name the series' name
+    * @param xValues the series' values for the X axis
+    * @param yValues the series' values for the Y axis
+    * @param dot The image to be used instead of a circle.
+    */
+   public Series(String name, double[] xValues, double[] yValues, Image dot)
+   {
+      this.name = name;
+      this.xValues = xValues;
+      this.yValues = yValues;
+      this.dot = dot;;
    }
 }
