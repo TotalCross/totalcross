@@ -102,8 +102,23 @@ public abstract class PointLineChart extends Chart
                   if (selectedSeries == i && selectedValue == j)
                      c = Color.darker(c);
 
-                  g.backColor = c;
-                  g.fillCircle(c1.x, c1.y, pointR);
+                  if (s.dot == null)
+                  {
+                     g.backColor = c;
+                     g.fillCircle(c1.x, c1.y, pointR);
+                  }
+                  else
+                  {
+                     int dy;
+                     int h = s.dot.getHeight();
+                     switch (s.dotVAlign)
+                     {
+                        case Control.TOP   : dy = c1.y-h; break;
+                        case Control.BOTTOM: dy = c1.y; break;
+                        default: dy = c1.y-h/2;
+                     }
+                     g.drawImage(s.dot, c1.x-s.dot.getWidth()/2, dy);
+                  }
                }
             }
          }

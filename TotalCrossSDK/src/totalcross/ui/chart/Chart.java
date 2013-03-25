@@ -337,7 +337,7 @@ public class Chart extends Control
       }
 
       double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
-      double val = 0;
+      double val = xAxisMinValue;
 
       for (int i = 0; i <= xAxisSteps; i ++, val += inc)
       {
@@ -355,7 +355,7 @@ public class Chart extends Control
          }
       }
 
-      val = 0;
+      val = yAxisMinValue;
       // adjust the number of steps depending on the number's height
       int ySteps = yAxisSteps;
       while (showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
@@ -367,7 +367,7 @@ public class Chart extends Control
       {
          int pos = getYValuePos(val);
          if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues)
+         if (showYValues && pos != yAxisY1)
          {
             String s = Convert.toCurrencyString(val,yDecimalPlaces);
             g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
@@ -485,7 +485,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getXValuePos(double value)
+   public int getXValuePos(double value)
    {
       return xAxisX1 + (int)Math.round((value - xAxisMinValue) / (xAxisMaxValue - xAxisMinValue) * (xAxisX2 - xAxisX1));
    }
@@ -499,7 +499,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getYValuePos(double value)
+   public int getYValuePos(double value)
    {
       return yAxisY1 - (int)Math.round((value - yAxisMinValue) / (yAxisMaxValue - yAxisMinValue) * (yAxisY1 - yAxisY2));
    }
