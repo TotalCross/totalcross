@@ -154,6 +154,12 @@ public class Chart extends Control
    private String[] seriesNames = new String[0];
    private Insets ci = new Insets();
    
+   /** Set to true to let a ChartData be snapped at the bottom. */
+   public boolean snapToBottom;
+   
+   /** Set to true to let a ChartData be snapped at the top. */
+   public boolean snapToTop;
+   
    /** Defines a value that will be used as the y-value width.
     * @since TotalCross 2.0 
     */
@@ -246,17 +252,17 @@ public class Chart extends Control
 
       boolean drawTitle = showTitle && title != null;
       boolean drawCategories = showCategories && xAxisCategories != null;
-      boolean drawLegend = showLegend && sCount > 0;
+      boolean drawLegend   = showLegend && sCount > 0;
 
-      int top = border.top;
+      int top = snapToTop ? 0 : border.top;
       int left = border.left;
-      int bottom = border.bottom;
+      int bottom = snapToBottom ? 0 : border.bottom;
       int right = border.right;
       double incY = (yAxisMaxValue - yAxisMinValue) / yAxisSteps;
       boolean lr = legendPosition == LEFT || legendPosition == RIGHT;
       int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2;
 
-      if (drawTitle)
+      if (drawTitle && !snapToTop)
          top += fmH;
 
       if (drawLegend)
@@ -289,8 +295,8 @@ public class Chart extends Control
       }
       ci.top = ci.bottom = ci.left = ci.right = 0;
       getCustomInsets(ci);
-      top += ci.top;
-      bottom += ci.bottom;
+      top += snapToTop ? 0 : ci.top;
+      bottom += snapToBottom ? 0 : ci.bottom;
       left += ci.left;
       right += ci.right;
 
@@ -300,14 +306,14 @@ public class Chart extends Control
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
          left += yvalW;
-         top += fm.ascent/2;
-         bottom += fm.ascent/2;
+         top += snapToTop ? 0 : fm.ascent/2;
+         bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
             bottom += fmH/2-1;
       }
       else
       if (drawCategories)
-         bottom += fmH - 3;
+         bottom += snapToBottom ? 0 : fmH - 3;
 
       xAxisX1 = left + 3;
       if (xAxisX1 < 0 || xAxisX1 >= width) // validate
@@ -317,8 +323,8 @@ public class Chart extends Control
       if (xAxisX2 < 0 || xAxisX2 >= width || xAxisX2 <= xAxisX1) // validate
          return false;
 
-      yAxisY1 = height - bottom - 4;
-      if (yAxisY1 < 0 || yAxisY1 >= height) // return false;
+      yAxisY1 = height - bottom - (snapToBottom ? 0 : 4);
+      if (yAxisY1 < 0 || yAxisY1 > height) // return false;
          return false;
 
       yAxisY2 = top;
@@ -342,7 +348,7 @@ public class Chart extends Control
       for (int i = 0; i <= xAxisSteps; i ++, val += inc)
       {
          int pos = getXValuePos(val);
-         if (drawAxis) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
+         if (drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
 
          if (showVGrids && pos != xAxisX1) // draw vertical grids
             g.drawDots(pos, yAxisY1, pos, yAxisY2);
@@ -366,11 +372,14 @@ public class Chart extends Control
       for (int i = 0; i <= ySteps; i ++, val += incY)
       {
          int pos = getYValuePos(val);
-         if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues && pos != yAxisY1)
+         if ((!snapToBottom || i != 0) && (!snapToTop || i != ySteps))
          {
-            String s = Convert.toCurrencyString(val,yDecimalPlaces);
-            g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+            if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
+            if (showYValues)
+            {
+               String s = Convert.toCurrencyString(val,yDecimalPlaces);
+               g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+            }
          }
          if (showHGrids && pos != yAxisY1) // draw horizontal grids
             g.drawDots(xAxisX1, pos, xAxisX2, pos);
