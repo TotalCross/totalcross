@@ -215,7 +215,7 @@ public class Check extends Control
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
       xx = wh+2; // guich@300_69
-      g.foreColor = textColor != -1 ? textColor : cfColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }
