@@ -278,7 +278,7 @@ public class Chart extends Control
       {
          sMaxLen += lr ? fm.getMaxWidth(seriesNames, 0, sCount) : (sqWH + 4) * sCount + getTotalSize(seriesNames);
          if (legendValues != null)
-               sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
+            sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
          int ww = sMaxLen + 32;
          if (is3d)
             ww += Math.abs(legendPerspective);
@@ -288,7 +288,8 @@ public class Chart extends Control
                right += ww;
                break;
             case LEFT:
-               left += ww;
+               if (yValuesSize <= 0)
+                  left += ww;
                break;
             case TOP:
                top += fmH+6;
@@ -311,12 +312,10 @@ public class Chart extends Control
 
       if (showYValues)
       {
-         int yvalW = 0;
+         int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
-         yvalW = Math.max(yvalW,yValuesSize);
          left += yvalW;
-         
          top += snapToTop ? 0 : fm.ascent/2;
          bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
