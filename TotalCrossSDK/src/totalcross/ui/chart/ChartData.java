@@ -95,6 +95,8 @@ public class ChartData extends Container
    
    public void onPaint(Graphics g)
    {
+      g.backColor = backColor;
+      g.fillRect(0,0,width,height);
       double inc = (chart.xAxisMaxValue - chart.xAxisMinValue) / chart.xAxisSteps;
       double val = chart.xAxisMinValue;
       if (chart.getXValuePos(val) == 0) return;
