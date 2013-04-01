@@ -311,10 +311,12 @@ public class Chart extends Control
 
       if (showYValues)
       {
-         int yvalW = yValuesSize;
+         int yvalW = 0;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
+         yvalW = Math.max(yvalW,yValuesSize);
          left += yvalW;
+         
          top += snapToTop ? 0 : fm.ascent/2;
          bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
