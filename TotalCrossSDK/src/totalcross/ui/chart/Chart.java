@@ -150,7 +150,7 @@ public class Chart extends Control
    public int axisForeColor; // black
 
    /** Color used in the axis lines. */
-   public int axisBackColor = 0xFF00FF;
+   public int axisBackColor = -1;
 
    /** Color used in the axis text (x,y values). */
    public int axisText; // black
