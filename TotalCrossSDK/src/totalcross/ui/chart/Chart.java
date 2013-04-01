@@ -146,9 +146,15 @@ public class Chart extends Control
    /** Flag that indicates if the axis must be drawn. Defaults to true. */
    protected boolean drawAxis=true;
    
-   /** Color used in the axis. */
-   public int axisColor = -1;
+   /** Color used in the axis lines. */
+   public int axisForeColor; // black
 
+   /** Color used in the axis lines. */
+   public int axisBackColor = -1;
+
+   /** Color used in the axis text (x,y values). */
+   public int axisText; // black
+   
    /** Values that may be shown with the legend. */
    protected String[] legendValues; // guich@tc110_78
 
@@ -334,11 +340,17 @@ public class Chart extends Control
       if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
          return false;
 
-      g.foreColor = axisColor != -1 ? axisColor : Color.BLACK;
-      g.backColor = backColor;
+      g.foreColor = axisForeColor;
       if (!transparentBackground)
-         g.fillRect(0, 0, width, height); // clear
-
+      {
+         g.backColor = backColor;
+         g.fillRect(0,0,width,height);
+         if (axisBackColor != -1 && (drawCategories || showYValues))
+         {
+            g.backColor = axisBackColor;
+            g.fillRect(xAxisX1,yAxisY2,xAxisX2-xAxisX1,yAxisY1-yAxisY2);
+         }
+      }
       if (drawAxis)
       {
          g.drawLine(xAxisX1, yAxisY1, xAxisX2, yAxisY1); // draw X axis
@@ -360,7 +372,9 @@ public class Chart extends Control
          {
             int tW = fm.stringWidth(xAxisCategories[i]);
             pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+            g.foreColor = axisText;
             g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+            g.foreColor = axisForeColor;
          }
       }
 
@@ -381,7 +395,9 @@ public class Chart extends Control
             if (showYValues)
             {
                String s = Convert.toCurrencyString(val,yDecimalPlaces);
+               g.foreColor = axisText;
                g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+               g.foreColor = axisForeColor;
             }
          }
          if (showHGrids && pos != yAxisY1) // draw horizontal grids
@@ -429,7 +445,7 @@ public class Chart extends Control
          g.fillRect(x, y, w, h);
          g.drawRect(x, y, w, h);
 
-         x += 3;
+         x += snapToBottom || snapToTop ? 0 : 3;
          for (int i = 0; i < sCount; i ++)
          {
             g.backColor = ((Series) series.items[i]).color;
