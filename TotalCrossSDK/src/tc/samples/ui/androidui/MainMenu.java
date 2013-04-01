@@ -31,6 +31,7 @@ public class MainMenu extends BaseContainer
       "ButtonMenu",
       "PopupMenu",
       "TabbedContainer",
+      "MultiButton",
    };
 
    Class[] itemClasses =
@@ -48,6 +49,7 @@ public class MainMenu extends BaseContainer
       ButtonMenuSamples.class,
       PopupMenuSamples.class,
       TabbedContainerSamples.class,
+      MultiButtonSamples.class,
    };
    
    BaseContainer[] itemInstances = new BaseContainer[itemClasses.length];
