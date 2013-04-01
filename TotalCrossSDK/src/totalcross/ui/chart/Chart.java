@@ -145,6 +145,9 @@ public class Chart extends Control
 
    /** Flag that indicates if the axis must be drawn. Defaults to true. */
    protected boolean drawAxis=true;
+   
+   /** Color used in the axis. */
+   public int axisColor = -1;
 
    /** Values that may be shown with the legend. */
    protected String[] legendValues; // guich@tc110_78
@@ -331,7 +334,7 @@ public class Chart extends Control
       if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
          return false;
 
-      g.foreColor = Color.BLACK;
+      g.foreColor = axisColor != -1 ? axisColor : Color.BLACK;
       g.backColor = backColor;
       if (!transparentBackground)
          g.fillRect(0, 0, width, height); // clear
