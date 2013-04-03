@@ -141,6 +141,13 @@ public class ChartData extends Container
             yy = data.length * fmH; g.drawDots(v0,yy-1,xf,yy-1);
          }
       }
+      if (chart.markPos != Chart.UNSET)
+      {
+         g.foreColor = chart.categoryMarkColor;
+         g.drawLine(chart.markPos-1,0,chart.markPos-1,height);
+         g.drawLine(chart.markPos,0,chart.markPos,height);
+         g.drawLine(chart.markPos+1,0,chart.markPos+1,height);
+      }
    }
    
    public void reposition()

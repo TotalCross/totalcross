@@ -27,11 +27,22 @@ import totalcross.util.Vector;
 
 public class XYChart extends PointLineChart
 {
+   
    /**
-    * Creates a new XY (scatter) chart
+    * Creates a new XY (scatter) chart without categories
     */
    public XYChart()
    {
+      this(null);
+   }
+   
+   /**
+    * Creates a new XY (scatter) chart with the given categories
+    */
+   public XYChart(String[] categories)
+   {
+      if (categories != null)
+         setXAxis(categories);
       border = new Insets(5, 5, 5, 5);
       showLines = true;
       showPoints = true;
