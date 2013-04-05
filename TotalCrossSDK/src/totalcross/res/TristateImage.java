@@ -84,7 +84,7 @@ public class TristateImage
       }
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
-         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance(backColor));
+         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance());
       return ret;
    }
    
@@ -107,7 +107,7 @@ public class TristateImage
          else 
             ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
-            ret = ret.getFadedInstance(backColor);
+            ret = ret.getFadedInstance();
          htPressed.put(hash, ret);
       }
       return ret;
