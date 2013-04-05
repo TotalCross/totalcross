@@ -102,6 +102,9 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
+   
+   /** @see CalculatorBox#rangeCheck */
+   public CalculatorBox.RangeCheck rangeCheck;
 
    private ControlEvent cursorChangedEvent;
    private StringBuffer chars = new StringBuffer(10);
@@ -1013,6 +1016,7 @@ public class Edit extends Control
 
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
+            calculator.rangeCheck = this.rangeCheck;
             calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
             hideSip();
@@ -1021,6 +1025,7 @@ public class Edit extends Control
 
          case KBD_NUMERIC:
             if (numeric == null) numeric = new CalculatorBox(false);
+            numeric.rangeCheck = this.rangeCheck;
             numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
             hideSip();

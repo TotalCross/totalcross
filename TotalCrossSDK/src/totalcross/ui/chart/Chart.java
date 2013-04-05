@@ -122,6 +122,14 @@ public class Chart extends Control
    /** Flag to indicate whether the categories must be painted */
    public boolean showCategories;
 
+   /** Flag to indicate whether the categories must be painted on the next tick. ShowCategories must be true too. */
+   public boolean showCategoriesOnTick;
+
+   /** The index where the category mark is shown. */
+   public int categoryMarkIndex=-1;
+   /** The color for the category mark. */
+   public int categoryMarkColor = Color.RED;
+
    /** Flag to indicate whether the y values must be painted */
    public boolean showYValues; // guich@tc110_75
 
@@ -145,7 +153,19 @@ public class Chart extends Control
 
    /** Flag that indicates if the axis must be drawn. Defaults to true. */
    protected boolean drawAxis=true;
+   
+   /** Shows the first y value or not. */
+   public boolean showFirstYValue = true;
+   
+   /** Color used in the axis lines. */
+   public int axisForeColor; // black
 
+   /** Color used in the axis lines. */
+   public int axisBackColor = -1;
+
+   /** Color used in the axis text (x,y values). */
+   public int axisText; // black
+   
    /** Values that may be shown with the legend. */
    protected String[] legendValues; // guich@tc110_78
 
@@ -153,6 +173,12 @@ public class Chart extends Control
 
    private String[] seriesNames = new String[0];
    private Insets ci = new Insets();
+   
+   /** Set to true to let a ChartData be snapped at the bottom. */
+   public boolean snapToBottom;
+   
+   /** Set to true to let a ChartData be snapped at the top. */
+   public boolean snapToTop;
    
    /** Defines a value that will be used as the y-value width.
     * @since TotalCross 2.0 
@@ -185,7 +211,7 @@ public class Chart extends Control
     */
    public void setXAxis(double min, double max, int steps)
    {
-      xAxisCategories = null; // disable categories
+//      xAxisCategories = null; // disable categories
       xAxisMinValue = min;
       xAxisMaxValue = max;
       xAxisSteps = steps;
@@ -229,6 +255,9 @@ public class Chart extends Control
    {
    }
 
+   static final int UNSET = -9999999;
+   int markPos = UNSET; 
+
    /**
     * Draws the chart's basic features.
     * @param g The graphics object.
@@ -246,24 +275,24 @@ public class Chart extends Control
 
       boolean drawTitle = showTitle && title != null;
       boolean drawCategories = showCategories && xAxisCategories != null;
-      boolean drawLegend = showLegend && sCount > 0;
+      boolean drawLegend   = showLegend && sCount > 0;
 
-      int top = border.top;
+      int top = snapToTop ? 0 : border.top;
       int left = border.left;
-      int bottom = border.bottom;
+      int bottom = snapToBottom ? 0 : border.bottom;
       int right = border.right;
       double incY = (yAxisMaxValue - yAxisMinValue) / yAxisSteps;
       boolean lr = legendPosition == LEFT || legendPosition == RIGHT;
       int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2;
 
-      if (drawTitle)
+      if (drawTitle && !snapToTop)
          top += fmH;
 
       if (drawLegend)
       {
          sMaxLen += lr ? fm.getMaxWidth(seriesNames, 0, sCount) : (sqWH + 4) * sCount + getTotalSize(seriesNames);
          if (legendValues != null)
-               sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
+            sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
          int ww = sMaxLen + 32;
          if (is3d)
             ww += Math.abs(legendPerspective);
@@ -273,7 +302,8 @@ public class Chart extends Control
                right += ww;
                break;
             case LEFT:
-               left += ww;
+               if (yValuesSize <= 0)
+                  left += ww;
                break;
             case TOP:
                top += fmH+6;
@@ -289,8 +319,8 @@ public class Chart extends Control
       }
       ci.top = ci.bottom = ci.left = ci.right = 0;
       getCustomInsets(ci);
-      top += ci.top;
-      bottom += ci.bottom;
+      top += snapToTop ? 0 : ci.top;
+      bottom += snapToBottom ? 0 : ci.bottom;
       left += ci.left;
       right += ci.right;
 
@@ -300,14 +330,14 @@ public class Chart extends Control
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
          left += yvalW;
-         top += fm.ascent/2;
-         bottom += fm.ascent/2;
+         top += snapToTop ? 0 : fm.ascent/2;
+         bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
             bottom += fmH/2-1;
       }
       else
       if (drawCategories)
-         bottom += fmH - 3;
+         bottom += snapToBottom ? 0 : fmH - 3;
 
       xAxisX1 = left + 3;
       if (xAxisX1 < 0 || xAxisX1 >= width) // validate
@@ -317,19 +347,25 @@ public class Chart extends Control
       if (xAxisX2 < 0 || xAxisX2 >= width || xAxisX2 <= xAxisX1) // validate
          return false;
 
-      yAxisY1 = height - bottom - 4;
-      if (yAxisY1 < 0 || yAxisY1 >= height) // return false;
+      yAxisY1 = height - bottom - (snapToBottom ? 0 : 4);
+      if (yAxisY1 < 0 || yAxisY1 > height) // return false;
          return false;
 
       yAxisY2 = top;
       if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
          return false;
 
-      g.foreColor = Color.BLACK;
-      g.backColor = backColor;
+      g.foreColor = axisForeColor;
       if (!transparentBackground)
-         g.fillRect(0, 0, width, height); // clear
-
+      {
+         g.backColor = backColor;
+         g.fillRect(0,0,width,height);
+         if (axisBackColor != -1 && (drawCategories || showYValues))
+         {
+            g.backColor = axisBackColor;
+            g.fillRect(xAxisX1,yAxisY2,xAxisX2-xAxisX1,yAxisY1-yAxisY2);
+         }
+      }
       if (drawAxis)
       {
          g.drawLine(xAxisX1, yAxisY1, xAxisX2, yAxisY1); // draw X axis
@@ -339,10 +375,13 @@ public class Chart extends Control
       double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
       double val = xAxisMinValue;
 
+      int lastPos = UNSET;
+      markPos = UNSET; 
+      
       for (int i = 0; i <= xAxisSteps; i ++, val += inc)
       {
          int pos = getXValuePos(val);
-         if (drawAxis) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
+         if (drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
 
          if (showVGrids && pos != xAxisX1) // draw vertical grids
             g.drawDots(pos, yAxisY1, pos, yAxisY2);
@@ -350,9 +389,36 @@ public class Chart extends Control
          if (drawCategories && i < xAxisCategories.length) // draw category
          {
             int tW = fm.stringWidth(xAxisCategories[i]);
-            pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
-            g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+
+            if (showCategoriesOnTick)
+            {
+               int p = pos - tW/2;
+               if (p > lastPos)
+               {
+                  g.foreColor = axisText;
+                  g.drawText(xAxisCategories[i], p, yAxisY1, textShadowColor != -1, textShadowColor);
+                  g.foreColor = axisForeColor;
+                  lastPos = p + tW + fmH;
+               }
+               if (categoryMarkIndex == i)
+                  markPos = pos;
+               pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+            }
+            else
+            { 
+               pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+               g.foreColor = axisText;
+               g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+               g.foreColor = axisForeColor;
+            }
          }
+      }
+      if (drawCategories && categoryMarkIndex >= 0 && markPos != UNSET)
+      {
+         g.foreColor = categoryMarkColor;
+         g.drawLine(markPos-1,yAxisY1,markPos-1,yAxisY2);
+         g.drawLine(markPos,yAxisY1,markPos,yAxisY2);
+         g.drawLine(markPos+1,yAxisY1,markPos+1,yAxisY2);
       }
 
       val = yAxisMinValue;
@@ -366,11 +432,19 @@ public class Chart extends Control
       for (int i = 0; i <= ySteps; i ++, val += incY)
       {
          int pos = getYValuePos(val);
-         if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues && pos != yAxisY1)
+         if (i == 0 && !showFirstYValue)
+            ;
+         else
+         if ((!snapToBottom || i != 0) && (!snapToTop || i != ySteps))
          {
-            String s = Convert.toCurrencyString(val,yDecimalPlaces);
-            g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+            if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
+            if (showYValues)
+            {
+               String s = Convert.toCurrencyString(val,yDecimalPlaces);
+               g.foreColor = axisText;
+               g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+               g.foreColor = axisForeColor;
+            }
          }
          if (showHGrids && pos != yAxisY1) // draw horizontal grids
             g.drawDots(xAxisX1, pos, xAxisX2, pos);
@@ -417,12 +491,22 @@ public class Chart extends Control
          g.fillRect(x, y, w, h);
          g.drawRect(x, y, w, h);
 
-         x += 3;
+         x += snapToBottom || snapToTop ? 0 : 3;
          for (int i = 0; i < sCount; i ++)
          {
-            g.backColor = ((Series) series.items[i]).color;
-            g.fillRect(x, y + sqOff, sqWH, sqWH);
-            g.drawRect(x, y + sqOff, sqWH, sqWH);
+            Series se = (Series) series.items[i];
+            if (se.dot != null)
+            {
+               if (se.legendDot == null)
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true);} catch (Exception e) {se.legendDot = se.dot;}
+               g.drawImage(se.legendDot,x,y+sqOff);
+            }
+            else
+            {
+               g.backColor = se.color;
+               g.fillRect(x, y + sqOff, sqWH, sqWH);
+               g.drawRect(x, y + sqOff, sqWH, sqWH);
+            }
             String s = seriesNames[i];
             if (legendValues != null)
                s = s.concat(legendValues[i]);
