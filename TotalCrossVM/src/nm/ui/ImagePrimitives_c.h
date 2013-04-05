@@ -597,7 +597,31 @@ static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // 
    }
 }
 
-static void getPixelRow(Object obj, Object outObj, int32 y)
+static void getAlphaInstance(Object thisObj, Object newObj, int32 delta) // guich@tc110_50
+{
+   PixelConv *in, *out;
+   int32 len;
+   int32 frameCount = Image_frameCount(thisObj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+
+   in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+   out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   len = ARRAYOBJ_LEN(pixelsObj);
+
+   for (; len-- > 0; in++,out++)
+   {                         
+      int32 a = in->a;
+      out->pixel = in->pixel;
+      if (a != 0)
+      {
+         a += delta;
+         if (a < 0) a = 0; else if (a > 255) a = 255;
+            out->a = a;
+      }
+   }
+}
+
+static void getPixelRow(Context currentContext, Object obj, Object outObj, int32 y)
 {
    Object pixObj = (Image_frameCount(obj) > 1) ? Image_pixelsOfAllFrames(obj) : Image_pixels(obj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);

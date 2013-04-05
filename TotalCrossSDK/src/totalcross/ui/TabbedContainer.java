@@ -97,7 +97,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private boolean atTop=true;
    private Rect [] rects,rSel,rNotSel;
    private int fColor,cColor;
-   private int fadedColor[];
    private Rect clientRect;
    private ArrowButton btnLeft, btnRight;
    private static final byte FOCUSMODE_OUTSIDE = 0;
@@ -236,11 +235,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public void setEnabled(int tabIndex, boolean on) // guich@tc110_58
    {
       disabled[tabIndex] = !on;
-      int back = getTabColor(tabIndex);
-      if (!on && (!isTextCaption || imgCaptions != null) && (imgDis[tabIndex] == null || fadedColor[tabIndex] != back))
+      if (!on && (!isTextCaption || imgCaptions != null) && (imgDis[tabIndex] == null))
          try
          {
-            imgDis[tabIndex] = imgCaptions[tabIndex].getFadedInstance(fadedColor[tabIndex] = back);
+            imgDis[tabIndex] = imgCaptions[tabIndex].getFadedInstance();
          }
          catch (ImageException e)
          {
@@ -307,8 +305,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private void setupImageProps()
    {
       imgDis = new Image[count];
-      fadedColor = new int[count];
-      Convert.fill(fadedColor, 0, count-1, -1);
    }
 
    /** Sets the position of the tabs. use constants TABS_TOP or TABS_BOTTOM.

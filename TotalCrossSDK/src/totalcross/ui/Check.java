@@ -202,7 +202,7 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh, backColor),0,0);
+            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor),0,0);
             if (checked)
                g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}

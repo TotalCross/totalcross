@@ -74,7 +74,8 @@ typedef enum
    SMOOTH_SCALED_INSTANCE,
    ROTATED_SCALED_INSTANCE,
    TOUCHEDUP_INSTANCE,
-   FADED_INSTANCE
+   FADED_INSTANCE,
+   ALPHA_INSTANCE
 } FuncType;
 TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
@@ -102,6 +103,9 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          break;
       case FADED_INSTANCE: // guich@tc110_50
          getFadedInstance(thisObj, newObj, color);
+         break;
+      case ALPHA_INSTANCE: // guich@tc200
+         getAlphaInstance(thisObj, newObj, p->i32[2]);
          break;
    }
 }

@@ -302,12 +302,13 @@ public class Image4D extends GfxSurface
    private static final int ROTATED_SCALED_INSTANCE = 2;
    private static final int TOUCHEDUP_INSTANCE = 3;
    private static final int FADED_INSTANCE = 4; // guich@tc110_50
+   private static final int ALPHA_INSTANCE = 5; // guich@tc110_50
 
    native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 
    private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color, int brightness, int contrast, int type) throws totalcross.ui.image.ImageException
    {
-      if (type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
+      if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
          return this;
       
       newW *= frameCount;
@@ -325,6 +326,18 @@ public class Image4D extends GfxSurface
    public Image4D getFadedInstance(int backColor) throws ImageException // guich@tc110_50
    {
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
+   }
+
+   public static int FADE_VALUE = -96;
+
+   public Image4D getFadedInstance() throws ImageException // guich@tc110_50
+   {
+      return getAlphaInstance(FADE_VALUE);
+   }
+   
+   public Image4D getAlphaInstance(int delta) throws ImageException
+   {
+      return getModifiedInstance(width, height, 0, 0, delta, 0, 0, ALPHA_INSTANCE);
    }
 
    public totalcross.ui.image.Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6

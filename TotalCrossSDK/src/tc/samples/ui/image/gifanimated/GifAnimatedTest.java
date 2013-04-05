@@ -103,7 +103,7 @@ public class GifAnimatedTest extends MainWindow
             case 3: img = img.getRotatedScaledInstance(50,90, -1); break;
             case 4: img = img.getTouchedUpInstance((byte)50,(byte)100); break;
             case 5: img.changeColors(no ? 0xA5B500 : 0x31CE31, 0x0077E5); break;
-            case 6: img = img.getFadedInstance(backColor); break;
+            case 6: img = img.getFadedInstance(); break;
             case 7: img.applyColor(Color.RED); break;
             case 8: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight(),img.transparentColor); break;
          }
