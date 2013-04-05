@@ -424,7 +424,7 @@ public class Chart extends Control
       val = yAxisMinValue;
       // adjust the number of steps depending on the number's height
       int ySteps = yAxisSteps;
-      while (showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
+      while (ySteps > 1 && showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
       {
          ySteps--;
          incY = (yAxisMaxValue - yAxisMinValue) / ySteps;
