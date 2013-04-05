@@ -581,23 +581,21 @@ int32 glGetPixel(int32 x, int32 y)
 
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch)
 {          
-   Pixel* p;
-   PixelConv pc;
+   PixelConv* p;
    glpixel gp;
    int32 i;
    if (pixcolors != (int32*)glcolors) flushPixels(9);
    for (; height-- > 0; srcY++,dstPixels += pitch)
    {
       glReadPixels(srcX, appH-srcY-1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, dstPixels); GL_CHECK_ERROR
-      p = dstPixels;
-      for (i = 0; i < width; i++)
+      p = (PixelConv*)dstPixels;
+      for (i = 0; i < width; i++,p++)
       {
-         gp.pixel = *p;
-         pc.a = 255;//gp.a; - with this, the transition effect causes a fade-out when finished in UIGadgets
-         pc.r = gp.r;
-         pc.g = gp.g;
-         pc.b = gp.b;
-         *p++ = pc.pixel;       
+         gp.pixel = p->pixel;
+         p->a = 255;//gp.a; - with this, the transition effect causes a fade-out when finished in UIGadgets
+         p->r = gp.r;
+         p->g = gp.g;
+         p->b = gp.b;
       }
    }   
 }
