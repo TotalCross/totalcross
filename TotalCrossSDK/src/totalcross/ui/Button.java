@@ -118,7 +118,7 @@ public class Button extends Control
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
-   protected int fColor,pressColor=-1,fadedColor=-1;
+   protected int fColor,pressColor=-1;
    protected int fourColors[] = new int[4];
    private int txtPos,tiGap,maxTW;
    private boolean fixPressColor;
@@ -611,18 +611,15 @@ public class Button extends Control
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!isAndroidStyle)
          fourColors[1] = pressColor;
-      if (!enabled && fadedColor != backColor) // guich@tc110_50
-      {
-         if (img != null) 
-            try
-            {
-               imgDis = img.getFadedInstance(fadedColor = backColor);
-            }
-            catch (ImageException e)
-            {
-               imgDis = img;
-            }
-      }
+      if (!enabled && img != null) // guich@tc110_50
+         try
+         {
+            imgDis = img.getFadedInstance();
+         }
+         catch (ImageException e)
+         {
+            imgDis = img;
+         }
    }
 
    /** Paint button's background. */
