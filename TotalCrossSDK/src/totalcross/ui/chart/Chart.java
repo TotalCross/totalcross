@@ -184,6 +184,8 @@ public class Chart extends Control
     * @since TotalCross 2.0 
     */
    public int yValuesSize;
+   
+   public boolean onlyShowCategories;
 
    /**
     * Sets this chart's title
@@ -264,6 +266,8 @@ public class Chart extends Control
     */
    protected boolean draw(Graphics g)
    {
+      int transY = onlyShowCategories ? fm.ascent : 0;
+      g.translate(0,-transY);
       boolean is3d = (type & IS_3D) != 0;
       int sMaxLen = 0;
       int sCount = series.size();
@@ -521,6 +525,7 @@ public class Chart extends Control
          g.backColor = backColor; // back to original back color
       }
       clientRect.set(left, top, this.width - right-left, this.height - top-bottom);
+      g.translate(0,transY);
 
       return true;
    }
