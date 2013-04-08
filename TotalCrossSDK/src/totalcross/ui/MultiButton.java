@@ -148,7 +148,7 @@ public class MultiButton extends Control
             if (enabled && !hadParentScrolled())
             {
                PenEvent pe = (PenEvent)e;
-               int sel = contains(this.x+pe.x,this.y+pe.y) ? pe.x / (width / tits.length) : -1;
+               int sel = isInsideOrNear(pe.x,pe.y) ? pe.x / (width / tits.length) : -1;
                if (sel != this.sel && (sel == -1 || disabled == null || !disabled[sel]))
                   setSelectedIndex(sel);
             }

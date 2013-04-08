@@ -189,7 +189,7 @@ public class PopupMenu extends Window
             sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
          }
          if (enableCancel)
-            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
+            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,PARENTSIZE+90,PREFERRED+fmH);
          add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
          list.setBackColor(Color.WHITE);
          list.addContainers(containers);
