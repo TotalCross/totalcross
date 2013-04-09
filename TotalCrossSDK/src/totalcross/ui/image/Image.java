@@ -1029,6 +1029,8 @@ public class Image extends GfxSurface
    }
 
    /** Creates a faded instance of this image, interpolating all pixels with the given background color.
+    * @deprecated Use getFadedInstance() instead
+    * @see #getFadedInstance()
     * @since TotalCross 1.01
     */
    public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
@@ -1041,6 +1043,51 @@ public class Image extends GfxSurface
       int[] to = (int[])(frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
       for (int i = from.length; --i >= 0;)
          to[i] = (from[i] & 0xFF000000) | Color.interpolate(backColor,from[i]); // keep the alpha channel unchanged
+      if (frameCount != 1)
+      {
+         imageOut.currentFrame = -1;
+         imageOut.setCurrentFrame(0);
+      }
+      return imageOut;
+   }
+
+   /** Used in getFadedInstance(). */
+   public static int FADE_VALUE = -96;
+   
+   /** Creates a faded instance of this image, decreasing the alpha-channel by 128 for all pixels.
+    * @since TotalCross 2.0
+    * @see #FADE_VALUE
+    */
+   public Image getFadedInstance() throws ImageException // guich@tc110_50
+   {
+      return getAlphaInstance(FADE_VALUE);
+   }
+   
+   /** Adds the given value to each pixel's alpha-channel of this image.
+    * Only the pixels that don't have a 0 alpha are changed.
+    * @since TotalCross 2.0
+    */
+   public Image getAlphaInstance(int delta) throws ImageException
+   {
+      Image imageOut = new Image(frameCount > 1 ? widthOfAllFrames : width, height);
+      if (frameCount > 1)
+         imageOut.setFrameCount(frameCount);
+
+      int[] from = (int[])(frameCount > 1 ? pixelsOfAllFrames : pixels);
+      int[] to = (int[])(frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+      for (int i = from.length; --i >= 0;)
+      {
+         int p = from[i];
+         if ((p & 0xFF000000) == 0)
+            to[i] = p;
+         else
+         {
+            int a = (p >>> 24) & 0xFF;
+            a += delta;
+            if (a < 0) a = 0; else if (a > 255) a = 255;
+            to[i] = (p & 0x00FFFFFF) | (a << 24);
+         }
+      }      
       if (frameCount != 1)
       {
          imageOut.currentFrame = -1;
@@ -2058,5 +2105,4 @@ public class Image extends GfxSurface
    public int transparentColor = Color.WHITE;
    /* @deprecated TotalCross 2 no longer uses this field. */
    public boolean useAlpha; // guich@tc126_12
-
 }
