@@ -185,7 +185,13 @@ public class Chart extends Control
     */
    public int yValuesSize;
    
+   /** The text color for the legend. */
+   public int legendTextColor; // black
+   
+   public int fillColor2=-1;
+   
    public boolean onlyShowCategories;
+   protected int columnW;
 
    /**
     * Sets this chart's title
@@ -287,7 +293,7 @@ public class Chart extends Control
       int right = border.right;
       double incY = (yAxisMaxValue - yAxisMinValue) / yAxisSteps;
       boolean lr = legendPosition == LEFT || legendPosition == RIGHT;
-      int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2;
+      int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2,xx;
 
       if (drawTitle && !snapToTop)
          top += fmH;
@@ -359,6 +365,10 @@ public class Chart extends Control
       if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
          return false;
 
+      double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
+      double val = xAxisMinValue;
+      columnW = getXValuePos(val+inc) - getXValuePos(val);
+
       g.foreColor = axisForeColor;
       if (!transparentBackground)
       {
@@ -376,13 +386,20 @@ public class Chart extends Control
          g.drawLine(xAxisX1, yAxisY2, xAxisX1, yAxisY1); // draw Y axis
       }
 
-      double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
-      double val = xAxisMinValue;
-
       int lastPos = UNSET;
       markPos = UNSET; 
-      
-      for (int i = 0; i <= xAxisSteps; i ++, val += inc)
+
+      if (fillColor2 != -1)
+      {
+         double x0 = val;
+         g.backColor = fillColor2;
+         x0 += inc;
+         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc*2) // vertical lines
+            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc)-xx,yAxisY1-yAxisY2);
+      }
+      val = xAxisMinValue;
+
+      for (int i = 0; i <= xAxisSteps; i++, val += inc)
       {
          int pos = getXValuePos(val);
          if (drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
@@ -496,13 +513,14 @@ public class Chart extends Control
          g.drawRect(x, y, w, h);
 
          x += snapToBottom || snapToTop ? 0 : 3;
+         g.foreColor = legendTextColor;
          for (int i = 0; i < sCount; i ++)
          {
             Series se = (Series) series.items[i];
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true);} catch (Exception e) {se.legendDot = se.dot;}
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,false);} catch (Exception e) {se.legendDot = se.dot;}
                g.drawImage(se.legendDot,x,y+sqOff);
             }
             else
