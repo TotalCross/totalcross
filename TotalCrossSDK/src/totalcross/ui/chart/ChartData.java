@@ -71,6 +71,8 @@ public class ChartData extends Container
    String[] title;
    Chart chart;
    public int lineColor = Color.DARK;
+   public int fillColor2 = 0xDDDDDD;
+   public int titleForeColor=-1, titleBackColor=-1;
    
    public boolean snapToTop;
    public boolean snapToBottom;
@@ -101,45 +103,73 @@ public class ChartData extends Container
       double inc = (chart.xAxisMaxValue - chart.xAxisMinValue) / chart.xAxisSteps;
       double val = chart.xAxisMinValue;
       if (chart.getXValuePos(val) == 0) return;
-      int v0 = chart.getXValuePos(val);
+      int v0 = chart.getXValuePos(val),xx;
       int cw = chart.getXValuePos(val+inc) - v0;
+      int ystep = this.height / data.length;
+      int yxtra = this.height % ystep;
 
+      if (fillColor2 != -1)
+      {
+         double x0 = val;
+         g.backColor = fillColor2;
+         x0 += inc;
+         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc*2) // vertical lines
+            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc)-xx,height);
+      }
+      
+      int xx0 = chart.getXValuePos(val);
+      if (titleBackColor != -1)
+      {
+         g.backColor = titleBackColor;
+         g.fillRect(0,0,xx0+1,height);
+      }
+
+      g.backColor = backColor;
       g.foreColor = foreColor;
       int yy = 0;
       for (int i = 0; i < data.length; i++)
       {
          double x0 = val;
+         int hh = ystep;
+         if (i < yxtra) hh++;
          if (title != null)
          {
-            g.setClip(0,yy,chart.getXValuePos(x0)-2,fmH);
-            g.drawText(title[i],0,yy);
+            g.setClip(0,yy,chart.getXValuePos(x0)-2,hh);
+            g.foreColor = titleForeColor != -1 ? titleForeColor : foreColor;
+            g.drawText(title[i],0,yy+(hh-fmH)/2);
          }         
+         g.foreColor = foreColor;
          for (int j = 0, n = data[i].length; j < n; j++, x0 += inc)
          {
-            int xx = chart.getXValuePos(x0);
-            g.setClip(xx,yy,cw,fmH-1);
+            xx = chart.getXValuePos(x0);
+            g.setClip(xx,yy,cw,hh-1);
             String d = data[i][j];
             int sw = fm.stringWidth(d);
-            g.drawText(d,xx+(cw-sw)/2,yy);
+            g.drawText(d,xx+(cw-sw)/2,yy+(hh-fmH)/2);
          }
-         yy += fmH;
+         yy += hh;
       }
       if (lineColor != -1)
       {
          g.clearClip();
          g.backColor = lineColor;
          g.foreColor = backColor;
-         int xf = chart.getXValuePos(val + inc * data[0].length),xx; 
-         double x0 = val;
-         for (int j = 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
+         int xf = chart.getXValuePos(val + inc * data[0].length);
+         double x0 = val+(fillColor2 != -1 ? inc : 0);
+         for (int j = fillColor2 != -1 ? 1 : 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
             g.drawDots(xx = chart.getXValuePos(x0),0,xx,height);
          yy = 0;
-         for (int i = snapToBottom ? 1 : 0, n = data.length; i <= n; i++,yy += fmH) // horizontal lines
-            g.drawDots(v0,yy,xf,yy);
-         if (!snapToTop)
+         int hh = 0;
+         if (fillColor2 != -1)
+            v0++;
+         for (int i = snapToBottom ? 1 : 0, n = data.length; i <= n; i++,yy += hh) // horizontal lines
          {
-            yy = data.length * fmH; g.drawDots(v0,yy-1,xf,yy-1);
+            g.drawDots(v0,yy,xf,yy);
+            hh = ystep;
+            if (i < yxtra) hh++;
          }
+         if (!snapToTop)
+            g.drawDots(v0,height-1,xf,height-1);
       }
       if (chart.markPos != Chart.UNSET)
       {
