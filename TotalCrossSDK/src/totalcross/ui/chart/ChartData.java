@@ -1,6 +1,7 @@
 package totalcross.ui.chart;
 
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
 /**
@@ -73,6 +74,7 @@ public class ChartData extends Container
    public int lineColor = Color.DARK;
    public int fillColor2 = 0xDDDDDD;
    public int titleForeColor=-1, titleBackColor=-1;
+   public int selectedCol=-1,selectedRow=-1;
    
    public boolean snapToTop;
    public boolean snapToBottom;
@@ -99,7 +101,14 @@ public class ChartData extends Container
    {
       g.backColor = backColor;
       if (!transparentBackground)
+      {
          g.fillRect(0,0,width,height);
+         if (chart.axisBackColor != -1)
+         {
+            g.backColor = chart.axisBackColor;
+            g.fillRect(chart.xAxisX1,0,chart.xAxisX2-chart.xAxisX1,height);
+         }
+      }
       double inc = (chart.xAxisMaxValue - chart.xAxisMinValue) / chart.xAxisSteps;
       double val = chart.xAxisMinValue;
       if (chart.getXValuePos(val) == 0) return;
@@ -180,8 +189,43 @@ public class ChartData extends Container
       }
    }
    
+   public void onEvent(Event e)
+   {
+      switch (e.type)
+      {
+         case PenEvent.PEN_UP:
+            if (enabled && !hadParentScrolled())
+            {
+               selectedRow = selectedCol = -1;
+               PenEvent pe = (PenEvent)e;
+               int pex = pe.x, pey = pe.y;
+               if (chart.xAxisX1 <= pex && pex <= chart.xAxisX2 && chart.yAxisY2 <= pey && pey <= chart.yAxisY1)
+               {
+                  int ystep = this.height / data.length;
+                  int yxtra = this.height % ystep;
+                  int x0 = chart.getXValuePos(chart.xAxisMinValue);
+                  selectedCol = (pex-x0) / chart.columnW;
+                  int hh = chart.yAxisY1;
+                  for (int i = 0, n = data.length, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
+                  {
+                     hh = ystep;
+                     if (i < yxtra) hh++;
+                     if (yy <= pey && pey < yy+hh)
+                     {
+                        selectedRow = i;
+                        break;
+                     }
+                  }
+                  postPressedEvent();
+               }
+            }
+            break;
+      }
+   }
+   
    public void reposition()
    {
+      super.reposition(false);
       removeAll();
       initUI();
    }
@@ -189,5 +233,31 @@ public class ChartData extends Container
    public int getPreferredHeight()
    {
       return fmH * data.length;
+   }
+   
+   public String getSelectedCell()
+   {
+      return selectedCol >= 0 && selectedRow >= 0 ? data[selectedRow][selectedCol] : null;
+   }
+
+   public String getCell(int col, int row)
+   {
+      return selectedCol >= 0 && selectedRow >= 0 ? data[row][col] : null;
+   }
+   
+   public void setCell(String text, int col, int row)
+   {
+      data[row][col] = text;
+      Window.needsPaint = true;
+   }
+   
+   public String getTitle(int row)
+   {
+      return title[row];
+   }
+   
+   public void setTitle(String title, int row)
+   {
+      this.title[row] = title;
    }
 }
