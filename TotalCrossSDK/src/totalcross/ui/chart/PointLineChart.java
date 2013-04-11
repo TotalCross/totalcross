@@ -44,6 +44,9 @@ public abstract class PointLineChart extends Chart
 
    /** Flag to indicate whether the points must be painted */
    public boolean showPoints;
+   
+   /** Flag to indicate whether is to show the selected value */
+   public boolean showValue = true;
 
    /** The current selected series */
    private int selectedSeries = -1;
@@ -59,6 +62,12 @@ public abstract class PointLineChart extends Chart
 
    /** Flag to indicate whether this chart is focused */
    private boolean hasFocus;
+   
+   /** The axis that was selected. */
+   public int selectedAxis=-1;
+   
+   /** Flag indicating if its to post an event when the user selects an axis. */
+   public boolean postEventOnAxisSelection;
 
    public void onPaint(Graphics g)
    {
@@ -99,7 +108,7 @@ public abstract class PointLineChart extends Chart
                   Coord c1 = (Coord) v.items[j];
 
                   int c = s.color;
-                  if (selectedSeries == i && selectedValue == j)
+                  if (showValue && selectedSeries == i && selectedValue == j)
                      c = Color.darker(c);
 
                   if (s.dot == null)
@@ -124,7 +133,7 @@ public abstract class PointLineChart extends Chart
          }
 
          // Draw selection (text box)
-         if (selectedSeries != -1)
+         if (selectedSeries != -1 && showValue)
          {
             Series s = (Series) series.items[selectedSeries];
 
@@ -142,6 +151,22 @@ public abstract class PointLineChart extends Chart
    {
       switch (e.type)
       {
+         case PenEvent.PEN_UP:
+         {
+            PenEvent pe = (PenEvent)e;
+            if (!hadParentScrolled() && xAxisX1 <= pe.x && pe.x <= xAxisX2)
+            {
+               int d = columnW/4;
+               for (int i = 0, xx = xAxisX1; xx <= xAxisX2; xx += columnW,i++)
+                  if ((xx-d) <= pe.x && pe.x <= (xx+d))
+                  {
+                     selectedAxis = i;
+                     postPressedEvent();
+                     break;
+                  }
+            }
+            break;
+         }
          case PenEvent.PEN_DOWN:
          {
             PenEvent pe = (PenEvent) e;
