@@ -262,7 +262,7 @@ public class File4B extends RandomAccessStream
       {
          assertOpen();
          if (!conn.isDirectory())
-            throw new IOException("File is not a root directory");
+            throw new IOException("The file can't be open in the DONT_OPEN mode to get its size.");
          
          long size = conn.availableSize();
          return (int)(size > 2147483647 ? 2147483647 : size);

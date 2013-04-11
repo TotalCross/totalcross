@@ -679,8 +679,9 @@ static void applyColor2(Object obj, Pixel color)
    hiR = hip.r;
    hiG = hip.g;
    hiB = hip.b;        
-   if (hiR == 0 && hiG == 0 && hiB == 0)
-      hiR = hiG = hiB = 255;
+   if (hiR == 0) hiR = 255;
+   if (hiG == 0) hiG = 255;
+   if (hiB == 0) hiB = 255;
    
    for (len = len0, pixels = pixels0; len-- > 0; pixels++)
       if (useAlpha || pixels->pixel != transp)

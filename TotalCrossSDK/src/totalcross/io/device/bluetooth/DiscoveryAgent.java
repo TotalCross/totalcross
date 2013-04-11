@@ -97,7 +97,7 @@ public class DiscoveryAgent
     * This method will only cancel the inquiry if the <code>listener</code> provided is the listener that started the
     * inquiry.
     * </p>
-    * Not implemented in ANDROID.
+    * Not implemented on Android.
     * 
     * @param listener
     *           the listener that is receiving inquiry events
@@ -120,11 +120,11 @@ public class DiscoveryAgent
     * discovery type of <code>SERVICE_SEARCH_TERMINATED</code> will occur when this method is called. After receiving
     * this event, no further <code>servicesDiscovered()</code> events will occur as a result of this search.
     * 
-    * Not implemented in ANDROID and Windows CE.
+    * Not implemented on Android and Windows CE.
     * 
     * @param transID
     *           the ID of the service search transaction to cancel; returned by <code>searchServices()</code>
-    * @return <code>true</code> if the service search transaction is terminated, else <code>false</code> if the
+    * @return <code>true</code> if the service search transaction is terminated, else <code>false</code> if
     *         <code>transID</code> does not represent an active service search transaction
     * @since TotalCross 1.2
     */
@@ -139,7 +139,7 @@ public class DiscoveryAgent
     * is maintained by the implementation of this API. (In other words, maintenance of the list of previously found
     * devices is an implementation detail.) A device can be set as a pre-known device in the Bluetooth Control Center.
     *
-    * Works in Android. Pass CACHED to list the unpaired devices, and PREKNOWN to list the paired devices. Note that 
+    * Works on Android. Pass CACHED to list the unpaired devices, and PREKNOWN to list the paired devices. Note that 
     * paired devices may not be at reach at the moment.
     * 
     * @param option
@@ -162,11 +162,11 @@ public class DiscoveryAgent
     * Searches for services on a remote Bluetooth device that have all the UUIDs specified in <code>uuidSet</code>. Once
     * the service is found, the attributes specified in <code>attrSet</code> and the default attributes are retrieved.
     * The default attributes are ServiceRecordHandle (0x0000), ServiceClassIDList (0x0001), ServiceRecordState (0x0002),
-    * ServiceID (0x0003), and ProtocolDescriptorList (0x0004).If <code>attrSet</code> is <code>null</code> then only the
+    * ServiceID (0x0003), and ProtocolDescriptorList (0x0004). If <code>attrSet</code> is <code>null</code> then only the
     * default attributes will be retrieved. <code>attrSet</code> does not have to be sorted in increasing order, but
     * must only contain values in the range [0 - (2<sup>16</sup>-1)].
     * 
-    * Not implemented in ANDROID.
+    * Not implemented on Android.
     * 
     * @param attrSet
     *           indicates the attributes whose values will be retrieved on services which have the UUIDs specified in
@@ -178,7 +178,7 @@ public class DiscoveryAgent
     *           the remote Bluetooth device to search for services on
     * @param discListener
     *           the object that will receive events when services are discovered
-    * @return the transaction ID of the service search; this number must be positive
+    * @return the transaction ID of the service search, which is a positive number.
     * @throws NullPointerException
     *            if <code>uuidSet</code>, <code>btDev</code>, or <code>discListener</code> is <code>null</code>; if an
     *            element in <code>uuidSet</code> array is <code>null</code>
@@ -255,7 +255,7 @@ public class DiscoveryAgent
     * service. How the service is selected if there are multiple services with <code>uuid</code> and which devices to
     * search is implementation dependent.
     *
-    * Not implemented in ANDROID.
+    * Not implemented on Android.
     * 
     * @param uuid
     *           the UUID to search for in the ServiceClassIDList
@@ -294,7 +294,7 @@ public class DiscoveryAgent
     * the application via the method <code>deviceDiscovered()</code> of the interface <code>DiscoveryListener</code>.
     * The <code>cancelInquiry()</code> method is called to stop the inquiry.
     *
-    * Not implemented in ANDROID.
+    * Not implemented on Android.
     * 
     * @param accessCode
     *           the type of inquiry to complete

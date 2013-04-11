@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-import totalcross.res.*;
-import totalcross.sys.*;
 
 /**
  * Radio is a radio control.
@@ -63,6 +63,11 @@ public class Radio extends Control
    private int colors[] = new int[4];
    private int cColor,bColor;
    private int textW;
+   
+   /** Sets the text color of the check. Defaults to the foreground color. 
+    * @since TotalCross 2.0.
+    */
+   public int textColor = -1;
    
    /** Set to the color of the check, if you want to make it different of the foreground color.
     * @since TotalCross 1.3
@@ -433,7 +438,7 @@ public class Radio extends Control
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (Settings.useNewFont && (uiPalm || uiCE || uiFlat) ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = cColor; // guich@tc120_55: use the foreground color
+      g.foreColor = textColor != -1 ? textColor : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 

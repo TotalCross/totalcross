@@ -24,8 +24,8 @@ package totalcross.io.device.bluetooth;
  * of the device and the type of services available on the device.
  * <P>
  * 
- * The Bluetooth Assigned Numbers document (<A HREF="http://www.bluetooth.org/assigned-numbers/baseband.htm">
- * http://www.bluetooth.org/assigned-numbers/baseband.htm</A>) defines the service class, major device class, and minor
+ * The Bluetooth Assigned Numbers document (<a href="http://www.bluetooth.org/assigned-numbers/sdp.htm">
+ * http://www.bluetooth.org/assigned-numbers/sdp.htm</a>) defines the service class, major device class, and minor
  * device class. The table below provides some examples of possible return values and their meaning:
  * <TABLE>
  * <TR>
