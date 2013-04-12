@@ -68,7 +68,7 @@ public abstract class PointLineChart extends Chart
    
    /** Flag indicating if its to post an event when the user selects an axis. */
    public boolean postEventOnAxisSelection;
-
+   
    public void onPaint(Graphics g)
    {
       // Draw lines
@@ -78,17 +78,19 @@ public abstract class PointLineChart extends Chart
          int thick = lineThickness;
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
-            g.foreColor = (((Series) series.items[i]).color);
+            Series s = (Series) series.items[i];
+            g.foreColor = s.color;
             Vector v = (Vector) points.items[i]; // the series' points
             if (v != null)
             {
-               for (int j = v.size() - 2; j >= 0; j --) // for each series point
-               {
-                  Coord c1 = (Coord) v.items[j];
-                  Coord c2 = (Coord) v.items[j + 1];
-                  for (int k = -(thick>>1); k <= (thick>>1); k++)
-                     g.drawLine(c1.x, c1.y-k, c2.x, c2.y-k);
-               }
+               for (int j = 0, n = v.size() - 2; j < n; j++) // for each series point
+                  if (s.yValues[j] != UNSET && s.yValues[j+1] != UNSET)
+                  {
+                     Coord c1 = (Coord) v.items[j];
+                     Coord c2 = (Coord) v.items[j + 1];
+                     for (int k = -(thick>>1); k <= (thick>>1); k++)
+                        g.drawLine(c1.x, c1.y-k, c2.x, c2.y-k);
+                  }
             }
          }
          g.useAA = false;
