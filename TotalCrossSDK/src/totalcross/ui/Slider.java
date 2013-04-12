@@ -61,11 +61,6 @@ public class Slider extends ScrollBar
       barY = new int[5];
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-
-      if (Settings.screenWidth < 200)
-         minDragBarSize = 7;
-      else
-         minDragBarSize = 11;
    }
 
    protected void recomputeParams(boolean justValue)
@@ -94,6 +89,7 @@ public class Slider extends ScrollBar
 
    private void recomputeThumb()
    {
+      minDragBarSize = fmH;
       int s = dragBarSize-1;
       int s2 = s/2;
       for (int i = barX.length; --i >= 0;) barX[i] = barY[i] = 0;
