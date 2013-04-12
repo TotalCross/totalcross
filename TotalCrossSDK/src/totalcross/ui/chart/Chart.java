@@ -263,7 +263,7 @@ public class Chart extends Control
    {
    }
 
-   static final int UNSET = -9999999;
+   public static final int UNSET = -9999999;
    int markPos = UNSET; 
 
    /**
