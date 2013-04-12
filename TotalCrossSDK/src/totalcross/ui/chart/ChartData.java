@@ -260,4 +260,9 @@ public class ChartData extends Container
    {
       this.title[row] = title;
    }
+   
+   public String[][] getData()
+   {
+      return data;
+   }
 }
