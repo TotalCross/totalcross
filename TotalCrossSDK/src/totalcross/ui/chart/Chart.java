@@ -272,8 +272,6 @@ public class Chart extends Control
     */
    protected boolean draw(Graphics g)
    {
-      int transY = onlyShowCategories ? fm.ascent : 0;
-      g.translate(0,-transY);
       boolean is3d = (type & IS_3D) != 0;
       int sMaxLen = 0;
       int sCount = series.size();
@@ -358,11 +356,11 @@ public class Chart extends Control
          return false;
 
       yAxisY1 = height - bottom - (snapToBottom ? 0 : 4);
-      if (yAxisY1 < 0 || yAxisY1 > height) // return false;
+      if (!onlyShowCategories && (yAxisY1 < 0 || yAxisY1 > height)) // return false;
          return false;
 
       yAxisY2 = top;
-      if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
+      if (!onlyShowCategories && (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1)) // validate
          return false;
 
       double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
@@ -380,7 +378,7 @@ public class Chart extends Control
             g.fillRect(xAxisX1,yAxisY2,xAxisX2-xAxisX1,yAxisY1-yAxisY2);
          }
       }
-      if (drawAxis)
+      if (!onlyShowCategories && drawAxis)
       {
          g.drawLine(xAxisX1, yAxisY1, xAxisX2, yAxisY1); // draw X axis
          g.drawLine(xAxisX1, yAxisY2, xAxisX1, yAxisY1); // draw Y axis
@@ -402,9 +400,9 @@ public class Chart extends Control
       for (int i = 0; i <= xAxisSteps; i++, val += inc)
       {
          int pos = getXValuePos(val);
-         if (drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
+         if (!onlyShowCategories && drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
 
-         if (showVGrids && pos != xAxisX1) // draw vertical grids
+         if (!onlyShowCategories && showVGrids && pos != xAxisX1) // draw vertical grids
             g.drawDots(pos, yAxisY1, pos, yAxisY2);
 
          if (drawCategories && i < xAxisCategories.length) // draw category
@@ -417,7 +415,7 @@ public class Chart extends Control
                if (p > lastPos)
                {
                   g.foreColor = axisText;
-                  g.drawText(xAxisCategories[i], p, yAxisY1, textShadowColor != -1, textShadowColor);
+                  g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height-fmH)/2 : yAxisY1, textShadowColor != -1, textShadowColor);
                   g.foreColor = axisForeColor;
                   lastPos = p + tW + fmH;
                }
@@ -434,6 +432,8 @@ public class Chart extends Control
             }
          }
       }
+      if (onlyShowCategories)
+         return true;
       if (drawCategories && categoryMarkIndex >= 0 && markPos != UNSET)
       {
          g.foreColor = categoryMarkColor;
@@ -543,7 +543,6 @@ public class Chart extends Control
          g.backColor = backColor; // back to original back color
       }
       clientRect.set(left, top, this.width - right-left, this.height - top-bottom);
-      g.translate(0,transY);
 
       return true;
    }
