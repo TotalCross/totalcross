@@ -41,6 +41,8 @@ public class Slider extends ScrollBar
    public boolean drawTicks;
    /** Set to false to don't draw the filled area. You must set this property before calling setValues (or the other min/max/value/visibleItems set methods) for the first time. */
    public boolean drawFilledArea = true;
+   /** The color of the slider */
+   public int sliderColor = -1;
 
    /** Constructs a HORIZONTAL Slider. */
    public Slider()
@@ -156,7 +158,7 @@ public class Slider extends ScrollBar
                if (drawFilledArea) g.fillRect(dragBarPos,p+1, width-1-dragBarPos, s-2); // solid = remains
                g.translate(dragBarPos,0);
             }
-            g.backColor = enabled ? fourColors[0] : bc;
+            g.backColor = enabled ? sliderColor != -1 ? sliderColor: fourColors[0] : bc;
             g.foreColor = enabled ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
