@@ -66,6 +66,11 @@ public class Check extends Control
     */
    public boolean leftJustify;
    
+   /** Sets the text color of the check. Defaults to the foreground color. 
+    * @since TotalCross 2.0.
+    */
+   public int textColor = -1;
+   
    /** Set to the color of the check, if you want to make it different of the foreground color.
     * @since TotalCross 1.3
     */
@@ -210,7 +215,7 @@ public class Check extends Control
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
       xx = wh+2; // guich@300_69
-      g.foreColor = cfColor;
+      g.foreColor = textColor != -1 ? textColor : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }

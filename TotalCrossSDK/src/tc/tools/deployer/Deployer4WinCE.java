@@ -223,6 +223,11 @@ public class Deployer4WinCE
          infFileName = "wince.inf";
          cabName = infFileName.substring(0,Math.min(8,infFileName.length()-4)); // strip the .inf - guich@421_75
          deleteCabs();
+         File oFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
+         File iFile = new File("wince.inf",File.READ_ONLY);
+         oFile.copyTo(iFile);
+         oFile.close();
+         iFile.close();
       }
       else
       {

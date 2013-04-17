@@ -2100,8 +2100,9 @@ public class Image extends GfxSurface
       int hiR = (hip >> 16) & 0xFF;
       int hiG = (hip >>  8) & 0xFF;
       int hiB = (hip      ) & 0xFF;
-      if (hip == 0)
-         hiR = hiG = hiB = 255;
+      if (hiR == 0) hiR = 255;
+      if (hiG == 0) hiG = 255;
+      if (hiB == 0) hiB = 255;
       
       for (int n = pixels.length; --n >= 0;)
       {

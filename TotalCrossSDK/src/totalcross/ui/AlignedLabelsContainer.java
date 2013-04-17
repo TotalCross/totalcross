@@ -171,6 +171,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
       yy += Edit.prefH/2; // guich@tc114_5
       for (int i =0; i < labels.length; i++, yy += inc)
       {
+         g.foreColor = foreColor;
          if (foreColors != null)
             g.foreColor = foreColors[i];
          switch (labelAlign)
