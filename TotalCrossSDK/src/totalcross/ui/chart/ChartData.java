@@ -265,4 +265,35 @@ public class ChartData extends Container
    {
       return data;
    }
+
+   /** Adds a new row. Pass -1 to add at the end */
+   public void addLine(int pos)
+   {
+      int rows = data.length;
+      int cols = data[0].length;
+      if (pos < 0 || pos > rows) pos = rows;
+      String[] newRow = new String[cols]; for (int i = newRow.length; --i >= 0;) newRow[i] = "";
+      String[][] newData = new String[rows+1][];
+      int i = 0;
+      for (; i < pos; i++)
+         newData[i] = data[i];
+      newData[i++] = newRow;
+      for (; i <= rows; i++)
+         newData[i] = data[i];
+      this.data = newData;
+   }
+
+   public void removeLine(int pos)
+   {
+      int rows = data.length;
+      if (pos < 0 || pos >= rows) return;
+      String[][] newData = new String[--rows][];
+      int i = 0,j=0;
+      for (; i < pos; i++,j++)
+         newData[i] = data[j];
+      j++; // skip line at pos
+      for (; i < rows; i++,j++)
+         newData[i] = data[j];
+      this.data = newData;
+   }
 }
