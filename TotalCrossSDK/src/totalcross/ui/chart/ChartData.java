@@ -268,33 +268,52 @@ public class ChartData extends Container
    }
 
    /** Adds a new row. Pass -1 to add at the end */
-   public void addLine(int pos)
+   public void addLine(int pos, String title)
    {
       int rows = data.length;
       int cols = data[0].length;
       if (pos < 0 || pos > rows) pos = rows;
+      String[] newTitle = new String[this.title.length + 1];
       String[] newRow = new String[cols]; for (int i = newRow.length; --i >= 0;) newRow[i] = "";
       String[][] newData = new String[rows+1][];
       int i = 0;
       for (; i < pos; i++)
+      {
+         newTitle[i] = this.title[i];
          newData[i] = data[i];
+      }
+      newTitle[i] = title;
       newData[i++] = newRow;
       for (; i <= rows; i++)
+      {
+         newTitle[i] = this.title[i];
          newData[i] = data[i];
+      }
+      this.title = newTitle;
       this.data = newData;
    }
 
    public void removeLine(int pos)
    {
       int rows = data.length;
+      if (pos == -1)
+         pos = rows - 1;
       if (pos < 0 || pos >= rows) return;
       String[][] newData = new String[--rows][];
+      String[] newTitle = new String[rows];
       int i = 0,j=0;
       for (; i < pos; i++,j++)
+      {
          newData[i] = data[j];
+         newTitle[i] = title[j];
+      }
       j++; // skip line at pos
       for (; i < rows; i++,j++)
+      {
          newData[i] = data[j];
+         newTitle[i] = title[j];
+      }
+      this.title = newTitle;
       this.data = newData;
    }
 }
