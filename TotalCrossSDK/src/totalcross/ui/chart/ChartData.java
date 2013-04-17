@@ -75,9 +75,11 @@ public class ChartData extends Container
    public int fillColor2 = 0xDDDDDD;
    public int titleForeColor=-1, titleBackColor=-1;
    public int selectedCol=-1,selectedRow=-1;
-   
+
    public boolean snapToTop;
    public boolean snapToBottom;
+
+   public int use2ndColorEveryXColumns = 1;
 
    /** Constructs a ChartData without title. 
     * @param data The values to be displayed in the format [rows][cols] 
@@ -119,11 +121,10 @@ public class ChartData extends Container
 
       if (fillColor2 != -1)
       {
-         double x0 = val;
+         double x0 = val + inc * use2ndColorEveryXColumns;
          g.backColor = fillColor2;
-         x0 += inc;
-         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc*2) // vertical lines
-            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc)-xx,height);
+         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
+            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,height);
       }
       
       int xx0 = chart.getXValuePos(val);

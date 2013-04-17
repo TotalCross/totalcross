@@ -188,8 +188,10 @@ public class Chart extends Control
    /** The text color for the legend. */
    public int legendTextColor; // black
    
-   public int fillColor2=-1;
-   
+   public int fillColor2 = -1;
+
+   public int use2ndColorEveryXColumns = 1;
+
    public boolean onlyShowCategories;
    protected int columnW;
 
@@ -389,11 +391,10 @@ public class Chart extends Control
 
       if (fillColor2 != -1)
       {
-         double x0 = val;
+         double x0 = val + inc * use2ndColorEveryXColumns;
          g.backColor = fillColor2;
-         x0 += inc;
-         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc*2) // vertical lines
-            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc)-xx,yAxisY1-yAxisY2);
+         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
+            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,yAxisY1-yAxisY2);
       }
       val = xAxisMinValue;
 
