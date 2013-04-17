@@ -161,7 +161,7 @@ public class ChartData extends Container
       if (lineColor != -1)
       {
          g.clearClip();
-         g.backColor = lineColor;
+         g.backColor = fillColor2 != -1 ? fillColor2 : lineColor;
          g.foreColor = backColor;
          int xf = chart.getXValuePos(val + inc * data[0].length);
          double x0 = val+(fillColor2 != -1 ? inc : 0);
