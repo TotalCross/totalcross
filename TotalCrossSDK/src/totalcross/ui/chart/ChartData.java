@@ -165,8 +165,8 @@ public class ChartData extends Container
          g.foreColor = chart.axisForeColor;
          g.drawLine(xx = chart.getXValuePos(val),0,xx,height); // draw Y axis
 
-         g.backColor = fillColor2 != -1 ? fillColor2 : lineColor;
-         g.foreColor = backColor;
+         g.backColor = chart.axisForeColor;
+         g.foreColor = fillColor2 != -1 ? fillColor2 : lineColor;
          int xf = width - chart.border.right - 1;
          double x0 = val+(fillColor2 != -1 ? inc : 0);
          for (int j = fillColor2 != -1 ? 1 : 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
