@@ -167,7 +167,7 @@ public class ChartData extends Container
 
          g.backColor = fillColor2 != -1 ? fillColor2 : lineColor;
          g.foreColor = backColor;
-         int xf = chart.getXValuePos(val + inc * data[0].length);
+         int xf = width - chart.border.right - 1;
          double x0 = val+(fillColor2 != -1 ? inc : 0);
          for (int j = fillColor2 != -1 ? 1 : 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
             g.drawDots(xx = chart.getXValuePos(x0),0,xx,height);
