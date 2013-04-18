@@ -162,6 +162,9 @@ public class ChartData extends Container
       if (lineColor != -1)
       {
          g.clearClip();
+         g.foreColor = chart.axisForeColor;
+         g.drawLine(xx = chart.getXValuePos(val),0,xx,height); // draw Y axis
+
          g.backColor = fillColor2 != -1 ? fillColor2 : lineColor;
          g.foreColor = backColor;
          int xf = chart.getXValuePos(val + inc * data[0].length);
