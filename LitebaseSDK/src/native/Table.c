@@ -1157,8 +1157,8 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
                                                                 uint8* bufAux, int32 first, int32 last, int32 fieldsCount, Heap heap)
 {
 	TRACE("quickSort")
-   PlainDB* plainDB = &table->db;
-   int32* columnSizes = table->columnSizes;
+   PlainDB* plainDB = &table->db;   
+   SQLResultSetField* field;
    int32* vector = table->nodes;
    uint8* basbuf = plainDB->basbuf;
    uint8* columnNulls1 = table->columnNulls;
@@ -1169,20 +1169,23 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
          rowSize = plainDB->rowSize;
-   uint32 size = 2;
+   uint32 size = 2,
+         columnSize;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
    while (--high >= 0)
       stringArray[high] = (StringArray*)TC_heapAlloc(heap, sizeof(StringArray) * fieldsCount);
 
+   // juliana@268_2: solved possible crash using order by when a string order by field does not appear in the select field.
 	while (--count >= 0) // Only loads columns used by the sorting process.
 	{
-		if (columnSizes[pivotIndex = fieldList[count]->tableColIndex])
+      pivotIndex = (field = fieldList[count])->tableColIndex;
+		if ((columnSize = field->table->columnSizes[TC_htGet32(&field->table->htName2index, field->tableColHashCode)]))
 		{
-			pivot[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[pivotIndex] << 1) + 2);
-			someRecord1[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[pivotIndex] << 1) + 2);
-			someRecord2[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[pivotIndex] << 1) + 2);
+			pivot[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSize << 1) + 2);
+			someRecord1[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSize << 1) + 2);
+			someRecord2[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSize << 1) + 2);
 		}
 	}
 
