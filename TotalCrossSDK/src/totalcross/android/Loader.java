@@ -18,12 +18,6 @@
 
 package totalcross.android;
 
-import totalcross.*;
-import totalcross.android.compat.*;
-
-import java.io.*;
-import java.util.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
@@ -33,6 +27,11 @@ import android.os.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import java.io.*;
+import java.util.*;
+
+import totalcross.*;
+import totalcross.android.compat.*;
 
 public class Loader extends Activity
 {
@@ -257,7 +256,7 @@ public class Loader extends Activity
          }
       }
    }
-      
+   
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);

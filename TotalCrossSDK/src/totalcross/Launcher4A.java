@@ -20,6 +20,8 @@ package totalcross;
 
 import totalcross.android.*;
 import totalcross.android.compat.*;
+import totalcross.android.zxing.*;
+import totalcross.android.zxing.common.*;
 
 import java.io.*;
 import java.util.*;
@@ -1414,4 +1416,36 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (tczs.get(i).raf != lastRAF)
             try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
+   
+   public static String zxing(String file)
+   {
+      String text = null;
+      try 
+      {
+         Bitmap bmp = BitmapFactory.decodeFile(file); // "/sdcard/myqrcode.png");
+         bmp = bmp.copy(Bitmap.Config.ARGB_8888, true);
+
+         int[] intArray = new int[bmp.getWidth() * bmp.getHeight()];
+         bmp.getPixels(intArray, 0, bmp.getWidth(), 0, 0, bmp.getWidth(),
+                 bmp.getHeight());
+
+         LuminanceSource source = new RGBLuminanceSource(
+                 bmp.getWidth(), bmp.getHeight(), intArray);
+         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+         MultiFormatReader reader = new MultiFormatReader();
+         Result result = reader.decode(bitmap);
+
+         text = result.getText();
+/*       byte[] rawBytes = result.getRawBytes();
+         BarcodeFormat format = result.getBarcodeFormat();
+         ResultPoint[] points = result.getResultPoints();*/
+      } 
+      catch (Exception e) 
+      {
+         text = "***"+e.getClass().getName()+" - "+e.getMessage();
+         e.printStackTrace();
+      }
+      return text;
+   }
+
 }
