@@ -207,10 +207,8 @@ public class ChartData extends Container
                {
                   int ystep = this.height / data.length;
                   int yxtra = this.height % ystep;
-                  int x0 = chart.getXValuePos(chart.xAxisMinValue);
-                  selectedCol = (pex-x0) / chart.columnW;
-                  int hh = chart.yAxisY1;
-                  for (int i = 0, n = data.length, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
+                  selectedCol = (pex-chart.xAxisX1) / chart.columnW;
+                  for (int i = 0, n = data.length, hh, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
                   {
                      hh = ystep;
                      if (i < yxtra) hh++;
