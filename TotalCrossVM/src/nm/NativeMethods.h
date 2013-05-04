@@ -438,5 +438,6 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+TC_API void tidsS_readBarcode_s(NMParams p);
 
 #endif

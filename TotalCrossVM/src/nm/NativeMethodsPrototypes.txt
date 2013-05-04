@@ -425,6 +425,7 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+TC_API void tidsS_readBarcode_s(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
@@ -2128,6 +2129,10 @@ TC_API void tuBI_intLength_i(NMParams p) // totalcross/util/BigInteger native st
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuBI_intLength_Ii(NMParams p) // totalcross/util/BigInteger native static int intLength(int []words, int len);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
 {
 }
 
@@ -4257,6 +4262,11 @@ TESTCASE(tuBI_intLength_i) // totalcross/util/BigInteger native static int intLe
    finish: ;
 }
 TESTCASE(tuBI_intLength_Ii) // totalcross/util/BigInteger native static int intLength(int []words, int len);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tidsS_readBarcode_s) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
 {
    TEST_SKIP;
    finish: ;

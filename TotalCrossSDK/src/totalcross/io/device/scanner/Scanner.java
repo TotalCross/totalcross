@@ -753,14 +753,17 @@ public class Scanner
 
    static
    {
-      driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                     Vm.attachNativeLibrary("Motorola") || 
-                     Vm.attachNativeLibrary("Symbol") || 
-                     Vm.attachNativeLibrary("Dolphin") || 
-                     Vm.attachNativeLibrary("OpticonH16") || 
-                     Vm.attachNativeLibrary("Intermec");
-      if (!driverLoaded && tries++ == 0)
-         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      if (!Settings.platform.equals(Settings.ANDROID))
+      {
+         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
+                        Vm.attachNativeLibrary("Motorola") || 
+                        Vm.attachNativeLibrary("Symbol") || 
+                        Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("OpticonH16") || 
+                        Vm.attachNativeLibrary("Intermec");
+         if (!driverLoaded && tries++ == 0)
+            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      }
    }
 
    /**
@@ -1013,4 +1016,10 @@ public class Scanner
    {
       return scannerIsPassive && Scanner.setParam(0,0,0);
    }
+   
+   public static String readBarcode(String fileName)
+   {
+      return null;
+   }
+   native public static String readBarcode4D(String fileName);
 }

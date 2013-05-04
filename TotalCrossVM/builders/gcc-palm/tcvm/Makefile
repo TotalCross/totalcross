@@ -91,6 +91,7 @@ NM_IO_FILES =                                   \
 	$(TC_SRCDIR)/nm/io/File.o                    \
 	$(TC_SRCDIR)/nm/io/device_PortConnector.o    \
 	$(TC_SRCDIR)/nm/io/device/RadioDevice.o      \
+	$(TC_SRCDIR)/nm/io/device/scanner/zxing.o    \
 	$(TC_SRCDIR)/nm/io/device/gps/GPS.o
 
 NM_LANG_FILES =                               \

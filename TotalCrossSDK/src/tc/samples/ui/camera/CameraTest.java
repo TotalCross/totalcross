@@ -19,6 +19,7 @@
 package tc.samples.ui.camera;
 
 import totalcross.io.*;
+import totalcross.io.device.scanner.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -109,7 +110,15 @@ public class CameraTest extends MainWindow
                      ic.setImage(img);
                      btnRotate.setEnabled(true);
                      if (Settings.platform.equals(Settings.ANDROID))
+                     {
                         ret = copyToSD(f);
+                        String scan = Scanner.readBarcode(sdfile);
+                        if (scan != null && scan.startsWith("***"))
+                           scan = Scanner.readBarcode("*"+sdfile); // use a try-harder algorithm
+                        if (scan != null)
+                           l.setText(scan);
+                     }
+                     else
                      l.setMarqueeText(img.getWidth() + "x" + img.getHeight() + " (" + s +" bytes) " + ret, 100, 3, -5);
                   }
                   catch (OutOfMemoryError oome) // guich@tc126_24
@@ -167,6 +176,7 @@ public class CameraTest extends MainWindow
       }
    }
 
+   String sdfile;
    private String copyToSD(File f)
    {
       String ret = f.getPath();
@@ -178,6 +188,7 @@ public class CameraTest extends MainWindow
          File f2 = new File(ret2,File.CREATE_EMPTY);
          f.copyTo(f2);
          f2.close();
+         sdfile = ret2;
          ret += " (and also at "+ret2+")";
       } catch (Exception e) {e.printStackTrace();}
       return ret;

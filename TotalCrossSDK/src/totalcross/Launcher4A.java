@@ -1422,28 +1422,36 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       String text = null;
       try 
       {
+         boolean harder = file.startsWith("*");
+         if (harder) file = file.substring(1);
          Bitmap bmp = BitmapFactory.decodeFile(file); // "/sdcard/myqrcode.png");
+         if (bmp == null)
+            throw new Exception("File not found: "+file);
          bmp = bmp.copy(Bitmap.Config.ARGB_8888, true);
-
          int[] intArray = new int[bmp.getWidth() * bmp.getHeight()];
-         bmp.getPixels(intArray, 0, bmp.getWidth(), 0, 0, bmp.getWidth(),
-                 bmp.getHeight());
+         bmp.getPixels(intArray, 0, bmp.getWidth(), 0, 0, bmp.getWidth(), bmp.getHeight());
 
-         LuminanceSource source = new RGBLuminanceSource(
-                 bmp.getWidth(), bmp.getHeight(), intArray);
+         LuminanceSource source = new RGBLuminanceSource(bmp.getWidth(), bmp.getHeight(), intArray);
          BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
          MultiFormatReader reader = new MultiFormatReader();
-         Result result = reader.decode(bitmap);
+         Hashtable<DecodeHintType, Object> decodeHints = new Hashtable<DecodeHintType, Object>();
+         if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+         Result result = reader.decode(bitmap, decodeHints);
+         //Result result = reader.decode(bitmap);
 
          text = result.getText();
+         //BarcodeFormat format = result.getBarcodeFormat();
 /*       byte[] rawBytes = result.getRawBytes();
-         BarcodeFormat format = result.getBarcodeFormat();
          ResultPoint[] points = result.getResultPoints();*/
       } 
-      catch (Exception e) 
+      catch (NotFoundException nfe)
       {
-         text = "***"+e.getClass().getName()+" - "+e.getMessage();
+         text = "***NO BARCODE FOUND";
+      }
+      catch (Throwable e) 
+      {
          e.printStackTrace();
+         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1
       }
       return text;
    }

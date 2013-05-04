@@ -236,7 +236,7 @@ extern void *pealAlert68K;
 extern const void *gEmulStateP;
 extern Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-extern jmethodID jshowCamera,jgetNativeResolutions;
+extern jmethodID jshowCamera,jgetNativeResolutions,jzxing;
 
 // android/GPS_c.h
 extern jmethodID jgpsFunc,jcellinfoUpdate;

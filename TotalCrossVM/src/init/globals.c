@@ -238,7 +238,7 @@ void *pealAlert68K;
 const void *gEmulStateP;
 Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-jmethodID jshowCamera,jgetNativeResolutions;
+jmethodID jshowCamera,jgetNativeResolutions,jzxing;
 
 // android/GPS_c.h
 jmethodID jgpsFunc,jcellinfoUpdate;
