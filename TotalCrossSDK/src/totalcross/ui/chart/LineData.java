@@ -181,27 +181,20 @@ public class LineData extends Container
          int lastX = -1;
          String lastV = "";
          boolean glue = false;
-         for (int j = 0, n = data[i].length; j < n; j++, x0 += inc)
+         int n = data[i].length;
+         while (n > 0 && data[i][n-1].equals(""))
+            n--;
+         for (int j = 0; j < n; j++, x0 += inc)
          {
             xx = chart.getXValuePos(x0) - cw/2;
             //g.setClip(xx,yy,cw,hh-1);
             String d = data[i][j];
             if (d.length() > 0)
             {
-               if (d.equals(lastV))
+               if (d.equals(lastV) && j < n-1)
                {
                   glue = true;
                   continue;
-               }
-               else
-               if (glue && lastX != -1)
-               {
-                  g.foreColor = colors[i];
-                  int ly = yy + hh/2;
-                  g.drawLine(lastX, ly-1, xx, ly-1);
-                  g.drawLine(lastX, ly, xx, ly);
-                  g.drawLine(lastX, ly+1, xx, ly+1);
-                  g.foreColor = textColor;
                }
                int sw = fm.stringWidth(d);
                int xt = xx+(cw-backw)/2;
@@ -217,6 +210,15 @@ public class LineData extends Container
                catch (ImageException e)
                {
                   // just ignore and dont draw the back
+               }
+               if (glue && lastX != -1)
+               {
+                  g.foreColor = colors[i];
+                  int ly = yy + hh/2;
+                  g.drawLine(lastX, ly-1, xx+1, ly-1);
+                  g.drawLine(lastX, ly, xx+1, ly);
+                  g.drawLine(lastX, ly+1, xx+1, ly+1);
+                  g.foreColor = textColor;
                }
                if (back != null)
                {
