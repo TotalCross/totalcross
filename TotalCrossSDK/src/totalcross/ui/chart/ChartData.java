@@ -81,6 +81,11 @@ public class ChartData extends Container
 
    public int use2ndColorEveryXColumns = 1;
 
+   /**
+    * The height of the cell when using PREFERRED, defined as a % of the control's font height. Default value is 100(%).
+    */
+   public int preferredCellHeight = 100;
+
    /** Constructs a ChartData without title. 
     * @param data The values to be displayed in the format [rows][cols] 
     */
@@ -234,7 +239,7 @@ public class ChartData extends Container
    
    public int getPreferredHeight()
    {
-      return fmH * data.length;
+      return fmH * preferredCellHeight * data.length / 100;
    }
    
    public String getSelectedCell()
