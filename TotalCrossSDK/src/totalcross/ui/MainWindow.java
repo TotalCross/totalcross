@@ -633,7 +633,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       {
          gscr.getRGB(buf, 0,0,y,w,1);
          gimg.setRGB(buf, 0,0,y,w,1);
-      }      
+      }
       return img;
    }
 }
