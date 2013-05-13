@@ -102,9 +102,10 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
-   
-   /** Defines the total transition time. Defaults to 1000 (1 second).
-    * @since TotalCross 2.0 
+   /**
+    * Defines the total transition time. Defaults to 1000 (1 second).
+    * 
+    * @since TotalCross 1.68
     */
    public static int TRANSITION_TIME = Settings.onJavaSE ? 500 : 1000;
 

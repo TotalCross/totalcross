@@ -553,6 +553,12 @@ static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // 
       out->r = (in->r + (int32)r) >> 1;
       out->g = (in->g + (int32)g) >> 1;
       out->b = (in->b + (int32)b) >> 1;
+      {
+         out->a = in->a;
+         out->r = (in->r + (int32)r) >> 1;
+         out->g = (in->g + (int32)g) >> 1;
+         out->b = (in->b + (int32)b) >> 1;
+      }
    }
 }
 
