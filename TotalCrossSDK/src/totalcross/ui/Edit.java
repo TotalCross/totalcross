@@ -128,7 +128,6 @@ public class Edit extends Control
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
-   private int lastPenDown=-1;
    public boolean showKeyboardOnNextEvent;
    static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
@@ -643,6 +642,8 @@ public class Edit extends Control
          chars.append(s);
          if (mode == CURRENCY && isMaskedEdit) // correct the number if this is a numeric edit
          {
+            isNegative = s.startsWith("-");
+            if (isNegative) {len--; s = s.substring(1); chars.deleteCharAt(0);} // guich@tc168 - if user sends a negative value, remove it from start and set the flag
             if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1)
                s = Convert.replace(s,".","").replace(',','.');
 
@@ -1397,12 +1398,10 @@ public class Edit extends Control
                else
                   clearSelect = true;
             } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
-         	lastPenDown = event.timeStamp;
             break;
          }
          case PenEvent.PEN_DRAG:
          {
-            lastPenDown = -1;
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
             if (newInsertPos != insertPos && enabled)
@@ -1410,7 +1409,6 @@ public class Edit extends Control
             break;
          }
          case PenEvent.PEN_UP:
-            lastPenDown = -1;
             if (kbdType != KBD_NONE && virtualKeyboard && !hadParentScrolled())
             {
                if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
@@ -1519,7 +1517,6 @@ public class Edit extends Control
 
    private boolean showClipboardMenu()
    {
-      lastPenDown = -1;
       int idx = showClipboardMenu(this);
       if (0 <= idx && idx <= 3)
       {
