@@ -813,8 +813,15 @@ public final class Settings
    {
       return screenWidth > screenHeight;
    }
-   
-	// this class can't be instantiated
+
+   /**
+    * Returns true if this is an open gl platform (IOS or Android).
+    * 
+    * @since TotalCross 1.68
+    */
+   public static boolean isOpenGL;
+
+   // this class can't be instantiated
 	private Settings()
 	{
 	}
