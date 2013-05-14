@@ -24,7 +24,6 @@ Litebase_sources = \
 	$(LBDIR)/NativeMethods.o	\
 	$(LBDIR)/ResultSet.o	\
 	$(LBDIR)/Table.o \
-	$(LBDIR)/Value.o \
 	$(LBDIR)/Key.o \
 	$(LBDIR)/Node.o \
 	$(LBDIR)/Index.o \
@@ -39,7 +38,6 @@ Parser_sources = \
 	$(LBDIR)/parser/LitebaseLex.o \
 	$(LBDIR)/parser/LitebaseMessage.o \
 	$(LBDIR)/parser/LitebaseParser.o \
-	$(LBDIR)/parser/LitebaseParser.tab.o \
 	$(LBDIR)/parser/SQLBooleanClause.o \
 	$(LBDIR)/parser/SQLBooleanClauseTree.o \
 	$(LBDIR)/parser/SQLColumnListClause.o \

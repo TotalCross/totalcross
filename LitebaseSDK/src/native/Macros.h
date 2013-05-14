@@ -65,10 +65,11 @@
 
 // LitebaseConnection
 #define OBJ_LitebaseIsAscii(o)      FIELD_I32(o, 0)					// LitebaseConnection.isAscii
-#define OBJ_LitebaseDontFinalize(o) FIELD_I32(o, 1)					// LitebaseConnection.dontFinalize
-#define OBJ_LitebaseKey(o)          FIELD_I32(o, 2)					// LitebaseConnection.key 
-#define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 3)					// LitebaseConnection.appCrid
-#define OBJ_LitebaseSlot(o)         FIELD_I32(o, 4)					// LitebaseConnection.slot
+#define OBJ_LitebaseUseCrypto(o)    FIELD_I32(o, 1)					// LitebaseConnection.useCrypto
+#define OBJ_LitebaseDontFinalize(o) FIELD_I32(o, 2)					// LitebaseConnection.dontFinalize
+#define OBJ_LitebaseKey(o)          FIELD_I32(o, 3)					// LitebaseConnection.key 
+#define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 4)					// LitebaseConnection.appCrid
+#define OBJ_LitebaseSlot(o)         FIELD_I32(o, 5)					// LitebaseConnection.slot
 
 // LitebaseConnection.htTables
 #define getLitebaseHtTables(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))
@@ -81,6 +82,11 @@
 // LitebaseConnection.htPS // juliana@226_16
 #define getLitebaseHtPS(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
 #define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
+
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
+// LitebaseConnection.nodes 
+#define getLitebaseNodes(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 3))
+#define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (intptr_t)v)
 
 // PreparedStatement
 #define OBJ_PreparedStatementType(o)          FIELD_I32(o, 0)               // PreparedStatement.type  
@@ -141,7 +147,7 @@
 #define isBitUnSet(items, index) !(((items)[(index) >> 3] & ((int32)1 << ((index) & 7))))   // Verifies if a bit is unset.
 
 // Checks if a bit is set in a <code>IntVector</code>.
-#define IntVectorisBitSet(v, index) ((v)->items[(index)>>5] & ((int32)1 << ((index) & 31)))
+#define IntVectorisBitSet(v, index) ((v)->items[(index) >> 5] & ((int32)1 << ((index) & 31)))
 
 // Implements a stack using an <code>IntVector</code> or a <code>ShortVector</code>.
 #define IntVectorPop(intVector)              intVector.items[--intVector.size]      // pop
@@ -171,9 +177,10 @@
 // Updates the hash code of a sql select command.
 #define CALCULATE_HASH(character) if (parser->yyposition > 0) hash = (hash << 5) - hash + (int32)(character)
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 // Key macros.
 // Indicates if two keys are equal.
-#define keyEquals(key1, key2, size) (key2 && !keyCompareTo(key1, key2, size))
+#define keyEquals(context, key1, key2, size, plainDB) (key2 && !keyCompareTo(context, key1, key2, size, plainDB))
 
 // Indicates if a node of an index is a leaf node.
 #define nodeIsLeaf(node) (*node->children == LEAF) 

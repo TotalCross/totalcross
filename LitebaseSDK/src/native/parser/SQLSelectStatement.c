@@ -42,24 +42,24 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	xmemmove(selectClause, &parser->select, sizeof(SQLSelectClause));
 	selectClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = ((selectClause->fieldsCount? selectClause->fieldsCount : MAXIMUMS) << 2));
 	xmemmove(selectClause->fieldList, parser->selectFieldList, count);
-   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->tableListSize << 2));
+   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->select.tableListSize << 2));
 	xmemmove(selectClause->tableList, parser->tableList, count);
 
    if (isPrepared) // It is only necessary to re-allocate the parser structures if the statement is from a prepared statement.
 	{
-      if (parser->group_by.fieldsCount) // Sets the group by clause.
+      if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
 			listClause = selectStmt->groupByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->group_by, sizeof(SQLColumnListClause));
-			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->group_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->groupBy, sizeof(SQLColumnListClause));
+			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->groupBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->groupByfieldList, count);
 		}
 
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
 			listClause = selectStmt->orderByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->order_by, sizeof(SQLColumnListClause));
-		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->order_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->orderBy, sizeof(SQLColumnListClause));
+		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->orderBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->orderByfieldList, count);
 		}
 
@@ -81,14 +81,14 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	}
 	else
 	{
-		if (parser->group_by.fieldsCount) // Sets the group by clause.
+		if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
-         selectStmt->groupByClause = &parser->group_by;
+         selectStmt->groupByClause = &parser->groupBy;
 			selectStmt->groupByClause->fieldList = parser->groupByfieldList;
 		}
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
-         selectStmt->orderByClause = &parser->order_by;
+         selectStmt->orderByClause = &parser->orderBy;
          selectStmt->orderByClause->fieldList = parser->orderByfieldList;
 		}
    
@@ -703,8 +703,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       goto error;
    }
 
-	i = -1;	
-	xmemset(colIndexesTable, -1, MAXIMUMS);
+	i = -1;		
+	xmemset(colIndexesTable, -1, MAXIMUMS); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
 	
    while (++i < selectFieldsCount)
    {
@@ -764,7 +764,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (!colIndexesTable[(field = fieldList[i])->tableColIndex])
+         // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         if (!colIndexesTable[(field = fieldList[i])->tableColIndex]) 
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
@@ -1063,10 +1064,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             index = tempTable1->columnIndexes[field->index];
          if (field->sqlFunction == FUNCTION_AGG_MAX)
          {
-            if (!findMaxValue(context, index, curRecord[i], rowsBitmap, heap))
+            if (!findMaxValue(context, index, curRecord[i], rowsBitmap))
                goto error;
          }
-         else if (!findMinValue(context, index, curRecord[i], rowsBitmap, heap))
+         else if (!findMinValue(context, index, curRecord[i], rowsBitmap))
             goto error;
       }
       
@@ -1462,7 +1463,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
       auxBitmap = newIntBits(recordCount, heap); 
    else
       xmemzero(&auxBitmap, sizeof(IntVector));
-      
+
    rsBag->indexCount = 0;
    table = rsBag->table;
    
@@ -1539,7 +1540,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
          {
             if (!getOperandValue(context, indexedValues[j + i + 1], &markBits.rightKey.keys[0]))
                return false;
-            markBits.rightKey.valRec = NO_VALUE;
+            markBits.rightKey.record = NO_VALUE;
             markBits.rightKey.index = index; 
             markBits.rightOp[j] = relationalOps[j + i++ + 1]; // The next operation is already processed.
          }
@@ -1569,7 +1570,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
          markBits.leftOp[j] = op;
       }
       markBits.leftKey.index = index;
-      markBits.leftKey.valRec = NO_VALUE;
+      markBits.leftKey.record = NO_VALUE;
 
       switch (op) // Finally, marks all rows that match this value / range of values.
       {
@@ -2901,17 +2902,14 @@ void findMaxMinIndex(SQLResultSetField* field)
        field->isComposed = false;
    }
    else
-   {
       while (--i >= 0)
-      {
          if (*composedIndices[i]->columns == column) // Else, if the field is the first field of a composed index, uses it.
          {
             field->index = i;
             field->isComposed = true;
             break;
          }
-      }
-   }
+
    if (i == -1)
       field->index = -1;
 }

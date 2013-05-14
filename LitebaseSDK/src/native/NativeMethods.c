@@ -435,15 +435,17 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
 
 //////////////////////////////////////////////////////////////////////////
 // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid, String params) 
-//                                                                                                 throws DriverException, NullPointerException;
+//
+// juliana@253_8: now Litebase supports weak cryptography.                                                                                                 throws DriverException, NullPointerException;
 /**
  * Creates a connection with Litebase.
  *
  * @param p->obj[0] The creator id, which may be the same one of the current application.
- * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data path, or 
- * <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or <code>unicode</code>, 
- * and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If only the path is passed as
- * a parameter, unicode is used. Notice that path must be absolute, not relative. 
+ * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
+ * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+ * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+ * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+ * cryptography. Notice that path must be absolute, not relative. 
  * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
  * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
@@ -629,8 +631,9 @@ LB_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public
       Object driver = p->obj[0],
              sqlString = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
-
-      if (logger)
+	          
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5])
       {
 	      LOCKVAR(log);
 	      TC_executeMethod(context, loggerLog, logger, 16, sqlString, false);
@@ -685,7 +688,8 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
             hashCode;
       bool isSelect = false;
 
-      if (logger) // juliana@230_30: reduced log files size.
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
 	   {
 	      Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
          
@@ -988,7 +992,8 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-	   if (logger) // juliana@230_30: reduced log files size.
+	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
 	   {
 		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1039,7 +1044,8 @@ LB_API void lLC_getRowCount_s(NMParams p)
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-		if (logger) // juliana@230_30: reduced log files size.
+		// juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
 		{
 			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1196,19 +1202,39 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         int32 tableNameLength = String_charsLen(tableNameObj);
+         int32 length = String_charsLen(tableNameObj),
+               slot = OBJ_LitebaseSlot(driver);
          CharP sourcePath = getLitebaseSourcePath(driver);
-         
+
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-         if (tableNameLength + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
-             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+         if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
          else
          {
-            TC_JCharP2CharPBuf(String_charsStart(tableNameObj), tableNameLength, tableNameCharP);
+            TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
             getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
             xstrcat(bufName, DB_EXT);
             getFullFileName(bufName, sourcePath, fullName);
-            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+            p->retI = lbfileExists(fullName, slot);
+         
+            // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
+#ifdef WINCE
+            length = TC_JCharPLen(fullName);
+#else
+            length = xstrlen(fullName);
+#endif
+            fullName[length] = 'o';
+            fullName[length + 1] = 0;
+            if (p->retI && !lbfileExists(fullName, slot))
+            {
+#ifdef WINCE
+               char path[MAX_PATHNAME];
+               TC_JCharP2CharPBuf(fullName, -1, path);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
+#else
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
+#endif                         
+            }
          }
       }
    }
@@ -1270,6 +1296,7 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
 // DriverException.
 // juliana@201_13: .dbo is now being purged.
 // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes. When 
  * a new record is added, it doesn't uses the position of the previously deleted one. This can make the table big, if a table is created, filled and 
@@ -1325,6 +1352,7 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1354,7 +1382,9 @@ LB_API void lLC_purge_s(NMParams p)
                   length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                   remain = 0,
                   type,
+                  numberOfBytes = NUMBEROFBYTES(columnCount),
                   slot = table->slot;
+            bool useCrypto = dbFile->useCrypto;
             CharP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
             Heap heap = heapCreate(); 
@@ -1392,7 +1422,7 @@ free:
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
             xstrcat(buffer, "_");
-            if (!nfCreateFile(context, buffer, true, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
+            if (!nfCreateFile(context, buffer, true, useCrypto, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
                goto free;
 
 		      plainDB->rowInc = willRemain;
@@ -1420,26 +1450,26 @@ free:
                         goto free;
                      }
 						
-				      xmemmove(&basbuf[columnOffsets[j]], columnNulls0, NUMBEROFBYTES(j)); 
+				      xmemmove(&basbuf[columnOffsets[j]], columnNulls0, numberOfBytes); 
 						
                   // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                   // juliana@220_4: added a crc32 code for every record. Please update your tables.
                   j = basbuf[3];
-                  basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                  basbuf[3] = useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                   
                   // juliana@230_12: improved recover table to take .dbo data into consideration.
-                  crc32 = updateCRC32(basbuf, length, 0);
+                  crc32 = updateCRC32(basbuf, length, 0, useCrypto);
                   
                   if (table->version == VERSION_TABLE)
                   {
                      k = columnCount;
                      while (--k >= 0)
                         if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, k))
-                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
+                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32, false);
                         else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, k))
                         {
                            dataLength = record[k]->length;
-                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                         }
                   }
                   
@@ -1485,7 +1515,7 @@ free:
          while (--i >= 0)
 
             // juliana@202_14: Corrected the simple index re-creation when purging the table. 
-            if (columnIndexes[i] && !tableReIndex(context, table, i, 0, null))
+            if (columnIndexes[i] && !tableReIndex(context, table, i, false, null))
             {
                table->deletedRowsCount = deleted;
                goto finish;
@@ -1494,7 +1524,7 @@ free:
          // recreate the composed indexes
          if ((i = table->numberComposedIndexes) > 0)
             while (--i >= 0)
-               if (!tableReIndex(context, table, -1, 0, composedIndexes[i]))
+               if (!tableReIndex(context, table, -1, false, composedIndexes[i]))
                {
                   table->deletedRowsCount = deleted;
                   goto finish;
@@ -1549,7 +1579,8 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection 
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-		if (logger) // juliana@230_30: reduced log files size.
+		// juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
 		{
 			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1599,7 +1630,8 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table = getTableFromName(context, driver, tableName);
 
-	   if (logger) // juliana@230_30: reduced log files size.
+	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
 	   {
 		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1999,6 +2031,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 // DriverException.
 // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
 // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid.
  * 
@@ -2042,7 +2075,6 @@ LB_API void lLC_recoverTable_s(NMParams p)
          int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
                i = -1,
-               j,
                read,
                rows,
                dataLength,
@@ -2052,6 +2084,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc,
                deleted = 0,
                type;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
+         uint32 j;
          int8* types;       
          
          // juliana@230_12
@@ -2119,6 +2153,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
          }
+         
+         if (useCrypto)
+            crc32Lido ^= 0xAA;
+         
 	      if ((crc32Lido & IS_SAVED_CORRECTLY) == IS_SAVED_CORRECTLY) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CLOSED), name);
@@ -2137,8 +2175,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
          name[xstrlen(name) - 3] = 0;
 
+          // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      rows = (plainDB = &table->db)->rowCount;
@@ -2154,7 +2194,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          columnSizes = table->columnSizes;
          
          j = columnCount;
-         while (--j > 0)
+         while (--j)
             if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
                record[j]->asChars = TC_heapAlloc(heap, columnSizes[j] << 1);
             else if (type == BLOB_TYPE)
@@ -2170,23 +2210,24 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		      else 
 		      {
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
-			      basbuf[3] = 0; // Erases rowid information.
+			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
    			   
 			      // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32Calc = updateCRC32(basbuf, crcPos, 0);
+               crc32Calc = updateCRC32(basbuf, crcPos, 0, useCrypto);
 
                if (table->version == VERSION_TABLE)
-               {
-                  readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
+               {  
+                  if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
+                     goto finish;
                   
                   j = columnCount;
-                  while (--j > 0)
+                  while (--j)
                      if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc, false);
                      else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                      {
                         dataLength = record[j]->length;
-                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc, false);
                      }
                }
                
@@ -2239,6 +2280,7 @@ finish:
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, this 
  * method can't be used. It is possible to know if the table version is not compativel with the current version used in Litebase because an exception
@@ -2283,7 +2325,6 @@ LB_API void lLC_convert_s(NMParams p)
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
                i,
-               j = 0,
                rowid,
                crc32,
                length,
@@ -2294,6 +2335,8 @@ LB_API void lLC_convert_s(NMParams p)
                columnCount,
                read,
                type;
+         uint32 j = 0;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          int8* types;
          int32* sizes;         
             
@@ -2356,6 +2399,10 @@ LB_API void lLC_convert_s(NMParams p)
             lbfileClose(&tableDb);
             goto finish;
 	      }
+	      
+	      if (useCrypto)
+	         j ^= 0xAA;
+	      
 	      if (j != VERSION_TABLE - 1) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_PREV_VERSION), name);
@@ -2364,7 +2411,7 @@ LB_API void lLC_convert_s(NMParams p)
          }
 
          // Changes the version to be current one and closes it.
-	      j = VERSION_TABLE;
+	      j = useCrypto? VERSION_TABLE ^ 0xAA : VERSION_TABLE;
          if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (CharP)&j, 0, 1, &read)))
          {
 		      fileError(context, i, name);
@@ -2384,8 +2431,10 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 	      }
 
+          // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      dbFile = (plainDB = &table->db)->db;
@@ -2401,7 +2450,7 @@ LB_API void lLC_convert_s(NMParams p)
          columnNulls0 = table->columnNulls;
 
          j = columnCount;
-         while (--j > 0)
+         while (--j)
             if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
                record[j]->asChars = TC_heapAlloc(heap, sizes[j] << 1);
             else if (type == BLOB_TYPE)
@@ -2413,23 +2462,23 @@ LB_API void lLC_convert_s(NMParams p)
 		      if (!nfReadBytes(context, &dbFile, basbuf, length))
                goto finish;
 		      rowid = basbuf[3];
-		      basbuf[3] = 0;
+		      basbuf[3] = useCrypto? 0xAA : 0;
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = updateCRC32(basbuf, length, 0);
+            crc32 = updateCRC32(basbuf, length, 0, useCrypto);
 
             if (table->version == VERSION_TABLE)
             {
-               readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
-               
+               if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
+                  goto finish;
                j = columnCount;
-               while (--j > 0)
+               while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
+                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
                   else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                   {
                      dataLength = record[j]->length;
-                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                   }
             }
 
@@ -2516,6 +2565,7 @@ LB_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public nativ
  * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If the database is not found or a file error occurs.
  * @throws NullPointerException If one of the string parameters is null.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_dropDatabase_ssi(NMParams p)
 {
@@ -2820,6 +2870,41 @@ error:
 finish: 
    TC_setObjectLock(p->retO, UNLOCKED); 
    
+   MEMORY_TEST_END
+}
+
+// juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot);
+/**
+ * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_encryptTables_ssi(NMParams p) 
+{
+   TRACE("lLC_encryptTables_ssi")
+   MEMORY_TEST_START
+   encDecTables(p, true);
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native void decryptTables(String crid, String sourcePath, int slot);
+/**
+ * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_decryptTables_ssi(NMParams p) 
+{
+   TRACE("lLC_decryptTables_ssi")
+   MEMORY_TEST_START
+   encDecTables(p, false);
    MEMORY_TEST_END
 }
 
@@ -4183,7 +4268,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
       if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         
+
          // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
          p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                          & ATTR_COLUMN_HAS_DEFAULT) != 0;
@@ -4301,7 +4386,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
       if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         
+
          // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
          p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                          & ATTR_COLUMN_IS_NOT_NULL) != 0;
@@ -4363,7 +4448,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     
+               
                      // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
                      p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                                      & ATTR_COLUMN_IS_NOT_NULL) != 0;          
@@ -4387,7 +4472,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
    MEMORY_TEST_END
 }
 
-// juliana@newmeta_1: added methods to return the primary key columns of a table.
+// juliana@253_3: added methods to return the primary key columns of a table.
 //////////////////////////////////////////////////////////////////////////
 // litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
 /**
@@ -4520,7 +4605,7 @@ finish: ;
    MEMORY_TEST_END
 }
 
-// juliana@newmeta_2: added methods to return the default value of a column.
+// juliana@253_4: added methods to return the default value of a column.
 //////////////////////////////////////////////////////////////////////////
 // litebase/ResultSetMetaData public native String getDefaultValue(int columnIndex) throws DriverException;
 /**
@@ -4551,7 +4636,7 @@ LB_API void lRSMD_getDefaultValue_i(NMParams p)
       TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
       
       // Returns the default value of the column or the parameter of a function.
-      TC_setObjectLock(p->retO = getDefault(context, rsBag, nameCharP, field->tableColIndex >= 0? field->tableColIndex : field->parameter->tableColIndex), UNLOCKED);
+      TC_setObjectLock(p->retO = getDefault(context, rsBag, nameCharP, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);
    }
    else if (!nameObj) // The column does not have an underlining table.
    {
@@ -4602,7 +4687,7 @@ LB_API void lRSMD_getDefaultValue_s(NMParams p)
                && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true)))
             {
                if (field->tableName) // Returns the default value of the column or the parameter of a function.
-                  TC_setObjectLock(p->retO = getDefault(context, rsBag, field->tableName, field->tableColIndex >= 0? field->tableColIndex : field->parameter->tableColIndex), UNLOCKED);     
+                  TC_setObjectLock(p->retO = getDefault(context, rsBag, field->tableName, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);     
                else
                   i = length;
                break;
@@ -4664,7 +4749,8 @@ LB_API void lPS_executeQuery(NMParams p)
             PlainDB* plainDB;
             Object logger = litebaseConnectionClass->objStaticValues[1];
           
-            if (logger) // If log is on, adds information to it.
+            // juliana@253_18: now it is possible to log only changes during Litebase operation.
+            if (logger && !litebaseConnectionClass->i32StaticValues[5]) // If log is on, adds information to it.
             { 
                LOCKVAR(log);
                if (OBJ_PreparedStatementStoredParams(stmt))
@@ -5312,3 +5398,50 @@ finish: ;
 }
 
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+
+//////////////////////////////////////////////////////////////////////////
+// juliana@253_20: added PreparedStatement.close().
+/**
+ * Closes a prepared statement.
+ * 
+ * @param p->obj[0] The prepared statement.
+ */
+LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native void close();
+{
+   TRACE("lPS_close")
+   MEMORY_TEST_START
+   if (testPSClosed(p))
+   {
+      Object statement = p->obj[0];
+      Hashtable* htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(statement));
+      Object sqlExpression = OBJ_PreparedStatementSqlExpression(statement);
+      int32 hashCode = TC_JCharPHashCode(String_charsStart(sqlExpression), String_charsLen(sqlExpression));
+      TC_htRemove(htPS, hashCode);
+      freePreparedStatement(statement);
+   }
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// juliana@253_21: added PreparedStatement.isValid().
+/**
+ * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+ *
+ * @param p->obj[0] The prepared statement.
+ * @param p->retI receives <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+ */
+LB_API void lPS_isValid(NMParams p) // litebase/PreparedStatement public native boolean isValid();
+{
+   TRACE("lPS_isValid")
+   Object statement = p->obj[0];
+   
+   MEMORY_TEST_START
+   
+   // Tests if the prepared statement isclosed or The connection with Litebase is closed.
+   if (OBJ_PreparedStatementDontFinalize(statement) || OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
+      p->retI = false;
+   else
+      p->retI = true;
+   
+   MEMORY_TEST_END
+}

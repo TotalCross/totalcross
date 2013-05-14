@@ -13,6 +13,7 @@
 
 package litebase;
 
+import totalcross.io.IOException;
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -144,6 +145,7 @@ class SQLValue
       }
    }
    
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares 2 values.
     *
@@ -151,21 +153,30 @@ class SQLValue
     * @param type The types of the values being compared.
     * @param isNull1 Indicates if the value being compared is null.
     * @param isNull2 Indicates if the value being compared against is null.
+    * @param plainDB the plainDB of a table if it is necessary to load a string.
     * @return 0 if the values are identical; a positive number if the value being compared is greater than the one being compared against; otherwise,
     * a negative number.
+    * @throws IOException If an internal method throws it.
     */
-   int valueCompareTo(SQLValue value, int type, boolean isNull1, boolean isNull2)
+   int valueCompareTo(SQLValue value, int type, boolean isNull1, boolean isNull2, PlainDB plainDB) throws IOException
    {
       if (isNull1 || isNull2) // A null value is always considered to be the greatest value.
          return (isNull1 == isNull2)? 0 : (isNull1? 1 : -1);
 
       switch (type)
       {
-         case SQLElement.CHARS_NOCASE:
-            return asString.toLowerCase().compareTo(value.asString.toLowerCase());
-
          case SQLElement.CHARS:
-            return asString == null? 0 : asString.compareTo(value.asString);
+         case SQLElement.CHARS_NOCASE:   
+            if (asString == null)
+               return 0;  
+            if (value.asString == null)
+            {
+               plainDB.dbo.setPos(value.asInt);
+               value.asString = plainDB.loadString();
+            }    
+            if (type == SQLElement.CHARS_NOCASE)
+               return asString.toLowerCase().compareTo(value.asString.toLowerCase());
+            return asString.compareTo(value.asString);
 
          case SQLElement.SHORT:
             return asShort - value.asShort;

@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Declares functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -56,46 +57,16 @@ uint8* keyLoad(Key* key, uint8* dataStream);
 uint8* keySave(Key* key, uint8* dataStream);
 
 /**
- * Adds a value in the repeated key structure.
- *
- * @param context The thread context where the function is being executed.
- * @param key The repeated key whose repeated value is being inserted.
- * @param record The value record to be inserted in the key.
- * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed);
-
-/**
- * Climbs on the key.
- *
- * @param context The thread context where the function is being executed.
- * @param key The key being climbed.
- * @param markBits The rows which will be returned to the result set.
- * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
- */
-int32 defaultOnKey(Context context, Key* key, MarkBits* mmarkBits);
-
-/**
- * Removes a value of the repeated key structure.
- *
- * @param context The thread context where the function is being executed.
- * @param key The key whose repeated value will be removed.
- * @param record The value record to be removed.
- * @return <code>REMOVE_SAVE_KEY</code>, <code>REMOVE_VALUE_ALREADY_SAVED</code>, or <code>REMOVE_ERROR</code>.
- * @throws DriverException If its not possible to find the key record to delete.
- */
-int32 keyRemove(Context context, Key* key, int32 record);
-
-/**
  * Compares two keys.
  *
+ * @param context The thread context where the function is being executed.
  * @param key1 The first key to be compared.
  * @param key2 The second key to be compared.
  * @param isNull1 Indicates if the fist key is null.
+ * @param plainDB the plainDB of a table if it is necessary to load a string.
  * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative 
- * number.  
+ * number.
  */
-int32 keyCompareTo(Key* key1, Key* key2, int32 size);
+int32 keyCompareTo(Context context, Key* key1, Key* key2, int32 size, PlainDB* plainDB);
 
 #endif

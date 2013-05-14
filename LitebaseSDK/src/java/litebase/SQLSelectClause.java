@@ -54,11 +54,6 @@ class SQLSelectClause
    boolean hasRealColumns;
 
    /**
-    * Indicates if the select clause field list was built from a wildcard.
-    */
-   boolean hasWildcard;
-
-   /**
     * The resulting <code>ResultSet</code> table list.
     */
    SQLResultSetTable[] tableList = new SQLResultSetTable[MAX_NUM_FIELDS];

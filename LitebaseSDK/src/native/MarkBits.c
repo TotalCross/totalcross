@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@253_5: removed .idr files from all indices and changed its format.
 /**
  * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 
  * only be used if the result set has a WHERE clause.
@@ -39,9 +40,9 @@ void markBitsReset(MarkBits* markBits, IntVector* bits)
  * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if the key could be climbed; -1 if an error occurs, or <code>true</code>, otherwise.
  */
-int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
+int32 onKey(Context context, Key* key, MarkBits* markBits)
 {
-	TRACE("markBitsOnKey")
+	TRACE("onKey")
    Key* leftKey = &markBits->leftKey;
    SQLValue* keys0 = key->keys;
    Index* index = key->index;
@@ -66,7 +67,7 @@ int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
 
    if (markBits->rightKey.index)
    {
-      int32 comp = keyCompareTo(key, &markBits->rightKey, numberColumns);
+      int32 comp = keyCompareTo(null, key, &markBits->rightKey, numberColumns, null);
       if (rightOp == OP_REL_LESS_EQUAL && comp > 0) // If key <= right key, stops. 
          return false;
       if (rightOp == OP_REL_LESS && comp >= 0) // if key < right key, stops.
@@ -75,14 +76,13 @@ int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
 
    // For inclusion operations, just uses the value.
    if (leftOp == OP_REL_EQUAL || leftOp == OP_REL_GREATER_EQUAL || (leftOp == OP_REL_GREATER && markBits->isNoLongerEqual))
-      return defaultOnKey(context, key, markBits); // Climbs on the values.
-
-   if (leftOp == OP_REL_GREATER) // The key can still be equal.
+      onValue(key->record, markBits); // Climbs on the value.
+   else if (leftOp == OP_REL_GREATER) // The key can still be equal.
    {
-      if (keyCompareTo(leftKey, key, numberColumns))
+      if (keyCompareTo(null, leftKey, key, numberColumns, null))
       {
          markBits->isNoLongerEqual = true;
-         return defaultOnKey(context, key, markBits); // Climbs on the values.
+         onValue(key->record, markBits); // Climbs on the value.
       }
    }
    else // OP_PAT_MATCH_LIKE
@@ -117,8 +117,9 @@ int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
 
       patStr = (keys0 = leftKey->keys)->asChars;
 		if (str16StartsWith(valStr, patStr, valLen, keys0->length, 0, caseless)) // Only starts with are used with indices.
-         return defaultOnKey(context, key, markBits); // climb on the values.
-      return false;
+         onValue(key->record, markBits); // climb on the value.
+      else
+         return false;
    }
    return true; // Does not visit this value, but continues the search.
 }
@@ -129,13 +130,16 @@ int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
  * @param record The record value to be climbed on.
  * @param markBits The rows which will be returned to the result set.
  */
-void markBitsOnValue(int32 record, MarkBits* markBits)
+void onValue(int32 record, MarkBits* markBits)
 {
-	TRACE("markBitsOnValue")
-   if (markBits->bitValue)
-      markBits->indexBitmap->items[record >> 5] |= ((int32)1 << (record & 31));  // set
-   else
-      markBits->indexBitmap->items[record >> 5] &= ~((int32)1 << (record & 31)); // reset
+	TRACE("onValue")
+   if (record != NO_VALUE)
+   {   
+      if (markBits->bitValue)
+         markBits->indexBitmap->items[record >> 5] |= ((int32)1 << (record & 31));  // set
+      else
+         markBits->indexBitmap->items[record >> 5] &= ~((int32)1 << (record & 31)); // reset
+   }
 }
 
 #ifdef ENABLE_TEST_SUITE
@@ -173,10 +177,10 @@ TESTCASE(markBitsOnValue)
    while ((i -= 4) >= 0)
    {
       markBits.bitValue = 1;
-      markBitsOnValue(i, &markBits);
+      onValue(i, &markBits);
       ASSERT1_EQUALS(True, IntVectorisBitSet(markBits.indexBitmap, i));
       markBits.bitValue = 0;
-      markBitsOnValue(i, &markBits);
+      onValue(i, &markBits);
       ASSERT1_EQUALS(False, IntVectorisBitSet(markBits.indexBitmap, i));
    }
 

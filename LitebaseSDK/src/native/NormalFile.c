@@ -21,6 +21,7 @@
  * @param context The thread context where the function is being executed.
  * @param name The name of the file.
  * @param isCreation Indicates if the file must be created or just open.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param xFile A pointer to the normal file structure.
@@ -29,7 +30,7 @@
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
 {
 	TRACE("nfCreateFile")
    TCHAR buffer[MAX_PATHNAME];
@@ -56,6 +57,8 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
    // juliana@227_3: improved table files flush dealing.
    if (xstrchr(name, '$') || xstrchr(name, '&'))
       xFile->dontFlush = true;
+   
+   xFile->useCrypto = useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
       
    // Creates the file or opens it and gets its size.
 #ifdef POSIX
@@ -101,10 +104,20 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
       return false;
    
    xmemmove(buffer, &xFile->cache[xFile->cachePos - xFile->cacheIni], count);
+   
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Decrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA; 
+   }
+   
    xFile->cachePos += count; // do NOT update xf->pos here!
    return true;
 }
 
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Write bytes in a file.
  *
@@ -118,6 +131,15 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("nfWriteBytes")
    int32 cachePos;
+   uint8* bufferAux = buffer;
+
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Encrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *bufferAux++ ^= 0xAA; 
+   }
 
 	// juliana@202_4: Removed a possible reset or GPF if there is not enough memory to create the file cache on Windows 32, Windows CE, Palm OS, 
    // and iPhone.
@@ -126,6 +148,15 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
       return false;
 
    xmemmove(&xFile->cache[(cachePos = xFile->cachePos) - xFile->cacheIni], buffer, count);
+   
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Decrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA; 
+   }
+   
    xFile->cacheIsDirty = true;
    xFile->cacheDirtyIni = MIN(cachePos, xFile->cacheDirtyIni);
    xFile->cacheDirtyEnd = MAX(cachePos + count, xFile->cacheDirtyEnd);

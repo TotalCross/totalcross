@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Declares functions to deal a B-Tree header.
  */
@@ -38,14 +39,12 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param hasIdr Indicates if the index fas the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
-                                                                                                                                  Heap heap);
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool exist, Heap heap);
 
 /**
  * Creates an index.
@@ -197,10 +196,9 @@ bool indexRename(Context context, Index* index, CharP newName);
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
  * @param bitMap The table bitmap which indicates which rows will be in the result set. 
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap);
 
 /**
  * Finds the maximum value of an index in a range.
@@ -209,10 +207,9 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * @param index The index where to find the minimum value.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap);
 
 /**
  * Loads a string from the table if needed.
@@ -267,7 +264,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * 
  * @param context The thread context where the function is being executed.
  * @param index The index being used to sort the query results.
- * @param valRec The negation of the record or a pointer to a list of values.
+ * @param valRec The record index.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param tempTable The temporary table for the result set.
  * @param record A record for writing in the temporary table.
@@ -275,19 +272,6 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes);
-
-/**
- * Reads from the selected record from the table and writes the necessary fields in the temporary table.
- * 
- * @param context The thread context where the function is being executed.
- * @param origTable The table where data is read from.
- * @param pos The position of the selected record.
- * @param tempTable The temporary table for the result set.
- * @param record A record for writing in the temporary table.
- * @param columnIndexes Has the indices of the tables for each resulting column.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes);
 
 #ifdef ENABLE_TEST_SUITE
 
