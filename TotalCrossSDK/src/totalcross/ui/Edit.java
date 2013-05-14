@@ -641,6 +641,8 @@ public class Edit extends Control
          chars.append(s);
          if (mode == CURRENCY && isMaskedEdit) // correct the number if this is a numeric edit
          {
+            isNegative = s.startsWith("-");
+            if (isNegative) {len--; s = s.substring(1); chars.setLength(0); chars.append(s);} // guich@tc168 - if user sends a negative value, remove it from start and set the flag
             if (s.indexOf(',') >= 0 || Convert.numberOf(s, '.') > 1)
                s = Convert.replace(s,".","").replace(',','.');
 

@@ -521,7 +521,7 @@ public class Chart extends Control
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,false);} catch (Exception e) {se.legendDot = se.dot;}
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
                g.drawImage(se.legendDot,x,y+sqOff);
             }
             else
