@@ -858,7 +858,7 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    if (surfaceWillChange) {clearPixels(); return;}
    if (pixcolors != (int32*)glcolors) flushPixels(11);
 #ifdef ANDROID
-   eglSwapBuffers(_display, _surface);
+   eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
 #else
    graphicsUpdateScreenIOS();
 #endif

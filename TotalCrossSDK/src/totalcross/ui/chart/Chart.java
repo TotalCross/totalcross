@@ -78,13 +78,13 @@ public class Chart extends Control
    public Vector series = new Vector();
 
    /** The value for the origin of the X axis */
-   protected double xAxisMinValue;
+   public double xAxisMinValue;
 
    /** The value for the end of the X axis */
-   protected double xAxisMaxValue;
+   public double xAxisMaxValue;
 
    /** The number of subdivisions of the X axis */
-   protected int xAxisSteps;
+   public int xAxisSteps;
 
    /** The categories of the X axis (may be null if X is a value axis) */
    protected String[] xAxisCategories;
@@ -99,19 +99,19 @@ public class Chart extends Control
    protected int yAxisSteps=10; // guich@tc100b5_56
 
    /** The relative screen position of the X axis origin */
-   protected int xAxisX1;
+   public int xAxisX1;
 
    /** The relative screen position of the X axis end */
-   protected int xAxisX2;
+   public int xAxisX2;
 
    /** The relative screen position of the Y axis origin */
-   protected int yAxisY1;
+   public int yAxisY1;
 
    /** The relative screen position of the Y axis end */
-   protected int yAxisY2;
+   public int yAxisY2;
 
    /** This chart's empty border dimensions */
-   protected Insets border = new Insets();
+   public Insets border = new Insets();
 
    /** Flag to indicate whether the title must be painted */
    public boolean showTitle;
@@ -188,10 +188,12 @@ public class Chart extends Control
    /** The text color for the legend. */
    public int legendTextColor; // black
    
-   public int fillColor2=-1;
-   
+   public int fillColor2 = -1;
+
+   public int use2ndColorEveryXColumns = 1;
+
    public boolean onlyShowCategories;
-   protected int columnW;
+   public int columnW;
 
    /**
     * Sets this chart's title
@@ -389,11 +391,10 @@ public class Chart extends Control
 
       if (fillColor2 != -1)
       {
-         double x0 = val;
+         double x0 = val + inc * use2ndColorEveryXColumns;
          g.backColor = fillColor2;
-         x0 += inc;
-         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc*2) // vertical lines
-            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc)-xx,yAxisY1-yAxisY2);
+         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
+            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,yAxisY1-yAxisY2);
       }
       val = xAxisMinValue;
 
@@ -520,7 +521,7 @@ public class Chart extends Control
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,false);} catch (Exception e) {se.legendDot = se.dot;}
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
                g.drawImage(se.legendDot,x,y+sqOff);
             }
             else

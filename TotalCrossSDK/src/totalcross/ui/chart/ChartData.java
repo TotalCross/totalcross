@@ -75,9 +75,16 @@ public class ChartData extends Container
    public int fillColor2 = 0xDDDDDD;
    public int titleForeColor=-1, titleBackColor=-1;
    public int selectedCol=-1,selectedRow=-1;
-   
+
    public boolean snapToTop;
    public boolean snapToBottom;
+
+   public int use2ndColorEveryXColumns = 1;
+
+   /**
+    * The height of the cell when using PREFERRED, defined as a % of the control's font height. Default value is 100(%).
+    */
+   public int preferredCellHeight = 100;
 
    /** Constructs a ChartData without title. 
     * @param data The values to be displayed in the format [rows][cols] 
@@ -119,11 +126,10 @@ public class ChartData extends Container
 
       if (fillColor2 != -1)
       {
-         double x0 = val;
+         double x0 = val + inc * use2ndColorEveryXColumns;
          g.backColor = fillColor2;
-         x0 += inc;
-         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc*2) // vertical lines
-            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc)-xx,height);
+         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
+            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,height);
       }
       
       int xx0 = chart.getXValuePos(val);
@@ -161,9 +167,12 @@ public class ChartData extends Container
       if (lineColor != -1)
       {
          g.clearClip();
-         g.backColor = lineColor;
-         g.foreColor = backColor;
-         int xf = chart.getXValuePos(val + inc * data[0].length);
+         g.foreColor = chart.axisForeColor;
+         g.drawLine(xx = chart.getXValuePos(val),0,xx,height); // draw Y axis
+
+         g.backColor = chart.axisForeColor;
+         g.foreColor = fillColor2 != -1 ? fillColor2 : lineColor;
+         int xf = width - chart.border.right - 1;
          double x0 = val+(fillColor2 != -1 ? inc : 0);
          for (int j = fillColor2 != -1 ? 1 : 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
             g.drawDots(xx = chart.getXValuePos(x0),0,xx,height);
@@ -203,10 +212,8 @@ public class ChartData extends Container
                {
                   int ystep = this.height / data.length;
                   int yxtra = this.height % ystep;
-                  int x0 = chart.getXValuePos(chart.xAxisMinValue);
-                  selectedCol = (pex-x0) / chart.columnW;
-                  int hh = chart.yAxisY1;
-                  for (int i = 0, n = data.length, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
+                  selectedCol = (pex-chart.xAxisX1) / chart.columnW;
+                  for (int i = 0, n = data.length, hh, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
                   {
                      hh = ystep;
                      if (i < yxtra) hh++;
@@ -232,7 +239,7 @@ public class ChartData extends Container
    
    public int getPreferredHeight()
    {
-      return fmH * data.length;
+      return fmH * preferredCellHeight * data.length / 100;
    }
    
    public String getSelectedCell()
@@ -264,5 +271,55 @@ public class ChartData extends Container
    public String[][] getData()
    {
       return data;
+   }
+
+   /** Adds a new row. Pass -1 to add at the end */
+   public void addLine(int pos, String title)
+   {
+      int rows = data.length;
+      int cols = data[0].length;
+      if (pos < 0 || pos > rows) pos = rows;
+      String[] newTitle = new String[this.title.length + 1];
+      String[] newRow = new String[cols]; for (int i = newRow.length; --i >= 0;) newRow[i] = "";
+      String[][] newData = new String[rows+1][];
+      int i = 0;
+      for (; i < pos; i++)
+      {
+         newTitle[i] = this.title[i];
+         newData[i] = data[i];
+      }
+      newTitle[i] = title;
+      newData[i++] = newRow;
+      for (; i <= rows; i++)
+      {
+         newTitle[i] = this.title[i];
+         newData[i] = data[i];
+      }
+      this.title = newTitle;
+      this.data = newData;
+   }
+
+   public void removeLine(int pos)
+   {
+      int rows = data.length;
+      if (pos == -1)
+         pos = rows - 1;
+      if (pos < 0 || pos >= rows) return;
+      String[][] newData = new String[--rows][];
+      String[] newTitle = new String[rows];
+      int i = 0,j=0;
+      for (; i < pos; i++,j++)
+      {
+         newData[i] = data[j];
+         newTitle[i] = title[j];
+      }
+      j++; // skip line at pos
+      for (; i < rows; i++,j++)
+      {
+         newData[i] = data[j];
+         newTitle[i] = title[j];
+      }
+      this.title = newTitle;
+      this.data = newData;
    }
 }
