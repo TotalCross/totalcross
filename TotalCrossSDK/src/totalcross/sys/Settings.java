@@ -759,9 +759,16 @@ public final class Settings
 	{
 	}
 	
-	// to be removed in TC 2. Only here to let Litebase compile.
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String PALMOS        = "PalmOS";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String BLACKBERRY    = "BlackBerry";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static int nvfsVolume = -1;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean useNewFont;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean isMinimized;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean keypadOnly;
 }

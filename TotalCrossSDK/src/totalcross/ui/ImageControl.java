@@ -49,6 +49,9 @@ public class ImageControl extends Control
    /** Set to true to let the image be dragged beyond container limits. */
    public boolean allowBeyondLimits;
 
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int drawOp;
+
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
    {

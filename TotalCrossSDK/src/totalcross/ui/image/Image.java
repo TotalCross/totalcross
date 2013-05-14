@@ -73,6 +73,13 @@ public class Image extends GfxSurface
    private Object pixelsOfAllFrames;
    private int currentFrame=-1, widthOfAllFrames;
 
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static final int NO_TRANSPARENT_COLOR = -2;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int transparentColor = Color.WHITE;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public boolean useAlpha; // guich@tc126_12
+
    /**
    * Creates an image of the specified width and height. The image has
    * a color depth (number of bitplanes) and color map that matches the
@@ -2100,9 +2107,4 @@ public class Image extends GfxSurface
    {
       return smoothScaledFromResolution(originalRes);
    }
-
-   /* @deprecated TotalCross 2 no longer uses this field. */
-   public int transparentColor = Color.WHITE;
-   /* @deprecated TotalCross 2 no longer uses this field. */
-   public boolean useAlpha; // guich@tc126_12
 }
