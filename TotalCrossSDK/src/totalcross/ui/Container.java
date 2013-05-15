@@ -110,6 +110,9 @@ public class Container extends Control
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
+   /** Unused in TotalCross 1, here to keep compatibility with TotalCross 2. */
+   public static int TRANSITION_TIME = 1000;
+   
    protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
    int numChildren;
    protected boolean started; // guich@340_15
