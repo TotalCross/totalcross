@@ -166,14 +166,17 @@ public class Container extends Control
     */
    static void setNextTransitionEffect(int t)
    {
-      nextTransitionEffect = t;
-      if (t != TRANSITION_NONE)
-         try
-         {
-            screen0 = MainWindow.getScreenShot();
-            screen0.lockChanges();
-         }
-         catch (Throwable e) {}
+      if (!Settings.isIOS())
+      {
+         nextTransitionEffect = t;
+         if (t != TRANSITION_NONE)
+            try
+            {
+               screen0 = MainWindow.getScreenShot();
+               screen0.lockChanges();
+            }
+            catch (Throwable e) {}
+      }
    }
 
    static Image screen0;
