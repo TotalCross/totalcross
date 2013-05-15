@@ -75,7 +75,7 @@ static int lastOrientationIsPortrait = true;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
    kbd.autocorrectionType = UITextAutocorrectionTypeNo;
-   [kbd setDelegate: self];
+   kbd.delegate = self;
 }
 
 - (void)destroySIP
@@ -95,13 +95,18 @@ static int lastOrientationIsPortrait = true;
    }
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if ([string isEqualToString:@" "])
+    {
+       [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
+       return NO;
+    }
+    return YES;
+}
+
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-   if ([text isEqualToString:@" "]) // Be sure to test for equality using the "isEqualToString" message
-   {
-      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
-      return FALSE; // Return FALSE to ignore all space chars
-   }
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
