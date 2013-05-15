@@ -97,6 +97,11 @@ static int lastOrientationIsPortrait = true;
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+   if ([text isEqualToString:@" "]) // Be sure to test for equality using the "isEqualToString" message
+   {
+      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
+      return FALSE; // Return FALSE to ignore all space chars
+   }
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
