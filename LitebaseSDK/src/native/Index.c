@@ -704,11 +704,6 @@ bool indexDeleteAllRows(Context context, Index* index)
       fileError(context, i, fnodes->name);
       return false;
    }
-   if (fvalues && (i = reopenFileIfNeeded(context, fvalues)))
-   {
-      fileError(context, i, fvalues->name);
-      return false;
-   }
 #endif
 
    // It is faster truncating a file than re-creating it again. 
