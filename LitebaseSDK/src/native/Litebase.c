@@ -132,6 +132,7 @@ bool initVars(OpenParams params)
 	int32 applicationId = getApplicationId();
 #endif
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Initializes the list of Litebase opened files.
 #ifdef POSIX
    xmemzero(&filesList, sizeof(XFilesList));

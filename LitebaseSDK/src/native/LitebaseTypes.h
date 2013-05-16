@@ -164,6 +164,7 @@ struct XFile
 	 */
    char name[DBNAME_SIZE]; 
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef POSIX
    /**
     * The file full path;

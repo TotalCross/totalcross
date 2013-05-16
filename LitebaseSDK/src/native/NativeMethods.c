@@ -1460,6 +1460,7 @@ free:
             plainDB->rowCount = remain;
             heapDestroy(heap);
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef POSIX
             removeFileFromList(&newdbo);
 #endif

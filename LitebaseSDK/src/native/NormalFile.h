@@ -142,6 +142,7 @@ bool flushCache(Context context, XFile* xFile);
  */
 void fileError(Context context, int32 errorCode, CharP fileName);
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef POSIX
 /**
  * Opens a disk file to store tables and put it in the files list.
