@@ -512,7 +512,8 @@ public class MainWindow extends Window implements totalcross.MainClass
          removeTimer(t);
          if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
-            new DemoBox().popup();
+            if (!Settings.isIOS() || timeAvailable == 0) // show only for non iOS or if trial time was elapsed.
+               new DemoBox().popup();
             if (timeAvailable == 0)
             {
                exit(0);

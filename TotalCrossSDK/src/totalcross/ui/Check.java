@@ -202,7 +202,7 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh, backColor),0,0);
+            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor),0,0);
             if (checked)
                g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
@@ -215,7 +215,7 @@ public class Check extends Control
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
       xx = wh+2; // guich@300_69
-      g.foreColor = textColor != -1 ? textColor : cfColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }

@@ -71,11 +71,11 @@ static int lastOrientationIsPortrait = true;
 
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
-   kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
+   kbd.autocapitalizationType = UITextAutocapitalizationTypeNone;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
-   [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
-   [kbd setDelegate: self];
+   kbd.autocorrectionType = UITextAutocorrectionTypeNo;
+   kbd.delegate = self;
 }
 
 - (void)destroySIP
@@ -93,6 +93,16 @@ static int lastOrientationIsPortrait = true;
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
    }
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if ([string isEqualToString:@" "])
+    {
+       [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
+       return NO;
+    }
+    return YES;
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text

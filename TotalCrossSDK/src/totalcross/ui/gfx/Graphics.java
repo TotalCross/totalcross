@@ -1284,12 +1284,6 @@ public final class Graphics
          drawSurface(srcPixels, image, 0,0, image.getWidth(), image.getHeight(), x,y, doClip, 0,0, image.getWidth(), image.getHeight());
    }
 
-   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
-   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
-   {
-      drawImage(image, x,y,doClip);
-   }
-
     /** Copies a part of the given source image to here at the given position with the given draw operation
     * and back color. Note that the current draw operation is not changed,
     * neither the current back color.
@@ -1314,11 +1308,6 @@ public final class Graphics
       int []srcPixels = (int[]) src.getPixels();
       if (srcPixels != null)
          drawSurface(srcPixels,src, x,y, width, height, 0,0, doClip, 0,0, src.getWidth(), src.getHeight());
-   }
-
-   /** @deprecated On TotalCross 2, drawOp and backColor are no longer used. */
-   public void copyImageRect(totalcross.ui.image.Image src, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
-   {
    }
 
    /** Draws an image at the given absolute x and y coordinates.
@@ -2952,4 +2941,58 @@ public final class Graphics
       if (b > 255) b = 255; else if (b < 0) b = 0;
       pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
+
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void eraseRect(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor)
+   {
+   }
+   private static int[] dumbVC = new int[11];
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public static int[] getVistaColors(int c)
+   {
+      return dumbVC;
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void fillCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawDottedCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
+   public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   {
+      copyImageRect(image, x, y, width, height, doClip);
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y)
+   {
+      drawText(sb, chrStart, chrCount, x, y, false, -1); 
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth)
+   {
+      drawText(sb, chrStart, chrCount, x, y, justifyWidth, false, -1); 
+   }
+   /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   {
+      drawImage(image, x,y, doClip);
+   }
+
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int drawOp;
 }

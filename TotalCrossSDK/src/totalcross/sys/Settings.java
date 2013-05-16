@@ -33,7 +33,7 @@ public final class Settings
    public static int version = 200;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "2.0a3";
+   public static String versionStr = "2.0b1";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -281,6 +281,7 @@ public final class Settings
      * Specific for Palm OS (Windows CE does not let the user hide records). This can be used to let the Operating System do the <i>login</i>
      * for a program that requires privacy.
      * @since SuperWaba 4.21
+     * @deprecated This was only used in Palm OS, which is now unsupported
      */
    public static boolean showSecrets = true; // guich@421_35
 
@@ -758,9 +759,16 @@ public final class Settings
 	{
 	}
 	
-	// to be removed in TC 2. Only here to let Litebase compile.
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String PALMOS        = "PalmOS";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String BLACKBERRY    = "BlackBerry";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static int nvfsVolume = -1;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean useNewFont;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean isMinimized;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean keypadOnly;
 }

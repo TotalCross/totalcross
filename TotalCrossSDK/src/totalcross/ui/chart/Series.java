@@ -41,6 +41,7 @@ public class Series
     * @see #dotVAlign 
     */
    public Image dot;
+   Image legendDot;
    
    /** The alignment of the dot image. Use CENTER (default), TOP or BOTTOM. */
    public int dotVAlign = Control.CENTER;   

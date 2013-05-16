@@ -60,6 +60,7 @@ static void invalidate(Object obj)
       setObjectLock(PDBFile_openRef(obj), UNLOCKED);
       PDBFile_openRef(obj) = null;
       PDBFile_mode(obj) = INVALID;
+      PDBFile_dbId(obj) = null;
    }
    if (PDBFile_dbId(obj) != null)
    {

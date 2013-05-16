@@ -122,7 +122,7 @@ public class Radio extends Control
       img = img.getSmoothScaledInstance(h,h);
       img.applyColor(foreColor);
       if (!enabled)
-         img = img.getFadedInstance(backColor);
+         img = img.getFadedInstance();
       imgs.put(key, img);
       return img;
    }
@@ -321,7 +321,7 @@ public class Radio extends Control
       if (uiAndroid)
          try 
          {
-            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, backColor);
+            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, foreColor);
             ret.applyColor(foreColor);
             g.drawImage(ret,0,0);
             if (checked)
@@ -416,7 +416,7 @@ public class Radio extends Control
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = textColor != -1 ? textColor : cColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 

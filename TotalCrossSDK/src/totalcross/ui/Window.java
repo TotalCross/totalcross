@@ -149,7 +149,7 @@ public class Window extends Container
    private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
-   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 40 : 0;
    private String oldTitle;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
@@ -205,6 +205,8 @@ public class Window extends Container
    protected Container mainSwapContainer;
    /** Used in the swap method */
    protected Container lastSwappedContainer;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public boolean highresPrepared = true;
 
    /** To be used in setBorderStyle */
    public static final byte NO_BORDER = 0;
