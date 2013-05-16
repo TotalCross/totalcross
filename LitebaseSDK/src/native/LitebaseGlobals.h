@@ -22,6 +22,7 @@
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // The list of table files currently opened.
 #ifdef POSIX
 extern XFilesList filesList; 
@@ -42,6 +43,7 @@ extern JChar questionMark[2];           // A jchar string representing "?".
 extern TCClass litebaseConnectionClass; // LitebaseConnection
 extern TCClass loggerClass;             // Logger
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
 extern DECLARE_MUTEX(log);    // Mutex for logging.
