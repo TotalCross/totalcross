@@ -18,6 +18,7 @@
 // Globas for driver creation.
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // The list of table files currently opened.
 #ifdef POSIX
 XFilesList filesList; 
@@ -182,6 +183,7 @@ uint16 yytable[] =
 TCClass litebaseConnectionClass; // LitebaseConnection
 TCClass loggerClass;             // Logger
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.
 DECLARE_MUTEX(log);    // Mutex for logging.
