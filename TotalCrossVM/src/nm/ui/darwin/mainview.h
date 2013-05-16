@@ -25,7 +25,7 @@
 #import "childview.h"
 #import "sipargs.h"
 
-@interface MainViewController : UIViewController<UIImagePickerControllerDelegate,CLLocationManagerDelegate>
+@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate>
 {
    NSMutableArray* _events;
    ChildView *child_view;
@@ -48,6 +48,7 @@
 - (NSArray*)getEvents;
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
