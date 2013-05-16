@@ -55,7 +55,7 @@ typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int
 typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for the structures used by Litebase.
-typedef union YYSTYPE YYSTYPE;
+// juliana@parser_1: improved Litebase parser.
 typedef struct SQLValue SQLValue;
 typedef struct SQLSelectClause SQLSelectClause;
 typedef struct SQLColumnListClause SQLColumnListClause;
@@ -132,18 +132,7 @@ struct XFile
 	 * Indicates the last position of the cache that is dirty.
 	 */
 	int32 cacheDirtyEnd;
-
-	/** 
-	 * Indicates if the cache is dirty and its contents needs to be saved later on.
-	 */
-	uint8 cacheIsDirty;
-
-   // juliana@227_3: improved table files flush dealing.
-   /**
-    * Indicates if the cache file should not be flushed.
-    */
-   uint8 dontFlush;
-
+	
 	/**
 	 * The file size.
 	 */
@@ -163,6 +152,22 @@ struct XFile
 	 * The file name, which is empty for a memory file.
 	 */
    char name[DBNAME_SIZE]; 
+
+   /** 
+	 * Indicates if the cache is dirty and its contents needs to be saved later on.
+	 */
+	uint8 cacheIsDirty;
+
+   // juliana@227_3: improved table files flush dealing.
+   /**
+    * Indicates if the cache file should not be flushed.
+    */
+   uint8 dontFlush;
+   
+   /**
+    * Indicates if the table uses cryptography.
+    */
+   uint8 useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef POSIX
@@ -197,16 +202,17 @@ struct XFilesList
    int32 count;
 };
 #endif
-
-/**
+   
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
+/** 
  * This structure represents the key of a record. It may be any of the SQL types defined here.
  */
 struct Key
 {
 	/**
-    * - (record + 1) or NO_VALUE.
+    * The record index or NO_VALUE.
     */
-	int32 valRec;
+	int32 record;
 
 	/**
     * The values stored in the key.
@@ -217,32 +223,6 @@ struct Key
     * The index that has this key.
     */
    Index* index;
-};
-
-/**
- * The union for yacc.
- */
-union YYSTYPE {
-
-   /**
-    * Used to store pointers for structures. 
-    */
-   VoidP obj;
-
-   /**
-    * Used to store numbers and boolean values during the parsing process.
-    */
-   int16 ival;
-
-   /** 
-    * Used to store identifiers.
-    */
-   CharP sval;
-
-   /** 
-    * Used to store numbers and strings from the sql.
-    */
-   JCharP sval16;
 };
 
 /**
@@ -418,11 +398,11 @@ struct LitebaseParser
     * <b><code>CMD_SELECT</b></code>, <b><code>CMD_INSERT</b></code>, <b><code>CMD_UPDATE</b></code>, or <b><code>CMD_DELETE</b></code>.
     */
 	uint8	command;
-
-	/**
-    * The number of tables in the table list.
+	
+	/** 
+    * Counts the number of simple primary keys, which must be only one.
     */
-	uint8 tableListSize;
+	uint8 numberPK;
 
 	/**
     * The number of fields in the field list.
@@ -456,9 +436,45 @@ struct LitebaseParser
    uint16 length;
 	
 	/**
+	 * The name of a token.
+	 */
+	VoidP yylval; // juliana@parser_1: improved Litebase parser.
+	
+	// juliana@parser_1: improved Litebase parser.
+	/** 
+    * The first table name found in an update statement.
+    */
+   CharP firstFieldUpdateTableName;
+
+   /** 
+    * The first table alias found in an update statement.
+    */
+   CharP firstFieldUpdateAlias;
+
+   /** 
+    * The second table name found in an update statement, which indicates an error.
+    */
+   CharP secondFieldUpdateTableName;
+
+   /** 
+    * The second table alias found in an update statement, which indicates an error.
+    */
+   CharP secondFieldUpdateAlias;
+	
+	/**
     * The last char read.
     */
 	JChar yycurrent;
+	
+	/**
+    * An auxiliary expression tree.
+    */
+	SQLBooleanClauseTree* auxTree;
+	
+	/**
+    * An auxiliary field.
+    */
+	SQLResultSetField* auxField;
 
    /**
     * Contains field values (strings) used on insert/update statements.
@@ -503,12 +519,12 @@ struct LitebaseParser
    /**
     * The order by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause order_by;
+   SQLColumnListClause orderBy;
 
    /**
     * The group by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause group_by;
+   SQLColumnListClause groupBy;
 
    /**
 	 * A pre-allocated field list for order by. 
@@ -1397,9 +1413,9 @@ struct Table
    SQLValue** defaultValues;
    
    /**
-    * An array of ancestors.
+    * An array of nodes indices.
     */
-   int32 ancestors[8];
+   int32* nodes; // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
@@ -1551,10 +1567,11 @@ struct Node // for B-tree
     */
    uint16 size;
    
+   // juliana@noidr_2: the maximum number of keys of a index was duplicated.
    /**
     * This children nodes.
     */
-   int16* children; // Each array has one extra component, to allow for possible overflow.
+   uint16* children; // Each array has one extra component, to allow for possible overflow.
    
    /**
     * The index of this node.
@@ -1683,10 +1700,7 @@ struct Index // renamed from BTree to Index
     */
    XFile fnodes;
 
-   /**
-    * The repeated values file.
-    */
-   XFile* fvalues;
+   // juliana@noidr_1: removed .idr files from all indices and changed its format.
 
    /**
     * The cache of the index.

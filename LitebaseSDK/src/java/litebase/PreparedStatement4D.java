@@ -231,5 +231,19 @@ public class PreparedStatement4D
     */
    public native String toString();
    
+   // juliana@253_20: added PreparedStatement.close().
+   /**
+    * Closes a prepared statement.
+    */
+   public native void close();
+   
    // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+
+   // juliana@253_21: added PreparedStatement.isValid().
+   /**
+    * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+    *
+    * @return <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+    */
+   public native boolean isValid();
 }

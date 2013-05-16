@@ -65,24 +65,29 @@ class SQLElement
    static final int CMD_ALTER_RENAME_COLUMN = 8;
 
    /**
+    * Represents the SQL command <code>ALTER TABLE ADD... (new column definition) </code>.
+    */
+   static final int CMD_ALTER_ADD_COLUMN = 9; // juliana@253_22: added command ALTER TABLE ADD column.
+
+   /**
     * Represents the SQL command <code>SELECT [DISTINCT]...</code>.
     */
-   static final int CMD_SELECT = 9;
+   static final int CMD_SELECT = 10;
 
    /**
     * Represents the SQL command <code>INSERT INTO...</code>.
     */
-   static final int CMD_INSERT = 10;
+   static final int CMD_INSERT = 11;
 
    /**
     * Represents the SQL command <code>UPDATE...</code>.
     */
-   static final int CMD_UPDATE = 11;
+   static final int CMD_UPDATE = 12;
 
    /**
     * Represents the SQL command <code>DELETE [FROM]...</code>.
     */
-   static final int CMD_DELETE = 12;
+   static final int CMD_DELETE = 13;
    
    // SQL Data Types.
    /**
@@ -265,36 +270,37 @@ class SQLElement
     * Boolean operator <code>NOT</code>.
     */
    static final int OP_BOOLEAN_NOT = 3;
-
-   /**
-    * Relational operator <code>=</code>.
-    */
-   static final int OP_REL_EQUAL = 4;
-
-   /**
-    * Relational operator <code>!=</code> or <code><></code>.
-    */
-   static final int OP_REL_DIFF = 5;
-
-   /**
-    * Relational operator <code>></code>.
-    */
-   static final int OP_REL_GREATER = 6;
-
+   
+   // juliana@253_9: improved Litebase parser.
    /**
     * Relational operator <code><</code>.
     */
-   static final int OP_REL_LESS = 7;
+   static final int OP_REL_LESS = LitebaseParser.TK_LESS;
+   
+   /**
+    * Relational operator <code>=</code>.
+    */
+   static final int OP_REL_EQUAL = LitebaseParser.TK_EQUAL;
+   
+   /**
+    * Relational operator <code>></code>.
+    */
+   static final int OP_REL_GREATER = LitebaseParser.TK_GREATER;
 
    /**
     * Relational operator <code>>=</code>.
     */
-   static final int OP_REL_GREATER_EQUAL = 8;
+   static final int OP_REL_GREATER_EQUAL = LitebaseParser.TK_GREATER_EQUAL;
 
    /**
     * Relational operator <code><=</code>.
     */
-   static final int OP_REL_LESS_EQUAL = 9;
+   static final int OP_REL_LESS_EQUAL = LitebaseParser.TK_LESS_EQUAL;
+   
+   /**
+    * Relational operator <code>!=</code> or <code><></code>.
+    */
+   static final int OP_REL_DIFF = LitebaseParser.TK_DIFF;
 
    /**
     * The operand is an identifier.

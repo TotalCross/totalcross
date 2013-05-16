@@ -393,7 +393,7 @@ public class ResultSetMetaData
       return false;
    }
    
-   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   // juliana@253_3: added methods to return the primary key columns of a table.
    /**
     * Returns the primary key column indices of a table.
     * 
@@ -448,7 +448,7 @@ public class ResultSetMetaData
       return null; // The table does not have a primary key.
    }
    
-   // juliana@newmeta_2: added methods to return the default value of a column.
+   // juliana@253_4: added methods to return the default value of a column.
    /**
     * Returns the default value of a column.
     * 
@@ -524,7 +524,7 @@ public class ResultSetMetaData
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
    
-   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   // juliana@253_3: added methods to return the primary key columns of a table.
    /**
     * Returns a table used in a select given its name.
     * 
@@ -555,7 +555,7 @@ public class ResultSetMetaData
       return null;
    }   
    
-   // juliana@newmeta_2: added methods to return the default value of a column.
+   // juliana@253_4: added methods to return the default value of a column.
    
    /**
     * Gets the default value of a column.

@@ -75,6 +75,7 @@ class MarkBits
       indexBitmap.ensureBit(bits);
    }
 
+   // juliana@253_5: removed .idr files from all indices and changed its format. 
    /**
     * Climbs on a key.
     *
@@ -100,7 +101,7 @@ class MarkBits
       
       if (rightKey != null)
       {
-         int comp = Utils.arrayValueCompareTo(k.keys, rightKey.keys, k.index.types); // Compares the key with the right key.
+         int comp = Utils.arrayValueCompareTo(k.keys, rightKey.keys, k.index.types, null); // Compares the key with the right key.
 
          // If key <= right key, stops.
          if (r0 == SQLElement.OP_REL_LESS_EQUAL && comp > 0)
@@ -113,13 +114,13 @@ class MarkBits
 
       // For inclusion operations, just uses the value.
       if (l0 == SQLElement.OP_REL_EQUAL || l0 == SQLElement.OP_REL_GREATER_EQUAL || (l0 == SQLElement.OP_REL_GREATER && isNoLongerEqual))
-         k.climb(this); // Climbs on the values.
+         onValue(k.record); // Climbs on the value.
       else if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
       {
-         if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types) != 0) // Compares the key with the left key.
+         if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types, null) != 0) // Compares the key with the left key.
          {
             isNoLongerEqual = true;
-            k.climb(this); // climbs on the values.
+            onValue(k.record); // Climbs on the value.
          }
       }
       else // OP_PAT_MATCH_LIKE
@@ -133,11 +134,22 @@ class MarkBits
             val = Utils.formatDateDateTime(db.driver.sBuffer, type, key);
          
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
-            k.climb(this); // Climbs on the values.
+            onValue(k.record); // Climbs on the value.
          else
             return false; // Stops the search.
       
       }
       return true; // Does not visit this value, but continues the search.
+   }
+
+   /**
+    * Climbs on a value.
+    *
+    * @param record The value record to be climbed on.
+    */
+   void onValue(int record)
+   {
+      if (record != Key.NO_VALUE)
+         indexBitmap.setBit(record, bitValue); // (Un)sets the corresponding bit on the bit array.
    }
 }

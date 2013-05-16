@@ -11,6 +11,7 @@
 
 package litebase;
 
+import totalcross.io.IOException;
 import totalcross.sys.*;
 
 /**
@@ -55,21 +56,8 @@ class Utils
     */
    static final int ATTR_COLUMN_IS_NOT_NULL = 4;
    
-   /**
-    * Indicates if the column has an .idr file.
-    */
-   static final int ATTR_COLUMN_HAS_IDR = 8;
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    
-   /**
-    * Indicates thar the column has an index with repetition.
-    */
-   static final int ATTR_COLUMN_HAS_IDX_IDR = Utils.ATTR_COLUMN_HAS_INDEX | Utils.ATTR_COLUMN_HAS_IDR;
-   
-   /**
-    * Indicates that the column has no indice.
-    */
-   static final int ATTR_COLUMN_HAS_NO_INDICE = ~(Utils.ATTR_COLUMN_HAS_INDEX | Utils.ATTR_COLUMN_HAS_IDR); // juliana@227_6
-
    /**
     * When saving the meta data, indicates that only the deleted rows count was changed.
     */
@@ -217,25 +205,29 @@ class Utils
       }
    }
    
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares 2 arrays of values.
     *
     * @param v1 The first array of values.
     * @param v2 The second array of values.
     * @param types The types of the values being compared.
+    * @param plainDB the plainDB of a table if it is necessary to load a string.
     * @return 0 if the arrays are identical; a positive number if <code>v1[]</code> is greater than <code>v2[]</code>; otherwise, a negative number.
+    * @throws IOException If an internal method throws it.
     */
-   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, byte[] types)
+   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, byte[] types, PlainDB plainDB) throws IOException
    {
       int size = v1.length, 
            r,
            i = -1;
       while (++i < size) // juliana@210a_12: corrected wrong comparison order.
-         if ((r = v1[i].valueCompareTo(v2[i], types[i], false, false)) != 0)
+         if ((r = v1[i].valueCompareTo(v2[i], types[i], false, false, plainDB)) != 0)
             return r;
       return 0;
    }
 
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares the two records, using the sort column list.
     * 
@@ -246,8 +238,9 @@ class Utils
     * @param sortFieldList The order of evaluation of the record.
     * @return 0 if the arrays are identical in the comparison order; a positive number if <code>record1[]</code> is greater than 
     * <code>record2[]</code>; otherwise, a negative number.
+    * @throws IOException If an internal method throws it.
     */ 
-   static int compareRecords(SQLValue[] record1, SQLValue[] record2, byte[] nullsRecord1, byte[] nullsRecord2, SQLResultSetField[] sortFieldList)
+   static int compareRecords(SQLValue[] record1, SQLValue[] record2, byte[] nullsRecord1, byte[] nullsRecord2, SQLResultSetField[] sortFieldList) throws IOException
    {
       
       int i = -1,
@@ -263,7 +256,7 @@ class Utils
          
          // Compares the elements checking if they are null.
          result = record1[index].valueCompareTo(record2[index], field.dataType, (nullsRecord1[index >> 3] & (1 << (index & 7))) != 0, 
-                                                                                (nullsRecord2[index >> 3] & (1 << (index & 7))) != 0);
+                                                                                (nullsRecord2[index >> 3] & (1 << (index & 7))) != 0, null);
          if (!field.isAscending)
             result = -result;
          if (result != 0)

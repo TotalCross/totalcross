@@ -440,16 +440,16 @@ class SQLBooleanClauseTree
             if (rightTree != null) // Sets the indexRs on the right tree.
                rightTree.setIndexRsOnTree();
             break;
-         case SQLElement.OP_REL_EQUAL:
-         case SQLElement.OP_REL_DIFF:
-         case SQLElement.OP_REL_GREATER:
-         case SQLElement.OP_REL_LESS:
-         case SQLElement.OP_REL_GREATER_EQUAL:
-         case SQLElement.OP_REL_LESS_EQUAL:
          case SQLElement.OP_PAT_MATCH_LIKE:
          case SQLElement.OP_PAT_MATCH_NOT_LIKE:
          case SQLElement.OP_PAT_IS:
          case SQLElement.OP_PAT_IS_NOT:
+         case SQLElement.OP_REL_LESS:
+         case SQLElement.OP_REL_EQUAL:               
+         case SQLElement.OP_REL_GREATER:               
+         case SQLElement.OP_REL_GREATER_EQUAL:
+         case SQLElement.OP_REL_LESS_EQUAL:
+         case SQLElement.OP_REL_DIFF:
             SQLBooleanClauseTree left = leftTree,
                                  right = rightTree; 
             SQLBooleanClause clause = booleanClause;
@@ -889,23 +889,23 @@ class SQLBooleanClauseTree
 
       switch (operandType)
       {
+         case SQLElement.OP_REL_LESS:
+            return result < 0;
+            
          case SQLElement.OP_REL_EQUAL:
             return result == 0;
 
-         case SQLElement.OP_REL_DIFF:
-            return result != 0;
-
          case SQLElement.OP_REL_GREATER:
-            return result > 0;
-
-         case SQLElement.OP_REL_LESS:
-            return result < 0;
+            return result > 0;         
 
          case SQLElement.OP_REL_GREATER_EQUAL:
             return result >= 0;
 
          case SQLElement.OP_REL_LESS_EQUAL:
             return result <= 0;
+            
+         case SQLElement.OP_REL_DIFF:
+            return result != 0;
       }
 
       return false;
@@ -928,12 +928,12 @@ class SQLBooleanClauseTree
       switch (operandType) // Checks the operand type of the tree.
       {
          // Relational operantors.
-         case SQLElement.OP_REL_EQUAL:
-         case SQLElement.OP_REL_DIFF:
-         case SQLElement.OP_REL_GREATER:
          case SQLElement.OP_REL_LESS:
-         case SQLElement.OP_REL_GREATER_EQUAL:
+         case SQLElement.OP_REL_EQUAL:
+         case SQLElement.OP_REL_GREATER:
+         case SQLElement.OP_REL_GREATER_EQUAL:            
          case SQLElement.OP_REL_LESS_EQUAL:
+         case SQLElement.OP_REL_DIFF:
             switch (valueType) // Calls the right operation accordingly to the values type.
             {
                case SQLElement.SHORT:
@@ -1146,12 +1146,12 @@ class SQLBooleanClauseTree
             switch (operandType)
             {
                // Relational operators.
-               case SQLElement.OP_REL_EQUAL:
-               case SQLElement.OP_REL_DIFF:
-               case SQLElement.OP_REL_GREATER:
                case SQLElement.OP_REL_LESS:
+               case SQLElement.OP_REL_EQUAL:               
+               case SQLElement.OP_REL_GREATER:               
                case SQLElement.OP_REL_GREATER_EQUAL:
                case SQLElement.OP_REL_LESS_EQUAL:
+               case SQLElement.OP_REL_DIFF:
                   if (leftIsChar || rightIsChar)
                   {
                      if (leftValueType == SQLElement.DATE || rightValueType == SQLElement.DATE) // rnovais@567_2
@@ -1273,60 +1273,6 @@ class SQLBooleanClauseTree
       {
          switch (right.operandType)
          {
-            case SQLElement.OP_REL_EQUAL: // not equal == dif.
-               right.operandType = SQLElement.OP_REL_DIFF;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;   
-            case SQLElement.OP_REL_DIFF: // not dif == equal.
-               right.operandType = SQLElement.OP_REL_EQUAL;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;   
-            case SQLElement.OP_REL_GREATER: // not greater == less equal.
-               right.operandType = SQLElement.OP_REL_LESS_EQUAL;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;   
-            case SQLElement.OP_REL_LESS: // not less == greater equal.
-               right.operandType = SQLElement.OP_REL_GREATER_EQUAL;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;   
-            case SQLElement.OP_REL_GREATER_EQUAL: // not greater equal == less.
-               right.operandType = SQLElement.OP_REL_LESS;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;   
-            case SQLElement.OP_REL_LESS_EQUAL: // not less equal == greates. 
-               right.operandType = SQLElement.OP_REL_GREATER;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;  
-            case SQLElement.OP_PAT_IS: // not is == is not.
-               right.operandType = SQLElement.OP_PAT_IS_NOT;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;
-            case SQLElement.OP_PAT_IS_NOT: // not is not == is.
-               right.operandType = SQLElement.OP_PAT_IS;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;
-            case SQLElement.OP_PAT_MATCH_LIKE: // not like == not like.
-               right.operandType = SQLElement.OP_PAT_MATCH_NOT_LIKE;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;
-            case SQLElement.OP_PAT_MATCH_NOT_LIKE: // not not like == like.
-               right.operandType = SQLElement.OP_PAT_MATCH_LIKE;
-               right.parent = expressionTree.parent;
-               expressionTree = right;
-               break;
-            case SQLElement.OP_BOOLEAN_NOT: // not not == null.
-               right.rightTree.parent = expressionTree.parent;
-               expressionTree = right.rightTree;
-               break;
             case SQLElement.OP_BOOLEAN_AND: // not (A and B) == not A or not B.
                SQLBooleanClauseTree tree = new SQLBooleanClauseTree(expressionTree.booleanClause);
                tree.operandType = SQLElement.OP_BOOLEAN_OR;
@@ -1350,6 +1296,60 @@ class SQLBooleanClauseTree
                tree.rightTree.leftTree = null;
                right.parent = expressionTree;
                expressionTree = tree;
+               break;
+            case SQLElement.OP_BOOLEAN_NOT: // not not == null.
+               right.rightTree.parent = expressionTree.parent;
+               expressionTree = right.rightTree;
+               break;
+            case SQLElement.OP_REL_LESS: // not less == greater equal.
+               right.operandType = SQLElement.OP_REL_GREATER_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;   
+            case SQLElement.OP_REL_EQUAL: // not equal == dif.
+               right.operandType = SQLElement.OP_REL_DIFF;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;     
+            case SQLElement.OP_REL_GREATER: // not greater == less equal.
+               right.operandType = SQLElement.OP_REL_LESS_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;   
+            case SQLElement.OP_REL_GREATER_EQUAL: // not greater equal == less.
+               right.operandType = SQLElement.OP_REL_LESS;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;   
+            case SQLElement.OP_REL_LESS_EQUAL: // not less equal == greates. 
+               right.operandType = SQLElement.OP_REL_GREATER;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;  
+            case SQLElement.OP_REL_DIFF: // not dif == equal.
+               right.operandType = SQLElement.OP_REL_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break; 
+            case SQLElement.OP_PAT_MATCH_LIKE: // not like == not like.
+               right.operandType = SQLElement.OP_PAT_MATCH_NOT_LIKE;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;
+            case SQLElement.OP_PAT_MATCH_NOT_LIKE: // not not like == like.
+               right.operandType = SQLElement.OP_PAT_MATCH_LIKE;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;
+            case SQLElement.OP_PAT_IS: // not is == is not.
+               right.operandType = SQLElement.OP_PAT_IS_NOT;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
+               break;
+            case SQLElement.OP_PAT_IS_NOT: // not is not == is.
+               right.operandType = SQLElement.OP_PAT_IS;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
          }   
       }   
       

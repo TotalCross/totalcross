@@ -18,7 +18,7 @@
 
 #include "Litebase.h"
 
-/* 
+/** 
  * The function which does the lexical analisys.
  *
  * @param parser The parser structure, which will hold the tree resulting from the parsing process.
@@ -26,14 +26,14 @@
  */
 int32 yylex(LitebaseParser* parser);
 
-/* 
+/** 
  * The initializer of the lexical analyser. It initializes the reserved words hash table and the kinds of token table based on ascii code.
  *
  * @return <code>false</code> if the reserved words hash table allocation fails; <code>true</code>, otherwise. 
  */
 bool initLex();
 
-/* 
+/** 
  * Finds if the token is a reserved word or just an identifier.
  *
  * @param parser The parser structure, which will hold the tree resulting from the parsing process.

@@ -15,7 +15,8 @@
 
 #include "LitebaseLex.h"
 
-/* 
+// juliana@253_9: improved Litebase parser.
+/** 
  * The function which does the lexical analisys.
  *
  * @param parser The parser structure, which will hold the tree resulting from the parsing process.
@@ -41,8 +42,6 @@ int32 yylex(LitebaseParser* parser)
       // Ends the lexycal analysis if the end of the file is found
       if (parser->yycurrent == 65535)
       {
-         parser->yycurrent = ' ';
-         parser->yyposition = 0;
          parser->select.sqlHashCode = hash;
          return PARSER_EOF;
       }
@@ -81,8 +80,8 @@ int32 yylex(LitebaseParser* parser)
             INSERT_CHAR(parser->yycurrent);
 
          // Copies the number to yacc.
-         yylval.sval16 = TC_heapAlloc(parser->heap, (yybefore = (parser->yyposition - initialPos)) << 1);
-			xmemmove(yylval.sval16, &zzReaderChars[initialPos], yybefore > 2? (yybefore - 1) << 1 : 2);
+         parser->yylval = TC_heapAlloc(parser->heap, (yybefore = (parser->yyposition - initialPos)) << 1);
+			xmemmove(parser->yylval, &zzReaderChars[initialPos], yybefore > 2? (yybefore - 1) << 1 : 2);
          parser->select.sqlHashCode = hash;
          return TK_NUMBER;
       }
@@ -100,57 +99,34 @@ int32 yylex(LitebaseParser* parser)
             parser->select.sqlHashCode = hash;
             return TK_DIFF;
          }
-
-         if (yybefore == '>') // Sees if it is the greater or greater or equal operator.
+         if (yybefore == '>' && parser->yycurrent == '=') // Sees if it is the greater or equal operator.
 			{
-				if (parser->yycurrent == '=')
-            {
-               CALCULATE_HASH(parser->yycurrent);
-               GET_YYCURRENT(parser->yycurrent);
-               parser->select.sqlHashCode = hash;
-               return TK_GREATER_EQUAL;
-            } 
+            CALCULATE_HASH(parser->yycurrent);
+            GET_YYCURRENT(parser->yycurrent);
             parser->select.sqlHashCode = hash;
-            return TK_GREATER;
+            return TK_GREATER_EQUAL;
+         }
+         if (yybefore == '<' && parser->yycurrent == '=') // Sees if it is the less operator.
+         {
+            CALCULATE_HASH(parser->yycurrent);
+            GET_YYCURRENT(parser->yycurrent);
+            parser->select.sqlHashCode = hash;
+            return TK_LESS_EQUAL;
+         }
+         if (yybefore == '>' || yybefore == '<') // > or <. 
+         {
+            parser->select.sqlHashCode = hash;
+            return yybefore;
 			}
 
-         if (yybefore == '<') // Sees if it is the less or les or equal operator.
-         {
-            if (parser->yycurrent == '=')
-            {
-               CALCULATE_HASH(parser->yycurrent);
-               GET_YYCURRENT(parser->yycurrent);
-               parser->select.sqlHashCode = hash;
-               return TK_LESS_EQUAL;
-            }
-            parser->select.sqlHashCode = hash;
-            return TK_LESS;
-         }
-         parser->select.sqlHashCode = hash;
-         return YYERRCODE; // Invalid operator.
+         // Invalid operator.
+         lbError(ERR_SYNTAX_ERROR, parser);
+         return PARSER_ERROR; 
       }
 
-      if (is[parser->yycurrent] & IS_PUNCT) // Finds tokens with one character, punctuators or '='.
-      {
-         yybefore = parser->yycurrent;
-         CALCULATE_HASH(parser->yycurrent);
-         GET_YYCURRENT(parser->yycurrent);
-         parser->select.sqlHashCode = hash;
-         switch (yybefore)
-         {
-            case '.':
-               return TK_DOT;
-            case ',':
-               return TK_COMMA;
-            case '?':
-               return TK_INTERROGATION;
-            case '=':
-               return TK_EQUAL;
-         }
-      }
-
-		// Sees if the tokens are arithmetic operators, '(', or ')'. In this case, returns the name of the token.
-      if (is[parser->yycurrent] & IS_OPERATOR) 
+      // Finds tokens with one character, punctuators or '='.
+      // Sees if the tokens are arithmetic operators, '(', or ')'. In this case, returns the name of the token.
+      if (is[parser->yycurrent] & (IS_PUNCT | IS_OPERATOR)) 
       {
          yybefore = parser->yycurrent;
          CALCULATE_HASH(parser->yycurrent);
@@ -186,14 +162,15 @@ int32 yylex(LitebaseParser* parser)
             {
                GET_YYCURRENT(parser->yycurrent);
                parser->select.sqlHashCode = hash;
-               return YYERRCODE;
+               lbError(ERR_SYNTAX_ERROR, parser);
+               return PARSER_ERROR;
             }
 
             else
                INSERT_CHAR(parser->yycurrent); // Anything else can be inside the string.
          }
          INSERT_CHAR(parser->yycurrent);
-         str16 = yylval.sval16 = TC_heapAlloc(parser->heap, (parser->yyposition - initialPos - 1 - counter) << 1);
+         str16 = parser->yylval = TC_heapAlloc(parser->heap, (parser->yyposition - initialPos - 1 - counter) << 1);
          counter = 0;
          finalPos = parser->yyposition - 2;
          while (initialPos < finalPos)
@@ -209,12 +186,12 @@ int32 yylex(LitebaseParser* parser)
       // Error.
       GET_YYCURRENT(parser->yycurrent);
       parser->select.sqlHashCode = hash;
-      return YYERRCODE;
+      lbError(ERR_SYNTAX_ERROR, parser);
+      return PARSER_ERROR;
    }
-
 }
 
-/* 
+/** 
  * The initializer of the lexical analyser. It initializes the reserved words hash table and the kinds of token table based on ascii code.
  *
  * @return <code>false</code> if the reserved words hash table allocation fails; <code>true</code>, otherwise. 
@@ -331,7 +308,8 @@ bool initLex()
    return false;
 }
 
-/* 
+// juliana@253_9: improved Litebase parser.
+/** 
  * Finds if the token is a reserved word or just an identifier.
  *
  * @param parser The parser structure, which will hold the tree resulting from the parsing process.
@@ -353,12 +331,12 @@ int32 findReserved(LitebaseParser* parser, int32 initialPos)
 		if (buf[found] >= '0' && buf[found] <= '9')
 			hasNumber = true;
 
-   if (!hasNumber && (found = TC_htGet32(&reserved, TC_hashCode(buf))))
+   if (!hasNumber && (found = TC_htGet32Inv(&reserved, TC_hashCode(buf))) >= 0)
       return found;
 
-   yylval.sval = TC_heapAlloc(parser->heap, found = parser->yyposition - initialPos);
-   TC_JCharP2CharPBuf(&parser->zzReaderChars[initialPos], found - 1, yylval.sval);
-   TC_CharPToLower(yylval.sval);
+   parser->yylval = TC_heapAlloc(parser->heap, found = parser->yyposition - initialPos);
+   TC_JCharP2CharPBuf(&parser->zzReaderChars[initialPos], found - 1, parser->yylval);
+   TC_CharPToLower(parser->yylval);
    return TK_IDENT;
 }
 
