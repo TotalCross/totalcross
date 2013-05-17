@@ -584,7 +584,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                int32 size;
                XFile* dbo = &plainDB->dbo;
 
-               if ((dbo->finalPos + (size = PTRSIZE + 4)) >= ((int32)dbo->size + 1) 
+               if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
@@ -608,9 +608,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			      // juliana@201_20: only grows .dbo if it is going to be increased.
 			      // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
                // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
-               if ((dbo->finalPos + size) >= ((int32)dbo->size + 1))
-				      if (!plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
-                     return false;
+               if ((dbo->finalPos + size) > (int32)dbo->size && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
+                  return false;
                
                plainDB->setPos(dbo, dbo->finalPos);       
                xmove4(buffer, &dbo->position);
@@ -685,7 +684,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			   {
                // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                // If the .dbo is full, grows it. 
-				   if ((dbo->finalPos + (size = PTRSIZE + 4)) >= ((int32)dbo->size + 1) 
+				   if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
@@ -706,7 +705,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 				   size = length + 4; 
 					
 				   // juliana@201_20: only grows .dbo if it is going to be increased.
-               if (addingNewRecord && (dbo->finalPos + size) >= ((int32)dbo->size + 1) 
+               if (addingNewRecord && (dbo->finalPos + size) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc)))  // guich@201_8: grow using rowInc instead of 16 if rowInc > 16
 					    return false;
 				   

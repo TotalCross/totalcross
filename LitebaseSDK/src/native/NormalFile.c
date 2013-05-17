@@ -175,7 +175,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
       goto error;
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
-#if !defined(POSIX) && !defined(ANDROID)
+#if !defined(POSIX) 
    if (newSize - xFile->size > 0) // juliana@230_18: removed possible garbage in table files.
    {
       uint8 zeroBuf[1024];
@@ -261,28 +261,27 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
-   bool retFlush = true;
 
    if (fileIsValid(xFile->file))
    {
       // Flushes the cache if necessary and frees it.
       if (xFile->cacheIsDirty) 
-         ret &= flushCache(context, xFile);
+         flushCache(context, xFile);
       
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret = lbfileClose(&xFile->file)))
+      if ((ret |= lbfileClose(&xFile->file)))
       {
          fileError(context, ret, xFile->name);
          fileInvalidate(xFile->file);
          return false;
       }
       fileInvalidate(xFile->file);
-      return !ret && retFlush;
+      return !ret;
    }
    return true;
 }
@@ -376,7 +375,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
+#if defined(WINCE) || defined(POSIX) 
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif

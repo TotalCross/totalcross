@@ -2084,7 +2084,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          int8* types;       
          
          // juliana@230_12
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
 
@@ -2117,7 +2117,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          TC_int2CRID(crid, name);
          
 // juliana@230_12      
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
@@ -2336,7 +2336,7 @@ LB_API void lLC_convert_s(NMParams p)
          int32* sizes;         
             
 // juliana@230_12
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
 
@@ -2369,7 +2369,7 @@ LB_API void lLC_convert_s(NMParams p)
          TC_int2CRID(crid, name);
       
 // juliana@230_12      
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
@@ -2694,7 +2694,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
       {
          Object driver = p->obj[0];
 
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
 
@@ -2714,7 +2714,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
          TC_int2CRID(crid, name);
          
 // juliana@230_12      
-#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+#ifdef POSIX
          if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
