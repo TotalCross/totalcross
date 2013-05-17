@@ -274,8 +274,9 @@ public class LitebaseConnection
             validatePath(path = conn.sourcePath = (path != null)? path : Settings.dataPath != null && Settings.dataPath.length() != 0? Settings.dataPath : Settings.appPath);
             
             // If the source folder does not exist, it is created. This creation is recursive.
-            if (path.length() > 0 && !new File(path).exists())
-               new File(path).createDir();
+            File file = new File(path);
+            if (path.length() > 0 && !file.exists())
+               file.createDir();
 
             if (!path.endsWith("\\") && !path.endsWith("/")) // Appends a "/" if the datapath does not end with "\\" or "/".
                conn.sourcePath = path + '/';
