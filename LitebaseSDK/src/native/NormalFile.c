@@ -446,7 +446,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#ifdef POSIX 
+#if defined(WINCE) || defined(POSIX) 
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif
