@@ -1,9 +1,9 @@
-export TARGET=iphone:5.1
+export TARGET=iphone:latest:5.1
 GO_EASY_ON_ME = 1
 
 type ?= demo
 
-ARCHS = armv7 armv6
+ARCHS = armv7
 
 libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork CoreLocation Foundation
 
