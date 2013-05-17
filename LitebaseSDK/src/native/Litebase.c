@@ -1425,7 +1425,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 		fileError(context, ret, sourcePath);
 		return 0;
 	}
-#elif !defined(WINCE) // WIN32, POSIX, ANDROID
+#elif !defined(WINCE) // WIN32 and POSIX
    // Creates the path folder if it does not exist; it can't be empty.
    if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
@@ -1525,9 +1525,7 @@ TESTCASE(LibClose)
    // All Created drivers are closed.
    ASSERT1_EQUALS(Null, htCreatedDrivers.items);
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);   
+   ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);  
 
 finish : ;
 }
@@ -2271,7 +2269,7 @@ TESTCASE(checkApppath)
    xstrcpy(path, "\\"); 
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
    ASSERT2_EQUALS(Sz, sourcePath, "/");
-#if !defined(ANDROID) && !defined(POSIX)
+#if !defined(POSIX)
 	xstrcpy(path, "\\temp\\tables");
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path)); 
    ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/");
