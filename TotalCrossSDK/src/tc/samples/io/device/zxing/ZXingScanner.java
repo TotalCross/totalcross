@@ -24,7 +24,6 @@ import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
 /** ZXing scanner demo
@@ -32,8 +31,6 @@ import totalcross.ui.gfx.*;
 
 public class ZXingScanner extends MainWindow implements KeyListener
 {
-   public static final int BKGCOLOR = 0x0A246A;
-   public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
    static
    {
       Settings.useNewFont = true;
@@ -54,23 +51,23 @@ public class ZXingScanner extends MainWindow implements KeyListener
    public void initUI()
    {
       setUIStyle(Settings.Android);
+      setDefaultFont(font.adjustedBy(2,true));
       setBackColor(UIColors.controlsBack = Color.WHITE);
-      UIColors.messageboxBack = Color.brighter(BKGCOLOR,64);
+      UIColors.messageboxBack = Color.brighter(0x4A64AA);
       UIColors.messageboxFore = Color.WHITE;
 
-      int c1 = 0x0A246A;
-      Font f = font.adjustedBy(2,true);
       headerBar = new Bar("ZXing Scanner Demo");
-      headerBar.setFont(f);
-      headerBar.setBackForeColors(c1,Color.WHITE);
+      headerBar.setBackForeColors(0x0A246A,Color.WHITE);
       headerBar.addButton(Resources.exit);
       add(headerBar, LEFT,0,FILL,PREFERRED);
       if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID))
          add(new Label("This program currently runs\nonly at the Android platform."),CENTER,CENTER);
       else
       {
-         add(btScanner = new Button("Scan"), CENTER, BOTTOM - 100,SCREENSIZE+80,PREFERRED+50);
+         add(btScanner = new Button("Scan"), LEFT, BOTTOM,FILL,PREFERRED+50);
          add(edtBarCode = new MultiEdit(3,1), LEFT, CENTER,FILL,PREFERRED);
+         btScanner.setBackColor(0x0A246A);
+         btScanner.setForeColor(Color.WHITE);
          add(new Label("Result:"),LEFT,BEFORE);
          edtBarCode.setEditable(false);
          getParentWindow().addKeyListener(this); // exit app when user press back 
