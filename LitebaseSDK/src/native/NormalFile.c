@@ -470,13 +470,20 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
             minStamp,
             oldest = 0;
       XFile** list = filesList.list;
+      XFile* file;
 
       xFile->timeStamp = minStamp = TC_getTimeStamp();
       while (--ret > 0)
          if (list[ret]->timeStamp < minStamp)
             minStamp = list[oldest = ret]->timeStamp;
 
-      if ((ret = lbfileClose(&list[oldest]->file)))
+      if ((file = list[oldest])->cacheIsDirty && ret = flushCache(context, file))
+      {
+         UNLOCKVAR(files);
+         return ret;
+      }
+
+      if ((ret = lbfileClose(&file->file)))
       {
          UNLOCKVAR(files);
          return ret;
