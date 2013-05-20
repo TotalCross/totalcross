@@ -149,59 +149,6 @@ target: makeNativeHT - updates the native methods hash table.
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: buildPalmOS5
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="buildPalmOS5_sdk" >
-   <antcall target="buildPalmOS5">
-      <param name="release.type" value="demo" />
-      <param name="palm.target.path" value="${target.sdk.path}" />
-   </antcall>
-</target>
-   
-<target name="buildPalmOS5_vms" >
-   <antcall target="buildPalmOS5">
-      <param name="release.type" value="nodemo" />
-      <param name="palm.target.path" value="${target.vms.path}" />
-   </antcall>
-</target>
-   
-<target name="buildPalmOS5" >
-
-   <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
-   
-   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_${release.type}.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
-         <arg line='--login -i ${basedir}\gcc-palm\clean.sh ${basedir}\gcc-palm'/>
-   </exec>
-   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails. Timeouts at 2:30 minutes. -->
-   <retry retrycount="5">
-      <trycatch>
-        <try>
-           <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
-              <arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh ${basedir}\gcc-palm'/>
-           </exec>
-        </try>
-        <catch>
-           <exec executable="cmd.exe">
-              <arg line='kill arm-elf-gcc.exe'/>
-           </exec>
-        </catch>
-      </trycatch>
-   </retry>
-
-   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-   <mkdir dir="${palm.target.path}\dist\lib\palm"/>
-   <copy file="gcc-palm/Litebase.prc" todir="${palm.target.path}/dist/lib/palm" overwrite="yes"/>
-   <copy file="lbcn-gcc-palm/LitebaseConduit.prc" todir="${palm.target.path}/dist/lib/palm" overwrite="yes"/>
-   
-   <property name="matchbox"    value="${source.tc.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-   <exec executable="${matchbox}" failonerror="yes">
-      <arg line='/palm /name "Litebase Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\lib\palm\Install.exe /files ${palm.target.path}\dist\lib\palm\Litebase.prc ${palm.target.path}\dist\lib\palm\LitebaseConduit.prc ${target.sdk.path}\dist\lib\palm\LitebaseLib.pdb'/>
-   </exec>
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
@@ -319,23 +266,12 @@ target: createSkeleton - Create the folders from scratch
   <!-- copy the changed files to the release folder -->
   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
   <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist/lib/palm" includes="*.pdb" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
 </target>
 
 <target name="buildSamples_sdk" >
   <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false"/>
   <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/dist/samples" /></copy>
-</target>
-
-<target name="buildBB_sdk" >
-   <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-sdk"  inheritAll="false"/>
-   <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
-</target>
-
-<target name="buildBB_vms" >
-  <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-vms" inheritAll="false"/>
-  <copy todir="${target.vms.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -645,8 +581,6 @@ target: ftp things to the site
   <property name="vm.dir" value="${target.sdk.path}/dist/lib"/>
   <mkdir dir="${temp}" />
 
-  <zip destfile="${temp}/lb_bb.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb" includes="Litebase.alx,Litebase.cod" />
-  <zip destfile="${temp}/lb_palm5.zip" compress="true" filesonly="true" basedir="${vm.dir}/palm" includes="LitebaseLib.pdb,LitebaseConduit.prc,Litebase.prc" />
   <zip destfile="${temp}/lb_win32.zip" compress="true" >
     <zipfileset dir="${vm.dir}/win32" includes="Litebase.dll" />
     <zipfileset dir="${vm.dir}" includes="LitebaseLib.tcz" />
@@ -698,9 +632,15 @@ target: checks if we must update the versions of the files prior to a build.
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
-<target name="build_vms" depends="checkVersionOnProjects,createSkeleton,buildBB_vms,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_vms" depends="checkVersionOnProjects,createSkeleton,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />
+
+<target name="buildBB_sdk" />
+<target name="buildBB_vms" />
+<target name="buildPalmOS5_sdk" />
+<target name="buildPalmOS5_vms" />
+
 </project>

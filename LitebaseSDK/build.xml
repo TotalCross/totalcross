@@ -154,7 +154,6 @@ target: compile
      excludes="litebase/android/**"
   >
      <classpath>
-        <pathelement location="${tcsdk.root}/etc/tools/bb/lib/net_rim_api.jar"/>
         <pathelement location="${tcsdk.root}/dist/tc.jar"/>
      </classpath>
   </javac>
@@ -186,11 +185,10 @@ target: device
     <arg line="/n LitebaseLib"/>
     <arg line="/a LBTC"/>
     <arg line="${tcdeploy_line}"/>
-    <arg line="-palm -win32"/>
+    <arg line="-win32"/>
   </java>
 
   <copy file="${output}/install/win32/LitebaseLib.tcz" todir="${dist}/lib"/>
-  <copy file="${output}/install/palm/LitebaseLib.pdb" todir="${dist}/lib/palm"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -216,12 +214,7 @@ target: desktop
          <field  access="public protected" />
          <method access="public protected" />
        </keep>
-       
-       <keep name="litebase.DataStreamLB" >
-         <field  access="public protected" />
-         <method access="public protected" />
-       </keep>           
-                  
+
        <keep name="litebase.XFile" >
          <field  access="public protected" />
          <method access="public protected" />
@@ -230,8 +223,7 @@ target: desktop
        <keep extends="litebase.XFile" >
          <field  access="public protected" />
          <method access="public protected" />
-       </keep> 
-
+       </keep>
 
        <!-- Preserve all .class method names. -->
 
@@ -257,124 +249,6 @@ target: desktop
    </proguard>
 
   <delete file="${output}/lb_.jar"/>
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: blackberry-sdk
-
--description:
-        build the Litebase BlackBerry module in demo version
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="bb_step1">
-  <delete file="${output}/Litebase.jar"/>
-  <copy file="${src}/litebase/LitebaseConnection.java" tofile="${src}/litebase/LitebaseConnection.java.bak" overwrite="true" preservelastmodified="true" />
-</target>
-
-<target name="bb_step2">
-  <antcall target="blackberry-cod" />
-  <mkdir dir="${dist}/lib/bb" />
-  <move file="${output}/install/bb/Litebase.alx" todir="${dist}/lib/bb" overwrite="true">
-    <filterchain>
-      <replaceregex pattern="(\x3Cdescription\x3E).*(\x3C/description\x3E)" replace="\1${description}\2" />
-      <replaceregex pattern="(\x3Cversion\x3E).*(\x3C/version\x3E)" replace="\1${versionStr}\2" />
-      <replaceregex pattern="(\x3Cvendor\x3E).*(\x3C/vendor\x3E)" replace="\1SuperWaba Ltda.\2" />
-      <replaceregex pattern="(\x3Ccopyright\x3E).*(\x3C/copyright\x3E)" replace="\1Copyright \(C\) 2000\-2009 SuperWaba Ltda\.\2" />
-      <expandproperties />
-    </filterchain>
-  </move>
-  <move file="${output}/install/bb/Litebase.jad" todir="${dist}/lib/bb" overwrite="true">
-    <filterchain>
-      <replaceregex pattern="(MIDlet-Description: ).*" replace="\1${description}" />
-      <replaceregex pattern="(MIDlet-Version: ).*" replace="\1${versionStr}" />
-      <replaceregex pattern="(MIDlet-Vendor: ).*" replace="\1SuperWaba Ltda." />
-      <expandproperties />
-    </filterchain>
-  </move>
-  <move todir="${dist}/lib/bb" overwrite="true">
-    <fileset dir="${output}/install/bb" includes="Litebase*" excludes="Litebase*.debug" />
-  </move>
-</target>
-  
-<target name="blackberry-sdk" depends="bb_step1" description="build the Litebase.cod in demo version mode">
-  
-  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
-
-  <antcall target="compile" />
-  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
-
-  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
-    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
-  </jar>
-
-  <property name="description" value="Litebase Demo" />
-  <antcall target="bb_step2" />
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: blackberry-vms
-
--description:
-        build the Litebase BlackBerry module in release version
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="blackberry-vms" depends="bb_step1" description="build the Litebase.cod in release version mode">
-
-  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
-
-  <antcall target="compile" />
-  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
-
-  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
-    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
-  </jar>
-
-  <property name="description" value="Litebase Full" />
-  <antcall target="bb_step2" />
-
-</target>
-  
-<target name="blackberry-vms_noras" depends="bb_step1" description="build the Litebase.cod in release version mode without activation control">
-
-  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
-  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
-
-  <antcall target="compile" />
-  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
-
-  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
-    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
-  </jar>
-
-  <property name="description" value="Litebase Full - No RAS" />
-  <antcall target="bb_step2" />
-
-  </target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: blackberry-cod
-
--description:
-        build the TotalCross COD file
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="blackberry-cod">
-
-  <echo message="create the Litebase.cod file" />
-  <copy file="${tcsdk.root}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${tcsdk.root}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
-  <java classname="tc.Deploy" fork="yes" dir="${output}">
-    <classpath>
-      <pathelement location="${tcsdk.root}/dist/tc.jar"/>
-      <pathelement location="${tcsdk.root}"/>
-    </classpath>
-    <arg value="${output}/Litebase.jar"/>
-    <arg line="/n Litebase"/>
-    <arg line="/a LBTC"/>
-    <arg line="${tcdeploy_line}"/>
-    <arg value="-bb"/>
-  </java>
 
 </target>
 
@@ -406,7 +280,7 @@ target: samples
    <mkdir dir="${target.dir}" />
 
    <!-- win32 packaging not supported on Linux -->
-   <condition property="supportedPlatforms" value="-palm -iphone -linux">
+   <condition property="supportedPlatforms" value="-iphone -linux">
 	<os family="unix"/>
    </condition>
    <property name="supportedPlatforms" value="-all"/>
