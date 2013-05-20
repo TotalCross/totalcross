@@ -1959,7 +1959,7 @@ TESTCASE(LibClose)
    // All Created drivers are closed.
    ASSERT1_EQUALS(Null, htCreatedDrivers.items);
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
-   ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);  
+   ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0); 
 
 finish : ;
 }
