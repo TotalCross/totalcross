@@ -1016,10 +1016,23 @@ public class Scanner
    {
       return scannerIsPassive && Scanner.setParam(0,0,0);
    }
-   
-   public static String readBarcode(String fileName)
+ 
+   /** Reads a barcode using ZXing for Android.
+    * 
+    *  The mode can be one of:
+    *  <ul>
+    *  <li> 1D - for one dimension barcodes
+    *  <li> 2D - for QR codes
+    *  <li> empty string - for both
+    *  </ul>
+    *  
+    *  If an error happens, it is returned prefixed with ***.
+    *  
+    *  See the tc.samples.io.device.zxing.ZXingScanner sample.
+    */
+   public static String readBarcode(String mode)
    {
       return null;
    }
-   native public static String readBarcode4D(String fileName);
+   native public static String readBarcode4D(String mode);
 }

@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Implementation of this interface attempt to read several barcodes from one image.
  *
- * @see com.google.zxing.Reader
+ * @see totalcross.android.zxing.Reader
  * @author Sean Owen
  */
 public interface MultipleBarcodeReader {

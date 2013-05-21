@@ -42,6 +42,7 @@ public class Loader extends Activity
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
+   private static final int ZXING_RETURN = 1234324333;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -105,6 +106,10 @@ public class Loader extends Activity
          case MAP_RETURN:
             Launcher4A.showingMap = false;
             break;
+         case ZXING_RETURN:
+            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
+            Launcher4A.callingZXing = false;
+            break;
       }
    }
    
@@ -154,6 +159,7 @@ public class Loader extends Activity
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
    public static final int INVERT_ORIENTATION = 8;
+   public static final int ZXING_SCAN = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -253,6 +259,21 @@ public class Loader extends Activity
                }
                break;
             }
+            case ZXING_SCAN:
+            {
+               String mode = b.getString("zxing.mode");
+               mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
+                      mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
+                      "SCAN_MODE";
+               Intent intent = new Intent("totalcross.android.zxing.client.android.SCAN");
+               intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
+               intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
+               startActivityForResult(intent, ZXING_RETURN);
+               //if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+               //Result result = reader.decode(bitmap, decodeHints);
+               break;
+            }
+               
          }
       }
    }

@@ -12,15 +12,15 @@
 #include "tcvm.h"
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
+TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String mode);
 {
 #ifdef ANDROID
    JNIEnv* env = getJNIEnv();         
-   Object fname = p->obj[0];
+   Object mode = p->obj[0];
    Object o = null;
-   jstring jfname = (*env)->NewString(env, (jchar*) String_charsStart(fname), String_charsLen(fname));
-   jstring result = (*env)->CallStaticObjectMethod(env, applicationClass, jzxing, jfname);
-   (*env)->DeleteLocalRef(env, jfname);
+   jstring jmode = mode == null ? null : (*env)->NewString(env, (jchar*) String_charsStart(mode), String_charsLen(mode));
+   jstring result = (*env)->CallStaticObjectMethod(env, applicationClass, jzxing, jmode);
+   (*env)->DeleteLocalRef(env, jmode);
    if (result != null)
    {
       const jchar *str = (*env)->GetStringChars(env, result, 0);

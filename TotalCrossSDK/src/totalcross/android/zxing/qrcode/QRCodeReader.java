@@ -46,7 +46,7 @@ public class QRCodeReader implements Reader {
 
   private final Decoder decoder = new Decoder();
 
-  protected Decoder getDecoder() {
+  protected final Decoder getDecoder() {
     return decoder;
   }
 
@@ -64,7 +64,7 @@ public class QRCodeReader implements Reader {
   }
 
   @Override
-  public Result decode(BinaryBitmap image, Map<DecodeHintType,?> hints)
+  public final Result decode(BinaryBitmap image, Map<DecodeHintType,?> hints)
       throws NotFoundException, ChecksumException, FormatException {
     DecoderResult decoderResult;
     ResultPoint[] points;
@@ -101,8 +101,7 @@ public class QRCodeReader implements Reader {
    * around it. This is a specialized method that works exceptionally fast in this special
    * case.
    *
-   * @see com.google.zxing.pdf417.PDF417Reader#extractPureBits(BitMatrix)
-   * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
+   * @see totalcross.android.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
    */
   private static BitMatrix extractPureBits(BitMatrix image) throws NotFoundException {
 
@@ -118,6 +117,11 @@ public class QRCodeReader implements Reader {
     int bottom = rightBottomBlack[1];
     int left = leftTopBlack[0];
     int right = rightBottomBlack[0];
+    
+    // Sanity check!
+    if (left >= right || top >= bottom) {
+      throw NotFoundException.getNotFoundInstance();
+    }
 
     if (bottom - top != right - left) {
       // Special case, where bottom-right module wasn't black so we found something else in the last row
@@ -141,6 +145,16 @@ public class QRCodeReader implements Reader {
     int nudge = (int) (moduleSize / 2.0f);
     top += nudge;
     left += nudge;
+    
+    // But careful that this does not sample off the edge
+    int nudgedTooFarRight = left + (int) ((matrixWidth - 1) * moduleSize) - (right - 1);
+    if (nudgedTooFarRight > 0) {
+      left -= nudgedTooFarRight;
+    }
+    int nudgedTooFarDown = top + (int) ((matrixHeight - 1) * moduleSize) - (bottom - 1);
+    if (nudgedTooFarDown > 0) {
+      top -= nudgedTooFarDown;
+    }
 
     // Now just read off the bits
     BitMatrix bits = new BitMatrix(matrixWidth, matrixHeight);

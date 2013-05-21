@@ -42,6 +42,7 @@ public final class VEventResultParser extends ResultParser {
       return null;
     }
     String end = matchSingleVCardPrefixedField("DTEND", rawText, true);
+    String duration = matchSingleVCardPrefixedField("DURATION", rawText, true);
     String location = matchSingleVCardPrefixedField("LOCATION", rawText, true);
     String organizer = stripMailto(matchSingleVCardPrefixedField("ORGANIZER", rawText, true));
 
@@ -64,7 +65,7 @@ public final class VEventResultParser extends ResultParser {
       try {
         latitude = Double.parseDouble(geoString.substring(0, semicolon));
         longitude = Double.parseDouble(geoString.substring(semicolon + 1));
-      } catch (NumberFormatException nfe) {
+      } catch (NumberFormatException ignored) {
         return null;
       }
     }
@@ -73,13 +74,14 @@ public final class VEventResultParser extends ResultParser {
       return new CalendarParsedResult(summary,
                                       start,
                                       end,
+                                      duration,
                                       location,
                                       organizer,
                                       attendees,
                                       description,
                                       latitude,
                                       longitude);
-    } catch (IllegalArgumentException iae) {
+    } catch (IllegalArgumentException ignored) {
       return null;
     }
   }

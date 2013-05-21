@@ -18,17 +18,6 @@
 
 package totalcross;
 
-import totalcross.android.*;
-import totalcross.android.compat.*;
-import totalcross.android.zxing.*;
-import totalcross.android.zxing.common.*;
-
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
-import android.view.animation.*;
-import android.view.animation.Animation.AnimationListener;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -43,8 +32,16 @@ import android.telephony.gsm.*;
 import android.util.*;
 import android.view.*;
 import android.view.View.OnKeyListener;
+import android.view.animation.*;
+import android.view.animation.Animation.AnimationListener;
 import android.view.inputmethod.*;
 import android.widget.*;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
+
+import totalcross.android.Loader;
+import totalcross.android.compat.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
@@ -1417,41 +1414,30 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
    
-   public static String zxing(String file)
+   public static boolean callingZXing;
+   public static String zxingResult;
+   public static String zxing(String mode)
    {
       String text = null;
       try 
       {
-         boolean harder = file.startsWith("*");
-         if (harder) file = file.substring(1);
-         Bitmap bmp = BitmapFactory.decodeFile(file); // "/sdcard/myqrcode.png");
-         if (bmp == null)
-            throw new Exception("File not found: "+file);
-         bmp = bmp.copy(Bitmap.Config.ARGB_8888, true);
-         int[] intArray = new int[bmp.getWidth() * bmp.getHeight()];
-         bmp.getPixels(intArray, 0, bmp.getWidth(), 0, 0, bmp.getWidth(), bmp.getHeight());
-
-         LuminanceSource source = new RGBLuminanceSource(bmp.getWidth(), bmp.getHeight(), intArray);
-         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-         MultiFormatReader reader = new MultiFormatReader();
-         Hashtable<DecodeHintType, Object> decodeHints = new Hashtable<DecodeHintType, Object>();
-         if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-         Result result = reader.decode(bitmap, decodeHints);
-         //Result result = reader.decode(bitmap);
-
-         text = result.getText();
-         //BarcodeFormat format = result.getBarcodeFormat();
-/*       byte[] rawBytes = result.getRawBytes();
-         ResultPoint[] points = result.getResultPoints();*/
+         if (mode == null) mode = "";
+         zxingResult = null;
+         callingZXing = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("zxing.mode", mode);
+         b.putInt("type",Loader.ZXING_SCAN);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingZXing)
+            try {Thread.sleep(200);} catch (Exception e) {}
+         return zxingResult;
       } 
-      catch (NotFoundException nfe)
-      {
-         text = "***NO BARCODE FOUND";
-      }
       catch (Throwable e) 
       {
          e.printStackTrace();
-         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1
+         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1)
       }
       return text;
    }

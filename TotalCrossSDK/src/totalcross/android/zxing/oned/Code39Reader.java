@@ -25,6 +25,7 @@ import totalcross.android.zxing.Result;
 import totalcross.android.zxing.ResultPoint;
 import totalcross.android.zxing.common.BitArray;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -55,14 +56,15 @@ public final class Code39Reader extends OneDReader {
 
   private final boolean usingCheckDigit;
   private final boolean extendedMode;
+  private final StringBuilder decodeRowResult;
+  private final int[] counters;
 
   /**
    * Creates a reader that assumes all encoded data is data, and does not treat the final
    * character as a check digit. It will not decoded "extended Code 39" sequences.
    */
   public Code39Reader() {
-    usingCheckDigit = false;
-    extendedMode = false;
+    this(false);
   }
 
   /**
@@ -73,8 +75,7 @@ public final class Code39Reader extends OneDReader {
    * data, and verify that the checksum passes.
    */
   public Code39Reader(boolean usingCheckDigit) {
-    this.usingCheckDigit = usingCheckDigit;
-    this.extendedMode = false;
+    this(usingCheckDigit, false);
   }
 
   /**
@@ -90,31 +91,36 @@ public final class Code39Reader extends OneDReader {
   public Code39Reader(boolean usingCheckDigit, boolean extendedMode) {
     this.usingCheckDigit = usingCheckDigit;
     this.extendedMode = extendedMode;
+    decodeRowResult = new StringBuilder(20);
+    counters = new int[9];
   }
 
   @Override
   public Result decodeRow(int rowNumber, BitArray row, Map<DecodeHintType,?> hints)
       throws NotFoundException, ChecksumException, FormatException {
 
-    int[] counters = new int[9];
-    int[] start = findAsteriskPattern(row, counters);
+    int[] theCounters = counters;
+    Arrays.fill(theCounters, 0);
+    StringBuilder result = decodeRowResult;
+    result.setLength(0);
+
+    int[] start = findAsteriskPattern(row, theCounters);
     // Read off white space    
     int nextStart = row.getNextSet(start[1]);
     int end = row.getSize();
 
-    StringBuilder result = new StringBuilder(20);
     char decodedChar;
     int lastStart;
     do {
-      recordPattern(row, nextStart, counters);
-      int pattern = toNarrowWidePattern(counters);
+      recordPattern(row, nextStart, theCounters);
+      int pattern = toNarrowWidePattern(theCounters);
       if (pattern < 0) {
         throw NotFoundException.getNotFoundInstance();
       }
       decodedChar = patternToChar(pattern);
       result.append(decodedChar);
       lastStart = nextStart;
-      for (int counter : counters) {
+      for (int counter : theCounters) {
         nextStart += counter;
       }
       // Read off white space
@@ -124,7 +130,7 @@ public final class Code39Reader extends OneDReader {
 
     // Look for whitespace after pattern:
     int lastPatternSize = 0;
-    for (int counter : counters) {
+    for (int counter : theCounters) {
       lastPatternSize += counter;
     }
     int whiteSpaceAfterEnd = nextStart - lastStart - lastPatternSize;
@@ -138,7 +144,7 @@ public final class Code39Reader extends OneDReader {
       int max = result.length() - 1;
       int total = 0;
       for (int i = 0; i < max; i++) {
-        total += ALPHABET_STRING.indexOf(result.charAt(i));
+        total += ALPHABET_STRING.indexOf(decodeRowResult.charAt(i));
       }
       if (result.charAt(max) != ALPHABET[total % 43]) {
         throw ChecksumException.getChecksumInstance();
@@ -223,7 +229,7 @@ public final class Code39Reader extends OneDReader {
       int pattern = 0;
       for (int i = 0; i < numCounters; i++) {
         int counter = counters[i];
-        if (counters[i] > maxNarrowCounter) {
+        if (counter > maxNarrowCounter) {
           pattern |= 1 << (numCounters - 1 - i);
           wideCounters++;
           totalWideCountersWidth += counter;
@@ -235,7 +241,7 @@ public final class Code39Reader extends OneDReader {
         // counter is more than 1.5 times the average:
         for (int i = 0; i < numCounters && wideCounters > 0; i++) {
           int counter = counters[i];
-          if (counters[i] > maxNarrowCounter) {
+          if (counter > maxNarrowCounter) {
             wideCounters--;
             // totalWideCountersWidth = 3 * average, so this checks if counter >= 3/2 * average
             if ((counter << 1) >= totalWideCountersWidth) {

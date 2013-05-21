@@ -92,9 +92,8 @@ public final class MaxiCodeReader implements Reader {
    * around it. This is a specialized method that works exceptionally fast in this special
    * case.
    *
-   * @see com.google.zxing.pdf417.PDF417Reader#extractPureBits(BitMatrix)
-   * @see com.google.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
-   * @see com.google.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
+   * @see totalcross.android.zxing.datamatrix.DataMatrixReader#extractPureBits(BitMatrix)
+   * @see totalcross.android.zxing.qrcode.QRCodeReader#extractPureBits(BitMatrix)
    */
   private static BitMatrix extractPureBits(BitMatrix image) throws NotFoundException {
     

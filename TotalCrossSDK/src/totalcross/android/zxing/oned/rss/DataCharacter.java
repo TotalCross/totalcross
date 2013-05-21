@@ -34,4 +34,23 @@ public class DataCharacter {
     return checksumPortion;
   }
 
+  @Override
+  public final String toString() {
+    return value + "(" + checksumPortion + ')';
+  }
+  
+  @Override
+  public final boolean equals(Object o) {
+    if(!(o instanceof DataCharacter)) {
+      return false;
+    }
+    DataCharacter that = (DataCharacter) o;
+    return value == that.value && checksumPortion == that.checksumPortion;
+  }
+
+  @Override
+  public final int hashCode() {
+    return value ^ checksumPortion;
+  }
+
 }

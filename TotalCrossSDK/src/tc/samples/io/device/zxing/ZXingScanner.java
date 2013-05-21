@@ -38,9 +38,9 @@ public class ZXingScanner extends MainWindow implements KeyListener
    }
 
    // by making the members private, the compiler can optimize them.
-   private Button btScanner;
    private MultiEdit edtBarCode;
    private Bar headerBar;
+   private PushButtonGroup pbg;
 
    public ZXingScanner()
    {
@@ -61,15 +61,18 @@ public class ZXingScanner extends MainWindow implements KeyListener
       headerBar.addButton(Resources.exit);
       add(headerBar, LEFT,0,FILL,PREFERRED);
       if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID))
-         add(new Label("This program currently runs\nonly at the Android platform."),CENTER,CENTER);
+         add(new Label("This program currently runs\nonly on the Android platform."),CENTER,CENTER);
       else
       {
-         add(btScanner = new Button("Scan"), LEFT, BOTTOM,FILL,PREFERRED+50);
-         add(edtBarCode = new MultiEdit(3,1), LEFT, CENTER,FILL,PREFERRED);
-         btScanner.setBackColor(0x0A246A);
-         btScanner.setForeColor(Color.WHITE);
-         add(new Label("Result:"),LEFT,BEFORE);
+         pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
+         add(pbg,LEFT,AFTER+100,FILL,PREFERRED+100);
+
+         add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-100,FILL,PREFERRED);
          edtBarCode.setEditable(false);
+         
+         add(new Label("Result:"),LEFT,BEFORE);
+         
+         
          getParentWindow().addKeyListener(this); // exit app when user press back 
       }
    }
@@ -93,11 +96,11 @@ public class ZXingScanner extends MainWindow implements KeyListener
             if (event.target == headerBar && headerBar.getSelectedIndex() == 1)
                   exit(0);
             else
-            if (event.target == btScanner)
+            if (event.target == pbg)
             {
-               String scan = Scanner.readBarcode("");
-               if (scan != null && scan.startsWith("***"))
-                  scan = Scanner.readBarcode("*"); // use a try-harder algorithm
+               int sel = pbg.getSelectedIndex();
+               String mode = sel == 0 ? "1D" : sel == 1 ? "2D" : "";
+               String scan = Scanner.readBarcode(mode);
                if (scan != null)
                   edtBarCode.setText(scan);
             }

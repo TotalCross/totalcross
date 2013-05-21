@@ -15,8 +15,20 @@
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
+        <activity android:name=".zxing.client.android.CaptureActivity"
+                 android:screenOrientation="landscape"
+                 android:clearTaskOnLaunch="true"
+                 android:stateNotNeeded="true"
+                 android:configChanges="orientation|keyboardHidden"
+                 android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                 android:windowSoftInputMode="stateAlwaysHidden">
+         <intent-filter>
+           <action android:name="totalcross.android.zxing.client.android.SCAN"/>
+           <category android:name="android.intent.category.DEFAULT"/>
+         </intent-filter>
+        </activity>
     </application>
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="10" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -30,6 +42,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
@@ -38,7 +51,10 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> 
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> 
 </manifest>

@@ -133,7 +133,8 @@ public final class ExpandedProductResultParser extends ResultParser {
       }
     }
 
-    return new ExpandedProductParsedResult(productID,
+    return new ExpandedProductParsedResult(rawText,
+                                           productID,
                                            sscc,
                                            lotNumber,
                                            productionDate,
@@ -150,7 +151,6 @@ public final class ExpandedProductResultParser extends ResultParser {
   }
 
   private static String findAIvalue(int i, String rawText) {
-    StringBuilder buf = new StringBuilder();
     char c = rawText.charAt(i);
     // First character must be a open parenthesis.If not, ERROR
     if (c != '(') {
@@ -159,6 +159,7 @@ public final class ExpandedProductResultParser extends ResultParser {
 
     String rawTextAux = rawText.substring(i + 1);
 
+    StringBuilder buf = new StringBuilder();
     for (int index = 0; index < rawTextAux.length(); index++) {
       char currentChar = rawTextAux.charAt(index);
       if (currentChar == ')') {

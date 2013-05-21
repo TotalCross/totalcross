@@ -40,6 +40,7 @@ public final class MultiFormatUPCEANReader extends OneDReader {
   private final UPCEANReader[] readers;
 
   public MultiFormatUPCEANReader(Map<DecodeHintType,?> hints) {
+    @SuppressWarnings("unchecked")
     Collection<BarcodeFormat> possibleFormats = hints == null ? null :
         (Collection<BarcodeFormat>) hints.get(DecodeHintType.POSSIBLE_FORMATS);
     Collection<UPCEANReader> readers = new ArrayList<UPCEANReader>();
@@ -75,7 +76,7 @@ public final class MultiFormatUPCEANReader extends OneDReader {
       Result result;
       try {
         result = reader.decodeRow(rowNumber, row, startGuardPattern, hints);
-      } catch (ReaderException re) {
+      } catch (ReaderException ignored) {
         continue;
       }
       // Special case: a 12-digit code encoded in UPC-A is identical to a "0"
@@ -93,6 +94,7 @@ public final class MultiFormatUPCEANReader extends OneDReader {
       boolean ean13MayBeUPCA =
           result.getBarcodeFormat() == BarcodeFormat.EAN_13 &&
               result.getText().charAt(0) == '0';
+      @SuppressWarnings("unchecked")      
       Collection<BarcodeFormat> possibleFormats =
           hints == null ? null : (Collection<BarcodeFormat>) hints.get(DecodeHintType.POSSIBLE_FORMATS);
       boolean canReturnUPCA = possibleFormats == null || possibleFormats.contains(BarcodeFormat.UPC_A);

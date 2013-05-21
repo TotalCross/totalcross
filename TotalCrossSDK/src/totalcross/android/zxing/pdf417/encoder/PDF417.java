@@ -25,7 +25,7 @@ import totalcross.android.zxing.WriterException;
 /**
  * Top-level class for the logic part of the PDF417 implementation.
  */
-final class PDF417 {
+public final class PDF417 {
 
   /**
    * The start pattern (17 bits)
@@ -518,11 +518,11 @@ final class PDF417 {
   private int maxRows;
   private int minRows;
 
-  PDF417() {
+  public PDF417() {
     this(false);
   }
 
-  PDF417(boolean compact) {
+  public PDF417(boolean compact) {
     this.compact = compact;
     compaction = Compaction.AUTO;
     minCols = 2;
@@ -531,37 +531,8 @@ final class PDF417 {
     minRows = 2;
   }
 
-  BarcodeMatrix getBarcodeMatrix() {
+  public BarcodeMatrix getBarcodeMatrix() {
     return barcodeMatrix;
-  }
-
-  /**
-   * Calculates the necessary number of rows as described in annex Q of ISO/IEC 15438:2001(E).
-   *
-   * @param m the number of source codewords prior to the additional of the Symbol Length
-   *          Descriptor and any pad codewords
-   * @param k the number of error correction codewords
-   * @param c the number of columns in the symbol in the data region (excluding start, stop and
-   *          row indicator codewords)
-   * @return the number of rows in the symbol (r)
-   */
-  private static int getNumberOfRows(int m, int k, int c) throws WriterException {
-    int r = calculateNumberOfRows(m, k, c);
-    if (r > 90) {
-      throw new WriterException(
-          "The message doesn't fit in the configured symbol size."
-              + " The resultant number of rows for this barcode exceeds 90."
-              + " Please increase the number of columns or decrease the error correction"
-              + " level to reduce the number of rows.");
-    }
-    if (r < 2) {
-      throw new WriterException(
-          "The message is too short for the configured symbol size."
-              + " The resultant number of rows is less than 3."
-              + " Please decrease the number of columns or increase the error correction"
-              + " level to increase the number of rows.");
-    }
-    return r;
   }
 
   /**
@@ -667,7 +638,7 @@ final class PDF417 {
    *
    * @param msg        the message to encode
    */
-  void generateBarcodeLogic(String msg, int errorCorrectionLevel) throws WriterException {
+  public void generateBarcodeLogic(String msg, int errorCorrectionLevel) throws WriterException {
 
     //1. step: High-level encoding
     int errorCorrectionCodeWords = PDF417ErrorCorrection.getErrorCorrectionCodewordCount(errorCorrectionLevel);
@@ -712,7 +683,7 @@ final class PDF417 {
    * @param errorCorrectionCodeWords number of error correction code words
    * @return dimension object containing cols as width and rows as height
    */
-  int[] determineDimensions(int sourceCodeWords, int errorCorrectionCodeWords) throws WriterException {
+  private int[] determineDimensions(int sourceCodeWords, int errorCorrectionCodeWords) throws WriterException {
     float ratio = 0.0f;
     int[] dimension = null;
 
@@ -757,7 +728,7 @@ final class PDF417 {
   /**
    * Sets max/min row/col values
    */
-  void setDimensions(int maxCols, int minCols, int maxRows, int minRows) {
+  public void setDimensions(int maxCols, int minCols, int maxRows, int minRows) {
     this.maxCols = maxCols;
     this.minCols = minCols;
     this.maxRows = maxRows;
@@ -767,7 +738,7 @@ final class PDF417 {
   /**
    * Sets compaction to values stored in {@link Compaction} enum
    */
-  void setCompaction(Compaction compaction) {
+  public void setCompaction(Compaction compaction) {
     this.compaction = compaction;
   }
 
@@ -775,7 +746,7 @@ final class PDF417 {
    * Sets compact to be true or false
    * @param compact
    */
-  void setCompact(boolean compact) {
+  public void setCompact(boolean compact) {
     this.compact = compact;
   }
 
