@@ -83,7 +83,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
-  private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 1500L;
+  private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 0;
   private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
 
   private static final String PACKAGE_NAME = "totalcross.android.zxing.client.android";
