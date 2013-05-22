@@ -87,6 +87,8 @@ public class ZXingScanner extends MainWindow implements KeyListener
          exit(0);
       }
    }
+   
+   private static final String msg = "Place a barcode inside the viewfinder rectangle to scan it";
 
    public void onEvent(Event event)
    {
@@ -100,7 +102,7 @@ public class ZXingScanner extends MainWindow implements KeyListener
             {
                int sel = pbg.getSelectedIndex();
                String mode = sel == 0 ? "1D" : sel == 1 ? "2D" : "";
-               String scan = Scanner.readBarcode(mode);
+               String scan = Scanner.readBarcode("mode="+mode+"&msg="+msg);
                if (scan != null)
                   edtBarCode.setText(scan);
             }

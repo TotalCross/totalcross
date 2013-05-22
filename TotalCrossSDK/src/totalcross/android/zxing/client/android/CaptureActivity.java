@@ -81,6 +81,17 @@ import java.util.Set;
  */
 public final class CaptureActivity extends Activity implements SurfaceHolder.Callback {
 
+   ///////////////// TOTALCROSS EXTRAS //////////////////
+   public static String msg = "";
+   private void totalCrossExtras(Intent intent)
+   {
+      String s = intent.getExtras().getString("SCAN_MESSAGE");
+      if (s != null)
+         msg = s;
+   }
+   ///////////////// TOTALCROSS EXTRAS //////////////////
+   
+   
   private static final String TAG = CaptureActivity.class.getSimpleName();
 
   private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 0;
@@ -170,6 +181,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     handler = null;
     lastResult = null;
 
+    Intent intent = getIntent();
+
+    totalCrossExtras(intent); ///////////////////////// TOTALCROSS EXTRAS
+
     resetStatusView();
 
     SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
@@ -189,12 +204,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
     inactivityTimer.onResume();
 
-    Intent intent = getIntent();
-
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     copyToClipboard = prefs.getBoolean(PreferencesActivity.KEY_COPY_TO_CLIPBOARD, true)
         && (intent == null || intent.getBooleanExtra(Intents.Scan.SAVE_HISTORY, true));
-
+    
     source = IntentSource.NONE;
     decodeFormats = null;
     characterSet = null;
@@ -252,7 +265,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     }
   }
   
-  private static boolean isZXingURL(String dataString) {
+private static boolean isZXingURL(String dataString) {
     if (dataString == null) {
       return false;
     }
@@ -750,7 +763,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private void resetStatusView() {
     resultView.setVisibility(View.GONE);
-    statusView.setText(R.string.msg_default_status);
+    statusView.setText(msg);
     statusView.setVisibility(View.VISIBLE);
     viewfinderView.setVisibility(View.VISIBLE);
     lastResult = null;

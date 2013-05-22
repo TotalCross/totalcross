@@ -261,13 +261,30 @@ public class Loader extends Activity
             }
             case ZXING_SCAN:
             {
-               String mode = b.getString("zxing.mode");
+               String cmd = b.getString("zxing.mode");
+               StringTokenizer st = new StringTokenizer(cmd,"&");
+               String mode = "SCAN_MODE";
+               String scanmsg = "";
+               while (st.hasMoreTokens())
+               {
+                  String s = st.nextToken();
+                  int i = s.indexOf('=');
+                  if (i == -1) continue;
+                  String s1 = s.substring(0,i);
+                  String s2 = s.substring(i+1);
+                  if (s1.equalsIgnoreCase("mode"))
+                     mode = s2;
+                  else
+                  if (s1.equalsIgnoreCase("msg"))
+                     scanmsg = s2;
+               }
                mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
                       mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
                       "SCAN_MODE";
                Intent intent = new Intent("totalcross.android.zxing.client.android.SCAN");
                intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
                intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
+               intent.putExtra("SCAN_MESSAGE", scanmsg);
                startActivityForResult(intent, ZXING_RETURN);
                //if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
                //Result result = reader.decode(bitmap, decodeHints);
