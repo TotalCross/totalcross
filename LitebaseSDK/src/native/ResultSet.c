@@ -367,7 +367,9 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
    
    nfSetPos(dbo = &plainDB->dbo, position);
-   if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
+   if (position >= dbo->finalPos)
+      length = 0;
+   else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
       return null;
 
    // Creates the returning object and loads the string inside it.
@@ -432,7 +434,9 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
    
    nfSetPos(&plainDB->dbo, position);
-   if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
+   if (position >= plainDB->dbo.finalPos)
+      length = 0;
+   else if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
       return null;
 
    // guich@570_97: checks often.
@@ -500,7 +504,9 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
          loadPlainDBAndPosition(ptr, &plainDB, &position);
 
 			nfSetPos(dbo = &plainDB->dbo, position);
-         if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
+         if (position >= dbo->finalPos)
+            length = 0;
+         else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
             return null;
 
          // Creates the returning object and loads the string inside it.
