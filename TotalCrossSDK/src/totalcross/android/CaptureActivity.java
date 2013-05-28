@@ -16,14 +16,14 @@
 
 package totalcross.android;
 
-import totalcross.android.zxing.*;
-import totalcross.android.zxing.client.android.*;
-import totalcross.android.zxing.client.android.R;
-import totalcross.android.zxing.client.android.camera.*;
-import totalcross.android.zxing.client.android.history.*;
-import totalcross.android.zxing.client.android.result.*;
-import totalcross.android.zxing.client.android.result.supplement.*;
-import totalcross.android.zxing.client.android.share.*;
+import totalcross.zxing.*;
+import totalcross.zxing.client.android.*;
+import totalcross.zxing.client.android.R;
+import totalcross.zxing.client.android.camera.*;
+import totalcross.zxing.client.android.history.*;
+import totalcross.zxing.client.android.result.*;
+import totalcross.zxing.client.android.result.supplement.*;
+import totalcross.zxing.client.android.share.*;
 
 import java.io.*;
 import java.text.*;
@@ -67,7 +67,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private static final long DEFAULT_INTENT_RESULT_DURATION_MS = 0;
   private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
 
-  private static final String PACKAGE_NAME = "totalcross.android.zxing.client.android";
+  private static final String PACKAGE_NAME = "totalcross.zxing.client.android";
   private static final String PRODUCT_SEARCH_URL_PREFIX = "http://www.google";
   private static final String PRODUCT_SEARCH_URL_SUFFIX = "/m/products/scan";
   private static final String[] ZXING_URLS = { "http://zxing.appspot.com/scan", "zxing://scan/" };
