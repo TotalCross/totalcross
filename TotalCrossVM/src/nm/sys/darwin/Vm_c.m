@@ -17,6 +17,17 @@
 #undef Class
 
 
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
+{
+   if (strEq(szCommand,"url"))
+   {
+      NSString* launchUrl = [NSString stringWithFormat:@"%s", szArgs];
+      [[UIApplication sharedApplication] openURL:[NSURL URLWithString: launchUrl]];   
+   }
+   if (!wait)
+      keepRunning = false;      
+}
+
 void vmVibrate(int32 ms)
 {
    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
