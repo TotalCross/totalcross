@@ -29,7 +29,7 @@ import java.net.URLEncoder;
  *
  * @author Sean Owen
  */
-final class ScanFromWebPageManager {
+public final class ScanFromWebPageManager {
 
   private static final String CODE_PLACEHOLDER = "{CODE}";
   private static final String RAW_CODE_PLACEHOLDER = "{RAWCODE}";
@@ -43,16 +43,16 @@ final class ScanFromWebPageManager {
   private final String returnUrlTemplate;
   private final boolean returnRaw;
 
-  ScanFromWebPageManager(Uri inputUri) {
+  public ScanFromWebPageManager(Uri inputUri) {
     returnUrlTemplate = inputUri.getQueryParameter(RETURN_URL_PARAM);
     returnRaw = inputUri.getQueryParameter(RAW_PARAM) != null;
   }
 
-  boolean isScanFromWebPage() {
+  public boolean isScanFromWebPage() {
     return returnUrlTemplate != null;
   }
 
-  String buildReplyURL(Result rawResult, ResultHandler resultHandler) {
+  public String buildReplyURL(Result rawResult, ResultHandler resultHandler) {
     String result = returnUrlTemplate;
     result = replace(CODE_PLACEHOLDER,
                      returnRaw ? rawResult.getText() : resultHandler.getDisplayContents(), result);

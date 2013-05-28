@@ -32,7 +32,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import totalcross.android.zxing.client.android.CaptureActivity;
 import totalcross.android.zxing.client.android.Intents;
 import totalcross.android.zxing.client.android.R;
 
@@ -75,7 +74,7 @@ public final class HistoryActivity extends ListActivity {
   @Override
   protected void onListItemClick(ListView l, View v, int position, long id) {
     if (adapter.getItem(position).getResult() != null) {
-      Intent intent = new Intent(this, CaptureActivity.class);
+      Intent intent = new Intent(this, totalcross.android.CaptureActivity.class);
       intent.putExtra(Intents.History.ITEM_NUMBER, position);
       setResult(Activity.RESULT_OK, intent);
       finish();
