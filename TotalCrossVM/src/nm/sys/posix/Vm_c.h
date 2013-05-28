@@ -44,6 +44,7 @@ void rebootDevice()
 //   ExitWindowsEx(EWX_REBOOT,0);
 }
 
+#ifndef darwin // implemented in Vm_c.m
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    int32 ret = -1;
@@ -74,6 +75,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    
    return ret;
 }
+#endif
 
 void vmSetAutoOff(bool enable)
 {

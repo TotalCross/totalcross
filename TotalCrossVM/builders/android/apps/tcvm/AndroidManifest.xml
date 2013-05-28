@@ -15,7 +15,7 @@
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
-        <activity android:name=".zxing.client.android.CaptureActivity"
+        <activity android:name=".CaptureActivity"
                  android:screenOrientation="landscape"
                  android:clearTaskOnLaunch="true"
                  android:stateNotNeeded="true"
@@ -23,7 +23,7 @@
                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                  android:windowSoftInputMode="stateAlwaysHidden">
          <intent-filter>
-           <action android:name="totalcross.android.zxing.client.android.SCAN"/>
+           <action android:name="totalcross.zxing.client.android.SCAN"/>
            <category android:name="android.intent.category.DEFAULT"/>
          </intent-filter>
         </activity>

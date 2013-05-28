@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  -->
-<totalcross.android.zxing.client.android.book.SearchBookContentsListItem
+<totalcross.zxing.client.android.book.SearchBookContentsListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="fill_parent"
@@ -35,4 +35,4 @@
             android:layout_gravity="left|top"
             android:singleLine="false"/>
 
-</totalcross.android.zxing.client.android.book.SearchBookContentsListItem>
+</totalcross.zxing.client.android.book.SearchBookContentsListItem>

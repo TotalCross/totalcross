@@ -33,7 +33,7 @@
                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                  android:windowSoftInputMode="stateAlwaysHidden">
          <intent-filter>
-           <action android:name="totalcross.android.zxing.client.android.SCAN"/>
+           <action android:name="totalcross.zxing.client.android.SCAN"/>
            <category android:name="android.intent.category.DEFAULT"/>
          </intent-filter>
         </activity>

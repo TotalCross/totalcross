@@ -281,7 +281,7 @@ public class Loader extends Activity
                mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
                       mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
                       "SCAN_MODE";
-               Intent intent = new Intent("totalcross.android.zxing.client.android.SCAN");
+               Intent intent = new Intent("totalcross.zxing.client.android.SCAN");
                intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
                intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
                intent.putExtra("SCAN_MESSAGE", scanmsg);

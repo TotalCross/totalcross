@@ -250,12 +250,12 @@ public class Deployer4Android
             "res/menu/encode.xml",
             "res/menu/history.xml",
             "res/raw/beep.ogg",
-            "res/values/arrays.xml",
+/*            "res/values/arrays.xml",
             "res/values/colors.xml",
             "res/values/dimens.xml",
             "res/values/ids.xml",
             "res/values/strings.xml",
-            "res/xml/preferences.xml",
+*/            "res/xml/preferences.xml",
          };
          
          for (int i = 0; i < extras.length; i++)
