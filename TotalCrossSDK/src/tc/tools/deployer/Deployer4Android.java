@@ -225,7 +225,41 @@ public class Deployer4Android
       if (singleApk)
       {
          processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "res/layout/main.xml", zos);
+         String[] extras = 
+         {
+            "res/drawable/launcher_icon.png",
+            "res/drawable/share_via_barcode.png",
+            "res/drawable/shopper_icon.png",
+            "res/drawable-hdpi/launcher_icon.png",
+            "res/drawable-hdpi/shopper_icon.png",
+            "res/drawable-xhdpi/launcher_icon.png",
+            "res/layout/bookmark_picker_list_item.xml",
+            "res/layout/capture.xml",
+            "res/layout/encode.xml",
+            "res/layout/help.xml",
+            "res/layout/history_list_item.xml",
+            "res/layout/main.xml",
+            "res/layout/search_book_contents.xml",
+            "res/layout/search_book_contents_header.xml",
+            "res/layout/search_book_contents_list_item.xml",
+            "res/layout/share.xml",
+            "res/layout-land/encode.xml",
+            "res/layout-land/share.xml",
+            "res/layout-ldpi/capture.xml",
+            "res/menu/capture.xml",
+            "res/menu/encode.xml",
+            "res/menu/history.xml",
+            "res/raw/beep.ogg",
+            "res/values/arrays.xml",
+            "res/values/colors.xml",
+            "res/values/dimens.xml",
+            "res/values/ids.xml",
+            "res/values/strings.xml",
+            "res/xml/preferences.xml",
+         };
+         
+         for (int i = 0; i < extras.length; i++)
+            copyZipEntry(tcFolder+"TotalCross.apk", extras[i], zos);
       }
       else
       {
