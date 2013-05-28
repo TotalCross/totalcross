@@ -47,7 +47,7 @@ public final class CaptureActivityHandler extends Handler {
 
   private static final String TAG = CaptureActivityHandler.class.getSimpleName();
 
-  private final CaptureActivity activity;
+  private final totalcross.android.CaptureActivity activity;
   private final DecodeThread decodeThread;
   private State state;
   private final CameraManager cameraManager;
@@ -58,7 +58,7 @@ public final class CaptureActivityHandler extends Handler {
     DONE
   }
 
-  CaptureActivityHandler(CaptureActivity activity,
+  public CaptureActivityHandler(totalcross.android.CaptureActivity activity,
                          Collection<BarcodeFormat> decodeFormats,
                          Map<DecodeHintType,?> baseHints,
                          String characterSet,

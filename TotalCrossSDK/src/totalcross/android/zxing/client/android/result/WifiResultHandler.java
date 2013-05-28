@@ -21,7 +21,6 @@ import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.widget.Toast;
 
-import totalcross.android.zxing.client.android.CaptureActivity;
 import totalcross.android.zxing.client.android.R;
 import totalcross.android.zxing.client.android.common.executor.AsyncTaskExecInterface;
 import totalcross.android.zxing.client.android.common.executor.AsyncTaskExecManager;
@@ -37,10 +36,10 @@ import totalcross.android.zxing.client.result.WifiParsedResult;
  */
 public final class WifiResultHandler extends ResultHandler {
 
-  private final CaptureActivity parent;
+  private final totalcross.android.CaptureActivity parent;
   private final AsyncTaskExecInterface taskExec;
 
-  public WifiResultHandler(CaptureActivity activity, ParsedResult result) {
+  public WifiResultHandler(totalcross.android.CaptureActivity activity, ParsedResult result) {
     super(activity, result);
     parent = activity;
     taskExec = new AsyncTaskExecManager().build();

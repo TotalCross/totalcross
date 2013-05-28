@@ -31,7 +31,7 @@ import totalcross.android.zxing.client.android.common.executor.AsyncTaskExecMana
 /**
  * Finishes an activity after a period of inactivity if the device is on battery power.
  */
-final class InactivityTimer {
+public final class InactivityTimer {
 
   private static final String TAG = InactivityTimer.class.getSimpleName();
 
@@ -42,14 +42,14 @@ final class InactivityTimer {
   private final BroadcastReceiver powerStatusReceiver;
   private InactivityAsyncTask inactivityTask;
 
-  InactivityTimer(Activity activity) {
+  public InactivityTimer(Activity activity) {
     this.activity = activity;
     taskExec = new AsyncTaskExecManager().build();
     powerStatusReceiver = new PowerStatusReceiver();
     onActivity();
   }
 
-  synchronized void onActivity() {
+  public synchronized void onActivity() {
     cancel();
     inactivityTask = new InactivityAsyncTask();
     taskExec.execute(inactivityTask);
@@ -73,7 +73,7 @@ final class InactivityTimer {
     }
   }
 
-  void shutdown() {
+  public void shutdown() {
     cancel();
   }
 

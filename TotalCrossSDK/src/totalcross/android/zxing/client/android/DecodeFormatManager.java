@@ -26,14 +26,14 @@ import android.content.Intent;
 import android.net.Uri;
 import totalcross.android.zxing.BarcodeFormat;
 
-final class DecodeFormatManager {
+public final class DecodeFormatManager {
 
   private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
-  static final Collection<BarcodeFormat> PRODUCT_FORMATS;
-  static final Collection<BarcodeFormat> ONE_D_FORMATS;
-  static final Collection<BarcodeFormat> QR_CODE_FORMATS = EnumSet.of(BarcodeFormat.QR_CODE);
-  static final Collection<BarcodeFormat> DATA_MATRIX_FORMATS = EnumSet.of(BarcodeFormat.DATA_MATRIX);
+  public static final Collection<BarcodeFormat> PRODUCT_FORMATS;
+  public static final Collection<BarcodeFormat> ONE_D_FORMATS;
+  public static final Collection<BarcodeFormat> QR_CODE_FORMATS = EnumSet.of(BarcodeFormat.QR_CODE);
+  public static final Collection<BarcodeFormat> DATA_MATRIX_FORMATS = EnumSet.of(BarcodeFormat.DATA_MATRIX);
   static {
     PRODUCT_FORMATS = EnumSet.of(BarcodeFormat.UPC_A,
                                  BarcodeFormat.UPC_E,
@@ -51,7 +51,7 @@ final class DecodeFormatManager {
 
   private DecodeFormatManager() {}
 
-  static Collection<BarcodeFormat> parseDecodeFormats(Intent intent) {
+  public static Collection<BarcodeFormat> parseDecodeFormats(Intent intent) {
     List<String> scanFormats = null;
     String scanFormatsString = intent.getStringExtra(Intents.Scan.FORMATS);
     if (scanFormatsString != null) {
@@ -60,7 +60,7 @@ final class DecodeFormatManager {
     return parseDecodeFormats(scanFormats, intent.getStringExtra(Intents.Scan.MODE));
   }
 
-  static Collection<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
+  public static Collection<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
     List<String> formats = inputUri.getQueryParameters(Intents.Scan.FORMATS);
     if (formats != null && formats.size() == 1 && formats.get(0) != null){
       formats = Arrays.asList(COMMA_PATTERN.split(formats.get(0)));

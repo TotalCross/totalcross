@@ -14,62 +14,32 @@
  * limitations under the License.
  */
 
-package totalcross.android.zxing.client.android;
+package totalcross.android;
 
-import totalcross.android.zxing.BarcodeFormat;
-import totalcross.android.zxing.DecodeHintType;
-import totalcross.android.zxing.Result;
-import totalcross.android.zxing.ResultMetadataType;
-import totalcross.android.zxing.ResultPoint;
-import totalcross.android.zxing.client.android.camera.CameraManager;
-import totalcross.android.zxing.client.android.history.HistoryActivity;
-import totalcross.android.zxing.client.android.history.HistoryItem;
-import totalcross.android.zxing.client.android.history.HistoryManager;
-import totalcross.android.zxing.client.android.result.ResultButtonListener;
-import totalcross.android.zxing.client.android.result.ResultHandler;
-import totalcross.android.zxing.client.android.result.ResultHandlerFactory;
-import totalcross.android.zxing.client.android.result.supplement.SupplementalInfoRetriever;
-import totalcross.android.zxing.client.android.share.ShareActivity;
+import totalcross.android.zxing.*;
+import totalcross.android.zxing.client.android.*;
+import totalcross.android.zxing.client.android.R;
+import totalcross.android.zxing.client.android.camera.*;
+import totalcross.android.zxing.client.android.history.*;
+import totalcross.android.zxing.client.android.result.*;
+import totalcross.android.zxing.client.android.result.supplement.*;
+import totalcross.android.zxing.client.android.share.*;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.preference.PreferenceManager;
-import android.text.ClipboardManager;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
+import android.app.*;
+import android.content.*;
+import android.content.pm.*;
+import android.graphics.*;
+import android.net.*;
+import android.os.*;
+import android.preference.*;
+import android.text.*;
+import android.util.*;
+import android.view.*;
+import android.widget.*;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -130,7 +100,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   private BeepManager beepManager;
   private AmbientLightManager ambientLightManager;
 
-  ViewfinderView getViewfinderView() {
+  public ViewfinderView getViewfinderView() {
     return viewfinderView;
   }
 
@@ -138,7 +108,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     return handler;
   }
 
-  CameraManager getCameraManager() {
+  public CameraManager getCameraManager() {
     return cameraManager;
   }
 
