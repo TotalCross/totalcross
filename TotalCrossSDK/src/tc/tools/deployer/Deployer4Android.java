@@ -201,6 +201,7 @@ public class Deployer4Android
       String apk = targetDir+fileName+".apk";
       ZipInputStream zis = new ZipInputStream(new FileInputStream(ap));
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
+
       ZipEntry ze,ze2;
 
       // search the input zip file, convert and write each entry to the output zip file
@@ -344,8 +345,20 @@ public class Deployer4Android
 
    private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
    {
-      dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+      ZipEntry ze = new ZipEntry(fileName);
+      
+      if (fileName.endsWith(".ogg")) // for zxing beep.ogg file 
+      {
+         CRC32 crc = new CRC32();
+         crc.update(bytes); 
+         ze.setCrc(crc.getValue());
+         ze.setMethod(ZipEntry.STORED);
+         ze.setCompressedSize(bytes.length);
+         ze.setSize(bytes.length);
+      }
+      
+      dstZip.putNextEntry(ze);
       dstZip.write(bytes,0,bytes.length);
       dstZip.closeEntry();
    }
