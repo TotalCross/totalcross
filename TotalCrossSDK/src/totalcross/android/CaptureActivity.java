@@ -549,7 +549,7 @@ private static boolean isZXingURL(String dataString) {
       }
     }
 
-    if (copyToClipboard && !resultHandler.areContentsSecure()) {
+/*    if (copyToClipboard && !resultHandler.areContentsSecure()) {
       ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
       if (displayContents != null) {
         try {
@@ -560,7 +560,7 @@ private static boolean isZXingURL(String dataString) {
         }
       }
     }
-  }
+*/  }
 
   // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.
   private void handleDecodeExternally(Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
