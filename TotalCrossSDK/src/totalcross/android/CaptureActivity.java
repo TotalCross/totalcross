@@ -549,7 +549,7 @@ private static boolean isZXingURL(String dataString) {
       }
     }
 
-    if (copyToClipboard && !resultHandler.areContentsSecure()) {
+/*    if (copyToClipboard && !resultHandler.areContentsSecure()) {
       ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
       if (displayContents != null) {
         try {
@@ -560,7 +560,7 @@ private static boolean isZXingURL(String dataString) {
         }
       }
     }
-  }
+*/  }
 
   // Briefly show the contents of the barcode, then handle the result outside Barcode Scanner.
   private void handleDecodeExternally(Result rawResult, ResultHandler resultHandler, Bitmap barcode) {
@@ -585,7 +585,7 @@ private static boolean isZXingURL(String dataString) {
       statusView.setText(getString(resultHandler.getDisplayTitle()) + " : " + rawResultString);
     }
 
-    if (copyToClipboard && !resultHandler.areContentsSecure()) {
+/*    if (copyToClipboard && !resultHandler.areContentsSecure()) {
       ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
       CharSequence text = resultHandler.getDisplayContents();
       if (text != null) {
@@ -597,7 +597,7 @@ private static boolean isZXingURL(String dataString) {
         }
       }
     }
-
+*/
     if (source == IntentSource.NATIVE_APP_INTENT) {
       
       // Hand back whatever action they requested - this can be changed to Intents.Scan.ACTION when
