@@ -11,9 +11,7 @@
 
 
 
-#if defined(PALMOS)
- const TCHARP TEMP_PATH = TEXT("/temp");
-#elif defined(WIN32) || defined (WINCE)
+#if defined(WIN32) || defined (WINCE)
  const TCHARP TEMP_PATH = TEXT("TC_TEST");
 #elif defined(linux)
  const TCHARP TEMP_PATH = TEXT("/tmp");

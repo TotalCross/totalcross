@@ -4,6 +4,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.unit.*;
@@ -46,6 +47,7 @@ public class StandardControls extends Container
          //Button.commonGap = 0;
          add(lStatus = new Label("",CENTER), LEFT,AFTER);
          lStatus.setHighlighted(true);
+         lStatus.setText("Font: "+Font.NORMAL_SIZE+", scr: "+Settings.screenWidth+"x"+Settings.screenHeight);
          add(new Ruler(),LEFT,AFTER+2, FILL, PREFERRED+4);
          add(ch = new Check("Enable:"),LEFT,AFTER+1); if (uiAndroid) ch.checkColor = Color.CYAN;     ch.setChecked(true);
          RadioGroupController rg = new RadioGroupController();
@@ -56,7 +58,6 @@ public class StandardControls extends Container
          int xx = clock.getWidth();
          int yy = clock.getHeight();
          Graphics g = clock.getGraphics();
-         g.backColor = Color.WHITE; g.fillRect(0,0,xx,yy);
          g.foreColor = Color.BLUE;
          g.drawCircle(xx/2,yy/2,xx/2);
          g.drawLine(xx/2,yy/2,xx,yy/2);
@@ -142,7 +143,7 @@ public class StandardControls extends Container
          }
          
          if (!initialized)
-         if (Settings.appSecretKey == null) // display the marquee only once per 5 runs.
+         if (Settings.appSecretKey == null) // display the marquee only once per 10 runs.
          {
             Settings.appSecretKey = "1";
             lStatus.setMarqueeText("Click title to see the menu options and also be able to select other user interface tests.", 100, 1, -5);
@@ -150,7 +151,7 @@ public class StandardControls extends Container
          else 
          {
             Settings.appSecretKey += "1";
-            if (Settings.appSecretKey.length() >= 5)
+            if (Settings.appSecretKey.length() >= 10)
                Settings.appSecretKey = null;
          }
       }

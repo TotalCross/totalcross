@@ -976,25 +976,13 @@ public class Scanner
       Window win = dest.getParentWindow(); // guich@400_44
       if (win != null)
          win.validate();
-      if (Settings.platform.equals(Settings.PALMOS)) // support PalmOS/SDL too
-      {
-         // If we are running on a Palm unit then calling activate() on the Symbol Scanner
-         // API will cause the scanner to allow any number of scans until deactivate is
-         // called. So, if continuousScanning is set to false then we need to disable the
-         // scanner
-         if (!continousScanning)
-            deactivate();
-      }
+      // If we are running on a PocketPC unit, or under Java emulation, then calling
+      // activate() on the Symbol Scanner API only schedules a single scan.
+      // So, if continuousScanning is true we need to schedule another scan.
+      if (continousScanning)
+         activate();
       else
-      {
-         // If we are running on a PocketPC unit, or under Java emulation, then calling
-         // activate() on the Symbol Scanner API only schedules a single scan.
-         // So, if continuousScanning is true we need to schedule another scan.
-         if (continousScanning)
-            activate();
-         else
-            isActive = false;
-      }
+         isActive = false;
    }
 
    /** Returns true if this scanner is a passive one. Passive scanners must be triggered programatically, using the

@@ -31,7 +31,7 @@ public class ButtonSamples extends BaseContainer
       
       try
       {
-         Image img = Resources.warning.getSmoothScaledInstance(fmH, fmH, -1);
+         Image img = Resources.warning.getSmoothScaledInstance(fmH, fmH);
          img.applyColor2(BKGCOLOR);
          sc.add(c = new Button("This is an image Button", img, LEFT, gap), LEFT, AFTER + gap);
       }

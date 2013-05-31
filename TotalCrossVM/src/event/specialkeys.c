@@ -14,9 +14,7 @@
 #include "tcvm.h"
 
 // Platform-specific code
-#if defined(PALMOS)
- #include "palm/specialkeys_c.h"
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/specialkeys_c.h"
 #elif defined(darwin)
  #include "darwin/specialkeys_c.h"
@@ -24,8 +22,6 @@
  #include "android/specialkeys_c.h"
 #elif defined(linux)
  #include "linux/specialkeys_c.h"
-#elif defined(__SYMBIAN32__)
- #include "symbian/specialkeys_c.h"
 #endif
 //
 

@@ -213,7 +213,7 @@ public class Document extends ScrollContainer
                   else
                   if (mustBeScaled)
                      img = (height <= 0 && (height=(imgHeight*width)/imgWidth) <= 0) || (width <= 0 && (width=(imgWidth*height)/imgHeight) <= 0) 
-                           ? null : img.getSmoothScaledInstance(width, height, backColor);
+                           ? null : img.getSmoothScaledInstance(width, height);
                }
             }
             catch (Exception e)

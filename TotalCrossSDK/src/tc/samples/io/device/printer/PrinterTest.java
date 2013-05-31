@@ -19,18 +19,12 @@
 package tc.samples.io.device.printer;
 
 import totalcross.io.device.printer.*;
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
 public class PrinterTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    public PrinterTest()
    {
       super("Printer test",TAB_ONLY_BORDER);

@@ -47,6 +47,7 @@ import totalcross.io.*;
 import totalcross.io.IOException;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.Container;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
 import totalcross.util.*;
@@ -367,28 +368,17 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("Possible Arguments (in any order and case insensitive). Default is marked as *");
       System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height");
       System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel (8, 16, 24 or 32)");
-      System.out.println("   /scr PalmLo      : Palm OS low     (same of /scr 160x160x8)");
-      System.out.println("*  /scr PalmHI      : Palm OS high    (same of /scr 320x320x16)");
-      System.out.println("   /scr PalmTall    : Palm OS tall    (same of /scr 320x480x16)");
-      System.out.println("   /scr PalmWide    : Palm OS wide    (same of /scr 480x320x16)");
-      System.out.println("   /scr WinCE       : Windows CE      (same of /scr 240x320x16)");
       System.out.println("   /scr Win32       : Windows 32      (same of /scr 240x320x24)");
-      System.out.println("   /scr bbLo        : BlackBerry low  (same of /scr 320x240x16)");
-      System.out.println("   /scr bbBold      : BlackBerry Bold (same of /scr 480x360x16)");
-      System.out.println("   /scr bbStorm     : BlackBerry Storm(same of /scr 480x320x16)");
-      System.out.println("   /scr iPhone      : iPhone          (same of /scr 320x480x24)");
-      System.out.println("   /scr android     : Android         (same of /scr 320x480x16)");
+      System.out.println("   /scr iPhone      : iPhone          (same of /scr 640x960x24)");
+      System.out.println("*  /scr android     : Android         (same of /scr 320x480x24)");
       System.out.println("   /pos x,y         : Sets the openning position of the application");
-      System.out.println("*  /uiStyle WinCE   : Windows CE user interface style");
-      System.out.println("   /uiStyle PalmOS  : Palm OS user interface style");
       System.out.println("   /uiStyle Flat    : Flat user interface style");
-      System.out.println("   /uiStyle Vista   : Vista user interface style");
+      System.out.println("*  /uiStyle Vista   : Vista user interface style");
       System.out.println("   /uiStyle Android : Android user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
       System.out.println("   /geofocus        : enables geographical focus.");
-      System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
       System.out.println("   /showmousepos    : shows the mouse position.");
       System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256 colors)");
@@ -445,46 +435,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/scr")) /* /scr 320x320  or  /scr 320x320x8 */
             {
                String next = args[++i];
-               if (next.equalsIgnoreCase("palmLo"))
-               {
-                  toWidth = toHeight = 160; toBpp = 8;
-               }
-               else
-               if (next.equalsIgnoreCase("palmHi"))
-               {
-                  toWidth = toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbLo"))
-               {
-                  toWidth = 320; toHeight = 240; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbBold"))
-               {
-                  toWidth = 480; toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbStorm"))
-               {
-                  toWidth = 480; toHeight = 360; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("palmTall"))
-               {
-                  toWidth = 320; toHeight = 480; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("palmWide"))
-               {
-                  toWidth = 480; toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("wince"))
-               {
-                  toWidth = 240; toHeight = 320; toBpp = 16;
-               }
-               else
                if (next.equalsIgnoreCase("win32"))
                {
                   toWidth = 240; toHeight = 320; toBpp = 24;
@@ -492,12 +442,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                else
                if (next.equalsIgnoreCase("iPhone"))
                {
-                  toWidth = 320; toHeight = 480; toBpp = 24;
+                  toWidth = 640; toHeight = 960; toBpp = 24;
                }
                else
                if (next.equalsIgnoreCase("android"))
                {
-                  toWidth = 320; toHeight = 480; toBpp = 16;
+                  toWidth = 320; toHeight = 480; toBpp = 24;
                }
                else
                {
@@ -533,17 +483,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/uiStyle"))
             {
                String next = args[++i];
-               if (next.equalsIgnoreCase("PalmOS"))
-                  toUI = Settings.PalmOS;
-               else
                if (next.equalsIgnoreCase("Flat"))
                   toUI = Settings.Flat;
                else
                if (next.equalsIgnoreCase("Vista"))
                   toUI = Settings.Vista;
-               else
-               if (next.equalsIgnoreCase("WinCE")) // guich@580_33
-                  toUI = Settings.WinCE;
                else
                if (next.equalsIgnoreCase("Android")) // guich@580_33
                   toUI = Settings.Android;
@@ -576,12 +520,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                System.out.println("Geographical focus is on");
             }
             else
-            if (args[i].equalsIgnoreCase("/keypadOnly")) // guich@573_20
-            {
-               Settings.keypadOnly = true;
-               System.out.println("Keypad only is on");
-            }
-            else
             if (args[i].equalsIgnoreCase("/virtualKeyboard")) // bruno@tc110
             {
                Settings.virtualKeyboard = true;
@@ -591,7 +529,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/bpp"))
             {
                toBpp = toInt(args[++i]);
-               if (toBpp != 4 && toBpp != 8 && toBpp != 16 && toBpp != 24 && toBpp != 32) // guich@450_4
+               if (toBpp != 8 && toBpp != 16 && toBpp != 24 && toBpp != 32) // guich@450_4
                   throw new Exception();
                System.out.println("Bpp is "+toBpp);
             }
@@ -629,7 +567,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (toWidth == -1 || toHeight == -1) // if no width specified, use the lowest one
       {
          if (isApplication)
-            toWidth = toHeight = 320; // guich@tc100b5_35: now default is palm hi
+         {
+            toWidth = 320;
+            toHeight = 480; // guich@tc100b5_35: now default is palm hi
+         }
          else
          {
             toWidth = getSize().width;
@@ -996,11 +937,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
 
-   public void updateScreen(int transitionEffect)
+   public void updateScreen()
    {
-      if (transitionEffect == -1)
-         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
-
       //int ini = totalcross.sys.Vm.getTimeStamp();
       int[] pixels = (int[])totalcross.ui.gfx.Graphics.mainWindowPixels;
       int n = Settings.screenWidth * Settings.screenHeight;
@@ -1075,48 +1013,15 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          g.setClip(0,0,ww,yy);         // limit drawing area
          g.translate(0,-(int)(shiftY*toScale));
       }
-      switch (transitionEffect)
+      if (toScale != 1) // guich@tc126_74 - guich@tc130 
       {
-         case totalcross.ui.Container.TRANSITION_CLOSE:
-         case totalcross.ui.Container.TRANSITION_OPEN:
-         {
-            n = Math.min(w,h);
-            int mx = w/2,mw=1,mh=1;
-            int my = h/2;
-            float incX=1,incY=1;
-            if (w > h)
-               {incX = (float)w/h; mw = (int)incX+1;}
-             else
-               {incY = (float)h/w; mh = (int)incY+1;}
-            int i0 = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? n : 0;
-            int iinc = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? -1 : 1;
-            for (int i =i0; --n >= 0; i+=iinc)
-            {
-               int minx = (int)(mx - i*incX);
-               int miny = (int)(my - i*incY);
-               int maxx = (int)(mx + i*incX);
-               int maxy = (int)(my + i*incY);
-               drawImageLine(g,minx-mw,miny-mh,maxx+mw,miny+mh);
-               drawImageLine(g,minx-mw,miny-mh,minx+mw,maxy+mh);
-               drawImageLine(g,maxx-mw,miny-mh,maxx+mw,maxy+mh);
-               drawImageLine(g,minx-mw,maxy-mh,maxx+mw,maxy+mh);
-               Vm.sleep(1);
-            }
-            if (toScale == 1)
-               break;
-         }
-         case totalcross.ui.Container.TRANSITION_NONE:
-            if (toScale != 1) // guich@tc126_74 - guich@tc130 
-            {
-               Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
-               g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
-               img.flush();
-            }
-            else
-            if (g != null)
-               g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
-            break;
+         Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+         g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+         img.flush();
       }
+      else
+      if (g != null)
+         g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
       if (shiftY != 0)
       {
          g.translate(0,(int)(shiftY*toScale));
@@ -1124,10 +1029,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       //System.out.println(++count+" total in "+(totalcross.sys.Vm.getTimeStamp()-ini)+"ms");
       //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
-   }
-   private void drawImageLine(Graphics g, int minx, int miny, int maxx, int maxy)
-   {
-      g.drawImage(screenImg, (int)(minx*toScale),(int)(miny*toScale),(int)(maxx*toScale),(int)(maxy*toScale), minx,miny,maxx,maxy, this); // this is faster than use img.getScaledInstance
    }
 
    //static int count;
@@ -1709,7 +1610,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          totalcross.sys.Settings.screenWidthInDPI = 96;
       }
       totalcross.sys.Settings.romVersion = 0x02000000;
-      totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.WinCE;
+      totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.Vista;
       totalcross.sys.Settings.screenWidth = toWidth;
       totalcross.sys.Settings.screenHeight = toHeight;
       totalcross.sys.Settings.onJavaSE = true;

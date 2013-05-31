@@ -13,9 +13,7 @@
 
 #include "RadioDevice.h"
 
-#if defined (PALMOS)
- //#include "palm/RadioDevice_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/RadioDevice_c.h"
 #elif defined (ANDROID)
  #include "android/RadioDevice_c.h"

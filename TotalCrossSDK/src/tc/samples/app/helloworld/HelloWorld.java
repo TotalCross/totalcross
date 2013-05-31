@@ -28,9 +28,7 @@ public class HelloWorld extends MainWindow
    static
    {
       Settings.isFullScreen = true;
-      Settings.useNewFont = true;
    }
-
    
    Button btn;
 
@@ -48,7 +46,6 @@ public class HelloWorld extends MainWindow
          "Platform is " + Settings.platform,
          "User is " + Settings.userName,
          "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
-         "Has Keypad only is " + Settings.keypadOnly,
          "Virtual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
          "Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,

@@ -16,13 +16,10 @@
 
 package totalcross.ui;
 
-import totalcross.sys.Vm;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.PenEvent;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.gfx.Graphics;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
+import totalcross.sys.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /** This is a whiteboard that can be used to draw something. 
  * It uses a special event flag in order to improve the accuracy.
@@ -190,7 +187,7 @@ public class Whiteboard extends Control
             }
             oldX = pe.x;
             oldY = pe.y;
-            Window.updateScreen(); // important at desktop!
+            if (Settings.onJavaSE) Window.updateScreen(); // important at desktop!
             break;
          case PenEvent.PEN_UP:
             getParentWindow().setGrabPenEvents(null);

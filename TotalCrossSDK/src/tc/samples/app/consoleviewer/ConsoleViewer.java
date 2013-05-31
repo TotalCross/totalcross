@@ -27,14 +27,9 @@ import totalcross.ui.gfx.*;
 
 public class ConsoleViewer extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Button btnExit,btnDelete,btnConvert;
    private String[] lines;
-   private boolean isPalm, isIPhone;
+   private boolean isIPhone;
    private File ff;
 
    public ConsoleViewer()
@@ -52,47 +47,41 @@ public class ConsoleViewer extends MainWindow
 
    public void initUI()
    {
-      isPalm = Settings.platform.equals(Settings.PALMOS);
       isIPhone = Settings.isIOS();
-      if (!isPalm && !isIPhone)
-         error("This program only works\non Palm OS and iPhone.");
+      if (!isIPhone)
+         error("This program only works on iPhone.");
       else
       try
       {
-         if (isPalm)
-            loadFile(new File("/DebugConsole",File.READ_ONLY, 1));
-         else
+         FileChooserBox fcb = new FileChooserBox(new FileChooserBox.Filter()
          {
-            FileChooserBox fcb = new FileChooserBox(new FileChooserBox.Filter()
+            public boolean accept(File f) throws IOException
             {
-               public boolean accept(File f) throws IOException
+               if (f.isDir()) // if its a folder, check if there's a debugconsole on it.
                {
-                  if (f.isDir()) // if its a folder, check if there's a debugconsole on it.
-                  {
-                     String[] list = f.listFiles();
-                     if (list != null)
-                        for (int i = 0; i < list.length; i++)
-                           if (list[i].indexOf("DebugConsole.txt") >= 0)
-                              return true;
-                     return false;
-                  }
-                  String path = f.getPath();
-                  return f.isDir() || path.indexOf("DebugConsole.txt") >= 0;
+                  String[] list = f.listFiles();
+                  if (list != null)
+                     for (int i = 0; i < list.length; i++)
+                        if (list[i].indexOf("DebugConsole.txt") >= 0)
+                           return true;
+                  return false;
                }
-            });
-            fcb.mountTree("/Applications",0);
-            if (fcb.getTree() == null || fcb.getTree().size() <= 1)
-            {
-               new MessageBox("Attention", "No DebugConsole.txt found on tree hierarchy!").popup();
-               exit(0);
+               String path = f.getPath();
+               return f.isDir() || path.indexOf("DebugConsole.txt") >= 0;
             }
-            fcb.popup();
-            String a = fcb.getAnswer();
-            if (a != null && a.indexOf("DebugConsole.txt") >= 0)
-               loadFile(new File(a, File.READ_ONLY));
-            else
-               exit(0);
+         });
+         fcb.mountTree("/Applications");
+         if (fcb.getTree() == null || fcb.getTree().size() <= 1)
+         {
+            new MessageBox("Attention", "No DebugConsole.txt found on tree hierarchy!").popup();
+            exit(0);
          }
+         fcb.popup();
+         String a = fcb.getAnswer();
+         if (a != null && a.indexOf("DebugConsole.txt") >= 0)
+            loadFile(new File(a, File.READ_ONLY));
+         else
+            exit(0);
       }
       catch (FileNotFoundException fnfe)
       {
@@ -121,10 +110,8 @@ public class ConsoleViewer extends MainWindow
          setBackColor(Color.CYAN);
          add(btnExit = new Button("Exit"), RIGHT,BOTTOM);
          add(btnDelete = new Button("DELETE and Exit"), BEFORE-10,BOTTOM);
-         if (isPalm) add(btnConvert = new Button("Convert to PDB"), BEFORE-10,BOTTOM);
          btnExit.setBackColor(Color.GREEN);
          btnDelete.setBackColor(Color.RED);
-         if (isPalm) btnConvert.setBackColor(Color.BLUE);
          ListBox lb;
          add(lb = new ListBox());
          lb.enableHorizontalScroll();

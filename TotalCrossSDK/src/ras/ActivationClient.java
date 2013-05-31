@@ -44,13 +44,6 @@ public abstract class ActivationClient
 //         instance = new ActivationClientImpl();
       return instance;
    }
-   public static ActivationClient getInstance4B()
-   {
-      if (instance == null)
-         instance = new ActivationClientImpl();
-      
-      return instance;
-   }
    public static ActivationClient getInstance4D() { if (instance == null) instance = new ActivationClientImpl(); return instance; }
    
    public static byte[] activate(byte[] request) throws ActivationException

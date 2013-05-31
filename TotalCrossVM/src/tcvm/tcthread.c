@@ -15,9 +15,7 @@
 
 void executeThreadRun(Context context, Object thread);
 
-#if defined PALMOS
- #include "palm/tcthread_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/tcthread_c.h"
 #elif defined POSIX || defined ANDROID
  #include "posix/tcthread_c.h"

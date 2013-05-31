@@ -85,13 +85,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
@@ -229,21 +227,21 @@ public class Deploy
    {
       int options = 0;
       IntHashtable iht = new IntHashtable(17);
-      iht.put("palm"   .hashCode(), BUILD_PALM);
-      iht.put("palmos" .hashCode(), BUILD_PALM);
+      iht.put("palm"   .hashCode(), 0);
+      iht.put("palmos" .hashCode(), 0);
       iht.put("ce"     .hashCode(), BUILD_WINCE);
       iht.put("wince"  .hashCode(), BUILD_WINCE);
       iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
-      iht.put("bb"     .hashCode(), BUILD_BB);
-      iht.put("blackberry".hashCode(), BUILD_BB);
+      iht.put("blackberry".hashCode(), 0);
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("ios"    .hashCode(), BUILD_IPHONE);
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
+      iht.put("bb"     .hashCode(), 0);
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)

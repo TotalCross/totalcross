@@ -32,6 +32,11 @@ public class BaseContainer extends Container
       {
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
+         if (isMainMenu) 
+         {
+            backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
+            setForeColor(0xBFCFFF);
+         }
          
          if (infoImg == null)
             infoImg = new Image("images/ic_dialog_info.png");
@@ -86,7 +91,9 @@ public class BaseContainer extends Container
             }
          });
          
-         getParentWindow().addKeyListener(new KeyListener() 
+         Window w = getParentWindow();
+         w.callListenersOnAllTargets = true; // fixes problem if focus goes to another control
+         w.addKeyListener(new KeyListener() 
          {
             public void keyPressed(KeyEvent e)
             {
@@ -148,4 +155,10 @@ public class BaseContainer extends Container
          MainWindow.exit(0); // we're the last screen, so just exit the application
       }
    }
-}
+/*   
+   public void onPaint(Graphics g)
+   {
+      super.onPaint(g); 
+      g.drawCylindricShade(0xBFCFFF,Color.WHITE,0,headerBar.getY2(),width,height-footerBar.getHeight());
+   }
+*/}

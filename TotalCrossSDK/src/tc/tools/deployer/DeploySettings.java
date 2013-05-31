@@ -13,11 +13,9 @@
 
 package tc.tools.deployer;
 
-import totalcross.io.File;
+import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.font.Font;
-import totalcross.util.IntVector;
-import totalcross.util.Vector;
+import totalcross.util.*;
 
 public class DeploySettings
 {
@@ -45,7 +43,7 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
-   public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
+   public static String fontTCZ = "TCFont.tcz";
    public static boolean resizableWindow;
    public static int windowFont, windowSize;
    public static double dJavaVersion;

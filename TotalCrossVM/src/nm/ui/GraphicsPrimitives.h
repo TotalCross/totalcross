@@ -14,14 +14,10 @@
 #ifndef GRAPHICSPRIMITIVES_H
 #define GRAPHICSPRIMITIVES_H
 
-#if defined(PALMOS)
- #include "palm/gfx_ex.h"
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/gfx_ex.h"
 #elif defined(darwin)
  #include "darwin/gfx_ex.h"
-#elif defined(__SYMBIAN32__)
- #include "symbian/gfx_ex.h"
 #elif defined(ANDROID)
  #include "android/gfx_ex.h"
 #elif defined(linux)
@@ -40,7 +36,7 @@ typedef union
 {
    struct
    {
-      uint8 a,b,g,r; // a not used
+      uint8 a,b,g,r;
    };
    Pixel pixel;
 } PixelConv;

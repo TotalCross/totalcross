@@ -13,9 +13,7 @@
 
 #include "tcvm.h"
 
-#if defined PALMOS
- #include "palm/media_Sound_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/media_Sound_c.h"
 #elif defined ANDROID
  #include "android/media_Sound_c.h"

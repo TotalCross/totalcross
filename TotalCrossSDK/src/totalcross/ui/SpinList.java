@@ -103,7 +103,7 @@ public class SpinList extends Control
    
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH + Edit.prefH : fmH;
+      return fmH + Edit.prefH;
    }
 
    /** Sets the choices to the given ones. Searches for [i0,if] and then expands the items.

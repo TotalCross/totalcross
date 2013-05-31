@@ -30,11 +30,6 @@ import totalcross.ui.event.Event;
 
 public class ServerSocketTest extends MainWindow implements Runnable
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Button btnStart;
    private Button btnStop;
    private ListBox lb;

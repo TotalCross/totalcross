@@ -60,7 +60,7 @@ public class ImageList extends ListBox // guich@tc126_2
       {
          int dx = 3; // guich@580_41: cursor must be drawn at 3 or will overwrite the border on a combobox with PalmOS style
          int dy = 3;
-         if (uiPalm || uiFlat) dy--;
+         if (uiFlat) dy--;
          if (simpleBorder) {dx--; dy--;}
 
          int ih = getItemHeight(sel);

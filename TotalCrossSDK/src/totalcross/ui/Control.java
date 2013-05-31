@@ -125,6 +125,26 @@ public class Control extends GfxSurface
     * @since TotalCross 1.52
     */
    public static final int PARENTSIZE = 17*UICONST;
+   /** Constant used in param width or height (will use screen's minimum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZEMIN + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZEMIN+20 in width will result in 20% of screen's minimum size.<br>
+    * 2. SCREENSIZEMIN - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZEMIN-4 in width will result in 1/4 of screen's minimum size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
+    * @since TotalCross 2.0
+    */
+   public static final int SCREENSIZEMIN = 18*UICONST;
+   /** Constant used in param width or height (will use screen's maximum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZEMAX + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZEMAX+20 in width will result in 20% of screen's maximum size.<br>
+    * 2. SCREENSIZEMAX - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZEMAX-4 in width will result in 1/4 of screen's maximum size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
+    * @since TotalCross 2.0 
+    */
+   public static final int SCREENSIZEMAX = 19*UICONST;
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -171,7 +191,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
+   protected static boolean uiFlat,uiVista=true,uiAndroid;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -221,8 +241,8 @@ public class Control extends GfxSurface
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
    
-   /** True means that EventListeners will be called without verifying that the event target is this. */
-   public boolean callListenersOnAllTargets = false;
+   /** True means that EventListeners for PenEvent and KeyEvent will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets;
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
@@ -476,6 +496,8 @@ public class Control extends GfxSurface
      * @see #RIGHT_OF
      * @see #BOTTOM_OF
      * @see #SCREENSIZE
+     * @see #SCREENSIZEMIN
+     * @see #SCREENSIZEMAX
      * @see #PARENTSIZE
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
@@ -528,12 +550,16 @@ public class Control extends GfxSurface
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
             tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
@@ -579,12 +605,16 @@ public class Control extends GfxSurface
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
             tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
@@ -643,19 +673,9 @@ public class Control extends GfxSurface
 	            else
                   throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control "+toString());
 	         }
-	         else
-	         if (asWindow != null && !asWindow.highResPrepared)
-               throw new RuntimeException("The window '"+asWindow.title+"' is not prepared for high resolution devices! Set highResPrepared to true and test it in 320x320 resolution!");
             if (height < 0 || width < 0)
                throw new RuntimeException("Invalid resulting values in width,height for control "+toString()+": "+width+","+height); 
          }
-      }
-      if (asWindow != null && fmH > 11 && !asWindow.highResPrepared && width <= 160 && height <= 160) // guich@240_20 - guich@450_19: now we check if w/h are also lower than 160 (if it is, the user probably took care of this problem)
-      {
-         width  = width  * fmH / 11;
-         height = height * fmH / 11;
-         x = (Settings.screenWidth-width) >> 1;
-         y = (Settings.screenHeight-height) >> 1;
       }
 
       this.x = x;
@@ -821,14 +841,30 @@ public class Control extends GfxSurface
    /** Redraws the control immediately. If this control is a Window, the whole window area is
      * marked for repaint (useful if you're removing some controls from a container).
      * This method affects only this control, while the repaint method affects the whole screen.
+     * 
+     * If Window.enableUpdateScreen is true, the method returns immediately.
      * @since SuperWaba 2.0 beta 4 release 3
      * @see #repaint()
      */
    public void repaintNow()
    {
+      if (!Window.enableUpdateScreen)
+         return;
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
+         if (Settings.isOpenGL)
+         {
+            Window.needsPaint = true; // make sure the whole area is marked to be repainted
+            if (MainWindow.isMainThread())
+               Window.repaintActiveWindows();
+            else
+            {
+               MainWindow.mainWindowInstance.setTimerInterval(1);
+               Vm.safeSleep(1);
+            }
+         }
+         else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
@@ -1160,8 +1196,6 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm    = Settings.uiStyle == Settings.PalmOS;
-         uiCE      = Settings.uiStyle == Settings.WinCE;
          uiFlat    = Settings.uiStyle == Settings.Flat;
          uiAndroid = Settings.uiStyle == Settings.Android;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
@@ -1244,7 +1278,7 @@ public class Control extends GfxSurface
    {
       if (enableUpdateScreen)
       {
-         totalcross.Launcher.instance.updateScreen(Container.getNextTransitionEffect());
+         totalcross.Launcher.instance.updateScreen();
          Graphics.needsUpdate = false;
       }
    }
@@ -1538,7 +1572,7 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && e instanceof PenEvent)) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;

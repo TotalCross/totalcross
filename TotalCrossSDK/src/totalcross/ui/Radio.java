@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
-import totalcross.res.*;
-import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
+import totalcross.res.*;
+import totalcross.sys.*;
 
 /**
  * Radio is a radio control.
@@ -118,26 +118,11 @@ public class Radio extends Control
       if ((img=(Image)imgs.get(key)) != null)
          return img;
       img = isSelected ? vistaSelected.getFrameInstance(0) : vistaUnselected.getFrameInstance(0);
-      if (Settings.useNewFont)
-      {
-         int h = height == 0 ? getPreferredHeight() : height;
-         img = img.getSmoothScaledInstance(h,h, backColor);
-      }
-      else
-      if (fmH >= 24)
-         img = img.getSmoothScaledInstance(fmH-8,fmH-8, backColor);
-      else
-      if (fmH >= 20)
-         ;
-      else
-      if (fmH >= 15)
-         img = img.getSmoothScaledInstance(fmH-3,fmH-3, backColor);
-      else
-         img = img.getSmoothScaledInstance(16*(fmH+3)/22,16*(fmH+3)/22, backColor);
-      
+      int h = height == 0 ? getPreferredHeight() : height;
+      img = img.getSmoothScaledInstance(h,h);
       img.applyColor(foreColor);
       if (!enabled)
-         img = img.getFadedInstance(backColor);
+         img = img.getFadedInstance();
       imgs.put(key, img);
       return img;
    }
@@ -182,13 +167,13 @@ public class Radio extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return Settings.useNewFont ? (uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1) : textW+getPreferredHeight() + (fmH>=22 ? 0 : 1);
+      return uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH+Edit.prefH : Math.max(12,uiPalm ? fm.ascent+1 : fm.ascent); // guich@tc110_18: min size is 12
+      return fmH+Edit.prefH; // guich@tc110_18: min size is 12
    }
 
    /** Called by the system to pass events to the radio control. */
@@ -301,14 +286,9 @@ public class Radio extends Control
    {
       cColor = getForeColor();
       bColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
-      if (uiPalm)
-         colors[1] = colors[2] = cColor;
-      else
-      {
-         colors[0] = colors[2] = Color.brighter(cColor);
-         colors[3] = bColor;
-         colors[1] = cColor;
-      }
+      colors[0] = colors[2] = Color.brighter(cColor);
+      colors[3] = bColor;
+      colors[1] = cColor;
       if (uiVista)
          try
          {
@@ -341,7 +321,7 @@ public class Radio extends Control
       if (uiAndroid)
          try 
          {
-            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, backColor);
+            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, foreColor);
             ret.applyColor(foreColor);
             g.drawImage(ret,0,0);
             if (checked)
@@ -356,7 +336,6 @@ public class Radio extends Control
          int kk = big?8:6; // number of elements per arc
          xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
          yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
-         if (uiPalm && Settings.screenWidth < 200) yy--;
          g.translate(xx,yy);
 
          int []coords = big?coords2:coords1;
@@ -368,10 +347,10 @@ public class Radio extends Control
             g.fillCircle(5,6,4);
          if (uiVista && enabled) // guich@573_6: shade diagonally
          {
-            int[] vcolors = Graphics.getVistaColors(bColor);
-            for (k=9,j=0; j < 7; j++) // bigger k -> darker
+            g.foreColor = Color.darker(bColor,UIColors.vistaFadeStep*2);
+            for (k=9,j=6; j >= 0; j--) // bigger k -> darker
             {
-               g.foreColor = vcolors[k--];
+               g.foreColor = Color.darker(g.foreColor,UIColors.vistaFadeStep);
                g.drawLine(2,4+j,4+j,2);
             }
          }
@@ -402,19 +381,18 @@ public class Radio extends Control
             g.backColor = cColor;
             if (uiVista) // guich@573_6
             {
-               int[] vcolors = Graphics.getVistaColors(cColor);
                if (big)
                {
-                  g.backColor = vcolors[9];
+                  g.backColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
                   g.fillCircle(7,7,4);
-                  g.backColor = vcolors[0];
+                  g.backColor = cColor;
                   g.fillCircle(7,7,2);
                }
                else
                {
-                  g.backColor = vcolors[0];
+                  g.backColor = cColor;
                   g.fillRect(5, 4, 2, 4);
-                  g.foreColor = vcolors[9];
+                  g.foreColor = Color.darker(cColor,UIColors.vistaFadeStep*9);
                   g.drawLine(4, 5, 4, 6);
                   g.drawLine(7, 5, 7, 6);
                }
@@ -437,8 +415,8 @@ public class Radio extends Control
 
       // draw label
       yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? (Settings.useNewFont && (uiPalm || uiCE || uiFlat) ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = textColor != -1 ? textColor : cColor;
+      xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 
