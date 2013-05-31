@@ -1510,8 +1510,10 @@ free:
          // table.
          if (plainDB->dbo.cacheIsDirty && !flushCache(context, &plainDB->dbo)) // Flushs .dbo.
             goto finish;
+         
          // juliana@250_6: corrected a bug on LitebaseConnection.purge() that could corrupt the table.
-         if ((i = lbfileSetSize(&dbFile->file, dbFile->size = (plainDB->rowCount + plainDB->rowAvail) * plainDB->rowSize + plainDB->headerSize))
+         plainDB->rowAvail = 0;
+         if ((i = lbfileSetSize(&dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize))
           || (i = lbfileFlush(dbFile->file)))
          {
             fileError(context, i, dbFile->name);
