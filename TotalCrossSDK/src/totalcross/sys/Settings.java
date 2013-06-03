@@ -33,12 +33,12 @@ public final class Settings
    public static int version = 200;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "2.0a3";
+   public static String versionStr = "2.0b2";
     
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 14;
+   public static int buildNumber = 15;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -761,9 +761,16 @@ public final class Settings
 	{
 	}
 	
-	// to be removed in TC 2. Only here to let Litebase compile.
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String PALMOS        = "PalmOS";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final String BLACKBERRY    = "BlackBerry";
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static int nvfsVolume = -1;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean useNewFont;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean isMinimized;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean keypadOnly;
 }

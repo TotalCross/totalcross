@@ -121,7 +121,10 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj) // guich@tc13
       /* Horizontal downsampling */
       filterFactor = xScale;
       scaledRadius = 2 / xScale;
-   }
+   }                                                             
+   
+   debug("scaling %X -> %X", thisObj, newObj);
+   
    /* The maximum number of contributions for a target pixel */
    maxContribs  = (int32) (2 * scaledRadius  + 1);
 
@@ -682,16 +685,22 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
    int32 frameCount = Image_frameCount(obj);
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj); 
    if (pixelsObj)
-   {
+   {     
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-      glLoadTexture(currentContext, obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+      int32 height = Image_height(obj);
+      int32 texId = 0;
+      glLoadTexture(currentContext, obj, &texId, pixels, width, height, updateList);
+      Image_textureId(obj) = texId;                                                                       
+      int32 pos = (height/2) * width + width/2;
+      debug("applyChanges img: %X, wh: %dx%d, id: %d, pix: %X %X %X",obj,width,height,texId,pixels[pos-1],pixels[pos],pixels[pos+1]);
    }
    Image_changed(obj) = false;
 }
 
 void freeTexture(Object img, bool updateList)
 {                                      
+   debug("freeTexture %X",img);
    glDeleteTexture(img,&(Image_textureId(img)), updateList);
 }
 
@@ -702,6 +711,7 @@ void recreateTextures(Context currentContext, VoidPs* imgTextures) // called by 
       do
       {    
          Object img = (Object)current->value;
+         debug("recreating %X",img);
          glDeleteTexture(img,&(Image_textureId(img)),false);
          applyChanges(currentContext, img,false);
          current = current->next;

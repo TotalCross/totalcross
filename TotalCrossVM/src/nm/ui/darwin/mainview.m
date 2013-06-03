@@ -71,11 +71,11 @@ static int lastOrientationIsPortrait = true;
 
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
-   kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
+   kbd.autocapitalizationType = UITextAutocapitalizationTypeNone;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
-   [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
-   [kbd setDelegate: self];
+   kbd.autocorrectionType = UITextAutocorrectionTypeNo;
+   kbd.delegate = self;
 }
 
 - (void)destroySIP
@@ -97,6 +97,11 @@ static int lastOrientationIsPortrait = true;
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+   if ([text isEqualToString:@" "])
+   {
+      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
+      return NO;
+   }
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
@@ -105,8 +110,11 @@ static int lastOrientationIsPortrait = true;
       return FALSE; // Return FALSE so that the final '\n' character doesn't get added
    }
    if ([text length] == 0)
+   {
+      lastRange.length = -1; // guich: fixed bug when pressing backspace and the next key was being ignored
       [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\b'], @"key", nil]];
-   else 
+   }
+   else
    if (lastRange.location <= 0 || !NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character twice.
    {
       lastRange.location = range.location;

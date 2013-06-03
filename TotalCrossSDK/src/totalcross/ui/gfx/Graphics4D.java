@@ -18,7 +18,6 @@
 
 package totalcross.ui.gfx;
 
-import totalcross.ui.*;
 import totalcross.util.*;
 
 /** This class is the one really used in the device.
@@ -254,4 +253,58 @@ public final class Graphics4D
    native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
    native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
+   
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void eraseRect(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor)
+   {
+   }
+   private static int[] dumbVC = new int[11];
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public static int[] getVistaColors(int c)
+   {
+      return dumbVC;
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void fillCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawDottedCursor(int x, int y, int w, int h)
+   {
+   }
+   /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
+   public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   {
+      copyImageRect(image, x, y, width, height, doClip);
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y)
+   {
+      drawText(sb, chrStart, chrCount, x, y, false, -1); 
+   }
+   /** Dumb method to keep compilation compatibility with TC 1 */
+   public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth)
+   {
+      drawText(sb, chrStart, chrCount, x, y, justifyWidth, false, -1); 
+   }
+   /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
+   public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
+   {
+      drawImage(image, x,y, doClip);
+   }
+
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int drawOp;
 }
