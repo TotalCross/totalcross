@@ -121,7 +121,8 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj) // guich@tc13
       /* Horizontal downsampling */
       filterFactor = xScale;
       scaledRadius = 2 / xScale;
-   }
+   }                                                             
+   
    /* The maximum number of contributions for a target pixel */
    maxContribs  = (int32) (2 * scaledRadius  + 1);
 
@@ -553,6 +554,12 @@ static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // 
       out->r = (in->r + (int32)r) >> 1;
       out->g = (in->g + (int32)g) >> 1;
       out->b = (in->b + (int32)b) >> 1;
+      {
+         out->a = in->a;
+         out->r = (in->r + (int32)r) >> 1;
+         out->g = (in->g + (int32)g) >> 1;
+         out->b = (in->b + (int32)b) >> 1;
+      }
    }
 }
 
@@ -676,10 +683,11 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
    int32 frameCount = Image_frameCount(obj);
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj); 
    if (pixelsObj)
-   {
+   {     
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-      glLoadTexture(currentContext, obj, &(Image_textureId(obj)), pixels, width, Image_height(obj), updateList);
+      int32 height = Image_height(obj);
+      glLoadTexture(currentContext, obj, &(Image_textureId(obj)), pixels, width, height, updateList);
    }
    Image_changed(obj) = false;
 }
@@ -696,7 +704,8 @@ void recreateTextures(Context currentContext, VoidPs* imgTextures) // called by 
       do
       {    
          Object img = (Object)current->value;
-         glDeleteTexture(img,&(Image_textureId(img)),false);
+         //glDeleteTexture(img,&(Image_textureId(img)),false); - cannot delete the textures! they were already deleted when the window was disposed
+         Image_textureId(img) = 0;
          applyChanges(currentContext, img,false);
          current = current->next;
       } while (imgTextures != current);

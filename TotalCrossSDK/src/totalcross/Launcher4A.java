@@ -294,6 +294,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
             return true;
          }
+         
+         public boolean finishComposingText()
+         {
+            sendCloseSIPEvent();
+            sipVisible = false;
+            return super.finishComposingText();
+         }
       };
    }
    
