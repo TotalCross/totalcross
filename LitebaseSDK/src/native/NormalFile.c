@@ -508,7 +508,7 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
          if (list[ret]->timeStamp < minStamp)
             minStamp = list[oldest = ret]->timeStamp;
 
-      if ((file = list[oldest])->cacheIsDirty && ret = flushCache(context, file))
+      if ((file = list[oldest])->cacheIsDirty && (ret = flushCache(context, file)))
       {
          UNLOCKVAR(files);
          return ret;
