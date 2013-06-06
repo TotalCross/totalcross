@@ -515,14 +515,15 @@ public class Chart extends Control
 
          x += snapToBottom || snapToTop ? 0 : 3;
          g.foreColor = legendTextColor;
+         int halfBlankWidth = fm.stringWidth(" ") / 2;
          for (int i = 0; i < sCount; i ++)
          {
             Series se = (Series) series.items[i];
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
-               g.drawImage(se.legendDot,x,y+sqOff);
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
+               g.drawImage(se.legendDot,x + halfBlankWidth,y+sqOff + 1);
             }
             else
             {
@@ -534,7 +535,7 @@ public class Chart extends Control
             if (legendValues != null)
                s = s.concat(legendValues[i]);
 
-            g.drawText(s, x + sqWH + 2, y, textShadowColor != -1, textShadowColor);
+            g.drawText(s, x + halfBlankWidth + sqWH + halfBlankWidth, y, textShadowColor != -1, textShadowColor);
             if (lr)
                y += fmH;
             else
