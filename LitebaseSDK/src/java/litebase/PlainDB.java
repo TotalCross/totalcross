@@ -470,7 +470,7 @@ class PlainDB
                
                if (isTemporary)
                {
-                  if ((dboFile.finalPos + 8) >= (dboFile.size + 1)) 
+                  if ((dboFile.finalPos + 8) > dboFile.size) 
                      dboFile.growTo(dboFile.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
                   dboFile.setPos(dboFile.finalPos);
                   ds.writeInt(dboFile.pos);
@@ -488,7 +488,7 @@ class PlainDB
                   // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                   // juliana@201_20: only grows .dbo if it is going to be increased.
                   // juliana@212_7: The size of the string must be taken into consideration because it can be zero.
-                  if ((dboFile.finalPos + size) >= (dboFile.size + 1)) 
+                  if ((dboFile.finalPos + size) > dboFile.size) 
                      dboFile.growTo(dboFile.size + 2 + size * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
                   
                   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
@@ -544,7 +544,7 @@ class PlainDB
                
                if (isTemporary) // The position of a blob and its table is being written to the temporary table.
                {
-                  if ((dboFile.finalPos + 8) >= (dboFile.size + 1)) 
+                  if ((dboFile.finalPos + 8) > dboFile.size) 
                      dboFile.growTo(dboFile.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
                   dboFile.setPos(dboFile.finalPos);
                   ds.writeInt(dboFile.pos);
