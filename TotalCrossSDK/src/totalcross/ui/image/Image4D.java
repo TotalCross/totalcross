@@ -37,8 +37,11 @@ public class Image4D extends GfxSurface
    public String comment;
    private Graphics4D gfx;
 
-   // deprecated for tc2
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static final int NO_TRANSPARENT_COLOR = -2;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public int transparentColor = Color.WHITE;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
    
    public Image4D(int width, int height) throws ImageException

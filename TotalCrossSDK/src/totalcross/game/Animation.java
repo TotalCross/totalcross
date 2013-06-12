@@ -76,6 +76,9 @@ public class Animation extends Control
   public static final int LOOPS_UNLIMITED 	= 0x7FFFFFFF;
 
   protected int curFrame;
+  
+  /** Dumb field to keep compilation compatibility with TC 1 */
+  public int drawOp;
 
   /**
    * Background image.

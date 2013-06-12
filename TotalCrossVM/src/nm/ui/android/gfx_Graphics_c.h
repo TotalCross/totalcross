@@ -21,7 +21,9 @@
 bool checkGlError(const char* op, int line)
 {
    GLint error;
-   int c=0;
+   
+   //debug("%s (%d)",op,line);
+   
    if (!op)
       return glGetError() != 0;
    else
@@ -36,18 +38,12 @@ bool checkGlError(const char* op, int line)
          case GL_OUT_OF_MEMORY    : msg = "OUT OF MEMORY"; break;
       }
       debug("glError %s at %s (%d)\n", msg, op, line);
-      c++;
       return true;
    }
    return false;
 }
 
-#if 1
-//#define GL_CHECK_ERROR debug("%s (%d)",__FILE__,__LINE__);
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
-#else
-#define GL_CHECK_ERROR 0
-#endif
 
 #ifdef ANDROID
 static void setProjectionMatrix(GLfloat w, GLfloat h);
@@ -363,10 +359,22 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
    PixelConv* pf = (PixelConv*)pixels;
    PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
    bool textureAlreadyCreated = *textureId != 0;
+   bool err;
    if (!pt)
+   {
+      throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
       return;
+   }
 
-   if (!textureAlreadyCreated) {glGenTextures(1, (GLuint*)textureId); GL_CHECK_ERROR}
+   if (!textureAlreadyCreated) 
+   {
+      glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR              
+      if (err) 
+      {
+         throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
+         return;
+      }
+   }
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
    if (!textureAlreadyCreated)
@@ -375,7 +383,6 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); GL_CHECK_ERROR
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
-//      glUniform1i(textureS, 0); GL_CHECK_ERROR - was giving INVALID OPERATION
    }
    // must invert the pixels from ARGB to RGBA
    for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
@@ -386,10 +393,9 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
    }
    else
    {
-      bool err;
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
-          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
+         throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
       {
          if (updateList)

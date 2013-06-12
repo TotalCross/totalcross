@@ -270,7 +270,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       onFontChanged();
    }
 
-   /** @deprecated TotalCross 2 no longer uses transparentColor */
+   /** Constructor to keep compilation compatibility with TC 1; transparentColor is ignored. */
    public TabbedContainer(Image []imgCaptions, int transparentColor) // guich@564_13
    {
       this(imgCaptions);

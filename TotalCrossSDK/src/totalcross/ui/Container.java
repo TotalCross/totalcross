@@ -102,9 +102,10 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
-   
-   /** Defines the total transition time. Defaults to 1000 (1 second).
-    * @since TotalCross 2.0 
+   /**
+    * Defines the total transition time. Defaults to 1000 (1 second).
+    * 
+    * @since TotalCross 1.68
     */
    public static int TRANSITION_TIME = Settings.onJavaSE ? 500 : 1000;
 
@@ -166,14 +167,17 @@ public class Container extends Control
     */
    static void setNextTransitionEffect(int t)
    {
-      nextTransitionEffect = t;
-      if (t != TRANSITION_NONE)
-         try
-         {
-            screen0 = MainWindow.getScreenShot();
-            screen0.lockChanges();
-         }
-         catch (Throwable e) {}
+      if (!Settings.isIOS())
+      {
+         nextTransitionEffect = t;
+         if (t != TRANSITION_NONE)
+            try
+            {
+               screen0 = MainWindow.getScreenShot();
+               screen0.lockChanges();
+            }
+            catch (Throwable e) {}
+      }
    }
 
    static Image screen0;
