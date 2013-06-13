@@ -84,7 +84,7 @@ public class Image extends GfxSurface
    private int currentFrame=-1, widthOfAllFrames;
 
    /** True if this image has an alpha-channel for transparency (higher 8 bits).
-	 * Important: if useAlpha is true, the transparentPixel must be set to -1, otherwise, many
+	 * Important: if useAlpha is true, transparentColor must be set to -1, otherwise, many
 	 * Graphics methods will not work.
 	 * Also, the only operation that works with alpha-channel is Graphics.DRAW_PAINT; all other
 	 * drawing operations ignore the alpha channel.

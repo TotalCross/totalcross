@@ -54,8 +54,8 @@ static void RdSetState(int32 type, int32 state)
    {
       if (pTD->DeviceType == type)
          _ChangeRadioState(pTD, state, RADIODEVICES_PRE_SAVE);
-      LocalFree(pTD->pszDeviceName);
-      LocalFree(pTD->pszDisplayName);
+      pTD->pszDeviceName = LocalFree(pTD->pszDeviceName);
+      pTD->pszDisplayName = LocalFree(pTD->pszDisplayName);
    }
    _FreeDeviceList(pDevice);
 #endif
@@ -90,8 +90,8 @@ static int32 RdGetState(int32 type)
       {
          if (pTD->DeviceType == type)
             state = pTD->dwState;
-         LocalFree(pTD->pszDeviceName);
-         LocalFree(pTD->pszDisplayName);
+         pTD->pszDeviceName = LocalFree(pTD->pszDeviceName);
+         pTD->pszDisplayName = LocalFree(pTD->pszDisplayName);
       }
       _FreeDeviceList(pDevice);
       

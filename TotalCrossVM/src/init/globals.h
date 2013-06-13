@@ -155,6 +155,9 @@ extern void *deviceCtx; // The device context points a structure containing plat
 
 // utils.c
 extern int32 firstTS;
+#ifdef ANDROID
+extern jmethodID jlistTCZs;
+#endif
 
 // file.c
 #ifdef ANDROID
@@ -181,6 +184,9 @@ extern Hashtable htNativeProcAddresses;
 
 // tcz.c
 extern VoidPs* openTCZs;
+#ifdef ANDROID
+jmethodID jreadTCZ, jfindTCZ;
+#endif
 
 // event.c
 extern bool appExitThrown;

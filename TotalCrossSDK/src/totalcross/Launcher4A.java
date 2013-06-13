@@ -21,7 +21,9 @@ package totalcross;
 import totalcross.android.*;
 import totalcross.android.compat.*;
 
+import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 
 import android.view.animation.*;
 import android.view.animation.Animation.AnimationListener;
@@ -124,9 +126,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    };
    
-   public Launcher4A(Loader context, String tczname, String appPath, String cmdline)
+   public Launcher4A(Loader context, String tczname, String appPath, String cmdline, boolean isSingleAPK)
    {
       super(context);
+      // read all apk names, before loading the vm
+      if (!isSingleAPK)
+      {
+         loadAPK("/data/data/litebase.android/apkname.txt",false); // litebase
+         loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
+      }
+      loadAPK(appPath+"/apkname.txt",true);
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
@@ -1194,5 +1203,205 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          AndroidUtils.handleException(e,false);
          return null;
       }
+   }
+   
+   //////////// apk handling
+   static ArrayList<TCZinAPK> tczs = new ArrayList<TCZinAPK>(10);
+   
+   // an InputStream that keeps track of position, since RandomAccessFile can't be used with ZipInputStream
+   static class SeekInputStream extends InputStream 
+   {
+      FileInputStream is;
+      int pos;
+      byte[] b = new byte[1];
+      int maxLength;
+      
+      public SeekInputStream(String name) throws FileNotFoundException
+      {
+         is = new FileInputStream(name);
+      }
+
+      public int read(byte[] bytes) throws IOException
+      {
+         return read(bytes,0,bytes.length);
+      }
+      
+      public int read(byte[] b, int offset, int length) throws IOException
+      {
+         if (length > maxLength) maxLength = length;
+         int n = is.read(b,offset,length);
+         if (n > 0)
+            pos += n;
+         return n;
+      }
+      
+      public int read() throws IOException
+      {
+         int n = read(b,0,1);
+         if (n == 1) {pos += n; return b[0] & 0xFF;}
+         return -1;
+      }
+      
+      public void close() throws IOException
+      {
+         is.close();
+      }
+   }
+   
+   static class TCZinAPK
+   {
+      String name;
+      long ofs, len;
+      RandomAccessFile raf;
+   }
+   
+   private void loadAPK(String txt, boolean handleEx)
+   {
+      FileInputStream fis = null;
+      SeekInputStream sis = null;
+      ZipInputStream zis = null;
+      try
+      {
+         fis = new FileInputStream(txt);
+         byte[] b = new byte[fis.available()];
+         fis.read(b);
+         fis.close();
+         String apk = new String(b);
+         // search the apk for the tcfiles.zip
+         sis = new SeekInputStream(apk);
+         zis = new ZipInputStream(sis);
+         ZipEntry ze,tcze;
+         int base = tczs.size();
+         while ((ze = zis.getNextEntry()) != null)
+         {
+            String name = ze.getName();
+            if (name.equals("assets/tcfiles.zip"))
+            {
+               ZipInputStream tcz = new ZipInputStream(zis);
+               while ((tcze = tcz.getNextEntry()) != null)
+               {
+                  name = tcze.getName();
+                  if (!name.endsWith(".tcz")) // hold only tcz files
+                     continue;
+                  TCZinAPK e = new TCZinAPK();
+                  e.name = name;
+                  e.ofs = sis.pos; // note: this offset is just a guess (upper limit), since the stream is read in steps. later we'll find the correct offset
+                  e.len = tcze.getSize();
+                  tczs.add(e);
+                  //AndroidUtils.debug(e.name+" ("+e.len+" bytes) - temp pos: "+e.ofs);
+               }
+               tcz.close();
+               zis.close();
+               sis.close();
+               // now we open the file again, with random access, and search for the filenames to get the correct offset to them
+               byte[] buf = new byte[Math.max(1024,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
+               RandomAccessFile raf = new RandomAccessFile(apk,"r");
+               for (int i = base, n = tczs.size(); i < n; i++)
+               {
+                  TCZinAPK a = tczs.get(i);
+                  a.raf = raf;
+                  byte[] what = a.name.getBytes();
+                  for (int j = 10;;)
+                  {
+                     long pos = a.ofs - buf.length/2; if (pos < 0) pos = 0;
+                     raf.seek(pos);
+                     int s = raf.read(buf);
+                     int realOfs = indexOf(buf, s, what);
+                     if (realOfs == -1) // if not found, double the read buffer and try again
+                     {
+                        if (--j == 0)
+                           throw new RuntimeException("Error: cannot find real offset in APK for "+a.name);
+                        buf = new byte[buf.length*2];
+                        AndroidUtils.debug("read from "+pos+" to "+(pos+buf.length)+" but not found. doubling buffer to "+buf.length+"!");
+                     }
+                     else
+                     {
+                        a.ofs = pos + realOfs + what.length; // the data comes after the name
+                        //AndroidUtils.debug(a.name+" - real pos: "+a.ofs);
+                        break;
+                     }
+                  }
+               }                              
+               break;
+            }
+         }
+      }
+      catch (FileNotFoundException fnfe)
+      {
+         if (handleEx)
+            AndroidUtils.handleException(fnfe,false);
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+      finally
+      {
+         try {fis.close();} catch (Exception e) {}
+         try {sis.close();} catch (Exception e) {}
+         try {zis.close();} catch (Exception e) {}
+      }
+   }
+
+   private static int indexOf(byte[] src, int srcLen, byte[] what)
+   {
+      if (src == null || srcLen == 0 || what == null || what.length == 0)
+         return -1;
+      int len = srcLen - what.length;
+      byte b = what[0];
+      int i,j,k;
+      for (i=0; i < len; i++)
+         if (src[i] == b) // first letter matches?
+         {
+            boolean found = true;
+            for (j = 1,k=i+j; j < what.length && found; j++,k++)
+               found &= src[k] == what[j]; // ps: cannot use continue here since we're inside 2 loops
+            if (found) return i; // all matches!
+         }
+      return -1;
+   }
+
+   public static String listTCZs()
+   {
+      StringBuilder sb = new StringBuilder(128);
+      sb.append(tczs.get(0).name);
+      for (int i = 1, n = tczs.size(); i < n; i++)
+         sb.append(",").append(tczs.get(i).name);
+      return sb.toString();
+   }
+   
+   public static int findTCZ(String tcz)
+   {
+      for (int i = 0, n = tczs.size(); i < n; i++)
+         if (tczs.get(i).name.equals(tcz))
+            return i;
+      return -1;
+   }
+   
+   public static int readTCZ(int fileIdx, int ofs, byte[] buf) // ofs is the relative offset inside the tcz file, not the absolute apk file position
+   {
+      synchronized (tczs)
+      {
+         try
+         {
+            TCZinAPK e = tczs.get(fileIdx);
+            e.raf.seek(ofs + e.ofs);
+            return e.raf.read(buf, 0, buf.length);
+         }
+         catch (Exception ex)
+         {
+            AndroidUtils.handleException(ex,false);
+            return -2;
+         }
+      }
+   }
+
+   public static void closeTCZs()
+   {
+      // close the tczs
+      RandomAccessFile lastRAF = null;
+      for (int i = 0, n = tczs.size(); i < n; i++)
+         if (tczs.get(i).raf != lastRAF)
+            try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
 }

@@ -119,7 +119,7 @@ public class MobileProvision
          NSObject item = entitlements.objectForKey(key);
          XCentPList.put(key, item);
       }
-      return XCentPList.toXMLPropertyList();
+      return MyNSObjectSerializer.toXMLPropertyList(XCentPList);
    }
 
    public static MobileProvision readFromFile(File input) throws Exception

@@ -14,7 +14,6 @@
 package totalcross;
 
 import java.io.*;
-import java.security.MessageDigest;
 import java.util.*;
 import java.util.zip.*;
 
@@ -29,10 +28,10 @@ public class AndroidUtils
 {
    static class Config
    {
-      private int version = 1;
-      public String install_md5hash;
+      private int version = 2;
       public int saved_screen_size;
       public int demotime;
+      public int zipDateTime;
       
       public Config()
       {
@@ -41,7 +40,6 @@ public class AndroidUtils
          Map<String,?> oldconf = pref.getAll();
          if (oldconf != null && !oldconf.isEmpty())
          {
-            install_md5hash = pref.getString("install_md5hash",null);
             saved_screen_size = pref.getInt("saved_screen_size",-1);
             demotime = pref.getInt("demotime",0);
             pref.edit().clear().commit();
@@ -52,13 +50,23 @@ public class AndroidUtils
                FileInputStream f = new FileInputStream(pinfo.applicationInfo.dataDir+"/config.bin");
                DataInputStream ds = new DataInputStream(f);
                int version = ds.readInt();
-               if (version >= 1)
+               if (version == 1)
                {
-                  install_md5hash = ds.readUTF();
+                  ds.readUTF();
                   saved_screen_size = ds.readInt();
                   demotime = ds.readInt();
                }
+               else
+               if (version == 2)
+               {
+                  saved_screen_size = ds.readInt();
+                  demotime = ds.readInt();
+                  zipDateTime = ds.readInt();
+               }
                f.close();
+            }
+            catch (FileNotFoundException fnfe)
+            {
             }
             catch (Exception e)
             {
@@ -73,9 +81,9 @@ public class AndroidUtils
             FileOutputStream f = new FileOutputStream(pinfo.applicationInfo.dataDir+"/config.bin");
             DataOutputStream ds = new DataOutputStream(f);
             ds.writeInt(version);
-            ds.writeUTF(install_md5hash);
             ds.writeInt(saved_screen_size);
             ds.writeInt(demotime);
+            ds.writeInt(zipDateTime);
             f.close();
          }
          catch (Exception e)
@@ -170,45 +178,20 @@ public class AndroidUtils
       String appName = main.getClass().getName();  
       String pack = appName.substring(0,appName.lastIndexOf('.'));
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");
+      
       InputStream is = file.createInputStream();
-      
-      MessageDigest digest = MessageDigest.getInstance("MD5");
-      int r;
-      
-      while ((r = is.read(buf)) > 0)
-         digest.update(buf, 0, r);
-      
+      is.skip(10); // check the date/time stored inside the zip header
+      int zipDateTime = new DataInputStream(is).readInt();
       is.close();
       
-      String oldHash = configs.install_md5hash;
-      String newHash = md5ToString(digest.digest());
-      
-      if (!newHash.equals(oldHash)) // application was updated
+      writeApkName();
+      if (configs.zipDateTime != zipDateTime)
       {
-         updateInstall(task, pack);
-         configs.install_md5hash = newHash;
+         configs.zipDateTime = zipDateTime;
          configs.save();
+         debug("Updating application "+pack+"...");
+         updateInstall(task);
       }
-      else // search for .tcz.bak files and copy them over the original files
-      {
-         String dataDir = pinfo.applicationInfo.dataDir;
-         String[] files = new File(dataDir).list();
-         if (files != null)
-            for (int i = 0; i < files.length; i++)
-               if (files[i].endsWith(".tcz.bak"))
-               {
-                  long t1 = System.currentTimeMillis();
-                  RandomAccessFile in  = new RandomAccessFile(new File(dataDir, files[i]),"r");
-                  RandomAccessFile out = new RandomAccessFile(new File(dataDir, files[i].substring(files[i].length()-4)),"rw");
-                  int len = 0;
-                  for (int n; (n = in.read(buf)) > 0; len += n)
-                     out.write(buf, 0, n);
-                  out.setLength(len);
-                  in.close();
-                  out.close();
-                  debug("Updated "+dataDir+"/"+files[i]+" in "+(System.currentTimeMillis()-t1)+" ms");
-               }
-      }         
    }
    
    public static int getSavedScreenSize()
@@ -222,9 +205,8 @@ public class AndroidUtils
       configs.save();
    }
    
-   public static void updateInstall(StartupTask task, String pack) throws Exception
+   public static void updateInstall(StartupTask task) throws Exception
    {
-      debug("Updating application "+pack+"...");
       long ini = System.currentTimeMillis();
       if (task != null)
          task.initDialog();
@@ -237,6 +219,13 @@ public class AndroidUtils
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
+         if (name.endsWith(".tcz")) // tcz files are never unpacked
+         {
+            File f = new File(dataDir, name);
+            try {if (f.exists()) {f.delete(); debug("deleted old "+dataDir+"/"+name);}} catch (Exception e) {} // delete old tcz files
+            continue;
+         }
+         
          int slash = name.lastIndexOf('/');
          String path = dataDir;
          if (slash > 0) // paths included?
@@ -250,28 +239,35 @@ public class AndroidUtils
             name = name.substring(slash+1);
          }
          
-         boolean isTCZ = name.endsWith(".tcz") && !name.toLowerCase().contains("tcfont");
          nativeCreateFile(path+"/"+name);
-         if (isTCZ)
-            nativeCreateFile(path+"/"+name+".bak");
-         RandomAccessFile raf = new RandomAccessFile(new File(path, name),"rw"), raf2=null;
-         if (isTCZ)
-            raf2 = new RandomAccessFile(new File(path, name+".bak"),"rw");
+         RandomAccessFile raf = new RandomAccessFile(new File(path, name),"rw");
          for (int n; (n = zis.read(buf)) > 0;)
-         {
             raf.write(buf, 0, n);
-            if (isTCZ)
-               raf2.write(buf, 0, n);
-         }
          raf.close();
-         if (isTCZ)
-            raf2.close();
       }
       zis.close();
       long fim = System.currentTimeMillis();
       if (fim-ini > 2000) debug("Installation elapsed "+(fim-ini)+" ms");
    }
 
+   private static void writeApkName()
+   {
+      try
+      {
+         // create a file that informs the application's apk file path
+         String txt = pinfo.applicationInfo.dataDir+"/apkname.txt";
+         nativeCreateFile(txt);
+         FileOutputStream fos = new FileOutputStream(txt);
+         String dir = main.getPackageResourcePath();
+         fos.write(dir.getBytes()); // full path including apk name
+         fos.close();
+         //debug("writting \""+dir+"\" into "+txt);
+      }
+      catch (Exception e)
+      {
+         handleException(e,false);
+      }
+   }
    native private static void nativeCreateFile(String path);
 
    public static void handleException(Throwable e, boolean terminateProgram)
@@ -343,6 +339,9 @@ public class AndroidUtils
                ht.put(key,value);
             }
             dis.close();
+         }
+         catch (FileNotFoundException fnfe)
+         {
          }
          catch (Exception e)
          {

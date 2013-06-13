@@ -1228,6 +1228,7 @@ public class Window extends Container
          postUnpop();
          popped = false;
          needsPaint = true;
+         repaintActiveWindows();
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////

@@ -145,6 +145,9 @@ public class PieChart extends Chart
             xx = c.x;
             yy = c.y;
          }
+         if (last == current)
+            ;
+         else
          if ((type & GRADIENT_VERTICAL) != 0)
          {
             int fade = (type & GRADIENT_DARK) != 0 ? Color.darker(color,128) : Color.brighter(color,128);
@@ -159,9 +162,10 @@ public class PieChart extends Chart
          }
          else
          {
-            g.foreColor = is3d ? color : 0;
+            g.foreColor = is3d || sum == v ? color : 0; // fixed color when only 1 serie has value > 0
             g.backColor = color;
             g.fillPie(xx, yy, rr, last, current);
+            Window.updateScreen();
          }
          last = current;
       }

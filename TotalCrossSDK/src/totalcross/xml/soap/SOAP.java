@@ -693,7 +693,7 @@ public class SOAP // guich@570_34
          httpOptions.postDataSB = sbuf;
          httpOptions.postSuffix = "</" + mtd + ">" + suffix;
          if (debug)
-            Vm.debug("post: " + httpOptions.postPrefix + httpOptions.postData + httpOptions.postSuffix);
+            Vm.debug("post: " + httpOptions.postPrefix + httpOptions.postDataSB + httpOptions.postSuffix);
          hs = new HttpStream(new URI(uri), httpOptions);
          boolean ok = hs.isOk();
          if (!ok)
