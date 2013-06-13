@@ -1325,6 +1325,7 @@ LB_API void lLC_purge_s(NMParams p)
              logger = litebaseConnectionClass->objStaticValues[1];
       Table* table = getTableFromName(context, driver, tableName);
       int32 deleted = 0;
+      int32 finalSize;
 
       if (logger) // juliana@230_30: reduced log files size.
 	   {
@@ -1543,11 +1544,18 @@ free:
          
          // juliana@250_6: corrected a bug on LitebaseConnection.purge() that could corrupt the table.
          plainDB->rowAvail = 0;
-         if ((i = lbfileSetSize(&dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize))
-          || (i = lbfileFlush(dbFile->file)))
+         if ((i = lbfileFlush(dbFile->file)) 
+          || (i = lbfileSetSize(&dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize)))
          {
             fileError(context, i, dbFile->name);
             goto finish;
+         }
+
+         lbfileGetSize(dbFile->file, NULL, &finalSize);
+         if (finalSize > dbFile->size)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", "flush não funcionou");
+            TC_debug("%d %d", finalSize, dbFile->size); 
          }
       }
       p->retI = deleted;
