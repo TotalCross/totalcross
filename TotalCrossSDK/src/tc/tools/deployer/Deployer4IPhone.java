@@ -186,7 +186,7 @@ public class Deployer4IPhone
       dos.close();
       vFiles.addElement("Info.plist");
 
-      byte[] data = DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.IPHONE_DEB);
+      byte[] data = Bitmaps.IPHONE_DEB.getImage();
       if (data == null) data = Utils.findAndLoadFile(DeploySettings.etcDir+"images/" + iconfile, false);
       if (data != null)
       {

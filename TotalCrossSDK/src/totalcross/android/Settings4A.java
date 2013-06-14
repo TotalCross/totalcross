@@ -188,7 +188,7 @@ public final class Settings4A
          catch (NoSuchFieldError nsfe) {}
          catch (Throwable t) {}
       
-      if (serialNumber == null && !Loader.IS_EMULATOR) // no else here!
+      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR) // no else here!
       {
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all
