@@ -362,7 +362,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
-      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
+      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
 
       return new BaseInputConnection(this, false)
       {
@@ -376,6 +376,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
             return true;
          }
+         
+         // public boolean finishComposingText() - does not work in a standard way! in samsung with swiftkeys, each key sends this, and in the std keyboard, it is sent BEFORE the keyboard appears
+
+         public boolean performPrivateCommand(java.lang.String action, android.os.Bundle data)
+         {
+            if (action != null && action.contains("hideSoftInputView")) // for LG's special "hide keyboard" key
+            {
+               sendCloseSIPEvent();
+               sipVisible = false;
+            }
+            return super.performPrivateCommand(action, data);
+         }
+         
+         public boolean reportFullscreenMode(boolean enabled)
+         {
+            return false;
+         }      
       };
    }
    
