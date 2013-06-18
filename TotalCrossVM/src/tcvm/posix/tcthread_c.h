@@ -42,7 +42,7 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
       pthread_cond_signal(&targs->state_cv);
       pthread_mutex_unlock(&targs->state_mutex);
    }
-   else throwException(context, RuntimeException, "Can't create thread");
+   else throwException(context, OutOfMemoryError, "Can't create thread (2)");
    return h;
 }
 
