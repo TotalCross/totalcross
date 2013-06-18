@@ -225,7 +225,7 @@ public class Deployer4WinCE
          deleteCabs();
          File oFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
          File iFile = new File("wince.inf",File.READ_ONLY);
-         oFile.copyTo(iFile);
+         iFile.copyTo(oFile);
          oFile.close();
          iFile.close();
       }

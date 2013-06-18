@@ -90,17 +90,27 @@ public final class Settings4A
 	   String id1,id2;
       // platform
       String v = Build.VERSION.RELEASE;
-      double vd = 0;
-      while (vd == 0 && v.length() > 0)
-         try
-         {
-            vd = Double.valueOf(v);            
-         }
-         catch (Exception e)
-         {
-            v = v.substring(0,v.length()-1);
-         }
-      romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16    
+      // guich@tc200: java was rounding 2.3 to 2.29...
+      if (v.length() == 5 && v.charAt(1) == '.' && v.charAt(3) == '.') // 2.3.4
+         romVersion = Integer.parseInt(v.replace(".",""));
+      else
+      if (v.length() == 3 && v.charAt(1) == '.') // 2.3
+         romVersion = Integer.parseInt(v.replace(".","")) * 10; // 23 * 10 = 230
+      else
+      {      
+         double vd = 0;
+         while (vd == 0 && v.length() > 0)
+            try
+            {
+               vd = Double.valueOf(v);            
+               vd += 0.005; // round up
+            }
+            catch (Exception e)
+            {
+               v = v.substring(0,v.length()-1);
+            }
+         romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16
+      }
       deviceId = Build.MANUFACTURER + " " + Build.MODEL;
       
       // userName
@@ -178,7 +188,7 @@ public final class Settings4A
          catch (NoSuchFieldError nsfe) {}
          catch (Throwable t) {}
       
-      if (serialNumber == null && !Loader.IS_EMULATOR) // no else here!
+      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR) // no else here!
       {
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all

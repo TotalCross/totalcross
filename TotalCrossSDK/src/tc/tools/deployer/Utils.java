@@ -759,6 +759,8 @@ public class Utils
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       if (jarsignerExe == null)
          throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");
+      if (jarsignerExe.contains(" ")) // if the path contains space, since it is added to the path variable, try to run it without the path.
+         jarsignerExe = DeploySettings.appendDotExe("jarsigner");
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
