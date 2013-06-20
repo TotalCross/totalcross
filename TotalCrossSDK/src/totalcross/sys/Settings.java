@@ -34,7 +34,7 @@ public final class Settings
    public static int version = 168;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.68";
+   public static String versionStr = "1.68_3";
     
    /** Current build number.
     * @since TotalCross 1.53 
