@@ -550,7 +550,7 @@ public class Bitmaps
       return palette;
    }
 
-   static final int IPHONE_DEB = 60;
+   static final Image4iOS IPHONE_DEB = new Image4iOS("Icon.png", 60);
 
    static final Image4iOS[] IOS_ICONS =
    {
@@ -566,6 +566,11 @@ public class Bitmaps
          new Image4iOS("Icon-Small-iPad@2x.png", 100)
    };
 
+   static final Image4iOS[] IOS_LAUNCHER_IMAGES =
+   {
+         new Image4iOS("Default-568h@2x.png", 640, 1136)
+   };
+
    static final Image4iOS[] ITUNES_ICONS =
    {
          new Image4iOS("iTunesArtwork", 512),
@@ -575,38 +580,48 @@ public class Bitmaps
    static class Image4iOS
    {
       final String name;
-      final int size;
+      final int width;
+      final int height;
 
       private Image4iOS(String name, int size)
       {
          this.name = name;
-         this.size = size;
+         this.width = size;
+         this.height = size;
       }
-   }
 
-   public byte[] getIPhoneIcon(int size)
-   {
-      byte[] b = null;
-      try
+      private Image4iOS(String name, int width, int height)
       {
-         Image img = IconStore.getSquareIcon(size);
-         // guich@tc100b5_11: flood fill with tolerance
-         floodFill(img, 0);
-         ByteArrayStream bas = new ByteArrayStream(size * size);
-         img.createPng(bas);
-         b = bas.toByteArray();
+         this.name = name;
+         this.width = width;
+         this.height = height;
       }
-      catch (Exception e)
+
+      public byte[] getImage()
       {
-         e.printStackTrace();
+         byte[] b = null;
+         try
+         {
+            Image img = width == height ? IconStore.getSquareIcon(width) : IconStore.getSplashImage(width, height);
+            // guich@tc100b5_11: flood fill with tolerance
+            floodFill(img, 0);
+            ByteArrayStream bas = new ByteArrayStream(width * height);
+            img.createPng(bas);
+            b = bas.toByteArray();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+         return b;
       }
-      return b;
    }
 }
 
 class IconStore extends Hashtable
 {
    private Image largestSquareIcon;
+   private Image largestSplashImage;
    private static IconStore instance;
 
    private IconStore() throws IOException
@@ -643,6 +658,21 @@ class IconStore extends Hashtable
       return b != null ? DeploySettings.bitmaps.new Bmp(b) : DeploySettings.bitmaps.new Bmp(width, height);
    }
 
+   public static Image getSplashImage(int width, int height) throws ImageException, IOException
+   {
+      Image img;
+      IconStore store = getInstance();
+      byte[] b = (byte[]) store.get(width + "x" + height);
+      if (b != null)
+         img = new Image(b);
+      else
+         img = store.largestSplashImage.getSmoothScaledInstance(width, height,
+               store.largestSplashImage.transparentColor);
+      if (img.getHeight() != height || img.getWidth() != width)
+         throw new ImageException("splash" + width + "x" + height + " must be " + width + "x" + height);
+      return img;
+   }
+
    public static Image getSquareIcon(int size) throws ImageException, IOException
    {
       Image img;
@@ -660,6 +690,7 @@ class IconStore extends Hashtable
    private void addFrom(String path) throws IOException
    {
       int largestIconSize = 0;
+      int largestSplashSize = 0;
 
       if (path != null && new File(path).isDir())
       {
@@ -678,6 +709,12 @@ class IconStore extends Hashtable
                   int idxIconName = file.indexOf("icon");
                   if (idxLastSlash != -1 && idxIconName != -1)
                      name = file.substring(idxIconName + 4, file.lastIndexOf('.'));
+                  else
+                  {
+                     int idxSplashName = file.indexOf("splash");
+                     if (idxLastSlash != -1 && idxSplashName != -1)
+                        name = file.substring(idxIconName + 6, file.lastIndexOf('.'));
+                  }
                }
 
                if (name != null)
@@ -693,6 +730,15 @@ class IconStore extends Hashtable
                         {
                            largestIconSize = imgSize;
                            largestSquareIcon = img;
+                        }
+                     }
+                     else
+                     {
+                        int imgSize = img.getWidth() * img.getHeight();
+                        if (imgSize > largestSplashSize)
+                        {
+                           largestSplashSize = imgSize;
+                           largestSplashImage = img;
                         }
                      }
                      if (name.length() > 1)
