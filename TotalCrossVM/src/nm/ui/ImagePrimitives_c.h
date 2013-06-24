@@ -596,10 +596,17 @@ static void getPixelRow(Context currentContext, Object obj, Object outObj, int32
    if (checkArrayRange(currentContext, outObj, 0, width))
       for (pixels += y * width; width-- > 0; pixels++)
       {
+#ifdef WIN32
+         *out++ = pixels->r;
+         *out++ = pixels->g;
+         *out++ = pixels->b;                                   
+         *out++ = pixels->a;
+#else
          *out++ = pixels->a;
          *out++ = pixels->r;
          *out++ = pixels->g;
          *out++ = pixels->b;                                   
+#endif         
       }
 }
 
