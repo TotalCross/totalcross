@@ -86,12 +86,13 @@ static bool pumpEvent(Context currentContext)
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
 #endif
 sleep:
- //  Sleep(1); // avoid 100% cpu
+   Sleep(1); // avoid 100% cpu - important on Android!
    return ok;
 }
 
 bool isEventAvailable()
-{
+{  
+   Sleep(1); // avoid 100% cpu - important on Android!
    return privateIsEventAvailable();
 }
 
