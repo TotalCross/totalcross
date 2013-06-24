@@ -214,7 +214,7 @@ public class MessageBox extends Window
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
          if (hb == 0) hb = ha;
-         hm = Settings.screenHeight - captionH - hb - ha;
+         hm = Math.max(fmH,Settings.screenHeight - captionH - hb - ha);
          hasScroll = true;
       }
       else 
