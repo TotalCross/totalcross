@@ -77,6 +77,7 @@ bool leakCheckingEnabled;
 bool showMemoryMessagesAtExit;
 VoidPs* createdHeaps;
 int32 totalAllocated, maxAllocated, allocCount, freeCount;
+DECLARE_MUTEX(createdHeaps);
 
 // PalmFont_c.h
 int32 maxFontSize, minFontSize, normalFontSize;
@@ -128,8 +129,8 @@ Stack objStack2;
 #endif
 
 // context.c
-VoidPs* contexts;
 Context mainContext,gcContext,lifeContext;
+Context contexts[MAX_CONTEXTS];
 
 // tcvm.c
 int32 vmTweaks;
@@ -262,7 +263,8 @@ bool initGlobals()
 	SETUP_MUTEX;
    INIT_MUTEX(omm);
    INIT_MUTEX(screen);
-   INIT_MUTEX(htSSL);
+   INIT_MUTEX(htSSL); 
+   INIT_MUTEX(createdHeaps);
 #if defined (WIN32) || defined (WINCE)
    initWinsock();
 #endif
@@ -279,6 +281,7 @@ void destroyGlobals()
    DESTROY_MUTEX(omm);
    DESTROY_MUTEX(screen);
    DESTROY_MUTEX(htSSL);
+   DESTROY_MUTEX(createdHeaps);
 #if defined (WIN32) || defined (WINCE)
    closeWinsock();
 #endif

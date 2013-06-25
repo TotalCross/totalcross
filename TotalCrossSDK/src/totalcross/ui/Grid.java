@@ -1763,6 +1763,7 @@ public class Grid extends Container implements Scrollable
          ed.setText(getCellText(selectedLine, col));
          ed.setVisible(true);
          ed.requestFocus();
+         ed.bringToFront();
          if (Settings.virtualKeyboard)
             ed.popupKCC();
       }

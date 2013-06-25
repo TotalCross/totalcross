@@ -128,8 +128,10 @@ extern Stack objStack2;
 #endif
 
 // context.c
-extern VoidPs* contexts;
 extern Context mainContext,gcContext,lifeContext;
+#define MAX_CONTEXTS 100
+extern Context contexts[MAX_CONTEXTS];
+
 
 // tcvm.c
 extern int32 vmTweaks;
