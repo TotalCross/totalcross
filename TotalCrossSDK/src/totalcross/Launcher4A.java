@@ -470,11 +470,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean eventIsAvailable()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       return eventThread.eventAvailable();
    }
    
    public static void pumpEvents()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       eventThread.pumpEvents();
    }
    
