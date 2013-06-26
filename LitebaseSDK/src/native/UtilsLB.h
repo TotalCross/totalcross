@@ -367,4 +367,13 @@ bool muPut(MemoryUsageHT* table, int32 key, int32 dbSize, int32 dboSize);
  */
 void muFree(MemoryUsageHT* table);
 
+/**
+ * Indicates if a buffer is only composed by zeros or not.
+ * 
+ * @param buffer The buffer.
+ * @param length The size of the buffer.
+ * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+ */
+bool isZero(uint8* buffer, int32 length);
+
 #endif
