@@ -1753,6 +1753,9 @@ public class LitebaseConnection
                table.deletedRowsCount++;
             else
             {
+               if (isZero(buffer)) // juliana@268_3: Now do not do anything if there are only zeros in a row.
+                  continue;
+               
                bas.reset();
                buffer[3] = 0; // Erases rowid information.
                
@@ -2367,5 +2370,21 @@ public class LitebaseConnection
       {
          throw new DriverException(exception);
       }
+   }
+   
+   /**
+    * Indicates if a buffer is only composed by zeros or not.
+    * 
+    * @param buffer The buffer.
+    * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+    */
+   private boolean isZero(byte[] buffer)
+   {
+      int i = buffer.length;
+      
+      while (--i >= 0)
+         if (buffer[i] != 0)
+            return false;
+      return true;
    }
 }

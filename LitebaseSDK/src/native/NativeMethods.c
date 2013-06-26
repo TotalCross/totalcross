@@ -2166,7 +2166,9 @@ LB_API void lLC_recoverTable_s(NMParams p)
                deleted++;
 		      else 
 		      {
-			      xmove4(&crc32Lido, &basbuf[crcPos]);
+			      if (isZero(basbuf, crcPos + 4)) // juliana@268_3: Now do not do anything if there are only zeros in a row.
+                  continue;
+               xmove4(&crc32Lido, &basbuf[crcPos]);
 			      basbuf[3] = 0; // Erases rowid information.
    			   
 			      // juliana@230_12: improved recover table to take .dbo data into consideration.

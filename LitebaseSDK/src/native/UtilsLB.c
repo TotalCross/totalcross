@@ -1022,3 +1022,18 @@ void muFree(MemoryUsageHT* iht)
    xfree(iht->items);
    iht->size = 0;
 }
+
+/**
+ * Indicates if a buffer is only composed by zeros or not.
+ * 
+ * @param buffer The buffer.
+ * @param length The size of the buffer.
+ * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+ */
+bool isZero(uint8* buffer, int32 length)
+{
+   while (--length >= 0)
+      if (buffer[length])
+         return false;
+   return true;
+}
