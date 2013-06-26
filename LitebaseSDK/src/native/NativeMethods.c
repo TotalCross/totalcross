@@ -2212,6 +2212,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
                deleted++;
 		      else 
 		      {
+               if (isZero(basbuf, crcPos + 4)) // juliana@268_3: Now do not do anything if there are only zeros in a row.
+                  continue;
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
 			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
    			   
