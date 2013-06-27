@@ -1727,7 +1727,7 @@ public class LitebaseConnection
          int rows = plainDB.rowCount,
              crc32,
              rowid,
-             i = -1,
+             i = rows,
              
          // juliana@230_12: improved recover table to take .dbo data into consideration.
              j,
@@ -1744,18 +1744,22 @@ public class LitebaseConnection
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
-         while (++i < rows) // Checks all table records.
+         while (--i >= 0) // Checks all table records.
          {
             plainDB.read(i);
-            rowid = dataStream.readInt();
             
+            if (isZero(buffer)) // juliana@268_3: Now does not do anything if there are only zeros in a row and removes them.
+            {
+               rows--;
+               continue;
+            }
+            
+            rowid = dataStream.readInt();
+
             if ((rowid & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Counts the number of deleted records.
                table.deletedRowsCount++;
             else
             {
-               if (isZero(buffer)) // juliana@268_3: Now do not do anything if there are only zeros in a row.
-                  continue;
-               
                bas.reset();
                buffer[3] = 0; // Erases rowid information.
                
@@ -1818,7 +1822,8 @@ public class LitebaseConnection
          table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
-         plainDB.close(plainDB.isAscii, false); // Closes the table files.
+         plainDB.rowCount = rows;
+         plainDB.close(plainDB.isAscii, true); // Closes the table files.
          table.db = null;
          Index idx;
          
