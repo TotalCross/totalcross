@@ -239,7 +239,7 @@ void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPAr
       m = (Method)callStack[0];
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
-      c = dumpMethodInfo(c, m, line, c0 + sizeof(c0) - 2);
+      c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);
       first = false;
    }
    *c = 0;
