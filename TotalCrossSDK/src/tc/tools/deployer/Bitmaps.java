@@ -669,7 +669,7 @@ class IconStore extends Hashtable
          img = store.largestSplashImage.getSmoothScaledInstance(width, height,
                store.largestSplashImage.transparentColor);
       if (img.getHeight() != height || img.getWidth() != width)
-         throw new ImageException("splash" + width + "x" + height + " must be " + width + "x" + height);
+         throw new ImageException("splash" + img.getHeight() + "x" + img.getWidth() + " must be " + width + "x" + height);
       return img;
    }
 
