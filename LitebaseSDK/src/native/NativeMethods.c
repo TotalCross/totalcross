@@ -2071,7 +2071,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          SQLValue** record;
          int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
-               i = -1,
+               i,
                read,
                rows,
                dataLength,
@@ -2178,7 +2178,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	                                                                                                                      false, heap)))
             goto finish;
 
-	      rows = (plainDB = &table->db)->rowCount;
+	      i = rows = (plainDB = &table->db)->rowCount;
 	      table->deletedRowsCount = p->retI = 0; // Invalidates the number of deleted rows.
 	      basbuf = plainDB->basbuf;
          columnIndexes = table->columnIndexes;
@@ -2197,17 +2197,22 @@ LB_API void lLC_recoverTable_s(NMParams p)
             else if (type == BLOB_TYPE)
                record[j]->asBlob = TC_heapAlloc(heap, columnSizes[j]);
 
-	      while (++i < rows) // Checks all table records.
+	      while (--i >= 0) // Checks all table records.
 	      {
 		      if (!plainRead(context, plainDB, i))
 			      goto finish;
+
+            if (isZero(basbuf, crcPos + 4)) // juliana@268_3: Now does not do anything if there are only zeros in a row and removes them.
+            {
+               rows--;
+               continue;
+            }
+
 		      xmove4(&read, basbuf);
 		      if ((read & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // Counts the number of deleted records.
                deleted++;
 		      else 
 		      {
-               if (isZero(basbuf, crcPos + 4)) // juliana@268_3: Now do not do anything if there are only zeros in a row.
-                  continue;
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
 			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
    			   
@@ -2266,8 +2271,11 @@ LB_API void lLC_recoverTable_s(NMParams p)
          tableSaveMetaData(context, table, TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows.
       
 finish: 
-	      if (table) 
+	      if (table)
+         {
+            plainDB->rowCount = rows;
             freeTable(context, table, false, true); // Closes the table.
+         }
         
       }
    }
