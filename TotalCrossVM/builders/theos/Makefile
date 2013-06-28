@@ -202,7 +202,7 @@ JPEG_FILES =                                 \
 	$(sourcedir)/jpeg/jdapimin.c               \
 	$(sourcedir)/jpeg/jdapistd.c               \
 	$(sourcedir)/jpeg/jdatasrc.c               \
-   $(sourcedir)/jpeg/jdatdst.c                \
+   $(sourcedir)/jpeg/jdatadst.c               \
 	$(sourcedir)/jpeg/jdcoefct.c               \
 	$(sourcedir)/jpeg/jdcolor.c                \
 	$(sourcedir)/jpeg/jddctmgr.c               \
