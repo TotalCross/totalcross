@@ -13,7 +13,7 @@
 
 #include "tcvm.h"
 
-#ifdef WIN32 // windows always give us aligned blocks
+#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
 #define EXTRA4ALIGN 0
 #else
 #define EXTRA4ALIGN 4
@@ -181,11 +181,13 @@ TC_API Heap privateHeapCreate(const char *file, int32 line)
       xstrcpy(p->ex.creationFile, max32(0,len-(sizeof(p->ex.creationFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
       p->ex.creationLine = line;
       p->count = ++hpcount;
+      LOCKVAR(createdHeaps);
       ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
       if (ch == null)
          xfree(p);
       else
          createdHeaps = ch;
+      UNLOCKVAR(createdHeaps);
    }
    return p;
 }
@@ -324,7 +326,9 @@ TC_API void heapDestroyPrivate(Heap m)
       m->current = mb;
    }
    m->finalizerFunc = null;
+   LOCKVAR(createdHeaps);
    createdHeaps = VoidPsRemove(createdHeaps, m, null);
+   UNLOCKVAR(createdHeaps);
    xfree(m);
 }
 

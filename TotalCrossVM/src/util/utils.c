@@ -688,6 +688,15 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
       }
       *buf = 0;
    }
+   if (buffer[0] == '-') // guich@tc200b5: check if its -0.00... and change to 0.00...
+   {
+      bool only0 = true;
+      buf = buffer;
+      for (buf++; *buf && only0; buf++)
+         only0 &= *buf == '.' || *buf == '0';
+      if (only0)
+         xstrcpy(buffer,buffer+1); // remove the -
+   }
    return buffer;
 }
 

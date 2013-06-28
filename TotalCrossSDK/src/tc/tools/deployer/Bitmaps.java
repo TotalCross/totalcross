@@ -666,10 +666,12 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-         img = store.largestSplashImage.getSmoothScaledInstance(width, height,
-               store.largestSplashImage.transparentColor);
+      if (store.largestSplashImage == null)
+         img =  whiteImage(width,height);
+      else
+         img = store.largestSplashImage.getSmoothScaledInstance(width, height, store.largestSplashImage.transparentColor);
       if (img.getHeight() != height || img.getWidth() != width)
-         throw new ImageException("splash" + width + "x" + height + " must be " + width + "x" + height);
+         throw new ImageException("splash" + img.getHeight() + "x" + img.getWidth() + " must be " + width + "x" + height);
       return img;
    }
 
@@ -681,9 +683,21 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size);
+      if (store.largestSplashImage == null)
+         img =  whiteImage(size,size);
+      else
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSplashImage.transparentColor);
       if (img.getHeight() != size || img.getWidth() != size)
          throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
+      return img;
+   }
+
+   private static Image whiteImage(int w, int h) throws ImageException
+   {
+      Image img = new Image(w,h);
+      Graphics g = img.getGraphics();
+      g.backColor = Color.WHITE;
+      g.fillRect(0,0,w,h);
       return img;
    }
 

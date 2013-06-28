@@ -836,23 +836,26 @@ bool joinAdjacentObjects(uint8* block, uint32 size)
 }
 
 static void markContexts()
-{
-   VoidPs *head = contexts, *current = head;
-   do
-   {
-      Context c = (Context)current->value;
-      ObjectArray oa = c->regOStart;
-      if (c->threadObj)
-         markObjects(c->threadObj);
-      if (c->nmp.retO)
-         markObjects(c->nmp.retO);
-      for (oa = c->regOStart; oa < c->regO; oa++)
-         if (*oa && OBJ_MARK(*oa) != markedAsUsed) // we must also mark the objects inside a locked object
-            markObjects(*oa);
-      if (c->thrownException != null)
-         markObjects(c->thrownException);
-      current = current->next;
-   } while (current != head);
+{                         
+   int32 i;         
+   Context c;
+   Context copy[MAX_CONTEXTS];
+   xmemmove(copy,contexts,MAX_CONTEXTS*sizeof(Context));
+   
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if ((c=copy[i]) != null)
+      {
+         ObjectArray oa = c->regOStart;
+         if (c->threadObj)
+            markObjects(c->threadObj);
+         if (c->nmp.retO)
+            markObjects(c->nmp.retO);
+         for (oa = c->regOStart; oa < c->regO; oa++)
+            if (*oa && OBJ_MARK(*oa) != markedAsUsed) // we must also mark the objects inside a locked object
+               markObjects(*oa);
+         if (c->thrownException != null)
+            markObjects(c->thrownException);
+      }
 }
 
 inline_ void finalizeObject(Object o, TCClass c)
