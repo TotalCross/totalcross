@@ -113,6 +113,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
  * Link Library: libc.
  *
  *************************************/
+static inline Err fileFlush(NATIVE_FILE fref);
 
 static Err fileClose(NATIVE_FILE* fref)
 {
@@ -121,7 +122,7 @@ static Err fileClose(NATIVE_FILE* fref)
 
    if (fref->handle == INVALID_HANDLE_VALUE)
       return NO_ERROR;
-
+   
    if (fstat(fileno(fref->handle), &statData))
       return errno;
 
@@ -129,6 +130,7 @@ static Err fileClose(NATIVE_FILE* fref)
       return NO_ERROR;
 
    hFile = fref->handle;
+   fileFlush(*fref);
    fref->handle = INVALID_HANDLE_VALUE;
 
    if (fclose(hFile))
@@ -610,6 +612,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
 
 static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
+   fileFlush(*fref);
    return ftruncate(fileno(fref->handle), newSize) ? errno : NO_ERROR;
 }
 

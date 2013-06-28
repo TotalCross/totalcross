@@ -376,8 +376,21 @@ public final class Convert
          if (exponent != 0)
             dest.append('E').append(exponent);
       }
+      String ret = dest.toString();
+      int l = ret.length();
+      if (l > 0 && ret.charAt(0) == '-') // guich@tc200b5: check if its -0.00... and change to 0.00...
+      {
+         boolean only0 = true;
+         for (int i = 1; i < l && only0; i++)
+         {
+            char c = ret.charAt(i);
+            only0 &= c == '.' || c == '0';
+         }
+         if (only0)
+            ret = ret.substring(1); // remove the -
+      }
       //System.out.println(" -> "+dest);
-      return dest.toString();
+      return ret;
    }
 
    /** Converts the String to a double.
