@@ -683,12 +683,12 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-      if (store.largestSplashImage == null)
+      if (store.largestSquareIcon == null)
          img =  whiteImage(size,size);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSplashImage.transparentColor);
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSquareIcon.transparentColor);
       if (img.getHeight() != size || img.getWidth() != size)
-         throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
+         throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + size + "x" + size);
       return img;
    }
 
