@@ -132,6 +132,15 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor2(thisObj, color);
 }
+//////////////////////////////////////////////////////////////////////////
+bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj, int32 quality); // JpegLoader.c
+TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+{
+   Object thisObj = p->obj[0];
+   Object stream = p->obj[1];
+   int32 quality = p->i32[0];
+   /*bool ret = */image2jpeg(p->currentContext, thisObj, stream, quality);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"

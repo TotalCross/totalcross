@@ -32,6 +32,7 @@ totalcross/ui/image/Image|native public void setCurrentFrame(int nr);
 totalcross/ui/image/Image|native public void applyColor(int color);
 totalcross/ui/image/Image|native private boolean nativeEquals(totalcross.ui.image.Image other);
 totalcross/ui/image/Image|native public void applyColor2(int color);
+totalcross/ui/image/Image|native public void createJpg(totalcross.io.Stream s, int quality);
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h, int ignoreColor);
 totalcross/ui/gfx/Graphics|native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 totalcross/ui/gfx/Graphics|native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);

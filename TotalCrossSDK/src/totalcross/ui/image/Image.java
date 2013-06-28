@@ -17,13 +17,13 @@
 
 package totalcross.ui.image;
 
-import totalcross.Launcher;
+import totalcross.*;
 import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.MainWindow;
+import totalcross.ui.*;
 import totalcross.ui.gfx.*;
-import totalcross.util.Vector;
-import totalcross.util.zip.ZLib;
+import totalcross.util.*;
+import totalcross.util.zip.*;
 
 
 /**
@@ -445,6 +445,16 @@ public class Image extends GfxSurface
       }
       return -1;
    }
+
+   public void createJpg(Stream s, int quality) throws ImageException, IOException
+   {
+/*      BufferedImage image = ImageIO.read(new ByteArrayStream.Input(b));
+      java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream(width);
+      int iw = image.getWidth();
+      int ih = image.getHeight();
+      ImageIO.write(image, "jpg", bos);
+      return bos.bas.toByteArray();
+*/   }
 
    /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 
      * to the given stream.

@@ -38,6 +38,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor_i"), &tuiI_applyColor_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_nativeEquals_i"), &tuiI_nativeEquals_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyColor2_i"), &tuiI_applyColor2_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiiii"), &tugG_dither_iiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCylindricShade_iiiiii"), &tugG_drawCylindricShade_iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawWindowBorder_iiiiiiiiii"), &tugG_drawWindowBorder_iiiiiiiiii);
