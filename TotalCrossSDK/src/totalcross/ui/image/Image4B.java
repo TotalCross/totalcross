@@ -379,6 +379,11 @@ public class Image4B extends GfxSurface
       return -1;
    }
 
+   public void createJpg(Stream s, int quality) throws ImageException, IOException
+   {
+
+   }
+
    public void createPng(Stream s) throws ImageException, totalcross.io.IOException
    {
       try
