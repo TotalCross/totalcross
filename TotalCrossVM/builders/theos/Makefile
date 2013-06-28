@@ -182,11 +182,27 @@ PNG_FILES =                                \
 	$(sourcedir)/png/pngset.c                  \
 	$(sourcedir)/png/pngtrans.c
 
-JPEG_FILES =                               \
+JPEG_FILES =                                 \
+   $(sourcedir)/jpeg/jcapimin.c               \
+   $(sourcedir)/jpeg/jcapistd.c               \
+   $(sourcedir)/jpeg/jccoefct.c               \
+   $(sourcedir)/jpeg/jccolor.c                \
+   $(sourcedir)/jpeg/jcdctmgr.c               \
+   $(sourcedir)/jpeg/jchuff.c                 \
+   $(sourcedir)/jpeg/jcinit.c                 \
+   $(sourcedir)/jpeg/jcmainct.c               \
+   $(sourcedir)/jpeg/jcmarker.c               \
+   $(sourcedir)/jpeg/jcmaster.c               \
+   $(sourcedir)/jpeg/jcomapi.c                \
+   $(sourcedir)/jpeg/jcparam.c                \
+   $(sourcedir)/jpeg/jcphuff.c                \
+   $(sourcedir)/jpeg/jcprepct.c               \
+   $(sourcedir)/jpeg/jcsample.c               \
 	$(sourcedir)/jpeg/jidctred.c               \
 	$(sourcedir)/jpeg/jdapimin.c               \
 	$(sourcedir)/jpeg/jdapistd.c               \
 	$(sourcedir)/jpeg/jdatasrc.c               \
+   $(sourcedir)/jpeg/jdatdst.c                \
 	$(sourcedir)/jpeg/jdcoefct.c               \
 	$(sourcedir)/jpeg/jdcolor.c                \
 	$(sourcedir)/jpeg/jddctmgr.c               \
@@ -199,8 +215,8 @@ JPEG_FILES =                               \
 	$(sourcedir)/jpeg/jdpostct.c               \
 	$(sourcedir)/jpeg/jdsample.c               \
 	$(sourcedir)/jpeg/jerror.c                 \
+	$(sourcedir)/jpeg/jfdctfst.c               \
 	$(sourcedir)/jpeg/jidctfst.c               \
-	$(sourcedir)/jpeg/jcomapi.c                \
 	$(sourcedir)/jpeg/jmemmgr.c                \
 	$(sourcedir)/jpeg/jmemnobs.c               \
 	$(sourcedir)/jpeg/JpegLoader.c             \
