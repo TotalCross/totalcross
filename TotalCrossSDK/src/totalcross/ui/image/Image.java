@@ -465,6 +465,15 @@ public class Image extends GfxSurface
       return -1;
    }
 
+   /**
+    * Saves this image as a jpeg file to the given stream.<br>
+    * NOT supported on Java and Blackberry
+    * 
+    * @param s
+    * @param quality
+    * @throws ImageException
+    * @throws IOException
+    */
    public void createJpg(Stream s, int quality) throws ImageException, IOException
    {
 /*      BufferedImage image = ImageIO.read(new ByteArrayStream.Input(b));
