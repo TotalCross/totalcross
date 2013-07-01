@@ -843,7 +843,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 void setTimerInterval(int32 t);
 void setShiftYgl()
-{
+{                   
 #ifdef ANDROID           
    if (setShiftYonNextUpdateScreen && needsPaint != null)
    {       
@@ -852,7 +852,9 @@ void setShiftYgl()
       screen.shiftY = desiredScreenShiftY;
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
       setTimerInterval(1);      
-   }
+   }                                     
+   if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
+      glShiftY = 0;
 #else
     glShiftY = -desiredScreenShiftY;
 #endif    
