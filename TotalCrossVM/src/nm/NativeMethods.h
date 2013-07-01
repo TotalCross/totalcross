@@ -51,6 +51,7 @@ TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
+TC_API void tuiI_createJpg_si(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);

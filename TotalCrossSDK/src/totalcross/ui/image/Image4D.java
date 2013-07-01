@@ -522,4 +522,5 @@ public class Image4D extends GfxSurface
          pixels = pixelsOfAllFrames = null;
       }
    }
+   native public void createJpg(Stream s, int quality) throws ImageException, IOException;
 }
