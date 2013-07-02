@@ -820,6 +820,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case GPSFUNC_GETDATA:
             return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
          case GPSFUNC_START:
+            if (!isGpsOn())
+               return null;
             lastGps = "*";
          case GPSFUNC_STOP:
             Message msg = viewhandler.obtainMessage();
@@ -836,6 +838,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             break;
       }
       return null;
+   }
+
+   private static boolean isGpsOn()
+   {
+      LocationManager manager = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+      return manager != null && manager.isProviderEnabled(LocationManager.GPS_PROVIDER); 
    }
 
    public void onLocationChanged(Location loc)
