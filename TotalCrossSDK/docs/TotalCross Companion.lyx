@@ -4795,6 +4795,461 @@ java tc.Deploy .....
  -iphone (or -all) /m <cert-and-keystore-path>
 \end_layout
 
+\begin_layout Subsection
+Deploying as IPA for Apple Store
+\end_layout
+
+\begin_layout Standard
+The process is similar to the above one.
+ However, you should use an appropriate key to publish your application
+ on the Apple Store.
+ You should not use a certificate for distributing in-house applications.
+\end_layout
+
+\begin_layout Subsection
+Updating an application on the Apple Store
+\end_layout
+
+\begin_layout Enumerate
+Go to iTunes Connect (
+\begin_inset CommandInset href
+LatexCommand href
+name "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa"
+target "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Enumerate
+Click on Manage Your Apps 
+\end_layout
+
+\begin_layout Enumerate
+Select an application 
+\end_layout
+
+\begin_layout Enumerate
+Click on Add version (it will go to "Prepare for upload" state)
+\end_layout
+
+\begin_layout Enumerate
+Click on the button at the top "Ready for upload".
+ Answer the questions until coming back to the screen and the status become
+ "Waiting for upload"
+\end_layout
+
+\begin_layout Enumerate
+Open the Application Loader
+\end_layout
+
+\begin_layout Enumerate
+Click on 
+\begin_inset Quotes eld
+\end_inset
+
+Deliver your app
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If you indicate that you don't have an application to send, repeat the steps
+ 1 to 5
+\end_layout
+
+\begin_layout Enumerate
+In the Application Information screen, click on Choose and select the 
+\family typewriter
+.ipa
+\family default
+ genereated with the distribution certificate
+\end_layout
+
+\begin_layout Enumerate
+Click on send.
+\end_layout
+
+\begin_layout Subsection
+OTA (Over the air updates) with Totalcross and iOS
+\end_layout
+
+\begin_layout Standard
+It is possible to push down over the air updates of your Totalcross application.
+\end_layout
+
+\begin_layout Standard
+To do this you need the following: 
+\end_layout
+
+\begin_layout Itemize
+Have a packaged 
+\family typewriter
+.ipa
+\family default
+ of your TotalCross application
+\end_layout
+
+\begin_layout Itemize
+Have 
+\begin_inset Quotes eld
+\end_inset
+
+iPhone Configuration Utility
+\begin_inset Quotes erd
+\end_inset
+
+ installed
+\end_layout
+
+\begin_layout Itemize
+A web server that will host: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+A 
+\family typewriter
+.plist
+\family default
+ file used by iOS to load your application OTA 
+\end_layout
+
+\begin_layout Itemize
+Your application 
+\family typewriter
+.ipa
+\family default
+ file
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+The 
+\family typewriter
+.plist
+\family default
+ file is a special type of file that points to the 
+\family typewriter
+.ipa
+\family default
+ file of your application on the webserver.
+ It is used by Safari on iOS to install the application.
+ It looks like the below.
+ Just copy this into a file and save it with a 
+\family typewriter
+.plist
+\family default
+ extension.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<?xml version="1.0" encoding="UTF-8"?>
+\end_layout
+
+\begin_layout Plain Layout
+
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/Pro
+pertyList-1.0.dtd">
+\end_layout
+
+\begin_layout Plain Layout
+
+<plist version="1.0">
+\end_layout
+
+\begin_layout Plain Layout
+
+	<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>items</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>assets</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<array>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>kind</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>software-package</string> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>url</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>http://yourserver/yourapplication.ipa
+\end_layout
+
+\begin_layout Plain Layout
+
+		</string> 		
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>metadata</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>bundle-identifier</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>application identifier</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>bundle-version</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>1.0</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>kind</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>software</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>title</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>application name</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+	</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+</plist>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then you need to edit the 
+\family typewriter
+.plist
+\family default
+ file in the following way: 
+\end_layout
+
+\begin_layout Itemize
+Edit the URL
+\family typewriter
+ <string>
+\family default
+ element to point to your 
+\family typewriter
+.ipa
+\family default
+ file as available via your web server 
+\end_layout
+
+\begin_layout Itemize
+Edit the bundle-identifier 
+\family typewriter
+<string>
+\family default
+ element to the identifier of your application 
+\end_layout
+
+\begin_layout Itemize
+To get the bundle-identifier you can use the 
+\begin_inset Quotes eld
+\end_inset
+
+iPhone Configuration Utility
+\begin_inset Quotes erd
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Itemize
+You need to load your 
+\family typewriter
+.ipa
+\family default
+ file into the application, then click on the "applications" section under
+ "Library" and it will display the identifier there.
+ 
+\end_layout
+
+\begin_layout Itemize
+Finally change the key 
+\family typewriter
+<string>
+\family default
+ element to your application name.
+\end_layout
+
+\begin_layout Standard
+One last step and you will be able to install your application over the
+ air.
+ Create a web page 
+\family typewriter
+test.html
+\family default
+ on the webserver that contains an anchor element as follows: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<a href="itms-services://?action=download-manifest&url=http://yourserver/yourfil
+e.plist">Application Name>>></a>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At this point if you have setup everything correctly you will be able to
+ manually update / install your application by pointing the iOS Safari browser
+ to 
+\family typewriter
+test.html
+\family default
+ on you hosted web server.
+ When you click on the link iOS will popup a screen asking if you would
+ like to install the application.
+\end_layout
+
+\begin_layout Standard
+So now you can manually update your TotalCross application.
+ If you want to be able to do automatic updates via TotalCross all you need
+ to do is execute the following once your application detects a new version
+ is available
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.exec("url","itms-services://?action=download-manifest&url=http://yourserv
+ er/yourfile.plist")
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This will launch Safari and execute the same process as doing an update
+ manually.
+\end_layout
+
+\begin_layout Standard
+Of course your application has to have a mechanism to detect when a new
+ version is available and be able to update itself, but that is outside
+ the scope of these instructions.
+\end_layout
+
+\begin_layout Standard
+So there you have it, how to do OTA updates on iOS without needing the App
+ Store.
+ 
+\end_layout
+
 \begin_layout Section
 Windows CE
 \end_layout
