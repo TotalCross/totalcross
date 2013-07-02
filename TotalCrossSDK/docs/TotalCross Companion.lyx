@@ -1325,9 +1325,9 @@ applet
 \family typewriter
 iOS
 \family default
-: for newer versions of the iOS (iPhone and iPad), contains a 
+: for newer versions of iOS (iPhone, iPad, and iPod), contains an 
 \family typewriter
-.deb
+.ipa
 \family default
  file.
  
@@ -4324,7 +4324,7 @@ wince.pkg
 \family typewriter
 iphone.pkg
 \family default
-, 
+ (also used por iPad and iPod), 
 \family typewriter
 android.pkg
 \family default
@@ -4434,7 +4434,7 @@ Installing your application
 \end_layout
 
 \begin_layout Section
-iPhone/iPad
+iOS (iPhone/iPad/iPod)
 \end_layout
 
 \begin_layout Subsection
@@ -4793,183 +4793,6 @@ When deploying your application you must use the argument
 \family typewriter
 java tc.Deploy .....
  -iphone (or -all) /m <cert-and-keystore-path>
-\end_layout
-
-\begin_layout Subsection
-Deploying as .deb for jailbroken devices
-\end_layout
-
-\begin_layout Standard
-First, to deploy TotalCross in your iPhone/iPad, you will have to JailBreak
- it.
-\end_layout
-
-\begin_layout Standard
-To install a TotalCross application on iPhone, you have two choices: perform
- a manual installation or support the package manager named “Cydia”.
-\end_layout
-
-\begin_layout Standard
-When the iOS is jailbroken, most programs have problems to keep the wifi
- connection working.
- We found an easy way to bypass this: all you have to do is ping the device.
- The best way to do this is to give your iOS device a fixed ip.
- Suppose it is 192.168.2.100; open a command prompt, and type: 
-\family typewriter
-ping 192.168.2.100 -n 1000000
-\family default
-.
- This will keep pinging the device 1 million times.
- If at the start of the ping you get that the ip is unreachable, open any
- URL at Safari on the device.
- Note that the device's wifi will continue to work even if the screen is
- dimmed, thus, consuming batteries.
- To completely turn off the device, you must press the on-off button.
-\end_layout
-
-\begin_layout Subsubsection
-"Cydia" support 
-\end_layout
-
-\begin_layout Standard
-Upload the 2 files (
-\family typewriter
-.bz2
-\family default
- and 
-\family typewriter
-.deb
-\family default
-) that were created by 
-\family typewriter
-tc.Deploy
-\family default
- to a site.
- For example, we will use 
-\family typewriter
-www.totalcross.com/androidui
-\family default
-.
-\end_layout
-
-\begin_layout Standard
-Run Cydia on the iphone/ipad, press Manage and then the Sources button.
- Press Edit, then Add button.
- Then type the site url you created (e.g.: http://www.totalcross.com/androidui).
- Cydia will then add this site as a source.
- When it returns to the list, select the url in the list and select the
- application you want to install.
- 
-\end_layout
-
-\begin_layout Standard
-If you're running a Windows server, you must add two mimetypes to it: 
-\family typewriter
-.bz2
-\family default
- (
-\family typewriter
-application/ bzip2
-\family default
-) and 
-\family typewriter
-.deb
-\family default
- (
-\family typewriter
-application/x-deb
-\family default
-).
- Otherwise, Cydia will fail to locate the files in the folder.
-\end_layout
-
-\begin_layout Standard
-By default, the option 
-\family typewriter
--iphone
-\family default
- will create a 
-\family typewriter
-.bz2
-\family default
- file with a simple program.
- You can join 
-\family typewriter
-.bz2
-\family default
- files of many programs using the 
-\family typewriter
-tc.tools.deployer.IPhoneBuildSource
-\family default
- tool.
-\end_layout
-
-\begin_layout Subsubsection
-Manual installation of .deb files 
-\end_layout
-
-\begin_layout Standard
-You can also follow these instructions, which shows two ways to install
- a 
-\family typewriter
-.deb
-\family default
- file manually:
-\end_layout
-
-\begin_layout Standard
-Prerequisites: 
-\end_layout
-
-\begin_layout Itemize
-A Jailbroken iPhone/iPad/iPodTouch.
-\end_layout
-
-\begin_layout Itemize
-iSpirit (for Windows) installed.
-\begin_inset Newline newline
-\end_inset
-
-This free software can be found at http://www.ithemesky.com/ispirit.
-\end_layout
-
-\begin_layout Itemize
-Optional: you may also use WinSCP, which can be found at http://winscp.net/eng/do
-wnload.php.
- Note that iSpirit is much easier.
-\end_layout
-
-\begin_layout Standard
-Using iSpirit
-\end_layout
-
-\begin_layout Enumerate
-Select the [Connection Mode].
- If you want to use wifi, select wifi and put the ip address of the phone.
-\end_layout
-
-\begin_layout Enumerate
-Press the [Install app] button from the iSpirit menu.
-\end_layout
-
-\begin_layout Enumerate
-From the file browser dialog box that appears below, navigate to and select
- the desired 
-\family typewriter
-.deb
-\family default
- file by tapping the Select File button.
- 
-\end_layout
-
-\begin_layout Enumerate
-After selecting the desired 
-\family typewriter
-.deb
-\family default
- file, press the install button shown in the above dialog box, and iSpirit
- will do the rest.
- When it completes, your application will be installed and ready to run.
 \end_layout
 
 \begin_layout Section
@@ -8253,8 +8076,8 @@ Support for devices without pen
 \end_layout
 
 \begin_layout Standard
-The iPhone and Android platforms introduced the use of finger instead of
- pen (however, some new Android works better with pens than with finger).
+The iOS and Android platforms introduced the use of finger instead of pen
+ (however, some new Android works better with pens than with finger).
  A finger is much less precise than a pen, thus an algorithm is used to
  locate the closest control.
  These platforms also introduced the concept of drag and flick: drag means
@@ -33266,7 +33089,7 @@ PagePosition
 PagePosition
 \family default
  implements the empty and filled balls that indicates the current page in
- a set of pages, very common on Android and iPhone.
+ a set of pages, very common on Android and iOS.
  
 \family typewriter
 PagePosition
@@ -37081,7 +36904,7 @@ spinnerType Defines the type of spinner for all instances.
 \family typewriter
 Spinner.IPHONE
 \family default
- when running on iPhone and 
+ when running on iOS and 
 \family typewriter
 Spinner.ANDROID
 \family default
@@ -41927,11 +41750,11 @@ Edit
 \family typewriter
 MultiEdit
 \family default
- (iPhone only), and 
+ (iOS only), and 
 \family typewriter
 secret
 \family default
- is to enable password entry (iPhone only).
+ is to enable password entry (iOS only).
 \end_layout
 
 \begin_layout FieldList
@@ -61319,13 +61142,13 @@ timeZoneStr Textual description of the time zone currently used by the device.
 \labelwidthstring 0
 fingerTouch Defines platforms that the touchscreen is used MOSTLY with the
  finger.
- We say mostly because there are special pens that can be used with iPhone;
+ We say mostly because there are special pens that can be used with iOS;
  however, we consider this an exception, not the rule.
  Currently this value is 
 \family typewriter
 true
 \family default
- for iPhone and Android platforms.
+ for iOS and Android platforms.
 \begin_inset Newline newline
 \end_inset
 
@@ -61873,7 +61696,7 @@ isIOS() Returns
 \family typewriter
 true
 \family default
- if this is an iPad or an iPhone.
+ if this is an iPad, an iPhone, or an iPod.
  
 \end_layout
 
@@ -71697,8 +71520,8 @@ Shows a Google Maps viewer on a separate window.
  Internet connection is required.
  Currently works on Android and iOS only.
  Pressing back returns to the application on Android.
- On iPhone you must do a double-click on the home button to open the task
- manager to return to your application.
+ On iOS you must do a double-click on the home button to open the task manager
+ to return to your application.
  This class only has a default constructor and a method, which is described
  below:
 \end_layout
@@ -92547,8 +92370,8 @@ chars2bytes()
 \end_layout
 
 \begin_layout Standard
-The iPhone has a virtual memory that swaps unused portions to disk; this
- may explain why this test ran so slowly when comparing to the other platforms.
+iOS has a virtual memory that swaps unused portions to disk; this may explain
+ why this test ran so slowly when comparing to the other platform.
 \end_layout
 
 \end_deeper
@@ -92657,18 +92480,12 @@ When an application crashes, it usually freezes and must be closed by the
 \end_layout
 
 \begin_layout Section
-iPhone and Android
+iOS and Android
 \end_layout
 
 \begin_layout Standard
 When an application crashes, it is usually closed by the system.
-\end_layout
-
-\begin_layout Standard
-After closing a TotalCross application on a iPhone jailbroken device, you
- must wait some seconds to open another TotalCross application.
- Trying to open it again almost instantaneously after closing another one,
- it will start its opening and suddenly close.
+ But on Android the system might reboot.
 \end_layout
 
 \begin_layout Standard
@@ -92679,8 +92496,7 @@ Pressing the home button puts it to background.
 \end_layout
 
 \begin_layout Standard
-Unless you are using a jailbroken iPhone, your application cannot access
- another application folder.
+On iOS, your application cannot access another application folder.
  On Android is also possible for it to access a memory card.
 \end_layout
 
