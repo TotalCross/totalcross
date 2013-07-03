@@ -467,22 +467,42 @@ public class Image extends GfxSurface
 
    /**
     * Saves this image as a jpeg file to the given stream.<br>
-    * NOT supported on Java and Blackberry
+    * NOT supported on Blackberry.
     * 
-    * @param s
-    * @param quality
+    * @param s The output stream used to write the jpeg.
+    * @param quality The quality of the image; 100 = no compression, 90 = medium compression, 
+    * 80 = high compression. Anything below 80 may greatly redude the image's quality. 85 is a common value. In JavaSE, the quality argument is ignored.
     * @throws ImageException
     * @throws IOException
     */
    public void createJpg(Stream s, int quality) throws ImageException, IOException
    {
-/*      BufferedImage image = ImageIO.read(new ByteArrayStream.Input(b));
-      java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream(width);
-      int iw = image.getWidth();
-      int ih = image.getHeight();
-      ImageIO.write(image, "jpg", bos);
-      return bos.bas.toByteArray();
-*/   }
+      try
+      {
+         java.awt.image.MemoryImageSource screenMis = new java.awt.image.MemoryImageSource(width, height, new java.awt.image.DirectColorModel(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0), (int[])pixels, 0, width);
+         screenMis.setAnimated(true);
+         screenMis.setFullBufferUpdates(true);
+         java.awt.Image screenImg = java.awt.Toolkit.getDefaultToolkit().createImage(screenMis);
+         screenMis.newPixels();
+         
+         java.awt.image.BufferedImage dest = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+         java.awt.Graphics2D g2 = dest.createGraphics();
+         g2.drawImage(screenImg, 0, 0, null);
+         g2.dispose();
+   
+   
+         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream(width);
+         javax.imageio.ImageIO.write(dest, "jpg", bos);
+         s.writeBytes(bos.toByteArray());
+      }
+      catch (Throwable e)
+      {
+         throw new IOException(e.getMessage());
+      }
+   }
+   public void createJpg4B(Stream s, int quality) throws ImageException, IOException
+   {
+   }
 
    /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 
      * to the given stream.
