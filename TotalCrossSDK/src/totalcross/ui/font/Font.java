@@ -55,9 +55,9 @@ public final class Font
     * If a specified font is not found, this one is used instead. 
     */
    public static final String DEFAULT = "TCFont";
-   /** The minimum font size: 6. */
+   /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 22. */
+   /** The maximum font size: 44. */
    public static int MAX_FONT_SIZE = 44;
 
 
