@@ -26,8 +26,6 @@ void applyChanges(Context currentContext, Object obj, bool updateList);
 void freeTexture(Object obj, bool updateList);
 bool checkGLfloatBuffer(Context c, int32 n);
 void flushPixels();
-void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
-void glClearClip();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 void glSetLineWidth(int32 w);

@@ -587,19 +587,6 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        if (xMin < clipX1 || (xMin+dX) >= clipX2 || yMin < clipY1 || (yMin+dY) >= clipY2)
           dontClip = false;
 
-#ifdef __gl2_h_
-       bool useOpenGL = Graphics_useOpenGL(g);
-       if (useOpenGL) // draw a full line and then cover with pixel2 colors
-       {
-          if (!dontClip) glSetClip(clipX1,clipY1,clipX2,clipY2);
-          glDrawLine(x1+tX,y1+tY,x2+tX,y2+tY,pixel1,255);
-          if (!dontClip) glClearClip();
-          currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
-          if (pixel1 == pixel2)
-             return;
-       }
-#endif
-
        currentX = x1+tX;
        currentY = y1+tY;
 
@@ -620,7 +607,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = pixel1;                        // plot the pixel - never in opengl
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, pixel1, 255);
+                   else
+#endif
+                      *row = pixel1;                        // plot the pixel - never in opengl
                 row      += xInc;                        // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -637,11 +629,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
 #ifdef __gl2_h_
-                   if (useOpenGL && (on++ & 1) == 0)
-                      glDrawPixel(currentX, currentY, pixel2, 255);
-#else
-                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
+                   else
 #endif
+                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
                 row += xInc;                             // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -664,7 +656,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = pixel1;                        // plot the pixel
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, pixel1, 255);
+                   else
+#endif
+                      *row = pixel1;                        // plot the pixel
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -681,11 +678,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
 #ifdef __gl2_h_
-                   if (useOpenGL && (on++ & 1) == 0)
-                      glDrawPixel(currentX, currentY, pixel2,255);
-#else
-                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
+                   else
 #endif
+                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -2857,7 +2854,8 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
-   glFillShadedRect(g,Graphics_transX(g)+x,Graphics_transY(g)+y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
+   if (translateAndClip(g, &x, &y, &width, &height))
+      glFillShadedRect(g,x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
    currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
 #else
    int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;

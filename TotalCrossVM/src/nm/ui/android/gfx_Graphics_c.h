@@ -301,44 +301,7 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
       shcolors[10] = shcolors[14] = f255[c1.b];
    }
     
-   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g)); GL_CHECK_ERROR
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
-   glClearClip();
-}
-
-void glDrawCylindricShade(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv ul, PixelConv ll, PixelConv lr, PixelConv ur)
-{                
-   if (pixcolors != (int32*)glcolors) flushPixels(5);
-   setCurrentProgram(shadeProgram);
-   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
-   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
-
-   y += glShiftY;
-   
-   shcoords[0] = shcoords[2] = x;
-   shcoords[1] = shcoords[7] = y;
-   shcoords[3] = shcoords[5] = y+h;
-   shcoords[4] = shcoords[6] = x+w;
-
-   shcolors[0] = f255[ul.r]; // upper left
-   shcolors[1] = f255[ul.g];
-   shcolors[2] = f255[ul.b];
-
-   shcolors[4] = f255[ll.r]; // lower left
-   shcolors[5] = f255[ll.g];
-   shcolors[6] = f255[ll.b];
-
-   shcolors[8]  = f255[lr.r]; // lower right
-   shcolors[9]  = f255[lr.g];
-   shcolors[10] = f255[lr.b];
-
-   shcolors[12] = f255[ur.r]; // upper right
-   shcolors[13] = f255[ur.g];
-   shcolors[14] = f255[ur.b];
-
-   glSetClip(Graphics_clipX1(g),Graphics_clipY1(g),Graphics_clipX2(g),Graphics_clipY2(g));
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
-   glClearClip();
 }
 
 void initTexture()
@@ -624,32 +587,6 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
          }
       }   
 }
-
-// note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
-void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
-{  
-   if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
-      {glClearClip(); GL_CHECK_ERROR}
-   else
-   {
-      y1 += glShiftY;
-      y2 += glShiftY;
-      glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
-      if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
-      if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
-      if (y1 < 0) y1 = 0; else if (y1 > appH) y1 = appH;
-      if (y2 < 0) y2 = 0; else if (y2 > appH) y2 = appH;
-      int32 h = y2-y1, w = x2-x1;
-      if (h < 0) h = 0;
-      if (w < 0) w = 0;
-      glScissor(x1,appH-y2,w,h); GL_CHECK_ERROR
-   }
-}
-
-void glClearClip()
-{            
-   glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
-}   
 
 void flushAll()
 {
