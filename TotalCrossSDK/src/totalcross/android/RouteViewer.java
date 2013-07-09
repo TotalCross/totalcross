@@ -1,13 +1,16 @@
 package totalcross.android;
 
-import android.graphics.*;
-import android.os.*;
-import android.view.*;
-import com.google.android.maps.*;
+import totalcross.*;
+
 import java.net.*;
 import java.util.*;
 
-import totalcross.*;
+import android.graphics.*;
+import android.os.*;
+import android.os.StrictMode.ThreadPolicy;
+import android.view.*;
+
+import com.google.android.maps.*;
 
 public class RouteViewer extends MapActivity
 {
@@ -109,6 +112,7 @@ public class RouteViewer extends MapActivity
    {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.route);
+      StrictMode.setThreadPolicy(ThreadPolicy.LAX); // get rid of NetworkOnMainThreadException
 
       try
       {
