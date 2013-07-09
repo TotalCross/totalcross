@@ -421,3 +421,4 @@ totalcross/util/BigInteger|native static int findLowestBit(int []words);
 totalcross/util/BigInteger|native static int gcd(int []x, int []y, int len);
 totalcross/util/BigInteger|native static int intLength(int i);
 totalcross/util/BigInteger|native static int intLength(int []words, int len);
+totalcross/io/device/scanner/Scanner|native public static String readBarcode(String fileName);

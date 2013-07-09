@@ -753,14 +753,17 @@ public class Scanner
 
    static
    {
-      driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                     Vm.attachNativeLibrary("Motorola") || 
-                     Vm.attachNativeLibrary("Symbol") || 
-                     Vm.attachNativeLibrary("Dolphin") || 
-                     Vm.attachNativeLibrary("OpticonH16") || 
-                     Vm.attachNativeLibrary("Intermec");
-      if (!driverLoaded && tries++ == 0)
-         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      if (!Settings.platform.equals(Settings.ANDROID))
+      {
+         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
+                        Vm.attachNativeLibrary("Motorola") || 
+                        Vm.attachNativeLibrary("Symbol") || 
+                        Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("OpticonH16") || 
+                        Vm.attachNativeLibrary("Intermec");
+         if (!driverLoaded && tries++ == 0)
+            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      }
    }
 
    /**
@@ -1001,4 +1004,23 @@ public class Scanner
    {
       return scannerIsPassive && Scanner.setParam(0,0,0);
    }
+ 
+   /** Reads a barcode using ZXing for Android.
+    * 
+    *  The mode can be one of:
+    *  <ul>
+    *  <li> 1D - for one dimension barcodes
+    *  <li> 2D - for QR codes
+    *  <li> empty string - for both
+    *  </ul>
+    *  
+    *  If an error happens, it is returned prefixed with ***.
+    *  
+    *  See the tc.samples.io.device.zxing.ZXingScanner sample.
+    */
+   public static String readBarcode(String mode)
+   {
+      return null;
+   }
+   native public static String readBarcode4D(String mode);
 }

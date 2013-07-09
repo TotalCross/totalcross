@@ -112,6 +112,7 @@ NM_IO_FILES =                                 \
 	$(TC_SRCDIR)/nm/io/File.c                  \
 	$(TC_SRCDIR)/nm/io/device_PortConnector.c  \
 	$(TC_SRCDIR)/nm/io/device/RadioDevice.c    \
+	$(TC_SRCDIR)/nm/io/device/scanner/zxing.c  \
 	$(TC_SRCDIR)/nm/io/device/gps/GPS.c
 
 NM_IO_DEVICE_BLUETOOTH_FILES =                \

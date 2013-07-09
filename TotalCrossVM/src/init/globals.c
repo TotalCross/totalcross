@@ -217,7 +217,7 @@ Heap heapSSLSocket;
 DECLARE_MUTEX(htSSL);
 
 #ifdef ANDROID
-jmethodID jshowCamera,jgetNativeResolutions;
+jmethodID jshowCamera,jgetNativeResolutions,jzxing;
 
 // android/GPS_c.h
 jmethodID jgpsFunc,jcellinfoUpdate;
