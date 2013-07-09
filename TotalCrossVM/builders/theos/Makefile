@@ -68,6 +68,7 @@ NM_IO_FILES =                                   \
 	$(sourcedir)/nm/io/File.c                    \
 	$(sourcedir)/nm/io/device_PortConnector.c    \
 	$(sourcedir)/nm/io/device/RadioDevice.c      \
+	$(sourcedir)/nm/io/device/scanner/zxing.c    \
 	$(sourcedir)/nm/io/device/gps/GPS.c
 
 NM_LANG_FILES =                               \

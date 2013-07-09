@@ -216,7 +216,7 @@ extern Hashtable htSSLSocket;
 extern Heap heapSSLSocket;
 
 #ifdef ANDROID
-extern jmethodID jshowCamera,jgetNativeResolutions;
+extern jmethodID jshowCamera,jgetNativeResolutions,jzxing;
 
 // android/GPS_c.h
 extern jmethodID jgpsFunc,jcellinfoUpdate;

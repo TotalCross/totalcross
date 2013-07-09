@@ -18,7 +18,7 @@
 
 package totalcross;
 
-import totalcross.android.*;
+import totalcross.android.Loader;
 import totalcross.android.compat.*;
 
 import java.io.*;
@@ -1305,4 +1305,33 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (tczs.get(i).raf != lastRAF)
             try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
+   
+   public static boolean callingZXing;
+   public static String zxingResult;
+   public static String zxing(String mode)
+   {
+      String text = null;
+      try 
+      {
+         if (mode == null) mode = "";
+         zxingResult = null;
+         callingZXing = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("zxing.mode", mode);
+         b.putInt("type",Loader.ZXING_SCAN);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingZXing)
+            try {Thread.sleep(200);} catch (Exception e) {}
+         return zxingResult;
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1)
+      }
+      return text;
+   }
+
 }

@@ -16,12 +16,6 @@
 
 package totalcross.android;
 
-import totalcross.*;
-import totalcross.android.compat.*;
-
-import java.io.*;
-import java.util.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -30,6 +24,11 @@ import android.os.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import java.io.*;
+import java.util.*;
+
+import totalcross.*;
+import totalcross.android.compat.*;
 
 public class Loader extends Activity 
 {
@@ -40,6 +39,7 @@ public class Loader extends Activity
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
+   private static final int ZXING_RETURN = 1234324333;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -102,6 +102,10 @@ public class Loader extends Activity
             break;
          case MAP_RETURN:
             Launcher4A.showingMap = false;
+            break;
+         case ZXING_RETURN:
+            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
+            Launcher4A.callingZXing = false;
             break;
       }
    }
@@ -170,7 +174,8 @@ public class Loader extends Activity
    public static final int LEVEL5 = 5;
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
-   public static final int ROUTE = 9;
+   public static final int ROUTE = 8;
+   public static final int ZXING_SCAN = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -265,10 +270,42 @@ public class Loader extends Activity
                }
                break;
             }
+            case ZXING_SCAN:
+            {
+               String cmd = b.getString("zxing.mode");
+               StringTokenizer st = new StringTokenizer(cmd,"&");
+               String mode = "SCAN_MODE";
+               String scanmsg = "";
+               while (st.hasMoreTokens())
+               {
+                  String s = st.nextToken();
+                  int i = s.indexOf('=');
+                  if (i == -1) continue;
+                  String s1 = s.substring(0,i);
+                  String s2 = s.substring(i+1);
+                  if (s1.equalsIgnoreCase("mode"))
+                     mode = s2;
+                  else
+                  if (s1.equalsIgnoreCase("msg"))
+                     scanmsg = s2;
+               }
+               mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
+                      mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
+                      "SCAN_MODE";
+               Intent intent = new Intent("totalcross.zxing.client.android.SCAN");
+               intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
+               intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
+               intent.putExtra("SCAN_MESSAGE", scanmsg);
+               startActivityForResult(intent, ZXING_RETURN);
+               //if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+               //Result result = reader.decode(bitmap, decodeHints);
+               break;
+            }
+               
          }
       }
    }
-      
+   
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);

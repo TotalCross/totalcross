@@ -35,6 +35,19 @@
 
         <service android:name=".TCService" android:exported="true" />
 
+        <activity android:name=".CaptureActivity"
+                 android:screenOrientation="landscape"
+                 android:clearTaskOnLaunch="true"
+                 android:stateNotNeeded="true"
+                 android:configChanges="orientation|keyboardHidden"
+                 android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                 android:windowSoftInputMode="stateAlwaysHidden">
+         <intent-filter>
+           <action android:name="totalcross.zxing.client.android.SCAN"/>
+           <category android:name="android.intent.category.DEFAULT"/>
+         </intent-filter>
+        </activity>
+
     </application>
     <uses-sdk android:minSdkVersion="10" />
     <uses-permission android:name="android.permission.READ_LOGS" />
@@ -50,6 +63,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
@@ -61,5 +75,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
     <uses-feature android:glEsVersion="0x00020000"/>
 </manifest>

@@ -408,6 +408,7 @@
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -827,6 +828,7 @@
 		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
+		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1164,6 +1166,7 @@
 		0F8C8ABA1549CFC700E0967F /* device */ = {
 			isa = PBXGroup;
 			children = (
+				3AFCD5FA174D474F008BA920 /* scanner */,
 				0F8C8ABB1549CFC700E0967F /* android */,
 				0F8C8ABD1549CFC700E0967F /* bluetooth */,
 				0F8C8AC91549CFC700E0967F /* gps */,
@@ -1865,6 +1868,14 @@
 			path = darwin;
 			sourceTree = "<group>";
 		};
+		3AFCD5FA174D474F008BA920 /* scanner */ = {
+			isa = PBXGroup;
+			children = (
+				3AFCD5FB174D474F008BA920 /* zxing.c */,
+			);
+			path = scanner;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2325,6 +2336,7 @@
 				0F8C8E361549CFC700E0967F /* zutil.c in Sources */,
 				0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */,
 				3A2B6B261577F4BD00E3993A /* childview.m in Sources */,
+				3AFCD5FC174D474F008BA920 /* zxing.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

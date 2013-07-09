@@ -103,6 +103,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
+   jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
 }
 
 char* getTotalCrossAndroidClass(CharP className)
