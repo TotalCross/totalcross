@@ -410,7 +410,7 @@ public class Deployer4WinCE
          infFile.close();
       }
 
-      String path2Cabwiz, callCabWiz, out;
+      String path2Cabwiz, out;
       if (pathsCount != 1)
       {
 	      // ok, the .inf file is created, now we call the cabwiz program
@@ -418,7 +418,7 @@ public class Deployer4WinCE
 	      if (path2Cabwiz == null)
 	         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
 	      // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
-	      callCabWiz = path2Cabwiz.replace('/',DeploySettings.SLASH)+" "+infFileName+" /cpu HPC2000_ARM HPC211_ARM PocketPC_ARM PocketPC_MIPS PocketPC_SH3";
+	      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","HPC2000_ARM","HPC211_ARM","PocketPC_ARM","PocketPC_MIPS","PocketPC_SH3"};
 	      out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 	      // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
 	      for (int i =0; i < 100; i++)
@@ -437,7 +437,7 @@ public class Deployer4WinCE
          throw new DeployerException("Could not find Cabwizsp.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
       try {new File(targetDir+cabName+".WMobile_ARM.CAB").delete();} catch (Exception e) {}
-      callCabWiz = path2Cabwiz.replace('/',DeploySettings.SLASH)+" "+infFileName+" /cpu WMobile_ARM";
+      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","WMobile_ARM"};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
