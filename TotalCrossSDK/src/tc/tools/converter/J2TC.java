@@ -37,6 +37,7 @@ public final class J2TC implements JConstants, TCConstants
    public static Hashtable htExcludedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    private static Hashtable htValidExtensions = new Hashtable(0xF);
    private static String totalcrossMain = "totalcross/MainClass";
+   private static String totalcrossService = "totalcross/Service";
    private static String totalcrossUiMainWindow = "totalcross/ui/MainWindow";
    public static boolean dump, dumpBytecodes;
    /** The output converted TCClass */
@@ -114,8 +115,10 @@ public final class J2TC implements JConstants, TCConstants
       bytes = tcbasz.toByteArray();
    }
 
-   private static boolean implementsMainClass(JavaClass jc)
+   private static boolean isMainClassOrService(JavaClass jc)
    {
+      if (jc.superClass.equals(totalcrossService))
+         return DeploySettings.isService = true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)
             if (totalcrossMain.equals(jc.interfaces[i]))
@@ -300,7 +303,9 @@ public final class J2TC implements JConstants, TCConstants
    private static void setApplicationProperties(JavaClass jc) throws Exception
    {
       TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
-      DeploySettings.isMainWindow = !implementsMainClass(jc);
+      DeploySettings.isMainWindow = !isMainClassOrService(jc);
+      if (!DeploySettings.isMainWindow) 
+         System.out.println("Application is MainClass or Service");
 
       for (int i =0; i < jc.methods.length; i++)
          if (jc.methods[i].signature.equals("<init>()")) // first check in the constructor
@@ -1148,7 +1153,7 @@ public final class J2TC implements JConstants, TCConstants
                            f.readBytes(bytes,0,bytes.length);
                            f.close();
                            JavaClass jc = new JavaClass(bytes, true);
-                           if (isMain(jc))
+                           if (isMain(jc) && !jc.className.contains("$"))
                            {
                               if (found)
                                  throw new IllegalArgumentException("More than one MainWindow/MainClass found in the given folder: "+fName+" and "+files[i]+". You must use the other options to deploy your application (a jar or specify the main class name)");
@@ -1343,7 +1348,7 @@ public final class J2TC implements JConstants, TCConstants
    {
       if ("totalcross/ui/MainWindow".equals(jc.superClass)   || "totalcross/game/GameEngineMainWindow".equals(jc.superClass) ||
           "totalcross/game/GameEngine".equals(jc.superClass) || "totalcross/unit/TestSuite".equals(jc.superClass) ||
-          "totalcross/io/sync/Conduit".equals(jc.superClass))
+          "totalcross/io/sync/Conduit".equals(jc.superClass) || "totalcross/Service".equals(jc.superClass))
          return true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)

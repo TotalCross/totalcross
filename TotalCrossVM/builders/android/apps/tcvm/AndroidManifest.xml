@@ -5,22 +5,23 @@
       android:versionName="!1.0!"
       android:sharedUserId="totalcross.app.sharedid"
     >
+
+    <!-- ATTENTION: THIS IS *** NOT *** FOR THE SINGLE APK - THERE'S ANOTHER MANIFEST FILE 
+    FOR STANDARD SINGLE APK APPLICATIONS AT
+    P:\gitrepo\TotalCross\TotalCrossVM\builders\android\apps\tcvm\AndroidManifest.xml -->
+
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
         />
+        <activity android:name=".RouteViewer"/>
+        <activity android:name=".TouchImageViewer" />
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
         <uses-library android:name="com.google.android.maps" android:required="false" />
-        
-        
-        
-        
-        
-        
     </application>
     <uses-sdk android:minSdkVersion="10" />
     <uses-permission android:name="android.permission.READ_LOGS" />

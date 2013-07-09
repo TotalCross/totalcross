@@ -37,7 +37,7 @@ int32 deviceFontHeight,iosScale;
 
 // GoogleMaps.c
 #ifdef ANDROID
-jmethodID jshowGoogleMaps;
+jmethodID jshowGoogleMaps, jshowRoute;
 #endif
 
 // startup.c

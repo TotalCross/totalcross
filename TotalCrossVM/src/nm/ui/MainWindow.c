@@ -18,7 +18,10 @@ void privateExit(int32 code);
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_restore(NMParams p) // totalcross/ui/MainWindow native public final void restore();
 {
-#if defined WIN32 // guich@tc122_49
+#ifdef ANDROID   
+   #define SOFT_UNEXIT 0x40000001
+   privateExit(SOFT_UNEXIT);
+#elif defined WIN32 // guich@tc122_49
    ShowWindow(mainHWnd, SW_RESTORE); 
    SetForegroundWindow(mainHWnd);
 #endif

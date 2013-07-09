@@ -147,7 +147,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Configuration config = getResources().getConfiguration();
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
-      
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
@@ -428,8 +427,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
    private final static int SOFT_EXIT = 0x40000000;
+   private final static int SOFT_UNEXIT = 0x40000001;
    static void exit(int ret)
    {
+      if (ret == SOFT_UNEXIT)
+      {
+         AndroidUtils.debug("soft unexit");
+         Intent myStarterIntent = new Intent(loader, Loader.class);
+         myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+         loader.startActivity(myStarterIntent);         
+         return;
+      }
+      else
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);
@@ -791,6 +800,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command.equals("viewer"))
+      {
+         if (args == null)
+            return -1;
+         String argl = args.toLowerCase();
+         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+            return -2;
+      }
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("command", command);
@@ -874,6 +891,90 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
    }
 
+   private static double[] getLatLon(String address) throws IOException
+   {
+      if (address.equals("")) // last known location?
+      {
+         // first, use the location manager
+         LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+         List<String> pros = loc.getProviders(true);
+         Location position = null;
+         for (String p : pros)
+         {
+            position = loc.getLastKnownLocation(p);
+            if (position != null)
+               return new double[]{position.getLatitude(),position.getLongitude()};
+         }
+      }
+      else
+      if (address.startsWith("@"))
+      {
+         String[] st = address.substring(1).split(",");
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
+      }
+      else
+      {         
+         Geocoder g = new Geocoder(instance.getContext());
+         List<Address> al = g.getFromLocationName(address, 1);
+         if (al != null && al.size() > 0)
+         {
+            Address a = al.get(0);
+            if (a.hasLatitude() && a.hasLongitude())
+               return new double[]{a.getLatitude(),a.getLongitude()};
+         }
+      }
+      return null;
+   }
+   
+   public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
+   {
+      boolean tryAgain = false;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            AndroidUtils.debug("addrs: "+addressI+", "+addressF);
+            double[] llI = getLatLon(addressI);
+            double[] llF = getLatLon(addressF);
+            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
+            if (llI != null && llF != null)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.ROUTE);
+               b.putDouble("latI", llI[0]);
+               b.putDouble("lonI", llI[1]);
+               b.putDouble("latF", llF[0]);
+               b.putDouble("lonF", llF[1]);
+               b.putString("coord", coords);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+            else
+               throw new Exception(tryAgainCount+" parse response for address"); // make it try again
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return false;
+   }
+   
    public static boolean showingMap;
    public static boolean showGoogleMaps(String address, boolean showSatellite)
    {
@@ -883,61 +984,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
-            double lat=0,lon=0;
-            boolean latlonOk = false;
-            if (address.equals("")) // last known location?
-            {
-               // first, use the location manager
-               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
-               List<String> pros = loc.getProviders(true);
-               Location position = null;
-               for (String p : pros)
-               {
-                  position = loc.getLastKnownLocation(p);
-                  //AndroidUtils.debug("Provider: "+p+"  "+position);
-                  if (position != null)
-                  {
-                     lat = position.getLatitude();
-                     lon = position.getLongitude();
-                     latlonOk = true;
-                     break;
-                  }
-               }
-            }
-            else
-            if (address.startsWith("@"))
-            {
-               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
-               lat = Double.parseDouble(st.nextToken());
-               lon = Double.parseDouble(st.nextToken());
-               latlonOk = true;
-            }
-            else
-            {         
-               Geocoder g = new Geocoder(instance.getContext());
-               List<Address> al = g.getFromLocationName(address, 1);
-               if (al != null && al.size() > 0)
-               {
-                  Address a = al.get(0);
-                  if (a.hasLatitude() && a.hasLongitude())
-                  {
-                     lat = a.getLatitude();
-                     lon = a.getLongitude();
-                     latlonOk = true;
-                  }
-               }
-               if (!latlonOk)
-                  throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
-            }
-            if (latlonOk)
+            double [] ll = getLatLon(address);
+            if (ll != null)
             {
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
                Bundle b = new Bundle();
                b.putInt("type", Loader.MAP);
-               b.putDouble("lat", lat);
-               b.putDouble("lon", lon);
+               b.putDouble("lat", ll[0]);
+               b.putDouble("lon", ll[1]);
                b.putBoolean("sat", showSatellite);
                msg.setData(b);
                loader.achandler.sendMessage(msg);
@@ -945,6 +1001,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   try {Thread.sleep(400);} catch (Exception e) {}
                return true;
             }
+            else throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
          }
          catch (Exception e)
          {

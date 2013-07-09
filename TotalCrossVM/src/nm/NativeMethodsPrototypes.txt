@@ -1,5 +1,6 @@
 
 TC_API void tmGM_showAddress_sb(NMParams p);
+TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);
@@ -424,6 +425,10 @@ TC_API void tuBI_intLength_Ii(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
 {
 }
 //////////////////////////////////////////////////////////////////////////

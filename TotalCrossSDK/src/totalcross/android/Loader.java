@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.android;
 
 import totalcross.*;
@@ -26,7 +24,6 @@ import java.util.*;
 
 import android.app.*;
 import android.content.*;
-import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
@@ -109,6 +106,25 @@ public class Loader extends Activity
       }
    }
    
+   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, boolean sat)
+   {
+      try
+      {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RouteViewer"));
+         intent.putExtra("latI",latI);
+         intent.putExtra("lonI",lonI);
+         intent.putExtra("latF",latF);
+         intent.putExtra("lonF",lonF);
+         intent.putExtra("coord",coord);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
    private void callGoogleMap(double lat, double lon, boolean sat)
    {
       try
@@ -124,7 +140,7 @@ public class Loader extends Activity
          AndroidUtils.handleException(e,false);
       }
    }
-   
+
    private void captureCamera(String s, int quality, int width, int height)
    {
       try
@@ -154,6 +170,7 @@ public class Loader extends Activity
    public static final int LEVEL5 = 5;
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
+   public static final int ROUTE = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -218,6 +235,9 @@ public class Loader extends Activity
                break;
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
+               break;
+            case ROUTE:
+               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getBoolean("sat"));
                break;
             case FULLSCREEN:
             {
@@ -288,7 +308,18 @@ public class Loader extends Activity
          else
          if (command.equalsIgnoreCase("viewer"))
          {
-            if (args.toLowerCase().endsWith(".pdf"))
+            String argl = args.toLowerCase();
+            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
+               intent.putExtra("file",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
+            if (argl.endsWith(".pdf"))
             {
                File pdfFile = new File(args);
                if(pdfFile.exists()) 
@@ -340,7 +371,12 @@ public class Loader extends Activity
          {
             Intent i = new Intent();
             i.setClassName(command,command+"."+args);
-            startActivity(i);
+            boolean isService = args.equalsIgnoreCase("TCService");
+            AndroidUtils.debug("*** Vm.exec "+command+" . "+args+": "+isService);
+            if (isService)
+               startService(i);
+            else
+               startActivity(i);
          }
          if (!wait)
             finish();

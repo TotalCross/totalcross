@@ -218,11 +218,11 @@ public class MainWindow extends Window implements totalcross.MainClass
     * @see #onRestore
     * @since TotalCross 1.10
     */
-   public final void minimize() // bruno@tc110_89
+   public static void minimize() // bruno@tc110_89
    {
       totalcross.Launcher.instance.minimize();
    }
-   native public final void minimize4D();
+   native public static void minimize4D();
 
    /**
     * Notifies the application that it should be restored, that is, transfered
@@ -232,11 +232,11 @@ public class MainWindow extends Window implements totalcross.MainClass
     * the application manually.
     * @since TotalCross 1.10
     */
-   public final void restore() // bruno@tc110_89
+   public static void restore() // bruno@tc110_89
    {
       totalcross.Launcher.instance.restore();
    }
-   native public final void restore4D();
+   native public static void restore4D();
 
    /** Returns the MainWindow of the current application. */
    public static MainWindow getMainWindow()

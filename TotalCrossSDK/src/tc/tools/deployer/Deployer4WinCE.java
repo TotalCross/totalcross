@@ -279,7 +279,7 @@ public class Deployer4WinCE
 
          infFileName = cabName+".inf";
          File infFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
-         String installDir = "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
+         String installDir = DeploySettings.isService ? "\\"+DeploySettings.filePrefix+"\\" : "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
          String inf =
             "[Version]\n" +
 
@@ -298,7 +298,7 @@ public class Deployer4WinCE
 
             "[Strings]\n" +
 
-            "TCDir    = \"\\TotalCross\"\n" +
+            "TCDir    = \"\\"+(DeploySettings.isService ? DeploySettings.filePrefix : "TotalCross")+"\"\n" +
 
             //-----------------------------------------------
 
@@ -390,7 +390,7 @@ public class Deployer4WinCE
             (hasExe ? "Binaries = 0,%InstallDir%\n" : "") +
             "GlobalFiles = 0,%TCDir%\n" +
             "LocalFiles = 0,%InstallDir%\n" +
-            "Startmenu = 0,%CE11%\n"+
+            (DeploySettings.isService ? "Startmenu = 0,%CE4%\n" : "Startmenu = 0,%CE11%\n")+
 
             (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix+".exe\n") : "") +
             (tcFolder != null ? ("tcvm.dll\n") : "") +
@@ -403,7 +403,7 @@ public class Deployer4WinCE
             toString(vGlobals, "\n",true) +
 
             (hasExe ? ("[Startmenu]\n" +
-            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
+            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "") 
             ;
          
          new DataStream(infFile).writeBytes(inf.getBytes());

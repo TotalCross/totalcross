@@ -74,7 +74,7 @@ VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
    void *tcvm = module ? module : dlopen(getTotalCrossAndroidClass(VM_PATH), RTLD_LAZY);
 #else
    void *tcvm = module ? module : dlopen(TEXT(VM_PATH), RTLD_LAZY);
-#endif
+#endif   	
    if (tcvm)
       return dlsym(tcvm, funcName);
 #endif

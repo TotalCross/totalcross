@@ -27,7 +27,7 @@ public class ArrowButton extends Button
 {
    protected byte direction;
    protected int prefWH;
-   private int xx,yy,kk,dkk;
+   protected int xx,yy,kk,dkk;
    private boolean horiz;
    
    /** The arrow's color */

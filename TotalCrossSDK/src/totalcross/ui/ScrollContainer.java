@@ -496,6 +496,14 @@ public class ScrollContainer extends Container implements Scrollable
       if (flick != null && flick.pagepos != null)
          flick.pagepos.setPosition(p);
    }
+   
+   /** Scrolls a page to left or right. Works only if it has a flick and a page position.
+    */
+   public void scrollPage(boolean left)
+   {
+      int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
+      scrollToPage(left ? curPage-1 : curPage+1);
+   }
 
    /** Scrolls to the given control. */
    public void scrollToControl(Control c) // kmeehl@tc100
