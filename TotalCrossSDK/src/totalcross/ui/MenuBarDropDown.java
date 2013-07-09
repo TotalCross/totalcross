@@ -87,7 +87,6 @@ public class MenuBarDropDown extends Window
    {
       focusTraversable = true;	//	timo@tc100b3 - must be focusTraversable for geographical focus to work
       this.items = items;
-      highResPrepared = true;
       canDrag = false;
       popX = x;
       popY = y;
