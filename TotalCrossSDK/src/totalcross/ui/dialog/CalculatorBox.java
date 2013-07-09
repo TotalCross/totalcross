@@ -86,7 +86,7 @@ public class CalculatorBox extends Window
       super(defaultTitle,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = started = true;
+      started = true;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       backspace = new KeyEvent(); backspace.type = KeyEvent.SPECIAL_KEY_PRESS; backspace.key = SpecialKeys.BACKSPACE;
       this.showOperations = showOperations;

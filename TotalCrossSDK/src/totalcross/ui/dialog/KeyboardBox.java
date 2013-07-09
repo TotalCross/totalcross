@@ -67,7 +67,6 @@ public class KeyboardBox extends Window // guich@102
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
 
       setBackColor(UIColors.keyboardBack); // before control definitions!
 
