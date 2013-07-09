@@ -30,7 +30,7 @@ public class MobileProvision
    {
       this.content = content;
 
-      NSDictionary rootDictionary = (NSDictionary) PropertyListParser.parse(content.getBytes());
+      NSDictionary rootDictionary = (NSDictionary) PropertyListParser.parse(content.getBytes("UTF-8"));
 
       // ApplicationIdentifierPrefix
       NSArray array = (NSArray) rootDictionary.objectForKey("ApplicationIdentifierPrefix");
