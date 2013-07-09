@@ -191,6 +191,16 @@ public final class Settings
 
    // Not set by the VM
 
+   /** Defines a Windows CE user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
+    */
+   public static final byte WinCE = 0;
+   /** Defines a PalmOS user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
+    */
+   public static final byte PalmOS = 1;
    /** Defines a FLAT user interface style, like the ones used in Pocket PC 2003. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
