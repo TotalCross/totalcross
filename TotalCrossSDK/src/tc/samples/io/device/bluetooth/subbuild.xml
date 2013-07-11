@@ -18,11 +18,11 @@
 
 -->
 
-<project name="ConsoleViewer" basedir=".">
+<project name="BtChat" basedir=".">
 
-<property name="app.srcdir" value="app/consoleviewer" />
-<property name="app.name" value="${ant.project.name}"/>  
-<import file="${sdk.root}/build.xml"/>
+<property name="app.srcdir" value="io/device/bluetooth" />
+<property name="app.name" value="${ant.project.name}"/>
+<import file="${sdk.root}/build.xml" />
+<property name="supportedPlatforms" value="-winmo -android"/>
 
-<property name="supportedPlatforms" value="-palm -iphone"/>
 </project>

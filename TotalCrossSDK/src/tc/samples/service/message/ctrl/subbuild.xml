@@ -18,11 +18,11 @@
 
 -->
 
-<project name="GoogleMaps" basedir=".">
+<project name="MailController" basedir=".">
 
-<property name="app.srcdir" value="map"/>
+<property name="app.srcdir" value="service/message/ctrl"/>
 <property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml"/>
-<property name="supportedPlatforms" value="-ios -android"/>
 
+<property name="supportedPlatforms" value="-wince -android"/>
 </project>
