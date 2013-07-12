@@ -26,7 +26,7 @@ public class MessageBoxSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               MessageBox mb = new MessageBox("Message","This is a MessageBox with title, in the Android user interface style.",new String[]{"Close"});
+               MessageBox mb = new MessageBox("Message","This is a MessageBox with title.",new String[]{"Close"});
                mb.popup();
             }
          });
@@ -35,7 +35,7 @@ public class MessageBoxSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               MessageBox mb = new MessageBox("","This is a MessageBox without title, in the Android user interface style.",new String[]{"Close"});
+               MessageBox mb = new MessageBox("","This is a MessageBox without title.",new String[]{"Close"});
                mb.popup();
             }
          });
@@ -44,7 +44,7 @@ public class MessageBoxSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top separator, in the Android user interface style.",new String[]{"Close"});
+               MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top separator.",new String[]{"Close"});
                mb.headerColor = UIColors.messageboxBack;
                mb.footerColor = 0xAAAAAA;
                try
@@ -60,7 +60,7 @@ public class MessageBoxSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top and bottom separators, in the Android user interface style.",new String[]{"Close"});
+               MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top and bottom separators.",new String[]{"Close"});
                mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                try
                {

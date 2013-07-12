@@ -19,10 +19,10 @@ public class ProgressBoxSample extends BaseContainer
 
          String[] items =
          {
-            "Small ProgressBox (iPhone style)",
-            "Big ProgressBox (iPhone style)",
-            "Small ProgressBox (android style)",
-            "Big ProgressBox (android style)"
+            "Small ProgressBox (style 1)",
+            "Big ProgressBox (style 1)",
+            "Small ProgressBox (style 2)",
+            "Big ProgressBox (style 2)"
          };
          
          menu = new ButtonMenu(items, ButtonMenu.SINGLE_COLUMN);
