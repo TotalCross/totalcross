@@ -128,7 +128,7 @@ public class Window extends Container
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
-
+   
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus,focusOnPenUp;
@@ -205,7 +205,7 @@ public class Window extends Container
    protected Container mainSwapContainer;
    /** Used in the swap method */
    protected Container lastSwappedContainer;
-   /** Dumb field to keep compilation compatibility with TC 1 */
+   /** @deprecated Dumb field to keep compilation compatibility with TC 1 */
    public boolean highresPrepared = true;
 
    /** To be used in setBorderStyle */

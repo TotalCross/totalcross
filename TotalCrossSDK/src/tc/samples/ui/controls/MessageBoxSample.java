@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.res.*;
 import totalcross.ui.*;
@@ -7,26 +7,21 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class MessageBoxSamples extends BaseContainer
+public class MessageBoxSample extends BaseContainer
 {
-   public MessageBoxSamples()
-   {
-      helpMessage = "These are MessageBox samples in the Android user interface style. Press back to go to the main menu.";
-   }
-   
    public void initUI()
    {
       try
       {
          super.initUI();
+         setTitle("MessageBox");
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
          
          Button btn;
          
-         Button.commonGap = gap;
-         add(btn = new Button("Title only"), CENTER, TOP+fmH);
+         sc.add(btn = new Button("Title only"), CENTER, TOP+fmH,PREFERRED+gap,PREFERRED+gap);
          btn.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
@@ -35,7 +30,7 @@ public class MessageBoxSamples extends BaseContainer
                mb.popup();
             }
          });
-         add(btn = new Button("No title"), CENTER, AFTER+fmH);
+         sc.add(btn = new Button("No title"), CENTER, AFTER+fmH,PREFERRED+gap,PREFERRED+gap);
          btn.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
@@ -44,7 +39,7 @@ public class MessageBoxSamples extends BaseContainer
                mb.popup();
             }
          });
-         add(btn = new Button("Title and Icon\nTop separator"), CENTER, AFTER+fmH);
+         sc.add(btn = new Button("Title and Icon\nTop separator"), CENTER, AFTER+fmH,PREFERRED+gap,PREFERRED+gap);
          btn.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
@@ -60,7 +55,7 @@ public class MessageBoxSamples extends BaseContainer
                mb.popup();
             }
          });
-         add(btn = new Button("Title and Icon\nTop/bottom separators"), CENTER, AFTER+fmH);
+         sc.add(btn = new Button("Title and Icon\nTop/bottom separators"), CENTER, AFTER+fmH,PREFERRED+gap,PREFERRED+gap);
          btn.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
@@ -78,9 +73,6 @@ public class MessageBoxSamples extends BaseContainer
                mb.popup();
             }
          });
-         Button.commonGap = 0;
-
-         setInfo("Click Info button for help.");
       }
       catch (Exception ee)
       {

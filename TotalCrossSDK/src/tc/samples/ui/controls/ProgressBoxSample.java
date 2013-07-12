@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -6,20 +6,16 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
-public class ProgressBoxSamples extends BaseContainer
+public class ProgressBoxSample extends BaseContainer
 {
    ButtonMenu menu;
-   
-   public ProgressBoxSamples()
-   {
-      helpMessage = "These are ProgressBox samples in the Android user interface style. Press back to go to the main menu.";
-   }
    
    public void initUI()
    {
       try
       {
          super.initUI();
+         setTitle("ProgressBox");
 
          String[] items =
          {

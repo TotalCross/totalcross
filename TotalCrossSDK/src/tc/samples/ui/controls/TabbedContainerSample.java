@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -6,19 +6,16 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class TabbedContainerSamples extends BaseContainer
+public class TabbedContainerSample extends BaseContainer
 {
-   public TabbedContainerSamples()
-   {
-      helpMessage = "These are TabbedContainer samples in the Android user interface style. Press back to go to the main menu.";
-   }
-   
    public void initUI()
    {
       try
       {
          super.initUI();
-         String[] caps = {"nak","andré","babi"};
+         setTitle("TabbedContainer");
+         
+         String[] caps = {"juju","andré","babi"};
          Image [] icons = {new Image("images/ic_dialog_alert.png"),new Image("images/ic_dialog_usb.png"),new Image("images/ic_dialog_info.png")};
          final TabbedContainer tc = new TabbedContainer(caps);
          tc.setBackColor(Color.DARK);
@@ -54,7 +51,6 @@ public class TabbedContainerSamples extends BaseContainer
                tc2.setEnabled(2,!ch.isChecked());
             }
          });
-         setInfo("Click Info button for help.");
       }
       catch (Exception ee)
       {

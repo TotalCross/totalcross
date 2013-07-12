@@ -1,17 +1,12 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
-public class EditSamples extends BaseContainer
+public class EditSample extends BaseContainer
 {
-   public EditSamples()
-   {
-      helpMessage = "These are Edit samples in the Android user interface style. Press back to go to the main menu.";
-   }
-   
    public void initUI()
    {
       try
@@ -19,6 +14,7 @@ public class EditSamples extends BaseContainer
          Settings.is24Hour = true;
          
          super.initUI();
+         setTitle("Edit");
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
@@ -81,7 +77,10 @@ public class EditSamples extends BaseContainer
          e.setBackColor(Color.brighter(Color.BLUE));
          sc.add(e,LEFT,AFTER);
 
-         setInfo("Click Info button for help.");
+         sc.add(new Label("Brazilian's 8-digit postal code"),LEFT,AFTER+gap);
+         e = new Edit("99.999-999");
+         e.setMode(Edit.NORMAL,true);
+         sc.add(e,LEFT,AFTER);
       }
       catch (Exception ee)
       {

@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -7,19 +7,15 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class ListContainerSamples extends BaseContainer
+public class ListContainerSample extends BaseContainer
 {
-   public ListContainerSamples()
-   {
-      helpMessage = "These are ListContainer samples in the Android user interface style. The information listed at startup shows the creation time (C), addition time (A), total time (T) and gc time/count during everything. Calling this sample will alternate between 30 and 3000 ListContainer items. Press back to go to the main menu.";
-   }
-   
    static int lastCount = -1;
    public void initUI()
    {
       try
       {
          super.initUI();
+         setTitle("ListContainer");
 
          int TOTAL_ITEMS = lastCount == 30 ? 3000 : 30; // increase this to 3000, for example
          lastCount = TOTAL_ITEMS;

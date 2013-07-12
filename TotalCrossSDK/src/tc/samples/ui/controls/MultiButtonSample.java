@@ -1,18 +1,14 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-public class MultiButtonSamples extends BaseContainer
+public class MultiButtonSample extends BaseContainer
 {
-   public MultiButtonSamples()
-   {
-      helpMessage = "These are MultiButton samples in the Android user interface style. Press back to go to the main menu.";
-   }
-   
    public void initUI()
    {
       super.initUI();
+      setTitle("MultiButton");
       ScrollContainer sc = new ScrollContainer(false, true);
       sc.borderColor = headerBar.getBackColor();
       sc.setBorderStyle(BORDER_ROUNDED); // sample of the new rounded border
@@ -33,6 +29,5 @@ public class MultiButtonSamples extends BaseContainer
       b.setEnabled(1,false);
 
       add(sc, LEFT+fmH, TOP+fmH, FILL-fmH, FILL-fmH);
-      setInfo("Click Info button for help.");
    }
 }

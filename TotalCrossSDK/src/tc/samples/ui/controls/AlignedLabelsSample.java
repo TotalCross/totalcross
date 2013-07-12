@@ -1,12 +1,18 @@
-package tc.samples.ui.gadgets;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-public class AlignedLabelsTest extends Container
+public class AlignedLabelsSample extends BaseContainer
 {
    public void initUI()
    {
+      super.initUI();
+      setTitle("AlignedLabelsContainer");
+      ScrollContainer sc = new ScrollContainer(false, true);
+      sc.setInsets(gap,gap,gap,gap);
+      add(sc,LEFT,TOP,FILL,FILL);
+
       String[] labels =
       {
          "Name",
@@ -22,7 +28,7 @@ public class AlignedLabelsTest extends Container
       c.labelAlign = RIGHT;
       c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,};
       c.setInsets(2,2,2,2);
-      add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
+      sc.add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
       int i;
       for (i =0; i < labels.length-2; i++)
          c.add(new Edit(),LEFT+2,c.getLineY(i));

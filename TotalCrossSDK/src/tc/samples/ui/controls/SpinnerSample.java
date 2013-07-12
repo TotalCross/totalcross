@@ -1,32 +1,26 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
-public class SpinnerSamples extends BaseContainer
+public class SpinnerSample extends BaseContainer
 {
    private Spinner sp1,sp2;
-   
-   public SpinnerSamples()
-   {
-      helpMessage = "These are Spinner samples in the Android user interface style. Note that the Spinner control is not likely to be used by the programmer; you should use the ProgressBox instead. Press back to go to the main menu.";
-   }
    
    public void initUI()
    {
       try
       {
          super.initUI();
-
+         setTitle("Spinner");
+         
          Spacer s;
          add(s = new Spacer(1,1),CENTER,CENTER);
          Spinner.spinnerType = Spinner.ANDROID;
          add(sp1 = new Spinner(),CENTER,BEFORE-gap,fmH*2,fmH*2, s);
          Spinner.spinnerType = Spinner.IPHONE;
          add(sp2 = new Spinner(),CENTER,AFTER+gap,fmH*2,fmH*2, s);
-
-         setInfo("Click Info button for help.");
       }
       catch (Exception ee)
       {

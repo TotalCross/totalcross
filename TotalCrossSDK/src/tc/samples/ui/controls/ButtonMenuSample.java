@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -6,20 +6,16 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class ButtonMenuSamples extends BaseContainer
+public class ButtonMenuSample extends BaseContainer
 {
    private ScrollContainer sc;
-   
-   public ButtonMenuSamples()
-   {
-      helpMessage = "These are ButtonMenu samples in the Android user interface style. Press back to go to the main menu.";
-   }
    
    public void initUI()
    {
       try
       {
          super.initUI();
+         setTitle("ButtonMenu");
          sc = new ScrollContainer(false, true);
          sc.setInsets(0,0,gap/2,gap/2);
          add(sc,LEFT,TOP,FILL,FILL);
@@ -94,8 +90,6 @@ public class ButtonMenuSamples extends BaseContainer
                um.names2[j*icons.length+i] = names[i]+" "+ k++;
             }
          um.controlPressed(null);
-         
-         setInfo("Click Info button for help.");
       }
       catch (Exception ee)
       {

@@ -1,24 +1,20 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
-public class ProgressBarSamples extends BaseContainer
+public class ProgressBarSample extends BaseContainer
 {
    ProgressBar pbe,pbzv,pbv,pbzh,pbh;
-   
-   public ProgressBarSamples()
-   {
-      helpMessage = "These are ProgressBar samples in the Android user interface style. Press back to go to the main menu.";
-   }
    
    public void initUI()
    {
       try
       {
          super.initUI();
+         setTitle("ProgressBar");
          Container sc = new Container();
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
@@ -72,7 +68,6 @@ public class ProgressBarSamples extends BaseContainer
    public void onSwapFinished()
    {
       final int ini = Vm.getTimeStamp();
-      setInfo("Click Info button for help.");
       repaintNow();
       // runs the bench test
       int max = pbv.max;

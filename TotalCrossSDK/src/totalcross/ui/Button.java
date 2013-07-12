@@ -182,6 +182,7 @@ public class Button extends Control
      * Note that this value will be added to the value of <code>gap</code>.
      * Remember to save the current value and restore it when done.
      * Changing this also affects the size of the ScrollBars created.
+     * @deprecated Does not work after screen rotation.
      */
    public static int commonGap; // guich@300_3
    

@@ -1,17 +1,12 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
-public class CheckRadioSamples extends BaseContainer
+public class CheckRadioSample extends BaseContainer
 {
-   public CheckRadioSamples()
-   {
-      helpMessage = "These are Check and Radio box samples in the Android user interface style. Press back to go to the main menu.";
-   }
-   
    Control c0,c1,c2,c3,c4,c5;
    public void initUI()
    {
@@ -19,9 +14,10 @@ public class CheckRadioSamples extends BaseContainer
       {
          super.initUI();
          setTitle("Check and Radio");
-
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
+         add(sc,LEFT,TOP,FILL,FILL);
+
          Check c;
          
          sc.add(c0 = c = new Check("Check box / cyan check"),LEFT,AFTER,PREFERRED+gap,PREFERRED+gap); 
@@ -65,8 +61,6 @@ public class CheckRadioSamples extends BaseContainer
                c5.setEnabled(b);
             }
          });
-         add(sc,LEFT,TOP,FILL,FILL);
-         setInfo("Click Info button for help.");
       }
       catch (Exception ee)
       {

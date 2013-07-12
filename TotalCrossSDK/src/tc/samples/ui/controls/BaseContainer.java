@@ -1,4 +1,4 @@
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.res.*;
 import totalcross.sys.*;
@@ -18,7 +18,7 @@ public class BaseContainer extends Container
    protected String helpMessage;
    private static Vector containerStack = new Vector(5);
    private static Image infoImg;
-   private String defaultTitle = "Android User Interface";
+   private String defaultTitle = "User Interface Controls";
    protected int gap;
 
    public BaseContainer()
@@ -45,8 +45,7 @@ public class BaseContainer extends Container
          headerBar = new Bar(defaultTitle);
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
-         headerBar.addButton(infoImg);
-         headerBar.addButton(isMainMenu ? Resources.exit : Resources.back);
+         headerBar.addButton(isMainMenu ? infoImg : Resources.back);
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
          footerBar = new Bar("");
@@ -60,14 +59,15 @@ public class BaseContainer extends Container
          // we use a PressListener so that the subclasses don't need to call super.onEvent
          headerBar.addPressListener(new PressListener()
          {
-            public void controlPressed(ControlEvent e)  
+            public void controlPressed(ControlEvent e)
             {
                e.consumed = true;
                try
                {
-                  switch (((Bar)e.target).getSelectedIndex())
+                  if (((Bar)e.target).getSelectedIndex() == 1)
                   {
-                     case 1:
+                     boolean isMainMenu = containerStack.size() == 1;
+                     if (isMainMenu)
                      {
                         if (helpMessage == null) 
                            return;
@@ -75,12 +75,10 @@ public class BaseContainer extends Container
                         mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                         mb.setIcon(infoImg);
                         mb.popup();
-                        break;
                      }
-                     case 2:
+                     else
                      {
                         back();
-                        break;
                      }  
                   }
                }
@@ -147,6 +145,7 @@ public class BaseContainer extends Container
    {
       try
       {
+         setInfo(MainMenu.DEFAULT_INFO);
          containerStack.pop(); // pop ourself
          Window.getTopMost().swap((Container)containerStack.peek());
       }

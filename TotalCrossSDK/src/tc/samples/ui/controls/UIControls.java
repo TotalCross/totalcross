@@ -14,15 +14,15 @@
  *                                                                               *
  *********************************************************************************/
 
-package tc.samples.ui.androidui;
+package tc.samples.ui.controls;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-public class AndroidUI extends MainWindow
+public class UIControls extends MainWindow
 {
-   public AndroidUI()
+   public UIControls()
    {
       setUIStyle(Settings.Android);
       setBackColor(UIColors.controlsBack = Color.WHITE);
