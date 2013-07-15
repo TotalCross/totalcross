@@ -125,6 +125,7 @@ public class Window extends Container
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
    protected boolean highresPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
+
    /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
     * @since TotalCross 1.53
     */

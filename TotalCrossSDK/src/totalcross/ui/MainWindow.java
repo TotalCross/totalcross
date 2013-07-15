@@ -92,7 +92,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.virtualKeyboard = false;
 
       // update some settings
-      highResPrepared = true; // main window is always prepared
       setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
