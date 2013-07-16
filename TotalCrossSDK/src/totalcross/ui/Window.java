@@ -206,7 +206,7 @@ public class Window extends Container
    /** Used in the swap method */
    protected Container lastSwappedContainer;
    /** @deprecated Dumb field to keep compilation compatibility with TC 1 */
-   public boolean highresPrepared = true;
+   public boolean highResPrepared = true;
 
    /** To be used in setBorderStyle */
    public static final byte NO_BORDER = 0;
