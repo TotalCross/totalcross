@@ -23,7 +23,6 @@ import java.util.*;
 
 import android.bluetooth.*;
 import android.content.*;
-import android.hardware.Camera.*;
 import android.os.*;
 
 public class Level5Impl extends Level5
@@ -371,16 +370,5 @@ public class Level5Impl extends Level5
             AndroidUtils.handleException(e,false);
          }
       setResponse(true,null);
-   }
-   
-   ///////////////////  CAMERA METHODS ////////////////////
-   public void setPictureParameters(Parameters parameters, int stillQuality, int ww, int hh)
-   {
-      parameters.setPreviewSize(ww,hh);
-      parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
-   }
-   public List<Size> getSupportedPictureSizes(Parameters parameters)
-   {
-      return parameters.getSupportedPictureSizes();
    }
 }
