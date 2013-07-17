@@ -21,7 +21,10 @@
 -(void) initApp
 {
    // This is the first launch ever
-   if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"])
+   NSString* currentVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+   NSString* storedVersion  = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastVersion"];
+   
+   if (!storedVersion || ![currentVersion isEqualToString:storedVersion])
    {
       NSString *documentsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:  @"Documents"];
       NSString *pkgDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"pkg"];
@@ -35,12 +38,13 @@
          {
             NSString *targetFilePath = [documentsDirectory stringByAppendingPathComponent:s];
             NSString *sourceFilePath = [pkgDirectory stringByAppendingPathComponent:s];
-            if (![[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File does not exist, copy it
-               [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
+            if ([[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File exist, delete it
+               [NSFileManager removeItemAtPath: targetFilePath error:NULL];
+            [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
          }
       }
        
-      [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"HasLaunchedOnce"];
+      [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"LastVersion"];
       [[NSUserDefaults standardUserDefaults] synchronize];
    }
    
