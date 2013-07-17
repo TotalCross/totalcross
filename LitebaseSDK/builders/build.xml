@@ -382,38 +382,7 @@ target: buildIPhone
 </target>
 
 <target name="package-deb-release">
-   <fail unless="release.type" />
-   <fail unless="output.path" />
-   
-   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-     <classpath>
-         <pathelement location="${base.temp.path}/classes_desktop"/>
-         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-     </classpath>
-     <arg line="-n Litebase"/>
-     <arg line="-c 'Litebase Library'"/>
-     <arg line="-d 'TotalCross Litebase library'"/>
-     <arg line="-v ${lb.version}"/>
-     <arg line="-b ${basedir}/theos/${release.type}/libLitebase.dylib"/>
-     <arg line="-t ${output.path}/dist/lib/ios"/>
-     <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-   </java>
 
-   <!-- package the files -->
-   <mkdir dir="${output.path}/dist/lib/ios" />
-   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${output.path}/dist/lib/ios">
-     <classpath>
-         <pathelement location="${base.temp.path}/classes_desktop"/>
-         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-     </classpath>
-     <arg line="."/>
-   </java>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -437,22 +406,6 @@ target: Linux builds
 </target>
    
 <target name="packageLinux" >
-   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-     <classpath>
-         <pathelement location="${base.temp.path}/classes_desktop"/>
-         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-     </classpath>
-     <arg line="-n Litebase"/>
-     <arg line="-c 'Litebase Library'"/>
-     <arg line="-d 'TotalCross Litebase library'"/>
-     <arg line="-v ${lb.version}"/>
-     <arg line="-b ${gcc.project.path}/linux/${type}/libLitebase.so"/>
-     <arg line="-t ${target.path}/dist/lib/linux"/>
-     <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-   </java>
 </target>
 
 <target name="packageLinux_sdk">
