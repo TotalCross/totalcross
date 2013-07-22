@@ -19,7 +19,6 @@
 package totalcross;
 
 import totalcross.android.Loader;
-import totalcross.android.compat.*;
 
 import java.io.*;
 import java.util.*;
@@ -1088,7 +1087,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          StringBuffer sb = new StringBuffer(32);
          Camera camera = Camera.open();
          Camera.Parameters parameters=camera.getParameters();
-         List<Camera.Size> sizes = Level5.getInstance().getSupportedPictureSizes(parameters);
+         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
          if (sizes == null)
             return null;
          for (Camera.Size ss: sizes)

@@ -107,7 +107,7 @@ public class Deploy
 
                //if (DeploySettings.buildIPA)
                if (DeploySettings.certStorePath == null)
-                  System.out.println("Warning: /m option not found, ignoring iphone deployment.");
+                  System.out.println("Warning: /m option not found, ignoring iOS deployment.");
                else
                {
                   if (DeploySettings.appleCertStore == null)

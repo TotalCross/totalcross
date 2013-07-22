@@ -1,0 +1,112 @@
+diff -ruN orig/org/vafer/jdeb/ar/ArEntry.java src/org/vafer/jdeb/ar/ArEntry.java
+--- orig/org/vafer/jdeb/ar/ArEntry.java	2008-08-18 19:03:00.000000000 +0200
++++ src/org/vafer/jdeb/ar/ArEntry.java	2009-08-25 02:23:50.000000000 +0200
+@@ -15,6 +15,9 @@
+  */
+ package org.vafer.jdeb.ar;
+ 
++import java.io.ByteArrayInputStream;
++import java.io.InputStream;
++
+ /**
+  * To be replace by commons compress once released
+  * 
+@@ -28,18 +31,20 @@
+ 	private int mode;
+ 	private long lastModified;
+ 	private long length;
++	private byte[] data;
+ 
+ 	public ArEntry(String name, long length) {
+-		this(name, length, 0, 0, 33188, System.currentTimeMillis());
++		this(name, length, 0, 0, 33188, System.currentTimeMillis(), null);
+ 	}
+ 
+-	public ArEntry(String name, long length, int userId, int groupId, int mode, long lastModified) {
++	public ArEntry(String name, long length, int userId, int groupId, int mode, long lastModified, byte[] data) {
+ 		this.name = name;
+ 		this.length = length;
+ 		this.userId = userId;
+ 		this.groupId = groupId;
+ 		this.mode = mode;
+ 		this.lastModified = lastModified;
++		this.data = data;
+ 	}
+ 
+ 	public String getName() {
+@@ -65,4 +70,9 @@
+ 	public long getLength() {
+ 		return length;
+ 	}
++
++	public InputStream getInputStream()
++	{
++		return new ByteArrayInputStream(data);
++	}
+ }
+diff -ruN orig/org/vafer/jdeb/ar/ArInputStream.java src/org/vafer/jdeb/ar/ArInputStream.java
+--- orig/org/vafer/jdeb/ar/ArInputStream.java	2008-08-18 19:03:00.000000000 +0200
++++ src/org/vafer/jdeb/ar/ArInputStream.java	2009-08-25 02:32:29.000000000 +0200
+@@ -48,14 +48,14 @@
+ 			}
+ 		}
+ 
+-		if (input.available() == 0) {
+-			return null;
+-		}
+-				
+ 		if (offset % 2 != 0) {
+ 			read();
+ 		}
+ 
++		if (input.available() == 0) {
++			return null;
++		}
++				
+ 		final byte[] name = new byte[FIELD_SIZE_NAME];
+ 		final byte[] lastmodified = new byte[FIELD_SIZE_LASTMODIFIED];
+ 		final byte[] userid = new byte[FIELD_SIZE_UID];
+@@ -82,7 +82,17 @@
+ 			}
+ 		}
+ 		
+-		return new ArEntry(new String(name).trim(), Long.parseLong(new String(length).trim()));
++		long llen = Long.parseLong(new String(length).trim());
++		byte[] data = new byte[(int)llen];
++		read(data);
++		
++		return new ArEntry(new String(name).trim(), 
++               	         llen,
++                           Integer.parseInt(new String(userid).trim()),
++                           Integer.parseInt(new String(groupid).trim()),
++                           Integer.parseInt(new String(filemode).trim()),
++                           Long.parseLong(new String(lastmodified).trim()),
++                           data);
+ 	}
+ 	
+ 	
+diff -ruN orig/org/vafer/jdeb/descriptors/PackageDescriptor.java src/org/vafer/jdeb/descriptors/PackageDescriptor.java
+--- orig/org/vafer/jdeb/descriptors/PackageDescriptor.java	2008-08-18 19:03:00.000000000 +0200
++++ src/org/vafer/jdeb/descriptors/PackageDescriptor.java	2009-08-19 01:11:37.000000000 +0200
+@@ -29,6 +29,9 @@
+ public final class PackageDescriptor extends AbstractDescriptor {
+ 
+ 	private final static String[] keys = {
++		"Name",
++		"Author",
++		"Icon",
+ 		"Package",
+ 		"Source",
+ 		"Version",
+diff -ruN orig/org/vafer/jdeb/Processor.java src/org/vafer/jdeb/Processor.java
+--- orig/org/vafer/jdeb/Processor.java	2008-08-18 19:03:00.000000000 +0200
++++ src/org/vafer/jdeb/Processor.java	2009-08-27 01:21:26.000000000 +0200
+@@ -300,7 +300,7 @@
+ 				final String debFullName = System.getenv("DEBFULLNAME");
+ 				final String debEmail = System.getenv("DEBEMAIL");
+ 
+-				if (debFullName != null && debEmail != null) {
++				if (packageDescriptor.get("Maintainer") == null && debFullName != null && debEmail != null) {
+ 					packageDescriptor.set("Maintainer", debFullName + " <" + debEmail + ">");
+ 					console.println("Using maintainer from the environment variables.");
+ 				}
