@@ -754,8 +754,8 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (xs=x1+1; xs<x2; xs++)
         {
            z = (yt>>16);
-           glDrawPixelG(g, xs, z, color_,255);
-           glDrawPixelG(g, xs, z+1, color_,96);
+           glDrawPixelG(g, xs, z, color_,192);
+           glDrawPixelG(g, xs, z+1, color_,64);
            yt += k;
         }
      }
@@ -800,8 +800,8 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (ys=y1+1; ys<y2; ys++)
         {
            z = xt>>16;
-           glDrawPixelG(g, z, ys, color_,255);
-           glDrawPixelG(g, z+1, ys, color_,96);
+           glDrawPixelG(g, z, ys, color_,192);
+           glDrawPixelG(g, z+1, ys, color_,64);
            xt += k;
         }
      }
@@ -834,9 +834,11 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
 
 inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
+#ifndef __gl2_h_
    if (Graphics_useAA(g))
       drawLineAA(currentContext, g, x1,y1,x2,y2,pixel);
    else
+#endif      
       drawDottedLine(currentContext, g, x1, y1, x2, y2, pixel, pixel);
 }
 
