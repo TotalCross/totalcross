@@ -1339,7 +1339,7 @@ public class Window extends Container
       else
          isHighlighting = Settings.keyboardFocusTraversable; // guich@573_17
       // add the new container.
-      if (newContainer.transitionEffect != TRANSITION_NONE)
+      if (newContainer != null && newContainer.transitionEffect != TRANSITION_NONE)
          setNextTransitionEffect(newContainer.transitionEffect);
       else
       if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
