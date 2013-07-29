@@ -36,7 +36,7 @@ public class Painter extends MainWindow
    Label status;
    ComboBox cbColors;
    String catalogName = "BMP.PAin.BITM";
-   String fileName = Settings.appPath + "/image.png";
+   String fileName = "/image.png";
 
    static
    {
@@ -87,7 +87,7 @@ public class Painter extends MainWindow
             try
             {
                // create
-               File f = new File(fileName, File.CREATE_EMPTY);
+               File f = new File(Settings.isOpenGL ? "/sdcard"+fileName : Settings.appPath+fileName, File.CREATE_EMPTY);
                PDBFile cat = new PDBFile(catalogName, PDBFile.CREATE_EMPTY); // always keep only one record on the catalog
                ByteArrayStream bas = new ByteArrayStream(500);
                try
@@ -110,7 +110,7 @@ public class Painter extends MainWindow
                   if (written1 < 0 || written2 < 0)
                      status.setText("Unable to write the image");
                   else
-                     status.setText("Saved image with " + totalBytesWritten + " bytes");
+                     status.setText("Saved " + f.getPath() + " ("+totalBytesWritten + " bytes)");
                }
                catch (ImageException e1)
                {
