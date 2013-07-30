@@ -105,7 +105,7 @@ public class KeyboardBox extends Window // guich@102
 
       if (pbs[0] == null)
       {
-         int glue = uiCE?-2:-1;
+         int glue = -1;
          for (int i =0; i < pbs.length; i++)
          {
             add(pbs[i] = new PushButtonGroup(names[i], false, -1, i == TEXT_PAD ? glue : 1, i >= CAPS_PAD ? 8 : 4, i == TEXT_PAD ? 8 : 1, i != SPECIAL_PAD,

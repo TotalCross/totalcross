@@ -76,12 +76,12 @@ public class ConnectionManager4A
          case GPRS:
          {
             int id = -1;
-            ContentResolver contentResolver = Launcher4A.getAppContext().getContentResolver();
+            ContentResolver contentResolver = Launcher4A.loader.getContentResolver();
             Cursor cursor = contentResolver.query(CONTENT_URI, new String[] { "_id" },
                   "apn = ? and user = ? and password = ?", new String[] { "tim.br", "tim", "tim" }, null);
             if (cursor == null || cursor.getCount() <= 0)
             {
-               TelephonyManager tel = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+               TelephonyManager tel = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
                String networkOperator = tel.getNetworkOperator();
 
                if (networkOperator != null && networkOperator.length() > 0) 
@@ -180,11 +180,11 @@ public class ConnectionManager4A
    {
       try
       {
-         ConnectivityManager connMgr = (ConnectivityManager) Launcher4A.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+         ConnectivityManager connMgr = (ConnectivityManager) Launcher4A.loader.getSystemService(Context.CONNECTIVITY_SERVICE);
          int type = connMgr.getActiveNetworkInfo().getType();
          if (type == ConnectivityManager.TYPE_WIFI)
          {
-            WifiManager wifiMgr = (WifiManager) Launcher4A.getAppContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiMgr = (WifiManager) Launcher4A.loader.getSystemService(Context.WIFI_SERVICE);
             return ipAddressToString(wifiMgr.getDhcpInfo().ipAddress);
          }
          return InetAddress.getLocalHost().getHostAddress();

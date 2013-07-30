@@ -118,7 +118,7 @@ public class Button extends Control
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
-   protected int fColor,imgColor=-1,pressColor=-1,fadedColor=-1;
+   protected int fColor,pressColor=-1;
    protected int fourColors[] = new int[4];
    private int txtPos,tiGap,maxTW;
    private boolean fixPressColor;
@@ -182,6 +182,7 @@ public class Button extends Control
      * Note that this value will be added to the value of <code>gap</code>.
      * Remember to save the current value and restore it when done.
      * Changing this also affects the size of the ScrollBars created.
+     * @deprecated Does not work after screen rotation.
      */
    public static int commonGap; // guich@300_3
    
@@ -211,7 +212,6 @@ public class Button extends Control
    {
       if (text != null) setText(text);
       this.img = img;
-      if (img != null) imgColor = img.transparentColor;
       this.tiGap = gap;
       txtPos = textPosition;
    }
@@ -247,7 +247,6 @@ public class Button extends Control
    public void setImage(Image img)
    {
       this.img = img;
-      imgColor = img.transparentColor;
       if (txtPos == 0)
          text = null;
       onBoundsChanged(false);
@@ -431,7 +430,8 @@ public class Button extends Control
             postPressedEvent();
             break;
          case PenEvent.PEN_DOWN:
-            press(isSticky ? armed = !armed: (armed = true));
+            armed = isSticky ? !armed: true;
+            repaintNow();
             if (!isSticky && autoRepeat) 
                autoRepeatTimer = addTimer(INITIAL_DELAY);
             break;
@@ -475,8 +475,7 @@ public class Button extends Control
          Window.enableUpdateScreen = eus;
       }
       armed = pressed; // some drawing routines does not receive the armed parameter, so we must set it here.
-      onPaint(getGraphics());
-      if (getParentWindow() != null) updateScreen(); // important
+      repaintNow();
    }
 
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
@@ -485,10 +484,10 @@ public class Button extends Control
       if (skipPaint) return;
       if (isAndroidStyle)
       {
-         g.getClip(clip);
-         g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+/*         g.getClip(clip);
+         g.backColor = parent.backColor;//g.getPixel(clip.x,clip.y); // use color painted by the parent
          g.fillRect(0,0,width,height);
-      }
+*/      }
       else
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
@@ -504,7 +503,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && !isAndroidStyle && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -558,7 +557,7 @@ public class Button extends Control
          if (colorized != null) //flsobral@tc150: colorized may now be null if there was not enough memory to create it at setBorder
             try
             {
-               img = colorized.getSmoothScaledInstance(width,height,backColor);
+               img = colorized.getSmoothScaledInstance(width,height);
             }
             catch (ImageException e)
             {
@@ -611,20 +610,17 @@ public class Button extends Control
       if (!isAndroidStyle)
          Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
-      if (!uiCE && !isAndroidStyle)
+      if (!isAndroidStyle)
          fourColors[1] = pressColor;
-      if (!enabled && fadedColor != backColor) // guich@tc110_50
-      {
-         if (img != null) 
-            try
-            {
-               imgDis = img.getFadedInstance(fadedColor = backColor);
-            }
-            catch (ImageException e)
-            {
-               imgDis = img;
-            }
-      }
+      if (!enabled && img != null) // guich@tc110_50
+         try
+         {
+            imgDis = img.getFadedInstance();
+         }
+         catch (ImageException e)
+         {
+            imgDis = img;
+         }
    }
 
    /** Paint button's background. */
@@ -649,18 +645,6 @@ public class Button extends Control
          }
          switch (Settings.uiStyle)
          {
-            case Settings.WinCE:
-               g.backColor = backColor;
-               g.fillRect(0,0,width,height);
-               break;
-            case Settings.PalmOS:
-               g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
-               if (border == BORDER_NONE)
-                  g.fillRect(0,0,width,height);
-               else
-               if (!armed) // guich@450_35: little optimization
-                  g.fillHatchedRect(0,0,width,height,true,true);
-               break;
             case Settings.Flat:
                g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
                g.fillRect(0,0,width,height);
@@ -702,12 +686,6 @@ public class Button extends Control
 
    protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
-      if (imgColor >= 0 && !img.useAlpha) // guich@310_26: allow imgColor be null - guich@tc126_12: not when using alpha
-      {
-         g.backColor = imgColor; // the transparent color is our background color
-         g.drawOp = Graphics.DRAW_SPRITE;  // draw the image transparent _OR_ draw the image making all pixels != background equal to our disabled color
-      }
-      else g.drawOp = Graphics.DRAW_PAINT;
       if (bkg) // only in uiAndroid
          try
          {

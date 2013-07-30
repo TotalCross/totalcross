@@ -27,21 +27,16 @@ import totalcross.util.*;
 
 public class GridTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    TabbedContainer tp;
    MenuBar mbar;
 
    public GridTest()
    {
-      int ui = 0;
+      int ui = Settings.Android;
       if (Settings.appSettings != null)
          try {ui = Convert.toInt(Settings.appSettings);} catch (InvalidNumberException e) {}
-      setUIStyle((Settings.onJavaSE || Settings.platform.equals(Settings.ANDROID)) ? Settings.Android : (byte)ui);
-      Settings.appSettings = Convert.toString((ui+1)%5);
+      setUIStyle(Settings.platform.equals(Settings.ANDROID) ? Settings.Android : (byte)ui);
+      Settings.appSettings = Convert.toString(ui==Settings.Flat?Settings.Vista:ui==Settings.Vista?Settings.Android:Settings.Flat); // since tc 2.0, only 2,3,4
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 

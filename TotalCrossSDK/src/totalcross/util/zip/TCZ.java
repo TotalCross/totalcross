@@ -90,7 +90,7 @@ public class TCZ
       }
    }
 
-   public static final short TCZ_VERSION = 110; // must sync with tcz.h
+   public static final short TCZ_VERSION = 200; // must sync with tcz.h
 
    /** Defines that the tcz file has a MainClass at the first record. If false, it is a library-only module */
    public static final short ATTR_HAS_MAINCLASS = 1;  
@@ -99,7 +99,7 @@ public class TCZ
    /** Defines that the tcz file is a library-only module. */  
    public static final short ATTR_LIBRARY = 4;
    /** Defines that the application uses the new font set. */
-   public static final short ATTR_NEW_FONT_SET = 8;
+   //public static final short ATTR_NEW_FONT_SET = 8;
    /** Defines that the application has resizable window. */
    public static final short ATTR_RESIZABLE_WINDOW = 16;
    /** Defines that the application uses the default font. */
@@ -117,7 +117,6 @@ public class TCZ
     * @see #ATTR_HAS_MAINCLASS
     * @see #ATTR_HAS_MAINWINDOW
     * @see #ATTR_LIBRARY
-    * @see #ATTR_NEW_FONT_SET
     * @see #ATTR_RESIZABLE_WINDOW
     */
    public int attr;

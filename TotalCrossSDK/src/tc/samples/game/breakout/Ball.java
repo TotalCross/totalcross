@@ -36,7 +36,7 @@ public final class Ball extends Sprite
 
    public Ball(Breakout game, Racket racket, Level level) throws ImageException, IOException
    {
-      super(new Image("tc/samples/game/breakout/ball.png").smoothScaledFromResolution(320, 0x000099), -1, true, null);
+      super(new Image("tc/samples/game/breakout/ball.png").setTransparentColor(0x000099).smoothScaledFromResolution(320), -1, true, null);
 
       this.game = game;
       this.racket = racket;

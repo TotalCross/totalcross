@@ -38,8 +38,8 @@ static void privateDestroyDebug()
 
 static bool privateDebug(char* str)
 {
+    bool err = true;
    static char debugPath[MAX_PATHNAME];
-   bool err = true;
    if (!fdebug)
    {
       xstrprintf(debugPath, "%s/DebugConsole.txt", appPath);
@@ -60,7 +60,10 @@ static bool privateDebug(char* str)
          fsync(fileno(fdebug));
       }
    }
-   return err;
+#ifdef darwin
+    iphoneDebug(str);
+#endif
+    return err;
 }
 
 // Alert

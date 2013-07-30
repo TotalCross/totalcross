@@ -41,6 +41,8 @@ public class Slider extends ScrollBar
    public boolean drawTicks;
    /** Set to false to don't draw the filled area. You must set this property before calling setValues (or the other min/max/value/visibleItems set methods) for the first time. */
    public boolean drawFilledArea = true;
+   /** The color of the slider */
+   public int sliderColor = -1;
 
    /** Constructs a HORIZONTAL Slider. */
    public Slider()
@@ -59,11 +61,6 @@ public class Slider extends ScrollBar
       barY = new int[5];
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-
-      if (Settings.screenWidth < 200)
-         minDragBarSize = 7;
-      else
-         minDragBarSize = 11;
    }
 
    protected void recomputeParams(boolean justValue)
@@ -92,6 +89,7 @@ public class Slider extends ScrollBar
 
    private void recomputeThumb()
    {
+      minDragBarSize = fmH;
       int s = dragBarSize-1;
       int s2 = s/2;
       for (int i = barX.length; --i >= 0;) barX[i] = barY[i] = 0;
@@ -132,7 +130,6 @@ public class Slider extends ScrollBar
 
    public void onPaint(Graphics g)
    {
-      //g.backColor=Color.RED; g.fillRect(0,0,width,height);
       g.backColor = sbColor;
       int bc = getBackColor(),p,s;
       s = Math.max(4, verticalBar ? (width/2) : (height/2));
@@ -156,17 +153,15 @@ public class Slider extends ScrollBar
                if (drawFilledArea) g.fillRect(dragBarPos,p+1, width-1-dragBarPos, s-2); // solid = remains
                g.translate(dragBarPos,0);
             }
-            g.backColor = enabled ? fourColors[0] : bc;
+            g.backColor = enabled ? sliderColor != -1 ? sliderColor: fourColors[0] : bc;
             g.foreColor = enabled ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
             break;
          }
-         case Settings.PalmOS:
          case Settings.Flat:
-         case Settings.WinCE:
          {
-            int k = uiCE && s > 5 ? 2 : 1;
+            int k = 1;
             if (verticalBar)
             {
                g.draw3dRect(p,0,s,height, Graphics.R3D_RAISED, false, false, fourColors);
@@ -185,11 +180,6 @@ public class Slider extends ScrollBar
             g.foreColor = enabled ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
-            if (uiCE)
-            {
-               g.foreColor = fourColors[2];
-               g.drawPolyline(barX, barY, 3);
-            }
             break;
          }
       }

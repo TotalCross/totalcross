@@ -122,7 +122,18 @@ public class Chart extends Control
    /** Flag to indicate whether the categories must be painted */
    public boolean showCategories;
 
-   /** Flag to indicate whether the categories must be painted on the next tick. ShowCategories must be true too. */
+   /**
+    * Flag to indicate whether the categories must be painted on the next tick.<br>
+    * The field {@link #showCategories} must also be set to true.<br>
+    * <br>
+    * Special values for categories on tick:
+    * <ul>
+    * <li>"|" - Paints a line using the axis fore color.
+    * <li>":" - Paints a dotted line using the axis fore and back colors.
+    * </ul>
+    * 
+    * @see #showCategories
+    */
    public boolean showCategoriesOnTick;
 
    /** The index where the category mark is shown. */
@@ -408,28 +419,42 @@ public class Chart extends Control
 
          if (drawCategories && i < xAxisCategories.length) // draw category
          {
-            int tW = fm.stringWidth(xAxisCategories[i]);
+            final int tW = (xAxisCategories[i] == null || xAxisCategories[i].length() == 0)
+                  ? 0
+                  : fm.stringWidth(xAxisCategories[i]);
 
-            if (showCategoriesOnTick)
+            if (tW > 0)
             {
-               int p = pos - tW/2;
-               if (p > lastPos)
+               if (showCategoriesOnTick)
                {
-                  g.foreColor = axisText;
-                  g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height-fmH)/2 : yAxisY1, textShadowColor != -1, textShadowColor);
-                  g.foreColor = axisForeColor;
-                  lastPos = p + tW + fmH;
+                  final int p = pos - (tW / 2);
+                  final int y1 = height - (fmH * 3 / 4);
+
+                  if ("|".equals(xAxisCategories[i]))
+                     g.drawLine(pos, y1, pos, y1 + fmH);
+                  else if (":".equals(xAxisCategories[i]))
+                  {
+                     g.backColor = axisBackColor;
+                     g.drawDots(pos, y1, pos, y1 + fmH);
+                  }
+                  else if (p > lastPos)
+                  {
+                     g.foreColor = axisText;
+                     g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height-fmH)/2 : yAxisY1, textShadowColor != -1, textShadowColor);
+                     g.foreColor = axisForeColor;
+                     lastPos = p + tW + fmH;
+                  }
+                  if (categoryMarkIndex == i)
+                     markPos = pos;
+                  pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
                }
-               if (categoryMarkIndex == i)
-                  markPos = pos;
-               pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
-            }
-            else
-            { 
-               pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
-               g.foreColor = axisText;
-               g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
-               g.foreColor = axisForeColor;
+               else
+               {
+                  pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+                  g.foreColor = axisText;
+                  g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+                  g.foreColor = axisForeColor;
+               }
             }
          }
       }
@@ -515,14 +540,15 @@ public class Chart extends Control
 
          x += snapToBottom || snapToTop ? 0 : 3;
          g.foreColor = legendTextColor;
+         int halfBlankWidth = fm.stringWidth(" ") / 2;
          for (int i = 0; i < sCount; i ++)
          {
             Series se = (Series) series.items[i];
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
-               g.drawImage(se.legendDot,x,y+sqOff);
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
+               g.drawImage(se.legendDot,x + halfBlankWidth,y+sqOff + 1);
             }
             else
             {
@@ -534,7 +560,7 @@ public class Chart extends Control
             if (legendValues != null)
                s = s.concat(legendValues[i]);
 
-            g.drawText(s, x + sqWH + 2, y, textShadowColor != -1, textShadowColor);
+            g.drawText(s, x + halfBlankWidth + sqWH + halfBlankWidth, y, textShadowColor != -1, textShadowColor);
             if (lr)
                y += fmH;
             else

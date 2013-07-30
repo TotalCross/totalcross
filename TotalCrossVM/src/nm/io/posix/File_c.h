@@ -17,9 +17,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#if !defined(__SYMBIAN32__)
 #include <utime.h>
-#endif
 
 #if HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -517,8 +515,6 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 
 static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 {
-#if !defined(__SYMBIAN32__)
-
    struct tm tm;
    struct utimbuf timbuf;
    struct stat statData;
@@ -547,7 +543,6 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 
    if (utime(path, &timbuf))
       return errno;
-#endif
 
    return NO_ERROR;
 }

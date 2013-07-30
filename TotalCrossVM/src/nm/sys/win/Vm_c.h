@@ -42,6 +42,10 @@ void rebootDevice()
 #endif
 }
 
+typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex,  LPCWSTR lpszLib,  DWORD dwInfo);
+typedef BOOL (__stdcall *DeregisterServiceProc)(HANDLE hDevice);
+typedef HANDLE (__stdcall *GetServiceHandleProc)(LPWSTR szPrefix, LPWSTR szDllName, DWORD pdwDllBuf);
+
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    PROCESS_INFORMATION processInfo;
@@ -56,6 +60,32 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    startInfo = &si;
 #endif
 
+   if (lstrcmp(szCommand,L"unregister service")==0)
+   {
+      HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
+      DeregisterServiceProc deregisterService = (DeregisterServiceProc)GetProcAddress(dll, TEXT("DeregisterService"));
+      GetServiceHandleProc getServiceHandle = (GetServiceHandleProc)GetProcAddress(dll, TEXT("GetServiceHandle"));
+      ret = 0;
+      srv = getServiceHandle(L"TSV0:",0,0);
+      if (srv != 0)
+         ret = deregisterService(srv) != 0;
+      FreeLibrary(dll);
+      return ret;
+   }
+   if (lstrcmp(szCommand,L"register service")==0)
+   {
+      HANDLE dll = LoadLibrary(TEXT("coredll.dll"));
+      RegisterServiceProc registerService = (RegisterServiceProc)GetProcAddress(dll, TEXT("RegisterService"));
+      char dllpath[255];
+      HANDLE srv;
+      xstrcpy(dllpath,vmPath);
+      xstrcat(dllpath,"\\tcvm.dll");
+      replaceChar(dllpath,'/','\\');
+      CharP2TCHARPBuf(dllpath,pathargs);
+      srv = registerService(L"TSV",0,pathargs,0);
+      FreeLibrary(dll);
+      return srv != 0;
+   }
    ok = CreateProcess(szCommand, szArgs, null, null, false, 0, null, null, startInfo, &processInfo); // guich@tc100b5_16: iexplore requires this mode.
    err = GetLastError();
 

@@ -31,7 +31,7 @@ public class ComboBoxDropDown extends Window
    /** The assigned ListBox. */
    public ListBox lb;
    /** Set to true if want to make the control popup below or above always, and not only if WinCE */
-   public boolean dontHideParent = !uiPalm; // guich@200b4_205: let the user choose to not hide the parent control
+   public boolean dontHideParent = true; // guich@200b4_205: let the user choose to not hide the parent control
    /** Set to true to make this pop have the screen height */
    public boolean fullHeight; // guich@330_52
    /** Set to true to make this popup have the screen width */

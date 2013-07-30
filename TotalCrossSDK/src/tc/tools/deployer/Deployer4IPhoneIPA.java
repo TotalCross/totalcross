@@ -145,7 +145,10 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
+      {
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
+         rootDict.put("CFBundleShortVersionString", DeploySettings.appVersion);
+      }
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
       String bundleIdentifier = this.Provision.bundleIdentifier;

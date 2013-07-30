@@ -55,8 +55,8 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
 {
    Object thisObj = p->obj[0];
-   Pixel from = makePixelRGB(p->i32[0]);
-   Pixel to = makePixelRGB(p->i32[1]);
+   Pixel from = makePixelARGB(p->i32[0]);
+   Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ TC_API void tuiI_getPixelRow_Bi(NMParams p) // totalcross/ui/image/Image native 
    Object thisObj = p->obj[0];
    Object fillIn = p->obj[1];
    int32 y = p->i32[0];
-   getPixelRow(thisObj, fillIn, y);
+   getPixelRow(p->currentContext,thisObj, fillIn, y);
 }
 //////////////////////////////////////////////////////////////////////////
 typedef enum
@@ -74,7 +74,8 @@ typedef enum
    SMOOTH_SCALED_INSTANCE,
    ROTATED_SCALED_INSTANCE,
    TOUCHEDUP_INSTANCE,
-   FADED_INSTANCE
+   FADED_INSTANCE,
+   ALPHA_INSTANCE
 } FuncType;
 TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
@@ -90,8 +91,7 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          getScaledInstance(thisObj, newObj);
          break;
       case SMOOTH_SCALED_INSTANCE:
-         Image_transparentColor(newObj) = p->i32[2]; // replace transparent color
-         if (!getSmoothScaledInstance(thisObj, newObj, color))
+         if (!getSmoothScaledInstance(thisObj, newObj))
             throwException(p->currentContext, OutOfMemoryError, null);
          break;
       case ROTATED_SCALED_INSTANCE:
@@ -102,6 +102,9 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          break;
       case FADED_INSTANCE: // guich@tc110_50
          getFadedInstance(thisObj, newObj, color);
+         break;
+      case ALPHA_INSTANCE: // guich@tc200
+         getAlphaInstance(thisObj, newObj, p->i32[2]);
          break;
    }
 }
@@ -133,6 +136,28 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
    applyColor2(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+   Object thisObj = p->obj[0];
+   Pixel color = makePixelRGB(p->i32[0]);
+   setTransparentColor(thisObj, color);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+#ifdef __gl2_h_    
+   Object thisObj = p->obj[0];
+   applyChanges(p->currentContext,thisObj,true);
+#endif    
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{  
+#ifdef __gl2_h_                         
+   freeTexture(p->obj[0],true);
+#endif   
+}
+
 bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj, int32 quality); // JpegLoader.c
 TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {

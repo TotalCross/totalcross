@@ -29,11 +29,6 @@ import totalcross.ui.event.PressListener;
 
 public class WorldWatch extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Container watches;
    Button btExit;
 
@@ -44,7 +39,7 @@ public class WorldWatch extends MainWindow
 
    public WorldWatch()
    {
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
    }
 
    private void addWatch(int x, int y, int city)

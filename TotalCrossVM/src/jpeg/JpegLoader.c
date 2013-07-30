@@ -165,10 +165,10 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
       jpeg_read_scanlines(&cinfo, buffer0, 1);
       if (cinfo.out_color_components == 1) // guich@tc114_12
          for (x = 0; x < width; x++, buffer++)
-            *pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
+            *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
       else
          for (x = 0; x < width; x++, buffer += 3)
-            *pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
+            *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
    }
 
    // now that everything went fine, set the image's width/height

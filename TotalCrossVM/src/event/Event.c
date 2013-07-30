@@ -17,14 +17,10 @@ void updateScreen(Context currentContext);
 void vmSetAutoOff(bool enable); // vm_c.h
 
 // Platform-specific code
-#if defined(PALMOS)
- #include "palm/event_c.h"
-#elif defined(WINCE) || defined(WIN32)
+#if defined(WINCE) || defined(WIN32)
  #include "win/event_c.h"
 #elif defined(darwin)
  #include "darwin/event_c.h"
-#elif defined(__SYMBIAN32__)
- #include "symbian/event_c.h"
 #elif defined(ANDROID)
  #include "android/event_c.h"
 #else
@@ -49,11 +45,7 @@ static void checkTimer(Context currentContext)
    }
 }
 
-#ifdef PALMOS
-#define INITIAL_TICK 500
-#else
 #define INITIAL_TICK 5000
-#endif
 
 #ifdef ENABLE_DEMO
 static int32 demoTick = INITIAL_TICK;
@@ -63,10 +55,14 @@ extern bool wokeUp();
 static int32 nextAutoOffTick;
 #endif
 
-static void pumpEvent(Context currentContext)
-{
+static bool pumpEvent(Context currentContext)
+{          
+   bool ok = true;   
    if (currentContext != mainContext) // only pump events on the mainContext
+   {
+      ok = false;
       goto sleep;
+   }
 #ifdef WINCE 
    {
     int32 ts;
@@ -79,24 +75,26 @@ static void pumpEvent(Context currentContext)
 	}
    }
 #endif
-#if defined(PALMOS) || (defined(WINCE) && _WIN32_WCE >= 300)
+#if (defined(WINCE) && _WIN32_WCE >= 300)
    if (wokeUp())
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_POWER_ON, 0,0,-1);
 #endif
-#ifndef PALMOS // guich@tc100b4: Palm OS requires SysEventGet to be called always, otherwise incoming phone calls will not work
    if (privateIsEventAvailable())
-#endif
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
 #ifdef ENABLE_DEMO
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
 #endif
 sleep:
-   Sleep(1); // avoid 100% cpu
+#ifndef darwin   
+   Sleep(1); // avoid 100% cpu - important on Android!
+#endif   
+   return ok;
 }
 
 bool isEventAvailable()
-{
+{  
+   Sleep(1); // avoid 100% cpu - important on Android!
    return privateIsEventAvailable();
 }
 
@@ -105,7 +103,8 @@ void pumpEvents(Context currentContext)
    if (keepRunning)
       do
       {
-         pumpEvent(currentContext);
+         if (!pumpEvent(currentContext))
+            break;
       } while (isEventAvailable() && keepRunning);
 
    if (!keepRunning && !appExitThrown)
@@ -115,6 +114,8 @@ void pumpEvents(Context currentContext)
    }
 }
 
+void graphicsSetupIOS();
+
 void mainEventLoop(Context currentContext)
 {
    // now that the Main class was load, it's safe to get these methods
@@ -123,6 +124,9 @@ void mainEventLoop(Context currentContext)
    onMinimize = getMethod(OBJ_CLASS(mainClass), true, "onMinimize", 0);
    onRestore = getMethod(OBJ_CLASS(mainClass), true, "onRestore", 0);
 
+#ifdef darwin
+    graphicsSetupIOS(); // start the opengl context in the same thread of the events
+#endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");
    else

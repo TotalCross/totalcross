@@ -219,6 +219,7 @@ public class File extends RandomAccessStream
     * @see #CREATE
     * @see #CREATE_EMPTY
     * @see totalcross.sys.Settings#nvfsVolume
+    * @deprecated TotalCross 2 no longer uses slot
     */
    public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
@@ -1133,7 +1134,6 @@ public class File extends RandomAccessStream
     * 
     * @param dir
     * @param recursive
-    * @return
     * @throws IOException
     */
    public static String[] listFiles(String dir, boolean recursive) throws IOException

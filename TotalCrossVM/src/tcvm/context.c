@@ -19,28 +19,39 @@ Context initContexts()
    if (gcContext == null)
       return null;                           
    lifeContext = newContext(null,null,false);
-   return mainContext = newContext(null,null,true);
+   mainContext = newContext(null,null,true);
+   return mainContext;
 }
 
 void destroyContexts()
-{
-   VoidPs *head = contexts, *current = head, *next;
+{                                    
+   int32 i;
    Context c;
-   do
-   {
-      next = current->next;
-      c = (Context)current->value;
-      deleteContext(c, true);
-      current = next;
-   } while (contexts != null);
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if ((c=contexts[i]) != null)
+      {
+         contexts[i] = null;
+         deleteContext(c, true);
+      }
 }
+
 
 Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
 {
-   volatile Heap heap = heapCreate();
+   volatile Heap heap;
    Context c;
+   int32 i;
    int32 regIsize, regOsize, reg64size, stackSize;
-   VoidPs* temp;
+   VoidPs* temp;      
+   
+   bool freeSlot = false;
+   for (i = 0; i < MAX_CONTEXTS && !freeSlot; i++)
+      if (contexts[i] == null)
+         freeSlot = true;
+   if (!freeSlot) 
+      return null;
+
+   heap = heapCreate();
    IF_HEAP_ERROR(heap)
    {
       heapDestroy(heap);
@@ -51,6 +62,20 @@ Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
    reg64size = bigContextSizes ? STARTING_REG64_SIZE : (STARTING_REG64_SIZE/10);
    stackSize = bigContextSizes ? STARTING_STACK_SIZE : (STARTING_STACK_SIZE/10);
    c = newXH(Context, heap);
+   LOCKVAR(omm);
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if (contexts[i] == null)
+      {
+         contexts[i] = c;
+         break;
+      }
+   UNLOCKVAR(omm);
+   if (i == MAX_CONTEXTS)
+   {
+      heapDestroy(heap);
+      return null;
+   }
+   
    c->heap = heap;
    c->threadObj = threadObj;
    c->regI         = c->regIStart      = newPtrArrayOf(Int32, regIsize, c->heap);
@@ -65,26 +90,28 @@ Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
    c->nmp.currentContext = c;
    SETUP_MUTEX;
    INIT_MUTEX(c->usageLock);
-   temp = VoidPsAdd(contexts, c, null);
-   if (temp == null)
-   {
-      heapDestroy(heap);
-      xfree(c);
-   }
-   else contexts = temp;
-   if (mainContext != null) // for the first context, it will be created later
+      
+   if (mainContext != null && c != null) // for the first context, it will be created later
       c->OutOfMemoryErrorObj = createObject(c, "java.lang.OutOfMemoryError"); // create the exception and prevent the exception from being collected. Note that there's no need to lock the msg and trace strings inside of it.
    return c;
 }
 
 void deleteContext(Context c, bool destroyThread)
 {
+   int32 i;
    if (c->thread && destroyThread) // destroy the thread
       threadDestroy(c->thread, false);
+   LOCKVAR(omm);
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if (contexts[i] == c) 
+      {
+         contexts[i] = null;
+         break;
+      }
    if (c->OutOfMemoryErrorObj != null) setObjectLock(c->OutOfMemoryErrorObj, UNLOCKED);
+   UNLOCKVAR(omm);
    xfree(c->litebasePtr); // free litebase pointer
    DESTROY_MUTEX(c->usageLock);
-   contexts = VoidPsRemove(contexts, c, null);
    heapDestroy(c->heap);
 }
 

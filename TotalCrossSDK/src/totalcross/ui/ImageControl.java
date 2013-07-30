@@ -35,10 +35,7 @@ public class ImageControl extends Control
    private int startX,startY;
    private int imgW,imgH;
    private Coord c = new Coord();
-   private int transpColor;
    private boolean isEventEnabled, canDrag;
-   /** Defines the drawing operation used to draw the image that is being panned. */
-   public int drawOp = Graphics.DRAW_PAINT;
    /** Set to true to center the image in the control when it is loaded */
    public boolean centerImage;
 
@@ -51,6 +48,9 @@ public class ImageControl extends Control
    public int borderColor = -1;
    /** Set to true to let the image be dragged beyond container limits. */
    public boolean allowBeyondLimits;
+
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int drawOp;
 
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
@@ -84,7 +84,6 @@ public class ImageControl extends Control
       {
          imgW = img.getWidth();
          imgH = img.getHeight();
-         transpColor = img.transparentColor;
          // draw a red border in the image
          if (borderColor != -1)
          {
@@ -188,7 +187,7 @@ public class ImageControl extends Control
    private void fillBack(Graphics g)
    {
       if (imgBack != null)
-         g.drawImage(imgBack,0,0, imgBack.transparentColor != -1 && !imgBack.useAlpha ? Graphics.DRAW_SPRITE : Graphics.DRAW_PAINT, imgBack.transparentColor, true);
+         g.drawImage(imgBack,0,0, true);
    }
 
    public void onPaint(Graphics g)
@@ -206,22 +205,11 @@ public class ImageControl extends Control
          // g.translateTo(c.x,c.y); // greg@563_4 - guich@tc100: commented, otherwise, QImageCardEditor will leave some trash on screen
          if (allowBeyondLimits)
          {
-            g.drawOp = drawOp;
-            g.drawImage(img, lastX,lastY, drawOp, transpColor, true);
+            g.drawImage(img, lastX,lastY, true);
             if (drawBack) fillBack(g);
          }
          else
-         if (transpColor != -1 && !img.useAlpha)
          {
-            g.backColor = getBackColor();
-            if (!transparentBackground) // guich@tc115_41
-               g.fillRect(0,0,imgW,imgH);
-            if (drawBack) fillBack(g); // guich@tc100b5_2: fill the background
-            g.drawImage(img, lastX,lastY, Graphics.DRAW_SPRITE, transpColor, true);
-         }
-         else
-         {
-            g.drawOp = drawOp;
             g.copyRect(img,0,0,imgW,imgH,lastX,lastY);
             if (drawBack) fillBack(g);
          }

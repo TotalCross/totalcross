@@ -27,18 +27,17 @@ int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 uint8 keyIsDown[256];
 bool dontPostOnChar;
-#elif defined(PALMOS)
-bool isGETreo650;
-bool supportsDIA;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
 bool appPaused;                         
-int32 deviceFontHeight;
+#endif
+#if defined(ANDROID) || defined(darwin)
+int32 deviceFontHeight,iosScale;
 #endif
 
 // GoogleMaps.c
 #ifdef ANDROID
-jmethodID jshowGoogleMaps;
+jmethodID jshowGoogleMaps, jshowRoute;
 #endif
 
 // startup.c
@@ -49,34 +48,24 @@ bool rebootOnExit;
 bool destroyingApplication;
 Object mainClass;  // the instance being executed
 bool isMainWindow;   // extends MainWindow ?
-#if defined PALMOS
-void *pealLoadLibrary68K, *pealUnloadLibrary68K, *pealGetProcAddress68K;
-#elif defined(ANDROID)
+#if defined(ANDROID)
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;
-#elif defined WIN32 || defined linux || defined __SYMBIAN32__
+#elif defined WIN32 || defined linux
 TCHAR exeName[MAX_PATHNAME];
-#endif
-
-// window.c
-#ifdef ANDROID
-jmethodID jtransitionEffectChanged;
 #endif
 
 // graphicsprimitives.c
 uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
-int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-#ifdef ANDROID
-jmethodID jupdateScreen;
-#endif
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
+int32* vistaFadeStepP;
 bool callingScreenChange;
 
 // mem.c
@@ -88,6 +77,7 @@ bool leakCheckingEnabled;
 bool showMemoryMessagesAtExit;
 VoidPs* createdHeaps;
 int32 totalAllocated, maxAllocated, allocCount, freeCount;
+DECLARE_MUTEX(createdHeaps);
 
 // PalmFont_c.h
 int32 maxFontSize, minFontSize, normalFontSize;
@@ -139,8 +129,8 @@ Stack objStack2;
 #endif
 
 // context.c
-VoidPs* contexts;
 Context mainContext,gcContext,lifeContext;
+Context contexts[MAX_CONTEXTS];
 
 // tcvm.c
 int32 vmTweaks;
@@ -154,7 +144,7 @@ jmethodID jgetSDCardPath;
 #endif
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
-#if !defined(PALMOS) && !defined(WIN32)
+#if !defined(WIN32)
 void *deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
         
@@ -226,19 +216,8 @@ Hashtable htSSLSocket;
 Heap heapSSLSocket;
 DECLARE_MUTEX(htSSL);
 
-#ifdef PALMOS
-// palm/Socket_c.h, ServerSocket_c.h
-VoidP gNETLink;
-// palm/media_Camera_c.h
-VoidP gpalmOneCameraLink;
-
-// palm/debug_c.h
-void *pealAlert68K;
-
-const void *gEmulStateP;
-Call68KFuncType *gCall68KFuncP;
-#elif defined ANDROID
-jmethodID jshowCamera,jgetNativeResolutions;
+#ifdef ANDROID
+jmethodID jshowCamera,jgetNativeResolutions,jzxing;
 
 // android/GPS_c.h
 jmethodID jgpsFunc,jcellinfoUpdate;
@@ -284,7 +263,8 @@ bool initGlobals()
 	SETUP_MUTEX;
    INIT_MUTEX(omm);
    INIT_MUTEX(screen);
-   INIT_MUTEX(htSSL);
+   INIT_MUTEX(htSSL); 
+   INIT_MUTEX(createdHeaps);
 #if defined (WIN32) || defined (WINCE)
    initWinsock();
 #endif
@@ -301,6 +281,7 @@ void destroyGlobals()
    DESTROY_MUTEX(omm);
    DESTROY_MUTEX(screen);
    DESTROY_MUTEX(htSSL);
+   DESTROY_MUTEX(createdHeaps);
 #if defined (WIN32) || defined (WINCE)
    closeWinsock();
 #endif

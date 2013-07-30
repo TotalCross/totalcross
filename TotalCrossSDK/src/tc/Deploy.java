@@ -85,13 +85,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
@@ -106,18 +104,19 @@ public class Deploy
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-file-7.5.1.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-kernel-7.5.1.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-swing-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
 
-               if (DeploySettings.buildIPA)
+               //if (DeploySettings.buildIPA)
+               if (DeploySettings.certStorePath == null)
+                  System.out.println("Warning: /m option not found, ignoring iOS deployment.");
+               else
                {
                   if (DeploySettings.appleCertStore == null)
                      throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: " + DeploySettings.certStorePath);
+                  else
                   if (DeploySettings.mobileProvision == null)
                      throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: " + DeploySettings.certStorePath);
                   new Deployer4IPhoneIPA();
                }
-               Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
@@ -229,15 +228,15 @@ public class Deploy
    {
       int options = 0;
       IntHashtable iht = new IntHashtable(17);
-      iht.put("palm"   .hashCode(), BUILD_PALM);
-      iht.put("palmos" .hashCode(), BUILD_PALM);
+      iht.put("palm"   .hashCode(), 0);
+      iht.put("palmos" .hashCode(), 0);
+      iht.put("blackberry".hashCode(), 0);
+      iht.put("bb"     .hashCode(), 0);
       iht.put("ce"     .hashCode(), BUILD_WINCE);
       iht.put("wince"  .hashCode(), BUILD_WINCE);
       iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
-      iht.put("bb"     .hashCode(), BUILD_BB);
-      iht.put("blackberry".hashCode(), BUILD_BB);
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("ios"    .hashCode(), BUILD_IPHONE);
@@ -299,6 +298,7 @@ public class Deploy
                         DeploySettings.buildIPA = true;
                         File folder = new File(args[++i]);
                         DeploySettings.certStorePath = folder.getPath();
+                        System.out.println("*** "+args[i]+" - "+folder.getPath()+" - "+folder.getCanonicalPath());
                         folder.list(new FilenameFilter()
                         {
                            public boolean accept(File dir, String fileName)
@@ -398,12 +398,10 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
-            "   -palm or -palmos : create the prc and installation files for Palm OS\n" +
             "   -ce or -wince : create the cab files for Windows CE\n" +
             "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
-            "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
             "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n" +

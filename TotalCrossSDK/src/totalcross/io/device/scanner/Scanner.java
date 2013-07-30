@@ -753,14 +753,17 @@ public class Scanner
 
    static
    {
-      driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                     Vm.attachNativeLibrary("Motorola") || 
-                     Vm.attachNativeLibrary("Symbol") || 
-                     Vm.attachNativeLibrary("Dolphin") || 
-                     Vm.attachNativeLibrary("OpticonH16") || 
-                     Vm.attachNativeLibrary("Intermec");
-      if (!driverLoaded && tries++ == 0)
-         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      if (!Settings.platform.equals(Settings.ANDROID))
+      {
+         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
+                        Vm.attachNativeLibrary("Motorola") || 
+                        Vm.attachNativeLibrary("Symbol") || 
+                        Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("OpticonH16") || 
+                        Vm.attachNativeLibrary("Intermec");
+         if (!driverLoaded && tries++ == 0)
+            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      }
    }
 
    /**
@@ -976,25 +979,13 @@ public class Scanner
       Window win = dest.getParentWindow(); // guich@400_44
       if (win != null)
          win.validate();
-      if (Settings.platform.equals(Settings.PALMOS)) // support PalmOS/SDL too
-      {
-         // If we are running on a Palm unit then calling activate() on the Symbol Scanner
-         // API will cause the scanner to allow any number of scans until deactivate is
-         // called. So, if continuousScanning is set to false then we need to disable the
-         // scanner
-         if (!continousScanning)
-            deactivate();
-      }
+      // If we are running on a PocketPC unit, or under Java emulation, then calling
+      // activate() on the Symbol Scanner API only schedules a single scan.
+      // So, if continuousScanning is true we need to schedule another scan.
+      if (continousScanning)
+         activate();
       else
-      {
-         // If we are running on a PocketPC unit, or under Java emulation, then calling
-         // activate() on the Symbol Scanner API only schedules a single scan.
-         // So, if continuousScanning is true we need to schedule another scan.
-         if (continousScanning)
-            activate();
-         else
-            isActive = false;
-      }
+         isActive = false;
    }
 
    /** Returns true if this scanner is a passive one. Passive scanners must be triggered programatically, using the
@@ -1013,4 +1004,23 @@ public class Scanner
    {
       return scannerIsPassive && Scanner.setParam(0,0,0);
    }
+ 
+   /** Reads a barcode using ZXing for Android.
+    * 
+    *  The mode can be one of:
+    *  <ul>
+    *  <li> 1D - for one dimension barcodes
+    *  <li> 2D - for QR codes
+    *  <li> empty string - for both
+    *  </ul>
+    *  
+    *  If an error happens, it is returned prefixed with ***.
+    *  
+    *  See the tc.samples.io.device.zxing.ZXingScanner sample.
+    */
+   public static String readBarcode(String mode)
+   {
+      return null;
+   }
+   native public static String readBarcode4D(String mode);
 }

@@ -28,11 +28,6 @@ import totalcross.ui.image.*;
 
 public class GifAnimatedTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private boolean no;
    private Button btnStartStop;
    private Button btnNext;
@@ -41,6 +36,11 @@ public class GifAnimatedTest extends MainWindow
    private int effect;
    private Label lab;
 
+   public GifAnimatedTest()
+   {
+      setUIStyle(Settings.Android);
+   }
+   
    public void initUI()
    {
       add(btnNext = new Button(" Next "), CENTER, AFTER+3);
@@ -48,7 +48,8 @@ public class GifAnimatedTest extends MainWindow
       add(lab = new Label("99999999ms"),LEFT,SAME);
       lab.setText("");
       add(new Label("Effect: "), LEFT, BOTTOM);
-      String[] items  = {"normal","scaledBy","smoothScaledBy","getRotatedScaledInstance","getTouchedUpInstance","changeColors","fadedInstance","applyColor1","applyColor2/dither"};      
+      String[] items  = {"normal","scaledBy","smoothScaledBy","getRotatedScaledInstance","getTouchedUpInstance","changeColors","fadedInstance","applyColor1","applyColor2/dither"};
+      ComboBox.usePopupMenu = false;
       add(cbEffect = new ComboBox(items), AFTER+2,SAME,FILL,PREFERRED);
       cbEffect.setSelectedIndex(0);
       next(false);
@@ -96,17 +97,19 @@ public class GifAnimatedTest extends MainWindow
          Image img = new Image(no ? "tc/samples/ui/image/gifanimated/wolf.gif" : "tc/samples/ui/image/gifanimated/alligator.gif");
          effect = cbEffect.getSelectedIndex();
          int ini = Vm.getTimeStamp();
+         double scale = Settings.isIOS() ? 1.5 : 2; // ios has less opengl memory
          switch (effect)
          {
-            case 1: img = img.scaledBy(2,2); break;
-            case 2: img = img.smoothScaledBy(2,2,img.transparentColor); break;
+            case 1: img = img.scaledBy(scale,scale); break;
+            case 2: img = img.smoothScaledBy(scale,scale); break;
             case 3: img = img.getRotatedScaledInstance(50,90, -1); break;
             case 4: img = img.getTouchedUpInstance((byte)50,(byte)100); break;
-            case 5: img.changeColors(no ? 0xA5B500 : 0x31CE31, 0x0077E5); break;
-            case 6: img = img.getFadedInstance(backColor); break;
+            case 5: img.changeColors(no ? 0xFFA5B500 : 0xFF31CE31, 0xFF0077E5); break;
+            case 6: img = img.getFadedInstance(); break;
             case 7: img.applyColor(Color.RED); break;
-            case 8: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight(),img.transparentColor); break;
+            case 8: img.applyColor2(Color.RED); img.getGraphics().dither(0,0,img.getWidth(),img.getHeight()); break;
          }
+         if (Settings.isOpenGL) img.applyChanges();
          int fim = Vm.getTimeStamp();
          lab.setText((fim-ini)+"ms");
          anim = new Animation(img, 200);
@@ -114,7 +117,7 @@ public class GifAnimatedTest extends MainWindow
          add(anim, CENTER,CENTER,PREFERRED,PREFERRED,btnNext);
          anim.start(Animation.LOOPS_UNLIMITED);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          MessageBox.showException(e, true);
       }

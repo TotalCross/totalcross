@@ -23,5 +23,6 @@
 <property name="app.srcdir" value="io/device/gpstest" />
 <property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml" />
+<property name="supportedPlatforms" value="-winmo -android -ios"/>
 
 </project>

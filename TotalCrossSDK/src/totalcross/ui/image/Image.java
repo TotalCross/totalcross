@@ -58,19 +58,9 @@ public class Image extends GfxSurface
 {
    protected int width;
    protected int height;
-   /** Sets the transparent pixel of this image. Used in many controls.
-     * Note that you can set it to -1 to make the image use the background
-     * color.
-     * Note also that this value is not used by the system, but the controls
-     * (E.g.: totalcross.ui.Button)
-     * use the value stored here to set the background color when going to
-     * draw a transparent image.
-     * @see #NO_TRANSPARENT_COLOR
-     */
-   public int transparentColor = Color.WHITE;
 
    /** Contains the pixels of this image. */
-   Object pixels;
+   int[] pixels;
 
    /** The number of frames of this image, if derived from a multi-frame gif. */
    private int frameCount=1;
@@ -83,21 +73,13 @@ public class Image extends GfxSurface
    private Object pixelsOfAllFrames;
    private int currentFrame=-1, widthOfAllFrames;
 
-   /** True if this image has an alpha-channel for transparency (higher 8 bits).
-	 * Important: if useAlpha is true, transparentColor must be set to -1, otherwise, many
-	 * Graphics methods will not work.
-	 * Also, the only operation that works with alpha-channel is Graphics.DRAW_PAINT; all other
-	 * drawing operations ignore the alpha channel.
-	 * @since TotalCross 1.27
-	 */
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static final int NO_TRANSPARENT_COLOR = -2;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public int transparentColor = Color.WHITE;
+   /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
 
-   /** The value that will be in <code>transparentColor</code> when image has no transparent color.
-    * @see #transparentColor
-    * @since TotalCross 1.3
-    */
-   public static final int NO_TRANSPARENT_COLOR = -2; // guich@tc130: -1 is often used in PNG with alpha-channel (opaque-white color - 0xFFFFFF), so we use another less-used color as no transparent
-   
    /**
    * Creates an image of the specified width and height. The image has
    * a color depth (number of bitplanes) and color map that matches the
@@ -124,8 +106,8 @@ public class Image extends GfxSurface
       init();
    }
 
-   /** Used only at desktop to get the image's pixels; <b>NOT AVAILABLE</b> at the device (will throw a NoSuchMethodError). */
-   public Object getPixels()
+   /** Used only at desktop to get the image's pixels. */
+   public int[] getPixels()
    {
       return pixels;
    }
@@ -164,7 +146,23 @@ public class Image extends GfxSurface
          throw new ImageException(fullDescription==null?"Description is null":("Error on bmp with "+fullDescription.length+" bytes length description"));
       init();
    }
-
+   
+   /** Sets the transparent color of this image. A new image is NOT created.
+    * 
+    * @return The image itself
+    * @since TotalCross 2.0
+    */
+   public Image setTransparentColor(int color)
+   {
+      int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
+      for (int i = pixels.length; --i >= 0;)
+      {
+         int p = pixels[i] & 0xFFFFFF;
+         pixels[i] = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
+      }
+      return this;
+   }
+   
    /** Parses an image from the given byte array. Note that the byte array must
      * specify the full JPEG/PNG image, with headers (Gif/Bmp are supported at desktop only).
      * Here is a code example: <pre>
@@ -176,6 +174,7 @@ public class Image extends GfxSurface
      *    g.backColor = Color.getRGB(10*i,10*i,10*i);
      *    g.fillRect(i*10,0,10,160);
      * }
+     * img.applyChanges();
      * // save the bmp in a byte stream
      * ByteArrayStream bas = new ByteArrayStream(4096);
      * DataStream ds = new DataStream(bas);
@@ -308,6 +307,31 @@ public class Image extends GfxSurface
       if (Launcher.instance.mainWindow != null) gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
       return gfx;
    }
+   
+   /** Applies any pending changes made in this image.
+    * In Open GL platforms, creates a texture for this image. This is already done, lazily, when the image
+    * is going to be painted. If you want to speedup paint, call this method as soon as any changes in the image
+    * are finished.
+    * 
+    * In non-open gl platforms, does nothing.
+    * @since TotalCross 2
+    */
+   public void applyChanges()
+   {
+   }
+
+   /** In OpenGL platforms, apply changes to the current texture and
+    * frees the memory used for the pixels in internal memory (the 
+    * image can, however, be drawn on screen because the texture will
+    * be ready). Calling getGraphics after this method will return a 
+    * null reference.
+    * 
+    * In non-OpenGL, does nothing.
+    * @since TotalCross 2.0
+    */ 
+   public void lockChanges()
+   {
+   }
 
    /** Changes all the pixels of the image from one color to the other.
    * The current value of the transparent color is not changed.
@@ -316,23 +340,18 @@ public class Image extends GfxSurface
    * Note this replaces a single solid color by another solid color. If you want to change
    * a gradient, or colorize an image, use the applyColor method instead.
    * 
+   * In OpenGL platforms, you must pass the color with the alpha channel (usually, 0xFF).
+   * For example, to change a red to green, use from=0xFFFF0000 (0xFF0000 with alpha=0xFF), to=0xFF00FF00.
+   * 
    * @see #applyColor(int)
    * @see #applyColor2(int)
    */
    final public void changeColors(int from, int to)
    {
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
-      if (useAlpha)
-      {
-         for (int n = pixels.length; --n >= 0;)
-            if ((pixels[n] & 0xFFFFFF) == from) 
-               pixels[n] = (pixels[n] & 0xFF000000) | to;
-      }
-      else
-      {
-         for (int n = pixels.length; --n >= 0;)
-            if (pixels[n] == from) pixels[n] = to;
-      }
+      for (int n = pixels.length; --n >= 0;)
+         if ((pixels[n] & 0xFFFFFF) == from) 
+            pixels[n] = (pixels[n] & 0xFF000000) | to;
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
    }
    
@@ -515,7 +534,7 @@ public class Image extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
+         ds.writeByte(6); // alpha or direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -523,16 +542,6 @@ public class Image extends GfxSurface
          ds.writeInt(c);
 
          // write transparent pixel information, if any
-         if (transparentColor >= 0) // transparency bit set?
-         {
-            ds.writeInt(6);
-            crc.reset();
-            ds.writeBytes("tRNS".getBytes());
-            ds.writeShort((transparentColor >> 16) & 0xFF);
-            ds.writeShort((transparentColor >> 8) & 0xFF);
-            ds.writeShort((transparentColor ) & 0xFF);
-            ds.writeInt((int)crc.getValue());
-         }
          if (comment != null && comment.length() > 0)
          {
             ds.writeInt("Comment".length() + 1 + comment.length());
@@ -546,7 +555,7 @@ public class Image extends GfxSurface
 
          // write the image data
          crc.reset();
-         int bytesPerPixel = useAlpha ? 4 : 3;
+         final int bytesPerPixel = 4;
          byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
          ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
@@ -592,8 +601,7 @@ public class Image extends GfxSurface
          fillIn[x++] = (byte)((p >> 16) & 0xFF); // r
          fillIn[x++] = (byte)((p >> 8) & 0xFF); // g
          fillIn[x++] = (byte)(p & 0xFF); // b
-         if (useAlpha)
-            fillIn[x++] = (byte)((p >>> 24) & 0xFF); // a
+         fillIn[x++] = (byte)((p >>> 24) & 0xFF); // a
       }
    }
 
@@ -607,8 +615,6 @@ public class Image extends GfxSurface
       // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
       newWidth *= frameCount; // guich@tc100b5_40
       Image scaledImage = new Image(newWidth, newHeight);
-      scaledImage.transparentColor = this.transparentColor;
-      scaledImage.useAlpha = this.useAlpha;
 
       int[] dstImageData = (int[]) scaledImage.pixels;
       int[] srcImageData = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
@@ -640,30 +646,25 @@ public class Image extends GfxSurface
    private static final int BIAS = (1<<BIAS_BITS);
    
    /** Returns the scaled instance using the area averaging algorithm for this image.
-    * The backColor replaces the transparent pixel of the current image to produce a smooth border.
     * Example: <pre>
-    * Image img2 = img.getSmoothScaledInstance(200,200, getBackColor());
+    * Image img2 = img.getSmoothScaledInstance(200,200);
     * </pre>
     * In device and JavaSE it uses a Catmull-rom resampling, and in Blackberry it uses an area-average resampling.
     * The reason is that the Catmull-rom consumes more memory and is also slower than the area-average, although the 
     * final result is much better. 
     * @since TotalCross 1.0
     */
-   public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
+   public Image getSmoothScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
    {
       // image preparation
       if (newWidth==width && newHeight==height) return this;
       newWidth *= frameCount;
       Image scaledImage = new Image(newWidth, newHeight);
-      scaledImage.transparentColor = this.transparentColor;
-      scaledImage.useAlpha = this.useAlpha;
 
       int width = this.width * frameCount;
       int height = this.height;
       int[] pixels = (int[]) (frameCount==1 ? this.pixels : this.pixelsOfAllFrames);
       int[] pixels2= (int[]) scaledImage.pixels;
-      int transp = transparentColor & 0xFFFFFF;
-      backColor &= 0xFFFFFF;
 
       // algorithm start
       
@@ -783,18 +784,9 @@ public class Image extends GfxSurface
                val = pixels[v_pixel[p_pixel++] + n * width]; /* Using val as temporary storage */
                /* Acting on color components */
                a += ((val>>24)&0xFF) * iweight;
-               if ((val&0xFFFFFF) == transp)
-               {
-                  r += ((backColor>>16)&0xFF) * iweight;
-                  g += ((backColor>> 8)&0xFF) * iweight;
-                  b += ((backColor    )&0xFF) * iweight;
-               }
-               else
-               {
-                  r += ((val>>16)&0xFF) * iweight;
-                  g += ((val>> 8)&0xFF) * iweight;
-                  b += ((val    )&0xFF) * iweight;
-               }
+               r += ((val>>16)&0xFF) * iweight;
+               g += ((val>> 8)&0xFF) * iweight;
+               b += ((val    )&0xFF) * iweight;
             }
             a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
             r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
@@ -908,9 +900,9 @@ public class Image extends GfxSurface
     * </pre>
     * @since TotalCross 1.0
     */
-   public Image smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
+   public Image smoothScaledBy(double scaleX, double scaleY) throws ImageException  // guich@402_6
    {
-      return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY), backColor); // guich@400_23: now test if the width/height are the same, what returns the original image
+      return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
 
    /** Returns the scaled instance using fixed aspect ratio for this image, given the scale arguments. Given values must be &gt; 0.
@@ -919,18 +911,17 @@ public class Image extends GfxSurface
     * 
     * @param newSize The new size (width or height) for the image
     * @param isHeight If true, the newSize is considered as the new height of the image. If false, the newSize is considered the new width of the image.
-    * @param backColor The background color to be used as transparent pixel; for PNG images with alpha-channel, use -1.
     * 
     * Example: <pre>
     * Image img2 = img.smoothScaledFixed(fmH, true, -1);
     * </pre>
     * @since TotalCross 1.53
     */
-   public Image smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   public Image smoothScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException  // guich@402_6
    {
       int w = !isHeight ? newSize : (newSize * width / height);
       int h =  isHeight ? newSize : (newSize * height / width);         
-      return getSmoothScaledInstance(w, h, backColor);
+      return getSmoothScaledInstance(w, h);
    }
 
    /** Creates a rotated and/or scaled version of this Image.
@@ -960,9 +951,6 @@ public class Image extends GfxSurface
    public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException
    {
       if (scale <= 0) scale = 1;
-      if (fillColor < 0 && transparentColor < 0)
-         fillColor = Color.WHITE;
-      int backColor = (fillColor < 0) ? this.transparentColor : fillColor;
 
       /* xplying by 0x10000 allow integer math, while not loosing much prec. */
 
@@ -1042,8 +1030,6 @@ public class Image extends GfxSurface
          
       Image imageOut = new Image(wOut * frameCount, hOut);
       if (frameCount > 1) imageOut.setFrameCount(frameCount);
-      imageOut.transparentColor = transparentColor;
-      imageOut.useAlpha = useAlpha;
 
       for (int f = 0; f < frameCount; f++)
       {
@@ -1071,7 +1057,7 @@ public class Image extends GfxSurface
                if (0 <= u && u < wIn && 0 <= v && v < hIn)
                   lineOut[iOut++] = pixelsIn[v*this.width+u];
                else
-                  lineOut[iOut++] = backColor;
+                  lineOut[iOut++] = fillColor;
             }
             x0 -= sine;
             y0 += cosine;
@@ -1089,7 +1075,8 @@ public class Image extends GfxSurface
    }
 
    /** Creates a faded instance of this image, interpolating all pixels with the given background color.
-    * The pixels that match the transparent color will not be changed
+    * @deprecated Use getFadedInstance() instead
+    * @see #getFadedInstance()
     * @since TotalCross 1.01
     */
    public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
@@ -1097,18 +1084,56 @@ public class Image extends GfxSurface
       Image imageOut = new Image(frameCount > 1 ? widthOfAllFrames : width, height);
       if (frameCount > 1)
          imageOut.setFrameCount(frameCount);
-      imageOut.transparentColor = transparentColor;
-      imageOut.useAlpha = useAlpha;
 
       int[] from = (int[])(frameCount > 1 ? pixelsOfAllFrames : pixels);
       int[] to = (int[])(frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
-      int t = transparentColor;
-      if (useAlpha)
-         for (int i = from.length; --i >= 0;)
-            to[i] = (from[i] & 0xFF000000) | Color.interpolate(backColor,from[i]); // keep the alpha channel unchanged
-      else
-         for (int i = from.length; --i >= 0;)
-            to[i] = from[i] == t ? t : Color.interpolate(backColor,from[i]);
+      for (int i = from.length; --i >= 0;)
+         to[i] = (from[i] & 0xFF000000) | Color.interpolate(backColor,from[i]); // keep the alpha channel unchanged
+      if (frameCount != 1)
+      {
+         imageOut.currentFrame = -1;
+         imageOut.setCurrentFrame(0);
+      }
+      return imageOut;
+   }
+
+   /** Used in getFadedInstance(). */
+   public static int FADE_VALUE = -96;
+   
+   /** Creates a faded instance of this image, decreasing the alpha-channel by 128 for all pixels.
+    * @since TotalCross 2.0
+    * @see #FADE_VALUE
+    */
+   public Image getFadedInstance() throws ImageException // guich@tc110_50
+   {
+      return getAlphaInstance(FADE_VALUE);
+   }
+   
+   /** Adds the given value to each pixel's alpha-channel of this image.
+    * Only the pixels that don't have a 0 alpha are changed.
+    * @since TotalCross 2.0
+    */
+   public Image getAlphaInstance(int delta) throws ImageException
+   {
+      Image imageOut = new Image(frameCount > 1 ? widthOfAllFrames : width, height);
+      if (frameCount > 1)
+         imageOut.setFrameCount(frameCount);
+
+      int[] from = (int[])(frameCount > 1 ? pixelsOfAllFrames : pixels);
+      int[] to = (int[])(frameCount > 1 ? imageOut.pixelsOfAllFrames : imageOut.pixels);
+      for (int i = from.length; --i >= 0;)
+      {
+         int p = from[i];
+         if ((p & 0xFF000000) == 0)
+            to[i] = p;
+         else
+         {
+            int a = (p >>> 24) & 0xFF;
+            a += delta;
+            if (a < 0) a = 0; else if (a > 255) a = 255;
+            to[i] = (p & 0x00FFFFFF) | (a << 24);
+         }
+      }      
       if (frameCount != 1)
       {
          imageOut.currentFrame = -1;
@@ -1141,7 +1166,6 @@ public class Image extends GfxSurface
 
       Image imageOut = new Image(w, h);
 
-      imageOut.useAlpha = useAlpha;
       int[] pixelsOut = (int[]) imageOut.pixels;
       short table[] = null;
       int m = 0, k = 0;
@@ -1176,7 +1200,6 @@ public class Image extends GfxSurface
       {
          case NO_TOUCHUP:
             Vm.arrayCopy(in, 0, out, 0, w*h);
-            imageOut.transparentColor = transparentColor;
             break;
          case BRITE_TOUCHUP:
             for (int i = w*h-1; i >= 0; i--)
@@ -1188,7 +1211,6 @@ public class Image extends GfxSurface
                int b = p & 0xFF;
                out[i] = a | Color.getRGBEnsureRange(((m * r) + k) >> 16, ((m * g) + k) >> 16, ((m * b) + k) >> 16);
             }
-            imageOut.transparentColor = Color.getRGBEnsureRange(((m * Color.getRed(transparentColor)) + k) >> 16, ((m * Color.getGreen(transparentColor)) + k) >> 16, ((m * Color.getBlue(transparentColor)) + k) >> 16); // guich@tc100b5_41: use the same algorithm for the transparent color
             break;
          case CONTRAST_TOUCHUP:
             for (int i = w*h-1; i >= 0; i--)
@@ -1200,7 +1222,6 @@ public class Image extends GfxSurface
                int b = p & 0xFF;
                out[i] = a | Color.getRGBEnsureRange(table[r], table[g], table[b] & 0xFF);
             }
-            imageOut.transparentColor = Color.getRGBEnsureRange(table[Color.getRed(transparentColor)], table[Color.getGreen(transparentColor)], table[Color.getBlue(transparentColor)] & 0xFF); // guich@tc100b5_41
             break;
          default: // case CTRSTBRITE_TOUCHUP:
             for (int i = w*h-1; i >= 0; i--)
@@ -1212,11 +1233,8 @@ public class Image extends GfxSurface
                int b = table[p & 0xFF];
                out[i] = a | Color.getRGBEnsureRange(((m * r) + k) >> 16, ((m * g) + k) >> 16, ((m * b) + k) >> 16);
             }
-            imageOut.transparentColor = Color.getRGBEnsureRange(((m * Color.getRed(transparentColor)) + k) >> 16, ((m * Color.getGreen(transparentColor)) + k) >> 16, ((m * Color.getBlue(transparentColor)) + k) >> 16); // guich@tc100b5_41
             break;
       }
-      if (imageOut.useAlpha)
-         imageOut.transparentColor = NO_TRANSPARENT_COLOR;
       if (frameCount > 1) // guich@tc100b5_40
          imageOut.setFrameCount(frameCount);
       return imageOut;
@@ -1228,8 +1246,6 @@ public class Image extends GfxSurface
       this.width  = img.getWidth();
       this.height = img.getHeight();
       this.pixels = img.pixels;
-      this.transparentColor = img.transparentColor;
-      this.useAlpha = img.useAlpha;
       this.frameCount = img.frameCount;
       this.comment = img.comment;
    }
@@ -1583,9 +1599,10 @@ public class Image extends GfxSurface
       private byte[] imgBytes;
       private boolean isGif;
       private Vector frames = new Vector(5);
-      private boolean paletteWithAlpha; // guich@tc130
       private java.awt.image.ColorModel colorModel;
       boolean isSupported = true;
+      private int transparentColor = -3;
+      private boolean useAlpha;
 
       /**
        * Create a ImageLoader object to grab frames from the image <code>img</code>
@@ -1639,7 +1656,7 @@ public class Image extends GfxSurface
                   ds.skipBytes(9);
                   colorType = ds.readByte();
                   bas.skipBytes(-10);
-                  imgCur.useAlpha = colorType == 4 || colorType == 6;
+                  useAlpha = colorType == 4 || colorType == 6;
                   isSupported = colorType != 4;
                }
                else
@@ -1654,17 +1671,17 @@ public class Image extends GfxSurface
                   switch (len)
                   {
                      case 6: // RGB
-                        imgCur.transparentColor = Color.getRGBEnsureRange(ds.readUnsignedShort(),ds.readUnsignedShort(),ds.readUnsignedShort());
+                        transparentColor = Color.getRGBEnsureRange(ds.readUnsignedShort(),ds.readUnsignedShort(),ds.readUnsignedShort());
                         bas.skipBytes(-6);
                         break;
                      case 256: // palettized? find the color that is transparent (0)
                         if (colorType == 3) // guich@tc130: palettized with alpha-channel palette
-                           paletteWithAlpha = imgCur.useAlpha = true;
+                           useAlpha = true;
                         for (int i = 0, pos = bas.getPos(); i < 256; i++,pos++)
                            if (input[pos] == 0)
                            {
                               if (plteLen == 768) // RGB?
-                                 imgCur.transparentColor = Color.getRGB(input[pltePos+i*3] & 0xFF,input[pltePos+i*3+1] & 0xFF,input[pltePos+i*3+2] & 0xFF);
+                                 transparentColor = Color.getRGB(input[pltePos+i*3] & 0xFF,input[pltePos+i*3+1] & 0xFF,input[pltePos+i*3+2] & 0xFF);
                               break;
                            }
                         break;
@@ -1709,6 +1726,8 @@ public class Image extends GfxSurface
             image.copyFrom(loaded);
             if (fc > 0)
                image.comment = "FC="+fc;
+            if (!useAlpha && transparentColor != -3)
+               image.setTransparentColor(transparentColor);
          }
       }
 
@@ -1771,14 +1790,15 @@ public class Image extends GfxSurface
             int p[] = (int[]) imageCur.pixels;
             int jMax = y + h;
             int iMax = x + w;
-            if (imageCur.useAlpha)
+            if (useAlpha)
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
                      p[i++] = model.getRGB(pixels[k++] & 0xFF);
             else
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
-                     p[i++] = model.getRGB(pixels[k++] & 0xFF) & 0xFFFFFF;
+                     p[i++] = model.getRGB(pixels[k++] & 0xFF) | 0xFF000000;
+               
          }
       }
 
@@ -1789,19 +1809,14 @@ public class Image extends GfxSurface
             int[] p = (int[]) imageCur.pixels;
             int jMax = y + h;
             int iMax = x + w;
-            if (imageCur.useAlpha)
-               for (int j = y; j < jMax; ++j, off += scansize)
-                  for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
-                     p[i++] = model.getRGB(pixels[k++]);
-            else
-            if (paletteWithAlpha)
+            if (useAlpha)
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
                      p[i++] = model.getRGB(pixels[k++]);
             else
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
-                     p[i++] = model.getRGB(pixels[k++]) & 0xFFFFFF;
+                     p[i++] = model.getRGB(pixels[k++]) | 0xFF000000;
          }
       }
 
@@ -1821,7 +1836,6 @@ public class Image extends GfxSurface
                try
                {
                   imageCur = new Image(width, height);
-                  imageCur.transparentColor = -3;
                }
                catch (ImageException e)
                {
@@ -1834,22 +1848,16 @@ public class Image extends GfxSurface
                   isGif = true;
                //
                int index;
-               if (imageCur.useAlpha)
-                  imageCur.transparentColor = Image.NO_TRANSPARENT_COLOR;
-               else
-               if (imageCur.transparentColor == -3) // guich@tc130: not already changed?
+               if (transparentColor == -3) // guich@tc130: not already changed?
                {
                   if ((colorModel instanceof java.awt.image.IndexColorModel) && (-1 != (index = ((java.awt.image.IndexColorModel) colorModel).getTransparentPixel())))
-                     imageCur.transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
-                  else
-                     imageCur.transparentColor = Color.WHITE; // guich@tc120_65
+                     transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
                }
-               
-               if (imageCur.transparentColor >= 0)
+               if (transparentColor >= 0)
                {
                   // fill all pixels with the transparent color
                   int[] p = (int[])imageCur.pixels;
-                  Convert.fill(p, 0, p.length, imageCur.transparentColor);
+                  Convert.fill(p, 0, p.length, transparentColor | 0xFF000000);
                }
             }
          }
@@ -1884,8 +1892,6 @@ public class Image extends GfxSurface
                for (int i =0; i < n; i++)
                   totalW += ((Image)frames.items[i]).width;
                Image temp = new Image(totalW, totalH);
-               temp.transparentColor = imageCur.transparentColor;
-               temp.useAlpha = imageCur.useAlpha;
                temp.frameCount = n;
                temp.comment = imageCur.comment;
                int[] dest = (int[])temp.pixels;
@@ -1982,8 +1988,6 @@ public class Image extends GfxSurface
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
       Vm.arrayCopy(from, 0, to, 0, from.length);
-      img.transparentColor = this.transparentColor;
-      img.useAlpha = this.useAlpha;
       return img;
    }
 
@@ -2002,13 +2006,12 @@ public class Image extends GfxSurface
       mr = (int) (Math.sqrt((r2 + k) / k) * 0x10000);
       mg = (int) (Math.sqrt((g2 + k) / k) * 0x10000);
       mb = (int) (Math.sqrt((b2 + k) / k) * 0x10000);
-      boolean useAlpha = this.useAlpha;
 
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
       for (int n = pixels.length; --n >= 0;)
       {
          int p = pixels[n];
-         if (useAlpha || p != transparentColor)
+         if ((p & 0xFF000000) != 0)
          {
             int r = (mr * Color.getRed(p)) >> 16;
             int g = (mg * Color.getGreen(p)) >> 16;
@@ -2026,13 +2029,12 @@ public class Image extends GfxSurface
     * based on the given resolution (which is the resolution that you used to MAKE the image). The target size is computed as 
     * <code>image_size*min(screen_size)/original_resolution</code>
     * @param originalRes The original resolution that the image was developed for. Its a good idea to create images for 320x320 and then scale them down.
-    * @param backColor The background color.
     * @since TotalCross 1.12
     */
-   final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
+   final public Image smoothScaledFromResolution(int originalRes) throws ImageException // guich@tc112_23
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
-      return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
+      return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes);
    }
    
    /** Returns true if the given Image object has the same size and RGB pixels of this one. 
@@ -2051,8 +2053,8 @@ public class Image extends GfxSurface
          if (w != w2 || h != h2)
             return false;
          
-         byte[] row1 = new byte[useAlpha ? 4*w : 3*w];
-         byte[] row2 = new byte[useAlpha ? 4*w : 3*w];
+         byte[] row1 = new byte[4*w];
+         byte[] row2 = new byte[4*w];
 
          for (int y = 0; y < h; y++)
          {
@@ -2078,63 +2080,22 @@ public class Image extends GfxSurface
       int r2 = Color.getRed(color);
       int g2 = Color.getGreen(color);
       int b2 = Color.getBlue(color);
-      boolean useAlpha = this.useAlpha;
-      int transp = transparentColor,m,p;
+      int m,p;
 
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
 
       // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
       int hi=0, hip=0;
-      if (!useAlpha)
-      {
-         if (transp == -1)
+      for (int n = pixels.length; --n >= 0;)
+         if (((p = pixels[n]) & 0xFF000000) == 0xFF000000) // consider only opaque pixels
          {
-            for (int n = pixels.length; --n >= 0;)
-            {
-               p = pixels[n];
-               int r = (p >> 16) & 0xFF;
-               int g = (p >>  8) & 0xFF;
-               int b = (p      ) & 0xFF;
-               m = (r + g + b) / 3;
-               if (m > hi) 
-               {
-                  hi = m; 
-                  hip = p; 
-                  if ((p&0xFFFFFF) == 0xFFFFFF) 
-                     break;
-               }
-            }
+            p &= 0x00FFFFFF;
+            int r = (p >> 16) & 0xFF;
+            int g = (p >>  8) & 0xFF;
+            int b = (p      ) & 0xFF;
+            m = (r + g + b) / 3;
+            if (m > hi) {hi = m; hip = p;}
          }
-         else
-         {
-            for (int n = pixels.length; --n >= 0;)
-               if ((p = pixels[n]) != transp)
-               {
-                  int r = (p >> 16) & 0xFF;
-                  int g = (p >>  8) & 0xFF;
-                  int b = (p      ) & 0xFF;
-                  m = (r + g + b) / 3;
-                  if (m > hi) 
-                  {
-                     hi = m; 
-                     hip = p; 
-                     if ((p&0xFFFFFF) == 0xFFFFFF) 
-                        break;
-                  }
-               }
-         }
-      }
-      else
-         for (int n = pixels.length; --n >= 0;)
-            if (((p = pixels[n]) & 0xFF000000) == 0xFF000000) // consider only opaque pixels
-            {
-               p &= 0x00FFFFFF;
-               int r = (p >> 16) & 0xFF;
-               int g = (p >>  8) & 0xFF;
-               int b = (p      ) & 0xFF;
-               m = (r + g + b) / 3;
-               if (m > hi) {hi = m; hip = p;}
-            }
       
       int hiR = (hip >> 16) & 0xFF;
       int hiG = (hip >>  8) & 0xFF;
@@ -2146,7 +2107,7 @@ public class Image extends GfxSurface
       for (int n = pixels.length; --n >= 0;)
       {
          p = pixels[n];
-         if (useAlpha || p != transparentColor)
+         if ((p & 0xFF000000) != 0)
          {
             int pr = (p >> 16) & 0xFF;
             int pg = (p >>  8) & 0xFF;
@@ -2161,5 +2122,28 @@ public class Image extends GfxSurface
          }
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
+   }
+
+   ////////////////////// TOTALCROSS 2 ////////////////////
+   
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
+   {
+      return getSmoothScaledInstance(newWidth, newHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledBy(scaleX, scaleY);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledFixedAspectRatio(newSize, isHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
+   {
+      return smoothScaledFromResolution(originalRes);
    }
 }

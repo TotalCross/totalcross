@@ -51,8 +51,6 @@ public class CompareBox extends Window
       {
          return;
       }
-      imgo.transparentColor = Image.NO_TRANSPARENT_COLOR; // otherwise, tests with only white pixels won't be shown bc the default transparent color is white
-      imgi.transparentColor = Image.NO_TRANSPARENT_COLOR;
       original = new ImageControl(imgo);
       test = new ImageControl(imgi);
       int w = original.getPreferredWidth() * 2 + 16;
@@ -102,8 +100,8 @@ public class CompareBox extends Window
 
    private void doBlink()
    {
-      myg0.fillCursor(i,j,w,w);
-      myg1.fillCursor(i,j,w,w);
+      myg0.drawRect(i,j,w,w);
+      myg1.drawRect(i,j,w,w);
       showing = !showing;
    }
 

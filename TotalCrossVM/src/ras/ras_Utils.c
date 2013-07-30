@@ -87,13 +87,6 @@ static void getArtificialHash(char *out)
       }
       RegCloseKey(handle);
    }
-#elif defined(PALMOS)
-   uint16 size = 4;
-   if (PrefGetAppPreferences('POWR', 1, &v, &size, true) == noPreferenceFound)
-   {
-      v = (int32)TimGetTicks();
-      PrefSetAppPreferences('POWR', 1, 1, &v, 4, true); // returns void
-   }
 #endif
    if (v != 0)
       xstrprintf(out, "%lX", (long)v);

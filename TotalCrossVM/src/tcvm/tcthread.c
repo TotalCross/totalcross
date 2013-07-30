@@ -15,9 +15,7 @@
 
 void executeThreadRun(Context context, Object thread);
 
-#if defined PALMOS
- #include "palm/tcthread_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/tcthread_c.h"
 #elif defined POSIX || defined ANDROID
  #include "posix/tcthread_c.h"
@@ -36,7 +34,8 @@ void executeThreadRun(Context context, Object thread)
       if (cc == null)
          throwException(context, OutOfMemoryError, "Can't create thread context");
       else
-      {
+      {              
+         Sleep(1);
          setObjectLock(thread, UNLOCKED); // now is safe to unlock, because the context will mark the threadObj
          executeMethod(cc, run, thread);
          deleteContext(cc, false);
@@ -79,16 +78,13 @@ void threadDestroy(ThreadHandle h, bool threadDestroyingItself)
 }
 
 void threadDestroyAll()
-{
-   VoidPs *head = contexts, *current = head;
-   do
-   {
-      Context c = (Context)current->value;
-      if (c->thread != null)
+{     
+   Context c;              
+   int32 i;
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if ((c=contexts[i]) != null && c->thread != null)
       {
          threadDestroy(c->thread,false);
          c->thread = null;
       }
-      current = current->next;
-   } while (current != head);
 }

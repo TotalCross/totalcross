@@ -226,11 +226,12 @@ int32 locateLine(Method m, int32 pc)
 void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPArray callStack)
 {
    Method m=null;
-   int32 line;
-   char *c=currentContext->exmsg;
+   int32 line;                  
+   char *c0 =currentContext->exmsg; 
+   char *c=c0;
    bool first = true;
    Code oldpc;
-
+   
    while (callStack > currentContext->callStackStart)
    {
       callStack -= 2;
@@ -238,23 +239,23 @@ void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPAr
       m = (Method)callStack[0];
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
-      c = dumpMethodInfo(c, m, line, currentContext->exmsg + sizeof(currentContext->exmsg) - 2);
+      c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);
       first = false;
    }
    *c = 0;
    if (exception != null)
    {
-      if (c != currentContext->exmsg) // was something filled in?
+      if (c != c0) // was something filled in?
       {
-         *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg, (int32)(c-currentContext->exmsg));
+         *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, c0, (int32)(c-c0));
          if (*Throwable_trace(exception))
             setObjectLock(*Throwable_trace(exception), UNLOCKED);
          else
          if (currentContext != gcContext)
-            debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg);
+            debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,c0);
          else
          if (exception != currentContext->OutOfMemoryErrorObj)
-            debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg); // guich@tc126_63
+            debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,c0); // guich@tc126_63
       }
       else
          *Throwable_trace(exception) = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj

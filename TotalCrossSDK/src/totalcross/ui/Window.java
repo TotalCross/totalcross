@@ -121,9 +121,11 @@ public class Window extends Container
    protected Control menubar; // guich@200
    /** If true (default), the user can drag this window around */
    protected boolean canDrag = true;
+
    /** Must set to true if your Window is prepared for 320x320 resolutions.
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
+   /** @deprecated */
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
 
    /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
@@ -133,7 +135,7 @@ public class Window extends Container
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
-
+   
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus,focusOnPenUp;
@@ -154,7 +156,7 @@ public class Window extends Container
    private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
-   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 40 : 0;
    private String oldTitle;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
@@ -481,7 +483,7 @@ public class Window extends Container
    public void validate() // guich@400_44
    {
       if (needsPaint)
-         _doPaint();
+         repaintActiveWindows();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
@@ -716,7 +718,7 @@ public class Window extends Container
             if (isHighlighting && handleFocusChangeKeys(_keyEvent))
             {
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
          }
@@ -729,7 +731,7 @@ public class Window extends Container
             {
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
             else
@@ -764,18 +766,9 @@ public class Window extends Container
 
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint();
+                  repaintActiveWindows();
                return;
             }
-         }
-         else
-         if (Settings.keypadOnly) // guich@580_42: only if keypadOnly is true, otherwise it will have problems with a Edit + ToolTip
-         {
-            if (_focus != highlighted && highlighted != null) // guich@573_47: something different of the movement commands was typed, so redirect the key directly to the control.
-               highlighted.requestFocus();
-
-            if (Keypad.getInstance().handleKey(key)) // fdie@570_107 use a keypad on "keypadOnly" devices
-               return; // otherwise, an Edit will receive two events
          }
          else
          if (_focus != highlighted && highlighted != null) // guich@tc100: without this, if an Edit is highlighted and the user press a key, the key is not sent to the control bypassing the need for the ACTION key
@@ -974,7 +967,7 @@ public class Window extends Container
          ((Control)event.target).postEvent(event);
       
       if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
-         topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+         repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
    }
 
    private int getDirection(int originX, int originY, int x, int y) // guich@tc122_11
@@ -1049,7 +1042,7 @@ public class Window extends Container
             {
                case HORIZONTAL_GRADIENT:
                case VERTICAL_GRADIENT:
-                  gg.drawRoundGradient(0, 0, width,hh, 0, 0, 0, 0, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor, borderStyle == VERTICAL_GRADIENT);
+                  gg.fillShadedRect(0, 0, width,hh, true, borderStyle == HORIZONTAL_GRADIENT, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor,100);
                   break;
                case TAB_BORDER:
                case TAB_ONLY_BORDER:
@@ -1345,18 +1338,18 @@ public class Window extends Container
          mainSwapContainer = newContainer;
       else
          isHighlighting = Settings.keyboardFocusTraversable; // guich@573_17
+      // add the new container.
+      if (newContainer != null && newContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(newContainer.transitionEffect);
+      else
+      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
       // remove the last container
       if (lastSwappedContainer != null)
          remove(lastSwappedContainer);
       // returning back to the main one?
       if (newContainer == null)
          newContainer = mainSwapContainer;
-      // add the new container.
-      if (newContainer.transitionEffect != TRANSITION_NONE)
-         setNextTransitionEffect(newContainer.transitionEffect);
-      else
-      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
-         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
       lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
@@ -1365,10 +1358,12 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
+      applyTransitionEffect();
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
+      newContainer.onSwapFinished();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the size of the title if any plus the size of the border.
@@ -1400,6 +1395,7 @@ public class Window extends Container
       int i,j,n;
       boolean eas = enableUpdateScreen;
       enableUpdateScreen = false;
+      needsPaint = false; // prevent from updating the screen
       // guich@400_73 guich@400_76
       Object[] items = zStack.items;
       Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
@@ -1415,7 +1411,7 @@ public class Window extends Container
       {
          if (i == lastFade)
             Graphics.fadeScreen(fadeValue);
-         if (items[i] != null) ((Window)items[i]).repaintNow();
+         if (items[i] != null) ((Window)items[i])._doPaint();
       }
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
@@ -1534,12 +1530,24 @@ public class Window extends Container
       c.postEvent(_controlEvent);
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Called when the screen is resized, probably caused by a rotation. */
+   /** Called when the screen is resized, probably caused by a rotation.
+    * ATTENTION: THIS CALL CANNOT BE BLOCKED OR THE SYSTEM WILL LOCK!
+    */
    public void screenResized()
    {
       enableUpdateScreen = false; requestFocus(); enableUpdateScreen = true; // if resize occured in an edit, remove the focus from it.
       rTitle = null; // guich@tc120_37
       reposition();
+      final TimerEvent te = topMost.addTimer(10);
+      topMost.addTimerListener(new TimerListener()
+      {
+         public void timerTriggered(TimerEvent e)
+         {
+            topMost.removeTimerListener(this);
+            topMost.removeTimer(te);
+            repaintActiveWindows();
+         }
+      });
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
@@ -1691,14 +1699,6 @@ public class Window extends Container
    public static int getDefaultDragThreshold()
    {
       double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
-      return (int)Math.round(threshold);
-   }
-   public static int getDefaultDragThreshold4B()
-   {
-      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
-      if (Settings.deviceId.startsWith("95")) // 95xx series have SurePress screen, so increase threshold
-         threshold *= 1.5;
-      
       return (int)Math.round(threshold);
    }
    

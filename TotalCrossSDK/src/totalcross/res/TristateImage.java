@@ -53,6 +53,11 @@ public class TristateImage
    
    public Image getNormalInstance(int width, int height, int backColor) throws ImageException
    {
+      return getNormalInstance(width, height, backColor, true);
+   }
+   
+   private Image getNormalInstance(int width, int height, int backColor, boolean apply) throws ImageException
+   {
       int hash;
       synchronized(sblock)
       {
@@ -79,7 +84,7 @@ public class TristateImage
       }
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
-         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor).getFadedInstance(backColor));
+         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance());
       return ret;
    }
    
@@ -100,9 +105,9 @@ public class TristateImage
             ret.applyColor2(pressColor);
          }
          else 
-            ret = getNormalInstance(width,height,backColor).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+            ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
-            ret = ret.getFadedInstance(backColor);
+            ret = ret.getFadedInstance();
          htPressed.put(hash, ret);
       }
       return ret;
@@ -110,7 +115,7 @@ public class TristateImage
    
    private Image scaleTo(int w, int h) throws ImageException
    {
-      Image img = base.getSmoothScaledInstance(w,h,-1);
+      Image img = base.getSmoothScaledInstance(w,h);
       if (img == base) // if image's width/height are the same of w/h
          img = base.getFrameInstance(0);
       return img;
