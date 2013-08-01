@@ -56,6 +56,8 @@ import totalcross.ui.gfx.*;
 * the text is shown. You can then set the tip to a new value using setText; setting to an empty
 * string will disable the tooltip at that moment. Calling setControlRect also changes the rectangle
 * around which the tooltip will be displayed.
+* 
+* In Android UI, the ToolTip is displayed with a round border.
 **/
 public class ToolTip extends Label implements PenListener, MouseListener
 {
@@ -101,6 +103,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
       setVisible(false);
       this.control = control;
       setBackForeColors(UIColors.tooltipBack,UIColors.tooltipFore);
+      transparentBackground = uiAndroid;
       if (control != null) 
       {
          control.addPenListener(this); // i must admit: listeners simplified a LOT the ToolTip class
@@ -169,8 +172,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
    {
       if (e.type == TimerEvent.TRIGGERED)
       {
-	      if (delayTimer != null && delayTimer.triggered)
-	      {
+         if (delayTimer != null && delayTimer.triggered)
+         {
             removeTimer(delayTimer);
             delayTimer = null;
             if (control != null)
@@ -180,8 +183,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
             }
             if (text.length() > 0) // only show if there's something to be shown
                show();
-	      }
-	      else
+         }
+         else
          if (displayTimer != null && displayTimer.triggered)
          {
             hide();
@@ -273,7 +276,10 @@ public class ToolTip extends Label implements PenListener, MouseListener
          int dx = (insideGap>>1)+1;
          int dy = (dx>>1)-2;
          g.backColor = backColor;
-         g.fillRect(0,0,dx,height); // since g will be translated, fill the part that the Label won't
+         if (uiAndroid)
+            g.fillRoundRect(0,0,width,height,fmH/2);
+         else
+            g.fillRect(0,0,dx,height); // since g will be translated, fill the part that the Label won't
          // draw the label, taking care to not overwrite the border
          g.translate(dx,dy);
          super.onPaint(g);
@@ -282,7 +288,10 @@ public class ToolTip extends Label implements PenListener, MouseListener
          if (borderColor != -1)
          {
             g.foreColor = borderColor;
-            g.drawRect(0,0,width,height);
+            if (uiAndroid)
+               g.drawRoundRect(0,0,width,height,fmH/2);
+            else
+               g.drawRect(0,0,width,height);
          }
       }
    }
