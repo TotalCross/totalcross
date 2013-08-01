@@ -1013,7 +1013,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          g.setClip(0,0,ww,hh);
       }
       // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
-      java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
+      //java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
    }
 
    //static int count;
