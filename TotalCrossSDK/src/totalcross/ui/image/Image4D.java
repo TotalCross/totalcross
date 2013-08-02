@@ -160,7 +160,6 @@ public class Image4D extends GfxSurface
    public Graphics4D getGraphics()
    {
       if (pixels == null) return null;
-      changed = true;
       gfx.setFont(MainWindow.getDefaultFont());
       return gfx;
    }

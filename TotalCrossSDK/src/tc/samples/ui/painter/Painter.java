@@ -36,7 +36,7 @@ public class Painter extends MainWindow
    Label status;
    ComboBox cbColors;
    String catalogName = "BMP.PAin.BITM";
-   String fileName = Settings.appPath + "/image.png";
+   String fileName = "/image.png";
 
    static
    {
@@ -45,7 +45,7 @@ public class Painter extends MainWindow
 
    public Painter()
    {
-      setUIStyle(Settings.Flat);
+      setUIStyle(Settings.Android);
    }
 
    public void initUI()
@@ -57,12 +57,12 @@ public class Painter extends MainWindow
       status = new Label("Status", CENTER);
 
       // center the save/load/clear buttons on screen
-      add(load, CENTER, BOTTOM - 5);
-      add(save, BEFORE - 5, SAME); // before the load button
-      add(clear, AFTER + 5, SAME, load); // after the load button add the paint control with a specified width
+      add(load, CENTER, BOTTOM - 5,PREFERRED+fmH,PREFERRED+fmH);
+      add(save, BEFORE - 5, SAME,PREFERRED+fmH,PREFERRED+fmH); // before the load button
+      add(clear, AFTER + 5, SAME,PREFERRED+fmH,PREFERRED+fmH, load); // after the load button add the paint control with a specified width
       add(paint);
       paint.borderColor = Color.BLACK;
-      paint.setRect(LEFT, TOP + 5, FILL, 100 * fmH / 11); // add the status
+      paint.setRect(CENTER, TOP + 5, SCREENSIZEMIN+90, SCREENSIZEMIN+50); // add the status
       add(status);
       status.setRect(0, AFTER + 5, FILL, PREFERRED);
       add(cbColors = new ComboBox(new ColorList()), CENTER, AFTER + 5);
@@ -87,7 +87,7 @@ public class Painter extends MainWindow
             try
             {
                // create
-               File f = new File(fileName, File.CREATE_EMPTY);
+               File f = new File(Settings.isOpenGL ? "/sdcard"+fileName : Settings.appPath+fileName, File.CREATE_EMPTY);
                PDBFile cat = new PDBFile(catalogName, PDBFile.CREATE_EMPTY); // always keep only one record on the catalog
                ByteArrayStream bas = new ByteArrayStream(500);
                try
@@ -110,7 +110,7 @@ public class Painter extends MainWindow
                   if (written1 < 0 || written2 < 0)
                      status.setText("Unable to write the image");
                   else
-                     status.setText("Saved image with " + totalBytesWritten + " bytes");
+                     status.setText("Saved " + f.getPath() + " ("+totalBytesWritten + " bytes)");
                }
                catch (ImageException e1)
                {

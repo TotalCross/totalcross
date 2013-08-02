@@ -61,7 +61,9 @@ public final class Graphics
    public int backColor = Color.BRIGHT;
 
    /** Set to true to use antialiase in all drawing operations that draw a diagonal line,
-    * such as drawPoligon and drawLine. */
+    * such as drawPoligon and drawLine.
+    * @deprecated This is not used in OpenGL platforms
+    */
    public boolean useAA;
 
    /** Contains the pixels of the MainWindow. */

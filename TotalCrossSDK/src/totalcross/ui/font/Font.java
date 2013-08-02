@@ -57,9 +57,8 @@ public final class Font
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 44. */
-   public static int MAX_FONT_SIZE = 44;
-
+   /** The maximum font size: 44 for Palm OS, 48 for other platforms. */
+   public static int MAX_FONT_SIZE = Settings.PALMOS.equals(Settings.platform) ? 44 : 48;
 
    /** Returns the default font size, based on the screen's size.
     * If not in Android and Settings.fingerTouch is true, the default font size will be increased by 15%. 

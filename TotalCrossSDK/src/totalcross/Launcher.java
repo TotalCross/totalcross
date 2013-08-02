@@ -47,7 +47,6 @@ import totalcross.io.*;
 import totalcross.io.IOException;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.Container;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
 import totalcross.util.*;
@@ -925,8 +924,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       int b = p & 0xFF;
       switch (toBpp)
       {
-         case 4:
-            return ((((r << 5) + (g << 6) + (b << 2)) / 100) >> 4) * 0x111111;
          case 8:
             if (lookupR == null)
                createColorPaletteLookupTables();
@@ -950,18 +947,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       // convert to the target bpp on-the-fly
       switch (toBpp)
       {
-         case 4:
-         {
-            while (--n >= 0)
-            {
-               int p = pixels[n];
-               int r = (p >> 16) & 0xFF;
-               int g = (p >> 8) & 0xFF;
-               int b = p & 0xFF;
-               screenPixels[n] = ((((r << 5) + (g << 6) + (b << 2)) / 100) >> 4) * 0x111111;
-            }
-            break;
-         }
          case 8:
          {
             if (lookupR == null)
@@ -1027,8 +1012,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          g.translate(0,(int)(shiftY*toScale));
          g.setClip(0,0,ww,hh);
       }
-      //System.out.println(++count+" total in "+(totalcross.sys.Vm.getTimeStamp()-ini)+"ms");
-      //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
+      // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
+      //java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
    }
 
    //static int count;

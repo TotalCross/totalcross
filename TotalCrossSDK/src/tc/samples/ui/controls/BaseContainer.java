@@ -21,11 +21,6 @@ public class BaseContainer extends Container
    private String defaultTitle = "User Interface Controls";
    protected int gap;
 
-   public BaseContainer()
-   {
-      transitionEffect = TRANSITION_OPEN;
-   }
-   
    public void initUI()
    {
       try
