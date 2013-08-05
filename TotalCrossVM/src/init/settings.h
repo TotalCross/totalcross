@@ -77,6 +77,7 @@ typedef struct
    int32* resizableWindow;               // boolean
    int32* windowFont;                    // int 
    int32* isOpenGL;                      // boolean
+   Object* lineNumber;                   // java.lang.String
 } TTCSettings, *TCSettings;
 
 typedef struct

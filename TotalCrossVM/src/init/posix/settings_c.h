@@ -383,6 +383,16 @@ bool fillSettings(Context currentContext)
       jstring2CharP(jStringField, romSerialNumber);
    (*env)->DeleteLocalRef(env, jSettingsClass);
 
+   // phone number
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
+
    return true;
 }
 
