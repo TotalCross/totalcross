@@ -83,6 +83,7 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
    tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
+   tcSettings.lineNumber                 = getStaticFieldObject(settingsClass, "lineNumber");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;

@@ -1557,6 +1557,7 @@ public class Image extends GfxSurface
          throw new ImageException("16-bpp BMP compressed RLE images is not supported! Use 24-bpp instead.");
       else
          readRLE(this.width, this.height, p, bitmapOffset, compression == BI_RLE8);
+      setTransparentColor(Color.WHITE); // every bmp image has white as default transparent color
    }
 
    /**
