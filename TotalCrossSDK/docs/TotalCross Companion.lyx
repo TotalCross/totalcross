@@ -6399,6 +6399,273 @@ erial);
 \end_layout
 
 \begin_layout Chapter
+Differences between TotalCross 1 and 2
+\end_layout
+
+\begin_layout Section
+Platforms
+\end_layout
+
+\begin_layout Standard
+In TotalCross 2 we dropped support for Palm OS and BlackBerry platforms,
+ since these platforms are discontinued or replaced in the market by Android
+ and iOS.
+\end_layout
+
+\begin_layout Standard
+If you want to support these platforms, you must download TotalCross 1.7,
+ which still supports these platforms.
+ Note that Litebase 2.7 works for both TotalCross 1.7 (and up) and TotalCross
+ 2.0 (and up).
+\end_layout
+
+\begin_layout Standard
+What we recommend is that you use TotalCross 1.7 only for those two platforms,
+ and use TotalCross 2 for all other platforms.
+ Both SDKs can coexist in the same machine, just rename them.
+\end_layout
+
+\begin_layout Standard
+So:
+\end_layout
+
+\begin_layout Enumerate
+Developing for all platforms: use 
+\family typewriter
+TotalCross2/dist/tc.jar
+\family default
+ 
+\end_layout
+
+\begin_layout Enumerate
+Deploying for Android, iOS, Windows 32, Windows CE, Linux, and browser:
+ use 
+\family typewriter
+TotalCross2 /dist/tc.jar
+\family default
+ 
+\end_layout
+
+\begin_layout Enumerate
+Deploying for Palm OS and Blackberry: use 
+\family typewriter
+TotalCross1.7/dist/tc.jar
+\end_layout
+
+\begin_layout Standard
+Applications created with TotalCross 2 can be hosted at Apple's Appstore,
+ using the developer distibution certificate, so we dropped support for
+ Cydia in TotalCross 2.
+ Due to this, all iOS samples are not included in the SDK, because to install
+ them you need a certificate.
+ We intend to put some samples at Apple´s Appstore.
+ 
+\end_layout
+
+\begin_layout Section
+Graphics
+\end_layout
+
+\begin_layout Standard
+TotalCross 2 was created to improve graphics perfomance.
+ We made a full rewrite of the native Graphics API to use Open GL.
+\end_layout
+
+\begin_layout Standard
+In TotalCross 1, the screen is drawn in a native bitmap, and then the bitmap
+ is drawn on the screen using the device's graphics API.
+ Everything, like lines, filled rectangles, and images are rendered by software.
+\end_layout
+
+\begin_layout Standard
+In TotalCross 2, we use Open GL, where everything is rendered by the hardware
+ graphics processor.
+ So, when you load an image, it is moved inside the video memory, and then
+ all draws of the image are instantaneous.
+\end_layout
+
+\begin_layout Standard
+Open GL is used on Android and iOS.
+ For Java SE, Windows 32, and Windows CE, it uses the old scheme of bitmaps.
+\end_layout
+
+\begin_layout Standard
+Besides the speed performance that Open GL provides, there are some drawbacks.
+ The main one is that Open GL requires that the whole screen is painted
+ on each screen update.
+ For example, in TotalCross 1, when an Edit's cursor is blinking, only the
+ cursor is painted at each screen update, while in TotalCross 2, the whole
+ screen is painted each time the cursor blinks.
+\end_layout
+
+\begin_layout Standard
+Another consequence of this requirement is that you cannot update the screen
+ in a thread.
+ So, in TotalCross 1, the spinner class was able to draw only the spinner
+ in a thread; this is impossible in TotalCross 2, which makes the spinner
+ useless under some circunstances.
+\end_layout
+
+\begin_layout Standard
+An advantage of Open GL is that it supports alpha channel by hardware.
+ Due to this, we removed support for the 
+\family typewriter
+Image
+\family default
+'s transparent color.
+ So, all 
+\family typewriter
+Image
+\family default
+ methods that would receive a transparent color were deprecated (like rotate,
+ scale, etc), and you must use images with alpha-channel.
+\end_layout
+
+\begin_layout Standard
+In Open GL, the 
+\family typewriter
+getPixels()
+\family default
+ operation is veeeeryyyy sloooowwww, and can cut all the performance gain
+ that you have with Open GL, so we removed support and deprecated for all
+ graphics methods that requires the read of the screen pixels (the methods
+ are still there but their effects are ignored):
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.useAA
+\family default
+ (for smooth antialiased lines) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawOp
+\family default
+ for controls that use 
+\family typewriter
+DRAW_SPRITE
+\family default
+, call the 
+\family typewriter
+Image.
+\begin_inset Newline newline
+\end_inset
+
+setTransparentColor()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawHighlightFrame()
+\family default
+,
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.eraseRect()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.getVistaColors()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.fillCursor()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawCursor()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawDottedCursor()
+\end_layout
+
+\begin_layout Standard
+We also deprecated these: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.NO_TRANSPARENT_COLOR
+\family default
+ (removed) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.useAlpha
+\family default
+ (now all images use alpha channel) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TabbedContainer
+\family default
+: the constructor that receives a transparent color 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Window.highResPrepared
+\end_layout
+
+\begin_layout Standard
+And added: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.applyChanges()
+\family default
+: in TotalCross 2, moves the image inside the video memory; in TotalCross
+ 1, does nothing.
+ Note that you do not have to call this method.
+ 
+\end_layout
+
+\begin_layout Section
+Font
+\end_layout
+
+\begin_layout Standard
+The original font of TotalCross was a Tahoma font generated inside a Windows
+ CE device.
+ When we moved it to Open GL, the results were very poor, so we decided
+ to change the font to the Android's default font and created the font inside
+ an Android 4.1 device.
+ This font is used in both TotalCross 1.7 and 2.0.
+ We also changed the minimum size to 7 and the maximum size to 48.
+ This new font is a bit narrower than the previous one, so it may not cause
+ impacts in the user interface.
+ 
+\end_layout
+
+\begin_layout Chapter
 SuperWaba to TotalCross conversion
 \end_layout
 
