@@ -633,7 +633,7 @@ LB_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public
 	          logger = litebaseConnectionClass->objStaticValues[1];
 	          
       // juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5])
+      if (logger && !litebaseConnectionClass->i32StaticValues[6])
       {
 	      LOCKVAR(log);
 	      TC_executeMethod(context, loggerLog, logger, 16, sqlString, false);
@@ -689,7 +689,7 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
       bool isSelect = false;
 
       // juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
+      if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
 	      Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
          
@@ -993,7 +993,7 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
       Table* table;
 
 	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
+      if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
 		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1045,7 +1045,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
       Table* table;
 
 		// juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
+      if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 		{
 			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1583,7 +1583,7 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection 
       Table* table;
 
 		// juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
+      if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 		{
 			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -1634,7 +1634,7 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
       Table* table = getTableFromName(context, driver, tableName);
 
 	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
-      if (logger && !litebaseConnectionClass->i32StaticValues[5]) // juliana@230_30: reduced log files size.
+      if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
 		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
@@ -4763,7 +4763,7 @@ LB_API void lPS_executeQuery(NMParams p)
             Object logger = litebaseConnectionClass->objStaticValues[1];
           
             // juliana@253_18: now it is possible to log only changes during Litebase operation.
-            if (logger && !litebaseConnectionClass->i32StaticValues[5]) // If log is on, adds information to it.
+            if (logger && !litebaseConnectionClass->i32StaticValues[6]) // If log is on, adds information to it.
             { 
                LOCKVAR(log);
                if (OBJ_PreparedStatementStoredParams(stmt))
