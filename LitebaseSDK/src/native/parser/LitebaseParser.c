@@ -75,7 +75,10 @@ LitebaseParser* initLitebaseParser(Context context, JCharP sqlStr, int32 sqlLen,
    if (parser)
       xmemzero(parser, sizeof(LitebaseParser));
    else if (!(parser = context->litebasePtr = (LitebaseParser*)xmalloc(sizeof(LitebaseParser))))
-	   return null;
+	{
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+      return null;
+   }
    
 	// Initializes some parser structures.
 	parser->heap = heap;
