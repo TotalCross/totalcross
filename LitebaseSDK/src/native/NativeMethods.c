@@ -2255,6 +2255,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	      }
 
          table->deletedRowsCount = deleted;
+         plainDB->rowCount = rows;
 
          // Recreates the indices.
          // Simple indices.
@@ -2278,10 +2279,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
       
 finish: 
 	      if (table)
-         {
-            plainDB->rowCount = rows;
             freeTable(context, table, false, true); // Closes the table.
-         }
         
       }
    }
