@@ -370,7 +370,8 @@ bool plainSetPos(Context context, PlainDB* plainDB, int32 record)
       plainDB->setPos(&plainDB->db, value);
       return true;
    }
-   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), record);
+   if (record >= 0)
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), record);
 	return false;
 }
 
