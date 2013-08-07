@@ -2057,6 +2057,8 @@ public class LitebaseConnection
             }
          }
            
+         plainDB.rowCount = rows;
+         
          // Recreates the indices.
          // Simple indices.
          i = table.columnIndices.length;
