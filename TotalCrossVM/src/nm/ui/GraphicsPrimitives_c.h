@@ -84,7 +84,6 @@ void repaintActiveWindows(Context currentContext)
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
-   callingScreenChange = true;
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
@@ -102,7 +101,6 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
    repaintActiveWindows(mainContext);
-   callingScreenChange = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2980,9 +2978,7 @@ static bool checkScreenPixels()
 void setShiftYgl();
 void updateScreen(Context currentContext)
 {
-#ifdef darwin
-   if (callingScreenChange) return;
-#elif defined ANDROID
+#ifdef ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);

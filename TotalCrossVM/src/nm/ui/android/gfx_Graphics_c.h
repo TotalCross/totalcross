@@ -666,7 +666,7 @@ bool setupGL(int width, int height)
     ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
-
+    clearPixels();
     return checkGLfloatBuffer(mainContext,10000);
 }
 
@@ -725,10 +725,15 @@ static void destroyEGL()
 }
 #endif
 
+void graphicsIOSdoRotate();
 void privateScreenChange(int32 w, int32 h)
 {
-   appW = w;
-   appH = h;
+#ifdef darwin
+   graphicsIOSdoRotate();
+#else
+    appW = w;
+    appH = h;
+#endif
    clearPixels();
    setProjectionMatrix(w,h); 
 }

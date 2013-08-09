@@ -28,7 +28,7 @@ bool initGLES(ScreenSurface screen)
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    // initialize the screen bitmap with the full width and height
    CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
-   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
+   window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
@@ -47,20 +47,20 @@ static int lastOrientationIsPortrait = true;
 - (void)viewDidLayoutSubviews
 {
    int orientation = [[UIDevice currentDevice] orientation];
-   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
-   if (lastOrientationIsPortrait != isPortrait)
+   if (orientation == UIDeviceOrientationUnknown)
+      lastOrientationIsPortrait = -1;
+   else
    {
-      // at this moment, ios will try to resize the current rendering buffer, placing it at the screen.
-      // the screen is updated when we reach GraphicsPrimitives_c.h / updateScreen
-      // so, before we actually update the screen, leading to a strange effect
-      // we just paint out screen now with black.
-      glClearColor(0,0,0,1);
-      glClear(GL_COLOR_BUFFER_BIT);
-      [child_view updateScreen];
-      // rotate the screen
-      [child_view onRotate];
+      bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
+      if (lastOrientationIsPortrait != isPortrait)
+      {
+         [self destroySIP];
+         [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
+                  [NSNumber numberWithInt:child_view.bounds.size.width *iosScale], @"width",
+                  [NSNumber numberWithInt:child_view.bounds.size.height*iosScale], @"height", nil] ];
+      }
+      lastOrientationIsPortrait = isPortrait;
    }
-   lastOrientationIsPortrait = isPortrait;
 }
 
 - (void)loadView
@@ -325,13 +325,13 @@ static bool callingCamera;
 
 void privateFullscreen(bool on) {}
 
-void graphicsSetupIOS()
-{
-   [DEVICE_CTX->_childview setCurrentGLcontext];
-}
 void graphicsUpdateScreenIOS()
 {                
    [DEVICE_CTX->_childview updateScreen];
+}
+void graphicsIOSdoRotate()
+{
+   [DEVICE_CTX->_childview doRotate];
 }
 
 //////////////// interface to mainview methods ///////////////////

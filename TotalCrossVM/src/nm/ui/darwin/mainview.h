@@ -62,7 +62,7 @@
 
 typedef struct
 {
-   __unsafe_unretained UIWindow  *_window;
+//   __unsafe_unretained UIWindow  *_window;
    __unsafe_unretained MainViewController  *_mainview;
    __unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;

@@ -28,10 +28,9 @@
 }
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
-- (void)onRotate;
+- (void)doRotate;
 - (void)updateScreen;
 - (void)createGLcontext;
-- (void)setCurrentGLcontext;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
