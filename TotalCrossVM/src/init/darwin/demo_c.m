@@ -11,6 +11,8 @@ bool getElapsed(int32 *value)
 
 bool setElapsed(int32 value)
 {
-   CFPreferencesSetAppValue(CFSTR("ttl"), (__bridge CFNumberRef)[NSNumber numberWithInt:value], CFSTR("com.totalcross.iphone.TotalCross"));
+    NSNumber* n = [NSNumber numberWithInt:value];
+   CFPreferencesSetAppValue(CFSTR("ttl"), (__bridge CFNumberRef)n, CFSTR("com.totalcross.iphone.TotalCross"));
+    [n release];
    return CFPreferencesAppSynchronize(CFSTR("com.totalcross.iphone.TotalCross"));
 }
