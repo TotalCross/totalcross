@@ -53,6 +53,8 @@ void graphicsSetupIOS()
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
 
+void recreateTextures();
+
 - (void)createGLcontext
 {
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
@@ -78,6 +80,7 @@ void graphicsSetupIOS()
       NSLog(@"Failed to make complete framebuffer object %x", stat);
    setupGL(gscreen->screenW,gscreen->screenH);
    realAppH = appH;
+   recreateTextures();
 }
 - (void)updateScreen
 {

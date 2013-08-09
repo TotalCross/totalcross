@@ -184,7 +184,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(Context currentContext, VoidPs* imgTextures); // imagePrimitives_c.h
+void recreateTextures(); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);  
 int32 desiredglShiftY;
@@ -223,7 +223,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {  
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(lifeContext,imgTextures);
+      recreateTextures();
    }
    lastWindow = window;
 }
