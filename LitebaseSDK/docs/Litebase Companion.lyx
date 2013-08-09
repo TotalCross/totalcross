@@ -860,7 +860,7 @@ try
 
 \begin_layout Plain Layout
 
-   String[] files = new File(sourcePath, File.READ_WRITE, 1).listFiles();
+   String[] files = new File(sourcePath, File.DONT_OPEN, 1).listFiles();
 \end_layout
 
 \begin_layout Plain Layout
