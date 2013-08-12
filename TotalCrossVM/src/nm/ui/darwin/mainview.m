@@ -19,6 +19,7 @@ bool allowMainThread();
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
+extern int32 iosScale;
 
 @implementation MainViewController
 
@@ -146,8 +147,6 @@ static int lastOrientationIsPortrait = true;
       _events = [[NSMutableArray alloc] init];
    [_events addObject: event];
 }
-
-extern int32 iosScale;
 
 -(void) keyboardDidShow: (NSNotification *)notif
 {
