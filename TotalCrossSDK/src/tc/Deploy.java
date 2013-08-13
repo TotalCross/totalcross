@@ -298,7 +298,6 @@ public class Deploy
                         DeploySettings.buildIPA = true;
                         File folder = new File(args[++i]);
                         DeploySettings.certStorePath = folder.getPath();
-                        System.out.println("*** "+args[i]+" - "+folder.getPath()+" - "+folder.getCanonicalPath());
                         folder.list(new FilenameFilter()
                         {
                            public boolean accept(File dir, String fileName)
