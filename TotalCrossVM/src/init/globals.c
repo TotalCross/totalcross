@@ -66,7 +66,6 @@ TScreenSurface screen;
 TCClass uiColorsClass;
 int32* shiftScreenColorP;
 int32* vistaFadeStepP;
-bool callingScreenChange;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -250,6 +249,7 @@ HINSTANCE aygshellDll, coreDll, cellcoreDll;
 
 DECLARE_MUTEX(omm);
 DECLARE_MUTEX(screen);
+DECLARE_MUTEX(opengl);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -261,6 +261,7 @@ DECLARE_MUTEX(screen);
 bool initGlobals()
 {
 	SETUP_MUTEX;
+   INIT_MUTEX(opengl);
    INIT_MUTEX(omm);
    INIT_MUTEX(screen);
    INIT_MUTEX(htSSL); 

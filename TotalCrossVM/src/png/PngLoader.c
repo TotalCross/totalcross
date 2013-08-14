@@ -167,7 +167,7 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       isAlpha = true;
    else
    if (png_ptr->num_trans > 0)
-   {
+   {             
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) // palettized?
       {
          int32 i;
@@ -197,7 +197,7 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       tczClose(tcz);
    heapDestroy(heap);
 
-   if (!isAlpha)
+   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
       setTransparentColor(imageObj, (Pixel)transp);
 }
 
@@ -220,7 +220,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
-
+   
    /*
    | set up transformation params:
    | expand images of all color-type and bit-depth to 3x8 bit RGB images

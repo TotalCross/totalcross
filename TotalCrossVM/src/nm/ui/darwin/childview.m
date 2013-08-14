@@ -9,7 +9,6 @@ int getTimeStamp();
 int realAppH;
 extern int appW,appH;
 void Sleep(int ms);
-extern BOOL callingScreenChange;
 void checkGlError(const char* op, int line);
 
 
@@ -44,40 +43,33 @@ extern int32 deviceFontHeight,iosScale;
    if (iosScale == 2) deviceFontHeight = 38;
 }
 
-- (void)setCurrentGLcontext
+- (void)doRotate
 {
-   [EAGLContext setCurrentContext:glcontext];
+   [self createGLcontext]; // recreate buffers at the new screen layout
 }
 
-- (void)onRotate
+void graphicsSetupIOS()
 {
-   gscreen->screenW =            appW = self.bounds.size.width *iosScale;
-   gscreen->screenH = realAppH = appH = self.bounds.size.height*iosScale;
-   [self createGLcontext]; // recreate buffers at the new screen layout
-   callingScreenChange = true;
-   [ (MainViewController*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
-                                                [NSNumber numberWithInt:appW], @"width", [NSNumber numberWithInt:appH], @"height", nil] ];
-   while (callingScreenChange)
-      Sleep(10); // let the event be processed
+   [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
+
+void recreateTextures();
 
 - (void)createGLcontext
 {
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
-   if (glcontext == null)
-   {
-      glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-      [self setCurrentGLcontext];
-   }
-   else
+   if (glcontext != null)
    {
       glDeleteFramebuffers(1, &defaultFramebuffer);
       glDeleteRenderbuffers(1, &colorRenderbuffer);
+      [glcontext release];
    }
-   // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
+   glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   [EAGLContext setCurrentContext:glcontext];
    glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
    glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR
+   // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
@@ -87,9 +79,8 @@ extern int32 deviceFontHeight,iosScale;
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
    setupGL(gscreen->screenW,gscreen->screenH);
-   glClearColor(1,1,1,1);
-   glClear(GL_COLOR_BUFFER_BIT);
    realAppH = appH;
+   recreateTextures();
 }
 - (void)updateScreen
 {

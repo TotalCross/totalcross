@@ -368,12 +368,14 @@ public class MainWindow extends Window implements totalcross.MainClass
       startTimer = addTimer(1); // guich@567_17
    }
 
+   static boolean quittingApp;
    /** Called by the system so we can finish things correctly.
      * Never call this method directly; this method is not private
      * to prevent the compiler from removing it during optimization.
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
+      quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
@@ -388,6 +390,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    /**
    * Called just before an application exits.
    * When this is called, all threads are already killed.
+   * You should return from this method as soon as possible, because the OS can kill the application if
+   * it takes too much to return.
    */
    public void onExit()
    {

@@ -1156,6 +1156,7 @@ public class Window extends Container
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, blocking the program execution, and make it child of this one. All events in the behind window are deactivated.
        Important! You can't use this method in the application's constructor or in the initUI method!
+       Calling this in onExit will NOT block the application.
    */
    private void popup(Window newWin) // anodos@320_9
    {
@@ -1171,6 +1172,7 @@ public class Window extends Container
       }
       popupNonBlocking(newWin);
       blocking = true;
+      if (!MainWindow.quittingApp)
       do
       {
          pumpEvents();

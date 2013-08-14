@@ -18,3 +18,4 @@ Launcher             -text
 *.cod                -text
 *.mobileprovision    text  eol=lf
 NativeMethodsPrototypes.txt            binary
+TCVM.vcproj       binary
