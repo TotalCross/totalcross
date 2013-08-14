@@ -2487,6 +2487,13 @@ Litebase
 
 \end_layout
 
+\begin_layout Standard
+Please notice that all indices files must be erased in order to use Litebase
+ tables created with version 2.67 with Litebase 2.7 and vice-versa.
+ Moreover, tables using cryptography created in version 2.7 can't be used
+ with version 2.67.
+\end_layout
+
 \begin_layout Section
 Litebase SQL Functions
 \end_layout
