@@ -57,7 +57,7 @@
 #ifdef APPNAME
        APPNAME;
 #else
-       [appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
+       [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
     [tcvm startVM:&context appName:(char*)name];
     [Litebase fillNativeProcAddressesLB];
