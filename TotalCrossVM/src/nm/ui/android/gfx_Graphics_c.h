@@ -184,7 +184,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(Context currentContext, VoidPs* imgTextures); // imagePrimitives_c.h
+void recreateTextures(); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);  
 int32 desiredglShiftY;
@@ -223,7 +223,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {  
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(lifeContext,imgTextures);
+      recreateTextures();
    }
    lastWindow = window;
 }
@@ -666,7 +666,7 @@ bool setupGL(int width, int height)
     ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
-
+    clearPixels();
     return checkGLfloatBuffer(mainContext,10000);
 }
 
@@ -725,10 +725,15 @@ static void destroyEGL()
 }
 #endif
 
+void graphicsIOSdoRotate();
 void privateScreenChange(int32 w, int32 h)
 {
-   appW = w;
-   appH = h;
+#ifdef darwin
+   graphicsIOSdoRotate();
+#else
+    appW = w;
+    appH = h;
+#endif
    clearPixels();
    setProjectionMatrix(w,h); 
 }

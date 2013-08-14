@@ -409,7 +409,7 @@ target: createSkeleton - Create the folders from scratch
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
       <fileset dir="${source.sdk.path}"
-         excludes=".*,.settings/**,src/tc/samples/app/activation/**,src/totalcross/zxing/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
+         excludes=".*,.settings/**,etc/tools/jdeb/**,src/tc/samples/app/activation/**,src/totalcross/zxing/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
       </copy>
    <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
@@ -718,36 +718,6 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${basedir}/theos/${type}/libtcvm.dylib"/>
-    <arg line="-t ${target.path}/dist/vm/ios"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.path}/dist/vm/ios"/>
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/ios">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
 
 </target>
 
@@ -832,23 +802,7 @@ target: Linux builds
 </target>
 
 <target name="packageLinux" >
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
-    <arg line="-t ${target.path}/dist/vm/linux"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-  </java>
+
 </target>
 
 <target name="packageLinux_sdk" >

@@ -1343,24 +1343,24 @@ public class Image extends GfxSurface
                   int r = (pixel >> 10) & 0x1f;
                   int g = (pixel >> 5) & 0x1f;
                   int b = pixel & 0x1f;
-                  pix[row++] = (r << 19) | (g << 11) | (b << 3);
+                  pix[row++] = 0xFF000000 | (r << 19) | (g << 11) | (b << 3);
                }
             break;
          case 32: // guich@tc114_15
             for (y=height-1, row = y * width; y >= 0; y--, row -= width+width)
                for (x=width; x > 0; x--)
-                  pix[row++] = ((in[offset++] & 0xFF) /*<< 0*/) | ((in[offset++] & 0xFF) << 8) | ((in[offset++] & 0xFF) << 16) | ((in[offset++] & 0xFF) << 24);
+                  pix[row++] = 0xFF000000 | ((in[offset++] & 0xFF) /*<< 0*/) | ((in[offset++] & 0xFF) << 8) | ((in[offset++] & 0xFF) << 16) | ((in[offset++] & 0xFF) << 24);
             break;
          case 24:
             pitch = (width*3+3) & ~3; // guich@tc110_107: must consider the width in bytes, not in pixels
             for (dif = pitch - width*3, y=height-1, row = y * width; y >= 0; y--, offset += dif, row -= width+width) // guich@tc110_107
                for (x=width; x > 0; x--)
-                  pix[row++] = ((in[offset++] & 0xFF) /*<< 0*/) | ((in[offset++] & 0xFF) << 8) | ((in[offset++] & 0xFF) << 16); // guich@tc114:20: fixed order
+                  pix[row++] = 0xFF000000 | (((in[offset++] & 0xFF) /*<< 0*/) | ((in[offset++] & 0xFF) << 8) | ((in[offset++] & 0xFF) << 16)); // guich@tc114:20: fixed order
             break;
          case 8: // guich@200b3: if 8bpp, use a faster routine
             for (y=height-1, row = y * width; y >= 0; y--, offset += dif, row -= width+width)
                for (x=width; x > 0; x--)
-                  pix[row++] = colorTable[in[offset++] & 0xFF];
+                  pix[row++] = 0xFF000000 | colorTable[in[offset++] & 0xFF];
             break;
          default:
             // Read in the first byte
@@ -1371,7 +1371,7 @@ public class Image extends GfxSurface
                {
                   // Get the next pixel from the current byte
                   if (x < width)
-                     pix[row++] = colorTable[(currByte >> bitShifts[whichBit]) & bitMask];
+                     pix[row++] = 0xFF000000 | colorTable[(currByte >> bitShifts[whichBit]) & bitMask];
                   // If the current bit position is past the number of pixels in a byte, advance to the next byte
                   if (++whichBit >= pixelsPerByte)
                   {
@@ -1557,6 +1557,7 @@ public class Image extends GfxSurface
          throw new ImageException("16-bpp BMP compressed RLE images is not supported! Use 24-bpp instead.");
       else
          readRLE(this.width, this.height, p, bitmapOffset, compression == BI_RLE8);
+      setTransparentColor(Color.WHITE); // every bmp image has white as default transparent color
    }
 
    /**

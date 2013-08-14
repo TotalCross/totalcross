@@ -378,55 +378,6 @@ public class Bitmaps
       }
    }
 
-   /** In PalmOS prc file, the icon is stored as an icon-family, with the first
-     * icon being the 1bpp and the 2nd icon being the 256 color icon. First there
-     * is a 16 bytes header.<p>
-     * Id: 1000 - 22x22
-     *   first icon  (1bpp)
-     *   second icon (8bpp)
-     *   third  icon (1bpp/double density)
-     *   fourth icon (8bpp/double density)
-     * Id: 1001 - 15x9
-     *   first icon  (1bpp)
-     *   gap: 2 bytes
-     *   second icon (8bpp)
-     *   third icon  (1bpp/double density)
-	 *   gap: 2 bytes
-	 *   fourth icon (8bpp/double density)
-    * @throws ImageException 
-    * @throws IOException 
-     */
-   public void savePalmOSIcons(byte[] bytes, int offset1000, int offset1001) throws ImageException, IOException
-   {
-      int realSize;
-
-      // get the 22x22x8
-      offset1000 += 16; // skip next header
-      realSize = 22 * 22; // tc note: pilrc uses 22x22 as the real size, while codewarrior uses 22x32
-      Bmp bmp22x22x8 = IconStore.getBmp(22, -22, 8);
-      copyBits(bmp22x22x8.pixels, bmp22x22x8.palette, palette256, 24, bytes, offset1000, 22, 22, 8, -1, false,
-            bmp22x22x8.shouldInvertY);
-      // get the 44x44x8
-      offset1000 += realSize; // skip first icon size
-      offset1000 += 40; // skip next header
-      Bmp bmp44x44x8 = IconStore.getBmp(44, -44, 8);
-      copyBits(bmp44x44x8.pixels, bmp44x44x8.palette, palette256, 44, bytes, offset1000, 44, 44, 8, -1, false,
-            bmp44x44x8.shouldInvertY);
-
-      // get the 15x9x8
-      offset1001 += 16; // skip next header
-      realSize = 16 * 9;
-      Bmp bmp15x9x8 = IconStore.getBmp(15, -9, 8);
-      copyBits(bmp15x9x8.pixels, bmp15x9x8.palette, palette256, 16, bytes, offset1001, 16, 9, 8, -1, false,
-            bmp15x9x8.shouldInvertY);
-      // get the 30x18x8
-      offset1001 += realSize; // skip first icon size
-      offset1001 += 40; // skip next header
-      Bmp bmp30x18x8 = IconStore.getBmp(30, -18, 8);
-      copyBits(bmp30x18x8.pixels, bmp30x18x8.palette, palette256, 32, bytes, offset1001, 30, 18, 8, -1, false,
-            bmp30x18x8.shouldInvertY);
-   }
-
    public void saveWinCEIcons(byte []bytes, int bitmap16x16x8_Offset, int bitmap32x32x8_Offset, int bitmap48x48x8_Offset) throws ImageException, IOException
    {
       Bmp bmp16x16x8 = IconStore.getBmp(16, 16, 8);
@@ -455,17 +406,6 @@ public class Bitmaps
       zos.write(s.getBuffer(), 0, s.getPos());
    }
    
-   public void saveBlackBerryIcon(Stream s) throws Exception
-   {
-      Image img;
-      byte[] b = IconStore.getImageData("80x80");
-      if (b != null)
-         img = new Image(b);
-      else
-         img = IconStore.getSquareIcon(60);
-      img.createPng(s);
-   }
-
    private static final int TOLERANCE = 16;
    private static IntVector fillCoords = new IntVector(10000); // guich@tc110_57: use a stack and static variables instead of a method recursion to avoid stack overflows
    private static boolean fillVisited[];
@@ -628,10 +568,9 @@ class IconStore extends Hashtable
    {
       super(30);
       if (DeploySettings.classPath != null && DeploySettings.classPath.length > 0)
-      {
          for (int i = DeploySettings.classPath.length - 1 ; i >= 0 ; i--)
-            addFrom(DeploySettings.classPath[i]);
-      }
+            if (DeploySettings.classPath[i].length() > 0)
+               addFrom(DeploySettings.classPath[i]);
       addFrom(DeploySettings.mainClassDir);
       addFrom(DeploySettings.baseDir);
       addFrom(".");

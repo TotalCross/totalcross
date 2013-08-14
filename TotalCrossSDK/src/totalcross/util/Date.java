@@ -269,10 +269,24 @@ public class Date implements Comparable
    */
    public int getWeek()
    {
-      int w = (getGregorianDay() / 7)%52;
-      if (w==0)
-         w=52;
-      return w;
+      int weekNum = 0; // initialize with any value
+      try
+      {
+         Date firstDay = new Date(1, 1, year); // find out first of year's day
+         int gregorian = getGregorianDay() - firstDay.getGregorianDay() + 1; // Jan 1 = 1, Jan 2 = 2, etc...
+         int dow = getDayOfWeek(); // Sun = 0, Mon = 1, etc...
+         int dowJan1 = firstDay.getDayOfWeek();
+         weekNum = ((gregorian + 6) / 7);
+         if (dow < dowJan1) // adjust for being after Saturday of week #1
+            ++weekNum;
+         if (weekNum > 53 || (weekNum > 52 && !(dowJan1 > (isLeapYear(this.year) ? 4 : 5))))
+            weekNum = 1;
+      }
+      catch (InvalidDateException e)
+      {
+         // should never happen
+      }
+      return weekNum;
    }
 
    /** Formats the day/month specified with the Settings.dateFormat, zero padded.*/

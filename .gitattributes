@@ -17,4 +17,5 @@ Launcher             -text
 *.jad                -text
 *.cod                -text
 *.mobileprovision    text  eol=lf
-NativeMethodsPrototypes.txt            -crlf
+NativeMethodsPrototypes.txt            binary
+TCVM.vcproj       binary

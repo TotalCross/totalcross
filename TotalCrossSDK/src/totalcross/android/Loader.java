@@ -371,7 +371,8 @@ public class Loader extends Activity
                    }
                    catch (ActivityNotFoundException e)
                    {
-                       e.printStackTrace(); 
+                      AndroidUtils.debug("THERE'S NO PDF READER TO OPEN "+args);
+                      e.printStackTrace(); 
                    }
                }
             }

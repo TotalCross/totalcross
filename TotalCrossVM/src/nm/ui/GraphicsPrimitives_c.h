@@ -84,7 +84,6 @@ void repaintActiveWindows(Context currentContext)
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
-   callingScreenChange = true;
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
@@ -102,7 +101,6 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
    repaintActiveWindows(mainContext);
-   callingScreenChange = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -324,8 +322,11 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    }
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
-#else
-   currentContext->fullDirty |= !Surface_isImage(dstSurf);
+#else            
+   if (Surface_isImage(dstSurf))
+      Image_changed(dstSurf) = true;
+   else
+      currentContext->fullDirty = true;
 #endif
 end:
    ;
@@ -383,7 +384,10 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
       if (Graphics_useOpenGL(g))
       {
          glDrawPixel(x,y,pixel,255);
-         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
 #endif
@@ -446,7 +450,10 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
          if (pixel1 != pixel2)
             for (x++; width > 0; width -= 2, x += 2)
                glDrawPixel(x,y, pixel2,255);
-         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
 #endif
@@ -500,7 +507,10 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
          if (pixel1 != pixel2)
             for (y++; height > 0; height -= 2, y += 2)
                glDrawPixel(x,y, pixel2,255);
-         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
 #endif
@@ -697,6 +707,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        }
 #ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+#else
+      if (Surface_isImage(Graphics_surface(g)))
+         Image_changed(Graphics_surface(g)) = true;
+      else
+         currentContext->fullDirty = true;
 #endif
     }
 }
@@ -754,8 +769,8 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (xs=x1+1; xs<x2; xs++)
         {
            z = (yt>>16);
-           glDrawPixelG(g, xs, z, color_,255);
-           glDrawPixelG(g, xs, z+1, color_,96);
+           glDrawPixelG(g, xs, z, color_,192);
+           glDrawPixelG(g, xs, z+1, color_,64);
            yt += k;
         }
      }
@@ -800,8 +815,8 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         for (ys=y1+1; ys<y2; ys++)
         {
            z = xt>>16;
-           glDrawPixelG(g, z, ys, color_,255);
-           glDrawPixelG(g, z+1, ys, color_,96);
+           glDrawPixelG(g, z, ys, color_,192);
+           glDrawPixelG(g, z+1, ys, color_,64);
            xt += k;
         }
      }
@@ -834,9 +849,11 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
 
 inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
+#ifndef __gl2_h_
    if (Graphics_useAA(g))
       drawLineAA(currentContext, g, x1,y1,x2,y2,pixel);
    else
+#endif      
       drawDottedLine(currentContext, g, x1, y1, x2, y2, pixel, pixel);
 }
 
@@ -883,7 +900,10 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
       if (Graphics_useOpenGL(g))
       {
          glFillRect(x,y,width,height,pixel,255);
-         currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
 #endif
@@ -1114,7 +1134,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
-   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
 #endif
 }
 
@@ -2771,7 +2794,10 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
 #ifndef __gl2_h_
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
 #else
-      currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+      if (Surface_isImage(Graphics_surface(g)))
+         Image_changed(Graphics_surface(g)) = true;
+      else
+         currentContext->fullDirty = true;
 #endif
    }
 }
@@ -2821,7 +2847,10 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
    }
    flushPixels(3);
    glSetLineWidth(1);
-   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
 #else
    for (i = 0; i < numSteps; i++)
    {
@@ -2856,7 +2885,10 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
    if (translateAndClip(g, &x, &y, &width, &height))
       glFillShadedRect(g,x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
-   currentContext->fullDirty |= !Surface_isImage(Graphics_surface(g));
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
 #else
    int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
@@ -2946,9 +2978,7 @@ static bool checkScreenPixels()
 void setShiftYgl();
 void updateScreen(Context currentContext)
 {
-#ifdef darwin
-   if (callingScreenChange) return;
-#elif defined ANDROID
+#ifdef ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);

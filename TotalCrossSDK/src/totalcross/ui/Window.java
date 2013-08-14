@@ -121,6 +121,13 @@ public class Window extends Container
    protected Control menubar; // guich@200
    /** If true (default), the user can drag this window around */
    protected boolean canDrag = true;
+
+   /** Must set to true if your Window is prepared for 320x320 resolutions.
+    *  If false (default), the Window is doubled size (and centered) to make controls fit.
+    */
+   /** @deprecated */
+   protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
+
    /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
     * @since TotalCross 1.53
     */
@@ -128,7 +135,7 @@ public class Window extends Container
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
-
+   
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus,focusOnPenUp;
@@ -205,8 +212,6 @@ public class Window extends Container
    protected Container mainSwapContainer;
    /** Used in the swap method */
    protected Container lastSwappedContainer;
-   /** Dumb field to keep compilation compatibility with TC 1 */
-   public boolean highresPrepared = true;
 
    /** To be used in setBorderStyle */
    public static final byte NO_BORDER = 0;
@@ -1151,6 +1156,7 @@ public class Window extends Container
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, blocking the program execution, and make it child of this one. All events in the behind window are deactivated.
        Important! You can't use this method in the application's constructor or in the initUI method!
+       Calling this in onExit will NOT block the application.
    */
    private void popup(Window newWin) // anodos@320_9
    {
@@ -1166,6 +1172,7 @@ public class Window extends Container
       }
       popupNonBlocking(newWin);
       blocking = true;
+      if (!MainWindow.quittingApp)
       do
       {
          pumpEvents();
@@ -1334,7 +1341,7 @@ public class Window extends Container
       else
          isHighlighting = Settings.keyboardFocusTraversable; // guich@573_17
       // add the new container.
-      if (newContainer.transitionEffect != TRANSITION_NONE)
+      if (newContainer != null && newContainer.transitionEffect != TRANSITION_NONE)
          setNextTransitionEffect(newContainer.transitionEffect);
       else
       if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)

@@ -98,14 +98,16 @@ public class ColorList extends ListBox
    {
       if (0 <= index && index <= colors.length)
       {
+         int hh = getItemHeight(index);
+         if (uiAndroid) hh--;
          int xx = btnX == 0 ? width : btnX;
          g.backColor = colors[index].value;
          if (uiVista)
-            g.fillVistaRect(dx-1,dy,xx,fmH,g.backColor,false,false);
+            g.fillVistaRect(dx-1,dy,xx,hh,g.backColor,false,false);
          else
-            g.fillRect(dx-1,dy,xx,fmH);
+            g.fillRect(dx-1,dy,xx,hh);
          g.foreColor = Color.getAlpha(colors[index].value) > 128 ? Color.BLACK : Color.WHITE;
-         g.drawText(colors[index].toString(), dx+4, dy, textShadowColor != -1, textShadowColor);
+         g.drawText(colors[index].toString(), dx+4, dy+(hh-fmH)/2, textShadowColor != -1, textShadowColor);
       }
    }
    

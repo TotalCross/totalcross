@@ -23,5 +23,6 @@
 <property name="app.srcdir" value="io/device/irchat" />
 <property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml" />
+<property name="supportedPlatforms" value="-winmo"/>
 
 </project>
