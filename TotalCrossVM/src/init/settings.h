@@ -79,6 +79,7 @@ typedef struct
    int32* useNewFont;                    // boolean
    int32* resizableWindow;               // boolean
    int32* windowFont;                    // int
+   Object* lineNumber;                  // java.lang.String
 } TTCSettings, *TCSettings;
 
 typedef struct

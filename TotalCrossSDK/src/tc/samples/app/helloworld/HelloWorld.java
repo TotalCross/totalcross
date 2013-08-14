@@ -66,6 +66,7 @@ public class HelloWorld extends MainWindow
          "weekStart is " + Settings.weekStart,
          "Battery is at " + Vm.getRemainingBattery() + "%",
          "Free memory is at " + Vm.getFreeMemory(),
+         "Line number is " + Settings.lineNumber,
          "Rom serial number is " + Settings.romSerialNumber,
          "IMEI is "+ Settings.imei,
          "ICCID is "+ Settings.iccid,
