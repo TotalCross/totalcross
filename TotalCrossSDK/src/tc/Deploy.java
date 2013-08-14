@@ -304,7 +304,10 @@ public class Deploy
                            {
                               String fileNameLower = fileName.toLowerCase();
                               if (fileNameLower.endsWith(".mobileprovision"))
+                              {
                                  DeploySettings.mobileProvision = new File(dir, fileName);
+                                 System.out.println("Mobile provision: "+DeploySettings.mobileProvision.getAbsolutePath());
+                              }
                               else if (fileNameLower.endsWith(".p12"))
                                  DeploySettings.appleCertStore = new File(dir, fileName);
                               return false;
