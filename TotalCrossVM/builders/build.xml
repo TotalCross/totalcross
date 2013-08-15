@@ -802,7 +802,24 @@ target: Linux builds
 </target>
 
 <target name="packageLinux" >
-
+    <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+      <classpath>
+          <pathelement location="${base.temp.path}/classes_desktop"/>
+          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+      </classpath>
+      <arg line="-n TotalCross"/>
+      <arg line="-c 'TotalCross VM'"/>
+      <arg line="-d 'The TotalCross Virtual Machine'"/>
+      <arg line="-v ${tc.version}"/>
+      <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
+      <arg line="-t ${target.path}/dist/vm/linux"/>
+      <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
+      <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
+    </java>
 </target>
 
 <target name="packageLinux_sdk" >
