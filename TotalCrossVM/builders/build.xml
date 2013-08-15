@@ -818,7 +818,6 @@ target: Linux builds
       <arg line="-t ${target.path}/dist/vm/linux"/>
       <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
       <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-      <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
     </java>
 </target>
 
