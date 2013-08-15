@@ -27,7 +27,7 @@ public class DeploySettings
    public static final int PACKAGE_LITEBASE = 4;
    public static int packageType;
    public static String folderTotalCrossSDKDistVM, folderTotalCrossVMSDistVM,
-                        folderLitebaseSDKDistLIB, folderLitebaseVMSDistLIB;
+                        folderLitebaseSDKDistLIB;
    
    public static String tczFileName;
    public static String targetDir;
@@ -141,7 +141,9 @@ public class DeploySettings
       else
       if ((etcDir = Utils.findPath("etc",false)) == null)
       {
-         String tchome = System.getenv("TOTALCROSS_HOME");
+         String tchome = System.getenv("TOTALCROSS2_HOME");
+         if (tchome == null)
+            tchome = System.getenv("TOTALCROSS_HOME");
          if (tchome != null)
             etcDir = tchome.replace('\\','/')+"/etc";
          else
@@ -172,7 +174,9 @@ public class DeploySettings
 
       // find the demo and release folders for totalcross and litebase
       String f;
-      f = System.getenv("TOTALCROSS_DEMO");
+      f = System.getenv("TOTALCROSS2_DEMO");
+      if (f == null)
+         f = System.getenv("TOTALCROSS_DEMO");
       if (f != null)
       {
          folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
@@ -183,7 +187,9 @@ public class DeploySettings
                folderTotalCrossSDKDistVM = f;
          }
       }
-      f = System.getenv("TOTALCROSS_RELEASE");
+      f = System.getenv("TOTALCROSS2_RELEASE");
+      if (f == null)
+         f = System.getenv("TOTALCROSS_RELEASE");
       if (f != null)
       {
          folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
@@ -194,12 +200,11 @@ public class DeploySettings
                folderTotalCrossVMSDistVM = f;
          }
       }
-      f = System.getenv("LITEBASE_DEMO");
+      f = System.getenv("LITEBASE_DEMO"); // either one works
+      if (f == null)
+         f = System.getenv("LITEBASE_RELEASE");
       if (f != null)
          folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");
-      f = System.getenv("LITEBASE_RELEASE");
-      if (f != null)
-         folderLitebaseVMSDistLIB = Convert.appendPath(f, "dist/lib/");
 
       if (folderTotalCrossSDKDistVM == null)
          folderTotalCrossSDKDistVM = distDir+"vm/";
@@ -211,13 +216,9 @@ public class DeploySettings
       lbhome = lbhome.replace('\\','/');
       if (folderLitebaseSDKDistLIB == null)
          folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
-      if (folderLitebaseVMSDistLIB == null)
-         folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseSDKDistLIB, "SDK","VMS");
       // check if folders exist
       if (!new File(folderLitebaseSDKDistLIB).exists())
          folderLitebaseSDKDistLIB = null;
-      if (!new File(folderLitebaseVMSDistLIB).exists()) 
-         folderLitebaseVMSDistLIB = null;
       if (!new File(folderTotalCrossSDKDistVM).exists()) 
          folderTotalCrossSDKDistVM = null;
       if (!new File(folderTotalCrossVMSDistVM).exists()) 
