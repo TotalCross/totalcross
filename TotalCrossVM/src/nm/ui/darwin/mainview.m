@@ -389,14 +389,9 @@ void vmClipboardCopy(JCharP string, int32 sLen) // from Vm.c
    UIPasteboard *pb = [UIPasteboard generalPasteboard];
    [pb setString:[[[NSString alloc] initWithCharacters:string length:sLen] autorelease]];
 }
-Object vmClipboardPaste(Context currentContext)
+unsigned short* ios_ClipboardPaste()
 {
    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
    NSString *text = pasteboard.string;
-   if (text) 
-   {
-      unsigned short* chars = (unsigned short*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
-      return createStringObjectFromJCharP(currentContext, chars,-1);
-  }   
-  return NULL;
+   return !text ? NULL : (unsigned short*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
 }

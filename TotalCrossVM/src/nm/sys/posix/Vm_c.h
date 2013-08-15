@@ -113,7 +113,12 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 
 #ifdef darwin
 void vmClipboardCopy(JCharP string, int32 sLen); // in mainview.m
-Object vmClipboardPaste(Context currentContext);
+unsigned short* ios_ClipboardPaste();
+Object vmClipboardPaste(Context currentContext)
+{
+   unsigned short* chars = ios_ClipboardPaste();
+   return !chars ? null : createStringObjectFromJCharP(currentContext, chars,-1);
+}
 #else
 static void vmClipboardCopy(JCharP string, int32 sLen) // JCharP
 {
