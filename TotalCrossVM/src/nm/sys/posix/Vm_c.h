@@ -111,6 +111,10 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 }
 //////////// END OF KEY INTERCEPTION FUNCTIONS
 
+#ifdef darwin
+void vmClipboardCopy(JCharP string, int32 sLen); // in mainview.m
+Object vmClipboardPaste(Context currentContext);
+#else
 static void vmClipboardCopy(JCharP string, int32 sLen) // JCharP
 {
    //dfb_clipboard_set()
@@ -121,7 +125,7 @@ static Object vmClipboardPaste(Context currentContext)
    //dfb_clipboard_get()
    return createStringObjectFromTCHAR(currentContext, "", 0);
 }
-
+#endif
 static bool vmIsKeyDown(int32 key)
 {
    return 0;
