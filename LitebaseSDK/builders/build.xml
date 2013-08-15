@@ -406,6 +406,22 @@ target: Linux builds
 </target>
    
 <target name="packageLinux" >
+	<java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+		<classpath>
+			<pathelement location="${base.temp.path}/classes_desktop"/>
+			<pathelement location="${tools}/jdeb/lib/ant.jar"/>
+			<pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+			<pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+			<pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+		</classpath>
+		<arg line="-n Litebase"/>
+		<arg line="-c 'Litebase Library'"/>
+		<arg line="-d 'TotalCross Litebase library'"/>
+		<arg line="-v ${lb.version}"/>
+		<arg line="-b ${gcc.project.path}/linux/${type}/libLitebase.so"/>
+		<arg line="-t ${target.path}/dist/lib/linux"/>
+		<arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
+	</java>
 </target>
 
 <target name="packageLinux_sdk">
