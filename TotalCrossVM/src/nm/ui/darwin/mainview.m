@@ -45,6 +45,14 @@ bool initGLES(ScreenSurface screen)
 }
 
 static int lastOrientationIsPortrait = true;
+- (void) setFirstOrientation
+{
+   int orientation = [[UIDevice currentDevice] orientation];
+   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
+   if (lastOrientationIsPortrait == -1 && orientation != UIDeviceOrientationUnknown)
+      lastOrientationIsPortrait = isPortrait;
+}
+
 - (void)viewDidLayoutSubviews
 {
    int orientation = [[UIDevice currentDevice] orientation];
@@ -91,6 +99,7 @@ static int lastOrientationIsPortrait = true;
       [ self destroySIP ];
    else
    {
+      [ self setFirstOrientation ];
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
    }
