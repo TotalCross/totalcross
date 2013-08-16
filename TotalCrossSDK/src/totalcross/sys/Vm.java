@@ -475,7 +475,6 @@ public final class Vm
    private static java.awt.datatransfer.ClipboardOwner defaultClipboardOwner = new ClipboardObserver();
 
    /** Copies the specific string to the clipboard. 
-    * Does not work on Android (it has no clipboard).
     */
    public static void clipboardCopy(String s)
    {
@@ -483,7 +482,6 @@ public final class Vm
    }
 
    /** Gets the last string from the clipboard. if none, returns "". 
-    * Does not work on Android (it has no clipboard).
     */
    public static String clipboardPaste()
    {
