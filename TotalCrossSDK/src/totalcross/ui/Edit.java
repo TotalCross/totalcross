@@ -1048,7 +1048,11 @@ public class Edit extends Control
                      Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
                   }
                   if (Settings.unmovableSIP) // guich@tc126_21
-                     getParentWindow().shiftScreen(this,0);
+                  {
+                     Window ww = getParentWindow();
+                     if (ww != null)
+                        ww.shiftScreen(this,0);
+                  }
                }
             }
             else
