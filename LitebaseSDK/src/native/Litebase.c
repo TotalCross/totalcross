@@ -1210,9 +1210,10 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             int32 type = field->fieldType;
             PlainDB newDB,
                     oldDB;
+            PlainDB* plainDB = &table->db;
             char tempName[DBNAME_SIZE + 1];
             bool isNull = (field->defaultValue == null),
-                 useCrypto = table->db.db.useCrypto;
+                 useCrypto = plainDB->db.useCrypto;
             int32 crc32,
                   j,
                   k,
@@ -1314,7 +1315,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             xstrcpy(tempName, table->name);
             xstrcat(tempName, "_");
             xmemzero(&newDB, sizeof(PlainDB));
-            xmemmove(&oldDB, &table->db, sizeof(PlainDB));
+            xmemmove(&oldDB, plainDB, sizeof(PlainDB));
             if (!(createPlainDB(context, &newDB, tempName, true, useCrypto, table->sourcePath, table->slot)))
                goto finish;
             newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
@@ -1324,13 +1325,19 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             newDB.rowInc = oldDB.rowCount;
 
             record[oldCount] = newDefaultValue; // Sets the record for the new column.
-                        
+                   
+#ifdef POSIX
+            removeFileFromList(&newDB.db);
+            removeFileFromList(&newDB.dbo);
+#endif
+
             // Saves the new meta data.
-            xmemmove(&table->db, &newDB, sizeof(PlainDB));
+            xmemmove(plainDB, &newDB, sizeof(PlainDB));
             table->columnCount++;
             tableSaveMetaData(context, table, TSMD_EVERYTHING); 
-            xmemmove(&newDB, &table->db, sizeof(PlainDB));
-            xmemmove(&table->db, &oldDB, sizeof(PlainDB));
+
+            xmemmove(&newDB, plainDB, sizeof(PlainDB));
+            xmemmove(plainDB, &oldDB, sizeof(PlainDB));
             table->columnCount--;
             
             size = oldDB.rowCount;
