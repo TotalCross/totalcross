@@ -117,7 +117,7 @@ public class Deployer4Android
          isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
          tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"android/";
          if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "android/";
+            lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "android/";
          // source and target packages must have the exact length
          sourcePackage = "totalcross/android";
          targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();

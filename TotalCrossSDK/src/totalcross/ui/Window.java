@@ -1130,6 +1130,7 @@ public class Window extends Container
          enableUpdateScreen = false;
          if (isScreenShifted())
             shiftScreen(null,0);
+         setSIP(SIP_HIDE,null,false);
          if (newWin.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this window was popped?
             newWin.reposition();
          newWin.popped = true;
@@ -1156,7 +1157,7 @@ public class Window extends Container
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, blocking the program execution, and make it child of this one. All events in the behind window are deactivated.
        Important! You can't use this method in the application's constructor or in the initUI method!
-       Calling this in onExit will NOT block the application.
+       Calling this 
    */
    private void popup(Window newWin) // anodos@320_9
    {

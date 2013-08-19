@@ -256,7 +256,7 @@ public class Deployer4WinCE
                if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
                {
                   vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
-                  lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "wince/";
+                  lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "wince/";
                }
                // copy binary files
                for (int i =0; i < pathsCount; i++)

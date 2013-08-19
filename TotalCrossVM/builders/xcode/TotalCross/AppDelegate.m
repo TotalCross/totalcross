@@ -51,12 +51,13 @@
     // setup for device orientation change events
     [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
+    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
+
     const char* name = 
 #ifdef APPNAME
        APPNAME;
 #else
-    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-    [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
+       [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
     [tcvm startVM:&context appName:(char*)name];
     [Litebase fillNativeProcAddressesLB];
