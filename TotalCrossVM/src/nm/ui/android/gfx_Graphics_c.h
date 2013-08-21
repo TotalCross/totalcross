@@ -644,6 +644,7 @@ bool checkGLfloatBuffer(Context c, int32 n)
 bool setupGL(int width, int height)
 {
     int i;
+    pixLastRGB = -1;
     appW = width;
     appH = height;
 

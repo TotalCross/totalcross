@@ -13,3 +13,5 @@ TotalCrossVM/builders/android/apps/tcvm/.settings
 TotalCrossVM/src/init/android/*.h
 TotalCrossVM/src/launchers/android/bin
 TotalCrossVM/src/launchers/android/gen
+TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/UserInterfaceState.xcuserstate
+TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/xcdebugger/Breakpoints.xcbkptlist

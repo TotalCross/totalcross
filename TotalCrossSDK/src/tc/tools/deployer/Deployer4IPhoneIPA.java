@@ -293,8 +293,8 @@ public class Deployer4IPhoneIPA
          icons[i] = new NSString(Bitmaps.IOS_LAUNCHER_IMAGES[i].name);
       }
 
-      NSArray iconBundle = new NSArray(icons);
-      rootDict.put("UILaunchImageFile", iconBundle);
+      //NSArray iconBundle = new NSArray(icons);
+      rootDict.put("UILaunchImageFile", icons[0]/*iconBundle*/); // received "Info.plist: Unexpected value for key: UILaunchImageFile is not a string." at 16/8/2013
    }
 
    protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
