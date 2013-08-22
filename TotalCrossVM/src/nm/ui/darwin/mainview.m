@@ -45,6 +45,14 @@ bool initGLES(ScreenSurface screen)
 }
 
 static int lastOrientationIsPortrait = true;
+- (void) setFirstOrientation
+{
+   int orientation = [[UIDevice currentDevice] orientation];
+   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
+   if (lastOrientationIsPortrait == -1 && orientation != UIDeviceOrientationUnknown)
+      lastOrientationIsPortrait = isPortrait;
+}
+
 - (void)viewDidLayoutSubviews
 {
    int orientation = [[UIDevice currentDevice] orientation];
@@ -91,6 +99,7 @@ static int lastOrientationIsPortrait = true;
       [ self destroySIP ];
    else
    {
+      [ self setFirstOrientation ];
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
    }
@@ -382,3 +391,16 @@ int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double
    return 0;
 }
 
+//////////////////// clipboard //////////////////////
+
+void vmClipboardCopy(JCharP string, int32 sLen) // from Vm.c
+{
+   UIPasteboard *pb = [UIPasteboard generalPasteboard];
+   [pb setString:[[[NSString alloc] initWithCharacters:string length:sLen] autorelease]];
+}
+unsigned short* ios_ClipboardPaste()
+{
+   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+   NSString *text = pasteboard.string;
+   return !text ? NULL : (unsigned short*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
+}

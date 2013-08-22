@@ -314,6 +314,20 @@ public class Loader extends Activity
    {
       try
       {
+         if (command.equalsIgnoreCase("broadcast"))
+         {
+            try 
+            {               
+               Intent intent = new Intent();
+               intent.setAction(args);
+               sendBroadcast(intent);
+            } 
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+         }
+         else
          if (command.equalsIgnoreCase("cmd"))
          {
             try 

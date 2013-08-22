@@ -231,6 +231,7 @@ public final class Vm
     * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store. Returns -1 if args is null, -2 if file was not found.
     * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
     * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
+    * <li> Vm.exec("broadcast","broadcast package",0,true); -- sends a broadcast intent.
     * </ul>
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
@@ -475,7 +476,6 @@ public final class Vm
    private static java.awt.datatransfer.ClipboardOwner defaultClipboardOwner = new ClipboardObserver();
 
    /** Copies the specific string to the clipboard. 
-    * Does not work on Android (it has no clipboard).
     */
    public static void clipboardCopy(String s)
    {
@@ -483,7 +483,6 @@ public final class Vm
    }
 
    /** Gets the last string from the clipboard. if none, returns "". 
-    * Does not work on Android (it has no clipboard).
     */
    public static String clipboardPaste()
    {
