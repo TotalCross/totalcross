@@ -72,6 +72,8 @@ public final class Settings4A
    // device capabilities
    public static boolean virtualKeyboard;
    public static boolean keypadOnly;
+   
+   public static String lineNumber;
 
    public static void refresh()
    {
@@ -118,6 +120,7 @@ public final class Settings4A
 	   
       // imei
       TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+      lineNumber = telephonyMgr.getLine1Number();
       // handle dual-sim phones. Usually, they overload the method with a
       Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
       Method[] mtds = cc.getDeclaredMethods();

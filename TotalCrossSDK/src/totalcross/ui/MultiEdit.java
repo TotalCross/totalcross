@@ -1123,6 +1123,11 @@ public class MultiEdit extends Container implements Scrollable
       {
          showTip(this, Edit.pasteStr, 500, -1);
          int n = pasted.length();
+         if (maxLength > 0)
+         {
+            pasted = pasted.substring(0,Math.max(0,maxLength - chars.length()));
+            n = pasted.length();
+         }
          if (chars.length() == 0)
          {
             chars.append(pasted);
