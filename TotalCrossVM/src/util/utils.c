@@ -616,12 +616,12 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
       exponent = (int32) (log(val) / LN10); // 3 : 1000.5432 = 1.0005432*10^3
       if (DOUBLE_MIN_NON_EXP <= val && val <= DOUBLE_MAX_NON_EXP) // does it fit without sci notation?
       {
-         double frac = (val - (int64)val); // guich@tc100b5_36: fixed this part of the routine from here...
+/*         double frac = (val - (int64)val); // guich@tc100b5_36: fixed this part of the routine from here...
          double pow10 = Pow10(decimalCount);
          double pivot = frac * pow10; // 23.2335+0.0005 = 23.2339999999, and pivot is 49
          if (pivot > 1) pivot = pivot - (int64)pivot; // guich@tc114_39: get the fractional part
          if (pivot >= 0.4555555555555)
-            val += rounds9[decimalCount]; // ...to here
+            val += rounds9[decimalCount]; // ...to here*/
          integral = (int64)val; // 1000
          exponent = 0;
       }
@@ -649,37 +649,33 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
       if (decimalCount > 0)
       {
          int i,firstNonZero=-1; // number of zeros between . and first non-zero
-         double f = val - integral; // 1000.5432-1000 = 0.5432
-         if (f > 1e-16)
-            for (i = 0; i < decimalCount; i++)
-            {
-               f *= 10; // 5.432
-               val *= 10; // 10005.432
-               if (val <= DOUBLE_MAX_NON_EXP)
-               {
-                  int64 temp = (int64)f; // 10005
-                  if (temp % 10 != 0) // ignore least significant zeros
-                  {
-                     fract = temp;
-                     if (firstNonZero == -1)
-                        firstNonZero = i;
-                  }
-               }
-               else
-                  break;
-            }
+         double f = val - integral,f0=f;
+         double pow10 = Pow10(decimalCount);
+         int64 ipow10 = (int64)pow10;
+         fract = exponent ? (int64)(f * pow10) : (int64)(f * pow10 + 9e-1); // guich@tc200: doing a single multiplication by power_of_10 is more precise than doing a batch of multipliations by 10
          s = long2str(fract,lb);
          i = decimalCount - xstrlen(s);
          *buf++ = '.';
-         if (firstNonZero > 0)
+         // check number of zeros between . and first non-zero digit
+         if (fract < I64_CONST(10000000000000000))
+            do
+            {
+               ipow10 /= 10;
+               firstNonZero++;
+            } while (ipow10 > fract);
+         if (0 < firstNonZero && firstNonZero < decimalCount) // place 0's between . and first non-zero digit
          {
             i -= firstNonZero;
             while (firstNonZero-- > 0)
                *buf++ = '0';
          }
-         while (*s)
+         while (*s) // place decimal value
             *buf++ = *s++;
-         if (!floating && i > 0) // fill with zeros if needed
+         if (floating) // if floating, remove leading zeros
+            while (buf > buffer-2 && buf[-2] != '.' && buf[-1] == '0')
+               buf--;
+         else
+         if (i > 0) // fill with zeros if needed
          {
             if (i > 20) i = 20; // this should not respect the maximum allowed width, because its just for user formatting
             while (i-- > 0)
