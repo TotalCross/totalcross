@@ -77,7 +77,7 @@ public class MainMenu extends BaseContainer
    
    public MainMenu()
    {
-      helpMessage = "This is a sample that shows the user interface controls and the changes in the other controls to match the new look and feel. In this screen you can see the new Bar control (at the header and footer), and also the new ButtonMenu (the menu at the middle). You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
+      helpMessage = "This is a TotalCross "+Settings.versionStr+" sample that shows the user interface controls and the changes in the other controls to match the new look and feel. In this screen you can see the new Bar control (at the header and footer), and also the new ButtonMenu (the menu at the middle). You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
    }
    
    private void addToolTip(Control c, String text)

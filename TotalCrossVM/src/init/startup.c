@@ -99,7 +99,7 @@ static int32 exitProgram(int32 exitcode)
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
    exitCode = exitcode;
-   destroyEvent();
+   if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
    destroyAll();
@@ -407,9 +407,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       cmdline += 6;
    }
 
-   if (!initEvent())
-      return exitProgram(102);
-
    if (cmdline || !*args) // parse the command line
    {
       bool loop = true;
@@ -522,6 +519,8 @@ jumpArgument:
 #endif
          // 1. Initialize the graphics
          isMainWindow = (loadedTCZ->header->attr & ATTR_HAS_MAINWINDOW) != 0;
+         if (isMainWindow && !initEvent())
+            return exitProgram(102);
          if (isMainWindow && (!initGraphicsBeforeSettings(currentContext,loadedTCZ->header->attr) || !keepRunning))
             return exitProgram(107);
          else
