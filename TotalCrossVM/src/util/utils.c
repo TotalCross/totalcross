@@ -521,13 +521,21 @@ TC_API double str2double(CharP str, bool *err) // guich@566_38: new routine
    // the string will be broken in 3 parts: xxx.yyyEzzz
    if (ePtr)
       *ePtr = 0;
-   if (dotPtr)
-      *dotPtr = 0;
-   result = (double)str2longPriv(str, &err2, true); // convert the first part 'xxx'
-   if (err2)
+   if (dotPtr && str == dotPtr) // fix for .25
    {
-      if (err) *err = true;
-      return 0;
+      result = 0;
+      err2 = false;
+   }
+   else
+   {
+      if (dotPtr)
+         *dotPtr = 0;
+      result = (double)str2longPriv(str, &err2, true); // convert the first part 'xxx'
+      if (err2)
+      {
+         if (err) *err = true;
+         return 0;
+      }
    }
    if (dotPtr)
    {

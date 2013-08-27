@@ -628,10 +628,9 @@ class IconStore extends Hashtable
    {
       super(30);
       if (DeploySettings.classPath != null && DeploySettings.classPath.length > 0)
-      {
          for (int i = DeploySettings.classPath.length - 1 ; i >= 0 ; i--)
-            addFrom(DeploySettings.classPath[i]);
-      }
+            if (DeploySettings.classPath[i].length() > 0)
+               addFrom(DeploySettings.classPath[i]);
       addFrom(DeploySettings.mainClassDir);
       addFrom(DeploySettings.baseDir);
       addFrom(".");

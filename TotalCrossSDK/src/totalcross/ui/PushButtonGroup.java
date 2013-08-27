@@ -403,10 +403,11 @@ public class PushButtonGroup extends Control
                   }
                }
                catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
-            if (simpleBorder)
-               g.drawRect(r.x,r.y,r.width,r.height);
-            else
-               g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?((uiCE || uiVista) && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:((uiCE || uiVista) && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
+            if (!uiAndroid) // if uiAndroid with transparentBackground, dont draw the old borders
+               if (simpleBorder)
+                  g.drawRect(r.x,r.y,r.width,r.height);
+               else
+                  g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?((uiCE || uiVista) && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:((uiCE || uiVista) && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
          }
       g.foreColor = fColor;
       for (i=0; i < n; i++)
