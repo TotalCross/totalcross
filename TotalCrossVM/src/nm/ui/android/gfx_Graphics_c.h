@@ -668,7 +668,7 @@ bool setupGL(int width, int height)
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
     clearPixels();
-    return checkGLfloatBuffer(mainContext,10000);
+    return checkGLfloatBuffer(mainContext,20000);
 }
 
 #ifdef ANDROID
