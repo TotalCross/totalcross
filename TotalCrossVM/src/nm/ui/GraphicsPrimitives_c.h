@@ -952,7 +952,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
-   GLfloat *glC = glcolors, *glV = glcoords;
+   GLfloat *glC, *glV;
 #endif
 
    if (!text || chrCount == 0 || fontObj == null) return;
@@ -1033,7 +1033,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
 #ifdef __gl2_h_
-         checkGLfloatBuffer(currentContext, (int32)(glC-glcolors) + uf->fontP.maxHeight * uf->fontP.maxWidth);
+         checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
 #endif
       }
       // valid char, get its start
@@ -1074,6 +1074,8 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          if (Graphics_useOpenGL(g))
          {
             int ty = glShiftY;
+            glC = glcolors;
+            glV = glcoords;
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)
             {
                current = start;
@@ -1092,6 +1094,8 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                   *glV++ = y + ty;
                }
             }
+            if (glC != glcolors) // flush vertices buffer
+               glDrawPixels(((int32)(glC-glcolors)),foreColor);
          }
          else
 #endif
@@ -1130,11 +1134,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
-   if (glC != glcolors) // flush vertices buffer
-   {
-      // debug("drawing %d points",(int32)(glC-glcolors)); - font size 48 reaches 8k points
-      glDrawPixels(((int32)(glC-glcolors)),foreColor);
-   }
    if (Surface_isImage(Graphics_surface(g)))
       Image_changed(Graphics_surface(g)) = true;
    else
