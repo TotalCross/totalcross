@@ -319,6 +319,8 @@ public class Loader extends Activity
             try 
             {               
                Intent intent = new Intent();
+               if (launchCode != 0)
+                  intent.addFlags(launchCode);
                intent.setAction(args);
                sendBroadcast(intent);
             } 
