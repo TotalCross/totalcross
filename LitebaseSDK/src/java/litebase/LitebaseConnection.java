@@ -121,7 +121,7 @@ public class LitebaseConnection
    /**
     * An array of ancestors of index nodes.
     */
-   int[] ancestors = new int[8];
+   int[] ancestors = new int[16];
    
    /**
     * A temporary buffer for strings.
