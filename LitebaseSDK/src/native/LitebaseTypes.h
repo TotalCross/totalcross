@@ -1366,7 +1366,7 @@ struct Table
    /**
     * An array of ancestors.
     */
-   int32 ancestors[8];
+   int32 ancestors[16];
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
