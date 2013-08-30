@@ -273,18 +273,16 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
 #ifdef __gl2_h_
+   if (isSrcScreen)
+      glGetPixels(dstPixels,srcX,srcY,width,height,Graphics_pitch(dstSurf));
+   else
    if (Graphics_useOpenGL(dstSurf))
    {
-      if (isSrcScreen)
-         glGetPixels(dstPixels,srcX,srcY,width,height,Graphics_pitch(dstSurf));
-      else
-      {
-         if (Image_changed(srcSurf))
-            applyChanges(currentContext, srcSurf,true);
-         int32 fc = Image_frameCount(srcSurf);
-         int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-         glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
-      }
+      if (Image_changed(srcSurf))
+         applyChanges(currentContext, srcSurf,true);
+      int32 fc = Image_frameCount(srcSurf);
+      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
    }
    else
 #endif
