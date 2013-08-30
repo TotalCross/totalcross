@@ -19,6 +19,20 @@
 
 int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
+   if (strEq(szCommand,"viewer")/* && xstrstr(szArgs,".pdf") != 0*/)
+   {
+      if (!DEVICE_CTX->_childview.uidController)
+      {
+         DEVICE_CTX->_childview.uidController = [[UIDocumentInteractionController alloc] init];
+         //DEVICE_CTX->_childview.uidController.UTI = @"com.adobe.pdf";
+      }
+      NSString* strl = [NSString stringWithFormat:@"%s", szArgs];
+      NSURL *url = [NSURL URLWithString:strl];
+      DEVICE_CTX->_childview.uidController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:url]];
+      CGRect navRect = DEVICE_CTX->_childview.frame;
+      [DEVICE_CTX->_childview.uidController presentOpenInMenuFromRect:navRect inView:[UIApplication sharedApplication].keyWindow animated:YES];
+   }
+   else
    if (strEq(szCommand,"url"))
    {
       NSString* launchUrl = [NSString stringWithFormat:@"%s", szArgs];
