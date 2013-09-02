@@ -197,8 +197,8 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       tczClose(tcz);
    heapDestroy(heap);
 
-   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
-      setTransparentColor(imageObj, (Pixel)transp);
+//   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
+//      setTransparentColor(imageObj, (Pixel)transp);
 }
 
 /**   do any setup here, including setting any of the transformations
