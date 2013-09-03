@@ -39,7 +39,7 @@
             NSString *targetFilePath = [documentsDirectory stringByAppendingPathComponent:s];
             NSString *sourceFilePath = [pkgDirectory stringByAppendingPathComponent:s];
             if ([[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File exist, delete it
-               [NSFileManager removeItemAtPath: targetFilePath error:NULL];
+               [[NSFileManager defaultManager] removeItemAtPath:targetFilePath error:&error];
             [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
          }
       }

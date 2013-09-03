@@ -427,7 +427,7 @@ public class Deploy
             "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Currently supports only \"/inst android\".\n" +
             "   /k      : Keep the exe and other temporary files during wince generation\n"+
             "   /kn     : As /k, but does not create the cab files for wince\n"+
-            "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS\n"+
+            "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
             "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +

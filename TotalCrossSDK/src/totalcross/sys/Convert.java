@@ -142,6 +142,8 @@ public final class Convert
    public static final double MIN_DOUBLE_VALUE = 4.9E-324d;
    /** The maximum number of digits in a double value, used when formatting to string. */
    public static final int MAX_DOUBLE_DIGITS = 15;
+   private static final double DOUBLE_MAX_NON_EXP = 9.007199254740992E15; // 2^53
+   private static final double DOUBLE_MIN_NON_EXP = 1.1102230246251565E-16; // 2^-53
    
    static final boolean useNative = !Settings.onJavaSE;
 
@@ -283,7 +285,6 @@ public final class Convert
          // example: -1000.5432
          long integral, fract=0;
          int exponent;
-         double frac, pow10, pivot;
          boolean floating = decimalCount < 0;
          if (floating)
             decimalCount = MAX_DOUBLE_DIGITS;
@@ -294,16 +295,10 @@ public final class Convert
          }
 
          exponent = (int) (Math.log(val) / Constants.LN10); // 3 : 1000.5432 = 1.0005432*10^3
-         if (MIN_DOUBLE_VALUE <= val && val <= MAX_DOUBLE_VALUE) // does it fit without sci notation?
+         if (DOUBLE_MIN_NON_EXP <= val && val <= DOUBLE_MAX_NON_EXP) // does it fit without sci notation?
          {
-            frac = (val - (long)val); // guich@tc100b5_36: fixed this part of the routine from here...
-            pow10 = Constants.p1[decimalCount]*Constants.p32[(decimalCount)>>5];
-            pivot = frac * pow10; // 23.2335+0.0005 = 23.2339999999, and pivot is 49
-            if (pivot > 1) pivot = pivot - (long)pivot; // guich@tc114_39: get the fractional part
-            if (pivot >= 0.4555555555555)
-               val += Constants.rounds9[decimalCount]; // ...to here
-            else
-               val += Constants.rounds5[decimalCount];
+            if (decimalCount == 0)
+               val += 0.5;
             integral = (long) val; // 1000
             exponent = 0;
          }
@@ -313,9 +308,10 @@ public final class Convert
             while (true) // guich@580_23: copied from c, which was correct.
             {
                // pow10: fast pow10
-               pow10 = (exponent>=0) ? Constants.p1[exponent & 31]*Constants.p32[exponent>>5] : Constants.np32[-exponent >> 5]/Constants.p1[-exponent & 31]; // guich@570_51: when exp >= 320, p32 index is 10, and 1e320 is impossible
+               double pow10 = (exponent>=0) ? Constants.p1[exponent & 31]*Constants.p32[exponent>>5] : Constants.np32[-exponent >> 5]/Constants.p1[-exponent & 31]; // guich@570_51: when exp >= 320, p32 index is 10, and 1e320 is impossible
                double mant = val / pow10;
-               mant += (double) Constants.rounds5[decimalCount];
+               if (decimalCount < 18)
+                  mant += (double) Constants.rounds5[decimalCount];
                integral = (long) mant;
                if (integral == 0 && !adjusted)
                {
@@ -335,41 +331,48 @@ public final class Convert
                }
             }
          }
-         dest.append(integral);
-         if (decimalCount > 0)
+         if (decimalCount == 0)
+            dest.append(integral);
+         else
          {
             int i,firstNonZero=-1; // number of zeros between . and first non-zero
+            double pow10 = (decimalCount>=0) ? Constants.p1[decimalCount & 31]*Constants.p32[decimalCount>>5] : Constants.np32[-decimalCount >> 5]/Constants.p1[-decimalCount & 31]; // guich@570_51: when exp >= 320, p32 index is 10, and 1e320 is impossible
+            long ipow10 = (long)pow10;
             double f = val - integral; // 1000.5432-1000 = 0.5432
             if (f > 1.0e-16)
-               for (i = 0; i < decimalCount; i++)
+            {
+               fract = (long)(f * pow10 + (exponent == 0 ? 0.5 : 0));
+               if (fract == ipow10) // case of Convert.toString(49.999,2)
                {
-                  f *= 10; // 5.432
-                  val *= 10; // 10005.432
-                  if (val <= MAX_DOUBLE_VALUE)
-                  {
-                     long temp = (long) f; // 10005
-                     if (temp % 10 != 0) // ignore least significant zeros
-                     {
-                        fract = temp;
-                        if (firstNonZero == -1)
-                           firstNonZero = i;
-                     }
-                  }
-                  else
-                     break;
+                  fract = 0;
+                  integral++;
                }
+            }
+            dest.append(integral);
+
+            do
+            {
+               ipow10 /= 10;
+               firstNonZero++;
+            }
+            while (ipow10 > fract);
             String s = Long.toString(fract);
             i = decimalCount - s.length();
             dest.append('.');
-            if (firstNonZero > 0)
+            if (0 < firstNonZero && firstNonZero < decimalCount)
             {
-               dest.append(Constants.zeros, 0, firstNonZero);
                i -= firstNonZero;
+               dest.append(Constants.zeros, 0, firstNonZero);
             }
             dest.append(s);
-            if (!floating && i > 0) // fill with zeros if needed
+            if (floating)
+               while (dest.charAt(dest.length()-2) != '.' && dest.charAt(dest.length()-1) == '0')
+                  dest.setLength(dest.length()-1);
+            else
+            if (i > 0) // fill with zeros if needed
                dest.append(Constants.zeros,0,i<20?i:20); // this should not respect the maximum allowed width, because its just for user formatting
          }
+
          if (exponent != 0)
             dest.append('E').append(exponent);
       }
@@ -2229,7 +2232,6 @@ public final class Convert
       };
       private static final double LN10 = 2.30258509299404568402;
 
-      private static double rounds9[] = {9e-1,9e-2,9e-3,9e-4,9e-5,9e-6,9e-7,9e-8,9e-9,9e-10,9e-11,9e-12,9e-13,9e-14,9e-15,9e-16,9e-17,9e-18};
       private static double rounds5[] = {5e-1,5e-2,5e-3,5e-4,5e-5,5e-6,5e-7,5e-8,5e-9,5e-10,5e-11,5e-12,5e-13,5e-14,5e-15,5e-16,5e-17,5e-18};
       private static char []zeros = "00000000000000000000".toCharArray();
    }
