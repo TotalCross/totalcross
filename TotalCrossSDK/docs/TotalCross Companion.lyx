@@ -4806,6 +4806,16 @@ The process is similar to the above one.
  You should not use a certificate for distributing in-house applications.
 \end_layout
 
+\begin_layout Standard
+You should also provide a 
+\family typewriter
+splash.png
+\family default
+ image whose size must be 640x1136.
+ The image should be with this size and name.
+ Otherwise, Apple will reject your application.
+\end_layout
+
 \begin_layout Subsection
 Updating an application on the Apple Store
 \end_layout
