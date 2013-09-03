@@ -1978,6 +1978,43 @@ LitebaseConnection.logOnlyChanges
 \end_layout
 
 \end_deeper
+\begin_layout Enumerate
+If the default logger is used, it will be saved in 
+\family typewriter
+Settings.appPath
+\family default
+.
+ On Android, it is not always possible to fetch the log file unless changing
+ some access permissions or even rooting the device.
+ Since this may be undesirable, the log file can be saved on the external
+ card so that it can be easily fetched.
+ In order to change its place, it is necessary to create it using 
+\family typewriter
+totalCross.util.Logger
+\family default
+.
+ Here is an example for Android using the default path for the external
+ card:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File log = new File(Convert.appendPath("/sdcard/", "Litebase_" + new Time().getTim
+eLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, -1);
+\end_layout
+
+\begin_layout Plain Layout
+
+LitebaseConnection.logger = Logger.getLogger("litebase", -1, log);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Compatibility
 \end_layout
@@ -23389,6 +23426,43 @@ LitebaseConnection.logOnlyChanges
 \end_layout
 
 \end_deeper
+\begin_layout Itemize
+If the default logger is used, it will be saved in 
+\family typewriter
+Settings.appPath
+\family default
+.
+ On Android, it is not always possible to fetch the log file unless changing
+ some access permissions or even rooting the device.
+ Since this may be undesirable, the log file can be saved on the external
+ card so that it can be easily fetched.
+ In order to change its place, it is necessary to create it using 
+\family typewriter
+totalCross.util.Logger
+\family default
+.
+ Here is an example for Android using the default path for the external
+ card:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File log = new File(Convert.appendPath("/sdcard/", "Litebase_" + new Time().getTim
+eLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, -1);
+\end_layout
+
+\begin_layout Plain Layout
+
+LitebaseConnection.logger = Logger.getLogger("litebase", -1, log);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 ResultSetMetaData
 \end_layout
