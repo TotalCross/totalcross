@@ -71,7 +71,7 @@ public class ScrollContainer extends Container implements Scrollable
    protected ClippedContainer bag;
    protected Container bag0; // used to make sure that the clipping will work
    boolean changed;
-   private int lastV=0, lastH=0; // eliminate duplicate events
+   protected int lastV=0, lastH=0; // eliminate duplicate events
    /** Set to true, to make the surrounding container shrink to its size. */
    public boolean shrink2size;
    private boolean isScrolling;

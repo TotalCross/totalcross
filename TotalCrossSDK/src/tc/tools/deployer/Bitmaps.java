@@ -503,11 +503,7 @@ public class Bitmaps
          new Image4iOS("Icon-Small-iPad.png", 50),
          new Image4iOS("Icon-Small-iPad@2x.png", 100),
          new Image4iOS("Icon-Small-iPad.png", 50),
-         new Image4iOS("Icon-Small-iPad@2x.png", 100)
-   };
-
-   static final Image4iOS[] IOS_LAUNCHER_IMAGES =
-   {
+         new Image4iOS("Icon-Small-iPad@2x.png", 100),
          new Image4iOS("Default-568h@2x.png", 640, 1136)
    };
 

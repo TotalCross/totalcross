@@ -136,8 +136,6 @@ public class Deployer4IPhoneIPA
 
       // add all the iphone icons
       addIcons(appFolder, rootDict);
-      // add all the iOS launcher images
-      addLauncherImage(appFolder, rootDict);
       // itunes metadata
       addMetadata(targetZip);
       
@@ -280,21 +278,6 @@ public class Deployer4IPhoneIPA
 
       NSArray iconBundle = new NSArray(icons);
       rootDict.put("CFBundleIconFiles", iconBundle);
-   }
-
-   private void addLauncherImage(TFile appFolder, NSDictionary rootDict) throws IOException
-   {
-      NSString[] icons = new NSString[Bitmaps.IOS_LAUNCHER_IMAGES.length];
-
-      for (int i = icons.length - 1; i >= 0; i--)
-      {
-         TFile icon = new TFile(appFolder, Bitmaps.IOS_LAUNCHER_IMAGES[i].name);
-         icon.input(new ByteArrayInputStream(Bitmaps.IOS_LAUNCHER_IMAGES[i].getImage()));
-         icons[i] = new NSString(Bitmaps.IOS_LAUNCHER_IMAGES[i].name);
-      }
-
-      //NSArray iconBundle = new NSArray(icons);
-      rootDict.put("UILaunchImageFile", icons[0]/*iconBundle*/); // received "Info.plist: Unexpected value for key: UILaunchImageFile is not a string." at 16/8/2013
    }
 
    protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
