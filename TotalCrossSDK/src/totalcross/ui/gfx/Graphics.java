@@ -78,6 +78,13 @@ public final class Graphics
    /** Set to true to use antialiase in all drawing operations that draw a diagonal line,
     * such as drawPoligon and drawLine. */
    public boolean useAA;
+   
+   /** States that the next calls to drawText will draw it vertically. We decided to do this using a boolean instead of 
+    * duplicating all the 10 drawText method calls, to keep it simple.
+    * @see #drawVerticalText(String, int, int)
+    * @since TotalCross 1.7 
+    */
+   public boolean isVerticalText;
 
    /** Contains the pixels of the MainWindow. */
    public static Object mainWindowPixels;
@@ -1017,8 +1024,35 @@ public final class Graphics
       drawText(text, x,y,0);
    }
    
+   /** Draws a VERTICAL text with the current font and the current foregrount color.
+    * 
+    * This is a shorthand of:
+    * <pre>
+    * g.isVerticalText = true;
+    * g.drawText(text,x,y);
+    * g.isVerticalText = false;
+    * </pre>
+    * @param text the text to be drawn
+    * @param x x coordinate of the text
+    * @param y y coordinate of the text
+    */
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
+   }
+   
    /** Draws a text with the current font and the current foregrount color,
     * justifying it to the given width.
+    * 
+    * The text can be vertical if you set the isVerticalText property. Note that vertical text does not allow justification. 
+    * You can use the justifyWidth to adjust the kerning; depending on the characters you're using, you can decrease the distance
+    * using <code>font.fm.height - font.fm.ascent</code> as the justifyWidth.
+    * 
+    * @see #isVerticalText
+    * @see #drawVerticalText(String, int, int)
+    * 
     * @param text the text to be drawn
     * @param x x coordinate of the text
     * @param y y coordinate of the text
@@ -1045,7 +1079,8 @@ public final class Graphics
       int pxRB = foreColor & 0xFF00FF;
       int pxG  = foreColor & 0x00FF00;
       int extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
-      if (justifyWidth > 0)
+      boolean isVert = isVerticalText;
+      if (justifyWidth > 0 && !isVert)
       {
          while (text.charAt(chrCount-1) <= ' ')
             chrCount--;
@@ -1058,6 +1093,7 @@ public final class Graphics
          }
       }
 
+      int ty = 0, incY = height + justifyWidth;
       x0 += transX;
       y0 += transY;
       xMax = xMin = (x0 < clipX1) ? clipX1 : x0;
@@ -1074,7 +1110,10 @@ public final class Graphics
          {
             if (ch == 160 || ch == ' ' || ch == '\t')
             {
-               x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
+               if (isVert)
+                  ty += ch == '\t' ? incY * Font.TAB_SIZE : incY;
+               else
+                  x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
                if (k <= extraPixelsRemaining)
                   x0++;
             }
@@ -1106,7 +1145,7 @@ public final class Graphics
                start += (yMin-y0)*rowWIB;
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
             {
-               int yy = y * pitch;
+               int yy = (y + ty) * pitch;
                current = start;
                currentBit = startBit;
                for (x=x0; x < xMax; x++)  // draw each column
@@ -1132,7 +1171,7 @@ public final class Graphics
             // draw the char
             for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
             {
-               int yy = y * pitch;
+               int yy = (y + ty) * pitch;
                current = start;
                boolean isLowNibble = isNibbleStartingLow;
                for (x=x0; x < xMax; x++)  // draw each column
@@ -1153,15 +1192,28 @@ public final class Graphics
                }
             }
          }
-         if (xMax >= clipX2)
+         if (isVert)
          {
-            xMax = clipX2;
-            break;
+            if (ty >= clipY2)
+            {
+               yMax = clipX2;
+               break;
+            }
+            //x0 = xMax; // next character
+            ty += incY;
          }
-         x0 = xMax; // next character
-         x0 += extraPixelsPerChar;
-         if (k <= extraPixelsRemaining)
-            x0++;
+         else
+         {
+            if (xMax >= clipX2)
+            {
+               xMax = clipX2;
+               break;
+            }
+            x0 = xMax; // next character
+            x0 += extraPixelsPerChar;
+            if (k <= extraPixelsRemaining)
+               x0++;
+         }
       }
    }
 
