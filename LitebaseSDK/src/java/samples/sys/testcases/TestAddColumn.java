@@ -24,7 +24,7 @@ public class TestAddColumn extends TestCase
    /**
     * The connection with Litebase.
     */
-   LitebaseConnection driver = LitebaseConnection.getInstance("Test");
+   LitebaseConnection driver = AllTests.getInstance("Test");
    
    /**
     * A time object.
@@ -453,7 +453,7 @@ public class TestAddColumn extends TestCase
       {
          fail("11");
       }
-      driver = LitebaseConnection.getInstance("Test");
+      driver = AllTests.getInstance("Test");
       
       try
       {
