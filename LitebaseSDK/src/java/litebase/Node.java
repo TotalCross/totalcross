@@ -160,7 +160,7 @@ class Node
 
          if (indexAux.isWriteDelayed)
          {
-            if ((idxAux & (NODEGROWSIZE - 1)) == 0) // Grows more than 1 record per time.
+            if (idxAux * recSize == fnodes.size) // Grows more than 1 record per time.
                fnodes.growTo((idxAux + NODEGROWSIZE) * recSize);
          }
          else
