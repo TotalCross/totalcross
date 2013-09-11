@@ -80,7 +80,7 @@ class Table
    /**
     * Indicates if the table uses cryptography.
     */
-   static final int USE_CRYPTO = 1; // juliana@253_8: now Litebase supports weak cryptography.
+   static final int USE_CRYPTO = 3; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -545,14 +545,17 @@ class Table
       DataStreamLB ds = new DataStreamLB(new ByteArrayStream(bytes), plainDB.useCrypto);
 
       // The currentRowId is found from the last non-empty record, not from the metadata.
-      if ((((bytes[0] & USE_CRYPTO) != 0 && !plainDB.useCrypto) || ((bytes[0] & USE_CRYPTO) == 0) && plainDB.useCrypto) 
-       && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1)) 
+      if (!(((bytes[0] & USE_CRYPTO) == 0) ^ plainDB.useCrypto)  
+       && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1 || bytes[0] == 3)) 
       {
          // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
          dbFile.close();
          plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
       }
+      
+      if (bytes[0] == 1)
+         plainDB.useOldCrypto = true;
       
       ds.skipBytes(4); // It is not necessary to read the last position of the blobs and strings file.
       plainDB.headerSize = ds.readShort(); // Reads the header size.
@@ -826,7 +829,7 @@ class Table
       else // Otherwise, allocates it.
          auxDs = tsmdDs = new DataStreamLB(auxBas = tsmdBas = new ByteArrayStream(plainDB.headerSize), plainDB.useCrypto); 
 
-      auxBas.getBuffer()[0] = (byte)(plainDB.useCrypto? USE_CRYPTO : 0);
+      auxBas.getBuffer()[0] = (byte)(plainDB.useCrypto? (plainDB.useOldCrypto? 1 : USE_CRYPTO) : 0);
       auxDs.skipBytes(4); // The strings and blobs final position is deprecated.
       auxDs.writeShort(plainDB.headerSize); // Saves the header size.
       auxDs.writeByte(plainDB.isAscii? IS_ASCII | j : j); // juliana@226_4: table is not saved correctly if modified.
@@ -2557,8 +2560,8 @@ class Table
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
       byte[] byteArray;
-      buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-      int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
+      buffer[3] = (plainDB.useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
+      int crc32 = updateCRC32(buffer, bas.getPos(), 0, plainDB.useCrypto); 
       
       if (version == Table.VERSION)
       {
@@ -2571,12 +2574,12 @@ class Table
            	   if (values[i] != null && !values[i].isNull)
            	   {
        	         byteArray = Utils.toByteArray(values[i].asString);
-       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
            	   }
        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
        	      {
        	         byteArray = Utils.toByteArray(vOlds[i].asString); 
-       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
        	      }
             }
             else if (types[i] == SQLElement.BLOB)
@@ -2585,14 +2588,14 @@ class Table
            	   {
            	      // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
            	      intArray[0] = ((values[i].asBlob.length > sizes[i])? sizes[i] : values[i].asBlob.length);
-           	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+           	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
            	   }
            	   // juliana@265_2: corrected a problem where a row could be wrongly deleted by recovering a table when an update was done and the 
                // column which was of type blob remained null on Java SE and BlackBerry.
         	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asInt != -1)
         	      {
         	         intArray[0] = vOlds[i].asInt;
-        	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+        	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
         	      }
             }
       }
@@ -2733,16 +2736,21 @@ class Table
     * @param buffer The buffer.
     * @param length The number of bytes to be used to update the CRC code.
     * @param oldCRC The previous CRC32 value.
+    * @param useCrypto Indicates if cryptography is to be used or not.
     * @return The CRC32 code updated to include the buffer data.
     */
-   static int updateCRC32(byte[] buffer, int length, int oldCRC)
+   static int updateCRC32(byte[] buffer, int length, int oldCRC, boolean useCrypto)
    {
      int[] crcTable = CRC32Stream.crcTable;
      int offset = 0;
      
      oldCRC = ~oldCRC;
-     while (--length >= 0)
-    	 oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
+     if (useCrypto)
+        while (--length >= 0)
+           oldCRC = crcTable[(oldCRC ^ (buffer[offset++] ^ 0xAA)) & 0xff] ^ (oldCRC >>> 8);
+     else   
+        while (--length >= 0)
+           oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
      
      return ~oldCRC;
    }

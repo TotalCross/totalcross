@@ -888,9 +888,9 @@ public class LitebaseConnection
             PlainDB newDB = new PlainDB(table.name + '_', sourcePath, true),
                     oldDB = table.db; 
             newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-            newDB.useCrypto = oldDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
             newDB.headerSize = oldDB.headerSize;
             newDB.driver = this; 
+            boolean useCrypto = newDB.useCrypto = oldDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
             int newRowSize = newOffsets[newCount] + ((newCount + 7) >> 3) + 4;
             byte[] newBuffer = newDB.basbuf = new byte[newRowSize];
             newDB.setRowSize(newRowSize, newBuffer);
@@ -938,11 +938,12 @@ public class LitebaseConnection
                // juliana@230_12: improved recover table to take .dbo data into consideration.
                // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                // juliana@220_4: added a crc32 code for every record. Please update your tables.
-               k = newBuffer[3];
-               newBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+               k = (useCrypto? newBuffer[3] ^ 0xAA : newBuffer[3]);
+               newBuffer[3] = (useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
+               newDB.useOldCrypto = false;
                
                // Computes the crc for the record and stores at the end of the record.
-               crc32 = Table.updateCRC32(newBuffer, newBas.getPos(), 0);
+               crc32 = Table.updateCRC32(newBuffer, newBas.getPos(), 0, useCrypto);
                if (table.version == Table.VERSION)
                {
                   byte[] byteArray;
@@ -953,12 +954,12 @@ public class LitebaseConnection
                       && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {
                         byteArray = Utils.toByteArray(record[j].asString);
-                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                      }
                      else if (newTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {  
                         intArray[0] = record[j].asBlob.length;
-                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                      }
                }
                newBasds.writeInt(crc32); 
@@ -1547,7 +1548,8 @@ public class LitebaseConnection
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
-
+               
+               boolean useCrypto = newdb.useCrypto = plainDB.useCrypto; // juliana@253_8: now Litebase supports weak cryptography. 
                SQLValue[] record = SQLValue.newSQLValues(table.columnCount);
                int length = columnNulls0.length;
                
@@ -1555,7 +1557,7 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-               newdb.useCrypto = plainDB.useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
+               
                newdb.driver = this; 
                
                // rnovais@570_61: verifies if it needs to store the currentRowId.
@@ -1591,10 +1593,10 @@ public class LitebaseConnection
                      // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
                      k = oldBuffer[3];
-                     oldBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                     oldBuffer[3] = (useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
                      
                      // Computes the crc for the record and stores at the end of the record.
-                     crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0);
+                     crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0, useCrypto);
                      
                      if (table.version == Table.VERSION)
                      {
@@ -1606,12 +1608,12 @@ public class LitebaseConnection
                             && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {
                               byteArray = Utils.toByteArray(record[j].asString);
-                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                            }
                            else if (columnTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {  
                               intArray[0] = record[j].asBlob.length;
-                              crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                              crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                            }
                      }
                      
@@ -1627,6 +1629,7 @@ public class LitebaseConnection
                dbFile.f.delete();
                ((NormalFile)plainDB.dbo).f.delete();
                newdb.rename(table.name, sourcePath);
+               newdb.useOldCrypto = false;
                table.db = newdb;
             }
 
@@ -1945,6 +1948,7 @@ public class LitebaseConnection
                                                                                                                         File.READ_WRITE, -1);
          
          byte[] buffer = oneByte; 
+         boolean useCryptoAux = useCrypto;
          
          // juliana@222_2: the table must be not closed properly in order to recover it.
          tableDb.setPos(6);
@@ -1954,7 +1958,7 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
-         if (useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
+         if (useCryptoAux) // juliana@253_8: now Litebase supports weak cryptography.
             buffer[0] ^= 0xAA;
          
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
@@ -1972,7 +1976,7 @@ public class LitebaseConnection
          // Opens the table even if it was not cloded properly.
          // juliana@253_8: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
-         
+
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
          DataStreamLB dataStream = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography. 
@@ -1994,6 +1998,7 @@ public class LitebaseConnection
          byte[] byteArray;
          byte[] types = table.columnTypes;
          int[] intArray = new int[1];
+         boolean useOldCrypto = plainDB.useOldCrypto;
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
@@ -2014,10 +2019,10 @@ public class LitebaseConnection
             else
             {
                bas.reset();
-               buffer[3] = 0; // Erases rowid information.
+               buffer[3] = (useCryptoAux? (byte)0xAA : 0); // Erases rowid information.
                
                // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32 = Table.updateCRC32(buffer, len, 0);
+               crc32 = Table.updateCRC32(buffer, len, 0, useCryptoAux);
                
                if (table.version == Table.VERSION)
                {
@@ -2033,18 +2038,24 @@ public class LitebaseConnection
                       && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {
                         byteArray = Utils.toByteArray(record[j].asString);
-                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                      }
                      else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {  
                         intArray[0] = record[j].asInt;
-                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                      }
                   
                }
                
                dataStream.skipBytes(len);
-               if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
+               if (useOldCrypto)
+               {
+                  dataStream.writeInt(crc32);
+                  plainDB.rewrite(i);
+                  table.auxRowId = (rowid & Utils.ROW_ID_MASK) + 1;                   
+               }
+               else if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
                {
                   bas.reset();
                   dataStream.writeInt(Utils.ROW_ATTR_DELETED);
@@ -2079,6 +2090,7 @@ public class LitebaseConnection
          // Closes the table.
          // juliana@253_8: now Litebase supports weak cryptography.
          plainDB.rowCount = rows;
+         plainDB.useOldCrypto = false;
          plainDB.close(true); // Closes the table files.
          table.db = null;
          Index idx;
@@ -2136,8 +2148,8 @@ public class LitebaseConnection
       {
          byte[] bytes = new byte[2];
          Table table = new Table();
-         byte rowid;
-         int version;
+         int rowid,
+             version;
          
          sBuffer.setLength(0);
          
@@ -2194,18 +2206,19 @@ public class LitebaseConnection
          byte[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] byteArray;
+         boolean useCrypto = plainDB.useCrypto;
          
          while (--rows >= 0) // Converts all the records adding a crc code to them.
          {
             dbFile.setPos(rows * len + headerSize);
             dbFile.readBytes(buffer, 0, len);
-            rowid = buffer[3];
-            buffer[3] = 0;
+            rowid = (useCrypto? buffer[3] ^ 0xAA: buffer[3]);
+            buffer[3] = (useCrypto? (byte)0xAA : 0);
             bas.reset();
             dataStream.skipBytes(len);
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = Table.updateCRC32(buffer, len, 0);
+            crc32 = Table.updateCRC32(buffer, len, 0, useCrypto);
             
             i = columnCount;
             while (--i > 0)
@@ -2219,16 +2232,16 @@ public class LitebaseConnection
                 && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {
                   byteArray = Utils.toByteArray(record[i].asString);
-                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                }
                else if (types[i] == SQLElement.BLOB && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {  
                   intArray[0] = record[i].asInt;
-                  crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                  crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                }
             
             dataStream.writeInt(crc32);
-            buffer[3] = rowid;
+            buffer[3] = (byte)rowid;
             plainDB.rewrite(rows);
          }   
             
@@ -2687,7 +2700,6 @@ public class LitebaseConnection
          int i = files.length,
              j,
              k;
-         int encByte = toEncrypt? 0 : 1;
          File file;
          byte[] bytes = new byte[NormalFile.CACHE_INITIAL_SIZE];
          
@@ -2700,13 +2712,13 @@ public class LitebaseConnection
             {
                (file = new File(sourcePath + files[i], File.READ_ONLY, -1)).readBytes(bytes, 0, 4);
                file.close();
-               if (bytes[0] != encByte || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
+               if ((toEncrypt? bytes[0] != 0 : (bytes[0] != 1 && bytes[0] != 3)) || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
                   throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
             }
          }
          
          i = files.length;
-         encByte = toEncrypt? 1 : 0;
+         int encByte = toEncrypt? 3 : 0;
          while (--i >= 0)
          {
             if (files[i].startsWith(crid))

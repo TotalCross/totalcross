@@ -352,13 +352,16 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    }
    
    // juliana@253_8: now Litebase supports weak cryptography.
-   if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
+   if (!(((ptr[0] & USE_CRYPTO) == 0) ^ plainDB->db.useCrypto) && ptr[1] == ptr[2] == ptr[3] == 0 && (ptr[0] == 0 || ptr[0] == 1 || ptr[0] == 3))
 	{
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		nfClose(context, dbFile);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT), 0);
 		goto error;
 	}
+
+   if (ptr[0] == 1)
+      plainDB->useOldCrypto = true;
    
    plainDB->dbo.finalPos = plainDB->dbo.size; // Gets the last position of the blobs and strings file.
    xmove2(&plainDB->headerSize, ptr + 4); // Reads the header size.
@@ -748,7 +751,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
    // The strings and blobs final position is deprecated.
    
-   *ptr = plainDB->db.useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
+   *ptr = (plainDB->db.useCrypto? (plainDB->useOldCrypto? 1 : USE_CRYPTO) : 0); // juliana@253_8: now Litebase supports weak cryptography.
    xmove2(ptr + 4, &plainDB->headerSize); // Saves the header size.
    ptr += 6;
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
@@ -2466,11 +2469,11 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    xmemmove(buffer, columnNulls0, numberOfBytes); // After the columns, stores the bytes of the null values.
 
    // juliana@220_4: added a crc32 code for every record.
-   basbuf[3] = db->useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+   basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
    
    // juliana@230_12: improved recover table to take .dbo data into consideration.
-   crc32 = updateCRC32(basbuf, i, 0, db->useCrypto);
+   crc32 = updateCRC32(basbuf, i, 0);
 	
    if (table->version == VERSION_TABLE)
    {      
@@ -2481,9 +2484,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          if (columnTypes[j] == CHARS_TYPE || columnTypes[j] == CHARS_NOCASE_TYPE)
          {
             if (values[j] && isBitUnSet(columnNulls0, j))
-               crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32, false);
+               crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
             else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull && vOlds[j]->asChars)
-               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32, false);
+               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32);
          }
          else if (columnTypes[j] == BLOB_TYPE)
          {	
@@ -2492,12 +2495,12 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                // juliana@253_12: corrected a possible table corruption when adding a small blob.
                // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
                length = MIN((uint32)columnSizes[j], values[j]->length); 
-        	      crc32 = updateCRC32((uint8*)&length, 4, crc32, false);
+        	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
             {
                length = vOlds[j]->length;
-     	         crc32 = updateCRC32((uint8*)&length, 4, crc32, false);
+     	         crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
          }
    }
@@ -2790,19 +2793,15 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, ui
  * @param buffer The buffer.
  * @param length The number of bytes to be used to update the CRC code.
  * @param oldCRC The previous CRC32 value.
- * @param useCrypto Indicates if each byte must be cryptographed before calculating the crc.
  * @return The CRC32 code updated to include the buffer data.
  */
-int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC, bool useCrypto)
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC)
 {
    TRACE("computeCRC32")      
    oldCRC = ~oldCRC;
-   if (useCrypto)
-      while (--length >= 0)
-         oldCRC = crcTable[(oldCRC ^ (*buffer++ ^ 0xAA)) & 0xff] ^ (((uint32)oldCRC) >> 8);
-   else
-      while (--length >= 0)
-         oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
+   
+   while (--length >= 0)
+      oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
 	return ~oldCRC;
 }
 

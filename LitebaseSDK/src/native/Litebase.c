@@ -1376,9 +1376,10 @@ free:
                // juliana@220_4: added a crc32 code for every record. Please update your tables.
                k = newBuffer[3];
                newBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-               
+               newDB.useOldCrypto = false;
+
                // Computes the crc for the record and stores at the end of the record.
-               crc32 = updateCRC32(newBuffer, length, 0, useCrypto);
+               crc32 = updateCRC32(newBuffer, length, 0);
                if (table->version == VERSION_TABLE)
                {  
                   j = newCount;
@@ -1386,12 +1387,12 @@ free:
                      if ((newTypes[j] == CHARS_TYPE || newTypes[j] == CHARS_NOCASE_TYPE) 
                       && (columnNulls[j >> 3] & (1 << (j & 7))) == 0)
                      {
-                        crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
+                        crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
                      }
                      else if (newTypes[j] == BLOB_TYPE && (columnNulls[j >> 3] & (1 << (j & 7))) == 0)
                      {  
                         blobLength = record[j]->length;
-                        crc32 = updateCRC32((uint8*)&blobLength, 4, crc32, false);
+                        crc32 = updateCRC32((uint8*)&blobLength, 4, crc32);
                      }
                }
                xmove4(&newBuffer[length], &crc32); // Computes the crc for the record and stores at the end of the record.
@@ -1880,7 +1881,7 @@ fileError:
                   }
                   if ((error = lbfileReadBytes(file, bytes, 0, 4, &j)) || (error = lbfileClose(&file)))
                      goto fileError; 
-                  if (bytes[0] != encByte || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)    
+                  if ((toEncrypt? bytes[0] != 0 : (bytes[0] != 1 && bytes[0] != 3)) || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
                   {
                      TC_throwExceptionNamed(params->currentContext, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT));
                      goto error;

@@ -145,7 +145,7 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
 
       if (index->isWriteDelayed) // Grows more than 1 record per time.
       {
-         if ((idx & (RECGROWSIZE - 1)) == 0 && !nfGrowTo(context, fnodes, (idx + RECGROWSIZE) * nodeRecSize))
+         if (idx * nodeRecSize == fnodes->size && !nfGrowTo(context, fnodes, (idx + RECGROWSIZE) * nodeRecSize))
             return -1;
       }
 		else if (!nfGrowTo(context, fnodes, (idx + 1) * nodeRecSize)) // Opens space for the node.
