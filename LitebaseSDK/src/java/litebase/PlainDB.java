@@ -101,6 +101,11 @@ class PlainDB
    boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
+    * Indicates whether a table used the wrong cryptography format.
+    */
+   boolean useOldCrypto;
+   
+   /**
     * The driver where this table file was created.
     */
    LitebaseConnection driver;
@@ -311,7 +316,7 @@ class PlainDB
 
       // Stores the changeable information.
       Convert.fill(buffer, 0, 4, 0);
-      buffer[0] = (byte)(useCrypto? Table.USE_CRYPTO : 0);
+      buffer[0] = (byte)(useCrypto? useOldCrypto? 1 : Table.USE_CRYPTO : 0);
       
       tsmdDs.skipBytes(4);
       tsmdDs.writeShort(headerSize);
