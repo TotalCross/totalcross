@@ -914,6 +914,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      onFontChanged();
       int btnW = vbar.getPreferredWidth();
       int btnH = hbar.getPreferredHeight();
       if (Settings.fingerTouch && ScrollPosition.AUTO_HIDE)
