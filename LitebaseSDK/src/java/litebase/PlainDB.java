@@ -316,7 +316,7 @@ class PlainDB
 
       // Stores the changeable information.
       Convert.fill(buffer, 0, 4, 0);
-      buffer[0] = (byte)(useCrypto? useOldCrypto? 1 : Table.USE_CRYPTO : 0);
+      buffer[0] = (byte)(useCrypto? (useOldCrypto? 1 : Table.USE_CRYPTO) : 0);
       
       tsmdDs.skipBytes(4);
       tsmdDs.writeShort(headerSize);

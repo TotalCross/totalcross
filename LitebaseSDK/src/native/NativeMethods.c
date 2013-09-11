@@ -1455,21 +1455,21 @@ free:
                   // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                   // juliana@220_4: added a crc32 code for every record. Please update your tables.
                   j = basbuf[3];
-                  basbuf[3] = useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                  basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                   
                   // juliana@230_12: improved recover table to take .dbo data into consideration.
-                  crc32 = updateCRC32(basbuf, length, 0, useCrypto);
+                  crc32 = updateCRC32(basbuf, length, 0);
                   
                   if (table->version == VERSION_TABLE)
                   {
                      k = columnCount;
                      while (--k >= 0)
                         if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, k))
-                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32, false);
+                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
                         else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, k))
                         {
                            dataLength = record[k]->length;
-                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
+                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
                         }
                   }
                   
@@ -1533,6 +1533,7 @@ free:
 
          // juliana@115_8: saving metadata before recreating the indices does not let .db header become empty.
          // Updates the metadata.
+         plainDB->useOldCrypto = false;
          if (!tableSaveMetaData(context, table, TSMD_EVERYTHING)) // guich@560_24 table->saveOnExit = 1;
             goto finish; 
 
@@ -2087,7 +2088,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc,
                deleted = 0,
                type;
-         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver),
+              useOldCrypto;
          uint32 j;
          int8* types;       
          
@@ -2195,6 +2197,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          types = table->columnTypes;
          columnNulls0 = table->columnNulls;
          columnSizes = table->columnSizes;
+         useOldCrypto = plainDB->useOldCrypto;
          
          j = columnCount;
          while (--j)
@@ -2220,10 +2223,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		      else 
 		      {
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
-			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
+			      basbuf[3] = 0; // Erases rowid information.
    			   
 			      // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32Calc = updateCRC32(basbuf, crcPos, 0, useCrypto);
+               crc32Calc = updateCRC32(basbuf, crcPos, 0);
 
                if (table->version == VERSION_TABLE)
                {  
@@ -2233,15 +2236,22 @@ LB_API void lLC_recoverTable_s(NMParams p)
                   j = columnCount;
                   while (--j)
                      if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc, false);
+                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
                      else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                      {
                         dataLength = record[j]->length;
-                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc, false);
+                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
                      }
                }
                
-               if (crc32Calc != crc32Lido) // Deletes and invalidates corrupted records.
+               if (useOldCrypto)
+               {
+                  xmove4(&basbuf[crcPos], &crc32Calc);
+                  table->auxRowId = (read & ROW_ID_MASK) + 1;
+                  if (!plainRewrite(context, plainDB, i))
+					      goto finish;
+               }
+               else if (crc32Calc != crc32Lido) // Deletes and invalidates corrupted records.
 			      {
                   j = ROW_ATTR_DELETED;
                   xmove4(basbuf, &j);
@@ -2275,6 +2285,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          plainDB->wasNotSavedCorrectly = false;
 
          // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().	   
+         plainDB->useOldCrypto = false;
          tableSaveMetaData(context, table, TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows.
       
 finish: 
@@ -2473,10 +2484,10 @@ LB_API void lLC_convert_s(NMParams p)
 		      if (!nfReadBytes(context, &dbFile, basbuf, length))
                goto finish;
 		      rowid = basbuf[3];
-		      basbuf[3] = useCrypto? 0xAA : 0;
+		      basbuf[3] = 0;
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = updateCRC32(basbuf, length, 0, useCrypto);
+            crc32 = updateCRC32(basbuf, length, 0);
 
             if (table->version == VERSION_TABLE)
             {
@@ -2485,11 +2496,11 @@ LB_API void lLC_convert_s(NMParams p)
                j = columnCount;
                while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
+                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
                   else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                   {
                      dataLength = record[j]->length;
-                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
+                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
                   }
             }
 

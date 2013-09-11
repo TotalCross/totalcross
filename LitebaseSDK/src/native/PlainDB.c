@@ -304,8 +304,9 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
             uint8* pointer = buffer;
 
             // Stores the changeable information.
+            // juliana@253_8: now Litebase supports weak cryptography.
             xmemzero(buffer, 4);
-            *pointer = plainDB->db.useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
+            *pointer = (plainDB->db.useCrypto? (plainDB->useOldCrypto? 1 : USE_CRYPTO) : 0); 
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 

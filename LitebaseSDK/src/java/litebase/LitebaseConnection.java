@@ -938,8 +938,9 @@ public class LitebaseConnection
                // juliana@230_12: improved recover table to take .dbo data into consideration.
                // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                // juliana@220_4: added a crc32 code for every record. Please update your tables.
-               k = newBuffer[3];
+               k = (useCrypto? newBuffer[3] ^ 0xAA : newBuffer[3]);
                newBuffer[3] = (useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
+               newDB.useOldCrypto = false;
                
                // Computes the crc for the record and stores at the end of the record.
                crc32 = Table.updateCRC32(newBuffer, newBas.getPos(), 0, useCrypto);
@@ -2147,8 +2148,8 @@ public class LitebaseConnection
       {
          byte[] bytes = new byte[2];
          Table table = new Table();
-         byte rowid;
-         int version;
+         int rowid,
+             version;
          
          sBuffer.setLength(0);
          
@@ -2211,7 +2212,7 @@ public class LitebaseConnection
          {
             dbFile.setPos(rows * len + headerSize);
             dbFile.readBytes(buffer, 0, len);
-            rowid = buffer[3];
+            rowid = (useCrypto? buffer[3] ^ 0xAA: buffer[3]);
             buffer[3] = (useCrypto? (byte)0xAA : 0);
             bas.reset();
             dataStream.skipBytes(len);
@@ -2240,7 +2241,7 @@ public class LitebaseConnection
                }
             
             dataStream.writeInt(crc32);
-            buffer[3] = rowid;
+            buffer[3] = (byte)rowid;
             plainDB.rewrite(rows);
          }   
             
