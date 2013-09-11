@@ -1154,6 +1154,16 @@ struct PlainDB
    uint8 wasNotSavedCorrectly;
 
    /**
+    * Indicates whether a table used the wrong cryptography format.
+    */
+   uint8 useOldCrypto;
+
+   /**
+    * Indicates if the tables of this connection use ascii or unicode strings.
+    */
+	uint8 isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+   
+   /**
     * The size of a row.
     */
    uint16 rowSize;
@@ -1177,11 +1187,6 @@ struct PlainDB
     * The number of rows available.
     */
    int32 rowAvail; // rnovais@112_2
-   
-   /**
-    * Indicates if the tables of this connection use ascii or unicode strings.
-    */
-	bool isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
    /**
     * A buffer to read a row.

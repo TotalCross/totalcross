@@ -352,7 +352,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    }
    
    // juliana@253_8: now Litebase supports weak cryptography.
-   if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
+   if (!(((ptr[0] & USE_CRYPTO) == 0) ^ plainDB->db.useCrypto) && ptr[1] == ptr[2] == ptr[3] == 0 && (ptr[0] == 0 || prt[0] == 1 || prt[0] == 3))
 	{
       // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		nfClose(context, dbFile);

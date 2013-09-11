@@ -513,6 +513,7 @@
 // Flags for saving the table.
 #define IS_SAVED_CORRECTLY  1 // Indicates that a table was saved correctly.
 #define IS_ASCII            2 // Indicates that the table strings are to be saved in the ascii format.
+#define USE_CRYPTO          3 // Indicates that the table uses weak cryptography.
 
 // Numerical limits.
 #define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: -32768.
