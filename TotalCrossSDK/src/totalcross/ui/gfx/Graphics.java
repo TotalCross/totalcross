@@ -1093,11 +1093,11 @@ public final class Graphics
          }
       }
 
-      int ty = 0, incY = height + justifyWidth;
+      int incY = height + justifyWidth;
       x0 += transX;
       y0 += transY;
       xMax = xMin = (x0 < clipX1) ? clipX1 : x0;
-      yMax = y0 + height;
+      yMax = y0 + (isVert ? chrCount * incY : height);
       if (yMax >= clipY2)
          yMax = clipY2;
       yMin = (y0 < clipY1)? clipY1 : y0;
@@ -1111,11 +1111,13 @@ public final class Graphics
             if (ch == 160 || ch == ' ' || ch == '\t')
             {
                if (isVert)
-                  ty += ch == '\t' ? incY * Font.TAB_SIZE : incY;
+                  y += ch == '\t' ? incY * Font.TAB_SIZE : incY;
                else
+               {
                   x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
-               if (k <= extraPixelsRemaining)
-                  x0++;
+                  if (k <= extraPixelsRemaining)
+                     x0++;
+               }
             }
             continue; // for all other control chars, just skip to next
          }
@@ -1134,18 +1136,32 @@ public final class Graphics
          width = bits.width;
          if ((xMax = x0 + width) > clipX2)
             xMax = clipX2;
+         int y1 = y,r=0;
+         start = 0;
+         if (!isVert)
+         {
+            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
+               start += (yMin-y0)*rowWIB;
+            y = yMin;
+         }
+         else
+         if (y < yMin)
+         {
+            r += yMin-y;
+            start += (yMin-y) * rowWIB; // guich@tc100b4_1: skip rows before yMin
+            y = yMin;
+         }
+         int rmax = (y+height > yMax) ? yMax - y : height;
 
          if (!font.antialiased) // antialiased?
          {
-            start     = bits.offset >> 3;
+            start    += bits.offset >> 3;
             startBit  = bits.offset & 7;
 
             // draws the char
-            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
-               start += (yMin-y0)*rowWIB;
-            for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
-               int yy = (y + ty) * pitch;
+               int yy = y * pitch;
                current = start;
                currentBit = startBit;
                for (x=x0; x < xMax; x++)  // draw each column
@@ -1162,16 +1178,13 @@ public final class Graphics
          }
          else
          {
-            start = bits.offset >> 1;
+            start += bits.offset >> 1;
             boolean isNibbleStartingLow = (bits.offset & 1) == 1;
             int transparency;
-
-            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
-               start += (yMin-y0)*rowWIB;
             // draw the char
-            for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
-               int yy = (y + ty) * pitch;
+               int yy = y * pitch;
                current = start;
                boolean isLowNibble = isNibbleStartingLow;
                for (x=x0; x < xMax; x++)  // draw each column
@@ -1194,13 +1207,9 @@ public final class Graphics
          }
          if (isVert)
          {
-            if (ty >= clipY2)
-            {
-               yMax = clipX2;
+            y = y1 + incY;
+            if (y >= yMax)
                break;
-            }
-            //x0 = xMax; // next character
-            ty += incY;
          }
          else
          {
