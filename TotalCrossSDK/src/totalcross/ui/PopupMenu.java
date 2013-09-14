@@ -258,7 +258,8 @@ public class PopupMenu extends Window
          }
          setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
       }
-      setSelectedIndex(desiredSelectedIndex);
+      if (desiredSelectedIndex != -1) // change only if used wanted it
+         setSelectedIndex(desiredSelectedIndex);
       desiredSelectedIndex = -1;
    }
 
