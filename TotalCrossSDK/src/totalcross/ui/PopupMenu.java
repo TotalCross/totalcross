@@ -57,7 +57,8 @@ public class PopupMenu extends Window
    private ListContainer.Item []containers;
    private boolean multipleSelection;
    private int cursorColor=-1;
-   private int desiredSelectedIndex = -2;
+   private static final int UNSET = -9999;
+   private int desiredSelectedIndex = UNSET;
    private IntHashtable htSearchKeys;
    private PushButtonGroup pbgSearch;
    /** The string of the button; defaults to "Cancel" */
@@ -83,6 +84,11 @@ public class PopupMenu extends Window
     * @since TotalCross 1.65
     */
    public boolean enableCancel = true;
+   
+   /** Set to true to keep the selected index unchanged if user press the Cancel button
+    * @since TotalCross 2.0
+    */
+   public boolean keepIndexOnCancel;
    
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
@@ -241,7 +247,7 @@ public class PopupMenu extends Window
    /** Returns the selected index when this window was closed or -1 if non was selected */
    public int getSelectedIndex()
    {
-      return selected;
+      return desiredSelectedIndex != UNSET ? desiredSelectedIndex : selected;
    }
 
    /** Setup some important variables */
@@ -258,9 +264,9 @@ public class PopupMenu extends Window
          }
          setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
       }
-      if (desiredSelectedIndex != -2) // change only if used wanted it
+      if (desiredSelectedIndex != UNSET) // change only if used wanted it
          setSelectedIndex(desiredSelectedIndex);
-      desiredSelectedIndex = -2;
+      desiredSelectedIndex = UNSET;
    }
 
    protected void postUnpop()
@@ -289,7 +295,8 @@ public class PopupMenu extends Window
             else
             if (cancel != null && event.target == cancel)
             {
-               selected = -1;
+               if (!keepIndexOnCancel)
+                  selected = -1;
                unpop();
             }
             break;
