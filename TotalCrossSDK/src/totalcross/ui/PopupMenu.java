@@ -57,7 +57,7 @@ public class PopupMenu extends Window
    private ListContainer.Item []containers;
    private boolean multipleSelection;
    private int cursorColor=-1;
-   private int desiredSelectedIndex = -1;
+   private int desiredSelectedIndex = -2;
    private IntHashtable htSearchKeys;
    private PushButtonGroup pbgSearch;
    /** The string of the button; defaults to "Cancel" */
@@ -258,9 +258,9 @@ public class PopupMenu extends Window
          }
          setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
       }
-      if (desiredSelectedIndex != -1) // change only if used wanted it
+      if (desiredSelectedIndex != -2) // change only if used wanted it
          setSelectedIndex(desiredSelectedIndex);
-      desiredSelectedIndex = -1;
+      desiredSelectedIndex = -2;
    }
 
    protected void postUnpop()
