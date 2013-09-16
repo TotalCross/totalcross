@@ -797,6 +797,8 @@ public final class Graphics
          }
       }
 
+      if (isVert)
+         y += transY;
       int incY = height + justifyWidth;
       x0 += transX;
       y0 += transY;
