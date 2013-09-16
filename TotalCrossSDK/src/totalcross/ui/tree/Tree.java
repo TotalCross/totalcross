@@ -1174,6 +1174,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void onPaint(Graphics g)
    {
+      if (imgPlus == null)
+         initImage();
       // Draw background and borders
       g.backColor = bgColor0;
       g.fillRect(0, 0, btnX, height);
