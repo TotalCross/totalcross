@@ -475,8 +475,8 @@ class LitebaseMessage
    static final int TOTAL_ERRORS = 85;
    
    // Error tables
-   static final String[] errorMsgs_en = new String[TOTAL_ERRORS];
-   static final String[] errorMsgs_pt = new String[TOTAL_ERRORS];
+   private static final String[] errorMsgs_en = new String[TOTAL_ERRORS];
+   private static final String[] errorMsgs_pt = new String[TOTAL_ERRORS];
 
    static
    {
