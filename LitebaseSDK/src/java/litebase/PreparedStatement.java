@@ -776,7 +776,7 @@ public class PreparedStatement
     * @param initialPos The position of the first character to be appended.
     * @param endPos The fist position of the character that won't be appended.
     */
-   void appendSubString(StringBuffer strBuffer, String string, int initialPos, int endPos)
+   private void appendSubString(StringBuffer strBuffer, String string, int initialPos, int endPos)
    {
       while (initialPos < endPos)
          strBuffer.append(string.charAt(initialPos++));
