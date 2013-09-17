@@ -144,7 +144,7 @@ class Index
    /**
     * An array for climbing on index nodes.
     */
-   Node[] nodes = new Node[4];
+   private Node[] nodes = new Node[4];
 
    /**
     * Constructs an index structure.

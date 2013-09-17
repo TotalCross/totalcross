@@ -167,44 +167,6 @@ class Utils
       }
    }
    
-   /**
-    * Finds the previous bit set from an b-tree.
-    *
-    * @param items The index bitmap.
-    * @param start The first value to search.
-    * @return The position of the previous bit set.
-    */
-   static int findPrevBitSet(int[] items, int start)
-   {
-      int index = start >> 5, // Converts from bits to int.
-          b;
-      
-      start &= 31;
-      while (true)
-      {
-         if (index >= 0 && items[index] == 0)
-         {
-            start = 31;            
-            while (index >= 0 && items[index] == 0) // Finds the next int with any bit set.
-               index--;
-         }
-         if (index >= 0) // Found?
-         {
-            b = items[index];
-            while (start >= 0 && (b & (1 << start)) == 0)
-               start--;
-            if (start < 0)
-            {
-               start = 31;
-               index--; // No more bits in this int? Tests next ints.
-               continue;
-            }
-            return start + (index << 5);
-         }
-         return -1;
-      }
-   }
-   
    // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares 2 arrays of values.
