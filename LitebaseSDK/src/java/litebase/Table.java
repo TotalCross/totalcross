@@ -3094,38 +3094,6 @@ class Table
          }
       }
    }
-
-   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   /**
-    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
-    * 
-    * @param resultSet The result set of the table.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    * @throws InvalidNumberException If an internal method throws it.
-    */
-   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
-   {
-      int i;
-      byte[] rowsBitmap = allRowsBitmap;
-    
-      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
-      {
-         i = answerCount = db.rowCount;
-         while (--i >= 0)
-            Utils.setBit(rowsBitmap, i, true);
-      }
-      else
-      {
-         i = 0;
-         while (resultSet.getNextRecord()) // No preverify needed.
-         {
-            Utils.setBit(rowsBitmap, resultSet.pos, true);   
-            i++;
-         }
-         answerCount = i;
-      }
-   }
    
    /**
     * Changes a table to the modified state whenever it is modified.
