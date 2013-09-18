@@ -18,4 +18,4 @@ Launcher             -text
 *.cod                -text
 *.mobileprovision    text  eol=lf
 TCVM.vcproj       binary
-TotalCrossVM/src/nm/NativeMethodsPrototypes.txt text eol=lf
+TotalCrossVM/src/nm/NativeMethodsPrototypes.txt binary

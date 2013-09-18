@@ -936,7 +936,7 @@ static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
    Object fontObj = Graphics_font(g);
-   int32 startBit,currentBit;
+   int32 startBit,currentBit,incY,y1,r,rmax,istart;
    uint8 *bitmapTable, *ands, *current, *start;
    uint16* bitIndexTable;
    int32 rowWIB,offset,xMin,xMax,yMin,yMax,x,y,yDif,width,height,spaceW=0,k,clipX2,pitch;
@@ -952,6 +952,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 #ifdef __gl2_h_
    GLfloat *glC, *glV;
 #endif
+   bool isVert = Graphics_isVerticalText(g);
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
@@ -974,6 +975,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 
    isAA = uf->fontP.antialiased;
    height = uf->fontP.maxHeight;
+   incY = height + justifyWidth;
 
    x0 += Graphics_transX(g);
    y0 += Graphics_transY(g);
@@ -992,12 +994,13 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    }
 
    xMax = xMin = (x0 < Graphics_clipX1(g)) ? Graphics_clipX1(g) : x0;
-   yMax = y0 + height;
+   yMax = y0 + (isVert ? chrCount * incY : height);
    if (yMax >= Graphics_clipY2(g))
       yMax = Graphics_clipY2(g);
    yMin = (y0 < Graphics_clipY1(g))? Graphics_clipY1(g) : y0;
    row0 = getGraphicsPixels(g) + yMin * Graphics_pitch(g);
    yDif = yMin - y0;
+   y = y0;
 
    pitch = Graphics_pitch(g);
    clipX2 = Graphics_clipX2(g);
@@ -1009,9 +1012,14 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       {
          if (ch == ' ' || ch == '\t' || ch == 160)
          {
-            x0 += getJCharWidth(currentContext, fontObj, ch)+extraPixelsPerChar;
-            if (k <= extraPixelsRemaining)
-               x0++;
+            if (isVert)
+               y += ch == '\t' ? incY * *tabSizeField : incY;
+            else
+            {
+               x0 += getJCharWidth(currentContext, fontObj, ch)+extraPixelsPerChar;
+               if (k <= extraPixelsRemaining)
+                  x0++;
+            }
          }
          continue;
       }
@@ -1039,14 +1047,31 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       width = bitIndexTable[ch+1] - offset;
       if ((xMax = x0 + width) > Graphics_clipX2(g))
          xMax = Graphics_clipX2(g);
+      y1 = y; r=0;
+      istart = 0;
+      if (!isVert)
+      {
+         if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
+            istart += yMin-y0;
+         y = yMin;
+      }
+      else
+      if (y < yMin)
+      {
+         r += yMin-y;
+         istart += yMin-y; // guich@tc100b4_1: skip rows before yMin
+         y = yMin;
+      }
+      row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
+      rmax = (y+height > yMax) ? yMax - y : height;
 
       if (!isAA) // antialiased?
       {
-         start     = bitmapTable + (offset >> 3) + rowWIB * yDif;
+         start     = bitmapTable + (offset >> 3) + rowWIB * istart;
          startBit  = offset & 7;
 
          // draws the char, a row at a time
-         for (y=yMin, row=row0; y < yMax; start+=rowWIB, x -= width, y++, row += pitch)
+         for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
          {
             current = start;
             ands = ands8 + (currentBit = startBit);
@@ -1065,7 +1090,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       }
       else
       {
-         start = bitmapTable + (offset >> 1) + rowWIB * yDif;
+         start = bitmapTable + (offset >> 1) + rowWIB * istart;
          isNibbleStartingLow = (offset & 1) == 1;
 #ifdef __gl2_h_
          // draws the char, a row at a time
@@ -1074,7 +1099,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
             int ty = glShiftY;
             glC = glcolors;
             glV = glcoords;
-            for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
                current = start;
                isLowNibble = isNibbleStartingLow;
@@ -1097,7 +1122,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          }
          else
 #endif
-            for (y=yMin, row=row0; y < yMax; start+=rowWIB, x -= width, y++, row += pitch)
+            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
             {
                current = start;
                isLowNibble = isNibbleStartingLow;
@@ -1119,15 +1144,24 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                }
             }
       }
-      if (xMax >= clipX2)
+      if (isVert)
       {
-         xMax = clipX2;
-         break;
+         y = y1 + incY;
+         if (y >= yMax)
+            break;
       }
-      x0 = xMax; // next character
-      x0 += extraPixelsPerChar;
-      if (k <= extraPixelsRemaining)
-         x0++;
+      else
+      {
+         if (xMax >= clipX2)
+         {
+            xMax = clipX2;
+            break;
+         }
+         x0 = xMax; // next character
+         x0 += extraPixelsPerChar;
+         if (k <= extraPixelsRemaining)
+            x0++;
+      }
    }
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
@@ -2639,7 +2673,6 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
    int32 y1l = yy+7;
    int32 x2r = x2-6;
    int32 y2r = y2-6;
-   PixelConv c;
 
    // horizontal and vertical lines
    for (i = 0; i < 3; i++)
@@ -2800,6 +2833,7 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
    }
 }
 
+void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
 {                    
    if (translateAndClip(g, &x,&y,&width,&height))
@@ -2888,7 +2922,7 @@ void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 wi
    else
       currentContext->fullDirty = true;
 #else
-   int32 dim,y0,hh,dim0,inc,lineS,line,line0,lastF,i,f,yy,k,backColor,c;
+   int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
    pc2.pixel = c2;
    dim = rotate ? width : height; dim0 = dim;

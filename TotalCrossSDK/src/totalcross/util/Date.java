@@ -598,4 +598,12 @@ public class Date implements Comparable
       Date d = (Date)other;
       return (year - d.year) * 10000 + (month - d.month) * 100 + (day - d.day);
    }
+
+   /** Returns this date in the format YYYY-MM-DD
+    * @since TotalCross 2.0 
+    */
+   public String getSQLDate()
+   {
+      return year+"-"+month+"-"+day;
+   }
 }

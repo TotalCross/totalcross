@@ -114,6 +114,8 @@
 #define Graphics_lastSize(o)        FIELD_I32(o, 19)
 #define Graphics_pitch(o)           FIELD_I32(o, 20)
 #define Graphics_alpha(o)           FIELD_I32(o, 21)
+#define Graphics_isVerticalText(o)  FIELD_I32(o, 22)
+
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 
 #define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
