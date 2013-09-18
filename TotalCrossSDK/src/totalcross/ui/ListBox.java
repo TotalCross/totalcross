@@ -1051,7 +1051,7 @@ public class ListBox extends Container implements Scrollable
          int sw;
          if (useFullWidthOnSelection || (sw = getItemWidth(sel)) == 0) // guich@500_16: use the full text width due to the horizontal scroll - guich@200final_5: if item is a zero length string, invert the complete row.
             sw = btnX-4;
-         g.fillRect(dx-1, dy-1, sw+2, ih+fm.descent); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
+         g.fillRect(dx-1, dy-1, sw+2, ih+2); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
          drawItem(g, sel, dx, dy); // pgr@520_4
          //if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
       }
