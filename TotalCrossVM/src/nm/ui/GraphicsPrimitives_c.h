@@ -203,6 +203,10 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    {
       srcPitch = srcWidth = Image_width(srcSurf);
       srcHeight = Image_height(srcSurf);
+#ifdef __gl2_h_
+      srcWidth  *= Image_hwScaleW(srcSurf);
+      srcHeight *= Image_hwScaleH(srcSurf);
+#endif      
    }
    else
    {

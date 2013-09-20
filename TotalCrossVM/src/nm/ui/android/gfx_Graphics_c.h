@@ -376,10 +376,93 @@ void glDeleteTexture(Object img, int32* textureId, bool updateList)
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
-
+typedef GLfloat mat4[16];
+/*
+// Pre-calculated value of PI / 180.
+#define kPI180   0.017453
+// Pre-calculated value of 180 / PI.
+#define k180PI  57.295780
+// Converts degrees to radians.
+#define degreesToRadians(x) (x * kPI180)
+// Converts radians to degrees.
+#define radiansToDegrees(x) (x * k180PI)
+void matrixMultiply(mat4 m1, mat4 m2, mat4 result)
+{
+    // Fisrt Column
+    result[0] = m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3];
+    result[1] = m1[1]*m2[0] + m1[5]*m2[1] + m1[9]*m2[2] + m1[13]*m2[3];
+    result[2] = m1[2]*m2[0] + m1[6]*m2[1] + m1[10]*m2[2] + m1[14]*m2[3];
+    result[3] = m1[3]*m2[0] + m1[7]*m2[1] + m1[11]*m2[2] + m1[15]*m2[3];
+     
+    // Second Column
+    result[4] = m1[0]*m2[4] + m1[4]*m2[5] + m1[8]*m2[6] + m1[12]*m2[7];
+    result[5] = m1[1]*m2[4] + m1[5]*m2[5] + m1[9]*m2[6] + m1[13]*m2[7];
+    result[6] = m1[2]*m2[4] + m1[6]*m2[5] + m1[10]*m2[6] + m1[14]*m2[7];
+    result[7] = m1[3]*m2[4] + m1[7]*m2[5] + m1[11]*m2[6] + m1[15]*m2[7];
+     
+    // Third Column
+    result[8] = m1[0]*m2[8] + m1[4]*m2[9] + m1[8]*m2[10] + m1[12]*m2[11];
+    result[9] = m1[1]*m2[8] + m1[5]*m2[9] + m1[9]*m2[10] + m1[13]*m2[11];
+    result[10] = m1[2]*m2[8] + m1[6]*m2[9] + m1[10]*m2[10] + m1[14]*m2[11];
+    result[11] = m1[3]*m2[8] + m1[7]*m2[9] + m1[11]*m2[10] + m1[15]*m2[11];
+     
+    // Fourth Column
+    result[12] = m1[0]*m2[12] + m1[4]*m2[13] + m1[8]*m2[14] + m1[12]*m2[15];
+    result[13] = m1[1]*m2[12] + m1[5]*m2[13] + m1[9]*m2[14] + m1[13]*m2[15];
+    result[14] = m1[2]*m2[12] + m1[6]*m2[13] + m1[10]*m2[14] + m1[14]*m2[15];
+    result[15] = m1[3]*m2[12] + m1[7]*m2[13] + m1[11]*m2[14] + m1[15]*m2[15];
+}
+void matrixIdentity(mat4 m)
+{
+    m[0] = m[5] = m[10] = m[15] = 1.0;
+    m[1] = m[2] = m[3] = m[4] = 0.0;
+    m[6] = m[7] = m[8] = m[9] = 0.0;
+    m[11] = m[12] = m[13] = m[14] = 0.0;
+}
+void matrixRotateX(float degrees, mat4 matrix)
+{
+    float radians = degreesToRadians(degrees);
+     
+    matrixIdentity(matrix);
+     
+    // Rotate X formula.
+    matrix[5] = cosf(radians);
+    matrix[6] = -sinf(radians);
+    matrix[9] = -matrix[6];
+    matrix[10] = matrix[5];
+}
+ 
+void matrixRotateY(float degrees, mat4 matrix)
+{
+    float radians = degreesToRadians(degrees);
+     
+    matrixIdentity(matrix);
+     
+    // Rotate Y formula.
+    matrix[0] = cosf(radians);
+    matrix[2] = sinf(radians);
+    matrix[8] = -matrix[2];
+    matrix[10] = matrix[0];
+}
+void matrixRotateZ(float degrees, mat4 matrix)
+{
+    float radians = degreesToRadians(degrees);
+     
+    matrixIdentity(matrix);
+     
+    // Rotate Z formula.
+    matrix[0] = cosf(radians);
+    matrix[1] = sinf(radians);
+    matrix[4] = -matrix[1];
+    matrix[5] = matrix[0];
+}
+*/
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {         
    GLfloat* coords = texcoords;
+/*   GLfloat degrees = 45;
+   GLfloat radians = degreesToRadians(degrees);
+   GLfloat co = cosf(radians), si = sinf(radians);*/
    if (pixcolors != (int32*)glcolors) flushPixels(6);
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
@@ -388,9 +471,21 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
 
    // destination coordinates
    coords[0] = coords[6] = dstX;
-   coords[1] = coords[3] = dstY+h;
-   coords[2] = coords[4] = dstX+w;
+   coords[1] = coords[3] = (dstY+h);
+   coords[2] = coords[4] = (dstX+w);
    coords[5] = coords[7] = dstY;
+/* TODO trying to do rotation too 
+http://db-in.com/blog/2011/04/cameras-on-opengl-es-2-x/
+http://en.wikipedia.org/wiki/Transformation_matrix#Rotation_2
+http://androidbook.com/item/4254
+
+   mat4 tempX,tempY,temp,temp2; 
+   matrixRotateX(rot, tempX); matrixRotateY(rot, tempY); 
+   matrixMultiply(tempX,tempY,temp);
+   matrixMultiply(coords,temp,temp2); 
+   xmemmove(coords,temp2,sizeof(mat4));*/
+   //matrixRotateZ(rotY, temp); matrixMultiply(coords,temp,temp2); xmemmove(coords,temp2,sizeof(mat4));
+
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    // source coordinates
@@ -596,7 +691,7 @@ void flushAll()
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
 {                              
-   GLfloat mat[16] =
+   mat4 mat =
    {
       2.0/w, 0.0, 0.0, -1.0,
       0.0, -2.0/h, 0.0, 1.0,

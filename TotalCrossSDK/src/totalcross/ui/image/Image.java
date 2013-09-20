@@ -79,6 +79,27 @@ public class Image extends GfxSurface
    public int transparentColor = Color.WHITE;
    /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
+   /** Hardware accellerated scaling. The original image is scaled up or down
+    * by the video card when its displayed. Works only if <code>Settings.isOpenGL</code> is
+    * true. If you set this in non-opengl environments (including JavaSE), 
+    * nothing will happen.
+    * To apply the changes, just call <code>repaint()</code>.
+    * @see #setHwScaleFixedAspectRatio(int,boolean)
+    * @since TotalCross 2.0
+    */
+   public double hwScaleW=1,hwScaleH=1;
+
+   /** Sets the hwScaleW and hwScaleH fields based on the given new size.
+    * @see #hwScaleH
+    * @see #hwScaleW
+    */
+   public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      hwScaleW = width / (double)w;
+      hwScaleH = height / (double)h;
+   }
 
    /**
    * Creates an image of the specified width and height. The image has
@@ -614,7 +635,7 @@ public class Image extends GfxSurface
    {
       // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
       newWidth *= frameCount; // guich@tc100b5_40
-      Image scaledImage = new Image(newWidth, newHeight);
+      Image scaledImage = getCopy(newWidth, newHeight);
 
       int[] dstImageData = (int[]) scaledImage.pixels;
       int[] srcImageData = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40
@@ -659,7 +680,7 @@ public class Image extends GfxSurface
       // image preparation
       if (newWidth==width && newHeight==height) return this;
       newWidth *= frameCount;
-      Image scaledImage = new Image(newWidth, newHeight);
+      Image scaledImage = getCopy(newWidth, newHeight);
 
       int width = this.width * frameCount;
       int height = this.height;
@@ -1028,7 +1049,7 @@ public class Image extends GfxSurface
       int hOut = ((yMax - yMin) * scale) / 100;
       
          
-      Image imageOut = new Image(wOut * frameCount, hOut);
+      Image imageOut = getCopy(wOut * frameCount, hOut);
       if (frameCount > 1) imageOut.setFrameCount(frameCount);
 
       for (int f = 0; f < frameCount; f++)
@@ -1081,7 +1102,7 @@ public class Image extends GfxSurface
     */
    public Image getFadedInstance(int backColor) throws ImageException // guich@tc110_50
    {
-      Image imageOut = new Image(frameCount > 1 ? widthOfAllFrames : width, height);
+      Image imageOut = getCopy(frameCount > 1 ? widthOfAllFrames : width, height);
       if (frameCount > 1)
          imageOut.setFrameCount(frameCount);
 
@@ -1095,6 +1116,13 @@ public class Image extends GfxSurface
          imageOut.setCurrentFrame(0);
       }
       return imageOut;
+   }
+   
+   private Image getCopy(int w, int h) throws ImageException
+   {
+      Image i = new Image(w,h);
+      // copy other attributes
+      return i;
    }
 
    /** Used in getFadedInstance(). */
@@ -1115,7 +1143,7 @@ public class Image extends GfxSurface
     */
    public Image getAlphaInstance(int delta) throws ImageException
    {
-      Image imageOut = new Image(frameCount > 1 ? widthOfAllFrames : width, height);
+      Image imageOut = getCopy(frameCount > 1 ? widthOfAllFrames : width, height);
       if (frameCount > 1)
          imageOut.setFrameCount(frameCount);
 
@@ -1164,7 +1192,7 @@ public class Image extends GfxSurface
       int w = frameCount == 1 ? this.width : this.widthOfAllFrames;
       int h = this.height;
 
-      Image imageOut = new Image(w, h);
+      Image imageOut = getCopy(w, h);
 
       int[] pixelsOut = (int[]) imageOut.pixels;
       short table[] = null;
@@ -1984,7 +2012,7 @@ public class Image extends GfxSurface
     */
    final public Image getFrameInstance(int frame) throws ImageException // guich@tc112_7
    {
-      Image img = new Image(width,height);
+      Image img = getCopy(width,height);
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;

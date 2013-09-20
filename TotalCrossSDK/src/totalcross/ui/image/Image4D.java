@@ -37,12 +37,18 @@ public class Image4D extends GfxSurface
    public String comment;
    private Graphics4D gfx;
 
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final int NO_TRANSPARENT_COLOR = -2;
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public int transparentColor = Color.WHITE;
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
+   public double hwScaleW=1,hwScaleH=1;
+   
+   public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      hwScaleW = width / (double)w;
+      hwScaleH = height / (double)h;
+   }
    
    public Image4D(int width, int height) throws ImageException
    {
@@ -149,12 +155,12 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return height;
+      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
    }
 
    public int getWidth()
    {
-      return width;
+      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
    }
 
    public Graphics4D getGraphics()
@@ -312,7 +318,7 @@ public class Image4D extends GfxSurface
          return this;
       
       newW *= frameCount;
-      Image4D imageOut = new Image4D(newW, newH);
+      Image4D imageOut = getCopy(newW, newH);
       if (type == ROTATED_SCALED_INSTANCE && frameCount > 1)
          imageOut.setFrameCount(frameCount);
       getModifiedInstance(imageOut, angle, percScale, color, brightness, contrast, type);
@@ -458,9 +464,18 @@ public class Image4D extends GfxSurface
       return filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
    }
    
+   private Image4D getCopy(int w, int h) throws ImageException
+   {
+      Image4D i = new Image4D(w,h);
+      // copy other attributes
+      i.hwScaleH = this.hwScaleH;
+      i.hwScaleW = this.hwScaleW;
+      return i;
+   }
+
    public Image4D getFrameInstance(int frame) throws ImageException
    {
-      Image4D img = new Image4D(width,height);
+      Image4D img = getCopy(width,height);
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;

@@ -138,6 +138,9 @@
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
 
+#define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
+
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 
 // totalcross.ui.Control
