@@ -1389,6 +1389,14 @@ public class Control extends GfxSurface
       addListener(Listener.PEN, listener);
    }
 
+   /** Adds a listener for MultiTouch events.
+    * @see totalcross.ui.event.MultiTouchListener
+    */
+   public void addMultiTouchListener(MultiTouchListener listener)
+   {
+      addListener(Listener.MULTITOUCH, listener);
+   }
+
    /** Adds a listener for mouse events.
     * @see totalcross.ui.event.MouseListener
     */
@@ -1474,6 +1482,15 @@ public class Control extends GfxSurface
    public void removeEnabledStateListener(EnabledStateChangeListener listener)
    {
       removeListener(Listener.ENABLED, listener);
+   }
+
+   /** Removes a listener for MultiTouch events.
+    * @see totalcross.ui.event.MultiTouchListener
+    * @since TotalCross 1.22
+    */
+   public void removeMultiTouchListener(MultiTouchListener listener)
+   {
+      removeListener(Listener.MULTITOUCH, listener);
    }
 
    /** Removes a listener for Pen events.
@@ -1578,6 +1595,7 @@ public class Control extends GfxSurface
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
             case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
             case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+            case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
             case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
             case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
             case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;

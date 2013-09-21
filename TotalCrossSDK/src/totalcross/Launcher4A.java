@@ -245,6 +245,38 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       });
    }
    
+   private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener
+   {
+      public boolean onScaleBegin(ScaleGestureDetector detector)
+      {
+         multiTouching = true;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
+         return true;
+      }
+      
+      public void onScaleEnd(/*ScaleGestureDetector detector*/)
+      {
+         multiTouching = false;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 2, 0,0, 0, 0);
+      }
+
+      public boolean onScale(ScaleGestureDetector detector)
+      {
+         if (eventThread.hasEvent(MULTITOUCHEVENT_SCALE))
+            return false;
+         double scale = detector.getScaleFactor();
+         long l = Double.doubleToLongBits(scale);
+         int x = (int)(l >>> 32);
+         int y = (int)l;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 0, x, y, 0, 0);
+         return true;
+      }
+   }
+
+   ScaleGestureDetector sgd;
+   ScaleListener scaleList;
+   boolean multiTouching;
+   
    public void surfaceCreated(SurfaceHolder holder)
    {
       // here is where everything starts
@@ -252,6 +284,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          eventThread = new TCEventThread(this);
          eventThread.popTime = 20;
+         sgd = new ScaleGestureDetector(loader, scaleList = new ScaleListener());
       }
       else
       {
@@ -274,7 +307,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int APP_RESUMED = 7;
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
-
+   private static final int MULTITOUCHEVENT_SCALE = 10;
+   
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
@@ -401,6 +435,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public boolean onTouchEvent(MotionEvent event)
    {
+      sgd.onTouchEvent(event);
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
@@ -412,6 +447,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
+      if (multiTouching) // we do this to ignore all touch events until a definitive pen_up
+      {
+         if (type == PEN_UP)
+            scaleList.onScaleEnd();
+      }
+      else
       if (type != lastType || x != lastX || y != lastY) // skip identical events
       {
          lastType = type;

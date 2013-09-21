@@ -33,7 +33,6 @@ public class ImageControl extends Control
    public static int scrollValue = 10;
    private Image img,imgBack;
    private int startX,startY;
-   private int imgW,imgH;
    private Coord c = new Coord();
    private boolean isEventEnabled, canDrag;
    /** Set to true to center the image in the control when it is loaded */
@@ -46,11 +45,15 @@ public class ImageControl extends Control
     * You may also set it to null if you don't want a border color.
     */
    public int borderColor = -1;
-   /** Set to true to let the image be dragged beyond container limits. */
+   /** Set to true to let the image be dragged beyond container limits. 
+    * Should be false for open gl. */
    public boolean allowBeyondLimits;
 
    /** Dumb field to keep compilation compatibility with TC 1 */
    public int drawOp;
+   
+   /** Set to true to enable zooming in open gl devices. */
+   public boolean hwScale = Settings.isOpenGL;
 
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
@@ -78,23 +81,21 @@ public class ImageControl extends Control
    public void setImage(Image img)
    {
       this.img = img;
-      c.x = c.y = lastX = lastY = imgW = imgH = 0;
+      c.x = c.y = lastX = lastY = 0;
       // test if it is really loaded.
       if (img != null && img.getWidth() > 0)
       {
-         imgW = img.getWidth();
-         imgH = img.getHeight();
          // draw a red border in the image
          if (borderColor != -1)
          {
             Graphics g = img.getGraphics();
             g.foreColor = borderColor;
-            g.drawRect(0,0,imgW,imgH);
+            g.drawRect(0,0,img.getWidth(),img.getHeight());
          }
          if (centerImage)
          {
-            lastX = (width-imgW)/2;
-            lastY = (height-imgH)/2;
+            lastX = (width-img.getWidth())/2;
+            lastY = (height-img.getHeight())/2;
          }
       }
       Window.needsPaint = true;
@@ -102,11 +103,27 @@ public class ImageControl extends Control
 
    public void onEvent(Event event)
    {
-      if (imgW <= 0 || !isEventEnabled) // no images found, nothing to do!
+      if (img == null || !isEventEnabled) // no images found, nothing to do!
          return;
       PenEvent pe;
       switch (event.type)
       {
+         case MultiTouchEvent.SCALE:
+            if (hwScale)
+            {
+               double step = ((MultiTouchEvent)event).scale;
+               double newScale = img.hwScaleH * step;
+               if (newScale > 0)
+               {
+                  int mx = img.getWidth();
+                  int my = img.getHeight();
+                  img.hwScaleH = img.hwScaleW = newScale;
+                  int mx2 = img.getWidth();
+                  int my2 = img.getHeight();
+                  moveTo(lastX+(mx-mx2)/2,lastY+(my-my2)/2);
+               }
+            }
+            break;
          case KeyEvent.ACTION_KEY_PRESS:
             canDrag = !canDrag;
             break;
@@ -133,7 +150,7 @@ public class ImageControl extends Control
             startY = pe.y-lastY;
             break;
          case PenEvent.PEN_DRAG:
-            if (imgW > this.width || imgH > this.height || allowBeyondLimits)
+            if (img.getWidth() > this.width || img.getHeight() > this.height || allowBeyondLimits)
             {
                pe = (PenEvent)event;
                if (moveTo(pe.x-startX,pe.y-startY))
@@ -160,10 +177,10 @@ public class ImageControl extends Control
       }
       else
       {
-         if (imgW > width)
-            lastX = Math.max(width-imgW,Math.min(newX, 0)); // don't let it move the image beyond its bounds
-         if (imgH > height)
-            lastY = Math.max(height-imgH,Math.min(newY,0));
+         if (img.getWidth() > width)
+            lastX = Math.max(width-img.getWidth(),Math.min(newX, 0)); // don't let it move the image beyond its bounds
+         if (img.getHeight() > height)
+            lastY = Math.max(height-img.getHeight(),Math.min(newY,0));
       }
       if (lx != lastX || ly != lastY)
       {
@@ -178,8 +195,8 @@ public class ImageControl extends Control
       translateFromOrigin(c);
       if (centerImage) // guich@100_1: reset the image's position if bounds changed
       {
-         lastX = (width-imgW)/2;
-         lastY = (height-imgH)/2;
+         lastX = (width-img.getWidth())/2;
+         lastY = (height-img.getHeight())/2;
       }
       else lastX = lastY = 0;
    }
@@ -200,33 +217,25 @@ public class ImageControl extends Control
       g.backColor = enabled ? backColor : Color.interpolate(backColor,parent.backColor);
       if (!transparentBackground) // guich@tc115_41
          g.fillRect(0,0,width,height);
-      if (imgW > 0) // images found?
+      if (img != null) // images found?
       {
-         // g.translateTo(c.x,c.y); // greg@563_4 - guich@tc100: commented, otherwise, QImageCardEditor will leave some trash on screen
          if (allowBeyondLimits)
-         {
             g.drawImage(img, lastX,lastY, true);
-            if (drawBack) fillBack(g);
-         }
          else
-         {
-            g.copyRect(img,0,0,imgW,imgH,lastX,lastY);
-            if (drawBack) fillBack(g);
-         }
+            g.copyRect(img,0,0,img.getWidth(),img.getHeight(),lastX,lastY);
       }
-      else
       if (drawBack)
          fillBack(g);
    }
 
    public int getPreferredWidth()
    {
-      return imgW != 0 ? Math.min(imgW,Settings.screenWidth) : imgBack != null ? imgBack.getWidth() : Settings.screenWidth; // guich@tc115_35
+      return img != null ? Math.min(img.getWidth(),Settings.screenWidth) : imgBack != null ? imgBack.getWidth() : Settings.screenWidth; // guich@tc115_35
    }
 
    public int getPreferredHeight()
    {
-      return imgH != 0 ? Math.min(imgH,Settings.screenHeight) : imgBack != null ? imgBack.getHeight() : Settings.screenHeight; // guich@tc115_35
+      return img != null ? Math.min(img.getHeight(),Settings.screenHeight) : imgBack != null ? imgBack.getHeight() : Settings.screenHeight; // guich@tc115_35
    }
 
    /** Returns the current image assigned to this ImageControl. */
