@@ -124,11 +124,11 @@ public class ImageControl extends Control
                double newScale = tempHwScale * step;
                if (newScale > 0)
                {
-                  int mx = img.getWidth();
-                  int my = img.getHeight();
+                  int mx = getImageWidth();
+                  int my = getImageHeight();
                   tempHwScale = newScale;
-                  int mx2 = img.getWidth();
-                  int my2 = img.getHeight();
+                  int mx2 = getImageWidth();
+                  int my2 = getImageHeight();
                   moveTo(lastX+(mx-mx2)/2,lastY+(my-my2)/2);
                }
             }
