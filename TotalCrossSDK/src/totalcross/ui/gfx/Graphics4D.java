@@ -197,6 +197,12 @@ public final class Graphics4D
    native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
    native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
 
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
+   }
    ////////////////////////////////////////////////////////////////////////////////
    public void setClip(Rect r)
    {
