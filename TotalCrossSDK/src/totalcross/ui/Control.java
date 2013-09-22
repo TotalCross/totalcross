@@ -125,6 +125,50 @@ public class Control extends GfxSurface
     * @since TotalCross 1.52
     */
    public static final int PARENTSIZE = 17*UICONST;
+   /** Constant used in param width or height (will use screen's minimum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZEMIN + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZEMIN+20 in width will result in 20% of screen's minimum size.<br>
+    * 2. SCREENSIZEMIN - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZEMIN-4 in width will result in 1/4 of screen's minimum size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
+    * @since TotalCross 2.0
+    */
+   public static final int SCREENSIZEMIN = 18*UICONST;
+   /** Constant used in param width or height (will use screen's maximum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZEMAX + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZEMAX+20 in width will result in 20% of screen's maximum size.<br>
+    * 2. SCREENSIZEMAX - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZEMAX-4 in width will result in 1/4 of screen's maximum size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
+    * @since TotalCross 2.0 
+    */
+   public static final int SCREENSIZEMAX = 19*UICONST;
+   /** Constant used in param width or height (will use parent's minimum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. PARENTSIZEMIN + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZEMIN+20 in width will result in 20% of parent's size.<br>
+    * 2. PARENTSIZEMIN - constant: it will use as a FRACTION of the parent's size. For example, PARENTSIZEMIN-4 in width will result in 1/4 of parent's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the parent's width/height.
+    * 
+    * If the parent is unknown, the screen size will be used instead.
+    * @since TotalCross 2.0
+    */
+   public static final int PARENTSIZEMIN = 20*UICONST;
+   /** Constant used in param width or height (will use parent's maximum size between width and height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. PARENTSIZEMAX + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZEMAX+20 in width will result in 20% of parent's size.<br>
+    * 2. PARENTSIZEMAX - constant: it will use as a FRACTION of the parent's size. For example, PARENTSIZEMAX-4 in width will result in 1/4 of parent's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the parent's width/height.
+    * 
+    * If the parent is unknown, the screen size will be used instead.
+    * @since TotalCross 2.0
+    */
+   public static final int PARENTSIZEMAX = 21*UICONST;
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -477,6 +521,10 @@ public class Control extends GfxSurface
      * @see #BOTTOM_OF
      * @see #SCREENSIZE
      * @see #PARENTSIZE
+     * @see #SCREENSIZEMIN
+     * @see #SCREENSIZEMAX
+     * @see #PARENTSIZEMIN
+     * @see #PARENTSIZEMAX
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
      */
@@ -529,12 +577,21 @@ public class Control extends GfxSurface
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
             tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
@@ -579,13 +636,21 @@ public class Control extends GfxSurface
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
             tempW = width;
             // non-dependant height
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
