@@ -97,8 +97,8 @@ public class Image extends GfxSurface
    {
       int w = !isHeight ? newSize : (newSize * width / height);
       int h =  isHeight ? newSize : (newSize * height / width);         
-      hwScaleW = width / (double)w;
-      hwScaleH = height / (double)h;
+      hwScaleW = (double)w / width;
+      hwScaleH = (double)h / height;
    }
 
    /**

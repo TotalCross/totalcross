@@ -46,8 +46,8 @@ public class Image4D extends GfxSurface
    {
       int w = !isHeight ? newSize : (newSize * width / height);
       int h =  isHeight ? newSize : (newSize * height / width);         
-      hwScaleW = width / (double)w;
-      hwScaleH = height / (double)h;
+      hwScaleW = (double)w / width;
+      hwScaleH = (double)h / height;
    }
    
    public Image4D(int width, int height) throws ImageException
