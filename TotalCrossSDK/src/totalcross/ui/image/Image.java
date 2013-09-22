@@ -80,11 +80,17 @@ public class Image extends GfxSurface
    /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
    /** Hardware accellerated scaling. The original image is scaled up or down
-    * by the video card when its displayed. Works only if <code>Settings.isOpenGL</code> is
+    * by the video card when its displayed. In high end devices, the quality
+    * is the same of the algorithm used in smooth instances. 
+    * 
+    * Works only if <code>Settings.isOpenGL</code> is
     * true. If you set this in non-opengl environments (including JavaSE), 
     * nothing will happen.
     * To apply the changes, just call <code>repaint()</code>.
     * @see #setHwScaleFixedAspectRatio(int,boolean)
+    * @see #hwScaledBy(double, double)
+    * @see #hwScaledFixedAspectRatio(int, boolean)
+    * @see #getHwScaledInstance(int, int)
     * @since TotalCross 2.0
     */
    public double hwScaleW=1,hwScaleH=1;
@@ -92,6 +98,7 @@ public class Image extends GfxSurface
    /** Sets the hwScaleW and hwScaleH fields based on the given new size.
     * @see #hwScaleH
     * @see #hwScaleW
+    * @since TotalCross 2.0
     */
    public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
    {
@@ -101,6 +108,36 @@ public class Image extends GfxSurface
       hwScaleH = (double)h / height;
    }
 
+   /** At non OpenGL devices, is the same of smoothScaledFixedAspectRatio;
+    * At openGL ones, this method shares all image informations
+    * while changing only the hwScaleW/hwScaleH parameters. 
+    * @since TotalCross 2.0
+    */
+   public Image hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
+   {
+      return smoothScaledFixedAspectRatio(newSize, isHeight);
+   }
+
+   /** At non OpenGL devices, is the same of getSmoothScaledInstance;
+    * At openGL ones, this method shares all image informations
+    * while changing only the hwScaleW/hwScaleH parameters. 
+    * @since TotalCross 2.0
+    */
+   public Image getHwScaledInstance(int width, int height) throws ImageException
+   {
+      return getSmoothScaledInstance(width, height);
+   }
+   
+   /** At non OpenGL devices, is the same of smoothScaledBy;
+    * At openGL ones, this method shares all image informations
+    * while changing only the hwScaleW/hwScaleH parameters. 
+    * @since TotalCross 2.0
+    */
+   public Image hwScaledBy(double scaleX, double scaleY) throws ImageException
+   {
+      return smoothScaledBy(scaleX, scaleY);
+   }   
+   
    /**
    * Creates an image of the specified width and height. The image has
    * a color depth (number of bitplanes) and color map that matches the

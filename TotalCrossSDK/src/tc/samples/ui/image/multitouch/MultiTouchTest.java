@@ -64,6 +64,6 @@ public class MultiTouchTest extends MainWindow
    
    private void updateStatus()
    {
-      l.setText(img.getWidth()+"x"+img.getHeight());
+      l.setText(ic.getImageWidth()+"x"+ic.getImageHeight());
    }
 }
