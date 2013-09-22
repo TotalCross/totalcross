@@ -29,6 +29,7 @@ public class MainMenu extends BaseContainer
       "ScrollContainer",
       "Spinner",
       "TabbedContainer",
+      "Scale with ImageControl",
       "Other controls",
    };
    
@@ -50,6 +51,7 @@ public class MainMenu extends BaseContainer
       "ScrollContainer shows three ScrollContainers that can be dragged in vertical, horizontal or both directions",
       "Spinner shows two spinner types",
       "TabbedContainer shows some container with tabs",
+      "Realtime scale using ImageControl", 
       "Other controls shows other controls that doesn't belong to these ones",
    };
 
@@ -70,6 +72,7 @@ public class MainMenu extends BaseContainer
       ScrollContainerSample.class,
       SpinnerSample.class,
       TabbedContainerSample.class,
+      ImageControlSample.class,
       OtherControlsSample.class,
    };
    
@@ -107,6 +110,8 @@ public class MainMenu extends BaseContainer
       add(menu,LEFT,TOP,FILL,FILL);
       for (int i = 0; i < tips.length; i++)
          addToolTip(menu.getButton(i), ToolTip.split(tips[i],fm));
+      if (!Settings.isOpenGL)
+         menu.getButton(tips.length-2).setEnabled(false);
 
       setInfo(DEFAULT_INFO);
 
@@ -141,7 +146,7 @@ public class MainMenu extends BaseContainer
          itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
       itemInstances[idx].show();
       itemInstances[idx].setInfo("Press Back for main menu");
-      if (itemClasses[idx] == ListContainerSample.class || itemClasses[idx] == ProgressBarSample.class) // these samples will change each time it is called
+      if (itemClasses[idx] == ImageControlSample.class || itemClasses[idx] == ListContainerSample.class || itemClasses[idx] == ProgressBarSample.class) // these samples will change each time it is called
          itemInstances[idx] = null;
    }
 }
