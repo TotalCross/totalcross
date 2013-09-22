@@ -124,6 +124,12 @@ public final class Graphics4D
       return r;
    }
 
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
+   }
    ////////////////////////////////////////////////////////////////////////////////
    public void setClip(Rect r)
    {

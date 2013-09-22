@@ -154,7 +154,7 @@ public class Control extends GfxSurface
     * If there are no constant number, size will be 100% of the parent's width/height.
     * 
     * If the parent is unknown, the screen size will be used instead.
-    * @since TotalCross 1.52
+    * @since TotalCross 2.0
     */
    public static final int PARENTSIZEMIN = 20*UICONST;
    /** Constant used in param width or height (will use parent's maximum size between width and height) in setRect. 
@@ -166,7 +166,7 @@ public class Control extends GfxSurface
     * If there are no constant number, size will be 100% of the parent's width/height.
     * 
     * If the parent is unknown, the screen size will be used instead.
-    * @since TotalCross 1.52
+    * @since TotalCross 2.0
     */
    public static final int PARENTSIZEMAX = 21*UICONST;
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
@@ -523,6 +523,11 @@ public class Control extends GfxSurface
      * @see #SCREENSIZEMIN
      * @see #SCREENSIZEMAX
      * @see #PARENTSIZE
+<<<<<<< HEAD
+=======
+     * @see #SCREENSIZEMIN
+     * @see #SCREENSIZEMAX
+>>>>>>> refs/remotes/origin/develop
      * @see #PARENTSIZEMIN
      * @see #PARENTSIZEMAX
      * @see Container#add(Control, int, int)
