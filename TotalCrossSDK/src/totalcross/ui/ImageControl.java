@@ -42,7 +42,7 @@ public class ImageControl extends Control
    public int lastX,lastY;
 
    /** Change this member to set the border color.
-    * You may also set it to null if you don't want a border color.
+    * You may also set it to -1 if you don't want a border color.
     */
    public int borderColor = -1;
    /** Set to true to let the image be dragged beyond container limits. 
@@ -54,6 +54,28 @@ public class ImageControl extends Control
    
    /** Set to true to enable zooming in open gl devices. */
    public boolean hwScale = Settings.isOpenGL;
+   
+   /** Default value of tempHwScaleW and tempHwScaleH, meaning there's NO TEMP values. */
+   public static final double NOTEMP = Convert.MIN_DOUBLE_VALUE;
+   
+   /** Temporary values to set the hwScaleW/hwScaleH to during draw.
+    * This is useful if you want to use the same image in different sizes.
+    * Sample:
+    * <pre>
+    * Image i = new Image("house.png");
+    * ImageControl ic = new ImageControl(i);
+    * add(ic,SAME,AFTER+10);
+    * ic = new ImageControl(i);
+    * ic.tempHwScaleH = ic.tempHwScaleW = 0.5;
+    * add(ic,SAME,AFTER+10);
+    * ic = new ImageControl(i);
+    * ic.tempHwScaleH = ic.tempHwScaleW = 0.2;
+    * add(ic,SAME,AFTER+10);
+    * </pre> 
+    * This will draw the same image using 3 different sizes.
+    * @since TotalCross 2.0
+    */
+   public double tempHwScaleW=NOTEMP,tempHwScaleH=NOTEMP;
 
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
@@ -83,19 +105,19 @@ public class ImageControl extends Control
       this.img = img;
       c.x = c.y = lastX = lastY = 0;
       // test if it is really loaded.
-      if (img != null && img.getWidth() > 0)
+      if (img != null && getImgW() > 0)
       {
          // draw a red border in the image
          if (borderColor != -1)
          {
             Graphics g = img.getGraphics();
             g.foreColor = borderColor;
-            g.drawRect(0,0,img.getWidth(),img.getHeight());
+            g.drawRect(0,0,getImgW(),getImgH());
          }
          if (centerImage)
          {
-            lastX = (width-img.getWidth())/2;
-            lastY = (height-img.getHeight())/2;
+            lastX = (width-getImgW())/2;
+            lastY = (height-getImgH())/2;
          }
       }
       Window.needsPaint = true;
@@ -150,7 +172,7 @@ public class ImageControl extends Control
             startY = pe.y-lastY;
             break;
          case PenEvent.PEN_DRAG:
-            if (img.getWidth() > this.width || img.getHeight() > this.height || allowBeyondLimits)
+            if (getImgW() > this.width || getImgH() > this.height || allowBeyondLimits)
             {
                pe = (PenEvent)event;
                if (moveTo(pe.x-startX,pe.y-startY))
@@ -177,10 +199,10 @@ public class ImageControl extends Control
       }
       else
       {
-         if (img.getWidth() > width)
-            lastX = Math.max(width-img.getWidth(),Math.min(newX, 0)); // don't let it move the image beyond its bounds
-         if (img.getHeight() > height)
-            lastY = Math.max(height-img.getHeight(),Math.min(newY,0));
+         if (getImgW() > width)
+            lastX = Math.max(width-getImgW(),Math.min(newX, 0)); // don't let it move the image beyond its bounds
+         if (getImgH() > height)
+            lastY = Math.max(height-getImgH(),Math.min(newY,0));
       }
       if (lx != lastX || ly != lastY)
       {
@@ -195,8 +217,8 @@ public class ImageControl extends Control
       translateFromOrigin(c);
       if (centerImage) // guich@100_1: reset the image's position if bounds changed
       {
-         lastX = (width-img.getWidth())/2;
-         lastY = (height-img.getHeight())/2;
+         lastX = (width-getImgW())/2;
+         lastY = (height-getImgH())/2;
       }
       else lastX = lastY = 0;
    }
@@ -219,23 +241,44 @@ public class ImageControl extends Control
          g.fillRect(0,0,width,height);
       if (img != null) // images found?
       {
+         double dw = img.hwScaleW, dh = img.hwScaleH;
+         if (tempHwScaleH != NOTEMP)
+         {
+            img.hwScaleW = tempHwScaleW;
+            img.hwScaleH = tempHwScaleH;
+         }
          if (allowBeyondLimits)
             g.drawImage(img, lastX,lastY, true);
          else
             g.copyRect(img,0,0,img.getWidth(),img.getHeight(),lastX,lastY);
+         if (tempHwScaleH != NOTEMP)
+         {
+            img.hwScaleW = dw;
+            img.hwScaleH = dh;
+         }
       }
       if (drawBack)
          fillBack(g);
    }
 
+   private int getImgW()
+   {
+      return tempHwScaleW != NOTEMP ? (int)(img.getWidth()*tempHwScaleW) : img.getWidth();
+   }
+   
+   private int getImgH()
+   {
+      return tempHwScaleH != NOTEMP ? (int)(img.getHeight()*tempHwScaleH) : img.getHeight();
+   }
+   
    public int getPreferredWidth()
    {
-      return img != null ? Math.min(img.getWidth(),Settings.screenWidth) : imgBack != null ? imgBack.getWidth() : Settings.screenWidth; // guich@tc115_35
+      return img != null ? Math.min(getImgW(),Settings.screenWidth) : imgBack != null ? imgBack.getWidth() : Settings.screenWidth; // guich@tc115_35
    }
 
    public int getPreferredHeight()
    {
-      return img != null ? Math.min(img.getHeight(),Settings.screenHeight) : imgBack != null ? imgBack.getHeight() : Settings.screenHeight; // guich@tc115_35
+      return img != null ? Math.min(getImgH(),Settings.screenHeight) : imgBack != null ? imgBack.getHeight() : Settings.screenHeight; // guich@tc115_35
    }
 
    /** Returns the current image assigned to this ImageControl. */
@@ -254,7 +297,7 @@ public class ImageControl extends Control
     * returns the currently assigned image. */
    public Image getVisibleImage(boolean includeBackground) throws ImageException
    {
-      Rect rImg = new Rect(lastX, lastY, img.getWidth(), img.getHeight());
+      Rect rImg = new Rect(lastX, lastY, getImgW(), getImgH());
       Rect rArea = getRect();
       rArea.x = rArea.y = 0;
       Image ret = img;
