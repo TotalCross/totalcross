@@ -40,17 +40,17 @@ public class MainMenu extends BaseContainer
       "ButtonMenu shows a single row menu and also a multi-row one",
       "Check/Radio shows multicolored check and radio boxes",
       "Combo/ListBox shows a ComboBox, a sorted ComboBox, and two Listbox",
-      "ProgressBar shows a bench using a few ProgressBars",
       "Edit shows the way to enter text in a single line, in several formats",
       "ListContainer shows a list of containers. Enter once to load 30, exit and enter again to show 3000 items",
       "MessageBox shows some MessageBox styles",
       "MultiButton shows a Single button that contains other buttons",
       "MultiEdit shows a standard MultiEdit, and a justified readonly one",
+      "ProgressBar shows a bench using a few ProgressBars",
       "ProgressBox shows a MessageBox with a spinner",
       "ScrollContainer shows three ScrollContainers that can be dragged in vertical, horizontal or both directions",
       "Spinner shows two spinner types",
       "TabbedContainer shows some container with tabs",
-      "Other controls shows other controls that doesn't belong to these ones.",
+      "Other controls shows other controls that doesn't belong to these ones",
    };
 
    Class[] itemClasses =
@@ -93,6 +93,7 @@ public class MainMenu extends BaseContainer
    {
       super.initUI(); // important!
       
+      ToolTip.distY = fmH;
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       
       menu.pressedColor = BKGCOLOR;
