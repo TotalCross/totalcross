@@ -83,9 +83,8 @@ public class Image extends GfxSurface
     * by the video card when its displayed. In high end devices, the quality
     * is the same of the algorithm used in smooth instances. 
     * 
-    * Works only if <code>Settings.isOpenGL</code> is
-    * true. If you set this in non-opengl environments (including JavaSE), 
-    * nothing will happen.
+    * Works only if <code>Settings.isOpenGL</code> or on JavaSE. 
+    * If you set this in non-opengl environments, nothing will happen.
     * To apply the changes, just call <code>repaint()</code>.
     * @see #setHwScaleFixedAspectRatio(int,boolean)
     * @see #hwScaledBy(double, double)
