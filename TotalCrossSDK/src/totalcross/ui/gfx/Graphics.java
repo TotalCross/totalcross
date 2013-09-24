@@ -1748,6 +1748,17 @@ public final class Graphics
    // copy the area x,y,width,height of the bitmap bmp with dimensions bmpW,bmpH to the (current active) screen location dstX,dstY
    private void drawSurface(int []pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH)
    {
+      if (srcSurface instanceof Image)
+      {
+         Image img = (Image)srcSurface;
+         if (img.hwScaleH != 1 || img.hwScaleW != 1)
+            try 
+            {
+               img = img.hwScaleW < 1 && img.hwScaleH < 1 ? img.smoothScaledBy(img.hwScaleW,img.hwScaleH) : img.scaledBy(img.hwScaleW,img.hwScaleH);
+               srcSurface = img;
+               pixels = img.getPixels();
+            } catch (ImageException ie) {}
+      }
       try // guich@200b4_63
       {
          // petrus@450_7: revamp of the drawBitmap clipping algorithm

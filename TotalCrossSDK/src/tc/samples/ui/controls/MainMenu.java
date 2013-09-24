@@ -110,7 +110,7 @@ public class MainMenu extends BaseContainer
       add(menu,LEFT,TOP,FILL,FILL);
       for (int i = 0; i < tips.length; i++)
          addToolTip(menu.getButton(i), ToolTip.split(tips[i],fm));
-      if (!Settings.isOpenGL)
+      if (!Settings.isOpenGL && !Settings.onJavaSE)
          menu.getButton(tips.length-2).setEnabled(false);
 
       setInfo(DEFAULT_INFO);

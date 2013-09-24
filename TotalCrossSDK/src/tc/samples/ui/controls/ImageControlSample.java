@@ -20,6 +20,9 @@ public class ImageControlSample extends BaseContainer
          setTitle("Scale with ImageControl");
          add(new Label("To Natasha"),CENTER,TOP);
          img = new Image("heart.png");
+         int nw = parent.getWidth()/2, nh = parent.getHeight()/2;
+         if (img.getWidth() > nw || img.getHeight() > nh)
+            img = img.smoothScaledFixedAspectRatio(nw < nh ? nw : nh, nh < nw);
          ic = new ImageControl(img);
          ic.centerImage = true;
          add(ic,LEFT,AFTER,FILL,FILL);

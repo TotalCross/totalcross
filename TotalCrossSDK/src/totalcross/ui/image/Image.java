@@ -350,13 +350,13 @@ public class Image extends GfxSurface
    /** Returns the height of the image. You can check if the image is ok comparing this with zero. */
    public int getHeight()
    {
-      return height;
+      return (int)(height * hwScaleH);
    }
 
    /** Returns the width of the image. You can check if the image is ok comparing this with zero. */
    public int getWidth()
    {
-      return width;
+      return (int)(width * hwScaleW);
    }
 
    /** Returns a new Graphics instance that can be used to drawing in this image. */
