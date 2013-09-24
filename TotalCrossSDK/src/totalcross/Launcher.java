@@ -793,22 +793,46 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
 
+   boolean isRightButton;
+   int startPY;
    public void mousePressed(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_DOWN, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
+         eventThread.pushEvent(PenEvent.PEN_DOWN, 0, px,py, modifiers, Vm.getTimeStamp());
+      if (isRightButton = (event.getButton() & 2) != 0)
+         eventThread.pushEvent(MultiTouchEvent.SCALE, 1, px,startPY = py, modifiers, Vm.getTimeStamp());
    }
 
    public void mouseReleased(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_UP, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
+         eventThread.pushEvent(PenEvent.PEN_UP, 0, px,py, modifiers, Vm.getTimeStamp());
+      if ((event.getButton() & 2) != 0)
+         eventThread.pushEvent(MultiTouchEvent.SCALE, 2, px,py, modifiers, Vm.getTimeStamp());
    }
 
    public void mouseDragged(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_DRAG, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      {
+         if ((event.getButton() & 2) != 0 || isRightButton)
+         {
+            double scale = py < startPY ? 1.05 : 0.95;
+            long l = Double.doubleToLongBits(scale);
+            int x = (int)(l >>> 32);
+            int y = (int)l;
+            if (!eventThread.hasEvent(MultiTouchEvent.SCALE))
+               eventThread.pushEvent(MultiTouchEvent.SCALE, 0, x,y, modifiers, Vm.getTimeStamp());
+         }
+         else
+            eventThread.pushEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      }
    }
 
    public void windowClosing(java.awt.event.WindowEvent event)

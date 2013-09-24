@@ -23,6 +23,12 @@ import totalcross.ui.*;
 
 /**
  * MultiTouchEvent works on devices that support more than one finger at a time.
+ * 
+ * It can be emulated in JavaSE by using the right mouse button:
+ * <ol>
+ * <li> Right-click and go up: the scale is increased. release the button.
+ * <li> Right-click and go down: the scale is decreased. release the button.
+ * </ol>
  */
 
 public class MultiTouchEvent extends Event

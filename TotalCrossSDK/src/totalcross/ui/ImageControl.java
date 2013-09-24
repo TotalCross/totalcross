@@ -53,7 +53,7 @@ public class ImageControl extends Control
    public int drawOp;
    
    /** Set to true to enable zooming in open gl devices. */
-   public boolean hwScale = Settings.isOpenGL;
+   public boolean hwScale = Settings.isOpenGL || Settings.onJavaSE;
    
    private static final double NOTEMP = Convert.MIN_DOUBLE_VALUE;
    /** Temporary values to set the hwScaleW/hwScaleH to during draw. */
