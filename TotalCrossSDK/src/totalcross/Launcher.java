@@ -175,6 +175,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
                runtimeInstructions();
+            loadBaseFonts();
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
@@ -1663,11 +1664,39 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    }
 
    ////  font and font metrics //////////////////////////////////////////////////////
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
+   int[] fontsizes = {15, 25, 70, 120};
+   totalcross.ui.font.Font font15,font25,font70,font120,font15b,font25b,font70b,font120b;
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
+   private boolean useRealFont;
+   private void loadBaseFonts()
+   {
+      useRealFont = true;
+      font15  = totalcross.ui.font.Font.getFont(false,15);
+      font15b = totalcross.ui.font.Font.getFont(true,15);
+      font25  = totalcross.ui.font.Font.getFont(false,25);
+      font25b = totalcross.ui.font.Font.getFont(true,25);
+      font70  = totalcross.ui.font.Font.getFont(false,70);
+      font70b = totalcross.ui.font.Font.getFont(true,70);
+      font120  = totalcross.ui.font.Font.getFont(false,120);
+      font120b = totalcross.ui.font.Font.getFont(true,120);
+      useRealFont = false;
+   }
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
+         if (!useRealFont && fontName.equals(totalcross.ui.font.Font.DEFAULT) && suffix.endsWith("u0"))
+         {
+            boolean bold = suffix.charAt(1) == 'b';
+            int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
+            totalcross.ui.font.Font base = bold 
+                  ? size < 15 ? font15b : size < 25 ? font25b : size < 70 ? font70b : font120b
+                  : size < 15 ? font15  : size < 25 ? font25  : size < 70 ? font70  : font120 ;
+            return new UserFont(fontName, suffix, size, base);
+         }
          return new UserFont(fontName, suffix);
       }
       catch (Exception e) 
@@ -1758,25 +1787,43 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private static Hashtable loadedTCZs = new Hashtable(31);
    public class UserFont
    {
-      public Object nativeFont;    // stores the system font in some platforms
-      public boolean antialiased;  // true if its antialiased
+      // 25/120 14/70 4/25 2/15
+      public totalcross.ui.image.Image nativeFont;     // stores the system font in some platforms
+      public int antialiased;      // AA_ flags
       public int firstChar;        // ASCII code of first character
       public int lastChar;         // ASCII code of last character
       public int spaceWidth;       // width of the space char
-      public int maxWidth;         // width of font rectangle
+      public int maxWidth;         // width of font rectangle - unused
       public int maxHeight;        // height of font rectangle
-      public int owTLoc;           // offset to offset/width table
+      public int owTLoc;           // offset to offset/width table - unused
       public int ascent;           // ascent
       public int descent;          // descent
-      public int rowWords;         // row width of bit image / 2
+      public int rowWords;         // row width of bit image / 2 - used only to compute rowWidthInBytes
 
-      public int   rowWidthInBytes;
-      public int   bitmapTableSize;
-      public byte  []bitmapTable;
-      public int []bitIndexTable;
-      public String fontName;
-      public int numberWidth;
+      private int rowWidthInBytes;
+      private byte []bitmapTable;
+      private int []bitIndexTable;
+      private String fontName;
+      private int numberWidth;
 
+      private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
+      {
+         UserFont ubase = (UserFont)base.hv_UserFont;
+         this.maxHeight = size;
+         this.rowWidthInBytes = ubase.rowWidthInBytes * maxHeight / ubase.maxHeight;
+         this.nativeFont = ubase.nativeFont;//.getSmoothScaledInstance(rowWidthInBytes,maxHeight);
+         this.bitIndexTable = new int[ubase.bitIndexTable.length];
+         for (int i = 0; i < bitIndexTable.length; i++)
+            this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
+         this.fontName = fontName;
+         this.firstChar = ubase.firstChar;
+         this.lastChar = ubase.lastChar;
+         this.antialiased = ubase.antialiased;
+         this.ascent = ubase.ascent * maxHeight / ubase.maxHeight;
+         this.descent = ubase.descent * maxHeight / ubase.maxHeight;
+         System.out.println("User font("+size+") ascent: "+ascent+"<-"+ubase.ascent+", descent: "+descent+"<-"+ubase.descent+", imgW: "+rowWidthInBytes+"<-"+ubase.rowWidthInBytes);
+      }
+      
       private UserFont(String fontName, String sufix) throws Exception
       {
          this.fontName = fontName;
@@ -1811,7 +1858,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          totalcross.io.ByteArrayStream bas = ((totalcross.io.ByteArrayStream[])z.bag)[index];
          bas.reset();
          totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
-         antialiased = ds.readUnsignedShort()==1;
+         antialiased = ds.readUnsignedShort();
          firstChar   = ds.readUnsignedShort();
          lastChar    = ds.readUnsignedShort();
          spaceWidth  = ds.readUnsignedShort();
@@ -1822,8 +1869,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          descent     = ds.readUnsignedShort();
          rowWords    = ds.readUnsignedShort();
 
-         rowWidthInBytes = rowWords << (antialiased ? 3 : 1);
-         bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
+         rowWidthInBytes = 2 * rowWords * (antialiased == AA_NO ? 1 : antialiased == AA_4BPP ? 4 : 8);
+         int bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
 
          bitmapTable     = new byte[bitmapTableSize];
          ds.readBytes(bitmapTable);
@@ -1835,6 +1882,13 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          {
             index = (int)'0' - (int)firstChar;
             numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+         }
+         if (antialiased == AA_8BPP)
+         {
+            nativeFont = new totalcross.ui.image.Image(rowWidthInBytes, maxHeight);
+            int[] pixels = nativeFont.getPixels();
+            for (int i = pixels.length; --i >= 0;)
+               pixels[i] = (bitmapTable[i] << 24);
          }
       }
 
