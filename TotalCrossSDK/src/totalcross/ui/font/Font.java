@@ -58,7 +58,7 @@ public final class Font
    /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 44 for Palm OS, 60 for other platforms. */
-   public static int MAX_FONT_SIZE = 70;
+   public static int MAX_FONT_SIZE = Settings.platform.equals(Settings.WIN32) ? 48 : 120;
 
    /** Returns the default font size, based on the screen's size.
     */

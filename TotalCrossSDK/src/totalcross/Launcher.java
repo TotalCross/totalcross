@@ -1693,8 +1693,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
             totalcross.ui.font.Font base = bold 
-                  ? size < 15 ? font15b : size < 25 ? font25b : size < 70 ? font70b : font120b
-                  : size < 15 ? font15  : size < 25 ? font25  : size < 70 ? font70  : font120 ;
+                  ? /*size < 15 ? font15b : size < 25 ? font25b : size < 70 ? font70b : */font120b
+                  : /*size < 15 ? font15  : size < 25 ? font25  : size < 70 ? font70  : */font120 ;
             return new UserFont(fontName, suffix, size, base);
          }
          return new UserFont(fontName, suffix);
@@ -1811,7 +1811,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          UserFont ubase = (UserFont)base.hv_UserFont;
          this.maxHeight = size;
          this.rowWidthInBytes = ubase.rowWidthInBytes * maxHeight / ubase.maxHeight;
-         this.nativeFont = ubase.nativeFont;//.getSmoothScaledInstance(rowWidthInBytes,maxHeight);
+         this.nativeFont = ubase.nativeFont.getSmoothScaledInstance(rowWidthInBytes,maxHeight);
          this.bitIndexTable = new int[ubase.bitIndexTable.length];
          for (int i = 0; i < bitIndexTable.length; i++)
             this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
@@ -1888,22 +1888,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             nativeFont = new totalcross.ui.image.Image(rowWidthInBytes, maxHeight);
             int[] pixels = nativeFont.getPixels();
             for (int i = pixels.length; --i >= 0;)
-               pixels[i] = ((bitmapTable[i]&0xFF) << 24);
-            CharBits ch = new CharBits();
-            System.out.println("########## "+maxHeight);
-            setCharBits('#', ch);
-            for (int yy = 0; yy < maxHeight; yy++)
-            {
-               System.out.println();
-               for (int xx = 0; xx < ch.width; xx++)
-               {
-                  int cc = pixels[(xx+ch.offset) + yy * ch.rowWIB];
-                  if (cc != 0)
-                  System.out.print("#");//"@"+(xx+ch.offset)+","+yy+": "+Integer.toHexString(cc).toUpperCase());
-                  else
-                     System.out.print(" ");
-               }
-            }
+               pixels[i] = (bitmapTable[i] << 24);
          }
       }
 
