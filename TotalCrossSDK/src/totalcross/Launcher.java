@@ -1888,7 +1888,22 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             nativeFont = new totalcross.ui.image.Image(rowWidthInBytes, maxHeight);
             int[] pixels = nativeFont.getPixels();
             for (int i = pixels.length; --i >= 0;)
-               pixels[i] = (bitmapTable[i] << 24);
+               pixels[i] = ((bitmapTable[i]&0xFF) << 24);
+            CharBits ch = new CharBits();
+            System.out.println("########## "+maxHeight);
+            setCharBits('#', ch);
+            for (int yy = 0; yy < maxHeight; yy++)
+            {
+               System.out.println();
+               for (int xx = 0; xx < ch.width; xx++)
+               {
+                  int cc = pixels[(xx+ch.offset) + yy * ch.rowWIB];
+                  if (cc != 0)
+                  System.out.print("#");//"@"+(xx+ch.offset)+","+yy+": "+Integer.toHexString(cc).toUpperCase());
+                  else
+                     System.out.print(" ");
+               }
+            }
          }
       }
 
