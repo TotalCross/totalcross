@@ -1683,6 +1683,18 @@ TestPalmMemoryCard
 On BlackBerry, Android, and Windows Mobile, there is no slot.
  It is only necessary to pass the card path to the new connection or to
  the data path.
+ If it is necessary to fetch Litebase tables from an Android device, it
+ is a good idea to create the data base on the memory card by using the
+ path 
+\family typewriter
+/sdcard
+\family default
+, unless the device is rooted and it is possible to fetch the table files
+ using 
+\family typewriter
+adb
+\family default
+ from the application folder.
 \end_layout
 
 \begin_layout Standard
