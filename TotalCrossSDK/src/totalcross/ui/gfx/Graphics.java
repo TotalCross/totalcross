@@ -781,7 +781,7 @@ public final class Graphics
       // speed-up
       totalcross.Launcher.UserFont font = (totalcross.Launcher.UserFont)this.font.hv_UserFont;
       totalcross.Launcher.CharBits bits = gCharBits;
-      int height = (byte)font.maxHeight;
+      int height = font.maxHeight;
       int chrStart = 0;
       int pxRB = foreColor & 0xFF00FF;
       int pxG  = foreColor & 0x00FF00;
