@@ -1919,7 +1919,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                   bits.img = nativeFonts[index];
                   bits.rowWIB = bits.width;
                }
-               catch (Exception e) {}
+               catch (Exception e) {e.printStackTrace();}
          }
          else
          {
