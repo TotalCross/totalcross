@@ -18,6 +18,7 @@
 
 package tc.samples.ui.fonts;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.font.*;
 
@@ -36,11 +37,12 @@ public class Selector extends Container
       add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Arial"}), AFTER, SAME);
       cbNames.setSelectedIndex(0);
       add(l2 = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER + 3, l1);
-      add(l1 = new Label(""+Font.MAX_FONT_SIZE), RIGHT, SAME);
+      int max = Settings.isOpenGL || Settings.onJavaSE ? Font.MAX_FONT_SIZE*2 : Font.MAX_FONT_SIZE;
+      add(l1 = new Label(""+max), RIGHT, SAME);
       add(slSize = new Slider(), AFTER+2, SAME, FIT-2, SAME,l2);
       slSize.setLiveScrolling(true);
       slSize.setMinimum(Font.MIN_FONT_SIZE);
-      slSize.setMaximum(Font.MAX_FONT_SIZE+1); // +1: visible items
+      slSize.setMaximum(max+1); // +1: visible items
       slSize.drawFilledArea = false;
       slSize.drawTicks = true;
       slSize.setValue(Font.NORMAL_SIZE);
