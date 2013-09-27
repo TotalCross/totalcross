@@ -33,7 +33,7 @@ public class Selector extends Container
    {
       Label l1,l2;
       add(l1 = new Label("Name: "), LEFT, TOP + 3);
-      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Old"}), AFTER, SAME);
+      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Arial"}), AFTER, SAME);
       cbNames.setSelectedIndex(0);
       add(l2 = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER + 3, l1);
       add(l1 = new Label(""+Font.MAX_FONT_SIZE), RIGHT, SAME);
@@ -44,7 +44,7 @@ public class Selector extends Container
       slSize.drawFilledArea = false;
       slSize.drawTicks = true;
       slSize.setValue(Font.NORMAL_SIZE);
-      add(lSize = new Label(" 99 (h=99) "),CENTER_OF,AFTER+3);
+      add(lSize = new Label(" 999 (h=999) "),CENTER_OF,AFTER+3);
       add(ckBold = new Check("Bold"), LEFT, AFTER + 3, l2);
       selFont = font;
       updateSize();

@@ -832,7 +832,7 @@ public final class Graphics
          }
          if (ch < font.firstChar || ch > font.lastChar) // guich@tc122_16: if the char is outside the font's range, load the new font
             this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
-         font.setCharBits(ch, bits);  // pgr@402_50
+         font.setCharBits(ch, bits);
          if (bits.offset == -1)
          {
             x0 += bits.width+extraPixelsPerChar;
@@ -920,9 +920,8 @@ public final class Graphics
             }
             case AA_8BPP:
             {
-               start += bits.offset;
                int transparency;
-               int[] imgPixels = font.nativeFont.getPixels();
+               int[] imgPixels = font.nativeFonts[bits.index].getPixels();
                // draw the char
                for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
                {

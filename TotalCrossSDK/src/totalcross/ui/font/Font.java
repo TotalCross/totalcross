@@ -57,7 +57,7 @@ public final class Font
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 44 for Palm OS, 60 for other platforms. */
+   /** The maximum font size: 48 for Windows32, 120 for other platforms. */
    public static int MAX_FONT_SIZE = Settings.platform.equals(Settings.WIN32) ? 48 : 120;
 
    /** Returns the default font size, based on the screen's size.
@@ -218,5 +218,16 @@ public final class Font
    void fontCreate()
    {
       hv_UserFont = Launcher.instance.getFont(this, ' ');
+   }
+   
+   /** Used internally. */
+   public void removeFromCache()
+   {
+      sb.setLength(0);
+      String key = sb.append(name).append('$').append(style==1?'B':'P').append(size).toString();
+      htFonts.remove(key);
+   }
+   public void removeFromCache4D()
+   {
    }
 }
