@@ -1673,8 +1673,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private void loadBaseFonts()
    {
       useRealFont = true;
-      baseFontN = totalcross.ui.font.Font.getFont(false,120); baseFontN.removeFromCache();
-      baseFontB = totalcross.ui.font.Font.getFont(true,120);  baseFontB.removeFromCache();
+      baseFontN = totalcross.ui.font.Font.getFont(false,80); baseFontN.removeFromCache();
+      baseFontB = totalcross.ui.font.Font.getFont(true,80);  baseFontB.removeFromCache();
       useRealFont = false;
    }
    private UserFont loadUF(String fontName, String suffix)
