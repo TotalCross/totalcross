@@ -136,9 +136,9 @@ public final class Convert
    public static final int MIN_INT_VALUE = 0x80000000;
    /** The maximum int value: 2147483647 */
    public static final int MAX_INT_VALUE = 0x7fffffff;
-   /** The maximum double value: 9.007199254740992E15 */
+   /** The maximum double value: 1.7976931348623157E308d */
    public static final double MAX_DOUBLE_VALUE = 1.7976931348623157E308d; // 2^53
-   /** The minimum double value: 1.1102230246251565E-16 */
+   /** The minimum double value: 4.9E-324d */
    public static final double MIN_DOUBLE_VALUE = 4.9E-324d;
    /** The maximum number of digits in a double value, used when formatting to string. */
    public static final int MAX_DOUBLE_DIGITS = 15;
