@@ -593,7 +593,7 @@ static void getPixelRow(Context currentContext, Object obj, Object outObj, int32
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   if (checkArrayRange(currentContext, outObj, 0, width))
+   if (checkArrayRange(currentContext, outObj, 0, width*4))
       for (pixels += y * width; width-- > 0; pixels++)
       {
          *out++ = pixels->r;

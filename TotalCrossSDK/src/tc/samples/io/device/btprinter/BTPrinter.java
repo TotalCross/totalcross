@@ -87,6 +87,7 @@ public class BTPrinter extends MainWindow
          loglist = new ListBox();
          loglist.setCursorColor(backColor);
          loglist.enableHorizontalScroll();
+         loglist.useFullWidthOnSelection = true;
          loglist.ihtBackColors = new IntHashtable(30);
          //loglist.setCursorColor(loglist.getBackColor());
          add(loglist,LEFT,AFTER+gap,FILL,FIT,btnConnect);
