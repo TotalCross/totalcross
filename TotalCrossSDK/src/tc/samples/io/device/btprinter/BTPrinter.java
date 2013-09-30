@@ -34,6 +34,7 @@ public class BTPrinter extends MainWindow
    Label lstatus;
    TimerEvent timer;
    ListBox loglist;
+   Check chUnsec;
    
    public BTPrinter()
    {
@@ -81,16 +82,16 @@ public class BTPrinter extends MainWindow
          add(btnListPaired = new Button("list paired"), LEFT,AFTER+gap);
          add(btnListUnpaired = new Button("list unpaired"), AFTER+gap,SAME);
          add(btnConnect = new Button("connect to selected device"), LEFT,AFTER+gap);
+         add(chUnsec = new Check("Unsecure connection"),LEFT,AFTER+gap,FILL,SAME);
          btnConnect.setEnabled(false);
          Button.commonGap = 0;
          add(lstatus = new Label("",CENTER),LEFT,BOTTOM);
          loglist = new ListBox();
          loglist.setCursorColor(backColor);
          loglist.enableHorizontalScroll();
-         loglist.useFullWidthOnSelection = true;
          loglist.ihtBackColors = new IntHashtable(30);
          //loglist.setCursorColor(loglist.getBackColor());
-         add(loglist,LEFT,AFTER+gap,FILL,FIT,btnConnect);
+         add(loglist,LEFT,AFTER+gap,FILL,FIT,chUnsec);
          timer = addTimer(200);
          updateButtonState(false,false);
       }
@@ -157,10 +158,13 @@ public class BTPrinter extends MainWindow
                   Object sel = loglist.getSelectedItem();
                   if (sel != null && sel instanceof RemoteDevice)
                   {
-                     boolean printIt = ask("This test currently only works with a CPCL / CPL compatible bluetooth printer (like Zebra MZ 320). Do you have such printer attached and want to print a test page?");
+                     boolean printIt = true;//ask("This test currently only works with a CPCL / CPL compatible bluetooth printer (like Zebra MZ 320). Do you have such printer attached and want to print a test page?");
                      RemoteDevice rd = (RemoteDevice)sel;
                      log("Connecting to "+rd.getBluetoothAddress());
-                     Stream s = (Stream)Connector.open("btspp://"+rd.getBluetoothAddress()+":0");
+                     String addr = rd.getBluetoothAddress();
+                     if (chUnsec.isChecked())
+                        addr = "*"+addr;
+                     Stream s = (Stream)Connector.open("btspp://"+addr+":0");
                      log("Connected!");
                      if (s != null && printIt)
                         printPCX(s);
@@ -226,11 +230,13 @@ public class BTPrinter extends MainWindow
       pcx.createPCX(pcxBAS);
       int pcxLen = pcxBAS.getPos();
 
-      s.writeBytes("! 0 200 200 " + (h+50) + " 1\r\n");
-      s.writeBytes("PCX 0 0\r\n");
-      s.writeBytes(pcxBAS.getBuffer(), 0, pcxLen);
-      s.writeBytes("ENDPCX.LBL\r\n");
-      s.writeBytes("PRINT\r\n");
+      ByteArrayStream bas = new ByteArrayStream(pcxLen+100);
+      bas.writeBytes("! 0 200 200 " + (h+50) + " 1\r\n");
+      bas.writeBytes("PCX 0 0\r\n");
+      bas.writeBytes(pcxBAS.getBuffer(), 0, pcxLen);
+      bas.writeBytes("ENDPCX.LBL\r\n");
+      bas.writeBytes("PRINT\r\n");
+      s.writeBytes(bas.getBuffer(),0,bas.getPos());
    }
 
    private void loglistSelected()
