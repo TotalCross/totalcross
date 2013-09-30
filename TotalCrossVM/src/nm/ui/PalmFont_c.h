@@ -15,6 +15,13 @@
 
 static char defaultFontName[16];
 
+#define AA_NO 0
+#define AA_4BPP 1
+#define AA_8BPP 2
+
+UserFont baseFontN, baseFontB;
+bool useRealFont;
+
 bool fontInit(Context currentContext)
 {
    int32 *maxfs=null, *minfs=null, *normal = null;
@@ -51,6 +58,13 @@ bool fontInit(Context currentContext)
       alert("Font file is missing.\nPlease install TCFont.tcz");
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
+   }
+   else
+   {
+      useRealFont = true;
+      baseFontN = loadUserFont(defaultFont, true, 80, ' ');
+      baseFontB = loadUserFont(defaultFont, false, 80, ' ');
+      useRealFont = false;
    }
    return defaultFont != null;
 }
@@ -171,6 +185,28 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
       //heapDestroy(fontsHeap); - guich@tc114_63 - not a good idea; just return null
       return null;
    }
+
+   if (!useRealFont && baseFontN != null && c <= 255 && strEq(ff->name,defaultFontName))
+   {
+      UserFont ubase = bold ? baseFontB : baseFontN; 
+      UserFont uf = newXH(UserFont, fontsHeap);
+      xmemmove(uf, base, sizeof(TUserFont));
+      uf->ubase = ubase;
+      uf->rowWidthInBytes = ubase->rowWidthInBytes * maxHeight / ubase->fontP.maxHeight;
+/*
+      uf->rowWidthInBytes = ((uint32)uf->fontP.rowWords) << (uf->fontP.antialiased ? 3 : 1);
+      numberOfChars = uf->fontP.lastChar - uf->fontP.firstChar + 1;
+      bitmapTableSize = ((uint32)uf->rowWidthInBytes) * uf->fontP.maxHeight;
+      bitIndexTableSize = (numberOfChars+1) * 2;
+      uf->bitmapTable = newPtrArrayOf(UInt8, bitmapTableSize, fontsHeap);
+      uf->bitIndexTable = newPtrArrayOf(UInt16, bitIndexTableSize>>1, fontsHeap);
+      tczRead(uftcz, uf->bitmapTable, bitmapTableSize);
+      tczRead(uftcz, uf->bitIndexTable, bitIndexTableSize);
+      uf->bitIndexTable -= uf->fontP.firstChar; // instead of doing "bitIndexTable[ch-firstChar]", this trick will allow use "bitIndexTable[ch]
+  */
+      return uf;
+   }
+
    nlen=0;
    vsize = (size == -1) ? normalFontSize : max32(size,minFontSize); // guich@tc122_15: don't check for the maximum font size here
 

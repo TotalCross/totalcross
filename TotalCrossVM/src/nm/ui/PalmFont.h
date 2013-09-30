@@ -17,7 +17,7 @@
 #pragma pack(2)
 typedef struct
 {
-   uint16 antialiased;      // true if the font is antialiased
+   uint16 antialiased;      // 0 - aa_no, 1: aa_4bpp, 2: aa_8bpp
    uint16 firstChar;        // ASCII code of first character
    uint16 lastChar;         // ASCII code of last character
    uint16 spaceWidth;       // width of the space character
@@ -42,6 +42,7 @@ typedef struct
    TPalmFont fontP;
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
+   struct TUserFont* ubase;
 } *UserFont, TUserFont;
 
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch);
