@@ -630,13 +630,14 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
                mant += (double)rounds5[decimalCount];
             if (I64_BITS(mant) == DOUBLE_POSITIVE_INFINITY_VALUE) // case of converting the minimum double value
             {
-               integral = 1;
-               break;
-            }
-            else
-            if (I64_BITS(mant) == DOUBLE_NEGATIVE_INFINITY_VALUE)
-            {
-               integral = -1;
+               int32 e = exponent < 0 ? -exponent : exponent;
+               mant = val;
+               if (e > 300) {mant *= Pow10(300); e -= 300;} // guich@tc200: fix convertion of MIN_DOUBLE_VALUE
+               mant *= Pow10(e); // remaining of exponent
+               if (decimalCount < 18)
+                  mant += (double)rounds5[decimalCount];
+               val = mant;
+               integral = (int64)val;
                break;
             }
             else
