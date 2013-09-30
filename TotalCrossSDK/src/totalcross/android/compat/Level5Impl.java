@@ -189,7 +189,7 @@ public class Level5Impl extends Level5
             btAdapter.cancelDiscovery();
          String formattedAddr = formatAddress(addr);
          BluetoothDevice device = btAdapter.getRemoteDevice(formattedAddr);
-         sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
+         sock = device.createInsecureRfcommSocketToServiceRecord(SPP_UUID); // device.createRfcommSocketToServiceRecord()
          while (true)
             try
             {
