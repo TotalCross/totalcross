@@ -21063,7 +21063,7 @@ public void onEvent(Event event)
 
 \begin_layout Plain Layout
 
-			if (event.target instanceof totalcross.ui.Radio)
+			if (event.target instanceof Radio)
 \end_layout
 
 \begin_layout Plain Layout
@@ -25328,7 +25328,7 @@ grid.secondStripeColor = Color.getRGB(235,235,235);
 
 \begin_layout Plain Layout
 
-String[][] data = new totalcross.lang.String[][]
+String[][] data = new String[][]
 \end_layout
 
 \begin_layout Plain Layout
