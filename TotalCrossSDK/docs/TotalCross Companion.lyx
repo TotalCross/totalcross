@@ -7850,7 +7850,7 @@ catch (Exception e)
 
 \begin_layout Plain Layout
 
-	totalcross.ui.dialog.MessageBox.showException(e,true);
+	MessageBox.showException(e,true);
 \end_layout
 
 \begin_layout Plain Layout
@@ -8582,7 +8582,7 @@ public class Foo extends MainWindow
 
 \begin_layout Plain Layout
 
-		totalcross.ui.MainWindow.setUIStyle(totalcross.sys.Settings.Android);
+		setUIStyle(Settings.Android);
 \end_layout
 
 \begin_layout Plain Layout
@@ -22182,7 +22182,7 @@ public class MyListBox extends ListBox
 
 \begin_layout Plain Layout
 
-	public MyListBox(totalcross.lang.String[] items)
+	public MyListBox(String[] items)
 \end_layout
 
 \begin_layout Plain Layout
