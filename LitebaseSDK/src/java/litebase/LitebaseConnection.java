@@ -360,10 +360,16 @@ public class LitebaseConnection
          LitebaseParser parser = new LitebaseParser();
          parser.tableList = new SQLResultSetTable[1];
          
-         if ((sql.toLowerCase().trim()).startsWith("create table"))
-            parser.fieldList = new SQLFieldDefinition[SQLElement.MAX_NUM_COLUMNS];
-         parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
-         
+         // juliana@270_18: Solved NPE being thrown instead of a SQLParseException when an insert is passed to LitebaseConnection.execute().
+         if ((sql = sql.toLowerCase().trim()).startsWith("create "))
+         {
+            if (sql.startsWith("create table"))
+               parser.fieldList = new SQLFieldDefinition[SQLElement.MAX_NUM_COLUMNS];
+            parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
+         }
+         else
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED));
+                        
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does de parsing.
         
@@ -525,8 +531,6 @@ public class LitebaseConnection
             
             driverCreateIndex(tableName, indexNames, null, false);
          }
-         else
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED));
       }
       catch (IOException exception)
       {
