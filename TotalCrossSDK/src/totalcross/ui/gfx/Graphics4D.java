@@ -40,6 +40,7 @@ public final class Graphics4D
    protected int minX, minY, maxX, maxY;
    protected int lastRX,lastRY,lastXC,lastYC,lastSize; // used by arcPiePointDrawAndFill
    protected int pitch;
+   public boolean isVerticalText;
    // instance doubles
    protected double lastPPD; // used by arcPiePointDrawAndFill
    // instance objects
@@ -196,6 +197,12 @@ public final class Graphics4D
    native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
    native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
 
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
+   }
    ////////////////////////////////////////////////////////////////////////////////
    public void setClip(Rect r)
    {

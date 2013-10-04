@@ -77,6 +77,7 @@ public final class Graphics4B
    private static int[]acos,asin;
    IntVector ints = new IntVector(4);
    private static XYRect grect = new XYRect();
+   public boolean isVerticalText;
    
    static
    {
@@ -1299,19 +1300,36 @@ public final class Graphics4B
          g.setColor(foreColor);
 
       int maxX = g.getClippingRect().X2();
+      int incY = userFont.maxHeight + justifyWidth;
+      boolean isVert = isVerticalText;
       
       for (int i = 0; i < count && x < maxX; i++) // draw chars while text is visible
       {
          char ch = chars[i];
          
          if (ch == ' ')
-            x += userFont.spaceWidth;
+         {
+            if (isVert)
+               y += incY;
+            else
+               x += userFont.spaceWidth;
+         }
          else
          if (ch == 160)
-            x += userFont.numberWidth;
+         {
+            if (isVert)
+               y += incY;
+            else
+               x += userFont.numberWidth;
+         }
          else
          if (ch == '\t')
-            x += userFont.spaceWidth * Font.TAB_SIZE;
+         {
+            if (isVert)
+               y += incY * Font.TAB_SIZE;
+            else
+               x += userFont.spaceWidth * Font.TAB_SIZE;
+         }
          else if (ch > ' ')
          {
             int w;
@@ -1338,7 +1356,10 @@ public final class Graphics4B
                w = nativeFont.getAdvance(ch);
             }
             
-            x += w;
+            if (isVert)
+               y += incY;
+            else
+               x += w;
          }
 
          x += extraPixelsPerChar + (i < extraPixelsRemaining ? 1 : 0);

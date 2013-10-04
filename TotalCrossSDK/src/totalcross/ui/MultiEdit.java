@@ -1125,7 +1125,7 @@ public class MultiEdit extends Container implements Scrollable
          int n = pasted.length();
          if (maxLength > 0)
          {
-            pasted = pasted.substring(0,Math.max(0,maxLength - chars.length()));
+            pasted = pasted.substring(0,Math.min(pasted.length(),Math.max(0,maxLength - chars.length())));
             n = pasted.length();
          }
          if (chars.length() == 0)

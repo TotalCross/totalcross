@@ -499,7 +499,7 @@ public class ComboBox extends Container
          else
             try
             {
-               PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : " ",pop.lb.getItemsArray(), isMultiListBox);
+               PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "("+pop.lb.size()+")",pop.lb.getItemsArray(), isMultiListBox);
                pm.makeUnmovable();
                pm.enableSearch = enableSearch;
                pm.itemCount = pop.lb.size();
