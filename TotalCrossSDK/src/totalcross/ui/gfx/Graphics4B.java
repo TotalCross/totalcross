@@ -25,7 +25,6 @@ import totalcross.ui.*;
 import totalcross.ui.font.Font;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-
 import net.rim.device.api.system.*;
 import net.rim.device.api.ui.*;
 
@@ -1265,6 +1264,13 @@ public final class Graphics4B
    public void drawText(String text, int x, int y)
    {
       drawText(text, x,y,0);
+   }
+
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
    }
 
    public void drawText(String text, int x, int y, int justifyWidth)
