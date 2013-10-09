@@ -97,6 +97,19 @@ class TCEventThread extends Thread
    {
       eventQueue.push(new TCEvent(type, key, x, y, modifiers, timestamp));
    }
+   
+   boolean hasEvent(int type)
+   {
+      Node n = eventQueue.queue;
+      while (n != null)
+      {
+         TCEvent ev = (TCEvent)n.o;
+         if (ev.type == type)
+            return true;
+         n = n.next;
+      }
+      return false;
+   }
 
    void invokeInEventThread(boolean wait, Runnable r)
    {

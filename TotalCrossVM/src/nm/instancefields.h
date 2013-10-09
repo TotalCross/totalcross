@@ -114,6 +114,8 @@
 #define Graphics_lastSize(o)        FIELD_I32(o, 19)
 #define Graphics_pitch(o)           FIELD_I32(o, 20)
 #define Graphics_alpha(o)           FIELD_I32(o, 21)
+#define Graphics_isVerticalText(o)  FIELD_I32(o, 22)
+
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 
 #define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -128,13 +130,16 @@
 #define Image_frameCount(o)         FIELD_I32(o, 3)
 #define Image_currentFrame(o)       FIELD_I32(o, 4)
 #define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
-#define Image_textureId(o)          FIELD_I32(o, 6)
-#define Image_changed(o)            FIELD_I32(o, 7)
+#define Image_changed(o)            FIELD_I32(o, 6)
 
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
-#define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2)))
+#define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 4)
+
+#define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
 
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 

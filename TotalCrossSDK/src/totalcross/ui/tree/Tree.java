@@ -914,6 +914,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      onFontChanged();
       int btnW = vbar.getPreferredWidth();
       int btnH = hbar.getPreferredHeight();
       if (Settings.fingerTouch && ScrollPosition.AUTO_HIDE)
@@ -1173,6 +1174,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void onPaint(Graphics g)
    {
+      if (imgPlus == null)
+         initImage();
       // Draw background and borders
       g.backColor = bgColor0;
       g.fillRect(0, 0, btnX, height);

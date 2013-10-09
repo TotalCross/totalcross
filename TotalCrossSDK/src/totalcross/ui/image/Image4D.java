@@ -24,25 +24,24 @@ import totalcross.util.zip.ZLib;
 
 public class Image4D extends GfxSurface
 {
-   public int surfaceType = 1; // don't move from here! must be at static position 0
+   public int surfaceType = 1; // don't move from here! must be static at position 0
    protected int width;
    protected int height;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
-   private int textureId;
    private boolean changed = true;
    
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
+   int[] textureId = new int[1];
    public String comment;
    private Graphics4D gfx;
 
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public static final int NO_TRANSPARENT_COLOR = -2;
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public int transparentColor = Color.WHITE;
-   /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
+   public double hwScaleW=1,hwScaleH=1;
+   private int []instanceCount = new int[1];
    
    public Image4D(int width, int height) throws ImageException
    {
@@ -149,12 +148,12 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return height;
+      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
    }
 
    public int getWidth()
    {
-      return width;
+      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
    }
 
    public Graphics4D getGraphics()
@@ -312,7 +311,7 @@ public class Image4D extends GfxSurface
          return this;
       
       newW *= frameCount;
-      Image4D imageOut = new Image4D(newW, newH);
+      Image4D imageOut = getCopy(newW, newH);
       if (type == ROTATED_SCALED_INSTANCE && frameCount > 1)
          imageOut.setFrameCount(frameCount);
       getModifiedInstance(imageOut, angle, percScale, color, brightness, contrast, type);
@@ -458,9 +457,18 @@ public class Image4D extends GfxSurface
       return filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
    }
    
+   private Image4D getCopy(int w, int h) throws ImageException
+   {
+      Image4D i = new Image4D(w,h);
+      // copy other attributes
+      i.hwScaleH = this.hwScaleH;
+      i.hwScaleW = this.hwScaleW;
+      return i;
+   }
+
    public Image4D getFrameInstance(int frame) throws ImageException
    {
-      Image4D img = new Image4D(width,height);
+      Image4D img = getCopy(width,height);
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
@@ -509,7 +517,8 @@ public class Image4D extends GfxSurface
    
    public void finalize()
    {
-      freeTexture();
+      if (--instanceCount[0] <= 0)
+         freeTexture();
    }
    
    public void lockChanges()
@@ -522,4 +531,57 @@ public class Image4D extends GfxSurface
       }
    }
    native public void createJpg(Stream s, int quality) throws ImageException, IOException;
+
+   public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      hwScaleW = (double)w / width;
+      hwScaleH = (double)h / height;
+   }
+   
+   private Image4D(Image4D src)
+   {
+      this.surfaceType = src.surfaceType;
+      this.width = src.width;
+      this.height = src.height;
+      this.frameCount = src.frameCount;
+      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
+      this.textureId = src.textureId;
+      if (src.changed)
+         src.applyChanges();
+      this.changed = false;
+      this.pixels = src.pixels;
+      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+      this.comment = src.comment;
+      gfx = new Graphics4D(this);
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
+      this.transparentColor = src.transparentColor;
+      this.useAlpha = src.useAlpha; // guich@tc126_12
+      this.instanceCount = src.instanceCount;
+      src.instanceCount[0]++;
+   }
+   
+   public Image4D hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.setHwScaleFixedAspectRatio(newSize,isHeight);
+      return copy;
+   }
+
+   public Image4D getHwScaledInstance(int width, int height) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.hwScaleW = (double)width / this.width;
+      copy.hwScaleH = (double)height / this.height;
+      return copy;
+   }
+
+   public Image4D hwScaledBy(double scaleX, double scaleY) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.hwScaleW = scaleX;
+      copy.hwScaleH = scaleY;
+      return copy;
+   }   
 }

@@ -29,6 +29,7 @@ public class MainMenu extends BaseContainer
       "ScrollContainer",
       "Spinner",
       "TabbedContainer",
+      "Scale with ImageControl",
       "Other controls",
    };
    
@@ -40,17 +41,18 @@ public class MainMenu extends BaseContainer
       "ButtonMenu shows a single row menu and also a multi-row one",
       "Check/Radio shows multicolored check and radio boxes",
       "Combo/ListBox shows a ComboBox, a sorted ComboBox, and two Listbox",
-      "ProgressBar shows a bench using a few ProgressBars",
       "Edit shows the way to enter text in a single line, in several formats",
       "ListContainer shows a list of containers. Enter once to load 30, exit and enter again to show 3000 items",
       "MessageBox shows some MessageBox styles",
       "MultiButton shows a Single button that contains other buttons",
       "MultiEdit shows a standard MultiEdit, and a justified readonly one",
+      "ProgressBar shows a bench using a few ProgressBars",
       "ProgressBox shows a MessageBox with a spinner",
       "ScrollContainer shows three ScrollContainers that can be dragged in vertical, horizontal or both directions",
       "Spinner shows two spinner types",
       "TabbedContainer shows some container with tabs",
-      "Other controls shows other controls that doesn't belong to these ones.",
+      "Realtime scale using ImageControl", 
+      "Other controls shows other controls that doesn't belong to these ones",
    };
 
    Class[] itemClasses =
@@ -70,6 +72,7 @@ public class MainMenu extends BaseContainer
       ScrollContainerSample.class,
       SpinnerSample.class,
       TabbedContainerSample.class,
+      ImageControlSample.class,
       OtherControlsSample.class,
    };
    
@@ -93,6 +96,7 @@ public class MainMenu extends BaseContainer
    {
       super.initUI(); // important!
       
+      ToolTip.distY = fmH;
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       
       menu.pressedColor = BKGCOLOR;
@@ -106,6 +110,8 @@ public class MainMenu extends BaseContainer
       add(menu,LEFT,TOP,FILL,FILL);
       for (int i = 0; i < tips.length; i++)
          addToolTip(menu.getButton(i), ToolTip.split(tips[i],fm));
+      if (!Settings.isOpenGL && !Settings.onJavaSE)
+         menu.getButton(tips.length-2).setEnabled(false);
 
       setInfo(DEFAULT_INFO);
 
@@ -140,7 +146,7 @@ public class MainMenu extends BaseContainer
          itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
       itemInstances[idx].show();
       itemInstances[idx].setInfo("Press Back for main menu");
-      if (itemClasses[idx] == ListContainerSample.class || itemClasses[idx] == ProgressBarSample.class) // these samples will change each time it is called
+      if (itemClasses[idx] == ImageControlSample.class || itemClasses[idx] == ListContainerSample.class || itemClasses[idx] == ProgressBarSample.class) // these samples will change each time it is called
          itemInstances[idx] = null;
    }
 }

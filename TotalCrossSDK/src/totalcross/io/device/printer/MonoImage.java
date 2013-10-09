@@ -69,7 +69,7 @@ public class MonoImage extends Image
       int bytes = rowH / 8;
 
       // data
-      byte rowIn[] = new byte[width*3];
+      byte rowIn[] = new byte[width*4];
       byte rowOut[] = new byte[rowW * rowH / 8];
       byte []bits = 
       {

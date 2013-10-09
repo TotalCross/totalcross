@@ -593,7 +593,7 @@ static void getPixelRow(Context currentContext, Object obj, Object outObj, int32
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   if (checkArrayRange(currentContext, outObj, 0, width))
+   if (checkArrayRange(currentContext, outObj, 0, width*4))
       for (pixels += y * width; width-- > 0; pixels++)
       {
          *out++ = pixels->r;
@@ -687,14 +687,14 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
-      glLoadTexture(currentContext, obj, &(Image_textureId(obj)), pixels, width, height, updateList);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList);
    }
    Image_changed(obj) = false;
 }
 
 void freeTexture(Object img, bool updateList)
 {                                      
-   glDeleteTexture(img,&(Image_textureId(img)), updateList);
+   glDeleteTexture(img,Image_textureId(img), updateList);
 }
 
 extern VoidPs* imgTextures;
@@ -706,7 +706,7 @@ void recreateTextures() // called by opengl when the application changes the ope
       {    
          Object img = (Object)current->value;
          //glDeleteTexture(img,&(Image_textureId(img)),false); - cannot delete the textures! they were already deleted when the window was disposed
-         Image_textureId(img) = 0;
+         *Image_textureId(img) = 0;
          applyChanges(lifeContext, img,false);
          current = current->next;
       } while (imgTextures != current);

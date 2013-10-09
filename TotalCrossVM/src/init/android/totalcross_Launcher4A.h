@@ -25,6 +25,8 @@ extern "C" {
 #define totalcross_Launcher4A_SCREEN_CHANGED 8L
 #undef totalcross_Launcher4A_SIP_CLOSED
 #define totalcross_Launcher4A_SIP_CLOSED 9L
+#undef totalcross_Launcher4A_MULTITOUCHEVENT_SCALE
+#define totalcross_Launcher4A_MULTITOUCHEVENT_SCALE 10L
 #undef totalcross_Launcher4A_TRANSITION_NONE
 #define totalcross_Launcher4A_TRANSITION_NONE 0L
 #undef totalcross_Launcher4A_TRANSITION_OPEN

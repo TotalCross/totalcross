@@ -25,6 +25,8 @@
    UIViewController* controller;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
+@public
+   UIDocumentInteractionController *uidController;
 }
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;

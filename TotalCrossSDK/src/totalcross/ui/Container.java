@@ -558,17 +558,21 @@ public class Container extends Control
    }
 
    /** Sets the border for this container. The insets are changed after this method is called.
+    * The BORDER_ROUNDED sets the background to transparent.
     * @see #BORDER_NONE
     * @see #BORDER_LOWERED
     * @see #BORDER_RAISED
     * @see #BORDER_SIMPLE
     * @see #BORDER_TOP
+    * @see #BORDER_ROUNDED
     */
    public void setBorderStyle(byte border) // guich@200final_16
    {
       int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setInsets(gap,gap,gap,gap);
       this.borderStyle = border;
+      if (border == BORDER_ROUNDED)
+         transparentBackground = true;
       onColorsChanged(false);
    }
 

@@ -320,8 +320,8 @@ public class Label extends Control
       originalText = text;
       if (marqueeTimer != null)
          stopMarquee();
-      this.text = text;
-      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
+      this.text = autoSplit && width > 0 ? Convert.insertLineBreak(this.width, fm, text) : text;
+      lines = this.text.equals("") ? new String[]{""} : Convert.tokenizeString(this.text,'\n'); // guich@tc100: now we use \n
       currentLine = 0;
       onFontChanged();
       Window.needsPaint = true;

@@ -145,7 +145,7 @@ public class GoogleMaps extends MainWindow
                               gps = new GPS();
                               // wait until a timeout, or the user cancelled, or something is captured 
                               int ini = Vm.getTimeStamp();
-                              for (int i = 0; i < 60 && gpsNotCancelled && gps.location[0] == 0; i++)
+                              for (int i = 0; i < 60 && gpsNotCancelled && gps.location[0] == GPS.INVALID; i++)
                               {
                                  Vm.safeSleep(1000);
                                  try
@@ -167,7 +167,7 @@ public class GoogleMaps extends MainWindow
                                  mbgps.unpop();
                               if (gpsEx != null)
                                  throw gpsEx;
-                              if (gps.location[0] != 0)
+                              if (gps.location[0] != GPS.INVALID)
                                  addr = "@"+gps.location[0]+","+gps.location[1];
                            }
                            catch (Exception ioe) 

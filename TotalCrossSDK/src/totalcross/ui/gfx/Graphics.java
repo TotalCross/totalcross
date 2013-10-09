@@ -65,6 +65,13 @@ public final class Graphics
     * @deprecated This is not used in OpenGL platforms
     */
    public boolean useAA;
+   
+   /** States that the next calls to drawText will draw it vertically. We decided to do this using a boolean instead of 
+    * duplicating all the 10 drawText method calls, to keep it simple.
+    * @see #drawVerticalText(String, int, int)
+    * @since TotalCross 1.7 
+    */
+   public boolean isVerticalText;
 
    /** Contains the pixels of the MainWindow. */
    public static Object mainWindowPixels;
@@ -721,8 +728,35 @@ public final class Graphics
       drawText(text, x,y,0);
    }
    
+   /** Draws a VERTICAL text with the current font and the current foregrount color.
+    * 
+    * This is a shorthand of:
+    * <pre>
+    * g.isVerticalText = true;
+    * g.drawText(text,x,y);
+    * g.isVerticalText = false;
+    * </pre>
+    * @param text the text to be drawn
+    * @param x x coordinate of the text
+    * @param y y coordinate of the text
+    */
+   public void drawVerticalText(String text, int x, int y)
+   {
+      isVerticalText = true;
+      drawText(text, x,y,0);
+      isVerticalText = false;
+   }
+   
    /** Draws a text with the current font and the current foregrount color,
     * justifying it to the given width.
+    * 
+    * The text can be vertical if you set the isVerticalText property. Note that vertical text does not allow justification. 
+    * You can use the justifyWidth to adjust the kerning; depending on the characters you're using, you can decrease the distance
+    * using <code>font.fm.height - font.fm.ascent</code> as the justifyWidth.
+    * 
+    * @see #isVerticalText
+    * @see #drawVerticalText(String, int, int)
+    * 
     * @param text the text to be drawn
     * @param x x coordinate of the text
     * @param y y coordinate of the text
@@ -749,7 +783,8 @@ public final class Graphics
       int pxRB = foreColor & 0xFF00FF;
       int pxG  = foreColor & 0x00FF00;
       int extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
-      if (justifyWidth > 0)
+      boolean isVert = isVerticalText;
+      if (justifyWidth > 0 && !isVert)
       {
          while (text.charAt(chrCount-1) <= ' ')
             chrCount--;
@@ -762,10 +797,13 @@ public final class Graphics
          }
       }
 
+      if (isVert)
+         y += transY;
+      int incY = height + justifyWidth;
       x0 += transX;
       y0 += transY;
       xMax = xMin = (x0 < clipX1) ? clipX1 : x0;
-      yMax = y0 + height;
+      yMax = y0 + (isVert ? chrCount * incY : height);
       if (yMax >= clipY2)
          yMax = clipY2;
       yMin = (y0 < clipY1)? clipY1 : y0;
@@ -778,9 +816,14 @@ public final class Graphics
          {
             if (ch == 160 || ch == ' ' || ch == '\t')
             {
-               x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
-               if (k <= extraPixelsRemaining)
-                  x0++;
+               if (isVert)
+                  y += ch == '\t' ? incY * Font.TAB_SIZE : incY;
+               else
+               {
+                  x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
+                  if (k <= extraPixelsRemaining)
+                     x0++;
+               }
             }
             continue; // for all other control chars, just skip to next
          }
@@ -799,16 +842,30 @@ public final class Graphics
          width = bits.width;
          if ((xMax = x0 + width) > clipX2)
             xMax = clipX2;
+         int y1 = y,r=0;
+         start = 0;
+         if (!isVert)
+         {
+            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
+               start += (yMin-y0)*rowWIB;
+            y = yMin;
+         }
+         else
+         if (y < yMin)
+         {
+            r += yMin-y;
+            start += (yMin-y) * rowWIB; // guich@tc100b4_1: skip rows before yMin
+            y = yMin;
+         }
+         int rmax = (y+height > yMax) ? yMax - y : height;
 
          if (!font.antialiased) // antialiased?
          {
-            start     = bits.offset >> 3;
+            start    += bits.offset >> 3;
             startBit  = bits.offset & 7;
 
             // draws the char
-            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
-               start += (yMin-y0)*rowWIB;
-            for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
                int yy = y * pitch;
                current = start;
@@ -827,14 +884,11 @@ public final class Graphics
          }
          else
          {
-            start = bits.offset >> 1;
+            start += bits.offset >> 1;
             boolean isNibbleStartingLow = (bits.offset & 1) == 1;
             int transparency;
-
-            if (y0 < yMin) // guich@tc100b4_1: skip rows before yMin
-               start += (yMin-y0)*rowWIB;
             // draw the char
-            for (y=yMin; y < yMax; start+=rowWIB, x -= width, y++)    // draw each row
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
                int yy = y * pitch;
                current = start;
@@ -857,15 +911,24 @@ public final class Graphics
                }
             }
          }
-         if (xMax >= clipX2)
+         if (isVert)
          {
-            xMax = clipX2;
-            break;
+            y = y1 + incY;
+            if (y >= yMax)
+               break;
          }
-         x0 = xMax; // next character
-         x0 += extraPixelsPerChar;
-         if (k <= extraPixelsRemaining)
-            x0++;
+         else
+         {
+            if (xMax >= clipX2)
+            {
+               xMax = clipX2;
+               break;
+            }
+            x0 = xMax; // next character
+            x0 += extraPixelsPerChar;
+            if (k <= extraPixelsRemaining)
+               x0++;
+         }
       }
    }
 
@@ -1685,6 +1748,19 @@ public final class Graphics
    // copy the area x,y,width,height of the bitmap bmp with dimensions bmpW,bmpH to the (current active) screen location dstX,dstY
    private void drawSurface(int []pixels, Object srcSurface, int x, int y, int width, int height, int dstX, int dstY, boolean doClip, int bmpX, int bmpY, int bmpW, int bmpH)
    {
+      boolean isScaled = false;
+      if (srcSurface instanceof Image)
+      {
+         Image img = (Image)srcSurface;
+         if (img.hwScaleH != 1 || img.hwScaleW != 1)
+            try 
+            {
+               img = img.hwScaleW < 1 && img.hwScaleH < 1 ? img.smoothScaledBy(img.hwScaleW,img.hwScaleH) : img.scaledBy(img.hwScaleW,img.hwScaleH);
+               srcSurface = img;
+               pixels = img.getPixels();
+               isScaled = true;
+            } catch (ImageException ie) {}
+      }
       try // guich@200b4_63
       {
          // petrus@450_7: revamp of the drawBitmap clipping algorithm
@@ -1795,10 +1871,13 @@ public final class Graphics
       }
       catch (Exception e)
       {
-         Vm.warning("Exception in drawBitmap\n"+
-           "drawBitmap("+x+','+y+','+width+','+height+" -> "+dstX+','+dstY+','+doClip+")\n"+
-           "clip: "+clipX1+","+clipY1+","+clipX2+","+clipY2+" - trans: "+transX+","+transY);
-         e.printStackTrace();
+         if (!isScaled)
+         {
+            Vm.warning("Exception in drawBitmap\n"+
+              "drawBitmap("+x+','+y+','+width+','+height+" -> "+dstX+','+dstY+','+doClip+")\n"+
+              "clip: "+clipX1+","+clipY1+","+clipX2+","+clipY2+" - trans: "+transX+","+transY+", isScaled: "+isScaled);
+            e.printStackTrace();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////

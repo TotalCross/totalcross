@@ -43,7 +43,7 @@ public class ProgressBoxSample extends BaseContainer
       {
          int sel = menu.getSelectedIndex();
          Spinner.spinnerType = sel >= 2 ? Spinner.ANDROID : Spinner.IPHONE;
-         String msg = sel == 0 || sel == 2 ? "Loading, please wait..." : "This device will explode in 5 seconds... throw it away!";
+         String msg = sel == 0 || sel == 2 ? "Loading, please wait..." : "This device will explode in 5 seconds...\nthrow it away!";
          ProgressBox pb = new ProgressBox("Message",msg,null);
          pb.popupNonBlocking();
          // we can't just block using Vm.sleep because it would also 

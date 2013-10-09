@@ -262,7 +262,9 @@ public class Window extends Container
    protected DragEvent _dragEvent = new DragEvent();
    private static int currentDragId;
    protected MouseEvent _mouseEvent = new MouseEvent();
+   protected MultiTouchEvent _multiEvent = new MultiTouchEvent();
    private static boolean lastInside;
+   protected boolean multiTouching;
    
    public static int shiftY,shiftH,lastShiftY;
    
@@ -491,7 +493,7 @@ public class Window extends Container
     */
    final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
    {
-      boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
+      boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
       if (isKeyEvent && Settings.deviceRobotSpecialKey == key)
       {
@@ -618,6 +620,23 @@ public class Window extends Container
       boolean invokeMenu = false;
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
+      if (type == MultiTouchEvent.SCALE)
+      {
+         if (key == 1)
+            multiTouching = true;
+         else
+         if (key == 2)
+            multiTouching = false;
+         else
+         {
+            long l = ((((long)x & 0xFFFFFFFFL) << 32) | ((long)y & 0xFFFFFFFFL));
+            _multiEvent.update(_focus, Convert.longBitsToDouble(l));
+            _focus.postEvent(_multiEvent);
+         }
+         if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
+            repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
+         return;
+      }
       if (isPenEvent) 
       {
          switch (type)
