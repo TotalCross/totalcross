@@ -12,9 +12,9 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
 
-#define Class __Class
 #include "tcvm.h"
 #include "../../nm/ui/darwin/mainview.h"
+#define Class __Class
 #include "GraphicsPrimitives.h"
 #undef Class
 
