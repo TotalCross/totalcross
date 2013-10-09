@@ -8,8 +8,8 @@
 #define Object NSObject*
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#define Class __Class
 #include "../../nm/ui/darwin/mainview.h"
+#define Class __Class
 #include "GraphicsPrimitives.h"
 typedef id Context;
 #include "event.h"
