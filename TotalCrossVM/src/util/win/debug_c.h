@@ -47,7 +47,7 @@ static bool privateDebug(char* str)
       freopen("conout$","w",stdout);
       freopen("conout$","w",stderr);
    }
-   printf(s);
+   printf(str);
    printf("\n");
    fflush(stdout);
    return true;
