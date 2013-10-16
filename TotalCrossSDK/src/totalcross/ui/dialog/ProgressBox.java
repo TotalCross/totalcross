@@ -103,6 +103,8 @@ public class ProgressBox extends MessageBox
    {
       lgap = fmH * 2 + fmH/4; // gap of fmH/8 at left and at right
       super.onPopup();
+      if (spinner != null) // guich@tc200: two spinners was being created during popup, because MessageBox' reposition was calling onPopup
+         spinner.stop();
       spinner = new Spinner();
       spinner.setBackForeColors(backColor, foreColor);
       boolean multiline = msg.getLineCount() > 1;
