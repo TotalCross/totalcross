@@ -44,7 +44,7 @@ public class MonoPCXImage extends Image
       stream.writeBytes(header);      // Write most of header data.
       stream.writeBytes(new byte[54]); // pad the 128-byte header
 
-      byte rowIn[] = new byte[width*3];
+      byte rowIn[] = new byte[width*4];
       byte rowInv[] = new byte[width];
       int []bits = {128, 64, 32, 16, 8, 4, 2, 1};
       

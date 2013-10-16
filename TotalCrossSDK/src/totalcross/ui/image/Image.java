@@ -645,8 +645,7 @@ public class Image extends GfxSurface
       }
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
-     * there must be enough space for the full line be filled, with width*3 bytes 
-     * (or width*4 bytes, if useAlpha is true). 
+     * there must be enough space for the full line be filled, with width*4 bytes. 
      * The alpha channel is NOT stripped off. */
    final protected void getPixelRow(byte []fillIn, int y)
    {
