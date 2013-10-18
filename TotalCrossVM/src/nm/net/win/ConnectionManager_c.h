@@ -458,25 +458,47 @@ static boolean CmIsAvailable(int type)
 boolean isWifiActive()
 {
    HKEY regKey = null;
-   TCHAR adapterName[64];
+   TCHAR adapterName[128] = TEXT("");
    TCHAR adapterPath[MAX_PATHNAME] = TEXT("Comm\\");
-   TCHAR adapterState[MAX_PATHNAME] = TEXT("{98C5250D-C29A-4985-AE5F-AFE5367E5006}\\"); // {98C5250D-C29A-4985-AE5F-AFE5367E5006} is the GUID for power-managed NDIS miniports. That usually includes Wi-Fi driver.
+   TCHAR adapterGUID[MAX_PATHNAME] = TEXT("{98C5250D-C29A-4985-AE5F-AFE5367E5006}"); // {98C5250D-C29A-4985-AE5F-AFE5367E5006} is the GUID for power-managed NDIS miniports. That usually includes Wi-Fi driver.
+   TCHAR adapterState[MAX_PATHNAME];
    int32 nameLen = MAX_PATHNAME - 5;
    DWORD valueType;
    DWORD adapterStateValue;
    DWORD valueSize = sizeof(DWORD);
+   int32 adapterGUIDLen = tcslen(adapterGUID);
+   int32 i;
    Err err;
 
-   if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\WZCSVC\\Parameters\\Interfaces"), 0, 0, &regKey)) != NO_ERROR)
-      goto returnFalse;
-   if ((err = RegEnumKeyEx(regKey, 0, adapterName, &nameLen, null, null, null, null)) != NO_ERROR)
-      goto returnFalse;
-   RegCloseKey(regKey);
-   regKey = null;
+   if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\WZCSVC\\Parameters\\Interfaces"), 0, 0, &regKey)) == NO_ERROR)
+   {
+      if ((err = RegEnumKeyEx(regKey, 0, adapterName, &nameLen, null, null, null, null)) != NO_ERROR)
+         goto returnFalse;
+      RegCloseKey(regKey);
+      regKey = null;
+   }
 
    if ((err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("System\\CurrentControlSet\\Control\\Power\\State"), 0, 0, &regKey)) != NO_ERROR)
       goto returnFalse;
-   tcscat(adapterState, adapterName);
+   if (tcslen(adapterName) > 0)
+      tcscat(adapterState, adapterName);
+   else
+   {
+      nameLen = MAX_PATHNAME - 5;
+      for (i = 0 ; (err = RegEnumValue(regKey, i, adapterState, &nameLen, null, null, null, null)) != ERROR_NO_MORE_ITEMS ; i++)
+      {
+         if (err != NO_ERROR)
+            goto returnFalse;
+         if (nameLen > 0 && tcsncmp(adapterState, adapterGUID, adapterGUIDLen) == 0)
+         {
+            tcscpy(adapterName, adapterState + adapterGUIDLen + 1);
+            break;
+         }
+         nameLen = MAX_PATHNAME - 5;
+      }
+      if (err == ERROR_NO_MORE_ITEMS)
+         goto returnFalse;
+   }
    if ((err = RegQueryValueEx(regKey, adapterState, null, &valueType, (LPBYTE) &adapterStateValue, &valueSize)) != NO_ERROR)
       goto returnFalse;
    RegCloseKey(regKey);
