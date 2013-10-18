@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivy-settings>
 	<settings defaultResolver="main" />
+	<property name="HOST.URL" value="10.1.0.9" />
 	<!--Authentication required for publishing (deployment). 'Artifactory Realm' is the realm used by Artifactory so don't change it.-->
-	<credentials host="superwaba.dnsalias.com" realm="Artifactory Realm" username="admin" passwd="yourPassword" />
+	<credentials host="${HOST.URL}" realm="Artifactory Realm" username="admin" passwd="yourPassword" />
 	<resolvers>
 		<chain name="main">
-			<ibiblio name="public" m2compatible="true" root="http://superwaba.dnsalias.com:8081/artifactory/libs-release"
+			<ibiblio name="public" m2compatible="true" root="http://${HOST.URL}:8081/artifactory/libs-release"
 				pattern="[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]" />
 		</chain>
 	</resolvers>
