@@ -144,7 +144,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
       goto error;
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
-#if !defined(POSIX) 
+#if !defined(POSIX) && !defined(ANDROID)
    if (newSize - xFile->size > 0) // juliana@230_18: removed possible garbage in table files.
    {
       uint8 zeroBuf[1024];
@@ -344,7 +344,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#if defined(WINCE) || defined(POSIX) 
+#if defined(WINCE) || defined(POSIX) || defined(ANDROID)
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif

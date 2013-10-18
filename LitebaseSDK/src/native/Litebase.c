@@ -2269,7 +2269,7 @@ TESTCASE(checkApppath)
    xstrcpy(path, "\\"); 
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
    ASSERT2_EQUALS(Sz, sourcePath, "/");
-#if !defined(POSIX)
+#if !defined(POSIX) && !defined(ANDROID)
 	xstrcpy(path, "\\temp\\tables");
    ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path)); 
    ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/");
