@@ -1,4 +1,69 @@
 
+TC_API void tlrA_newInstance_ci(NMParams p);
+TC_API void tlrA_newInstance_cI(NMParams p);
+TC_API void tlrA_getLength_o(NMParams p);
+TC_API void tlrA_get_oi(NMParams p);
+TC_API void tlrA_getBoolean_oi(NMParams p);
+TC_API void tlrA_getByte_oi(NMParams p);
+TC_API void tlrA_getChar_oi(NMParams p);
+TC_API void tlrA_getShort_oi(NMParams p);
+TC_API void tlrA_getInt_oi(NMParams p);
+TC_API void tlrA_getLong_oi(NMParams p);
+TC_API void tlrA_getFloat_oi(NMParams p);
+TC_API void tlrA_getDouble_oi(NMParams p);
+TC_API void tlrA_set_oio(NMParams p);
+TC_API void tlrA_setBoolean_oib(NMParams p);
+TC_API void tlrA_setByte_oib(NMParams p);
+TC_API void tlrA_setChar_oic(NMParams p);
+TC_API void tlrA_setShort_ois(NMParams p);
+TC_API void tlrA_setInt_oii(NMParams p);
+TC_API void tlrA_setLong_oil(NMParams p);
+TC_API void tlrA_setFloat_oif(NMParams p);
+TC_API void tlrA_setDouble_oid(NMParams p);
+TC_API void tlrM_getDeclaringClass(NMParams p);
+TC_API void tlrM_getName(NMParams p);
+TC_API void tlrM_getModifiers(NMParams p);
+TC_API void tlrM_getReturnType(NMParams p);
+TC_API void tlrM_getParameterTypes(NMParams p);
+TC_API void tlrM_getExceptionTypes(NMParams p);
+TC_API void tlrM_equals_o(NMParams p);
+TC_API void tlrM_hashCode(NMParams p);
+TC_API void tlrM_toString(NMParams p);
+TC_API void tlrM_invoke_oO(NMParams p);
+TC_API void tlrC_getDeclaringClass(NMParams p);
+TC_API void tlrC_getName(NMParams p);
+TC_API void tlrC_getModifiers(NMParams p);
+TC_API void tlrC_getParameterTypes(NMParams p);
+TC_API void tlrC_getExceptionTypes(NMParams p);
+TC_API void tlrC_equals_o(NMParams p);
+TC_API void tlrC_hashCode(NMParams p);
+TC_API void tlrC_toString(NMParams p);
+TC_API void tlrC_newInstance_O(NMParams p);
+TC_API void tlrF_getDeclaringClass(NMParams p);
+TC_API void tlrF_getName(NMParams p);
+TC_API void tlrF_getModifiers(NMParams p);
+TC_API void tlrF_getType(NMParams p);
+TC_API void tlrF_equals_o(NMParams p);
+TC_API void tlrF_hashCode(NMParams p);
+TC_API void tlrF_toString(NMParams p);
+TC_API void tlrF_get_o(NMParams p);
+TC_API void tlrF_getBoolean_o(NMParams p);
+TC_API void tlrF_getByte_o(NMParams p);
+TC_API void tlrF_getChar_o(NMParams p);
+TC_API void tlrF_getShort_o(NMParams p);
+TC_API void tlrF_getInt_o(NMParams p);
+TC_API void tlrF_getLong_o(NMParams p);
+TC_API void tlrF_getFloat_o(NMParams p);
+TC_API void tlrF_getDouble_o(NMParams p);
+TC_API void tlrF_set_oo(NMParams p);
+TC_API void tlrF_setBoolean_ob(NMParams p);
+TC_API void tlrF_setByte_ob(NMParams p);
+TC_API void tlrF_setChar_oc(NMParams p);
+TC_API void tlrF_setShort_os(NMParams p);
+TC_API void tlrF_setInt_oi(NMParams p);
+TC_API void tlrF_setLong_ol(NMParams p);
+TC_API void tlrF_setFloat_of(NMParams p);
+TC_API void tlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
@@ -424,6 +489,266 @@ TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
 TC_API void tidsS_readBarcode_s(NMParams p);
 
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_newInstance_ci(NMParams p) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_newInstance_cI(NMParams p) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getLength_o(NMParams p) // totalcross/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_get_oi(NMParams p) // totalcross/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getBoolean_oi(NMParams p) // totalcross/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getByte_oi(NMParams p) // totalcross/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getChar_oi(NMParams p) // totalcross/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getShort_oi(NMParams p) // totalcross/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getInt_oi(NMParams p) // totalcross/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getLong_oi(NMParams p) // totalcross/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getFloat_oi(NMParams p) // totalcross/lang/reflect/Array public static native float getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_getDouble_oi(NMParams p) // totalcross/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_set_oio(NMParams p) // totalcross/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setBoolean_oib(NMParams p) // totalcross/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setByte_oib(NMParams p) // totalcross/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setChar_oic(NMParams p) // totalcross/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setShort_ois(NMParams p) // totalcross/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setInt_oii(NMParams p) // totalcross/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setLong_oil(NMParams p) // totalcross/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setFloat_oif(NMParams p) // totalcross/lang/reflect/Array public static native void setFloat(Object array, int index, float f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrA_setDouble_oid(NMParams p) // totalcross/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Method public native Class getDeclaringClass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getName(NMParams p) // totalcross/lang/reflect/Method public native String getName();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getModifiers(NMParams p) // totalcross/lang/reflect/Method public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getReturnType(NMParams p) // totalcross/lang/reflect/Method public native Class getReturnType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getParameterTypes(NMParams p) // totalcross/lang/reflect/Method public native java.lang.Class[] getParameterTypes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_getExceptionTypes(NMParams p) // totalcross/lang/reflect/Method public native java.lang.Class[] getExceptionTypes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_equals_o(NMParams p) // totalcross/lang/reflect/Method public native boolean equals(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_hashCode(NMParams p) // totalcross/lang/reflect/Method public native int hashCode();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_toString(NMParams p) // totalcross/lang/reflect/Method public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Constructor public native Class getDeclaringClass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_getName(NMParams p) // totalcross/lang/reflect/Constructor public native String getName();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_getModifiers(NMParams p) // totalcross/lang/reflect/Constructor public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_getParameterTypes(NMParams p) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getParameterTypes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_getExceptionTypes(NMParams p) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getExceptionTypes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_equals_o(NMParams p) // totalcross/lang/reflect/Constructor public native boolean equals(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_hashCode(NMParams p) // totalcross/lang/reflect/Constructor public native int hashCode();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_toString(NMParams p) // totalcross/lang/reflect/Constructor public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Field public native Class getDeclaringClass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getName(NMParams p) // totalcross/lang/reflect/Field public native String getName();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getModifiers(NMParams p) // totalcross/lang/reflect/Field public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getType(NMParams p) // totalcross/lang/reflect/Field public native Class getType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_equals_o(NMParams p) // totalcross/lang/reflect/Field public native boolean equals(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_hashCode(NMParams p) // totalcross/lang/reflect/Field public native int hashCode();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_toString(NMParams p) // totalcross/lang/reflect/Field public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getBoolean_o(NMParams p) // totalcross/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getByte_o(NMParams p) // totalcross/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getChar_o(NMParams p) // totalcross/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getShort_o(NMParams p) // totalcross/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getInt_o(NMParams p) // totalcross/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getLong_o(NMParams p) // totalcross/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getFloat_o(NMParams p) // totalcross/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_getDouble_o(NMParams p) // totalcross/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setBoolean_ob(NMParams p) // totalcross/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setByte_ob(NMParams p) // totalcross/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setChar_oc(NMParams p) // totalcross/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setShort_os(NMParams p) // totalcross/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setInt_oi(NMParams p) // totalcross/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setLong_ol(NMParams p) // totalcross/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setFloat_of(NMParams p) // totalcross/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tlrF_setDouble_od(NMParams p) // totalcross/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+}
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
@@ -2121,6 +2446,331 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
 {
 }
 
+TESTCASE(tlrA_newInstance_ci) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_newInstance_cI) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getLength_o) // totalcross/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_get_oi) // totalcross/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getBoolean_oi) // totalcross/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getByte_oi) // totalcross/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getChar_oi) // totalcross/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getShort_oi) // totalcross/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getInt_oi) // totalcross/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getLong_oi) // totalcross/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getFloat_oi) // totalcross/lang/reflect/Array public static native float getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_getDouble_oi) // totalcross/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_set_oio) // totalcross/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setBoolean_oib) // totalcross/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setByte_oib) // totalcross/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setChar_oic) // totalcross/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setShort_ois) // totalcross/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setInt_oii) // totalcross/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setLong_oil) // totalcross/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setFloat_oif) // totalcross/lang/reflect/Array public static native void setFloat(Object array, int index, float f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrA_setDouble_oid) // totalcross/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getDeclaringClass) // totalcross/lang/reflect/Method public native Class getDeclaringClass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getName) // totalcross/lang/reflect/Method public native String getName();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getModifiers) // totalcross/lang/reflect/Method public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getReturnType) // totalcross/lang/reflect/Method public native Class getReturnType();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getParameterTypes) // totalcross/lang/reflect/Method public native java.lang.Class[] getParameterTypes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_getExceptionTypes) // totalcross/lang/reflect/Method public native java.lang.Class[] getExceptionTypes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_equals_o) // totalcross/lang/reflect/Method public native boolean equals(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_hashCode) // totalcross/lang/reflect/Method public native int hashCode();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_toString) // totalcross/lang/reflect/Method public native String toString();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrM_invoke_oO) // totalcross/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_getDeclaringClass) // totalcross/lang/reflect/Constructor public native Class getDeclaringClass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_getName) // totalcross/lang/reflect/Constructor public native String getName();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_getModifiers) // totalcross/lang/reflect/Constructor public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_getParameterTypes) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getParameterTypes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_getExceptionTypes) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getExceptionTypes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_equals_o) // totalcross/lang/reflect/Constructor public native boolean equals(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_hashCode) // totalcross/lang/reflect/Constructor public native int hashCode();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_toString) // totalcross/lang/reflect/Constructor public native String toString();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrC_newInstance_O) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getDeclaringClass) // totalcross/lang/reflect/Field public native Class getDeclaringClass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getName) // totalcross/lang/reflect/Field public native String getName();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getModifiers) // totalcross/lang/reflect/Field public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getType) // totalcross/lang/reflect/Field public native Class getType();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_equals_o) // totalcross/lang/reflect/Field public native boolean equals(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_hashCode) // totalcross/lang/reflect/Field public native int hashCode();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_toString) // totalcross/lang/reflect/Field public native String toString();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_get_o) // totalcross/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getBoolean_o) // totalcross/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getByte_o) // totalcross/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getChar_o) // totalcross/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getShort_o) // totalcross/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getInt_o) // totalcross/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getLong_o) // totalcross/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getFloat_o) // totalcross/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_getDouble_o) // totalcross/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_set_oo) // totalcross/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setBoolean_ob) // totalcross/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setByte_ob) // totalcross/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setChar_oc) // totalcross/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setShort_os) // totalcross/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setInt_oi) // totalcross/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setLong_ol) // totalcross/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setFloat_of) // totalcross/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tlrF_setDouble_od) // totalcross/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tmGM_showAddress_sb) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
    TEST_SKIP;
