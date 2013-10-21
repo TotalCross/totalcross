@@ -5205,7 +5205,6 @@ e.plist">Application Name>>></a>
 
 \end_inset
 
-
 \end_layout
 
 \begin_layout Standard
@@ -5258,6 +5257,33 @@ Of course your application has to have a mechanism to detect when a new
 So there you have it, how to do OTA updates on iOS without needing the App
  Store.
  
+\end_layout
+
+\begin_layout Subsection
+Debugging
+\end_layout
+
+\begin_layout Standard
+On iOS one can get the 
+\family typewriter
+debugConsole.txt
+\family default
+ and other program files by installing a program called DiskAid.
+ It is only necessary to open the program, connect the device, go to the
+ application folder and them access its files.
+ Using this program one can even copy the device files to the computer.
+ Before stalling DiskAid, it is desirable to install iTunes.
+ Moreover, some configurations must be done in order to show a TotalCross
+ Application.
+ Just go to DiskAid-->Preferences and check the options to show all files,
+ applications, etc.
+ Your application is inside Apps.
+ Just double-click it to see the application folders.
+ The application files are located in the folder 
+\family typewriter
+Documents
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -7676,7 +7702,7 @@ catch (Exception e)
 
 \begin_layout Plain Layout
 
-	totalcross.ui.dialog.MessageBox.showException(e,true);
+	MessageBox.showException(e,true);
 \end_layout
 
 \begin_layout Plain Layout
@@ -8386,7 +8412,7 @@ public class Foo extends MainWindow
 
 \begin_layout Plain Layout
 
-		totalcross.ui.MainWindow.setUIStyle(totalcross.sys.Settings.Android);
+		setUIStyle(Settings.Android);
 \end_layout
 
 \begin_layout Plain Layout
@@ -20382,7 +20408,7 @@ public void onEvent(Event event)
 
 \begin_layout Plain Layout
 
-			if (event.target instanceof totalcross.ui.Radio)
+			if (event.target instanceof Radio)
 \end_layout
 
 \begin_layout Plain Layout
@@ -21500,7 +21526,7 @@ public class MyListBox extends ListBox
 
 \begin_layout Plain Layout
 
-	public MyListBox(totalcross.lang.String[] items)
+	public MyListBox(String[] items)
 \end_layout
 
 \begin_layout Plain Layout
@@ -24646,7 +24672,7 @@ grid.secondStripeColor = Color.getRGB(235,235,235);
 
 \begin_layout Plain Layout
 
-String[][] data = new totalcross.lang.String[][]
+String[][] data = new String[][]
 \end_layout
 
 \begin_layout Plain Layout
