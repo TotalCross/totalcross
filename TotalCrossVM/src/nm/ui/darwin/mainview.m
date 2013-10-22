@@ -328,6 +328,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 BOOL invalidated;
 void Sleep(int ms);
+extern bool callingScreenChange;
 
 void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
 {								  
@@ -336,7 +337,8 @@ void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 tran
    {
       invalidated = FALSE;
       [vw invalidateScreen:screen withContext:currentContext];
-      while (!invalidated) Sleep(10);
+      while (!invalidated && !callingScreenChange)
+        Sleep(10);
    }      
 }
 
