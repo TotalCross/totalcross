@@ -176,7 +176,7 @@ static bool callingCamera;
    imageH = h;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
-      UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+      imagePicker = [[UIImagePickerController alloc] init];
       if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
       else
@@ -187,14 +187,15 @@ static bool callingCamera;
    while (callingCamera)
       Sleep(100);
    return imageFileName != null;
-}   
+}
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [[picker parentViewController] dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:YES];
    imageFileName = null;
    callingCamera = false;
 }
+
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
    UIImage* finalImage = [info objectForKey:UIImagePickerControllerOriginalImage];
