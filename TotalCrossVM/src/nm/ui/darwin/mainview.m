@@ -360,6 +360,21 @@ bool graphicsLock(ScreenSurface screen, bool on)
    return true;
 }
 
+void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr)
+{
+   NSTimeZone* tz = [NSTimeZone systemTimeZone];
+   *daylightSavingsPtr = [tz isDaylightSavingTime];
+   *daylightSavingsMinutesPtr = (int)([tz daylightSavingTimeOffset] / 60);
+   *timeZoneMinutesPtr = (int)(tz.secondsFromGMT / 60) - *daylightSavingsMinutesPtr; // as of 22/10/2013, android returns -180/60 and ios returns -120/60
+   *timeZonePtr = *timeZoneMinutesPtr / 60;
+   NSString *name = tz.name;
+   if (name != nil)
+   {
+      const char* s = [name cStringUsingEncoding:NSASCIIStringEncoding];
+      strncpy(timeZoneStrPtr, s, sizeofTimeZoneStr-1);
+   }
+}
+
 //////////////// interface to mainview methods ///////////////////
 
 bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos)
