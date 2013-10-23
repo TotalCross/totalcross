@@ -14,11 +14,11 @@
 #include "tcvm.h"
 
 #if _WIN32_WCE >= 300
- #include "win\media_Camera_c.h"
+ #include "win/media_Camera_c.h"
 #elif defined(PALMOS)
- #include "palm\media_Camera_c.h"
+ #include "palm/media_Camera_c.h"
 #elif defined(ANDROID)
- #include "android\media_Camera_c.h"
+ #include "android/media_Camera_c.h"
 #elif defined(darwin)
  #include "darwin/media_Camera_c.h"
 #endif
