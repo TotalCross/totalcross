@@ -250,8 +250,16 @@ void restoreSoundSettings()
 {
 }
 
+void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr); // darwin/gfx_Graphics_c.h
+
 void updateDaylightSavings(Context currentContext)
 {
+#ifdef darwin
+    char nameBuf[50];
+    fillIOSSettings(tcSettings.daylightSavingsPtr, tcSettings.daylightSavingsMinutesPtr, tcSettings.timeZonePtr, tcSettings.timeZoneMinutesPtr, nameBuf,sizeof(nameBuf));
+    if (nameBuf[0] != 0)
+        setObjectLock(*tcSettings.timeZoneStrPtr = createStringObjectFromCharP(currentContext, nameBuf, -1),UNLOCKED);
+#else
    time_t t;
    struct tm tm;
    time(&t);
@@ -260,6 +268,7 @@ void updateDaylightSavings(Context currentContext)
    t = 30326400 + 12*3600;   // 01/01/1970 12:00:00 - UTC
    localtime_r(&t, &tm);     // localtime_r is the reentrant version (multithreading aware)
    *tcSettings.timeZonePtr = tm.tm_hour - 12;
+#endif
 }
 
 #if defined (ANDROID)
@@ -325,9 +334,15 @@ bool fillSettings(Context currentContext)
    // locale
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "daylightSavings", "Z");
    *tcSettings.daylightSavingsPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
+   
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "daylightSavingsMinutes", "I");
+   *tcSettings.daylightSavingsMinutesPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZone", "I");
    *tcSettings.timeZonePtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
+   
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZoneMinutes", "I");
+   *tcSettings.timeZoneMinutesPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZoneStr", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);

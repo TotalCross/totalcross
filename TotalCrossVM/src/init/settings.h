@@ -53,6 +53,8 @@ typedef struct
    int32* virtualKeyboardPtr;            // boolean
    int32* daylightSavingsPtr;            // boolean
    int32* timeZonePtr;                   // int
+   int32* timeZoneMinutesPtr;            // int
+   int32* daylightSavingsMinutesPtr;     // int
    int32* showSecretsPtr;                // boolean
    int32* keyboardFocusTraversablePtr;   // boolean
    int32* closeButtonTypePtr;            // int
