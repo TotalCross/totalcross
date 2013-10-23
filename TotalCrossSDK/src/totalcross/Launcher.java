@@ -1809,9 +1809,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          this.maxHeight = size;
          this.rowWidthInBytes = ubase.rowWidthInBytes * maxHeight / ubase.maxHeight;
          this.bitIndexTable = new int[ubase.bitIndexTable.length];
-         for (int i = 0; i < bitIndexTable.length; i++)
+         for (int i = 0; i < bitIndexTable.length; i++) // compute the target size using the rule of three
             this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
-         this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];//ubase.nativeFont.getSmoothScaledInstance(rowWidthInBytes,maxHeight);
+         this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
          this.fontName = fontName;
          this.firstChar = ubase.firstChar;
          this.lastChar = ubase.lastChar;
@@ -1881,10 +1881,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
          }
          if (antialiased == AA_8BPP)
-         {
             nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
-            //int[] pixels = nativeFont.getPixels(); for (int i = pixels.length; --i >= 0;) pixels[i] = (bitmapTable[i] << 24);
-         }
       }
       
       private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
@@ -1895,7 +1892,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          int[] pixels = img.getPixels();
          for (int y = 0,idx=0; y < maxHeight; y++)
             for (int x = 0; x < width; x++,idx++)
-               pixels[/*y * bits.width + x*/idx] = bitmapTable[y * rowWidthInBytes + x + offset] << 24;
+               pixels[idx] = bitmapTable[y * rowWidthInBytes + x + offset] << 24;
          return img;
       }
       
@@ -1913,9 +1910,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (ubase != null)
                try
                {
-                  if (ubase.nativeFonts[index] == null)
+                  if (ubase.nativeFonts[index] == null) // character at original size
                      ubase.nativeFonts[index] = ubase.getBaseCharImage(index);
-                  if (nativeFonts[index] == null)
+                  if (nativeFonts[index] == null) // character at the target size
                      nativeFonts[index] = ubase.nativeFonts[index].getHwScaledInstance(bits.width,maxHeight);
                   bits.img = nativeFonts[index];
                   bits.rowWIB = bits.width;
