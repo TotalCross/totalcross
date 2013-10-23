@@ -263,12 +263,15 @@ public final class Settings4A
 	   }
 	}
 	
+   public static int timeZoneMinutes;
+   public static int daylightSavingsMinutes;
    public static void settingsRefresh()
    {
-      java.util.Calendar cal = java.util.Calendar.getInstance();
-      daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0;
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
-      timeZone = tz.getRawOffset() / (60*60*1000);
+      daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      daylightSavings = daylightSavingsMinutes != 0;
+      timeZone = tz.getRawOffset() / (60*60000);
+      timeZoneMinutes = tz.getRawOffset() / 60000;
       timeZoneStr = java.util.TimeZone.getDefault().getID();
    }
    
