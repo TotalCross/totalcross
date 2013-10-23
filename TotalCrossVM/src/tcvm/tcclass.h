@@ -601,5 +601,7 @@ typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, 
 /// Checks if the methods have the same parameters
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
 
+Type type2javaType(CharP type);
+
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
 #endif

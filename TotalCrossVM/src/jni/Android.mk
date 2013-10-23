@@ -121,6 +121,7 @@ NM_IO_DEVICE_BLUETOOTH_FILES =                \
 	$(TC_SRCDIR)/nm/io/device/bluetooth/SerialPortServer.c 
 
 NM_LANG_FILES =                               \
+	$(TC_SRCDIR)/nm/lang/Reflection.c          \
 	$(TC_SRCDIR)/nm/lang/Class.c               \
 	$(TC_SRCDIR)/nm/lang/Object.c              \
 	$(TC_SRCDIR)/nm/lang/String.c              \

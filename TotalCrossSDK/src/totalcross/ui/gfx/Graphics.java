@@ -919,7 +919,7 @@ public final class Graphics
          }
          else
          {
-            if (xMax >= clipX2)
+            if (xMax >= clipX2) 
             {
                xMax = clipX2;
                break;

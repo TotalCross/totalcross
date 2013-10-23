@@ -753,7 +753,7 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    return ret == CLASS_OUT_OF_MEMORY ? null : ret;
 }
 
-static Type type2javaType(CharP type)
+Type type2javaType(CharP type)
 {
    if (*type == '[')
       type++;

@@ -548,12 +548,12 @@ Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, u
    Object *oa;
 
    // note that all dimensions are type java.lang.Array, except the last one.
-   len = *dims < 65 ? regI[*dims] : (*dims-65);
+   len = dims == null ? regI[0] : *dims < 65 ? regI[*dims] : (*dims-65);
    o = createArrayObject(currentContext, type, len);
    if (o != null && count > 1)
    {
       for (oa = (Object*)ARRAYOBJ_START(o); len-- > 0; oa++)
-         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims+1, regI)) == null)
+         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims == null ? null : dims+1, dims == null ? regI+1 : regI)) == null)
             return null;
          else
             setObjectLock(*oa, UNLOCKED);
