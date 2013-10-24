@@ -215,7 +215,7 @@ public class ImageControl extends Control
          {
             // keep original image
          }
-      if (centerImage) // guich@100_1: reset the image's position if bounds changed
+      if (centerImage && img != null) // guich@100_1: reset the image's position if bounds changed
       {
          lastX = (width-getImageWidth())/2;
          lastY = (height-getImageHeight())/2;
@@ -257,13 +257,13 @@ public class ImageControl extends Control
    /** Returns the image's width; when scaling, returns the scaled width. */
    public int getImageWidth()
    {
-      return tempHwScale != NOTEMP ? (int)(img.getWidth()*tempHwScale) : img.getWidth();
+      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getWidth()*tempHwScale) : img.getWidth();
    }
    
    /** Returns the image's height; when scaling, returns the scaled height. */
    public int getImageHeight()
    {
-      return tempHwScale != NOTEMP ? (int)(img.getHeight()*tempHwScale) : img.getHeight();
+      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getHeight()*tempHwScale) : img.getHeight();
    }
    
    public int getPreferredWidth()
