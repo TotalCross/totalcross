@@ -359,6 +359,8 @@ int32 testAndPrepareTime(CharP chars)
          c = chars[i];
          if ('0' <= c && c <= '9')
             len++;
+		 else if (j == 3) // If there's already three separators, error!
+            break;
          else
          {
             chars[pos = start + len] = 0;
