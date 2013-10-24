@@ -238,6 +238,9 @@ XML_FILES =                                   \
 
 PALMDB_FILES =                                \
 	$(TC_SRCDIR)/palmdb/palmdb.c
+	
+SQLITE_FILES =                               \
+	$(TC_SRCDIR)/sqlite/sqlite3.c               
 
 SOURCE_FILES =                                \
 	$(EVENT_FILES)                             \
@@ -264,15 +267,16 @@ SOURCE_FILES =                                \
 	$(MAP_FILES)                               \
 	$(AXTLS_FILES)                             \
 	$(PALMDB_FILES)                            \
+	$(SQLITE_FILES)                            \
 	$(TEST_SUITE_FILES)
 
 
 LOCAL_ARM_MODE   := arm
 LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
-LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io
+LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/sqlite
 LOCAL_LDLIBS     := -llog -ldl
-LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
+LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES) #-DSQLITE_OMIT_TRIGGER
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
 
 include $(BUILD_SHARED_LIBRARY)
