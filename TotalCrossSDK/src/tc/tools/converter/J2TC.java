@@ -967,7 +967,8 @@ public final class J2TC implements JConstants, TCConstants
             {
                String name = (String)classes[i];
                name = name.replace('.','/')+".class";
-               addAndExpand(temp, name);
+               if (!inExclusionList(name))
+                  addAndExpand(temp, name);
             }
             if (temp.size() > 0)
             {

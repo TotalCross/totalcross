@@ -380,4 +380,14 @@
 #define ZipStream_lastEntry(o)         getInstanceFieldObject(o, "lastEntry", "totalcross.util.zip.ZipStream")
 #define ZipStream_method(o)            *getInstanceFieldInt(o, "defaultMethod", "totalcross.util.zip.ZipStream")
 
+// java.lang Wrappers
+#define Boolean_v(o)        FIELD_I32(o, 0)
+#define Byte_v(o)           FIELD_I32(o, 0)
+#define Character_v(o)      FIELD_I32(o, 0)
+#define Short_v(o)          FIELD_I32(o, 0)
+#define Integer_v(o)        FIELD_I32(o, 0)
+#define Float_v(o)          FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Double_v(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Long_v(o)           FIELD_I64(o, OBJ_CLASS(o), 0)
+
 #endif
