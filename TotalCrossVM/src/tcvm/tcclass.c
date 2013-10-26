@@ -770,6 +770,7 @@ Type type2javaType(CharP type)
       case 'b': return Type_Boolean;
       case 'L': return Type_Long;
       case 'D': return Type_Double;
+      case 'F': return Type_Double;
       default : return Type_Object;
    }
 }

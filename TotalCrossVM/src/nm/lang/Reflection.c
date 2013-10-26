@@ -360,7 +360,7 @@ TC_API void jlrA_setDouble_oid(NMParams p) // totalcross/lang/reflect/Array publ
    }
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrA_setFloat_oif(NMParams p) // totalcross/lang/reflect/Array public static native void setFloat(Object array, int index, float f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+TC_API void jlrA_setFloat_oid(NMParams p) // totalcross/lang/reflect/Array public static native void setFloat(Object array, int index, float f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
 	jlrA_setDouble_oid(p);
 }

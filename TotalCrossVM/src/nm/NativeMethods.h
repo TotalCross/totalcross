@@ -31,7 +31,7 @@ TC_API void jlrA_setChar_oic(NMParams p);
 TC_API void jlrA_setShort_ois(NMParams p);
 TC_API void jlrA_setInt_oii(NMParams p);
 TC_API void jlrA_setLong_oil(NMParams p);
-TC_API void jlrA_setFloat_oif(NMParams p);
+TC_API void jlrA_setFloat_oid(NMParams p);
 TC_API void jlrA_setDouble_oid(NMParams p);
 TC_API void jlrM_getDeclaringClass(NMParams p);
 TC_API void jlrM_getName(NMParams p);
