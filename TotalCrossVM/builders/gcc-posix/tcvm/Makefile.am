@@ -32,6 +32,10 @@ if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
+SQLITE_CFLAGS_EXTRA = -I$(sourcedir)/sqlite
+
+AM_CFLAGS += $(SQLITE_CFLAGS_EXTRA)
+
 if LINUX
 ALL_LIBS = \
 	libnmui.la \
@@ -56,6 +60,7 @@ ALL_LIBS = \
 	libjpeg.la \
 	libevent.la \
 	libvm.la \
+	libsqlite3.la \
 	libinit.la
 else
 ALL_LIBS = 
@@ -68,7 +73,7 @@ inst_LTLIBRARIES = libtcvm.la
 else
 inst_LTLIBRARIES =
 endif
-instdir = /usr/lib/totalcross
+instdir = /home/jeffque/lib/totalcross
 
 if LINUX
 libtcvm_la_LDFLAGS = @DIRECTFB_LIBS@ -lm
@@ -328,6 +333,12 @@ EVENT_FILES =                              \
 
 libevent_la_SOURCES = ${EVENT_FILES}
 
+SQLITE3_FILES =    \
+        $(sourcedir)/sqlite/sqlite3.c
+
+libsqlite3_la_SOURCES =  \
+	$(SQLITE3_FILES)
+
 VM_FILES =                                     \
 	$(sourcedir)/tcvm/tcclass.c                \
 	$(sourcedir)/tcvm/tcmethod.c               \
@@ -368,6 +379,7 @@ endif
 
 libtcvm_la_SOURCES =	\
 	$(TEST_SUITE_SOURCES)
+
 
 inst_PROGRAMS = Launcher
 
