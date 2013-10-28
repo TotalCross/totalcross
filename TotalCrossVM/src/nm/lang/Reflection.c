@@ -11,6 +11,7 @@
 
 #include "tcvm.h"
 
+typedef char NameBuf[256];
 static Object *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 static void loadTYPEs(Context currentContext)
 {
@@ -23,13 +24,13 @@ static void loadTYPEs(Context currentContext)
    doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double", false), "TYPE");
    charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
 }
-CharP getTargetArrayClass(Object o, bool *isPrimitive, Context currentContext)
+CharP getTargetArrayClass(Object o, NameBuf namebuf, Context currentContext)
 {
    CharP name = null;
    int32 len=0;
+   TCClass target;
    if (booleanTYPE == null)
       loadTYPEs(currentContext);
-   *isPrimitive = true;
    // test if this is a primitive array
    if (o == *booleanTYPE) name = BOOLEAN_ARRAY; else
    if (o == *byteTYPE   ) name = BYTE_ARRAY; else
@@ -41,18 +42,19 @@ CharP getTargetArrayClass(Object o, bool *isPrimitive, Context currentContext)
    if (o == *charTYPE   ) name = CHAR_ARRAY; 
    else
    {
-      TCClass target;
-      *isPrimitive = false;
       xmoveptr(&target, ARRAYOBJ_START(Class_targetClass(o)));
       len = xstrlen(target->name);
-      name = xmalloc(len+2);
-      if (!name)
-         throwException(currentContext, OutOfMemoryError, "for name with len %d",len);
+      if (len > sizeof(NameBuf)-2)
+      {
+         throwException(currentContext, IllegalArgumentException, "Class name too long: %d", len);
+         name = target->name; // just to return
+      }
       else
       {
-         name[0] = '[';
-         xstrcpy(name+1,target->name);
+         namebuf[0] = '[';
+         xstrcpy(&namebuf[1],target->name);
       }
+      name = namebuf;
    }
    return name;
 }
@@ -127,6 +129,7 @@ TC_API void jlrA_newInstance_ci(NMParams p) // totalcross/lang/reflect/Array pub
 {
    // short o[] = (short[])Array.newInstance(Short.TYPE, 2);
    // Short o[] = (Short[])Array.newInstance(java.lang.Short.class, 2);
+   char namebuf[256];
    Object componentType = p->obj[0];
    int32 length = p->i32[0];
    if (length < 0)
@@ -136,16 +139,14 @@ TC_API void jlrA_newInstance_ci(NMParams p) // totalcross/lang/reflect/Array pub
       throwException(p->currentContext, NullPointerException, "Argument componentType is null");
    else
    {
-      bool isPrimitive;
-      CharP name = getTargetArrayClass(componentType, &isPrimitive, p->currentContext);
+      CharP name = getTargetArrayClass(componentType, namebuf, p->currentContext);
       setObjectLock(p->retO = createArrayObject(p->currentContext, name, length), UNLOCKED);
-      if (!isPrimitive)
-         xfree(name);
    }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_newInstance_cI(NMParams p) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
 {
+   char namebuf[256];
    Object componentType = p->obj[0];
    Object dimensions = p->obj[1];
    if (componentType == null)
@@ -166,7 +167,6 @@ TC_API void jlrA_newInstance_cI(NMParams p) // totalcross/lang/reflect/Array pub
          throwException(p->currentContext, IllegalArgumentException, "dimensions length cannot be greater than 255");
       else
       {
-         bool isPrimitive;
          CharP name;
          for (i = dimsLen; --i >= 0;)
             if (dims[i] < 0)
@@ -174,10 +174,8 @@ TC_API void jlrA_newInstance_cI(NMParams p) // totalcross/lang/reflect/Array pub
                throwException(p->currentContext, NegativeArraySizeException, "Invalid array size %d at dimension position %d", dims[i],i);
                return;
             }    
-         name = getTargetArrayClass(componentType, &isPrimitive, p->currentContext);
-         setObjectLock(p->retO = createArrayObjectMulti(p->currentContext, name, dimsLen, null, dims), UNLOCKED);
-         if (!isPrimitive)
-            xfree(name);
+         name = getTargetArrayClass(componentType, namebuf, p->currentContext);
+         setObjectLock(p->retO = createArrayObjectMulti(p->currentContext, namebuf, dimsLen, null, dims), UNLOCKED);
       }
    }
 }
