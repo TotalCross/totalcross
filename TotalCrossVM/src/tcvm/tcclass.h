@@ -495,6 +495,8 @@ struct TTCClass
    // Index in the vLoadedClasses array
    uint32 index;
    uint32 hash;
+   // Used in reflection
+   Object classObj;
 };
 
 /** Structure representing a method of a class. */

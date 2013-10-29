@@ -12,16 +12,16 @@
 #include "tcvm.h"
 
 typedef char NameBuf[256];
-static Object *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
+Object *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 static void loadTYPEs(Context currentContext)
 {
-   booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean", false), "TYPE");
-   byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte", false), "TYPE");
-   shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short", false), "TYPE");
-   intTYPE     = getStaticFieldObject(loadClass(currentContext, "java.lang.Integer", false), "TYPE");
-   longTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Long", false), "TYPE");
-   floatTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Float", false), "TYPE");
-   doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double", false), "TYPE");
+   booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
+   byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
+   shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short",     false), "TYPE");
+   intTYPE     = getStaticFieldObject(loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
+   longTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Long",      false), "TYPE");
+   floatTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Float",     false), "TYPE");
+   doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double",    false), "TYPE");
    charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
 }
 CharP getTargetArrayClass(Object o, NameBuf namebuf, Context currentContext)

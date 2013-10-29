@@ -1,4 +1,27 @@
 
+TC_API void jlC_forName_s(NMParams p);
+TC_API void jlC_newInstance(NMParams p);
+TC_API void jlC_isInstance_o(NMParams p);
+TC_API void jlC_isAssignableFrom_c(NMParams p);
+TC_API void jlC_isInterface(NMParams p);
+TC_API void jlC_isArray(NMParams p);
+TC_API void jlC_isPrimitive(NMParams p);
+TC_API void jlC_getSuperclass(NMParams p);
+TC_API void jlC_getInterfaces(NMParams p);
+TC_API void jlC_getComponentType(NMParams p);
+TC_API void jlC_getModifiers(NMParams p);
+TC_API void jlC_getFields(NMParams p);
+TC_API void jlC_getMethods(NMParams p);
+TC_API void jlC_getConstructors(NMParams p);
+TC_API void jlC_getField_s(NMParams p);
+TC_API void jlC_getMethod_sC(NMParams p);
+TC_API void jlC_getConstructor_C(NMParams p);
+TC_API void jlC_getDeclaredFields(NMParams p);
+TC_API void jlC_getDeclaredMethods(NMParams p);
+TC_API void jlC_getDeclaredConstructors(NMParams p);
+TC_API void jlC_getDeclaredField_s(NMParams p);
+TC_API void jlC_getDeclaredMethod_sC(NMParams p);
+TC_API void jlC_getDeclaredConstructor_C(NMParams p);
 TC_API void jlrA_newInstance_ci(NMParams p);
 TC_API void jlrA_newInstance_cI(NMParams p);
 TC_API void jlrA_getLength_o(NMParams p);
@@ -313,9 +336,6 @@ TC_API void tpD_number_s(NMParams p);
 TC_API void tpD_hangup(NMParams p);
 TC_API void tpSMS_send_ss(NMParams p);
 TC_API void tpSMS_receive(NMParams p);
-TC_API void jlC_forName_s(NMParams p);
-TC_API void jlC_newInstance(NMParams p);
-TC_API void jlC_isInstance_o(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);
@@ -489,6 +509,98 @@ TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
 TC_API void tidsS_readBarcode_s(NMParams p);
 
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isArray();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Class getComponentType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_newInstance_ci(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
 {
@@ -1746,18 +1858,6 @@ TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public stat
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private String toStringNative();
 {
 }
@@ -2446,6 +2546,121 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
 {
 }
 
+TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isAssignableFrom_c) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInterface) // java/lang/Class public native boolean isInterface();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isArray) // java/lang/Class public native boolean isArray();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isPrimitive) // java/lang/Class public native boolean isPrimitive();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getSuperclass) // java/lang/Class public native Class getSuperclass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getInterfaces) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getComponentType) // java/lang/Class public native Class getComponentType();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getModifiers) // java/lang/Class public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getFields) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethods) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getField_s) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethod_sC) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredFields) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethods) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredField_s) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethod_sC) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(jlrA_newInstance_ci) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
 {
    TEST_SKIP;
@@ -4012,21 +4227,6 @@ TESTCASE(tpSMS_send_ss) // totalcross/phone/SMS native public static void send(S
    finish: ;
 }
 TESTCASE(tpSMS_receive) // totalcross/phone/SMS native public static String[] receive() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
 {
    TEST_SKIP;
    finish: ;

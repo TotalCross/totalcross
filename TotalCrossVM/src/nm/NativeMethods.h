@@ -12,6 +12,29 @@
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H
 
+TC_API void jlC_forName_s(NMParams p);
+TC_API void jlC_newInstance(NMParams p);
+TC_API void jlC_isInstance_o(NMParams p);
+TC_API void jlC_isAssignableFrom_c(NMParams p);
+TC_API void jlC_isInterface(NMParams p);
+TC_API void jlC_isArray(NMParams p);
+TC_API void jlC_isPrimitive(NMParams p);
+TC_API void jlC_getSuperclass(NMParams p);
+TC_API void jlC_getInterfaces(NMParams p);
+TC_API void jlC_getComponentType(NMParams p);
+TC_API void jlC_getModifiers(NMParams p);
+TC_API void jlC_getFields(NMParams p);
+TC_API void jlC_getMethods(NMParams p);
+TC_API void jlC_getConstructors(NMParams p);
+TC_API void jlC_getField_s(NMParams p);
+TC_API void jlC_getMethod_sC(NMParams p);
+TC_API void jlC_getConstructor_C(NMParams p);
+TC_API void jlC_getDeclaredFields(NMParams p);
+TC_API void jlC_getDeclaredMethods(NMParams p);
+TC_API void jlC_getDeclaredConstructors(NMParams p);
+TC_API void jlC_getDeclaredField_s(NMParams p);
+TC_API void jlC_getDeclaredMethod_sC(NMParams p);
+TC_API void jlC_getDeclaredConstructor_C(NMParams p);
 TC_API void jlrA_newInstance_ci(NMParams p);
 TC_API void jlrA_newInstance_cI(NMParams p);
 TC_API void jlrA_getLength_o(NMParams p);
@@ -326,9 +349,6 @@ TC_API void tpD_number_s(NMParams p);
 TC_API void tpD_hangup(NMParams p);
 TC_API void tpSMS_send_ss(NMParams p);
 TC_API void tpSMS_receive(NMParams p);
-TC_API void jlC_forName_s(NMParams p);
-TC_API void jlC_newInstance(NMParams p);
-TC_API void jlC_isInstance_o(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);

@@ -19,6 +19,8 @@
 
 package totalcross.lang;
 
+import java.lang.reflect.*;
+
 /** 
  * This class contains utility methods that are used to load classes by name 
  * and get information about their fields and methods. 
@@ -68,4 +70,27 @@ public final class Class4D
    {
    	return targetName;
    }
+   
+   public native boolean isAssignableFrom(Class cls);
+   public native boolean isInterface();
+   public native boolean isArray();
+   public native boolean isPrimitive();
+   public native Class getSuperclass();
+   public native Class[] getInterfaces();
+   public native Class getComponentType();
+   public native int getModifiers();
+   public native Object[] getSigners();
+   public native Field[] getFields() throws SecurityException;
+   public native Method[] getMethods() throws SecurityException;
+   public native Constructor[] getConstructors() throws SecurityException;
+   public native Field getField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor getConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Field[] getDeclaredFields() throws SecurityException;
+   public native Method[] getDeclaredMethods() throws SecurityException;
+   public native Constructor[] getDeclaredConstructors() throws SecurityException;
+   public native Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getDeclaredMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor getDeclaredConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   
 }
