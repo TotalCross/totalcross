@@ -241,7 +241,6 @@
 		0F8C8D5E1549CFC700E0967F /* gfx_ex.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B4F1549CFC700E0967F /* gfx_ex.h */; };
 		0F8C8D5F1549CFC700E0967F /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */; };
 		0F8C8D621549CFC700E0967F /* mainview.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B531549CFC700E0967F /* mainview.h */; };
-		0F8C8D631549CFC700E0967F /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8B541549CFC700E0967F /* mainview.m */; };
 		0F8C8D641549CFC700E0967F /* media_MediaClip_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */; };
 		0F8C8D651549CFC700E0967F /* media_Sound_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8B561549CFC700E0967F /* media_Sound_c.h */; };
 		0F8C8D661549CFC700E0967F /* media_Sound_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8B571549CFC700E0967F /* media_Sound_c.m */; };
@@ -407,6 +406,11 @@
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
+		CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513F181EF13F00B1B00A /* sqlite3.c */; };
+		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
+		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
+		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -651,7 +655,6 @@
 		0F8C8B4F1549CFC700E0967F /* gfx_ex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_ex.h; sourceTree = "<group>"; };
 		0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_Graphics_c.h; sourceTree = "<group>"; };
 		0F8C8B531549CFC700E0967F /* mainview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = mainview.h; sourceTree = "<group>"; tabWidth = 3; };
-		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; name = mainview.m; path = "/Users/tcbuilder/iphone-debug/TotalCross/TotalCrossVM/src/nm/ui/darwin/mainview.m"; sourceTree = "<absolute>"; tabWidth = 3; usesTabs = 0; };
 		0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_MediaClip_c.h; sourceTree = "<group>"; };
 		0F8C8B561549CFC700E0967F /* media_Sound_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Sound_c.h; sourceTree = "<group>"; };
 		0F8C8B571549CFC700E0967F /* media_Sound_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = media_Sound_c.m; sourceTree = "<group>"; };
@@ -825,6 +828,11 @@
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
+		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
+		CEFA513F181EF13F00B1B00A /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = sqlite/sqlite3.c; sourceTree = "<group>"; };
+		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
+		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
+		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -874,6 +882,7 @@
 		0F8C89FA1549CFC700E0967F /* src */ = {
 			isa = PBXGroup;
 			children = (
+				CEFA5146181EF15300B1B00A /* sqlite */,
 				0F8C89FB1549CFC700E0967F /* axtls */,
 				0F8C8A181549CFC700E0967F /* event */,
 				0F8C8A2E1549CFC700E0967F /* init */,
@@ -1535,6 +1544,7 @@
 		0F8C8B481549CFC700E0967F /* darwin */ = {
 			isa = PBXGroup;
 			children = (
+				CEFA5147181EF24700B1B00A /* mainview.m */,
 				3A11E08915791A9D00F883EC /* childview.h */,
 				3A2B6B251577F4BD00E3993A /* childview.m */,
 				0F8C8B491549CFC700E0967F /* AudioPlayer.h */,
@@ -1548,7 +1558,6 @@
 				0F8C8B5A1549CFC700E0967F /* Window_c.h */,
 				0F8C8B4A1549CFC700E0967F /* AudioPlayer.m */,
 				0F8C8B4C1549CFC700E0967F /* AudioQueueObject.m */,
-				0F8C8B541549CFC700E0967F /* mainview.m */,
 				0F8C8B571549CFC700E0967F /* media_Sound_c.m */,
 				0F8C8B591549CFC700E0967F /* sipargs.m */,
 				0F8C8B5B1549CFC700E0967F /* Window_c.m */,
@@ -1862,6 +1871,17 @@
 			path = darwin;
 			sourceTree = "<group>";
 		};
+		CEFA5146181EF15300B1B00A /* sqlite */ = {
+			isa = PBXGroup;
+			children = (
+				CEFA513E181EF13F00B1B00A /* shell.c */,
+				CEFA513F181EF13F00B1B00A /* sqlite3.c */,
+				CEFA5140181EF13F00B1B00A /* sqlite3.h */,
+				CEFA5141181EF13F00B1B00A /* sqlite3ext.h */,
+			);
+			name = sqlite;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1985,6 +2005,7 @@
 				0F8C8D671549CFC700E0967F /* sipargs.h in Headers */,
 				0F8C8D691549CFC700E0967F /* Window_c.h in Headers */,
 				0F8C8D6C1549CFC700E0967F /* event_Event_test.h in Headers */,
+				CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */,
 				0F8C8D6E1549CFC700E0967F /* font_Font_test.h in Headers */,
 				0F8C8D701549CFC700E0967F /* font_FontMetrics_test.h in Headers */,
 				0F8C8D721549CFC700E0967F /* gfx_Graphics_test.h in Headers */,
@@ -2020,6 +2041,7 @@
 				0F8C8D951549CFC700E0967F /* Window_c.h in Headers */,
 				0F8C8D971549CFC700E0967F /* Window.h in Headers */,
 				0F8C8D981549CFC700E0967F /* Window_test.h in Headers */,
+				CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */,
 				0F8C8D9F1549CFC700E0967F /* zip_ZLib_test.h in Headers */,
 				0F8C8DA11549CFC700E0967F /* xml_XmlTokenizer_test.h in Headers */,
 				0F8C8DA31549CFC700E0967F /* palmdb.h in Headers */,
@@ -2134,6 +2156,7 @@
 				0F8C8C621549CFC700E0967F /* crypto_misc.c in Sources */,
 				0F8C8C631549CFC700E0967F /* hmac.c in Sources */,
 				0F8C8C641549CFC700E0967F /* loader.c in Sources */,
+				CEFA5148181EF24700B1B00A /* mainview.m in Sources */,
 				0F8C8C651549CFC700E0967F /* md2.c in Sources */,
 				0F8C8C661549CFC700E0967F /* md5.c in Sources */,
 				0F8C8C671549CFC700E0967F /* openssl.c in Sources */,
@@ -2248,7 +2271,6 @@
 				0F8C8D561549CFC700E0967F /* Control.c in Sources */,
 				0F8C8D591549CFC700E0967F /* AudioPlayer.m in Sources */,
 				0F8C8D5B1549CFC700E0967F /* AudioQueueObject.m in Sources */,
-				0F8C8D631549CFC700E0967F /* mainview.m in Sources */,
 				0F8C8D661549CFC700E0967F /* media_Sound_c.m in Sources */,
 				0F8C8D681549CFC700E0967F /* sipargs.m in Sources */,
 				0F8C8D6A1549CFC700E0967F /* Window_c.m in Sources */,
@@ -2267,7 +2289,9 @@
 				0F8C8D9B1549CFC700E0967F /* CompressedStream.c in Sources */,
 				0F8C8D9C1549CFC700E0967F /* ZipEntry.c in Sources */,
 				0F8C8D9D1549CFC700E0967F /* ZipFile.c in Sources */,
+				CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */,
 				0F8C8D9E1549CFC700E0967F /* zip_ZLib.c in Sources */,
+				CEFA5142181EF13F00B1B00A /* shell.c in Sources */,
 				0F8C8DA01549CFC700E0967F /* xml_XmlTokenizer.c in Sources */,
 				0F8C8DA21549CFC700E0967F /* palmdb.c in Sources */,
 				0F8C8DC01549CFC700E0967F /* png.c in Sources */,

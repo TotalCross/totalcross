@@ -21,6 +21,9 @@
 		3A7FE723155C176000403952 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE722155C176000403952 /* libtcvm.a */; };
 		3A7FE726155C177C00403952 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A7FE725155C177C00403952 /* libLitebase.a */; };
 		3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */; };
+		CEFA514B181EF4C100B1B00A /* TCBase.tcz in Resources */ = {isa = PBXBuildFile; fileRef = CEFA5149181EF4C100B1B00A /* TCBase.tcz */; };
+		CEFA514C181EF4C100B1B00A /* TCFont.tcz in Resources */ = {isa = PBXBuildFile; fileRef = CEFA514A181EF4C100B1B00A /* TCFont.tcz */; };
+		CEFA5150181EFA0300B1B00A /* LitebaseLib.tcz in Resources */ = {isa = PBXBuildFile; fileRef = CEFA514F181EFA0300B1B00A /* LitebaseLib.tcz */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +49,9 @@
 		3A7FE722155C176000403952 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "build/Release-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
 		3A7FE725155C177C00403952 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
 		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		CEFA5149181EF4C100B1B00A /* TCBase.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCBase.tcz; path = ../../../TotalCrossSDK/dist/vm/TCBase.tcz; sourceTree = "<group>"; };
+		CEFA514A181EF4C100B1B00A /* TCFont.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = TCFont.tcz; path = ../../../TotalCrossSDK/dist/vm/TCFont.tcz; sourceTree = "<group>"; };
+		CEFA514F181EFA0300B1B00A /* LitebaseLib.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; name = LitebaseLib.tcz; path = ../../../../Litebase/LitebaseSDK/dist/lib/LitebaseLib.tcz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +76,9 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
+				CEFA514F181EFA0300B1B00A /* LitebaseLib.tcz */,
+				CEFA5149181EF4C100B1B00A /* TCBase.tcz */,
+				CEFA514A181EF4C100B1B00A /* TCFont.tcz */,
 				3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */,
 				3A7FE725155C177C00403952 /* libLitebase.a */,
 				3A7FE722155C176000403952 /* libtcvm.a */,
@@ -178,6 +187,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEFA5150181EFA0300B1B00A /* LitebaseLib.tcz in Resources */,
+				CEFA514B181EF4C100B1B00A /* TCBase.tcz in Resources */,
+				CEFA514C181EF4C100B1B00A /* TCFont.tcz in Resources */,
 				0F5AF5121507FA3600D6142B /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
