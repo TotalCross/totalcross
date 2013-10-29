@@ -282,6 +282,8 @@ class Utils
                value += (c - '0') * multiplier;
                multiplier *= 10;
             }
+            else if (j < 0) // juliana@270_20: solved a possible AIOOBE when passing an invalid time to DATETIME.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_VALUE_ISNOT_DATETIME) + strTime);
             else
             {
                p[j--] = value;
