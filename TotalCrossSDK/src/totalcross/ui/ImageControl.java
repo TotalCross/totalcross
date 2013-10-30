@@ -57,7 +57,7 @@ public class ImageControl extends Control
    
    private static final double NOTEMP = Convert.MIN_DOUBLE_VALUE;
    /** Temporary values to set the hwScaleW/hwScaleH to during draw. */
-   private double tempHwScale=NOTEMP;
+   public double tempHwScale=NOTEMP;
    
    /** Set to true to scale the image to fit the bounds. */
    public boolean scaleToFit;
@@ -122,6 +122,7 @@ public class ImageControl extends Control
                   tempHwScale = 1;
                double step = ((MultiTouchEvent)event).scale;
                double newScale = tempHwScale * step;
+               if (newScale < 0.1) newScale = 0.1;
                if (newScale > 0)
                {
                   // -p + s/2
