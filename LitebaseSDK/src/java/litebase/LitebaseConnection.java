@@ -350,11 +350,12 @@ public class LitebaseConnection
          int i;
          LitebaseParser parser = new LitebaseParser();
          parser.tableList = new SQLResultSetTable[1];
+         String sqlAux = sql.toLowerCase().trim();
          
          // juliana@270_18: Solved NPE being thrown instead of a SQLParseException when an insert is passed to LitebaseConnection.execute().
-         if ((sql = sql.toLowerCase().trim()).startsWith("create "))
+         if (sqlAux.startsWith("create "))
          {
-            if (sql.startsWith("create table"))
+            if (sqlAux.startsWith("create table"))
                parser.fieldList = new SQLFieldDefinition[SQLElement.MAX_NUM_COLUMNS];
             parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
          }
