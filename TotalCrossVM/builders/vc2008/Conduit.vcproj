@@ -29,7 +29,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCSync.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCSync.dll"
 			/>
 			<Tool
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
+				AdditionalIncludeDirectories="..\..\src\sqlite;..\..\src\tcvm;..\..\src\util;&quot;$(EXTLIBS_HOME)\WindowsCE\wce420\POCKET PC 2003\Activesync\Inc&quot;;&quot;P:\extlibs\cdk601\C++\Common\include&quot;;&quot;P:\extlibs\cdk601\C++\Win\include&quot;"
 				PreprocessorDefinitions="SYNC_EXPORTS;_RAPI_;WIN32;LITTLE_ENDIAN;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
@@ -119,7 +119,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCSync.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCSync.dll"
 			/>
 			<Tool
@@ -298,7 +298,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCSync.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCSync.dll"
 			/>
 			<Tool
@@ -477,7 +477,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCSync.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCSync.dll"
 			/>
 			<Tool

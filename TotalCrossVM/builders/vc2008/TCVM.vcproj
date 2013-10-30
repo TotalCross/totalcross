@@ -885,7 +885,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\sqlite;..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;ENABLE_DEMO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -988,7 +988,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\sqlite"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;ENABLE_DEMO;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -3604,6 +3604,22 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="sqlite"
+			>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3ext.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
