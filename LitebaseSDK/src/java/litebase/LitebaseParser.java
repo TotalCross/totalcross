@@ -731,7 +731,7 @@ class LitebaseParser
                token = yylex();
             }
             else 
-               tableList[0] = new SQLResultSetTable(tableName);
+               tableList[0] = new SQLResultSetTable(tableName, tableName);
             
             token = optWhereClause(token); // Where clause.
             command = SQLElement.CMD_DELETE;
