@@ -14,9 +14,7 @@
 #include "tcvm.h"
 #include "PDBFile.h"
 
-#if defined PALMOS
- #include "palm/PDBFile_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/PDBFile_c.h"
 #else
  #include "posix/PDBFile_c.h"
@@ -43,11 +41,7 @@ static Err releaseRecord(Object obj)
    {
       if (hvRecordPos != -1) // release the current record
       {
-#ifdef PALMOS
-         dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
          dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
          if (!dbP)
             err = -1;
          else
@@ -66,9 +60,7 @@ static void invalidate(Object obj)
       setObjectLock(PDBFile_openRef(obj), UNLOCKED);
       PDBFile_openRef(obj) = null;
       PDBFile_mode(obj) = INVALID;
-#ifndef PALMOS
       PDBFile_dbId(obj) = null;
-#endif
    }
    if (PDBFile_dbId(obj) != null)
    {
@@ -87,11 +79,7 @@ static bool destroy(Object obj)
    if (dbPObj == null || releaseRecord(obj) != errNone)
       return false;
 
-#ifdef PALMOS
-   dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
    dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
    if (!dbP)
       return false;
 
@@ -144,9 +132,6 @@ static bool splitName(TCHARP fullName, TCHARP* name, TCHARP* creator, TCHARP* ty
    else
    {
       nameLen = *creator - strP;
-#if defined (PALMOS)
-      *name = strP + 1;
-#endif
       if (nameLen >= DB_NAME_LENGTH || nameLen == 0)
          return false;
    }
@@ -183,19 +168,6 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
 
    UInt16 attr = 0; //dmHdrAttrBackup;
 
-#ifdef PALMOS
-   dbIdObj = createByteArray(p->currentContext, sizeof(VoidP));
-   dbPObj = createByteArray(p->currentContext, sizeof(DmOpenRef));
-   if (dbIdObj == null || dbPObj == null)
-   {
-      if (dbIdObj != null) setObjectLock(dbIdObj, UNLOCKED);
-      if (dbPObj != null) setObjectLock(dbPObj, UNLOCKED);
-      return;
-   }
-
-   dbId = *(VoidP*) ARRAYOBJ_START(dbIdObj);
-   dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
    dbPObj = createByteArray(p->currentContext, sizeof(TPDBFile));
    if (dbPObj == null)
       return;
@@ -203,7 +175,6 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
 
    dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
    dbId = dbP;
-#endif
    PDBFile_dbId(pdbFile) = dbIdObj;
    PDBFile_openRef(pdbFile) = dbPObj;
 
@@ -213,11 +184,7 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
    creatorId = chars2int(szCreator);
    typeId = chars2int(szType);
 
-#ifdef PALMOS
-   dbId = DmFindDatabase(szName);
-#else
    dbId = DmFindDatabase(p->currentContext, szName, dbId);  // ATENCAO: TEM QUE VER SE O DMFINDDATABASE FAZ UM LOCK DO OBJETO NOVAMENTE! ISSO CORROMPERIA O GC
-#endif
 
    if (dbId) // check if the creator id and type are those expected
    {
@@ -251,12 +218,8 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
                throwExceptionWithCode(p->currentContext, IOException, err);
                goto error;
             }
-#ifdef PALMOS
-            dbId = DmFindDatabase(szName); // update dbRef
-#else
             dbId = dbP;
             dbId = DmFindDatabase(p->currentContext, szName, dbId); // update dbRef
-#endif
             if (!dbId)
             {
               throwExceptionWithCode(p->currentContext, IOException, DmGetLastErr());
@@ -293,10 +256,6 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
             }
       }
    }
-#ifdef PALMOS
-   *(VoidP*) ARRAYOBJ_START(dbIdObj) = dbId;
-   *(DmOpenRef*) ARRAYOBJ_START(dbPObj) = dbP;
-#endif
    return;
 error:
    invalidate(pdbFile);
@@ -325,11 +284,7 @@ TC_API void tiPDBF_rename_s(NMParams p) // totalcross/io/PDBFile native public v
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbId = *(VoidP*) ARRAYOBJ_START(dbIdObj);
-#else
       dbId = (VoidP) ARRAYOBJ_START(dbIdObj);
-#endif
 
       if (newName == null)
          throwNullArgumentException(p->currentContext, "newName");
@@ -369,11 +324,7 @@ TC_API void tiPDBF_addRecord_ii(NMParams p) // totalcross/io/PDBFile native publ
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
       if (size < 0 || size > 65535)
          throwIllegalArgumentIOException(p->currentContext, "size", int2str(size, intBuf));
       else
@@ -425,11 +376,7 @@ TC_API void tiPDBF_resizeRecord_i(NMParams p) // totalcross/io/PDBFile native pu
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
       if (size < 0 || size > 65535)
          throwIllegalArgumentIOException(p->currentContext, "size", int2str(size, intBuf));
       else
@@ -473,13 +420,8 @@ TC_API void tiPDBF_delete(NMParams p) // totalcross/io/PDBFile native public voi
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-      dbId = *(VoidP*) ARRAYOBJ_START(dbIdObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
       dbId = (VoidP) ARRAYOBJ_START(dbIdObj);
-#endif
       if (!dbP || !dbId)
          throwException(p->currentContext, IOException, "The pdb file is closed.");
       else
@@ -489,9 +431,6 @@ TC_API void tiPDBF_delete(NMParams p) // totalcross/io/PDBFile native public voi
          else if ((err = DmDeleteDatabase(dbId)) != errNone)
          {
             dbP = DmOpenDatabase(dbId, dmModeReadWrite); // try to re-open database
-#ifdef PALMOS
-            *(DmOpenRef*) ARRAYOBJ_START(dbPObj) = dbP;
-#endif
             throwExceptionWithCode(p->currentContext, IOException, err);
          }
          else invalidate(pdbFile);
@@ -554,11 +493,7 @@ TC_API void tiPDBF_deleteRecord(NMParams p) // totalcross/io/PDBFile native publ
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
       if ((hvRecordPos = PDBFile_hvRecordPos(pdbFile)) == -1)
          throwException(p->currentContext, IOException, "No record selected for this operation.");
       else if ((err = DmRemoveRecord(dbP, (uint16) hvRecordPos) != errNone))
@@ -579,11 +514,7 @@ TC_API void tiPDBF_getRecordCount(NMParams p) // totalcross/io/PDBFile native pu
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
       p->retI = DmNumRecords(dbP);
    }
 }
@@ -606,11 +537,7 @@ TC_API void tiPDBF_setRecordPos_i(NMParams p) // totalcross/io/PDBFile native pu
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
 
       if (pos < -1 || pos >= DmNumRecords(dbP))
          throwIllegalArgumentIOException(p->currentContext, "pos", int2str(pos, intBuf));
@@ -699,11 +626,7 @@ TC_API void tiPDBF_inspectRecord_Bii(NMParams p) // totalcross/io/PDBFile native
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
 
       if (byteBuf == null)
          throwNullArgumentException(p->currentContext, "byteBuf");
@@ -757,11 +680,7 @@ TC_API void tiPDBF_getRecordAttributes_i(NMParams p) // totalcross/io/PDBFile na
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
 
       if (recordPos < 0 || recordPos >= DmNumRecords(dbP))
          throwIllegalArgumentIOException(p->currentContext, "recordPos", int2str(recordPos, intBuf));
@@ -790,11 +709,7 @@ TC_API void tiPDBF_setRecordAttributes_ib(NMParams p) // totalcross/io/PDBFile n
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
 
       if (recordPos < 0 || recordPos >= DmNumRecords(dbP))
          throwIllegalArgumentIOException(p->currentContext, "recordPos", int2str(recordPos, intBuf));
@@ -826,11 +741,7 @@ TC_API void tiPDBF_getAttributes(NMParams p) // totalcross/io/PDBFile native pub
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbId = *(VoidP*) ARRAYOBJ_START(dbIdObj);
-#else
       dbId = (VoidP) ARRAYOBJ_START(dbIdObj);
-#endif
 
       if ((err = DmDatabaseInfo(dbId, null, &attr, null, null, null, null, null, null, null, null, null)) != errNone )
          throwExceptionWithCode(p->currentContext, IOException, err);
@@ -854,11 +765,7 @@ TC_API void tiPDBF_setAttributes_i(NMParams p) // totalcross/io/PDBFile native p
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbId = *(VoidP*) ARRAYOBJ_START(dbIdObj);
-#else
       dbId = (VoidP) ARRAYOBJ_START(dbIdObj);
-#endif
 
       if ((err = DmSetDatabaseInfo(dbId, null, &attr, null, null, null, null, null, null, null, null, null)) != errNone)
          throwExceptionWithCode(p->currentContext, IOException, err);
@@ -895,11 +802,7 @@ TC_API void tiPDBF_searchBytes_Bii(NMParams p) // totalcross/io/PDBFile native p
       throwException(p->currentContext, IOException, "The pdb file is closed.");
    else
    {
-#ifdef PALMOS
-      dbP = *(DmOpenRef*) ARRAYOBJ_START(dbPObj);
-#else
       dbP = (DmOpenRef) ARRAYOBJ_START(dbPObj);
-#endif
 
       if (toSearch == null)
          throwNullArgumentException(p->currentContext, "toSearch");

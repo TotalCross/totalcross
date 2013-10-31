@@ -108,8 +108,6 @@ public class NinePatch
    private Image getImageArea(int[] buf, Image orig, int x, int y, int w, int h) throws ImageException
    {
       Image img = new Image(w,h);
-      img.useAlpha = orig.useAlpha;
-      img.transparentColor = orig.transparentColor;
       copyPixels(buf,img, orig, 0,0, x,y,w,h); 
       return img;
    }
@@ -145,8 +143,6 @@ public class NinePatch
    {
       int []buf = new int[width > height ? width : height];
       Image ret = new Image(width,height);
-      ret.useAlpha = p.imgC.useAlpha;
-      ret.transparentColor = p.imgC.transparentColor;
       Image c;
       int side = p.side, s;
       int corner = p.corner;
@@ -179,7 +175,7 @@ public class NinePatch
          copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
       }
       if (Settings.screenBPP == 16)
-         ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight(),ret.transparentColor);
+         ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight());
       if (color != -1)
          ret.applyColor2(color);
       if (rotate)

@@ -28,11 +28,6 @@ import totalcross.phone.*;
 
 public class PhoneDialer extends MainWindow implements Dial.Listener
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    PushButtonGroup pbg;
    Edit ed;
    ListBox lb;

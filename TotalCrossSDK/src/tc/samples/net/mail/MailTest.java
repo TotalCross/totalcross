@@ -1,21 +1,14 @@
 
 package tc.samples.net.mail;
 
-import totalcross.net.AuthenticationException;
+import totalcross.net.*;
 import totalcross.net.mail.*;
-import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
 
 public class MailTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Container mailboxPanel;
    MessageContainer messagePanel;
 

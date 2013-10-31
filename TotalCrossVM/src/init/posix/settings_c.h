@@ -23,9 +23,7 @@
 #else
  #include <sys/fcntl.h>
 #endif
-#ifndef __SYMBIAN32__
- #include <sys/utsname.h>
-#endif
+#include <sys/utsname.h>
 
 #if HAVE_STDLIB_H
 #include <stdlib.h>
@@ -36,7 +34,7 @@
 #define DEFAULT_DIR_PERMS  0775
 #define DEFAULT_FILE_PERMS 0664
 
-#if defined(UNICODE) && !defined(__SYMBIAN32__)
+#if defined(UNICODE)
  // UNICODE Filesystem API
  #define PATH_SEPARATOR_STR L"/"
  #define lstrlen wcslen
@@ -252,8 +250,16 @@ void restoreSoundSettings()
 {
 }
 
+void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr); // darwin/gfx_Graphics_c.h
+
 void updateDaylightSavings(Context currentContext)
 {
+#ifdef darwin
+    char nameBuf[50];
+    fillIOSSettings(tcSettings.daylightSavingsPtr, tcSettings.daylightSavingsMinutesPtr, tcSettings.timeZonePtr, tcSettings.timeZoneMinutesPtr, nameBuf,sizeof(nameBuf));
+    if (nameBuf[0] != 0)
+        setObjectLock(*tcSettings.timeZoneStrPtr = createStringObjectFromCharP(currentContext, nameBuf, -1),UNLOCKED);
+#else
    time_t t;
    struct tm tm;
    time(&t);
@@ -262,6 +268,7 @@ void updateDaylightSavings(Context currentContext)
    t = 30326400 + 12*3600;   // 01/01/1970 12:00:00 - UTC
    localtime_r(&t, &tm);     // localtime_r is the reentrant version (multithreading aware)
    *tcSettings.timeZonePtr = tm.tm_hour - 12;
+#endif
 }
 
 #if defined (ANDROID)
@@ -327,9 +334,15 @@ bool fillSettings(Context currentContext)
    // locale
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "daylightSavings", "Z");
    *tcSettings.daylightSavingsPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
+   
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "daylightSavingsMinutes", "I");
+   *tcSettings.daylightSavingsMinutesPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZone", "I");
    *tcSettings.timeZonePtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
+   
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZoneMinutes", "I");
+   *tcSettings.timeZoneMinutesPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "timeZoneStr", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
@@ -378,15 +391,22 @@ bool fillSettings(Context currentContext)
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "virtualKeyboard", "Z");
    *tcSettings.virtualKeyboardPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
 
-   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "keypadOnly", "Z");
-   *tcSettings.keypadOnlyPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
-   
    // rom serial number
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "serialNumber", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
    (*env)->DeleteLocalRef(env, jSettingsClass);
+
+   // phone number
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
 
    return true;
 }
@@ -405,13 +425,7 @@ bool fillSettings(Context currentContext)
    int gmtBias;             // gmt+0
    int daylightSavings;     // 1 when DST is on
 
-#if defined(USE_SERIES_60)
-   *tcSettings.romVersionPtr = 0x6000;
-#elif defined(USE_SERIES_80)
-   *tcSettings.romVersionPtr = 0x8000;
-#elif defined(__SYMBIAN32__) // uiq
-   *tcSettings.romVersionPtr = 0x7000;
-#elif defined (darwin)
+#if defined (darwin)
    *tcSettings.romVersionPtr = getRomVersion(); //flsobral@tc126_3: implemented Settings.romVersion for iPhone/iPad.
 #else
    *tcSettings.romVersionPtr = 0;
@@ -419,7 +433,6 @@ bool fillSettings(Context currentContext)
 
    getSerialNum(romSerialNumber, sizeof(romSerialNumber));
 
-#ifndef __SYMBIAN32__
    struct utsname u;
    uname(&u);
 
@@ -428,7 +441,6 @@ bool fillSettings(Context currentContext)
    xstrncpy(deviceId, u.machine, sizeof(deviceId));
 #else
    snprintf(deviceId, sizeof(deviceId), "%s/%s", u.sysname, u.machine);
-#endif
 #endif
 
 // username
@@ -439,11 +451,7 @@ bool fillSettings(Context currentContext)
    xstrncpy(userName, u.nodename, sizeof(userName));
 #endif
 
-#if defined(__SYMBIAN32__) && NO_PEN
-   *tcSettings.keyboardFocusTraversablePtr = *tcSettings.keypadOnlyPtr = 1;
-#else
-   *tcSettings.keyboardFocusTraversablePtr = *tcSettings.keypadOnlyPtr = 0;
-#endif
+   *tcSettings.keyboardFocusTraversablePtr = 0;
 
 // platform, touch screen and virtual keyboard settings
 #if defined darwin
@@ -453,16 +461,10 @@ bool fillSettings(Context currentContext)
 #elif defined linux
    platform = "Linux";
    *tcSettings.virtualKeyboardPtr = 0;
-#elif defined __SYMBIAN32__
-   platform = "Symbian";
-   *tcSettings.virtualKeyboardPtr = 0;
 #else
 #error "not supported platform"
 #endif
 
-#if defined __SYMBIAN32__ // fdie@502_12
-   epoc_settings_get(&ds,&ts,&dateSep,&timeSep,&datefmt,&time24h,&daylightSavings,&ws,&gmtBias);
-#else
    time_t t;
    struct tm tm;
    struct lconv *locale;
@@ -501,7 +503,6 @@ bool fillSettings(Context currentContext)
       timeSep = tmpbuf[2];
    
    time24h = (tmpbuf[0] > '1');
-#endif
    
    *tcSettings.decimalSeparatorPtr      = ds;
    *tcSettings.thousandsSeparatorPtr    = ts;

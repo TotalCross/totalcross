@@ -14,9 +14,10 @@
 package tc.tools;
 
 import totalcross.io.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.Font;
+import totalcross.ui.font.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
@@ -600,7 +601,7 @@ public class FontGenerator
       public TestFont()
       {
          super("", TAB_ONLY_BORDER);
-         setUIStyle(totalcross.sys.Settings.PalmOS);
+         setUIStyle(Settings.Vista);
       }
       public void initUI()
       {

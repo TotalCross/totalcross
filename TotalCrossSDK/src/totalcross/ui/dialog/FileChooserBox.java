@@ -203,7 +203,7 @@ public class FileChooserBox extends Window
       if (initialPath != null)
          try
          {
-            mountTree(initialPath,1);
+            mountTree(initialPath);
          }
          catch (IOException e)
          {
@@ -212,15 +212,19 @@ public class FileChooserBox extends Window
       tree.requestFocus();
 	}
    
+   /** @deprecated */
+   public void mountTree(String filePath, int volume) throws IOException
+   {
+      mountTree(filePath);
+   }
    /** Call this method to mount the tree, starting from the given path and volume.
     * @param filePath The root from where the tree will be mounted.
-    * @param volume The volume used in Palm OS only. Usually 1 is the NVFS volume, and 2 is the card slot.
     */
-   public void mountTree(String filePath, int volume) throws IOException
+   public void mountTree(String filePath) throws IOException
    {
       Node root;
       filePath = filePath.replace('\\','/');
-      File f = new File(filePath, File.DONT_OPEN, volume);
+      File f = new File(filePath, File.DONT_OPEN);
       if (!f.isDir())
          throw new IOException(filePath+" is not a valid path");
       root = new Node(new PathEntry(filePath, true));
@@ -288,7 +292,7 @@ public class FileChooserBox extends Window
          for (int i = 0; i < files.length; i++)
          {
             theFile = Convert.appendPath(thisDir,files[i]);
-            f = new File(theFile, File.DONT_OPEN, f.getSlot()); // use the same volume
+            f = new File(theFile, File.DONT_OPEN); // use the same volume
             if (ff == null || ff.accept(f))
             {
                boolean isDir = f.isDir();
@@ -358,7 +362,7 @@ public class FileChooserBox extends Window
                      int selectedIndex = cbRoot.getSelectedIndex();
                      if (previouslySelectedRootIndex != selectedIndex)
                      {
-                        mountTree((String) cbRoot.getSelectedItem(), 0);
+                        mountTree((String) cbRoot.getSelectedItem());
                         tree.setModel(tmodel);
                         tree.reload();
                         previouslySelectedRootIndex = selectedIndex;
@@ -370,7 +374,7 @@ public class FileChooserBox extends Window
                      String selectedItem = (String) cbRoot.getSelectedItem();
                      if (selectedItem != null || initialPath != null)
                      {
-                        mountTree(initialPath != null ? initialPath : selectedItem, 1);
+                        mountTree(initialPath != null ? initialPath : selectedItem);
                         //tree.setModel(tmodel);
                         //tree.reload();
                      }

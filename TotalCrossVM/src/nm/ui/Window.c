@@ -17,23 +17,12 @@
  #include "win/Window_c.h"
 #elif defined (darwin)
  #include "darwin/Window_c.h"
-#elif defined(PALMOS)
- #include "palm/Window_c.h"
 #elif defined(ANDROID)
  #include "android/Window_c.h"
 #else
  #include "linux/Window_c.h"
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
-{
-#ifdef ANDROID
-   JNIEnv *env = getJNIEnv();
-   if (env && jtransitionEffectChanged != null)
-      (*env)->CallStaticVoidMethod(env, applicationClass, jtransitionEffectChanged, p->i32[0]);
-#endif   
-}
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
 {
@@ -47,7 +36,7 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
       windowSetSIP(sipOption);
 #elif defined(darwin)
    windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*secret*/);
-#elif defined(PALMOS) || defined (ANDROID)
+#elif defined (ANDROID)
    windowSetSIP(sipOption);
 #else
    ;
@@ -62,9 +51,7 @@ TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public sta
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
 {
    UNUSED(p);
-#ifndef PALMOS
    windowSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
-#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

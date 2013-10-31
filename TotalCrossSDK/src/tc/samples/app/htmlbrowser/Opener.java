@@ -62,7 +62,6 @@ public class Opener extends Window
       super("Go to...", RECT_BORDER);
       int regionColor = 0xFFFF99;
       setRect(CENTER, CENTER, Settings.screenWidth*150/160, Settings.screenHeight*100/160);
-      highResPrepared = true;
       setBackForeColors(Color.WHITE, HtmlBrowser.bgColor);
       rgSerialType = new RadioGroupController();
       add(llPort = new Label("Port:"), LEFT + 2, TOP + 18);

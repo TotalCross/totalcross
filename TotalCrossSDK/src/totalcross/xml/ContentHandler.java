@@ -31,7 +31,7 @@ package totalcross.xml;
 * implement: if the application needs to be informed of basic parsing
 * events, it implements this interface and registers an instance with
 * the XML reader using the {@link XmlReader#setContentHandler}
-* setContentHandler} method.  The XML reader uses the instance to report
+* method.  The XML reader uses the instance to report
 * basic document-related events like the start and end of elements
 * and character data.</p>
 *
@@ -86,7 +86,7 @@ public abstract class ContentHandler
    * Receive notification of comment data.
    *
    * <p>The XMLReader will call this method to report each chunk of
-   * comments.  This XMLReader implementation return all contiguous
+   * comments.  This XMLReader implementation returns all contiguous
    * comment data in a single chunk.
    *
    * @param s The string of characters from the XML document.

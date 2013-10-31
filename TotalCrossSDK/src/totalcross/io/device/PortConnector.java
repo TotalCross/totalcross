@@ -28,7 +28,7 @@ import totalcross.sys.Convert;
 /**
  * PortConnector accesses the device ports.
  * <p>
- * This works under the devices and under JDK (in this case, it uses javax.comm, which must
+ * This works on the devices and on JDK (in this case, it uses javax.comm, which must
  * be installed separately)
  * <p>
  * When a serial port is created, an attempt is made to open the port.
@@ -51,7 +51,7 @@ import totalcross.sys.Convert;
  *  IRCOMM=b<br>
  *  SIR=c<br>
  *  USB=d<br>
- *  If the file is not found, it will use COM1,COM2,COM3,COM4 respectively.
+ *  If the file is not found, it will use COM1, COM2, COM3, and COM4, respectively.
  */
 
 public class PortConnector extends Stream
@@ -80,7 +80,7 @@ public class PortConnector extends Stream
    /** SIR Port (Physical Layer of IrDA Stack). Important! In order
      * to access the SIR port on the Pocket PCs the following has to be
      * UNCHECKED: Settings/Connections/Beam/Receive all incoming beams and select
-     * discoverable mode. Note that Palm OS OMAP-based devices does NOT support
+     * discoverable mode. Note that Palm OS OMAP-based devices do NOT support
      * SIR (aka raw IR); see this: http://www.alanjmcf.me.uk/comms/infrared/IrDA%20FAQ.html
      * and http://news.palmos.com/read/messages?id=146145#146145.
      * Note also that there's no handshaking support on SIR, and that not all devices work
@@ -94,7 +94,7 @@ public class PortConnector extends Stream
    /** Bluetooth: open the built-in Bluetooth discovery dialog,
      * then establish a Serial Port Profile (just serial emulation across
      * Bluetooth, using the RFComm BT layer) virtual serial port connection.
-     * Note: in WinCE, this maps to the Serial (port 0). You must explicitly
+     * Note: on WinCE, this maps to the Serial (port 0). You must explicitly
      * map your BlueTooth outside the program.
      */
    public static final int BLUETOOTH = 0x1003; // guich@330_34
@@ -150,7 +150,7 @@ public class PortConnector extends Stream
     * is used and RTS/CTS flow control (commonly called hardware flow control)
     * is turn on by default on all platforms but Windows CE. The parity setting
     * must be one of the constants PARITY_NONE, PARITY_EVEN, PARITY_ODD. For Palm OS,
-    * PARITY_ODD turns on XonXoff mode.
+    * PARITY_ODD turns on XON/XOFF mode.
     *
     * @param number port number. In Windows, this is the number of the COM port. On Windows and Palm OS, you can pass
     * a 4-letter that indicates the connection that will be used. For example, on Palm OS you could use <code>Convert.chars2int("rfcm")</code>
@@ -174,7 +174,7 @@ public class PortConnector extends Stream
    /**
    * Open a port with settings of 8 bits, no parity and 1 stop bit.
    * These are the most commonly used port settings.
-   * @param number port number. In Windows, this is the number of the COM port.
+   * @param number port number. On Windows, this is the number of the COM port.
    * @param baudRate baud rate
    * @see #PortConnector(int, int, int, int, int)
    */
@@ -324,8 +324,7 @@ public class PortConnector extends Stream
 
 
    /**
-   * Writes to the port. Returns the number of bytes written or -1
-   * if an error prevented the write operation from occurring. If data
+   * Writes to the port. Returns the number of bytes written or throws an <code>IOException</code> if an error prevented the write operation from occurring. If data
    * can't be written to the port and flow control is on, the write
    * operation will time out and fail after approximately 2 seconds.
    * @param buf the byte array to write data from
@@ -400,7 +399,7 @@ public class PortConnector extends Stream
 
    private static String portDEFAULT, portIRCOMM, portSIR, portUSB;
    /** Set this to a value that will be used to keep trying to read further while something is available.
-    * If a series of bytes are returned in very few steps, this will make the read stop after the readTries were reached zero.
+    * If a series of bytes is returned in very few steps, this will make the read stop after readTries has reached zero.
     * @since SuperWaba 5.72
     */
    public static int readTries = 10; // guich@572_8

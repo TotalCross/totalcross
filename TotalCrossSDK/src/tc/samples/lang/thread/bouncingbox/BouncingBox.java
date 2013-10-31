@@ -25,11 +25,6 @@ import totalcross.util.*;
 
 public class BouncingBox extends MainWindow implements Runnable
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Button btnAddH,btnAddL,btnRemH,btnRemL;
    Edit ed;
    Label lMem, lInst;
@@ -48,12 +43,6 @@ public class BouncingBox extends MainWindow implements Runnable
       add(btnRemH = new Button("Remove High"), AFTER+20,SAME);
       add(btnAddL = new Button("Add Low"), LEFT+10,AFTER+4);
       add(btnRemL = new Button("Remove Low"), AFTER+20,SAME);
-      if (Settings.platform.equals(Settings.PALMOS)) // high priority threads can lock Palm OS.
-      {
-         btnAddH.setEnabled(false);
-         btnRemH.setEnabled(false);
-      }
-
       add(ed=new Edit(), CENTER,BOTTOM,SCREENSIZE+50,PREFERRED);
       new Thread(this).start();
    }

@@ -63,7 +63,7 @@ public class RegAllocation
             maxColorI = maxColor + 1;
          }
          else
-            throw new ConverterException("The maximum number of interger registers has been reached. Please split your method and try again.");
+            throw new ConverterException("The maximum number of integer registers has been reached. Please split your method and try again.");
          cleanData();
       }
 

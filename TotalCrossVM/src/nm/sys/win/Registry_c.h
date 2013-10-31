@@ -125,7 +125,11 @@ static void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 d
 
 static void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data)
 {
-   set(c, hk, key, value, REG_SZ, data, xstrlen(data));
+   int32 len = xstrlen(data);
+   TCHARP wdata = CharP2TCHARP(data);
+   if (wdata)
+      set(c, hk, key, value, REG_SZ, wdata, len*2);
+   xfree(wdata);
 }
 
 static void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len)

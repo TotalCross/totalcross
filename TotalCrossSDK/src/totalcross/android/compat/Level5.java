@@ -16,10 +16,6 @@
 
 package totalcross.android.compat;
 
-import java.util.*;
-
-import android.hardware.Camera.Parameters;
-import android.hardware.Camera.Size;
 import android.os.*;
 
 
@@ -85,13 +81,4 @@ public class Level5
 
    // dumb methods
    public void processMessage(Bundle b) {setResponse(-1,null);}
-
-   public void setPictureParameters(Parameters parameters, int stillQuality, int width, int height)
-   {
-   }
-
-   public List<Size> getSupportedPictureSizes(Parameters parameters)
-   {
-      return null;
-   }
 }

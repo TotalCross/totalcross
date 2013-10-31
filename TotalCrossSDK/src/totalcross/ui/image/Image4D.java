@@ -24,18 +24,24 @@ import totalcross.util.zip.ZLib;
 
 public class Image4D extends GfxSurface
 {
-   public static final int NO_TRANSPARENT_COLOR = -2; // guich@tc130: -1 is often used in PNG with alpha-channel (opaque-white color - 0xFFFFFF), so we use another less-used color as no transparent
-   public int surfaceType = 1; // don't move from here! must be at static position 0
+   public int surfaceType = 1; // don't move from here! must be static at position 0
    protected int width;
    protected int height;
-   public int transparentColor = Color.WHITE;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
-   public boolean useAlpha; // guich@tc126_12
+   private boolean changed = true;
+   
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
+   int[] textureId = new int[1];
    public String comment;
    private Graphics4D gfx;
+
+   public static final int NO_TRANSPARENT_COLOR = -2;
+   public int transparentColor = Color.WHITE;
+   public boolean useAlpha; // guich@tc126_12
+   public double hwScaleW=1,hwScaleH=1;
+   private int []instanceCount = new int[1];
    
    public Image4D(int width, int height) throws ImageException
    {
@@ -142,20 +148,23 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return height;
+      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
    }
 
    public int getWidth()
    {
-      return width;
+      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
    }
 
    public Graphics4D getGraphics()
    {
+      if (pixels == null) return null;
       gfx.setFont(MainWindow.getDefaultFont());
       return gfx;
    }
 
+   native public void applyChanges();
+   
    native public void changeColors(int from, int to);
 
    public void saveTo(PDBFile cat, String name) throws ImageException, IOException
@@ -231,7 +240,7 @@ public class Image4D extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
+         ds.writeByte(6); // alpha or direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -239,16 +248,6 @@ public class Image4D extends GfxSurface
          ds.writeInt(c);
 
          // write transparent pixel information, if any
-         if (transparentColor >= 0) // transparency bit set?
-         {
-            ds.writeInt(6);
-            crc.reset();
-            ds.writeBytes("tRNS".getBytes());
-            ds.writeShort((transparentColor >> 16) & 0xFF);
-            ds.writeShort((transparentColor >> 8) & 0xFF);
-            ds.writeShort((transparentColor ) & 0xFF);
-            ds.writeInt((int)crc.getValue());
-         }
          if (comment != null && comment.length() > 0)
          {
             ds.writeInt("Comment".length() + 1 + comment.length());
@@ -262,7 +261,7 @@ public class Image4D extends GfxSurface
 
          // write the image data
          crc.reset();
-         int bytesPerPixel = useAlpha ? 4 : 3;
+         final int bytesPerPixel = 4;
          byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
          ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
@@ -302,20 +301,19 @@ public class Image4D extends GfxSurface
    private static final int ROTATED_SCALED_INSTANCE = 2;
    private static final int TOUCHEDUP_INSTANCE = 3;
    private static final int FADED_INSTANCE = 4; // guich@tc110_50
+   private static final int ALPHA_INSTANCE = 5; // guich@tc110_50
 
    native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 
    private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color, int brightness, int contrast, int type) throws totalcross.ui.image.ImageException
    {
-      if (type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
+      if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
          return this;
       
       newW *= frameCount;
-      Image4D imageOut = new Image4D(newW, newH);
+      Image4D imageOut = getCopy(newW, newH);
       if (type == ROTATED_SCALED_INSTANCE && frameCount > 1)
          imageOut.setFrameCount(frameCount);
-      imageOut.transparentColor = transparentColor;
-      imageOut.useAlpha = useAlpha;
       getModifiedInstance(imageOut, angle, percScale, color, brightness, contrast, type);
       if (type != ROTATED_SCALED_INSTANCE && frameCount > 1)
          imageOut.setFrameCount(frameCount);
@@ -327,26 +325,35 @@ public class Image4D extends GfxSurface
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
    }
 
-   public totalcross.ui.image.Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   public static int FADE_VALUE = -96;
+
+   public Image4D getFadedInstance() throws ImageException // guich@tc110_50
+   {
+      return getAlphaInstance(FADE_VALUE);
+   }
+   
+   public Image4D getAlphaInstance(int delta) throws ImageException
+   {
+      return getModifiedInstance(width, height, 0, 0, delta, 0, 0, ALPHA_INSTANCE);
+   }
+
+   public totalcross.ui.image.Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException  // guich@402_6
    {
       int w = !isHeight ? newSize : (newSize * width / height);
       int h =  isHeight ? newSize : (newSize * height / width);         
-      return getModifiedInstance(w, h, 0, 0, backColor, 0, 0, SMOOTH_SCALED_INSTANCE);
+      return getModifiedInstance(w, h, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
    }
    public totalcross.ui.image.Image4D getScaledInstance(int newWidth, int newHeight) throws totalcross.ui.image.ImageException // guich@350_22
    {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
    }
-   public totalcross.ui.image.Image4D getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws totalcross.ui.image.ImageException // guich@350_22
+   public totalcross.ui.image.Image4D getSmoothScaledInstance(int newWidth, int newHeight) throws totalcross.ui.image.ImageException // guich@350_22
    {
-      return getModifiedInstance(newWidth, newHeight, 0, 0, backColor, 0, 0, SMOOTH_SCALED_INSTANCE);
+      return getModifiedInstance(newWidth, newHeight, 0, 0, 0, 0, 0, SMOOTH_SCALED_INSTANCE);
    }
    public totalcross.ui.image.Image4D getRotatedScaledInstance(int percScale, int angle, int fillColor) throws totalcross.ui.image.ImageException
    {
       if (percScale <= 0) percScale = 1;
-      if (fillColor < 0 && transparentColor < 0)
-         fillColor = Color.WHITE;
-      int backColor = (fillColor < 0) ? this.transparentColor : fillColor;
 
       /* xplying by 0x10000 allow integer math, while not loosing much prec. */
 
@@ -416,7 +423,7 @@ public class Image4D extends GfxSurface
       int hOut = ((yMax - yMin) * percScale) / 100;
       int x0 = ((wIn << 16) - (((xMax - xMin) * rawCosine) - ((yMax - yMin) * rawSine)) - 1) / 2;
       int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
-      return getModifiedInstance(wOut, hOut, percScale, angle, backColor, x0, y0, ROTATED_SCALED_INSTANCE);
+      return getModifiedInstance(wOut, hOut, percScale, angle, 0, x0, y0, ROTATED_SCALED_INSTANCE);
    }
    public totalcross.ui.image.Image4D getTouchedUpInstance(byte brightness, byte contrast) throws totalcross.ui.image.ImageException
    {
@@ -428,9 +435,9 @@ public class Image4D extends GfxSurface
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
 
-   public Image4D smoothScaledBy(double scaleX, double scaleY, int backColor) throws totalcross.ui.image.ImageException // guich@402_6
+   public Image4D smoothScaledBy(double scaleX, double scaleY) throws totalcross.ui.image.ImageException // guich@402_6
    {
-      return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY), backColor); // guich@400_23: now test if the width/height are the same, what returns the original image
+      return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
 
    public int getX()
@@ -450,31 +457,131 @@ public class Image4D extends GfxSurface
       return filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
    }
    
+   private Image4D getCopy(int w, int h) throws ImageException
+   {
+      Image4D i = new Image4D(w,h);
+      // copy other attributes
+      i.hwScaleH = this.hwScaleH;
+      i.hwScaleW = this.hwScaleW;
+      return i;
+   }
+
    public Image4D getFrameInstance(int frame) throws ImageException
    {
-      Image4D img = new Image4D(width,height);
+      Image4D img = getCopy(width,height);
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
       Vm.arrayCopy(from, 0, to, 0, from.length);
-      img.transparentColor = this.transparentColor;
-      img.useAlpha = useAlpha;
       return img;
    }
    
    native public void applyColor(int color); // guich@tc112_24
    
-   final public Image4D smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
+   final public Image4D smoothScaledFromResolution(int originalRes) throws ImageException // guich@tc112_23
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
-      return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
+      return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes);
    }
    
    public boolean equals(Object o)
    {
       return (o instanceof Image) && nativeEquals((Image)o); 
    }
-   
+
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image4D getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
+   {
+      return getSmoothScaledInstance(newWidth, newHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image4D smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledBy(scaleX, scaleY);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   public Image4D smoothScaledFixedAspectRatio(int newSize, boolean isHeight, int backColor) throws ImageException  // guich@402_6
+   {
+      return smoothScaledFixedAspectRatio(newSize, isHeight);
+   }
+   /** @deprecated TotalCross 2 no longer uses the backColor parameter. */
+   final public Image4D smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
+   {
+      return smoothScaledFromResolution(originalRes);
+   }
+
    native private boolean nativeEquals(Image other);
    native public void applyColor2(int color);
+   native public Image setTransparentColor4D(int color);
+   native private void freeTexture();
+   
+   public void finalize()
+   {
+      if (--instanceCount[0] <= 0)
+         freeTexture();
+   }
+   
+   public void lockChanges()
+   {
+      if (Settings.isOpenGL)
+      {
+         if (changed)
+            applyChanges();
+         pixels = pixelsOfAllFrames = null;
+      }
+   }
+   native public void createJpg(Stream s, int quality) throws ImageException, IOException;
+
+   public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
+   {
+      int w = !isHeight ? newSize : (newSize * width / height);
+      int h =  isHeight ? newSize : (newSize * height / width);         
+      hwScaleW = (double)w / width;
+      hwScaleH = (double)h / height;
+   }
+   
+   private Image4D(Image4D src)
+   {
+      this.surfaceType = src.surfaceType;
+      this.width = src.width;
+      this.height = src.height;
+      this.frameCount = src.frameCount;
+      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
+      this.textureId = src.textureId;
+      if (src.changed)
+         src.applyChanges();
+      this.changed = false;
+      this.pixels = src.pixels;
+      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+      this.comment = src.comment;
+      gfx = new Graphics4D(this);
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
+      this.transparentColor = src.transparentColor;
+      this.useAlpha = src.useAlpha; // guich@tc126_12
+      this.instanceCount = src.instanceCount;
+      src.instanceCount[0]++;
+   }
+   
+   public Image4D hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.setHwScaleFixedAspectRatio(newSize,isHeight);
+      return copy;
+   }
+
+   public Image4D getHwScaledInstance(int width, int height) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.hwScaleW = (double)width / this.width;
+      copy.hwScaleH = (double)height / this.height;
+      return copy;
+   }
+
+   public Image4D hwScaledBy(double scaleX, double scaleY) throws ImageException
+   {
+      Image4D copy = new Image4D(this);
+      copy.hwScaleW = scaleX;
+      copy.hwScaleH = scaleY;
+      return copy;
+   }   
 }

@@ -223,6 +223,11 @@ public class Deployer4WinCE
          infFileName = "wince.inf";
          cabName = infFileName.substring(0,Math.min(8,infFileName.length()-4)); // strip the .inf - guich@421_75
          deleteCabs();
+         File oFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
+         File iFile = new File("wince.inf",File.READ_ONLY);
+         iFile.copyTo(oFile);
+         oFile.close();
+         iFile.close();
       }
       else
       {
@@ -251,7 +256,7 @@ public class Deployer4WinCE
                if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
                {
                   vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
-                  lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "wince/";
+                  lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "wince/";
                }
                // copy binary files
                for (int i =0; i < pathsCount; i++)
@@ -274,7 +279,7 @@ public class Deployer4WinCE
 
          infFileName = cabName+".inf";
          File infFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
-         String installDir = "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
+         String installDir = DeploySettings.isService ? "\\"+DeploySettings.filePrefix+"\\" : "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
          String inf =
             "[Version]\n" +
 
@@ -293,7 +298,7 @@ public class Deployer4WinCE
 
             "[Strings]\n" +
 
-            "TCDir    = \"\\TotalCross\"\n" +
+            "TCDir    = \"\\"+(DeploySettings.isService ? DeploySettings.filePrefix : "TotalCross")+"\"\n" +
 
             //-----------------------------------------------
 
@@ -385,7 +390,7 @@ public class Deployer4WinCE
             (hasExe ? "Binaries = 0,%InstallDir%\n" : "") +
             "GlobalFiles = 0,%TCDir%\n" +
             "LocalFiles = 0,%InstallDir%\n" +
-            "Startmenu = 0,%CE11%\n"+
+            (DeploySettings.isService ? "Startmenu = 0,%CE4%\n" : "Startmenu = 0,%CE11%\n")+
 
             (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix+".exe\n") : "") +
             (tcFolder != null ? ("tcvm.dll\n") : "") +
@@ -398,14 +403,14 @@ public class Deployer4WinCE
             toString(vGlobals, "\n",true) +
 
             (hasExe ? ("[Startmenu]\n" +
-            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
+            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "") 
             ;
          
          new DataStream(infFile).writeBytes(inf.getBytes());
          infFile.close();
       }
 
-      String path2Cabwiz, callCabWiz, out;
+      String path2Cabwiz, out;
       if (pathsCount != 1)
       {
 	      // ok, the .inf file is created, now we call the cabwiz program
@@ -413,7 +418,7 @@ public class Deployer4WinCE
 	      if (path2Cabwiz == null)
 	         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
 	      // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
-	      callCabWiz = path2Cabwiz.replace('/',DeploySettings.SLASH)+" "+infFileName+" /cpu HPC2000_ARM HPC211_ARM PocketPC_ARM PocketPC_MIPS PocketPC_SH3";
+	      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","HPC2000_ARM","HPC211_ARM","PocketPC_ARM","PocketPC_MIPS","PocketPC_SH3"};
 	      out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 	      // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
 	      for (int i =0; i < 100; i++)
@@ -432,7 +437,7 @@ public class Deployer4WinCE
          throw new DeployerException("Could not find Cabwizsp.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
       try {new File(targetDir+cabName+".WMobile_ARM.CAB").delete();} catch (Exception e) {}
-      callCabWiz = path2Cabwiz.replace('/',DeploySettings.SLASH)+" "+infFileName+" /cpu WMobile_ARM";
+      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","WMobile_ARM"};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.

@@ -190,9 +190,6 @@ static void testPalette(Context currentContext, Object g)
    for (i = 0; i < 256; i++)
    {
       c = pal[i];
-#ifdef PALMOS // other platforms have the r,g,b in the right order, Palm OS is BBGGRR00
-     {uint32 r = (c>>8)&0xFF, g = (c>>16)&0xFF, b = (c >> 24)&0xFF; c = (r << 16) | (g << 8) | b;}
-#endif
       if (i && (i % 16) == 0)
       {
          x = 0; y += wh;

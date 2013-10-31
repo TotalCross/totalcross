@@ -118,9 +118,7 @@ bool inline_ PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 
    if (growSize < 0)
    {
-      #if !defined __ECOS && !defined __SYMBIAN32__
-         return ftruncate(fileno(fileRef), growSize + oldSize) == 0;
-      #endif
+      return ftruncate(fileno(fileRef), growSize + oldSize) == 0;
    }
    else
    {

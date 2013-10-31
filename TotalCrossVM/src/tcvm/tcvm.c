@@ -214,6 +214,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       {
 #ifdef ENABLE_TRACE
          TRACE("T %08d %X %X %05d - Cannot acquire context; owner=%X; usageCount=%d", getTimeStamp(), thread, context, ++context->ccon, context->usageOwner, context->usageCount);
+#else
+         debug("Cannot acquire context! Waiting to release...");
 #endif
          do
          {
@@ -222,6 +224,9 @@ TC_API TValue executeMethod(Context context, Method method, ...)
             LOCKVAR(context->usageLock);
          }
          while (context->usageOwner != null); // while this context is not released
+#ifndef ENABLE_TRACE
+         debug("Context released!");
+#endif
       }
       context->usageOwner = thread;
    }
@@ -335,7 +340,7 @@ mainLoop:
       OPCODE(MOV_regO_sym)        regO[code->reg_sym.reg] = cp->str[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_reg64_reg64)     reg64[code->reg_reg.reg0] = reg64[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_reg64_arc)       ARRAYCHECK(code->reg)
-      OPCODE(MOV_reg64_aru)       REGD(reg64)[code->reg_ar.reg]  = ((double*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
+      OPCODE(MOV_reg64_aru)       REGL(reg64)[code->reg_ar.reg]  = ((int64*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regD_sym)        REGD(reg64)[code->reg_sym.reg] = cp->dbl[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regL_sym)        REGL(reg64)[code->reg_sym.reg] = cp->i64[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regD_s18)        REGD(reg64)[code->s18_reg.reg] = (int32)code->s18_reg.s18; NEXT_OP
@@ -362,10 +367,10 @@ mainLoop:
       OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) REGD(reg64)[code->field_reg.reg] = FIELD_DBL(o, OBJ_CLASS(o), retv); NEXT_OP
       OPCODE(MOV_static_regI)     GET_STATIC_FIELD(RegI) ((int32*) sf)[0] = regI[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((Object*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((double*)sf)[0] = REGD(reg64)[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((int64*)sf)[0] = REGL(reg64)[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_regI_static)     GET_STATIC_FIELD(RegI) regI[code->static_reg.reg] = ((int32*) sf)[0]; NEXT_OP
       OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((Object*)sf)[0]; NEXT_OP
-      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGD(reg64)[code->static_reg.reg] = ((double*)sf)[0]; NEXT_OP
+      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGL(reg64)[code->static_reg.reg] = ((int64*)sf)[0]; NEXT_OP
       OPCODE(ADD_regI_regI_regI)  regI[code->reg_reg_reg.reg0] = regI[code->reg_reg_reg.reg1] + regI[code->reg_reg_reg.reg2]; NEXT_OP
       OPCODE(ADD_regI_s12_regI)   regI[code->reg_reg_s12.reg0] = regI[code->reg_reg_s12.reg1] + (int32)code->reg_reg_s12.s12; NEXT_OP
       OPCODE(ADD_regD_regD_regD)  REGD(reg64)[code->reg_reg_reg.reg0] = REGD(reg64)[code->reg_reg_reg.reg1] + REGD(reg64)[code->reg_reg_reg.reg2]; NEXT_OP
@@ -592,15 +597,6 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
-#ifdef PALMOS
-               if (newMethod->ref) // external library?
-               {
-                  EnterLibrary(newMethod->ref)
-                  newMethod->boundNM(nmp); // call the method
-                  ExitLibrary()
-               }
-               else
-#endif
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here

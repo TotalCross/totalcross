@@ -61,13 +61,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static int timeAvailable;
 
    static Font defaultFont;
+   private static Thread mainThread;
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()
    {
       this(null,NO_BORDER);
    }
-
+   
    /** Constructs a main window with the given title and border style.
     * @see #NO_BORDER
     * @see #RECT_BORDER
@@ -79,6 +80,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
+      mainThread = Thread.currentThread();
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -92,7 +94,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.virtualKeyboard = false;
 
       // update some settings
-      highResPrepared = true; // main window is always prepared
       setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
@@ -115,6 +116,14 @@ public class MainWindow extends Window implements totalcross.MainClass
             restoreRegistry = true;
          }
          catch (Exception e) {e.printStackTrace();}
+   }
+   
+   /** Returns true if this is the main thread.
+    * @since TotalCross 2.0
+    */
+   public static boolean isMainThread()
+   {
+      return mainThread == Thread.currentThread();
    }
 
    void mainWindowCreate()
@@ -167,8 +176,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     * Changing to Android style will also set Settings.fingerTouch to true.
     * If you don't like such behaviour in non finger devices, set this property to false after calling setUIStyle.
     *  
-    * @see totalcross.sys.Settings#PalmOS
-    * @see totalcross.sys.Settings#WinCE
     * @see totalcross.sys.Settings#Flat
     * @see totalcross.sys.Settings#Vista
     * @see totalcross.sys.Settings#Android
@@ -176,8 +183,6 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    public void setUIStyle(byte style)
    {
-      if (style == Settings.PalmOS)
-         setBackColor(Color.WHITE);
       Settings.uiStyle = style;
       if (style == Settings.Android)
          Settings.fingerTouch = true;
@@ -213,11 +218,11 @@ public class MainWindow extends Window implements totalcross.MainClass
     * @see #onRestore
     * @since TotalCross 1.10
     */
-   public final void minimize() // bruno@tc110_89
+   public static void minimize() // bruno@tc110_89
    {
       totalcross.Launcher.instance.minimize();
    }
-   native public final void minimize4D();
+   native public static void minimize4D();
 
    /**
     * Notifies the application that it should be restored, that is, transfered
@@ -227,11 +232,11 @@ public class MainWindow extends Window implements totalcross.MainClass
     * the application manually.
     * @since TotalCross 1.10
     */
-   public final void restore() // bruno@tc110_89
+   public static void restore() // bruno@tc110_89
    {
       totalcross.Launcher.instance.restore();
    }
-   native public final void restore4D();
+   native public static void restore4D();
 
    /** Returns the MainWindow of the current application. */
    public static MainWindow getMainWindow()
@@ -363,12 +368,14 @@ public class MainWindow extends Window implements totalcross.MainClass
       startTimer = addTimer(1); // guich@567_17
    }
 
+   static boolean quittingApp;
    /** Called by the system so we can finish things correctly.
      * Never call this method directly; this method is not private
      * to prevent the compiler from removing it during optimization.
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
+      quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
@@ -383,6 +390,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    /**
    * Called just before an application exits.
    * When this is called, all threads are already killed.
+   * You should return from this method as soon as possible, because the OS can kill the application if
+   * it takes too much to return.
    */
    public void onExit()
    {
@@ -507,7 +516,8 @@ public class MainWindow extends Window implements totalcross.MainClass
          removeTimer(t);
          if (timeAvailable != -999999 && timeAvailable != -1) // guich@tc126_46
          {
-            new DemoBox().popup();
+            if (!Settings.isIOS() || timeAvailable == 0) // show only for non iOS or if trial time was elapsed.
+               new DemoBox().popup();
             if (timeAvailable == 0)
             {
                exit(0);
@@ -575,7 +585,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (minInterval > 0 || lastMinInterval > 0) // guich@tc100: call only if there's a timer to run
          setTimerInterval(lastMinInterval = minInterval);
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
-         topMost._doPaint();
+         repaintActiveWindows(); // already calls updateScreen
+      else
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
          updateScreen();
    }
@@ -626,14 +637,21 @@ public class MainWindow extends Window implements totalcross.MainClass
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
       Image img = new Image(w,h);
-      img.transparentColor = -1;
       Graphics gimg = img.getGraphics();
+      enableUpdateScreen = false;
+      repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
+      enableUpdateScreen = true;
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)
       {
          gscr.getRGB(buf, 0,0,y,w,1);
          gimg.setRGB(buf, 0,0,y,w,1);
-      }      
+      }
+      if (Settings.isOpenGL)
+         img.applyChanges();
+      else
+      if (Settings.onJavaSE)
+         img.setTransparentColor(-1);
       return img;
    }
 }

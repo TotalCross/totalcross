@@ -25,6 +25,7 @@ class TCEventThread extends Thread
    static private final int INVOKE_IN_EVENT_THREAD = -99998;
    MainClass win;
    public boolean running = true;
+   public int popTime = 100;
 
    public TCEventThread(MainClass win)
    {
@@ -38,11 +39,6 @@ class TCEventThread extends Thread
    {
       setPriority(Thread.MAX_PRIORITY); // event thread should have maximum priority
       setDaemon(true);
-      start();
-   }
-   void nativeCreate4B()
-   {
-      setPriority(Thread.MAX_PRIORITY); // event thread should have maximum priority
       start();
    }
 
@@ -75,11 +71,11 @@ class TCEventThread extends Thread
          privatePumpEvents();
    }
 
-   private void privatePumpEvents()
+   void privatePumpEvents()
    {
       // This gives the system CPU some breathing room when in a tight event
       // loop and no events are posted.
-      TCEvent event = (TCEvent)eventQueue.popWait(100);
+      final TCEvent event = popTime <= 0 ? (TCEvent)eventQueue.pop() : (TCEvent)eventQueue.popWait(popTime);
       if (event != null)
       {
          if (event.type == INVOKE_IN_EVENT_THREAD)
@@ -87,12 +83,10 @@ class TCEventThread extends Thread
             event.r.run();
             // If they are waiting for this, then notify.
             if (event.synch != null)
-            {
                synchronized(event.synch)
                {
                   event.synch.notify();
                }
-            }
          }
          else
             win._postEvent(event.type, event.key, event.x, event.y, event.modifiers, event.timestamp);
@@ -102,6 +96,19 @@ class TCEventThread extends Thread
    void pushEvent(int type, int key, int x, int y, int modifiers, int timestamp)
    {
       eventQueue.push(new TCEvent(type, key, x, y, modifiers, timestamp));
+   }
+   
+   boolean hasEvent(int type)
+   {
+      Node n = eventQueue.queue;
+      while (n != null)
+      {
+         TCEvent ev = (TCEvent)n.o;
+         if (ev.type == type)
+            return true;
+         n = n.next;
+      }
+      return false;
    }
 
    void invokeInEventThread(boolean wait, Runnable r)
@@ -167,7 +174,7 @@ class TCEventThread extends Thread
      /** Returns the oldest object in the queue or null if no objects in the queue */
      synchronized Object pop()
      {
-       if(queue == null)
+       if(queue == null || size == 0)
          return null;
 
        Object ret = queue.o;

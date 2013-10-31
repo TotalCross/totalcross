@@ -87,13 +87,6 @@ static void getArtificialHash(char *out)
       }
       RegCloseKey(handle);
    }
-#elif defined(PALMOS)
-   uint16 size = 4;
-   if (PrefGetAppPreferences('POWR', 1, &v, &size, true) == noPreferenceFound)
-   {
-      v = (int32)TimGetTicks();
-      PrefSetAppPreferences('POWR', 1, 1, &v, 4, true); // returns void
-   }
 #endif
    if (v != 0)
       xstrprintf(out, "%lX", (long)v);
@@ -120,10 +113,10 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #ifdef ANDROID
    if (__system_property_get("ro.serialno",serial) <= 0)
       serial[0] = 0;
+   if (serial[0] == 0) // no serial? try the java way.
+      getRomSerialNumber(serial);
    if (strEq(deviceId, "LGE LG-P698f") || strEq(deviceId, "unknown generic")) // android dual sim phone
    {
-      if (serial[0] == 0) // no serial? try the java way.
-         getRomSerialNumber(serial);
       if (serial[0] != 0) // do not use IMEI if the serial is available.
          imei[0] = 0;
    }

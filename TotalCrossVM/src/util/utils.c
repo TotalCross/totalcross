@@ -24,8 +24,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/utils_c.h"
-#elif defined(PALMOS)
- #include "palm/utils_c.h"
 #else
  #include "posix/utils_c.h"
 #endif
@@ -423,13 +421,7 @@ TC_API CharP long2str(int64 i, LongBuf buf)
    return c;
 }
 
-#if defined(PALMOS) || (defined(__SYMBIAN32__) && defined(__MARM__) && !defined(__GCCE__))
-#define DOUBLES_MIXED // Mixed endian for doubles only
-#define IEEE_I64_VALUE(x)  (((x & 0xFFFFFFFFUL) << 32) | (x >> 32))
-#else
 #define IEEE_I64_VALUE(x)  x
-#endif
-
 #define I64_BITS(VAL) (*(int64 *)(&VAL))
 #define DOUBLE_NAN_VALUE               IEEE_I64_VALUE(I64_CONST(0x7ff8000000000000))
 #define DOUBLE_POSITIVE_INFINITY_VALUE IEEE_I64_VALUE(I64_CONST(0x7ff0000000000000))
@@ -521,13 +513,21 @@ TC_API double str2double(CharP str, bool *err) // guich@566_38: new routine
    // the string will be broken in 3 parts: xxx.yyyEzzz
    if (ePtr)
       *ePtr = 0;
-   if (dotPtr)
-      *dotPtr = 0;
-   result = (double)str2longPriv(str, &err2, true); // convert the first part 'xxx'
-   if (err2)
+   if (dotPtr && str == dotPtr) // fix for .25
    {
-      if (err) *err = true;
-      return 0;
+      result = 0;
+      err2 = false;
+   }
+   else
+   {
+      if (dotPtr)
+         *dotPtr = 0;
+      result = (double)str2longPriv(str, &err2, true); // convert the first part 'xxx'
+      if (err2)
+      {
+         if (err) *err = true;
+         return 0;
+      }
    }
    if (dotPtr)
    {
@@ -565,7 +565,6 @@ TC_API double str2double(CharP str, bool *err) // guich@566_38: new routine
 
 #define LN10 2.30258509299404568402
 static double rounds5[] = {5e-1,5e-2,5e-3,5e-4,5e-5,5e-6,5e-7,5e-8,5e-9,5e-10,5e-11,5e-12,5e-13,5e-14,5e-15,5e-16,5e-17,5e-18};
-static double rounds9[] = {9e-1,9e-2,9e-3,9e-4,9e-5,9e-6,9e-7,9e-8,9e-9,9e-10,9e-11,9e-12,9e-13,9e-14,9e-15,9e-16,9e-17,9e-18};
 
 TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
 {
@@ -616,12 +615,8 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
       exponent = (int32) (log(val) / LN10); // 3 : 1000.5432 = 1.0005432*10^3
       if (DOUBLE_MIN_NON_EXP <= val && val <= DOUBLE_MAX_NON_EXP) // does it fit without sci notation?
       {
-         double frac = (val - (int64)val); // guich@tc100b5_36: fixed this part of the routine from here...
-         double pow10 = Pow10(decimalCount);
-         double pivot = frac * pow10; // 23.2335+0.0005 = 23.2339999999, and pivot is 49
-         if (pivot > 1) pivot = pivot - (int64)pivot; // guich@tc114_39: get the fractional part
-         if (pivot >= 0.4555555555555)
-            val += rounds9[decimalCount]; // ...to here
+         if (decimalCount == 0)
+            val += 0.5;
          integral = (int64)val; // 1000
          exponent = 0;
       }
@@ -631,8 +626,22 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
          while (1)
          {
             double mant = val / (double)Pow10(exponent);
-            mant += (double)rounds5[decimalCount];
-            integral = (int64)mant;
+            if (decimalCount < 18)
+               mant += (double)rounds5[decimalCount];
+            if (I64_BITS(mant) == DOUBLE_POSITIVE_INFINITY_VALUE) // case of converting the minimum double value
+            {
+               int32 e = exponent < 0 ? -exponent : exponent;
+               mant = val;
+               if (e > 300) {mant *= Pow10(300); e -= 300;} // guich@tc200: fix convertion of MIN_DOUBLE_VALUE
+               mant *= Pow10(e); // remaining of exponent
+               if (decimalCount < 18)
+                  mant += (double)rounds5[decimalCount];
+               val = mant;
+               integral = (int64)val;
+               break;
+            }
+            else
+               integral = (int64)mant;
             if (integral == 0  && !adjusted) {adjusted = true; exponent--;} // 0.12345 ?
             else
             if (integral >= 10 && !adjusted) {adjusted = true; exponent++;} // 10.12345 ?
@@ -643,35 +652,41 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
             }
          }
       }
-      s = long2str(integral, lb);
-      while (*s)
-         *buf++ = *s++;
-      if (decimalCount > 0)
+      if (decimalCount == 0)
+      {
+         s = long2str(integral, lb);
+         while (*s)
+            *buf++ = *s++;
+      }
+      else
       {
          int i,firstNonZero=-1; // number of zeros between . and first non-zero
+         double pow10 = Pow10(decimalCount);
+         int64 ipow10 = (int64)pow10;
          double f = val - integral; // 1000.5432-1000 = 0.5432
-         if (f > 1e-16)
-            for (i = 0; i < decimalCount; i++)
+         if (f > 1.0e-16)
+         {
+            fract = (int64)(f * pow10 + (exponent == 0 ? 0.5 : 0));
+            if (fract == ipow10) // case of Convert.toString(49.999,2)
             {
-               f *= 10; // 5.432
-               val *= 10; // 10005.432
-               if (val <= DOUBLE_MAX_NON_EXP)
-               {
-                  int64 temp = (int64)f; // 10005
-                  if (temp % 10 != 0) // ignore least significant zeros
-                  {
-                     fract = temp;
-                     if (firstNonZero == -1)
-                        firstNonZero = i;
-                  }
-               }
-               else
-                  break;
+               fract = 0;
+               integral++;
             }
+         }
+         s = long2str(integral, lb);
+         while (*s)
+            *buf++ = *s++;
+
+         do
+         {
+            ipow10 /= 10;
+            firstNonZero++;
+         }
+         while (ipow10 > fract);
          s = long2str(fract,lb);
          i = decimalCount - xstrlen(s);
          *buf++ = '.';
-         if (firstNonZero > 0)
+         if (0 < firstNonZero && firstNonZero < decimalCount)
          {
             i -= firstNonZero;
             while (firstNonZero-- > 0)
@@ -679,7 +694,11 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
          }
          while (*s)
             *buf++ = *s++;
-         if (!floating && i > 0) // fill with zeros if needed
+         if (floating)
+            while (buf[-2] != '.' && buf[-1] == '0')
+               buf--;
+         else
+         if (i > 0) // fill with zeros if needed
          {
             if (i > 20) i = 20; // this should not respect the maximum allowed width, because its just for user formatting
             while (i-- > 0)
@@ -695,6 +714,15 @@ TC_API CharP double2str(double val,int32 decimalCount, DoubleBuf buffer)
             *buf++ = *s++;
       }
       *buf = 0;
+   }
+   if (buffer[0] == '-') // guich@tc200b5: check if its -0.00... and change to 0.00...
+   {
+      bool only0 = true;
+      buf = buffer;
+      for (buf++; *buf && only0; buf++)
+         only0 &= *buf == '.' || *buf == '0';
+      if (only0)
+         xstrcpy(buffer,buffer+1); // remove the -
    }
    return buffer;
 }
@@ -745,7 +773,6 @@ FILE* findFile(CharP name, CharP pathOut)
    // 1. search in current folder
    xstrprintf(fullName,"%s",name);
    f = fopen(fullName,"rb");
-#ifndef PALMOS
    // 2. search in vmPath
    if (f == null)
    {
@@ -794,7 +821,6 @@ FILE* findFile(CharP name, CharP pathOut)
    }
 #endif // ENABLE_TEST_SUITE only
 #endif // WIN32 only
-#endif // not PALM
 #ifdef ANDROID
    // 9. search also on litebase's path
    if (f == null)

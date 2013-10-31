@@ -44,6 +44,7 @@ import totalcross.util.*;
  * A PRESSED event is sent when an item is selected.
  * 
  * Note: the colors must be set before the control's bounds are defined using setRect or add.
+ * 
  */
 
 public class PopupMenu extends Window
@@ -56,7 +57,8 @@ public class PopupMenu extends Window
    private ListContainer.Item []containers;
    private boolean multipleSelection;
    private int cursorColor=-1;
-   private int desiredSelectedIndex = -1;
+   private static final int UNSET = -9999;
+   private int desiredSelectedIndex = UNSET;
    private IntHashtable htSearchKeys;
    private PushButtonGroup pbgSearch;
    /** The string of the button; defaults to "Cancel" */
@@ -82,6 +84,11 @@ public class PopupMenu extends Window
     * @since TotalCross 1.65
     */
    public boolean enableCancel = true;
+   
+   /** Set to true to keep the selected index unchanged if user press the Cancel button
+    * @since TotalCross 2.0
+    */
+   public boolean keepIndexOnCancel;
    
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
@@ -115,7 +122,7 @@ public class PopupMenu extends Window
       // "off" image is a composite of two images: on + selection
       Image on = off.getFrameInstance(0);
       ball.applyColor2(color); // paint it
-      on.getGraphics().drawImage(ball,0,0,Graphics.DRAW_PAINT,Color.WHITE,true);
+      on.getGraphics().drawImage(ball,0,0);
       return on;
    }
 
@@ -161,7 +168,8 @@ public class PopupMenu extends Window
             }
             if (cw == -1)
                cw = getClientRect().width - Math.abs(c.getLeftControlX()) - Math.abs(c.getRightControlX());
-            if (fm.stringWidth(s) <= cw)
+            int sw = fm.stringWidth(s);
+            if (sw <= cw)
                c.items = new String[]{"",s,""};
             else
             {
@@ -187,11 +195,11 @@ public class PopupMenu extends Window
             sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
          }
          if (enableCancel)
-            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
+            add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,PARENTSIZE+90,PREFERRED+fmH);
          add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,(enableCancel?FIT:FILL)-fmH/2, enableSearch ? sc2 : null);
          list.setBackColor(Color.WHITE);
          list.addContainers(containers);
-         repositionOnHeight();
+         repositionOnSize();
       }
       catch (Exception e)
       {
@@ -201,11 +209,12 @@ public class PopupMenu extends Window
       }
    }
    
-   private void repositionOnHeight()
+   private void repositionOnSize()
    {
       if (containers == null) return;
       int hh = containers[containers.length-1].getY2();
       int hm = list.y+hh+(cancel==null?0:cancel.height)+fmH;
+      
       if (this.height > hm)
       {
          list.height = hh+fmH/3;
@@ -217,7 +226,7 @@ public class PopupMenu extends Window
    public void reposition()
    {
       super.reposition();
-      repositionOnHeight();
+      repositionOnSize();
    }
 
    /** Selects the given index. */
@@ -238,16 +247,26 @@ public class PopupMenu extends Window
    /** Returns the selected index when this window was closed or -1 if non was selected */
    public int getSelectedIndex()
    {
-      return selected;
+      return desiredSelectedIndex != UNSET ? desiredSelectedIndex : selected;
    }
 
    /** Setup some important variables */
    protected void onPopup()
    {
       if (list == null)
-         setRect(CENTER,CENTER,SCREENSIZE+90,SCREENSIZE+90);
-      setSelectedIndex(desiredSelectedIndex);
-      desiredSelectedIndex = -1;
+      {
+         int maxW = Math.max(!enableCancel ? 0 : fm.stringWidth(cancelString), title == null ? 0 : titleFont.fm.stringWidth(title))+fmH*4;
+         for (int i = 0; i < itemCount; i++)
+         {
+            String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
+            int w = fm.stringWidth(s) + fmH*6;
+            if (w > maxW) maxW = w;
+         }
+         setRect(CENTER,CENTER,maxW < Math.min(Settings.screenWidth,Settings.screenHeight)-fmH*2 ? maxW : SCREENSIZE+90,SCREENSIZE+90);
+      }
+      if (desiredSelectedIndex != UNSET) // change only if used wanted it
+         setSelectedIndex(desiredSelectedIndex);
+      desiredSelectedIndex = UNSET;
    }
 
    protected void postUnpop()
@@ -276,7 +295,8 @@ public class PopupMenu extends Window
             else
             if (cancel != null && event.target == cancel)
             {
-               selected = -1;
+               if (!keepIndexOnCancel)
+                  selected = -1;
                unpop();
             }
             break;

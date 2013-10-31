@@ -48,6 +48,12 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
+   private static int platform;
+   
+   public static boolean isOnlyBB()
+   {
+      return platform == BUILD_BB;
+   }
 
    public Deploy(String[] args)
    {
@@ -64,7 +70,7 @@ public class Deploy
 
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
-         int options = parseOptions(args);
+         int options = platform = parseOptions(args);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -79,13 +85,11 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
             if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
-            if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
@@ -100,18 +104,19 @@ public class Deploy
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-file-7.5.1.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-kernel-7.5.1.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-swing-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
 
-               if (DeploySettings.buildIPA)
+               //if (DeploySettings.buildIPA)
+               if (DeploySettings.certStorePath == null)
+                  System.out.println("Warning: /m option not found, ignoring iOS deployment.");
+               else
                {
                   if (DeploySettings.appleCertStore == null)
                      throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: " + DeploySettings.certStorePath);
+                  else
                   if (DeploySettings.mobileProvision == null)
                      throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: " + DeploySettings.certStorePath);
                   new Deployer4IPhoneIPA();
                }
-               Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
@@ -223,15 +228,15 @@ public class Deploy
    {
       int options = 0;
       IntHashtable iht = new IntHashtable(17);
-      iht.put("palm"   .hashCode(), BUILD_PALM);
-      iht.put("palmos" .hashCode(), BUILD_PALM);
+      iht.put("palm"   .hashCode(), 0);
+      iht.put("palmos" .hashCode(), 0);
+      iht.put("blackberry".hashCode(), 0);
+      iht.put("bb"     .hashCode(), 0);
       iht.put("ce"     .hashCode(), BUILD_WINCE);
       iht.put("wince"  .hashCode(), BUILD_WINCE);
       iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
-      iht.put("bb"     .hashCode(), BUILD_BB);
-      iht.put("blackberry".hashCode(), BUILD_BB);
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("ios"    .hashCode(), BUILD_IPHONE);
@@ -299,7 +304,10 @@ public class Deploy
                            {
                               String fileNameLower = fileName.toLowerCase();
                               if (fileNameLower.endsWith(".mobileprovision"))
+                              {
                                  DeploySettings.mobileProvision = new File(dir, fileName);
+                                 System.out.println("Mobile provision: "+DeploySettings.mobileProvision.getAbsolutePath());
+                              }
                               else if (fileNameLower.endsWith(".p12"))
                                  DeploySettings.appleCertStore = new File(dir, fileName);
                               return false;
@@ -357,9 +365,9 @@ public class Deploy
                          if (type.endsWith("litebase"))
                          {
                             DeploySettings.packageType |= DeploySettings.PACKAGE_LITEBASE;
-                            String lbfolder = isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB;
+                            String lbfolder = DeploySettings.folderLitebaseSDKDistLIB;
                             if (lbfolder == null)
-                               throw new DeployerException("Could not find the path for "+(isDemo?"LitebaseSDK":"LitebaseVMS")+", so its impossible to create a single installation package.");                               
+                               throw new DeployerException("Could not find the path for LitebaseSDK, so its impossible to create a single installation package.");                               
                          }
                          System.out.println("Creating single installation package: "+(isDemo?"DEMO TCVM":"ACTIVATION TCVM")+((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0 ? " + LITEBASE" : ""));
                          break;
@@ -392,12 +400,10 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
-            "   -palm or -palmos : create the prc and installation files for Palm OS\n" +
             "   -ce or -wince : create the cab files for Windows CE\n" +
             "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
-            "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
             "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n" +
@@ -421,21 +427,21 @@ public class Deploy
             "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Currently supports only \"/inst android\".\n" +
             "   /k      : Keep the exe and other temporary files during wince generation\n"+
             "   /kn     : As /k, but does not create the cab files for wince\n"+
-            "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS\n"+
+            "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
             "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +
                          "The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
                          "(where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
                          "or the release that requires activation). The DEMO SDKs must be in the path or in the " +
-                         "TOTALCROSS_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
-                         "same parent folder of the DEMO ones. Example: if TOTALCROSS_HOME points to t:\\sdks\\TotalCrossSDK, " +
-                         "then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS_HOME and LITEBASE_HOME are not set," +
+                         "TOTALCROSS2_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
+                         "same parent folder of the DEMO ones. Example: if TOTALCROSS2_HOME points to t:\\sdks\\TotalCrossSDK, " +
+                         "then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS2_HOME and LITEBASE_HOME are not set," +
                          "then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
                          "The files are always installed at the same folder of the application, so each application will have its own vm/litebase." +
                          "You can optionally set four environment variables, pointing to the folder of each SDK (these will have priority over the " +
-                         "other locations): TOTALCROSS_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
-                         "LITEBASE_DEMO (must point to LitebaseSDK folder), LITEBASE_RELEASE (must point to LitebaseVMS folder).\n" +
+                         "other locations): TOTALCROSS2_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
+                         "LITEBASE_DEMO or LITEBASE_RELEASE (must point to LitebaseSDK folder).\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
             "   /s pass : Launch the BlackBerry SignatureTool and automatically sign the COD module\n" +
             "             using the optional password. If no password is provided, the SignatureTool will\n" +

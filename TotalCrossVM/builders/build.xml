@@ -54,7 +54,6 @@ IMPORTANT:
 <property name="msvc.project.path" value="${basedir}/vc2008"/>
 <property name="evc.project.path"  value="${basedir}/evc3"/>
 <property name="gcc.project.path"  value="${basedir}/gcc-posix"/>
-<property name="palm.project.path"  value="${basedir}/gcc-palm"/>
 <property name="evc.project"       value="${evc.project.path}/TotalCross.vcw"/>
 <property name="android.project.path" value="${basedir}/android"/>
 <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
@@ -140,70 +139,6 @@ target: makeNativeHT - updates the native methods hash table.
    >
       <arg line="makeNativeHT TC ${source.vms.path}\src\init ${source.vms.path}\src\nm\NativeMethods.txt" />
    </java>
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: buildPalmOS5
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="buildPalmOS5_launcher" >
-    <echo message="GENERATING PALM OS 5 FILES - LAUNCHER"/>
-
-    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\launcher\runmake.sh'/></exec>
-    <copy file="${palm.project.path}\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
-</target>
-
-<target name="buildPalmOS5_sdk" >
-   <antcall target="buildPalmOS5">
-      <param name="release.type" value="demo" />
-      <param name="palm.target.path" value="${target.sdk.path}" />
-   </antcall>
-</target>
-   
-<target name="buildPalmOS5_vms" >
-   <antcall target="buildPalmOS5">
-      <param name="release.type" value="release" />
-      <param name="palm.target.path" value="${target.vms.path}" />
-   </antcall>
-</target>
-   
-<target name="buildPalmOS5_vms_noras" >
-   <property name="norasid" value=""/>
-   <antcall target="buildPalmOS5">
-      <param name="release.type" value="noras ${norasid}" />
-      <param name="palm.target.path" value="${target.noras.path}" />
-   </antcall>
-</target>
-
-<target name="buildPalmOS5" >
-
-   <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
-   
-   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
-         <arg line='--login -i ${palm.project.path}\tcvm\clean.sh ${palm.project.path}\tcvm'/>
-   </exec>
-   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails. Timeouts at 2:30 minutes. -->
-   <retry retrycount="5">
-      <trycatch>
-        <try>
-           <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
-              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm -${release.type}'/>
-           </exec>
-        </try>
-        <catch>
-           <exec executable="cmd.exe">
-              <arg line='kill arm-elf-gcc.exe'/>
-           </exec>
-        </catch>
-      </trycatch>
-   </retry>
-   <mkdir dir="${palm.target.path}\dist\vm\palm"/>
-   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${palm.target.path}/dist/vm/palm" overwrite="yes"/>
-   
-   <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-   <exec executable="${matchbox}" failonerror="yes">
-      <arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\vm\palm\Install.exe /files ${palm.target.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb ${source.sdk.path}\etc\fonts\TCFontOld.pdb'/>
-   </exec>
-
 </target>
    
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -474,11 +409,10 @@ target: createSkeleton - Create the folders from scratch
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
       <fileset dir="${source.sdk.path}"
-         excludes=".*,.settings/**,src/tc/samples/app/activation/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,etc/tools/bb/bin/sigtool.csk,etc/tools/bb/lib/**,etc/tools/bb/bin/sigtool.db,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
+         excludes=".*,.settings/**,etc/tools/jdeb/**,src/tc/samples/app/activation/**,src/totalcross/zxing/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
       </copy>
    <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
-   <copy file="${source.sdk.path}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${target.sdk.path}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -499,9 +433,6 @@ target: buildSkeleton - Build the folders
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
-   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/dist/vm/palm/TCBase.pdb" />
-   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFont.pdb" />
-   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFontOld.pdb" />
    <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
    <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
@@ -522,41 +453,6 @@ target: buildSkeleton - Build the folders
 
   <copy toDir="${target.sdk.path}/dist">
    <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
-  </copy>
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   BlackBerry builds
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildBB_sdk" >
-
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_sdk" inheritAll="false"/>
-
-  <mkdir dir="${target.sdk.path}/dist/vm" />
-  <copy todir="${target.sdk.path}/dist/vm" overwrite="true">
-    <fileset dir="${source.sdk.path}/dist/vm" includes="bb*/**" />
-  </copy>
-
-</target>
-
-<target name="buildBB_vms" >
-
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_vms" inheritAll="false"/>
-
-  <copy todir="${target.vms.path}/dist/vm" overwrite="true">
-    <fileset dir="${source.sdk.path}/dist/vm" includes="bb*/**" />
-  </copy>
-
-</target>
-
-<target name="buildBB_vms_noras" >
-
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="blackberry_vms_noras" inheritAll="false"/>
-
-  <copy todir="${target.noras.path}/dist/vm" overwrite="true">
-    <fileset dir="${source.sdk.path}/dist/vm" includes="bb*/**" />
   </copy>
 
 </target>
@@ -753,7 +649,6 @@ target: IPhone builds
     includeAntRuntime="false"
    >
       <classpath>
-         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
          <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -773,7 +668,6 @@ target: IPhone builds
    >
       <classpath>
          <pathelement location="${path.to.invalidator}"/>
-         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
          <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -824,37 +718,6 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${basedir}/theos/${type}/libtcvm.dylib"/>
-    <arg line="-t ${target.path}/dist/vm/ios"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.path}/dist/vm/ios"/>
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/ios">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-  </java>
 
 </target>
 
@@ -939,24 +802,23 @@ target: Linux builds
 </target>
 
 <target name="packageLinux" >
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
-    <classpath>
-        <pathelement location="${base.temp.path}/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
-    <arg line="-t ${target.path}/dist/vm/linux"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-  </java>
+    <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+      <classpath>
+          <pathelement location="${base.temp.path}/classes_desktop"/>
+          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+      </classpath>
+      <arg line="-n TotalCross"/>
+      <arg line="-c 'TotalCross VM'"/>
+      <arg line="-d 'The TotalCross Virtual Machine'"/>
+      <arg line="-v ${tc.version}"/>
+      <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
+      <arg line="-t ${target.path}/dist/vm/linux"/>
+      <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
+    </java>
 </target>
 
 <target name="packageLinux_sdk" >
@@ -1116,13 +978,9 @@ target: ftp things to the site
   <property name="vm.dir" value="${target.sdk.path}/dist/vm"/>
   <mkdir dir="${temp}" />
 
-  <zip destfile="${temp}/tc_bb430.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/4.3.0" includes="TotalCross.alx,TotalCross.cod" />
-  <zip destfile="${temp}/tc_bb470.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/4.7.0" includes="TotalCross.alx,TotalCross.cod" />
-  <zip destfile="${temp}/tc_bb500.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/5.0.0" includes="TotalCross.alx,TotalCross.cod" />
-  <zip destfile="${temp}/tc_palm5.zip" compress="true" filesonly="true" basedir="${vm.dir}/palm" includes="TCBase.pdb,TCFont.pdb,TCFontOld.pdb,TCVM.prc" />
   <zip destfile="${temp}/tc_win32.zip" compress="true" >
     <zipfileset dir="${vm.dir}/win32" includes="TCSync.dll,TCSyncLib.tcz,TCVM.dll" />
-    <zipfileset dir="${vm.dir}" includes="TCBase.tcz,TCFont.tcz,TCFontOld.tcz" />
+    <zipfileset dir="${vm.dir}" includes="TCBase.tcz,TCFont.tcz" />
   </zip>
   <zip destfile="${temp}/tc_android.zip" compress="true" filesonly="true" basedir="${vm.dir}/android" />
   <copy todir="${temp}"><fileset dir="${vm.dir}/ios" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
@@ -1214,4 +1072,12 @@ target: build targets
  
 <target name="iphone_test" depends="buildIPhone_sdk,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the device" />
 <target name="ftp" depends="ftp_demo_vms,ftp_sdk,ftp_javadoc" description="FTP the iphone sdk and javadoc" />
+
+<target name="buildBB_sdk" />
+<target name="buildBB_vms" />
+<target name="buildBB_vms_noras" />
+<target name="buildPalmOS5_sdk" />
+<target name="buildPalmOS5_vms" />
+<target name="buildPalmOS5_vms_noras" />
+
 </project>

@@ -33,7 +33,7 @@ import totalcross.ui.gfx.*;
  * This is the conduit's MainWindow. Two methods will be called at different times:
  * <ul>
  * <li>doSync: when a synchronization begins.
- * <li>doSetup: when a setup (preferrences) is asked by the user.
+ * <li>doConfig: when a setup (preferences) is asked by the user.
  * </ul>
  * <p>
  */
@@ -216,8 +216,8 @@ public abstract class Conduit extends totalcross.ui.MainWindow
    native boolean finishSync4D();
 
    /**
-    * When synchronizing PalmOS devices, logs the given text on the HotSync log.<br>
-    * When synchronizing other devices, the text is logged on the DebugConsole instead.
+    * When synchronizing Palm OS devices, logs the given text on the HotSync log.<br>
+    * When synchronizing Windows CE devices, the text is logged on the debug console instead.
     */
    public static void log(String text)
    {
@@ -304,7 +304,7 @@ public abstract class Conduit extends totalcross.ui.MainWindow
       }
    }
 
-   /** Returns wether the conduit is enabled or not. */
+   /** Returns whether the conduit is enabled or not. */
    public static boolean isSyncingEnabled()
    {
       try
@@ -321,7 +321,7 @@ public abstract class Conduit extends totalcross.ui.MainWindow
     * You can remove the window from screen by using a x value like 10000.
     * Default values are -2,-2,240,320.
     * You should call this method in the onRegister method, inherited by your conduit.
-    * <br>This is a sample that sets the screen size to be the same of "/scr palmhi" when running in the desktop:
+    * <br>This is a sample that sets the screen size to be the same of "/scr palmhi" when running on the desktop:
     * <pre>
     * setConduitRect(-2,-2,320,320,false);
     * </pre>

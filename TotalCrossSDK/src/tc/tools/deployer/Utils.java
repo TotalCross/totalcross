@@ -701,7 +701,7 @@ public class Utils
    }
    /////////////////////////////////////////////////////////////////////////////////////
    // Calls runtime.exec, returning the output string which can be used to debug a problem.
-   public static String exec(String command, String path) throws Exception
+   public static String exec(String[] command, String path) throws Exception
    {
       Process process = Runtime.getRuntime().exec(command, null, new java.io.File(path));
       java.io.InputStream inputStream = process.getInputStream();
@@ -759,12 +759,24 @@ public class Utils
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       if (jarsignerExe == null)
          throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");
+      if (jarsignerExe.contains(" ")) // if the path contains space, since it is added to the path variable, try to run it without the path.
+         jarsignerExe = DeploySettings.appendDotExe("jarsigner");
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
-      String algo = DeploySettings.dJavaVersion >= 1.7 ? " -digestalg SHA1 -sigalg MD5withRSA" : "";
-      String cmd = DeploySettings.pathAddQuotes(jarsignerExe)+algo+" -keystore "+DeploySettings.pathAddQuotes(keystore)+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
-      String out = Utils.exec(cmd, targetDir);
+      Vector v = new Vector(10);
+      v.addElement(jarsignerExe);
+      if (DeploySettings.dJavaVersion >= 1.7)
+         v.addElements(new String[]{"-digestalg","SHA1","-sigalg","MD5withRSA"});
+      v.addElement("-keystore");
+      v.addElement(keystore);
+      v.addElement("-storepass");
+      v.addElement("@ndroid$w");
+      v.addElement("-keypass");
+      v.addElement("@ndroidsw");
+      v.addElement(jar);
+      v.addElement("tcandroidkey");
+      String out = Utils.exec((String[])v.toObjectArray(), targetDir);
       if (out != null)
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
    }

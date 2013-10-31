@@ -18,14 +18,7 @@
 extern "C" {
 #endif
 
-#ifdef PALMOS
- typedef long jmp_buf[16];		 // saved registers (see below for order)
- int __setjmp(jmp_buf env);
- #define setjmp(env) __setjmp(env)
- void longjmp(jmp_buf env, int val);
-#else
 #include <setjmp.h>
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Atomic memory allocation
@@ -92,11 +85,7 @@ struct TMemBlock
    struct TMemBlock *next;
 };
 
-#ifdef PALMOS
-typedef char CExceptionFileCharBuf[16];
-#else
 typedef char CExceptionFileCharBuf[64];
-#endif
 
 /**
  Structure used to save all informations about a C Exception (simulated with setjmp/longjmp.

@@ -108,6 +108,12 @@ public abstract class Thread4D
       this.name = name == null ? "Thread-" + tid : name;
    }
    
+   /** Returns the thread id, which is a number generated automatically. */
+   public long getId()
+   {
+      return tid;
+   }
+   
    /**
     * Returns a string representation of this thread, including the 
     * thread's name and priority.

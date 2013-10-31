@@ -165,10 +165,10 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
       jpeg_read_scanlines(&cinfo, buffer0, 1);
       if (cinfo.out_color_components == 1) // guich@tc114_12
          for (x = 0; x < width; x++, buffer++)
-            *pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
+            *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[0], (uint8)buffer[0]);
       else
          for (x = 0; x < width; x++, buffer += 3)
-            *pixels++ = makePixel((uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
+            *pixels++ = makePixelA(0xFF,(uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
    }
 
    // now that everything went fine, set the image's width/height
@@ -180,90 +180,6 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
    jpeg_destroy_decompress(&cinfo);
    if (tcz != null)
       tczClose(tcz);
-   heapDestroy(heap);
-}
-
-#if defined (PALMOS) // only used by palmos right now
-//performs bmp to jpeg conversion
-void bmp2jpeg(Context currentContext, Object srcStreamObj, Object dstStreamObj, Object bufObj)
-{
-   JPEGFILE srcFile, dstFile;
-   struct jpeg_error_mgr errbase;
-   struct jpeg_compress_struct cinfo;
-   volatile Heap heap;
-   cjpeg_source_ptr src_mgr;
-   JDIMENSION num_scanlines;
-
-   // initialize structs
-   xmemzero(&errbase, sizeof(errbase));
-   xmemzero(&cinfo, sizeof(cinfo));
-   xmemzero(&srcFile, sizeof(srcFile));
-   xmemzero(&dstFile, sizeof(dstFile));
-
-   // initialize srcFile structure
-   srcFile.currentContext = currentContext;
-   srcFile.inputStreamObj = srcStreamObj;
-   srcFile.bufObj = bufObj;    // a byte array for readBytes()
-   srcFile.readBytesMethod = getMethod(OBJ_CLASS(srcFile.inputStreamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-   srcFile.params[0].asObj = srcFile.inputStreamObj;
-   srcFile.params[1].asObj = srcFile.bufObj;
-
-   // initialize dstFile structure
-   dstFile.currentContext = currentContext;
-   dstFile.outputStreamObj = dstStreamObj;
-   dstFile.bufObj = bufObj;    // a byte array for writeBytes()
-   dstFile.writeBytesMethod = getMethod(OBJ_CLASS(dstFile.outputStreamObj), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-   dstFile.params[0].asObj = dstFile.outputStreamObj;
-   dstFile.params[1].asObj = dstFile.bufObj;
-
-   // heap creation
-   heap = heapCreate();
-   IF_HEAP_ERROR(heap)
-   {
-      heapDestroy(heap);
-      throwException(currentContext, OutOfMemoryError, null);
-      return;
-   }
-
-   /* initialize default error handling. */
-   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
-   errbase.last_addon_message = JMSG_LASTADDONCODE;
-   errbase.heap = heap;
-
-   // initialize error handler and compressor.
-   cinfo.err = jpeg_std_error(&errbase);
-   jpeg_create_compress(&cinfo);
-
-   // set the compressor output to dstFile
-   jpeg_stdio_dest(&cinfo, &dstFile);
-
-   // we are reading a bmp!
-   src_mgr = jinit_read_bmp(&cinfo);
-   src_mgr->input_file = &srcFile;
-
-   /* Read the input file header to obtain file size & colorspace. */
-   (*src_mgr->start_input) (&cinfo, src_mgr);
-
-   // set required parameters to default values
-	jpeg_set_defaults(&cinfo);
-
-   /* Make optional parameter settings here */
-   jpeg_default_colorspace(&cinfo);
-
-    /* Start compressor */
-   jpeg_start_compress(&cinfo, true);
-
-   while (cinfo.next_scanline < cinfo.image_height) /* Process data */
-   {
-      num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-      jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
-   }
-
-   // Finish decompression and release memory. Do it in this order because output module
-   // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
-   (*src_mgr->finish_input) (&cinfo, src_mgr);
-   jpeg_finish_compress(&cinfo);
-   jpeg_destroy_compress(&cinfo);
    heapDestroy(heap);
 }
 
@@ -384,4 +300,106 @@ finish:
 
    return ret;
 }
-#endif
+
+bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj, int32 quality)
+{
+   JPEGFILE dstFile;
+   struct jpeg_error_mgr errbase;
+   struct jpeg_compress_struct cinfo;
+   volatile Heap heap;
+   Object bufObj;
+   uint8* bufP;
+   uint8* bufAux;
+   int32 i, p,scanLineOut;
+   volatile bool ret = false;                  
+   
+   Object pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
+   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
+   int32 width = (Image_frameCount(srcImageObj) > 1) ? Image_widthOfAllFrames(srcImageObj) : Image_width(srcImageObj);
+   int32 height = Image_height(srcImageObj), n;
+   scanLineOut = width * 3;
+
+   // initialize structs
+   xmemzero(&errbase, sizeof(errbase));
+   xmemzero(&cinfo, sizeof(cinfo));
+   xmemzero(&dstFile, sizeof(dstFile));
+
+   if ((bufObj = createByteArray(currentContext, scanLineOut)) == null)
+      return false;
+
+   // initialize srcFile structure
+
+   // initialize dstFile structure
+   dstFile.currentContext = currentContext;
+   dstFile.outputStreamObj = dstStreamObj;
+   dstFile.bufObj = bufObj;    // a byte array for writeBytes()
+   dstFile.writeBytesMethod = getMethod(OBJ_CLASS(dstFile.outputStreamObj), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
+   dstFile.params[0].asObj = dstFile.outputStreamObj;
+   dstFile.params[1].asObj = dstFile.bufObj;
+
+   // heap creation
+   heap = heapCreate();
+   IF_HEAP_ERROR(heap)
+   {
+      heapDestroy(heap);
+      throwException(currentContext, OutOfMemoryError, null);
+      goto finish;
+   }
+
+   bufAux = (uint8*) heapAlloc(heap, scanLineOut);
+
+   /* initialize default error handling. */
+   errbase.first_addon_message = JMSG_FIRSTADDONCODE;
+   errbase.last_addon_message = JMSG_LASTADDONCODE;
+   errbase.heap = heap;
+
+   // initialize error handler and compressor.
+   cinfo.err = jpeg_std_error(&errbase);
+   jpeg_create_compress(&cinfo);
+
+   // set the compressor output to dstFile
+   jpeg_stdio_dest(&cinfo, &dstFile);
+
+	cinfo.image_width = width; 	/* image width and height, in pixels */
+	cinfo.image_height = height;
+	cinfo.input_components = 3;	/* # of color components per pixel */
+	cinfo.in_color_space = JCS_RGB; /* colorspace of input image */
+
+   // set required parameters to default values
+	jpeg_set_defaults(&cinfo);
+
+   jpeg_set_quality(&cinfo, quality, TRUE);
+
+   /* Make optional parameter settings here */
+   jpeg_default_colorspace(&cinfo);
+
+    /* Start compressor */
+   jpeg_start_compress(&cinfo, true);
+
+   while (cinfo.next_scanline < cinfo.image_height) /* Process data */
+   {
+      for (i = width ; --i >= 0; pixels++)
+      {
+         *bufAux++ = pixels->r;
+         *bufAux++ = pixels->g;
+         *bufAux++ = pixels->b;
+      }
+      bufAux -= scanLineOut;
+
+      jpeg_write_scanlines(&cinfo, &bufAux, 1);
+   }
+
+   // Finish decompression and release memory. Do it in this order because output module
+   // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
+   jpeg_finish_compress(&cinfo);
+   jpeg_destroy_compress(&cinfo);
+   ret = true; // finished successfully
+
+finish:
+   if (bufObj != null)
+      setObjectLock(bufObj, UNLOCKED);
+   if (heap != null)
+      heapDestroy(heap);
+
+   return ret;
+}

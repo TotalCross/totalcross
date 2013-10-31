@@ -20,13 +20,11 @@
 package totalcross.ui.event;
 
 
-/**
- * ControlEvent is an event posted by a control.
- */
+
 
 public class EnabledStateChangeEvent extends ControlEvent
 {
-   /** The event type for a pressed event. */
+   
    public static final int ENABLED_STATE_CHANGE = 308;
 
    /** Constructs an empty EnabledStateChangeEvent. */

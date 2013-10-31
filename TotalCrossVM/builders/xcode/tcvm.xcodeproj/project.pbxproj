@@ -405,12 +405,14 @@
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
+		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
 		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
 		CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513F181EF13F00B1B00A /* sqlite3.c */; };
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
 		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
 		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
+		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -655,6 +657,7 @@
 		0F8C8B4F1549CFC700E0967F /* gfx_ex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_ex.h; sourceTree = "<group>"; };
 		0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_Graphics_c.h; sourceTree = "<group>"; };
 		0F8C8B531549CFC700E0967F /* mainview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = mainview.h; sourceTree = "<group>"; tabWidth = 3; };
+		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; name = mainview.m; path = mainview.m; sourceTree = "<group>"; tabWidth = 3; };
 		0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_MediaClip_c.h; sourceTree = "<group>"; };
 		0F8C8B561549CFC700E0967F /* media_Sound_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Sound_c.h; sourceTree = "<group>"; };
 		0F8C8B571549CFC700E0967F /* media_Sound_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = media_Sound_c.m; sourceTree = "<group>"; };
@@ -826,6 +829,7 @@
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
+		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
 		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
@@ -833,6 +837,7 @@
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
+		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1171,6 +1176,7 @@
 		0F8C8ABA1549CFC700E0967F /* device */ = {
 			isa = PBXGroup;
 			children = (
+				3AFCD5FA174D474F008BA920 /* scanner */,
 				0F8C8ABB1549CFC700E0967F /* android */,
 				0F8C8ABD1549CFC700E0967F /* bluetooth */,
 				0F8C8AC91549CFC700E0967F /* gps */,
@@ -1545,6 +1551,7 @@
 			isa = PBXGroup;
 			children = (
 				CEFA5147181EF24700B1B00A /* mainview.m */,
+				3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */,
 				3A11E08915791A9D00F883EC /* childview.h */,
 				3A2B6B251577F4BD00E3993A /* childview.m */,
 				0F8C8B491549CFC700E0967F /* AudioPlayer.h */,
@@ -1882,6 +1889,14 @@
 			name = sqlite;
 			sourceTree = "<group>";
 		};
+		3AFCD5FA174D474F008BA920 /* scanner */ = {
+			isa = PBXGroup;
+			children = (
+				3AFCD5FB174D474F008BA920 /* zxing.c */,
+			);
+			path = scanner;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2096,6 +2111,7 @@
 				0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */,
 				3A11E08A15791A9D00F883EC /* childview.h in Headers */,
 				3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */,
+				3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2345,6 +2361,7 @@
 				0F8C8E361549CFC700E0967F /* zutil.c in Sources */,
 				0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */,
 				3A2B6B261577F4BD00E3993A /* childview.m in Sources */,
+				3AFCD5FC174D474F008BA920 /* zxing.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

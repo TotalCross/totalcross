@@ -15,8 +15,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/Registry_c.h"
-#elif defined(PALMOS)
- #include "palm/Registry_c.h"
 #else
  #include "posix/Registry_c.h"
 #endif

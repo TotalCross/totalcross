@@ -87,7 +87,6 @@ public class MenuBarDropDown extends Window
    {
       focusTraversable = true;	//	timo@tc100b3 - must be focusTraversable for geographical focus to work
       this.items = items;
-      highResPrepared = true;
       canDrag = false;
       popX = x;
       popY = y;
@@ -156,7 +155,6 @@ public class MenuBarDropDown extends Window
    /** Selects the given index. */
    public int setSelectedIndex(int index)
    {
-      Graphics gr = getGraphics();
       if (index <= -1)
          index = selected = 1;
       else
@@ -165,16 +163,13 @@ public class MenuBarDropDown extends Window
       else
       if (selected > 0) // && (index > 0))
       {
-         drawCursor(gr,selected,false);
          selected = index;
-         drawCursor(gr,selected,true);
-         updateScreen();
+         Window.needsPaint = true;
       }
       else
       {
           selected = index >= 1 ? index : 1;
-          drawCursor(gr,selected,true);
-          updateScreen();
+          Window.needsPaint = true;
       }
       return selected;
    }
@@ -258,12 +253,6 @@ public class MenuBarDropDown extends Window
       return -1;
    }
 
-   private void drawCursor(Graphics g, int index, boolean on)
-   {
-      int f = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
-      g.eraseRect(1,ypos[index-1]-titleGap/2,width-3,lineHeight,on?bColor:f,on?f:bColor,foreColor);
-   }
-
    public void onEvent(Event event)
    {
       switch (event.type)
@@ -305,11 +294,8 @@ public class MenuBarDropDown extends Window
                int newSelected = getItemAt(pe.y);
                if (newSelected != selected)
                {
-                  Graphics gr = getGraphics();
-                  if (selected != -1) drawCursor(gr,selected,false);
                   selected = newSelected;
-                  if (selected != -1) drawCursor(gr,selected,true);
-                  updateScreen();
+                  Window.needsPaint = true;
                }
                if (event.type == PenEvent.PEN_UP && selected != -1)
                {
@@ -320,8 +306,7 @@ public class MenuBarDropDown extends Window
             else
             if (selected != -1) // outside valid area?
             {
-               drawCursor(getGraphics(),selected,false);
-               updateScreen();
+               Window.needsPaint = true;
                selected = -1;
             }
             break;
@@ -363,6 +348,12 @@ public class MenuBarDropDown extends Window
       // paing captions
       for (int i =1; i < items.length; i++)
       {
+         if (i == selected)
+         {
+            g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
+            g.fillRect(1,ypos[i-1]-titleGap/2,width-3,lineHeight);
+            g.backColor = bColor;
+         }
          MenuItem mi = items[i];
          if (mi.isSeparator) // dotted line?
             g.drawDots(0,ypos[i-1]-halfTG,width-3,ypos[i-1]-halfTG);
@@ -400,12 +391,6 @@ public class MenuBarDropDown extends Window
             g.drawText(mi.caption,3,ypos[i-1], textShadowColor != -1, textShadowColor);
             if (!mi.isEnabled) g.foreColor = fColor;
          }
-      }
-      // paint cursor
-      if (selected != -1)
-      {
-         drawCursor(g,selected,true);
-         updateScreen();
       }
    }
 

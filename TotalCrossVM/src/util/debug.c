@@ -19,8 +19,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/debug_c.h"
-#elif defined(PALMOS)
- #include "palm/debug_c.h"
 #elif defined(ANDROID)
  #include "android/debug_c.h"
 #else
@@ -34,14 +32,11 @@ void repaintActiveWindows(Context currentContext);
 ///////////////////////////////////////////////////////////////////////////
 //                                Debug                                  //
 ///////////////////////////////////////////////////////////////////////////
+static char debugstrSmall[64]; // used during startup and exit, when debugstr is not valid, for SHORT MESSAGES!
 
 bool initDebug()
 {
-#ifndef PALMOS
    debugstr = malloc(16384); // don't use xmalloc!
-#else
-   debugstr = malloc(4096);
-#endif
    return debugstr != null && privateInitDebug();
 }
 
@@ -64,14 +59,15 @@ void destroyDebug()
 TC_API bool debug(const char *s, ...)
 {
    va_list args;
+   char* buf = debugstr ? debugstr : debugstrSmall;
    if (debugstr == null) // guich@tc120_3: check disableDebug
       return false;
 
    va_start(args, s);
 
-   vsprintf(debugstr, s, args);
+   vsprintf(buf, s, args);
    va_end(args);
-   return debugStr(debugstr);
+   return debugStr(buf);
 }
 
 bool debugStr(char *s)
@@ -83,13 +79,9 @@ bool debugStr(char *s)
 
 TC_API bool trace(char *s) // used to trace function calls. also prints the memory available
 {
-   if (debugstr == null)
-      debugStr(s);
-   else
-   {
-      xstrprintf(debugstr, "#%s (%d)", s, getFreeMemory(false));
-      debugStr(debugstr);
-   }        
+   char* buf = debugstr ? debugstr : debugstrSmall;
+   xstrprintf(buf, "#%s (%d)", s, getFreeMemory(false));
+   debugStr(buf);
    return true;
 }
 
@@ -102,24 +94,17 @@ TC_API bool alert(char *s, ...)
 {
    if (s)
    {
-      if (debugstr) // allow debugging past end of destroyAll
-      {
-         va_list args;
-         va_start(args, s);
-         vsprintf(debugstr, s, args);
-         va_end(args);
-         privateAlert(debugstr);   
+      char* buf = debugstr ? debugstr : debugstrSmall;
+      va_list args;
+      va_start(args, s);
+      vsprintf(buf, s, args);
+      va_end(args);
+      privateAlert(buf);   
 #if defined(ANDROID) || defined(WINCE)
-         if (mainClass != null) // guich@tc123_
-            repaintActiveWindows(mainContext);
+      if (debugstr && mainClass != null) // guich@tc123_
+         repaintActiveWindows(mainContext);
 #endif     
-         return true;
-      }
-      else 
-      {
-         privateAlert(s);
-         return true;
-      }
+      return true;
    }
    return false;
 }

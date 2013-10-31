@@ -88,12 +88,15 @@ void userfree(png_structp png_ptr, png_voidp ptr)
    //heapFree(userData->heap, ptr);
 }
 
+void setTransparentColor(Object obj, Pixel color);
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
 void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4)
 {
    Heap heap;
    int32 count;
    uint8 buffer[512];
+   int32 transp = -1;
+   bool isAlpha = false;
 
    UserData userData;
    png_structp png_ptr;
@@ -149,10 +152,8 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
    png_set_progressive_read_fn(png_ptr,&userData,info_callback,row_callback,null);
 
    /* Create decompressor output buffer. */
-   while (!userData.quit && (count=pngRead(buffer, 512, &userData)) > 0)
-   {
+   while (!userData.quit && (count=pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, info_ptr, buffer, count);
-   }
 
    // guich@tc100: check if a comment came with the png
    if (info_ptr->text && strEq("Comment",info_ptr->text->key))
@@ -161,30 +162,28 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
-   if (png_ptr->color_type == 6)
-   {
-      Image_useAlpha(imageObj) = true;
-      Image_transparentColor(imageObj) = -1;
-   }
-   else
    // guich@tc100: set the transparent color
+   if (png_ptr->color_type == 6)
+      isAlpha = true;
+   else
    if (png_ptr->num_trans > 0)
-   {
+   {             
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) // palettized?
       {
          int32 i;
          if (png_ptr->num_trans == 256 && png_ptr->color_type == 3)
-            Image_useAlpha(imageObj) = true;
+            isAlpha = true;
          for (i = png_ptr->num_trans; --i >= 0;) // guich@tc120_60: must find the entry that has 0 in trans array
             if (png_ptr->trans[i] == 0)
             {
                png_color c = png_ptr->palette[i];
-               Image_transparentColor(imageObj) = (c.red << 16) | (c.green << 8) | c.blue;
+               transp = (c.red << 16) | (c.green << 8) | c.blue;
+               isAlpha = false;
                break;
             }
       }
       else
-         Image_transparentColor(imageObj) = (info_ptr->trans_values.red << 16) | (info_ptr->trans_values.green << 8) | info_ptr->trans_values.blue;
+         transp = (info_ptr->trans_values.red << 16) | (info_ptr->trans_values.green << 8) | info_ptr->trans_values.blue;
    }
 
    // Finish decompression and release memory. Do it in this order because output module
@@ -197,6 +196,9 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
+
+//   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
+//      setTransparentColor(imageObj, (Pixel)transp);
 }
 
 /**   do any setup here, including setting any of the transformations
@@ -218,7 +220,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
-
+   
    /*
    | set up transformation params:
    | expand images of all color-type and bit-depth to 3x8 bit RGB images

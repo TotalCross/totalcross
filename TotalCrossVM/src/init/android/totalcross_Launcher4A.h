@@ -25,6 +25,8 @@ extern "C" {
 #define totalcross_Launcher4A_SCREEN_CHANGED 8L
 #undef totalcross_Launcher4A_SIP_CLOSED
 #define totalcross_Launcher4A_SIP_CLOSED 9L
+#undef totalcross_Launcher4A_MULTITOUCHEVENT_SCALE
+#define totalcross_Launcher4A_MULTITOUCHEVENT_SCALE 10L
 #undef totalcross_Launcher4A_TRANSITION_NONE
 #define totalcross_Launcher4A_TRANSITION_NONE 0L
 #undef totalcross_Launcher4A_TRANSITION_OPEN
@@ -89,11 +91,11 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_initializeVM
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    nativeSetOffcreenBitmap
+ * Method:    nativeInitSize
  * Signature: (Landroid/graphics/Bitmap;)V
  */
-JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap
-  (JNIEnv *, jobject, jobject);
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeInitSize
+  (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     totalcross_Launcher4A

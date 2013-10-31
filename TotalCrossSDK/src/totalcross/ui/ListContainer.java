@@ -220,7 +220,7 @@ public class ListContainer extends ScrollContainer
             try
             {
                int iw = img.getWidth();
-               return img.getSmoothScaledInstance(iw * imgH / ih, imgH, img.transparentColor);
+               return img.getSmoothScaledInstance(iw * imgH / ih, imgH);
             } 
             catch (ImageException ime) {} // just keep the previous image intact
          return img;

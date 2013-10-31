@@ -14,8 +14,19 @@
 #ifndef TCVM_H
 #define TCVM_H
 
-#ifdef ANDROID
+//#define ENABLE_TRACE
+
+#ifdef darwin
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#define __gl2_h_
+#endif
+
+#if defined(ANDROID)
 #include <jni.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
 #endif
 
 #if HAVE_CONFIG_H
@@ -62,10 +73,6 @@
  #endif
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
-#elif defined PALMOS
- #include <string.h>  // for memmove
-// #include <PalmOSARM.h>
- #include <PalmCompatibility.h>
 #endif
 
 #include <stdarg.h>

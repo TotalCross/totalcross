@@ -33,11 +33,6 @@ import totalcross.ui.event.Event;
 
 public class SignatureTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Object[] signatures;
    private Key[] sigKeys;
    private Key[] verKeys;

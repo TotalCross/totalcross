@@ -1,11 +1,11 @@
 Title=TotalCross SDK @VERSION@
-Path=c:\TotalCrossSDK
+Path=c:\TotalCross2SDK
 Overwrite=1
 Setup=setup.bat
 
 Text
 {
-Welcome to the installation of TotalCross SDK @VERSION@ with DEMO virtual machines. The SDK is fully functional, with all libraries included in the licensed version,
+Welcome to the installation of TotalCross 2 SDK @VERSION@ with DEMO virtual machines. The SDK is fully functional, with all libraries included in the licensed version,
 but there's a time period of 80 hours of the virtual machine. After this period, you can just hard-reset the device and install it again.
 
 

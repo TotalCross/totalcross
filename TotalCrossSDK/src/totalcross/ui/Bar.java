@@ -89,7 +89,7 @@ public class Bar extends Container
                try
                {
                   leftIcon = null;
-                  leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH,leftIcon0.useAlpha ? -1 : backColor);
+                  leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH);
                } catch (ImageException e) {icon = icon0;}
          }
          else
@@ -97,7 +97,7 @@ public class Bar extends Container
          {
             icon = null;
             if (icon0 != null)
-               icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
+               icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH);
          } catch (ImageException e) {icon = icon0;}
       }
       
@@ -142,7 +142,6 @@ public class Bar extends Container
             int tx = px;
             if (leftIcon != null)
             {
-               g.drawOp = leftIcon.useAlpha ? Graphics.DRAW_PAINT : Graphics.DRAW_SPRITE;
                g.drawImage(leftIcon,px,(height-leftIcon.getHeight())/2);
                tx += leftIcon.getWidth()+gap;
             }

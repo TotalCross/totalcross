@@ -274,7 +274,7 @@ public final class TCMethod implements TCConstants
          else
          {
             java.lang.reflect.Method methods[] = c4D.getDeclaredMethods();
-            // lookahead to see if there are 4D/4B methods with this same name
+            // lookahead to see if there are 4D methods with this same name
             Hashtable ht = new Hashtable(methods.length);
             for (int i =0; i < methods.length; i++)
                ht.put(methods[i].getName(),"");
@@ -284,7 +284,7 @@ public final class TCMethod implements TCConstants
                if (name.endsWith("4D"))
                   name = name.substring(0,name.length()-2);
                else
-               if (name.endsWith("4B") || ht.exists(name+"4D"))
+               if (ht.exists(name+"4D"))
                   continue;
                if (name.equals(method) && areParametersCompatible(params, methods[i].getParameterTypes()))
                {

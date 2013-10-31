@@ -147,7 +147,6 @@ public class MessageBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       ha = 6 * Settings.screenHeight/160; // guich@450_24: increase arrow size if screen size change
       wa = ha*2+1; // guich@570_52: now wa is computed from ha
       if (text == null)
@@ -215,7 +214,7 @@ public class MessageBox extends Window
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
          if (hb == 0) hb = ha;
-         hm = Settings.screenHeight - captionH - hb - ha;
+         hm = Math.max(fmH,Settings.screenHeight - captionH - hb - ha);
          hasScroll = true;
       }
       else 
@@ -282,7 +281,7 @@ public class MessageBox extends Window
     */
    public void setIcon(Image icon) throws ImageException
    {
-      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent,-1);
+      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent);
    }
    
    /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */

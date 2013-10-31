@@ -28,9 +28,7 @@ public class HelloWorld extends MainWindow
    static
    {
       Settings.isFullScreen = true;
-      Settings.useNewFont = true;
    }
-
    
    Button btn;
 
@@ -48,7 +46,6 @@ public class HelloWorld extends MainWindow
          "Platform is " + Settings.platform,
          "User is " + Settings.userName,
          "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
-         "Has Keypad only is " + Settings.keypadOnly,
          "Virtual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
          "Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,
@@ -56,16 +53,19 @@ public class HelloWorld extends MainWindow
          "Device font height is " + Settings.deviceFontHeight,
          "Screen bpp is " + Settings.screenBPP,
          "timeZone is " + Settings.timeZone,
+         "timeZoneMinutes is " + Settings.timeZoneMinutes,
+         "daylightSavings is " + Settings.daylightSavings,
+         "daylightSavingsMinutes is " + Settings.daylightSavingsMinutes,
          "dateFormat is " + Settings.dateFormat,
          "dateSeparator is " + Settings.dateSeparator,
          "decimalSeparator is " + Settings.decimalSeparator,
          "thousandsSeparator is " + Settings.thousandsSeparator + "  ",
          "timeSeparator is " + Settings.timeSeparator,
-         "daylightSavings is " + Settings.daylightSavings,
          "is24Hour is " + Settings.is24Hour,
          "weekStart is " + Settings.weekStart,
          "Battery is at " + Vm.getRemainingBattery() + "%",
          "Free memory is at " + Vm.getFreeMemory(),
+         "Line number is " + Settings.lineNumber,
          "Rom serial number is " + Settings.romSerialNumber,
          "IMEI is "+ Settings.imei,
          "ICCID is "+ Settings.iccid,

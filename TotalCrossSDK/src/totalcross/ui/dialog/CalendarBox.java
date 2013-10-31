@@ -78,7 +78,6 @@ public class CalendarBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       String[]defCaps = new String[42];
       for (int i=0; i < 42; i++)
          defCaps[i] = Convert.toString(i+10);

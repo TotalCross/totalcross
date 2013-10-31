@@ -62,13 +62,5 @@ static void getWorkingDir()
 
    TCHARP2CharPBuf(sl, exeName);
 }
-#elif defined(__SYMBIAN32__)
-static void getWorkingDir()
-{
-   // get the path to the vm
-   TCHARP2CharPBuf("/system/apps/TotalCross", vmPath);
-   TCHARP2CharPBuf(".", appPath);
-   TCHARP2CharPBuf("unknown", exeName);
-}
 #endif
 #endif

@@ -72,6 +72,8 @@ public final class Settings4A
    // device capabilities
    public static boolean virtualKeyboard;
    public static boolean keypadOnly;
+   
+   public static String lineNumber;
 
    public static void refresh()
    {
@@ -90,24 +92,35 @@ public final class Settings4A
 	   String id1,id2;
       // platform
       String v = Build.VERSION.RELEASE;
-      double vd = 0;
-      while (vd == 0 && v.length() > 0)
-         try
-         {
-            vd = Double.valueOf(v);            
-         }
-         catch (Exception e)
-         {
-            v = v.substring(0,v.length()-1);
-         }
-      romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16    
+      // guich@tc200: java was rounding 2.3 to 2.29...
+      if (v.length() == 5 && v.charAt(1) == '.' && v.charAt(3) == '.') // 2.3.4
+         romVersion = Integer.parseInt(v.replace(".",""));
+      else
+      if (v.length() == 3 && v.charAt(1) == '.') // 2.3
+         romVersion = Integer.parseInt(v.replace(".","")) * 10; // 23 * 10 = 230
+      else
+      {      
+         double vd = 0;
+         while (vd == 0 && v.length() > 0)
+            try
+            {
+               vd = Double.valueOf(v);            
+               vd += 0.005; // round up
+            }
+            catch (Exception e)
+            {
+               v = v.substring(0,v.length()-1);
+            }
+         romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16
+      }
       deviceId = Build.MANUFACTURER + " " + Build.MODEL;
       
       // userName
       userName = null; // still looking for a way to retrieve this on droid.	   
 	   
       // imei
-      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
+      lineNumber = telephonyMgr.getLine1Number();
       // handle dual-sim phones. Usually, they overload the method with a
       Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
       Method[] mtds = cc.getDeclaredMethods();
@@ -228,7 +241,7 @@ public final class Settings4A
 	   
 	   if (!Loader.IS_EMULATOR) // running on emulator, right now there's no way to retrieve more settings from it.
 	   {
-	      ContentResolver cr = Launcher4A.getAppContext().getContentResolver();
+	      ContentResolver cr = Launcher4A.loader.getContentResolver();
 	      
 	      Configuration config = new Configuration();
 	      Settings.System.getConfiguration(cr, config);
@@ -250,12 +263,15 @@ public final class Settings4A
 	   }
 	}
 	
+   public static int timeZoneMinutes;
+   public static int daylightSavingsMinutes;
    public static void settingsRefresh()
    {
-      java.util.Calendar cal = java.util.Calendar.getInstance();
-      daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0;
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
-      timeZone = tz.getRawOffset() / (60*60*1000);
+      daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      daylightSavings = daylightSavingsMinutes != 0;
+      timeZone = tz.getRawOffset() / (60*60000);
+      timeZoneMinutes = tz.getRawOffset() / 60000;
       timeZoneStr = java.util.TimeZone.getDefault().getID();
    }
    

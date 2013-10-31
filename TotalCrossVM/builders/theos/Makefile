@@ -5,7 +5,7 @@ type ?= demo
 
 ARCHS = armv7
 
-libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork CoreLocation Foundation
+libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork CoreLocation Foundation OpenGLES QuartzCore
 
 libtcvm_CFLAGS = -std=gnu99 -fms-extensions -O3 -fomit-frame-pointer -DTHEOS -Dlinux -pthread -DPOSIX -Ddarwin -Ddarwin9 -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/axtls -I${sourcedir}/event
 
@@ -68,6 +68,7 @@ NM_IO_FILES =                                   \
 	$(sourcedir)/nm/io/File.c                    \
 	$(sourcedir)/nm/io/device_PortConnector.c    \
 	$(sourcedir)/nm/io/device/RadioDevice.c      \
+	$(sourcedir)/nm/io/device/scanner/zxing.c    \
 	$(sourcedir)/nm/io/device/gps/GPS.c
 
 NM_LANG_FILES =                               \
@@ -182,11 +183,27 @@ PNG_FILES =                                \
 	$(sourcedir)/png/pngset.c                  \
 	$(sourcedir)/png/pngtrans.c
 
-JPEG_FILES =                               \
+JPEG_FILES =                                 \
+   $(sourcedir)/jpeg/jcapimin.c               \
+   $(sourcedir)/jpeg/jcapistd.c               \
+   $(sourcedir)/jpeg/jccoefct.c               \
+   $(sourcedir)/jpeg/jccolor.c                \
+   $(sourcedir)/jpeg/jcdctmgr.c               \
+   $(sourcedir)/jpeg/jchuff.c                 \
+   $(sourcedir)/jpeg/jcinit.c                 \
+   $(sourcedir)/jpeg/jcmainct.c               \
+   $(sourcedir)/jpeg/jcmarker.c               \
+   $(sourcedir)/jpeg/jcmaster.c               \
+   $(sourcedir)/jpeg/jcomapi.c                \
+   $(sourcedir)/jpeg/jcparam.c                \
+   $(sourcedir)/jpeg/jcphuff.c                \
+   $(sourcedir)/jpeg/jcprepct.c               \
+   $(sourcedir)/jpeg/jcsample.c               \
 	$(sourcedir)/jpeg/jidctred.c               \
 	$(sourcedir)/jpeg/jdapimin.c               \
 	$(sourcedir)/jpeg/jdapistd.c               \
 	$(sourcedir)/jpeg/jdatasrc.c               \
+   $(sourcedir)/jpeg/jdatadst.c               \
 	$(sourcedir)/jpeg/jdcoefct.c               \
 	$(sourcedir)/jpeg/jdcolor.c                \
 	$(sourcedir)/jpeg/jddctmgr.c               \
@@ -199,8 +216,8 @@ JPEG_FILES =                               \
 	$(sourcedir)/jpeg/jdpostct.c               \
 	$(sourcedir)/jpeg/jdsample.c               \
 	$(sourcedir)/jpeg/jerror.c                 \
+	$(sourcedir)/jpeg/jfdctfst.c               \
 	$(sourcedir)/jpeg/jidctfst.c               \
-	$(sourcedir)/jpeg/jcomapi.c                \
 	$(sourcedir)/jpeg/jmemmgr.c                \
 	$(sourcedir)/jpeg/jmemnobs.c               \
 	$(sourcedir)/jpeg/JpegLoader.c             \

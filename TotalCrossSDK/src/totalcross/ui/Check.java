@@ -66,6 +66,11 @@ public class Check extends Control
     */
    public boolean leftJustify;
    
+   /** Sets the text color of the check. Defaults to the foreground color. 
+    * @since TotalCross 2.0.
+    */
+   public int textColor = -1;
+   
    /** Set to the color of the check, if you want to make it different of the foreground color.
     * @since TotalCross 1.3
     */
@@ -160,13 +165,13 @@ public class Check extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return getMaxTextWidth() + (Settings.useNewFont ? fmH+Edit.prefH+2 : fm.ascent + 2);
+      return getMaxTextWidth() + fmH+Edit.prefH+2;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH*lines.length+Edit.prefH : fm.ascent*lines.length;
+      return fmH*lines.length+Edit.prefH;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
@@ -179,7 +184,7 @@ public class Check extends Control
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
-      int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+      int wh = lines.length == 1 ? height : fmH+Edit.prefH;
       int xx,yy;
 
       // guich@200b4_126: repaint the background of the whole control
@@ -197,7 +202,7 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh, backColor),0,0);
+            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor),0,0);
             if (checked)
                g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
@@ -210,7 +215,7 @@ public class Check extends Control
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
       xx = wh+2; // guich@300_69
-      g.foreColor = cfColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }
@@ -238,7 +243,7 @@ public class Check extends Control
          int wh = height;
          int m = 2*wh/5;
          int yy = m;
-         int xx = uiPalm ? 2 : 3;
+         int xx = 3;
          wh -= xx;
          if (fmH <= 10) // guich@tc110_18
          {
@@ -290,7 +295,7 @@ public class Check extends Control
       if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
-         int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+         int wh = lines.length == 1 ? height : fmH+Edit.prefH;
          split(this.width-wh-2);
          if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
             setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);

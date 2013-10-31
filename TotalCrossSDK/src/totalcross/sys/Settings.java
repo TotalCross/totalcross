@@ -29,17 +29,16 @@ public final class Settings
    * Field that represents the version of the TotalCross Virtual Machine. The major version is
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
-   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */
-   public static int version = 167;
+   public static int version = 200;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "1.671";
+   public static String versionStr = "2.0rc4";
     
    /** Current build number.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 16;
+   public static int buildNumber = 20;
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
@@ -83,8 +82,6 @@ public final class Settings
    
    /** Underlying platform is Java. To be used with the <code>platform</code> member. */
    public static final String JAVA          = "Java";
-   /** Underlying platform is Palm OS. To be used with the <code>platform</code> member. */
-   public static final String PALMOS        = "PalmOS";
    /** Underlying platform is Windows CE. To be used with the <code>platform</code> member. */
    public static final String WINDOWSCE     = "WindowsCE";
    /** Underlying platform is Pocket PC. To be used with the <code>platform</code> member. */
@@ -97,8 +94,6 @@ public final class Settings
    public static final String LINUX         = "Linux";
    /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */
    public static final String IPHONE        = "iPhone";
-   /** Underlying platform is BlackBerry. To be used with the <code>platform</code> member. */
-   public static final String BLACKBERRY    = "BlackBerry";
    /** Underlying platform is Android. To be used with the <code>platform</code> member. */
    public static final String ANDROID       = "Android";
    /** Underlying platform is iPad. To be used with the <code>platform</code> member. */   
@@ -107,7 +102,6 @@ public final class Settings
    /** Field that returns the current platform name.
     * The possible return values are the constants described below.
     * @see #JAVA         
-    * @see #PALMOS       
     * @see #WINDOWSCE    
     * @see #POCKETPC     
     * @see #WINDOWSMOBILE
@@ -115,7 +109,6 @@ public final class Settings
     * @see #IPAD
     * @see #LINUX        
     * @see #IPHONE       
-    * @see #BLACKBERRY   
     * @see #ANDROID      
     * @see #isWindowsDevice()
     * @see #isIOS()
@@ -198,24 +191,14 @@ public final class Settings
 
    // Not set by the VM
 
-   /** Field that stores the current user interface style.
-    * It must be set by calling Settings.setUIStyle.
-    * @see #PalmOS
-    * @see #WinCE
-    * @see #Flat
-    * @see #Vista
-    * @see #Android
-    */
-   public static byte uiStyle;
-   
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat or Android 
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
     */
    public static final byte WinCE = 0;
    /** Defines a PalmOS user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
-    * @deprecated Use Flat or Android
+    * @deprecated Use Flat, Vista or Android. This user interface does not work on TotalCross 2. 
     */
    public static final byte PalmOS = 1;
    /** Defines a FLAT user interface style, like the ones used in Pocket PC 2003. Used in the uiStyle member.
@@ -231,6 +214,14 @@ public final class Settings
     */
    public static final byte Android = 4; // guich@tc130
 
+   /** Field that stores the current user interface style.
+    * It must be set by calling Settings.setUIStyle.
+    * @see #Flat
+    * @see #Vista
+    * @see #Android
+    */
+   public static byte uiStyle = Vista;
+   
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;
    /** Constant used in dateFormat: day month year */
@@ -238,16 +229,45 @@ public final class Settings
    /** Constant used in dateFormat: year month day */
    public static final byte DATE_YMD = 3;
 
-   /** Field that represents if the device is in daylight savings mode.
-     * @since SuperWaba 3.4
-     */
+   /** 
+    * Field that represents if the device is in daylight savings mode.
+    * @since SuperWaba 3.4
+    * @deprecated Use daylightSavingsMinutes
+    */
    public static boolean daylightSavings;
+   
+   /**
+    * Daylight savings minutes to add; will be 0 when not in daylight savings.
+	* To compute the difference to GMT+0, use:
+    * <pre>
+    * int dif = Settings.timeZoneMinutes + Settings.daylightSavingsMinutes;
+    * int hours = dif / 60;
+    * int minutes = Math.abs(dif % 60);
+    * </pre>
+    * @since TotalCross 2.0
+    */
+   public static int daylightSavingsMinutes;
 
-   /** Field that represents the timezone used for this device. This is the number of hours
-     * away from GMT (E.g.: for Brazil it will return -3).
-     * @since SuperWaba 3.4
-     */
+   /**
+    * Field that represents the timezone used for this device. This is the number of hours
+    * away from GMT (E.g.: for Brazil it will return -3).
+    * @since SuperWaba 3.4
+    * @deprecated Use timeZoneMinutes
+    */
    public static int timeZone;
+   
+   /**
+    * Timezone in minutes. Some countries have a timezone difference in minutes, like Iran with 3:30.
+    * In this example, timeZoneMinutes will be 210.
+    * To compute the difference to GMT+0, use:
+    * <pre>
+    * int dif = Settings.timeZoneMinutes + Settings.daylightSavingsMinutes;
+    * int hours = dif / 60;
+    * int minutes = Math.abs(dif % 60);
+    * </pre>
+    * @since TotalCross 2.0
+    */
+   public static int timeZoneMinutes;
 
    /** True if this handheld has a virtual keyboard, I.E., like the soft input panel in windows ce devices or in the Tungsten T|X. */
    public static boolean virtualKeyboard;
@@ -300,18 +320,9 @@ public final class Settings
      * Specific for Palm OS (Windows CE does not let the user hide records). This can be used to let the Operating System do the <i>login</i>
      * for a program that requires privacy.
      * @since SuperWaba 4.21
+     * @deprecated This was only used in Palm OS, which is now unsupported
      */
    public static boolean showSecrets = true; // guich@421_35
-
-   /** Field that represents if this device has a keypad only (many SmartPhones have keypads only).
-    * On such devices, presses in the 1-9 and *# pops up the KeyPad class (used in phones without alpha keys).
-    * You can set keypadOnly to enable/disable the the KeyPad popup.
-    * The disabling occurs everytime a non-digit is pressed.
-    * 
-    * This class is still used in BlackBerry devices.
-    * @since SuperWaba 5.7
-    */
-   public static boolean keypadOnly; // fdie@570_107 the device has a keypad only (no alphanum keyboard)
 
    /** Defines if the arrow keys will be used to change the focus using the keyboard. Note that some controls
     * will behave differently. It will be true for pen less devices, and it may be changed
@@ -361,9 +372,6 @@ public final class Settings
     * by the x one, which just minimizes the application. The ok closes the application, and the
     * x minimizes it. By default, it is CLOSE_BUTTON, which closes the application.
     *
-    * On BlackBerry, if this is set to <code>CLOSE_BUTTON</code>, the application is closed
-    * when the END key is pressed; otherwise, it is sent to background (minimized). The default behavior
-    * is sending the application to background (set to <code>MINIMIZE_BUTTON</code>).
     * @since TotalCross 1.11
     * @see #CLOSE_BUTTON
     * @see #MINIMIZE_BUTTON
@@ -446,11 +454,6 @@ public final class Settings
     * @since TotalCross 1.0
     */
    public static boolean showDesktopMessages = true;
-
-   /** Field that represents the number of the hidden volume (flash memory), or -1 if the device does not have it or if its not a Palm OS device
-    * @since TotalCross 1.0
-    */
-   public static int nvfsVolume = -1;
 
    /** Field that represents the smartphone IMEI (if this device is a GSM, UMTS or IDEN smartphone), or null if there's none.
     * @since TotalCross 1.0
@@ -567,7 +570,7 @@ public final class Settings
    
    /** Defines platforms that the touchscreen is used MOSTLY with the finger.
     * We say <i>mostly</i> because there are special pens that can be used with iPhone; however, we consider this an exception, not the rule.
-    * Currently this value is true for iPhone and Android platforms, and the Blackberry Storm.
+    * Currently this value is true for iPhone and Android platforms.
     * <br><br>
     * When fingerTouch is true, all controls that can scroll, like ListBox, Grid, ScrollContainer, MultiEdit, etc, 
     * will have the flick and drag enabled and the ScrollBar will be replaced by the ScrollPosition.
@@ -690,9 +693,6 @@ public final class Settings
     */
    public static boolean moveCursorToEndOnFocus;
    
-   /** No longer used or supported. */
-   public static boolean isMinimized; // used in Blackberry's stub!
-
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
     * the SIP will stay at the bottom of the screen (otherwise, it will be moved to the top).
@@ -732,32 +732,6 @@ public final class Settings
     * @see totalcross.ui.Control#uiAdjustmentsBasedOnFontHeightIsSupported
     */
    public static boolean uiAdjustmentsBasedOnFontHeight;
-
-   /** Change to true to use the new font added in version 1.3. The main difference between the old and the 
-    * new fonts is that the new one was generated INSIDE an Android emulator, thus, it uses the Android's
-    * True Type Font engine, which is far better than the Java's engine, used to generate the old font.
-    * Thus, the new font has a better appearance, and its also a bit smaller than the old font 
-    * (the new height is about 2 below the old height, so if you used 20 for the old font, you should use 
-    * 22 for the new one).
-    * 
-    * To have your application's font be optimzed for all platforms, start by using the new font. 
-    * Android's default font size is computed based on the new font.  
-    * Using the old font on Android will result in less-than optimal results on Android devices.
-    * 
-    * The standard VM installation files includes both new and old font files. However, if you use
-    * the tc.Deploy option that generates a single package (/p), only the choosen font will be packaged.
-    * 
-    * You must change this property at the application's static initializer.
-    * <pre>
-    * static
-    * {
-    *    Settings.useNewFont = true;
-    * }
-    * </pre>
-    * 
-    * @since TotalCross 1.3
-    */
-   public static boolean useNewFont;
 
    /** Set to true to post a PRESSED event when an item is programatically selected or changed.
     * 
@@ -808,14 +782,41 @@ public final class Settings
     */
    public static int windowFont;
    
+   /** Returns the line number of the device. Note that if the phone is off it may return null. 
+    * It can be null also if the device uses a non-standard API. Works only on Android, since iOS
+    * does not allow to get it programatically. For dual-sim devices, returns only the first line number.
+    * @since TotalCross 1.7 / 2.0
+    */
+   public static String lineNumber;
+   
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()
    {
       return screenWidth > screenHeight;
    }
-   
-	// this class can't be instantiated
+
+   /**
+    * Returns true if this is an open gl platform (IOS or Android).
+    * 
+    * @since TotalCross 1.68
+    */
+   public static boolean isOpenGL;
+
+   // this class can't be instantiated
 	private Settings()
 	{
 	}
+	
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static final String PALMOS        = "PalmOS";
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static final String BLACKBERRY    = "BlackBerry";
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static int nvfsVolume = -1;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean useNewFont;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean isMinimized;
+   /** Dumb field to keep compilation compatibility with TC 1 */
+   public static boolean keypadOnly;
 }

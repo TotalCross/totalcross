@@ -33,11 +33,6 @@ import totalcross.ui.media.MediaClipEvent;
 
 public class SoundRecorder extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    Edit edTime;
    Button btnRecord, btnStop, btnPlay;
    MediaClip clip;
@@ -58,7 +53,6 @@ public class SoundRecorder extends MainWindow
          // create the record, stop and play image buttons
          // record: a red circle
          Image imgRec = new Image(wh, wh);
-         imgRec.transparentColor = 0;
          Graphics g = imgRec.getGraphics();
          g.backColor = Color.RED;
          g.foreColor = 1;
@@ -66,7 +60,6 @@ public class SoundRecorder extends MainWindow
          g.drawCircle(wh / 2, wh / 2, wh / 2 - 1);
          // stop: a blue rectangle
          Image imgStop = new Image(wh, wh);
-         imgStop.transparentColor = 0;
          g = imgStop.getGraphics();
          g.backColor = Color.BLUE;
          g.foreColor = 1;
@@ -74,7 +67,6 @@ public class SoundRecorder extends MainWindow
          g.drawRect(0, 0, wh, wh);
          // play: a green right triangle
          Image imgPlay = new Image(wh, wh);
-         imgPlay.transparentColor = 0;
          g = imgPlay.getGraphics();
          g.drawArrow(wh / 3, 0, wh / 2, Graphics.ARROW_RIGHT, false, 0x00AA00);
 

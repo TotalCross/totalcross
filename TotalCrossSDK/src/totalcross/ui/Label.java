@@ -320,8 +320,8 @@ public class Label extends Control
       originalText = text;
       if (marqueeTimer != null)
          stopMarquee();
-      this.text = text;
-      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
+      this.text = autoSplit && width > 0 ? Convert.insertLineBreak(this.width, fm, text) : text;
+      lines = this.text.equals("") ? new String[]{""} : Convert.tokenizeString(this.text,'\n'); // guich@tc100: now we use \n
       currentLine = 0;
       onFontChanged();
       Window.needsPaint = true;
@@ -509,7 +509,7 @@ public class Label extends Control
             g.fillRect(0,0,width,height); // guich@200b4_120: make sure the label is painted with the correct color
          else
          {
-            g.drawRoundGradient(0,0,width, height, 0,0,0,0,firstGradientColor, secondGradientColor, backgroundType == VERTICAL_GRADIENT_BACKGROUND);
+            g.fillShadedRect(0,0,width, height, true, backgroundType == HORIZONTAL_GRADIENT_BACKGROUND,firstGradientColor, secondGradientColor,100);
             g.foreColor = invert ? backColor : fColor;
             g.backColor = invert ? fColor : backColor;
          }

@@ -27,23 +27,23 @@ import totalcross.ui.dialog.*;
 /**
  * Scanner accesses some popular barcode scanners.
  * <p>
- * Scanner access is only available when running under a native TotalCross VM, it
- * is not supported when running under Java. It is, tho, emulated under Java:
+ * Scanner access is only available when running on a native TotalCross VM; it
+ * is not supported when running on Java. It is, though, emulated on Java:
  * a popup dialog will ask you for a barcode symbol which will be returned every time
  * the <code>getData</code> method is called.
  * <p>
  * Since there is only one scanner per device, the scanner class is static.
  * Activating the scanner causes the physical scanner to be powered, and
- * enables the trigger.  Deactivating the scanner removes power from the
+ * enables the trigger. Deactivating the scanner removes the power from the
  * scanner and prevents scans from taking place. The scanner should always
  * be deactivated at the end of processing to prevent excessive battery drain.
  * <p>
  * When the scanner is activated, scan events will appear in the MainWindow's
- * onEvent method.  The scan events will contain a String describing either
+ * onEvent method.  The scan events will contain a string describing either
  * the item scanned or a battery error. Deactivating the scanner prevents
  * scan events from being delivered.
  * <p>
- * You can change this behaviour in some devices by calling setContinuousScanning(false),
+ * You can change this behaviour on some devices by calling setContinuousScanning(false),
  * which will cause each call to activate() to only allow a single scan.
  * <p>
  * Since barcodes can have many formats, this class includes a method to
@@ -162,7 +162,7 @@ public class Scanner
    public final static int DL_SCAN_PARAM_KEYBOARD_EMULATION  = 0x4000007;
    /** To be used with Datalogic scanners, in the setParam method: disable/enable the soft trigger functions. if enabled, allows the scanner to read, even if the scan button is not pressed */
    public final static int DL_SCAN_PARAM_SOFT_TRIGGER        = 0x4000008;
-   /** To be used with Datalogic scanners, in the setParam method: if enabled, allows the scanner to read, even if the scanenable() function has not been called. */
+   /** To be used with Datalogic scanners, in the setParam method: if enabled, allows the scanner to read, even if the active() function has not been called. */
    public final static int DL_SCAN_PARAM_SCAN_ALWAYS_ENABLED = 0x4000009;
    /** To be used with Datalogic scanners, in the setParam method: beeper type, dual-tone (0), monotone (1) */
    public final static int DL_SCAN_PARAM_BEEPER_TYPE         = 0x400000A;
@@ -753,26 +753,29 @@ public class Scanner
 
    static
    {
-      driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                     Vm.attachNativeLibrary("Motorola") || 
-                     Vm.attachNativeLibrary("Symbol") || 
-                     Vm.attachNativeLibrary("Dolphin") || 
-                     Vm.attachNativeLibrary("OpticonH16") || 
-                     Vm.attachNativeLibrary("Intermec");
-      if (!driverLoaded && tries++ == 0)
-         throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      if (!Settings.platform.equals(Settings.ANDROID))
+      {
+         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
+                        Vm.attachNativeLibrary("Motorola") || 
+                        Vm.attachNativeLibrary("Symbol") || 
+                        Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("OpticonH16") || 
+                        Vm.attachNativeLibrary("Intermec");
+         if (!driverLoaded && tries++ == 0)
+            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      }
    }
 
    /**
     * Flag which can be set to false so activate() only performs one scan
     * <p>
     * Note: the Symbol Scanner API differs on Palm and PocketPC (the Java
-    * emulation works the same as PocketPC).  Under Palm activating the scanner
+    * emulation works the same as PocketPC). On Palm activating the scanner
     * will allow the user to scan any number of barcodes until the scanner is
-    * deactivated.  Under Java/PocketPC activating the Scanner only schedules
+    * deactivated. On Java/PocketPC activating the Scanner only schedules
     * a single scan.
     * <p>
-    * We obviously need this class act the same on both platforms.  Rather than
+    * We obviously need this class behave in the same way on both platforms.  Rather than
     * forcing one choice on the user, the continuousScanning flag allows the user
     * to choose which mode they want.
     */
@@ -891,8 +894,8 @@ public class Scanner
 
    /**
    * Commit the barcode parameters to the scanner. Returns true if the
-   * operation is successful and false otherwise.
-   * Not used in the Windows CE platform.
+   * operation is successful and false, otherwise.
+   * Not used on the Windows CE platform.
    *
    */
    public static boolean commitBarcodeParams()
@@ -903,7 +906,7 @@ public class Scanner
 
    /**  Set the length of a barcode. The lengthType must be one of the following values:
     * @param barcodeType One of the BARxxxx constants
-    * @param lengthType 0 (Variable length, min and max are ignored), 1 (length = min), 2 (length = min || length = max), 3 (min <= length <= max). Careful: in Motorola Scanners, the min and max must be used in inverted order due to a bug in the MOTOROLA API.
+    * @param lengthType 0 (variables length, min, and max are ignored), 1 (length = min), 2 (length = min || length = max), 3 (min <= length <= max). Careful: in Motorola Scanners, min and max must be used in inverted order due to a bug in the MOTOROLA API.
     * @param min The minimum value
     * @param max The maximum value
     */
@@ -934,8 +937,8 @@ public class Scanner
    native public static String getScanManagerVersion4D(); //return !isActive?null:scannerGetScanManagerVersion();
 
    /**
-   * Get the Scanner Port Driver version as an hexadecimal String. If an error occurs or if this method
-   * is called before the Scanner is initialized, a null String will be returned.
+   * Get the Scanner Port Driver version as an hexadecimal string. If an error occurs or if this method
+   * is called before the Scanner is initialized, a null string will be returned.
    */
    public static String getScanPortDriverVersion()
    {
@@ -945,7 +948,7 @@ public class Scanner
 
    /**
    * Deactivate the scanner. Returns true if the operation is successful
-   * and false otherwise.
+   * and false, otherwise.
    */
    public static boolean deactivate()
    {
@@ -976,25 +979,13 @@ public class Scanner
       Window win = dest.getParentWindow(); // guich@400_44
       if (win != null)
          win.validate();
-      if (Settings.platform.equals(Settings.PALMOS)) // support PalmOS/SDL too
-      {
-         // If we are running on a Palm unit then calling activate() on the Symbol Scanner
-         // API will cause the scanner to allow any number of scans until deactivate is
-         // called. So, if continuousScanning is set to false then we need to disable the
-         // scanner
-         if (!continousScanning)
-            deactivate();
-      }
+      // If we are running on a PocketPC unit, or under Java emulation, then calling
+      // activate() on the Symbol Scanner API only schedules a single scan.
+      // So, if continuousScanning is true we need to schedule another scan.
+      if (continousScanning)
+         activate();
       else
-      {
-         // If we are running on a PocketPC unit, or under Java emulation, then calling
-         // activate() on the Symbol Scanner API only schedules a single scan.
-         // So, if continuousScanning is true we need to schedule another scan.
-         if (continousScanning)
-            activate();
-         else
-            isActive = false;
-      }
+         isActive = false;
    }
 
    /** Returns true if this scanner is a passive one. Passive scanners must be triggered programatically, using the
@@ -1013,4 +1004,23 @@ public class Scanner
    {
       return scannerIsPassive && Scanner.setParam(0,0,0);
    }
+ 
+   /** Reads a barcode using ZXing for Android.
+    * 
+    *  The mode can be one of:
+    *  <ul>
+    *  <li> 1D - for one dimension barcodes
+    *  <li> 2D - for QR codes
+    *  <li> empty string - for both
+    *  </ul>
+    *  
+    *  If an error happens, it is returned prefixed with ***.
+    *  
+    *  See the tc.samples.io.device.zxing.ZXingScanner sample.
+    */
+   public static String readBarcode(String mode)
+   {
+      return null;
+   }
+   native public static String readBarcode4D(String mode);
 }

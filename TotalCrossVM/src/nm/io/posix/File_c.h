@@ -17,9 +17,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#if !defined(__SYMBIAN32__)
 #include <utime.h>
-#endif
 
 #if HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -113,6 +111,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
  * Link Library: libc.
  *
  *************************************/
+static inline Err fileFlush(NATIVE_FILE fref);
 
 static Err fileClose(NATIVE_FILE* fref)
 {
@@ -121,7 +120,7 @@ static Err fileClose(NATIVE_FILE* fref)
 
    if (fref->handle == INVALID_HANDLE_VALUE)
       return NO_ERROR;
-
+   
    if (fstat(fileno(fref->handle), &statData))
       return errno;
 
@@ -129,6 +128,7 @@ static Err fileClose(NATIVE_FILE* fref)
       return NO_ERROR;
 
    hFile = fref->handle;
+   fileFlush(*fref);
    fref->handle = INVALID_HANDLE_VALUE;
 
    if (fclose(hFile))
@@ -288,6 +288,7 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
    if (fref.handle != INVALID_HANDLE_VALUE)
    {
       struct stat statData;
+      fileFlush(fref); // flsobral: must flush before getSize, otherwise the value returned may not be accurate - this fix a bug in ZipStream introduced with the forced flush in setSize.
       if (!fstat(fileno(fref.handle), &statData))
       {
          *size = statData.st_size;
@@ -515,8 +516,6 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 
 static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 {
-#if !defined(__SYMBIAN32__)
-
    struct tm tm;
    struct utimbuf timbuf;
    struct stat statData;
@@ -545,7 +544,6 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 
    if (utime(path, &timbuf))
       return errno;
-#endif
 
    return NO_ERROR;
 }
@@ -610,6 +608,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
 
 static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
+   fileFlush(*fref);
    return ftruncate(fileno(fref->handle), newSize) ? errno : NO_ERROR;
 }
 

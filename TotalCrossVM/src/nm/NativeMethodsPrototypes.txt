@@ -1,5 +1,6 @@
 
 TC_API void tmGM_showAddress_sb(NMParams p);
+TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);
@@ -33,11 +34,15 @@ TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
-TC_API void tugG_dither_iiiii(NMParams p);
+TC_API void tuiI_setTransparentColor_i(NMParams p);
+TC_API void tuiI_applyChanges(NMParams p);
+TC_API void tuiI_freeTexture(NMParams p);
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
+TC_API void tugG_dither_iiii(NMParams p);
+TC_API void tuiI_createJpg_si(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
-TC_API void tugG_drawDottedCursor_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
 TC_API void tugG_fillEllipse_iiii(NMParams p);
 TC_API void tugG_drawArc_iiidd(NMParams p);
@@ -50,22 +55,17 @@ TC_API void tugG_drawCircle_iii(NMParams p);
 TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
-TC_API void tugG_eraseRect_iiii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
-TC_API void tugG_fillCursor_iiii(NMParams p);
-TC_API void tugG_drawCursor_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
-TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_fillPolygon_IIi(NMParams p);
+TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_drawPolygon_IIi(NMParams p);
 TC_API void tugG_drawPolyline_IIi(NMParams p);
 TC_API void tugG_drawText_sii(NMParams p);
 TC_API void tugG_drawText_Ciiii(NMParams p);
-TC_API void tugG_drawText_siiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
-TC_API void tugG_drawText_siiiii(NMParams p);
 TC_API void tugG_drawHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_fillHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
@@ -73,16 +73,14 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_setClip_iiii(NMParams p);
 TC_API void tugG_clip_r(NMParams p);
 TC_API void tugG_copyRect_giiiiii(NMParams p);
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
-TC_API void tugG_drawImage_iiiiib(NMParams p);
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p);
+TC_API void tugG_drawImage_iiib(NMParams p);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p);
-TC_API void tugG_eraseRect_iiiiiii(NMParams p);
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p);
 TC_API void tugG_drawArrow_iiibbi(NMParams p);
 TC_API void tugG_drawImage_iii(NMParams p);
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p);
@@ -116,7 +114,6 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
-TC_API void tuC_transitionEffectChanged_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
@@ -425,9 +422,14 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+TC_API void tidsS_readBarcode_s(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -563,7 +565,27 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -576,10 +598,6 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -631,23 +649,11 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -659,11 +665,11 @@ TC_API void tugG_fillRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -683,15 +689,7 @@ TC_API void tugG_drawText_Ciiii(NMParams p) // totalcross/ui/gfx/Graphics native
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -723,19 +721,15 @@ TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics nati
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -755,11 +749,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -892,10 +882,6 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2130,8 +2116,17 @@ TC_API void tuBI_intLength_i(NMParams p) // totalcross/util/BigInteger native st
 TC_API void tuBI_intLength_Ii(NMParams p) // totalcross/util/BigInteger native static int intLength(int []words, int len);
 {
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
+{
+}
 
 TESTCASE(tmGM_showAddress_sb) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tmGM_showRoute_sssb) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
 {
    TEST_SKIP;
    finish: ;
@@ -2301,7 +2296,32 @@ TESTCASE(tuiI_applyColor2_i) // totalcross/ui/image/Image native public void app
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_dither_iiiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+TESTCASE(tuiI_setTransparentColor_i) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_applyChanges) // totalcross/ui/image/Image native public void applyChanges();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_freeTexture) // totalcross/ui/image/Image native private void freeTexture();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tugG_fillShadedRect_iiiibbiii) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tugG_dither_iiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_createJpg_si) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {
    TEST_SKIP;
    finish: ;
@@ -2317,11 +2337,6 @@ TESTCASE(tugG_drawWindowBorder_iiiiiiiiii) // totalcross/ui/gfx/Graphics native 
    finish: ;
 }
 TESTCASE(tugG_create_g) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawDottedCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2386,27 +2401,12 @@ TESTCASE(tugG_setPixel_ii) // totalcross/ui/gfx/Graphics native public void setP
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_eraseRect_iiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawLine_iiii) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
    TEST_SKIP;
    finish: ;
 }
 TESTCASE(tugG_drawDots_iiii) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillCursor_iiii) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2421,12 +2421,12 @@ TESTCASE(tugG_fillRect_iiii) // totalcross/ui/gfx/Graphics native public void fi
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawDottedRect_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+TESTCASE(tugG_fillPolygon_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_fillPolygon_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+TESTCASE(tugG_drawDottedRect_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
    TEST_SKIP;
    finish: ;
@@ -2451,17 +2451,7 @@ TESTCASE(tugG_drawText_Ciiii) // totalcross/ui/gfx/Graphics native public void d
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawText_siiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawText_siii) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
    TEST_SKIP;
    finish: ;
@@ -2501,22 +2491,17 @@ TESTCASE(tugG_copyRect_giiiiii) // totalcross/ui/gfx/Graphics native public void
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawHighLightFrame_iiiiiib) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(tugG_drawRoundGradient_iiiiiiiii) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_drawImage_iiiiib) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TESTCASE(tugG_drawImage_iiib) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_copyImageRect_iiiiiiib) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TESTCASE(tugG_copyImageRect_iiiiib) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
    TEST_SKIP;
    finish: ;
@@ -2541,12 +2526,7 @@ TESTCASE(tugG_draw3dRect_iiiibbbI) // totalcross/ui/gfx/Graphics native public v
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(tugG_eraseRect_iiiiiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillVistaRect_iiiibbI) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TESTCASE(tugG_fillVistaRect_iiiiibb) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
    TEST_SKIP;
    finish: ;
@@ -2712,11 +2692,6 @@ TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public static void setSI
    finish: ;
 }
 TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuC_transitionEffectChanged_i) // totalcross/ui/Container native static void transitionEffectChanged(int t);
 {
    TEST_SKIP;
    finish: ;
@@ -4257,6 +4232,11 @@ TESTCASE(tuBI_intLength_i) // totalcross/util/BigInteger native static int intLe
    finish: ;
 }
 TESTCASE(tuBI_intLength_Ii) // totalcross/util/BigInteger native static int intLength(int []words, int len);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tidsS_readBarcode_s) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
 {
    TEST_SKIP;
    finish: ;

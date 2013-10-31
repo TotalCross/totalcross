@@ -49,11 +49,6 @@ import totalcross.util.*;
 
 public abstract class TestSuite extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private ProgressBar bar;
    private Label lErrors,lElapsed;
    private static Label lMsg,lMem;

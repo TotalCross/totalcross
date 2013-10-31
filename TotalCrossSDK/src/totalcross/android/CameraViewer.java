@@ -19,7 +19,6 @@
 package totalcross.android;
 
 import totalcross.*;
-import totalcross.android.compat.*;
 
 import java.io.*;
 
@@ -73,7 +72,8 @@ public class CameraViewer extends Activity // guich@tc126_34
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             int ww = Math.max(width,height);
             int hh = Math.min(width,height);
-            Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
+//            parameters.setPreviewSize(ww,hh);
+            parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
             if (width != 0 && height != 0)
                parameters.setPictureSize(ww,hh);
             try

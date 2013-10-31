@@ -143,8 +143,8 @@ public class ScrollBar extends Container
       btnDec.focusTraversable = btnInc.focusTraversable = false;
       add(btnDec);
       add(btnInc);
-      btnDec.setBorder(uiPalm?Button.BORDER_NONE:Button.BORDER_3D);
-      btnInc.setBorder(uiPalm?Button.BORDER_NONE:Button.BORDER_3D);
+      btnDec.setBorder(Button.BORDER_3D);
+      btnInc.setBorder(Button.BORDER_3D);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
    }
@@ -552,14 +552,7 @@ public class ScrollBar extends Container
          btnDec.setBackForeColors(backColor,foreColor);
          btnInc.setBackForeColors(backColor,foreColor);
       }
-      if (uiPalm)
-      {
-         bColor = backColor;
-         sbColor = getForeColor();
-         sbColorDis = Color.brighter(sbColor);
-         sfColor = enabled?Color.brighter(sbColor):sbColor;
-      }
-      else bColor = Color.brighter(getBackColor());
+      bColor = Color.brighter(getBackColor());
       if (parent != null && bColor == parent.getBackColor())
          bColor = Color.getCursorColor(bColor);
       Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
@@ -568,78 +561,54 @@ public class ScrollBar extends Container
    public void onPaint(Graphics g)
    {
       // Draw background and borders
-      if (uiPalm)
+      int k = size - (btnWH<<1);
+      if (k <= 0) return;
+      g.backColor = bColor;
+      if (verticalBar)
+         g.fillRect(0,btnWH,btnWH,k);
+      else
+         g.fillRect(btnWH,0,k,btnWH);
+      g.backColor = backColor;
+      if (uiFlat)
       {
-         g.backColor = backColor;
-         if (!transparentBackground)
-            g.fillRect(0,0,width,height);
-         g.backColor = btnDec.enabled || btnInc.enabled ? sbColor : sbColorDis; // guich@582_5
-         g.foreColor = sfColor;
-         int h = Settings.screenWidth >= 200 ? 5 : 3; // guich@511_5
-         int c = btnWH >> 1;
-         int s = (btnWH-h)>>1;
-         if (verticalBar)
-         {
-            g.drawLine(c,btnWH,c,size-btnWH);
-            g.fillRect(s,dragBarPos,h,dragBarSize);
-         }
+         g.foreColor = fourColors[2];
+         g.drawRect(0,0,width,height);
+      }
+      if (verticalBar)
+      {
+         if (uiVista && enabled) // guich@573_6
+            g.fillVistaRect(0,dragBarPos,width,dragBarSize,backColor,startDragPos!=-1,true); // guich@tc110_51: press the bar if dragging.
          else
+            g.fillRect(0,dragBarPos,width,dragBarSize);
+         g.draw3dRect(0,dragBarPos,width,dragBarSize,uiVista?Graphics.R3D_CHECK:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
+         if (uiFlat || uiVista)
          {
-            g.drawLine(btnWH,c,size-btnWH,c);
-            g.fillRect(dragBarPos,s,dragBarSize,h);
+            g.foreColor = fourColors[2];
+            k = dragBarPos+(dragBarSize>>1);
+            g.drawLine(3,k,width-4,k);
+            if (dragBarSize > minDragBarSize)
+            {
+               g.drawLine(3,k-2,width-4,k-2);
+               g.drawLine(3,k+2,width-4,k+2);
+            }
          }
       }
       else
       {
-         int k = size - (btnWH<<1);
-         if (k <= 0) return;
-         g.backColor = bColor;
-         if (verticalBar)
-            g.fillRect(0,btnWH,btnWH,k);
+         if (uiVista && enabled) // guich@573_6
+            g.fillVistaRect(dragBarPos,0,dragBarSize,height,backColor,startDragPos!=-1,false); // guich@tc110_51: press the bar if dragging.
          else
-            g.fillRect(btnWH,0,k,btnWH);
-         g.backColor = backColor;
-         if (uiFlat)
+            g.fillRect(dragBarPos,0,dragBarSize,height);
+         g.draw3dRect(dragBarPos,0,dragBarSize,height,uiVista?Graphics.R3D_CHECK:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
+         if (uiFlat || uiVista)
          {
             g.foreColor = fourColors[2];
-            g.drawRect(0,0,width,height);
-         }
-         if (verticalBar)
-         {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(0,dragBarPos,width,dragBarSize,backColor,startDragPos!=-1,true); // guich@tc110_51: press the bar if dragging.
-            else
-               g.fillRect(0,dragBarPos,width,dragBarSize);
-            g.draw3dRect(0,dragBarPos,width,dragBarSize,uiVista?Graphics.R3D_CHECK:uiCE && startDragPos!=-1 ? Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
-            if (uiFlat || uiVista)
+            k = dragBarPos+(dragBarSize>>1);
+            g.drawLine(k,3,k,height-4);
+            if (dragBarSize > minDragBarSize)
             {
-               g.foreColor = fourColors[2];
-               k = dragBarPos+(dragBarSize>>1);
-               g.drawLine(3,k,width-4,k);
-               if (dragBarSize > minDragBarSize)
-               {
-                  g.drawLine(3,k-2,width-4,k-2);
-                  g.drawLine(3,k+2,width-4,k+2);
-               }
-            }
-         }
-         else
-         {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(dragBarPos,0,dragBarSize,height,backColor,startDragPos!=-1,false); // guich@tc110_51: press the bar if dragging.
-            else
-               g.fillRect(dragBarPos,0,dragBarSize,height);
-            g.draw3dRect(dragBarPos,0,dragBarSize,height,uiVista?Graphics.R3D_CHECK:uiCE && startDragPos!=-1 ? Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
-            if (uiFlat || uiVista)
-            {
-               g.foreColor = fourColors[2];
-               k = dragBarPos+(dragBarSize>>1);
-               g.drawLine(k,3,k,height-4);
-               if (dragBarSize > minDragBarSize)
-               {
-                  g.drawLine(k-2,3,k-2,height-4);
-                  g.drawLine(k+2,3,k+2,height-4);
-               }
+               g.drawLine(k-2,3,k-2,height-4);
+               g.drawLine(k+2,3,k+2,height-4);
             }
          }
       }

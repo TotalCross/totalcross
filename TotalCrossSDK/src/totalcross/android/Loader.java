@@ -14,27 +14,23 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.android;
-
-import totalcross.*;
-import totalcross.android.compat.*;
-
-import java.io.*;
-import java.util.*;
 
 import android.app.*;
 import android.content.*;
-import android.content.pm.*;
 import android.content.res.*;
 import android.net.*;
 import android.os.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import java.io.*;
+import java.util.*;
 
-public class Loader extends Activity
+import totalcross.*;
+import totalcross.android.compat.*;
+
+public class Loader extends Activity 
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
@@ -43,6 +39,7 @@ public class Loader extends Activity
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
+   private static final int ZXING_RETURN = 1234324333;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -106,9 +103,32 @@ public class Loader extends Activity
          case MAP_RETURN:
             Launcher4A.showingMap = false;
             break;
+         case ZXING_RETURN:
+            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
+            Launcher4A.callingZXing = false;
+            break;
       }
    }
    
+   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, boolean sat)
+   {
+      try
+      {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RouteViewer"));
+         intent.putExtra("latI",latI);
+         intent.putExtra("lonI",lonI);
+         intent.putExtra("latF",latF);
+         intent.putExtra("lonF",lonF);
+         intent.putExtra("coord",coord);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
    private void callGoogleMap(double lat, double lon, boolean sat)
    {
       try
@@ -124,7 +144,7 @@ public class Loader extends Activity
          AndroidUtils.handleException(e,false);
       }
    }
-   
+
    private void captureCamera(String s, int quality, int width, int height)
    {
       try
@@ -154,7 +174,8 @@ public class Loader extends Activity
    public static final int LEVEL5 = 5;
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
-   public static final int INVERT_ORIENTATION = 8;
+   public static final int ROUTE = 8;
+   public static final int ZXING_SCAN = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -186,12 +207,6 @@ public class Loader extends Activity
       setTitle(tczname);
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      // in android 3.2, the size is retrieved as excluding the taskbar, so we have to rotate in both directions and get the total screen size. this value is cached
-      if (Build.VERSION.SDK_INT >= 13 && AndroidUtils.getSavedScreenSize() == -1) // android 3.2 has a bug and we have to change the layout to landscape and portrait and measure the screen width in both 
-      {
-         boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-         setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-      }
       
       // start the vm
       achandler = new EventHandler();
@@ -226,14 +241,8 @@ public class Loader extends Activity
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
                break;
-            case INVERT_ORIENTATION:
-               if (!b.getBoolean("invert"))
-                  setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-               else
-               {
-                  boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-                  setRequestedOrientation(isPortrait ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-               }
+            case ROUTE:
+               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getBoolean("sat"));
                break;
             case FULLSCREEN:
             {
@@ -242,6 +251,13 @@ public class Loader extends Activity
                Window w = getWindow();
                if (setAndHide)
                {
+                  try // for galaxy tab2 bar
+                  {
+                     java.lang.reflect.Method m = View.class.getMethod("setSystemUiVisibility", new Class[]{Integer.class});
+                     final int SYSTEM_UI_FLAG_HIDE_NAVIGATION = 2;
+                     m.invoke(Launcher4A.instance, new Integer(SYSTEM_UI_FLAG_HIDE_NAVIGATION));
+                  }
+                  catch (Exception e) {}
                   imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0, Launcher4A.instance.siprecv);
                   w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                   w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -254,10 +270,42 @@ public class Loader extends Activity
                }
                break;
             }
+            case ZXING_SCAN:
+            {
+               String cmd = b.getString("zxing.mode");
+               StringTokenizer st = new StringTokenizer(cmd,"&");
+               String mode = "SCAN_MODE";
+               String scanmsg = "";
+               while (st.hasMoreTokens())
+               {
+                  String s = st.nextToken();
+                  int i = s.indexOf('=');
+                  if (i == -1) continue;
+                  String s1 = s.substring(0,i);
+                  String s2 = s.substring(i+1);
+                  if (s1.equalsIgnoreCase("mode"))
+                     mode = s2;
+                  else
+                  if (s1.equalsIgnoreCase("msg"))
+                     scanmsg = s2;
+               }
+               mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
+                      mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
+                      "SCAN_MODE";
+               Intent intent = new Intent("totalcross.zxing.client.android.SCAN");
+               intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
+               intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
+               intent.putExtra("SCAN_MESSAGE", scanmsg);
+               startActivityForResult(intent, ZXING_RETURN);
+               //if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+               //Result result = reader.decode(bitmap, decodeHints);
+               break;
+            }
+               
          }
       }
    }
-      
+   
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -266,6 +314,22 @@ public class Loader extends Activity
    {
       try
       {
+         if (command.equalsIgnoreCase("broadcast"))
+         {
+            try 
+            {               
+               Intent intent = new Intent();
+               if (launchCode != 0)
+                  intent.addFlags(launchCode);
+               intent.setAction(args);
+               sendBroadcast(intent);
+            } 
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+         }
+         else
          if (command.equalsIgnoreCase("cmd"))
          {
             try 
@@ -280,9 +344,35 @@ public class Loader extends Activity
             }
          }
          else
+         if (command.equalsIgnoreCase("kingsoft"))
+         {
+            File f = new File(args);
+            if (f.exists()) 
+            {
+               Intent intent = new Intent();
+               intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+               intent.setAction(android.content.Intent.ACTION_VIEW);
+               intent.setClassName("cn.wps.moffice_eng", "cn.wps.moffice.documentmanager.PreStartActivity");
+               Uri uri = Uri.fromFile(f);
+               intent.setData(uri);
+               startActivity(intent);
+            }
+         }
+         else
          if (command.equalsIgnoreCase("viewer"))
          {
-            if (args.toLowerCase().endsWith(".pdf"))
+            String argl = args.toLowerCase();
+            if (android.os.Build.VERSION.SDK_INT >= 8 && AndroidUtils.isImage(argl))
+            {
+               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".TouchImageViewer"));
+               intent.putExtra("file",args);
+               if (!wait)
+                  startActivityForResult(intent, JUST_QUIT);
+               else
+                  startActivity(intent);
+               return;
+            }
+            if (argl.endsWith(".pdf"))
             {
                File pdfFile = new File(args);
                if(pdfFile.exists()) 
@@ -297,7 +387,8 @@ public class Loader extends Activity
                    }
                    catch (ActivityNotFoundException e)
                    {
-                       e.printStackTrace(); 
+                      AndroidUtils.debug("THERE'S NO PDF READER TO OPEN "+args);
+                      e.printStackTrace(); 
                    }
                }
             }
@@ -334,7 +425,12 @@ public class Loader extends Activity
          {
             Intent i = new Intent();
             i.setClassName(command,command+"."+args);
-            startActivity(i);
+            boolean isService = args.equalsIgnoreCase("TCService");
+            AndroidUtils.debug("*** Vm.exec "+command+" . "+args+": "+isService);
+            if (isService)
+               startService(i);
+            else
+               startActivity(i);
          }
          if (!wait)
             finish();
@@ -347,7 +443,6 @@ public class Loader extends Activity
    
    public void onConfigurationChanged(Configuration config)
    {
-      // TODO change the Settings.virtualKeyboard to true when newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
       super.onConfigurationChanged(config);
       Launcher4A.hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
    }

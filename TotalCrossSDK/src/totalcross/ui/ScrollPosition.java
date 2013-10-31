@@ -123,7 +123,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       Image img = null;
       try
       {
-         img = Resources.progressHandle.getSmoothScaledInstance(fmH*2,dragBarSize,-1);
+         img = Resources.progressHandle.getSmoothScaledInstance(fmH*2,dragBarSize);
          img.applyColor(barColor);
       }
       catch (ImageException e)

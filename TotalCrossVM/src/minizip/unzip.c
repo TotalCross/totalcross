@@ -35,10 +35,6 @@ woven in by Terry Thorsen 1/2003.
  */
 
 
-#if defined(TOTALCROSS) && defined(PALMOS)
-#include "tcvm.h"
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

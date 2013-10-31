@@ -112,7 +112,7 @@ public interface DiscoveryListener
    public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod);
 
    /**
-    * Called when an inquiry is completed. The <code>discType</code> will be <code>INQUIRY_COMPLETED</code> if the
+    * Called when an inquiry is completed. <code>discType</code> will be <code>INQUIRY_COMPLETED</code> if the
     * inquiry ended normally or <code>INQUIRY_TERMINATED</code> if the inquiry was canceled by a call to
     * <code>DiscoveryAgent.cancelInquiry()</code>. The <code>discType</code> will be <code>INQUIRY_ERROR</code> if an
     * error occurred while processing the inquiry causing the inquiry to end abnormally.

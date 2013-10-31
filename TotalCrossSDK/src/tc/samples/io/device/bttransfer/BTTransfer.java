@@ -30,7 +30,6 @@ public class BTTransfer extends MainWindow
    static
    {
       Settings.isFullScreen = true;
-      Settings.useNewFont = true;
    }
    
    public BTTransfer()

@@ -42,7 +42,7 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
       pthread_cond_signal(&targs->state_cv);
       pthread_mutex_unlock(&targs->state_mutex);
    }
-   else throwException(context, RuntimeException, "Can't create thread");
+   else throwException(context, OutOfMemoryError, "Can't create thread (2)");
    return h;
 }
 
@@ -53,7 +53,7 @@ static ThreadHandle privateThreadGetCurrent()
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
-#if !defined(ANDROID) && !defined(__SYMBIAN32__) // TODO must find an alternative these platforms
+#if !defined(ANDROID)
    if (!threadDestroyingItself) pthread_cancel(h);
    void *ret;
    pthread_join(h, &ret); // wait child thread termination and get its exit code

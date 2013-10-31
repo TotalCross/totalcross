@@ -40,7 +40,7 @@ public class PieChart extends Chart
    /** The suffix used in the legend to display the values. E.G.: "%". Defaults to blank.
     */
    public String legendValueSuffix = "";
-   /** Set to true to show the values in the legent. */
+   /** Set to true to show the values in the legend. */
    public boolean showValuesOnLegend;
 
    /** Perspective horizontal distance. */

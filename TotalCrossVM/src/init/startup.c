@@ -18,8 +18,6 @@
 #if defined (WINCE) || defined (WIN32)
  #include "malloc.h"
  #include "win/startup_c.h"
-#elif defined(PALMOS)
- #include "palm/startup_c.h"
 #elif defined(ANDROID)
  #include "android/startup_c.h"
 #else
@@ -59,9 +57,6 @@ static Context initAll(CharP* args)
    }
 #endif
    ok = ok && initGlobals();
-#ifdef PALMOS
-   ok = ok && initPalmPosix(getApplicationId, alert);
-#endif
    ok = ok && initMem();
    if (ok) firstTS = getTimeStamp();
    ok = ok && (c=initContexts()) != null;
@@ -96,9 +91,6 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyTCZ();
    destroyMem();    
    destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
-#ifdef PALMOS
-   destroyPalmPosix();
-#endif
    destroyGlobals();
 }
 
@@ -107,7 +99,7 @@ static int32 exitProgram(int32 exitcode)
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
    exitCode = exitcode;
-   destroyEvent();
+   if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
    destroyAll();
@@ -165,8 +157,7 @@ static bool loadLibraries(Context currentContext, CharP path, bool first)
    err = jlen > 0 ? NO_ERROR : 1;
 #else
    CharP2TCHARPBuf(path, searchPath);
-   
-   err = listFiles(searchPath,0,&files,&count,h, LF_RECURSIVE | LF_FILE_TYPE);
+   err = listFiles(searchPath,0,&files,&count,h, LF_RECURSIVE);
    if (err == NO_ERROR && count > 0)
    {
       head = files;
@@ -175,16 +166,9 @@ static bool loadLibraries(Context currentContext, CharP path, bool first)
          TCHARP2CharPBuf(files->value, fname);
          len = xstrlen(fname);
          CharPToLower(fname);
-#ifdef PALMOS
-         if (strEq(&fname[len-8],"lib.tczf"))
-#else
          if (strEq(&fname[len-7],"lib.tcz"))
-#endif
          {
             TCHARP2CharPBuf(files->value, fname); // restore original case
-#ifdef PALMOS
-            fname[len-5] = 0; // cut the .tczf
-#endif
             if (tczLoad(currentContext, fname) == null)
             {
                err = !NO_ERROR; // remove mem leak
@@ -380,12 +364,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
     if (isWakeUpCall(argsOriginal))
       return 109;
  #endif
-#elif defined (PALMOS) // for Palm OS, strip the leading _ of the launching program
-   if (argsOriginal && argsOriginalLen > 0 && (c=xstrchr(argsOriginal, '_')) != 0) // guich@tc110_84: there may exist other arguments
-   {
-      xstrcpy(c, c+1);
-      argsOriginalLen--;
-   }
 #elif defined WIN32
    {
       SYSTEM_INFO systemInfo;
@@ -428,9 +406,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       *cmdline = 0;
       cmdline += 6;
    }
-
-   if (!initEvent())
-      return exitProgram(102);
 
    if (cmdline || !*args) // parse the command line
    {
@@ -495,7 +470,7 @@ jumpArgument:
       xstrcpy(commandLine, c);
    }
 
-#if defined(ENABLE_TRACE) && (defined(WINCE) || defined(PALMOS) || defined(ANDROID)) && !defined(DEBUG)
+#if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
    traceOn = true;
 #endif
 
@@ -544,6 +519,8 @@ jumpArgument:
 #endif
          // 1. Initialize the graphics
          isMainWindow = (loadedTCZ->header->attr & ATTR_HAS_MAINWINDOW) != 0;
+         if (isMainWindow && !initEvent())
+            return exitProgram(102);
          if (isMainWindow && (!initGraphicsBeforeSettings(currentContext,loadedTCZ->header->attr) || !keepRunning))
             return exitProgram(107);
          else

@@ -202,7 +202,7 @@ public class ProgressBar extends Control
       // computes the current width of the bar
       int dif = max-min;
       int size = vertical ? height : width;
-      int s = (dif == 0 || value==max) ? size : (value == 0) ? 0 : (int)(size * (value - min) / dif);
+      int s = (dif == 0 || value==max) ? size : (value == 0) ? 0 : (int)((long)size * (long)(value - min) / (long)dif);
       if (s > size) s = size;
       // draw the filled part
       int bc = getBackColor();

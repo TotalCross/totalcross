@@ -31,7 +31,7 @@ import totalcross.ui.image.*;
  * <pre>
  * cp = new CitizenPrinter(); // or new BluetoothPrinter();
  * cp.write(new byte[2048]); // fill the buffer
- * cp.newLine(ENTER);
+ * cp.newLine();
  * ...
  * </pre>
  */
@@ -55,7 +55,7 @@ public class BluetoothPrinter
    }
    
    /** Creates a new BluetoothPrinter instance, using the given PortConnector as bridge to the printer.
-    * Note that the PortConnector can use any port (including infrared), however, it is not guaranteed 
+    * Note that PortConnector can use any port (including infrared), however, it is not guaranteed 
     * that it will work with that port. For example, IR does not work on Palm OS devices.
     */
    public BluetoothPrinter(PortConnector con) throws IOException
@@ -99,8 +99,8 @@ public class BluetoothPrinter
    }
    
    /** Prints the given MonoImage. See IMAGE_xxx for possible modes.
-    * <b> IMPORTANT: the image height must be a multiple of the vertical density! </b>. 
-    * If its not, a new image will be created, forcing the correct behaviour.
+    * <b> IMPORTANT: the image height must be a multiple of the vertical density! </b>
+    * If it's not, a new image will be created, forcing the correct behavior.
     * <br><br>
     * In the image, only black pixels are written. The maximum width 
     * for single density is 192, and for double density is 384; the image is trimmed 

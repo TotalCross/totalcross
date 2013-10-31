@@ -82,8 +82,8 @@ import totalcross.util.zip.*;
  * cbas.close();
  * </pre>
  *
- * Note that, although the sample uses writeLine and readLine, you can store any
- * kind of data, by attaching a DataStream as
+ * Note that, although the samples above use writeLine and readLine, you can store any
+ * kind of data. By attaching a DataStream it's possible to read any data type from the stream.
  *
  * <pre>
  * CompressedByteArrayStream cbas = new CompressedByteArrayStream(5);
@@ -104,8 +104,8 @@ import totalcross.util.zip.*;
  * for (int i = 0; i &lt; 100000; i++)
  * {
  *    int i = ds.readInt();
- *    String love = ds.writeString(); // Michelle
- *    double d = ds.writeDouble();
+ *    String love = ds.readString(); // Michelle
+ *    double d = ds.readDouble();
  * }
  * </pre>
  *
@@ -119,7 +119,7 @@ import totalcross.util.zip.*;
 
 public class CompressedByteArrayStream extends Stream
 {
-   /** Implements a CharacterConverter that from char[] to byte[] which just
+   /** Implements a CharacterConverter that converts from char[] to byte[] which just
     * casts the char to byte; thus, ignoring any non-ASCII character. */
    public static class DirectCharConverter extends CharacterConverter
    {
@@ -141,8 +141,8 @@ public class CompressedByteArrayStream extends Stream
    /** Used in the setMode method. Turns the mode into WRITE. */
    public static final int        WRITE_MODE            = 0;
    /**
-    * used in the setMode method. Turns the mode into READ, and after reading
-    * each buffer, discards it, releasing memory. The CompressedByteArrayStream will not be able to
+    * Used in the setMode method. Turns the mode into READ, and after reading
+    * each buffer, discards it, releasing memory. CompressedByteArrayStream will not be able to
     * read the buffer again. This is useful when you download data and then want to read from it,
     * releasing memory on-demand.
     */
@@ -218,7 +218,7 @@ public class CompressedByteArrayStream extends Stream
       loadNextBuffer();      
    }
 
-   /** Deletes all internal buffers. Do not try to use this class afterwards. */
+   /** Deletes all internal buffers. Do not try to use the object afterwards. */
    public void close()
    {
       buf = null;
@@ -272,7 +272,7 @@ public class CompressedByteArrayStream extends Stream
     * @param buffer the byte array to read data into
     * @param start  the start position in the array
     * @param count  the number of bytes to read
-    * @return the number of bytes read. If an error occured, -1 is returned and 
+    * @return the number of bytes read. If an error occurred, -1 is returned and 
     * @throws IOException 
     */
    public int readBytes(byte buffer[], int start, int count) throws IOException
@@ -300,7 +300,7 @@ public class CompressedByteArrayStream extends Stream
     * @param buffer the byte array to write data from
     * @param start  the start position in the byte array
     * @param count  the number of bytes to write
-    * @return the number of bytes written. If an error occured, -1 is returned and 
+    * @return the number of bytes written. If an error occurred, -1 is returned and 
     * @throws IOException 
     * @since SuperWaba 2.0 beta 2
     */
@@ -379,7 +379,7 @@ public class CompressedByteArrayStream extends Stream
     * @param inputStream The input stream from where data will be read
     * @param retryCount  The number of times to retry if no data is read. In remote connections, 
     * use at least 5; for files, it can be 0.
-    * @param bufSize The size of buffer used to read data.
+    * @param bufSize The size of the buffer used to read data.
     * @throws IOException
     * @since SuperWaba 5.7
     */

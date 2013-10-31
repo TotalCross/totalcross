@@ -25,25 +25,7 @@
 #import "childview.h"
 #import "sipargs.h"
 
-/*
- * fdie@ add iPhone full screen support.
- * The UIView can't be created during the app launching insofar its creation have to be deferred until
- * we started the video mode where the we choose between fullscreen and normal mode.
- * But it also requires to call the video switching code in the app main thread. The app mainloop() is
- * executed in a event dispatching thread that is not able to successfully call into the UIKit framework :-(
- */
-
-@interface SSize : NSObject
-{
-   CGSize ssize;
-}
-
-- (id)set:(CGSize)size;
-- (CGSize)get;
-
-@end
-
-@interface MainView : UIViewController<UIImagePickerControllerDelegate,CLLocationManagerDelegate>
+@interface MainViewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,CLLocationManagerDelegate>
 {
    NSMutableArray* _events;
    ChildView *child_view;
@@ -53,6 +35,7 @@
    // camera
    NSString* imageFileName;
    int imageW,imageH;
+   UIImagePickerController *imagePicker;
    // gps
 @public   
    CLLocationManager* locationManager;
@@ -61,12 +44,12 @@
    double locationLat, locationLon;
 }
 
-- (void)initEvents;
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
 - (NSArray*)getEvents;
 - (void)showSIP:(SipArguments*)args;
 - (void)destroySIP;
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
@@ -80,8 +63,8 @@
 
 typedef struct
 {
-   __unsafe_unretained UIWindow  *_window;
-   __unsafe_unretained MainView  *_mainview;
+//   __unsafe_unretained UIWindow  *_window;
+   __unsafe_unretained MainViewController  *_mainview;
    __unsafe_unretained ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 

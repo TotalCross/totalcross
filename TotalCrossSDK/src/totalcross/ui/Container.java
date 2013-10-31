@@ -15,13 +15,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -63,11 +62,18 @@ public class Container extends Control
    static public final byte BORDER_SIMPLE=5;
    /** used in the setBorderStyle method */
    static public final byte BORDER_TOP = 1;
+   /** used in the setBorderStyle method.
+    * @since TotalCross 2.0 */
+   static public final byte BORDER_ROUNDED = 6;
    
    /** used in the bckgroundStyle field */
    static public final int BACKGROUND_SOLID = 0;
    /** used in the backgroundStyle field */
    static public final int BACKGROUND_SHADED = 1;
+   /** used in the backgroundStyle field. The bright color must be the fore color, and the darker color, the back color
+    * @since TotalCross 2.0 
+    */
+   static public final int BACKGROUND_CYLINDRIC_SHADED = 2;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -75,6 +81,11 @@ public class Container extends Control
    public static final int TRANSITION_OPEN = 1;
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_CLOSE = 2;
+   
+   /** The color used in the border.
+    * @since TotalCross 2.0
+    */
+   public int borderColor = -1;
    
    /** Set the transition effect when this container appears on screen.
     * Defaults to Control.UPDATESCREEN_AT_ONCE, which means no transition effects.
@@ -91,6 +102,12 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
+   /**
+    * Defines the total transition time. Defaults to 1000 (1 second).
+    * 
+    * @since TotalCross 1.68
+    */
+   public static int TRANSITION_TIME = Settings.onJavaSE ? 500 : 1000;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -150,22 +167,83 @@ public class Container extends Control
     */
    static void setNextTransitionEffect(int t)
    {
-      nextTransitionEffect = t;
-      if (t != TRANSITION_NONE)
-         transitionEffectChanged(t);
+      if (!Settings.isIOS())
+      {
+         nextTransitionEffect = t;
+         if (t != TRANSITION_NONE)
+            try
+            {
+               screen0 = MainWindow.getScreenShot();
+               screen0.lockChanges();
+            }
+            catch (Throwable e) {}
+      }
    }
 
-   public static int getNextTransitionEffect()
+   static Image screen0;
+
+   static void applyTransitionEffect()
    {
-      int ret = nextTransitionEffect;
+      int transitionEffect = nextTransitionEffect;
       nextTransitionEffect = Container.TRANSITION_NONE;
-      return ret;
-   }
+      if (transitionEffect == -1)
+         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
 
-   static void transitionEffectChanged(int t)
-   {
+      if (screen0 != null) // only when transitionEffect is not NONE
+      {
+         try
+         {
+            int ini0 = Vm.getTimeStamp();
+            Image screen1 = MainWindow.getScreenShot();
+            screen1.lockChanges();
+            int w = totalcross.sys.Settings.screenWidth;
+            int h = totalcross.sys.Settings.screenHeight;
+            int remainingFrames = Math.min(w,h)/2;
+            int mx = w/2;
+            int my = h/2;
+            double incX=1,incY=1;
+            if (w > h)
+               incX = (double)w/h;
+             else
+               incY = (double)h/w;
+            Graphics g = MainWindow.mainWindowInstance.getGraphics();
+            int step=1;
+            boolean isClose = transitionEffect == TRANSITION_CLOSE;
+            Image s0 = isClose ? screen1 : screen0;
+            Image s1 = isClose ? screen0 : screen1;
+            for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
+            {
+               int ini = Vm.getTimeStamp();
+               g.clearClip();
+               g.drawImage(s0,0,0);
+               int minx = (int)(mx - i*incX);
+               int miny = (int)(my - i*incY);
+               int maxx = (int)(mx + i*incX);
+               int maxy = (int)(my + i*incY);
+               g.setClip(minx,miny,maxx-minx,maxy-miny);
+               g.drawImage(s1,0,0);
+               Window.updateScreen();
+               int frameElapsed = Vm.getTimeStamp()-ini;
+               int totalElapsed = Vm.getTimeStamp()-ini0;
+               int remainingTime = TRANSITION_TIME - totalElapsed;
+               if (remainingTime <= 0)
+                  break;
+               if (frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+               {
+                  Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
+                  step = 1;
+               }
+               else
+               {
+                  step = frameElapsed * remainingFrames / remainingTime;
+               }
+            }
+         }
+         catch (Throwable e) {}
+         screen0 = null;
+         Vm.gc();
+      }
    }
-   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01
@@ -480,17 +558,21 @@ public class Container extends Control
    }
 
    /** Sets the border for this container. The insets are changed after this method is called.
+    * The BORDER_ROUNDED sets the background to transparent.
     * @see #BORDER_NONE
     * @see #BORDER_LOWERED
     * @see #BORDER_RAISED
     * @see #BORDER_SIMPLE
     * @see #BORDER_TOP
+    * @see #BORDER_ROUNDED
     */
    public void setBorderStyle(byte border) // guich@200final_16
    {
       int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setInsets(gap,gap,gap,gap);
       this.borderStyle = border;
+      if (border == BORDER_ROUNDED)
+         transparentBackground = true;
       onColorsChanged(false);
    }
 
@@ -517,7 +599,7 @@ public class Container extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP)
+      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED)
          Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
    }
 
@@ -537,6 +619,9 @@ public class Container extends Control
             case BACKGROUND_SHADED:
                g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
                break;
+            case BACKGROUND_CYLINDRIC_SHADED:
+               g.drawCylindricShade(foreColor,backColor,0,0,width,height);
+               break;
          }
       }
       switch (borderStyle)
@@ -545,13 +630,17 @@ public class Container extends Control
             break;
 
          case BORDER_TOP:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,0);
             break;
             
          case BORDER_SIMPLE:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,height);
+            break;
+            
+         case BORDER_ROUNDED:
+            g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),backColor,backColor,backColor,2,false);
             break;
 
          default:
@@ -961,5 +1050,12 @@ public class Container extends Control
          if (cc.asContainer != null)
             cc.asContainer.setFocusTraversable(b);
       }
+   }
+   
+   /** Called when this container has been swapped into the Window and the swap is done.
+    * @since TotalCross 2.0
+    */
+   public void onSwapFinished()
+   {
    }
 }

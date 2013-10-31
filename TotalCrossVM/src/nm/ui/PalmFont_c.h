@@ -48,11 +48,7 @@ bool fontInit(Context currentContext)
    defaultFont = loadFontFile(defaultFontName);
    if (defaultFont == null)
    {
-      #ifdef PALMOS
-      alert("Font file is missing.\nPlease install TCFont.pdb (or TCFontOld.pdb)");
-      #else
-      alert("Font file is missing.\nPlease install TCFont.tcz (or TCFontOld.tcz)");
-      #endif
+      alert("Font file is missing.\nPlease install TCFont.tcz");
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
    }

@@ -18,15 +18,12 @@
 
 package totalcross;
 
-import totalcross.android.*;
-import totalcross.android.compat.*;
+import totalcross.android.Loader;
 
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import android.view.animation.*;
-import android.view.animation.Animation.AnimationListener;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -49,7 +46,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
-   public static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
    static Rect rDirty = new Rect();
@@ -140,6 +136,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       instance = this;
       loader = context;
       surfHolder = getHolder();
+      surfHolder.setFormat(PixelFormat.RGBA_8888);
       surfHolder.addCallback(this);
       setWillNotDraw(true);
       setWillNotCacheDrawing(true);
@@ -149,7 +146,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Configuration config = getResources().getConfiguration();
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
-      
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
@@ -196,65 +192,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
-   private static int firstOrientationSize;
+   private android.view.Surface lastSurface;
    
-   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
+   public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
       if (h == 0 || w == 0) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
-      //PixelFormat pf = new PixelFormat(); - android returns 5
-      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
       int screenHeight = display.getHeight();
-      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (sScreenBitmap == null) 
-      {
-         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
-         if (Build.VERSION.SDK_INT >= 13)
-         {
-            // if first try, check if the value was already cached
-            int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
-            {
-               screenSize = temp;
-               //AndroidUtils.debug("restoring size from cache: "+screenSize);
-               firstOrientationSize = 1;
-            }
-            else
-            {
-               // not yet cached. first try? store the size and cache it
-               if (firstOrientationSize == 0)
-               {
-                  //AndroidUtils.debug("@@@@ first: "+screenSize);
-                  firstOrientationSize = screenSize;
-                  sendOrientationChange(true);
-                  return;
-               }
-               //AndroidUtils.debug("@@@@ second: "+screenSize);
-               if (firstOrientationSize > screenSize)
-                  screenSize = firstOrientationSize;
-               AndroidUtils.setSavedScreenSize(screenSize);
-               sendOrientationChange(false); // restore orientation to what user wants
-            }
-         }
-         if (screenSize == 0)
-         {
-            screenSize = screenSize0;
-            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
-         }
-         sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
-         sScreenBitmap.eraseColor(0xFFFFFFFF);
-         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
-         
-         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-         // for this second chance and ignore the first one.
-
-         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
-         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
-         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
-//         if (Loader.isFullScreen && h != screenHeight) return; 
-      }
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -264,51 +209,93 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       if (sipVisible) // sip changed?
       {
+         instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
          if (rotated) // close the sip if a rotation occurs
             setSIP(SIP_HIDE);
-         return;
+      }
+      else
+      {
+         instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
+         android.view.Surface surface = holder.getSurface();
+         if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
+         {
+            lastSurface = surface;
+            lastScreenW = w;
+            lastScreenH = h;
+            sendScreenChangeEvent();
+         }
+      }
+   }
+
+   private void sendScreenChangeEvent()
+   {
+      eventThread.invokeInEventThread(false, new Runnable()
+      {
+         public void run()
+         {
+            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
+            deviceFontHeight = (int)new TextView(getContext()).getTextSize();
+            rDirty.left = rDirty.top = 0;
+            rDirty.right = lastScreenW;
+            rDirty.bottom = lastScreenH;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            sendCloseSIPEvent(); // makes first screen rotation work
+         }
+      });
+   }
+   
+   private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener
+   {
+      public boolean onScaleBegin(ScaleGestureDetector detector)
+      {
+         multiTouching = true;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
+         return true;
       }
       
-      if (w != lastScreenW || h != lastScreenH)
+      public void onScaleEnd(/*ScaleGestureDetector detector*/)
       {
-         lastScreenW = w;
-         lastScreenH = h;
-         eventThread.invokeInEventThread(false, new Runnable()
-         {
-            public void run()
-            {
-               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
-               rDirty.left = rDirty.top = 0;
-               rDirty.right = lastScreenW;
-               rDirty.bottom = lastScreenH;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               surfHolder.unlockCanvasAndPost(canvas);
-               DisplayMetrics metrics = getResources().getDisplayMetrics();
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-            }
-         });
+         multiTouching = false;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 2, 0,0, 0, 0);
+      }
+
+      public boolean onScale(ScaleGestureDetector detector)
+      {
+         if (eventThread.hasEvent(MULTITOUCHEVENT_SCALE))
+            return false;
+         double scale = detector.getScaleFactor();
+         long l = Double.doubleToLongBits(scale);
+         int x = (int)(l >>> 32);
+         int y = (int)l;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 0, x, y, 0, 0);
+         return true;
       }
    }
 
-   private void sendOrientationChange(boolean invert)
-   {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putBoolean("invert",invert);
-      b.putInt("type",Loader.INVERT_ORIENTATION);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
-   }
-
+   ScaleGestureDetector sgd;
+   ScaleListener scaleList;
+   boolean multiTouching;
+   
    public void surfaceCreated(SurfaceHolder holder)
    {
       // here is where everything starts
       if (eventThread == null)
+      {
          eventThread = new TCEventThread(this);
+         eventThread.popTime = 20;
+         sgd = new ScaleGestureDetector(loader, scaleList = new ScaleListener());
+      }
+      else
+      {
+         lastSurface = holder.getSurface();
+         sendScreenChangeEvent();
+      }
    }
 
    public void surfaceDestroyed(SurfaceHolder holder)
    {
+      instance.nativeInitSize(null,0,0); // signal vm that the surface will change
    }
 
    private static final int PEN_DOWN  = 1;
@@ -320,11 +307,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int APP_RESUMED = 7;
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
-
+   private static final int MULTITOUCHEVENT_SCALE = 10;
+   
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
-      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
+      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
 
       return new BaseInputConnection(this, false)
       {
@@ -338,6 +326,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
             return true;
          }
+         
+         // public boolean finishComposingText() - does not work in a standard way! in samsung with swiftkeys, each key sends this, and in the std keyboard, it is sent BEFORE the keyboard appears
+
+         public boolean performPrivateCommand(java.lang.String action, android.os.Bundle data)
+         {
+            if (action != null && action.contains("hideSoftInputView")) // for LG's special "hide keyboard" key
+            {
+               sendCloseSIPEvent();
+               sipVisible = false;
+            }
+            return super.performPrivateCommand(action, data);
+         }
+         
+         public boolean reportFullscreenMode(boolean enabled)
+         {
+            return false;
+         }      
       };
    }
    
@@ -354,12 +359,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean hardwareKeyboardIsVisible;
    
-   
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-      if (oldh < h)
-         updateScreen(0,0,w,h,TRANSITION_NONE);
    }
 
    public boolean onKey(View v, int keyCode, KeyEvent event)
@@ -433,6 +435,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public boolean onTouchEvent(MotionEvent event)
    {
+      sgd.onTouchEvent(event);
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
@@ -444,6 +447,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
+      if (multiTouching) // we do this to ignore all touch events until a definitive pen_up
+      {
+         if (type == PEN_UP)
+            scaleList.onScaleEnd();
+      }
+      else
       if (type != lastType || x != lastX || y != lastY) // skip identical events
       {
          lastType = type;
@@ -454,150 +463,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return true;
    }
 
-   private static final int TRANSITION_NONE = 0;
-   private static final int TRANSITION_OPEN = 1;
-   private static final int TRANSITION_CLOSE = 2;
-   
-   static class ScreenView extends SurfaceView
-   {
-      public ScreenView(Context context)
-      {
-         super(context);
-         setWillNotDraw(false);
-         setWillNotCacheDrawing(true);
-      }
-      
-      public void draw(Canvas c)
-      {
-         c.drawBitmap(sScreenBitmap,0,0,null);
-      }
-   }
-   
-   static class AnimationThread implements Runnable,AnimationListener
-   {
-      Bitmap bm;
-      java.util.concurrent.CountDownLatch latch;
-      int trans;
-      ImageView newView;
-      ScreenView scrView;
-      
-      void startTransition(int trans)
-      {
-         this.trans = trans;
-         latch = new java.util.concurrent.CountDownLatch(1);
-         loader.runOnUiThread(this);
-         try {animt.latch.await();} catch (InterruptedException ie) {}
-      }
-      
-      public void run()
-      {
-         if (scrView == null)
-         {
-            ViewGroup vg = (ViewGroup)instance.getParent();
-            scrView = new ScreenView(instance.getContext());
-            newView = new ImageView(instance.getContext());
-            newView.setWillNotCacheDrawing(true);
-            newView.setVisibility(ViewGroup.INVISIBLE);
-            scrView.setVisibility(ViewGroup.INVISIBLE);
-            vg.addView(scrView);
-            vg.addView(newView);
-         }
-         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
-         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
-         {
-            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
-            bm.eraseColor(0xFFFFFFFF);
-            newView.setImageBitmap(bm);
-         }
-         Animation anim;
-         if (trans == TRANSITION_OPEN)
-         {
-            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-            newView.setImageBitmap(bm);
-            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-         else // TRANSITION_CLOSE
-         {
-            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-
-            newView.setImageBitmap(bm);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            scrView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-      }
-      
-      public void onAnimationEnd(Animation animation)
-      {
-         drawScreen();
-         newView.setVisibility(ViewGroup.INVISIBLE);
-         scrView.setVisibility(ViewGroup.INVISIBLE);
-         latch.countDown();
-      }
-
-      public void onAnimationRepeat(Animation animation) {}
-      public void onAnimationStart(Animation animation) {}
-   }
-   
-   static AnimationThread animt = new AnimationThread();
-   
-   static void drawScreen()
-   {
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
-      }
-   }
-
-   static void transitionEffectChanged(int type)
-   {
-      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
-         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
-   }
-   
-   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
-   {
-      if (!appPaused)
-      try
-      {
-         //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
-            return;
-         
-         switch (transitionEffect)
-         {
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-               animt.startTransition(transitionEffect);
-               // no break!
-            case TRANSITION_NONE:
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               drawScreen();
-               break;
-         }
-         //int ela = (int)(System.currentTimeMillis() - ini);
-         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
-      }
-      catch (Throwable t)
-      {
-         AndroidUtils.debug(Log.getStackTraceString(t));
-      }
-   }
-
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
    private final static int SOFT_EXIT = 0x40000000;
+   private final static int SOFT_UNEXIT = 0x40000001;
    static void exit(int ret)
    {
+      if (ret == SOFT_UNEXIT)
+      {
+         AndroidUtils.debug("soft unexit");
+         Intent myStarterIntent = new Intent(loader, Loader.class);
+         myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+         loader.startActivity(myStarterIntent);         
+         return;
+      }
+      else
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);
@@ -638,11 +519,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean eventIsAvailable()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       return eventThread.eventAvailable();
    }
    
    public static void pumpEvents()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       eventThread.pumpEvents();
    }
    
@@ -660,7 +545,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void onClick(DialogInterface dialoginterface, int i) 
             {
-               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
+//               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
                showingAlert = false;
             }
          })
@@ -693,7 +578,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeSetOffcreenBitmap(Bitmap bmp);
+   native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -955,6 +840,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command.equals("viewer"))
+      {
+         if (args == null)
+            return -1;
+         String argl = args.toLowerCase();
+         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+            return -2;
+      }
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("command", command);
@@ -984,6 +877,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case GPSFUNC_GETDATA:
             return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
          case GPSFUNC_START:
+            if (!isGpsOn())
+               return null;
             lastGps = "*";
          case GPSFUNC_STOP:
             Message msg = viewhandler.obtainMessage();
@@ -1000,6 +895,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             break;
       }
       return null;
+   }
+
+   private static boolean isGpsOn()
+   {
+      LocationManager manager = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+      return manager != null && manager.isProviderEnabled(LocationManager.GPS_PROVIDER); 
    }
 
    public void onLocationChanged(Location loc)
@@ -1030,6 +931,90 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
    }
 
+   private static double[] getLatLon(String address) throws IOException
+   {
+      if (address.equals("")) // last known location?
+      {
+         // first, use the location manager
+         LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+         List<String> pros = loc.getProviders(true);
+         Location position = null;
+         for (String p : pros)
+         {
+            position = loc.getLastKnownLocation(p);
+            if (position != null)
+               return new double[]{position.getLatitude(),position.getLongitude()};
+         }
+      }
+      else
+      if (address.startsWith("@"))
+      {
+         String[] st = address.substring(1).split(",");
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
+      }
+      else
+      {         
+         Geocoder g = new Geocoder(instance.getContext());
+         List<Address> al = g.getFromLocationName(address, 1);
+         if (al != null && al.size() > 0)
+         {
+            Address a = al.get(0);
+            if (a.hasLatitude() && a.hasLongitude())
+               return new double[]{a.getLatitude(),a.getLongitude()};
+         }
+      }
+      return null;
+   }
+   
+   public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
+   {
+      boolean tryAgain = false;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            AndroidUtils.debug("addrs: "+addressI+", "+addressF);
+            double[] llI = getLatLon(addressI);
+            double[] llF = getLatLon(addressF);
+            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
+            if (llI != null && llF != null)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.ROUTE);
+               b.putDouble("latI", llI[0]);
+               b.putDouble("lonI", llI[1]);
+               b.putDouble("latF", llF[0]);
+               b.putDouble("lonF", llF[1]);
+               b.putString("coord", coords);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+            else
+               throw new Exception(tryAgainCount+" parse response for address"); // make it try again
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return false;
+   }
+   
    public static boolean showingMap;
    public static boolean showGoogleMaps(String address, boolean showSatellite)
    {
@@ -1039,61 +1024,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
-            double lat=0,lon=0;
-            boolean latlonOk = false;
-            if (address.equals("")) // last known location?
-            {
-               // first, use the location manager
-               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
-               List<String> pros = loc.getProviders(true);
-               Location position = null;
-               for (String p : pros)
-               {
-                  position = loc.getLastKnownLocation(p);
-                  //AndroidUtils.debug("Provider: "+p+"  "+position);
-                  if (position != null)
-                  {
-                     lat = position.getLatitude();
-                     lon = position.getLongitude();
-                     latlonOk = true;
-                     break;
-                  }
-               }
-            }
-            else
-            if (address.startsWith("@"))
-            {
-               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
-               lat = Double.parseDouble(st.nextToken());
-               lon = Double.parseDouble(st.nextToken());
-               latlonOk = true;
-            }
-            else
-            {         
-               Geocoder g = new Geocoder(instance.getContext());
-               List<Address> al = g.getFromLocationName(address, 1);
-               if (al != null && al.size() > 0)
-               {
-                  Address a = al.get(0);
-                  if (a.hasLatitude() && a.hasLongitude())
-                  {
-                     lat = a.getLatitude();
-                     lon = a.getLongitude();
-                     latlonOk = true;
-                  }
-               }
-               if (!latlonOk)
-                  throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
-            }
-            if (latlonOk)
+            double [] ll = getLatLon(address);
+            if (ll != null)
             {
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
                Bundle b = new Bundle();
                b.putInt("type", Loader.MAP);
-               b.putDouble("lat", lat);
-               b.putDouble("lon", lon);
+               b.putDouble("lat", ll[0]);
+               b.putDouble("lon", ll[1]);
                b.putBoolean("sat", showSatellite);
                msg.setData(b);
                loader.achandler.sendMessage(msg);
@@ -1101,6 +1041,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   try {Thread.sleep(400);} catch (Exception e) {}
                return true;
             }
+            else throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
          }
          catch (Exception e)
          {
@@ -1187,7 +1128,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          StringBuffer sb = new StringBuffer(32);
          Camera camera = Camera.open();
          Camera.Parameters parameters=camera.getParameters();
-         List<Camera.Size> sizes = Level5.getInstance().getSupportedPictureSizes(parameters);
+         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
          if (sizes == null)
             return null;
          for (Camera.Size ss: sizes)
@@ -1404,4 +1345,33 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (tczs.get(i).raf != lastRAF)
             try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
    }
+   
+   public static boolean callingZXing;
+   public static String zxingResult;
+   public static String zxing(String mode)
+   {
+      String text = null;
+      try 
+      {
+         if (mode == null) mode = "";
+         zxingResult = null;
+         callingZXing = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("zxing.mode", mode);
+         b.putInt("type",Loader.ZXING_SCAN);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingZXing)
+            try {Thread.sleep(200);} catch (Exception e) {}
+         return zxingResult;
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1)
+      }
+      return text;
+   }
+
 }

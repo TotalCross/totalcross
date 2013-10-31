@@ -16,14 +16,7 @@ TESTCASE(tumMC_play_b) // totalcross/ui/media/MediaClip native public boolean pl
 #if 1
    TEST_CANNOT_RUN;
 #else
-#if defined(PALMOS)
-   TNMParams p;
-   Object obj = createStringObjectFromCharP("test.wav", -1);
-   p.currentContext = currentContext;
-   p.obj = &obj;
-   tumSC_play_b(&p);
-   ASSERT1_EQUALS(True, p.retI);
-#elif defined (WIN32)
+#if defined (WIN32)
 #if 1
    TNMParams p;
    Object obj;

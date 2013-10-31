@@ -71,7 +71,7 @@ public class ScrollContainer extends Container implements Scrollable
    protected ClippedContainer bag;
    protected Container bag0; // used to make sure that the clipping will work
    boolean changed;
-   private int lastV=0, lastH=0; // eliminate duplicate events
+   protected int lastV=0, lastH=0; // eliminate duplicate events
    /** Set to true, to make the surrounding container shrink to its size. */
    public boolean shrink2size;
    private boolean isScrolling;
@@ -440,6 +440,7 @@ public class ScrollContainer extends Container implements Scrollable
                {
                   scrollContent(dx, dy);
                   event.consumed = true;
+                  Event.clearQueue(PenEvent.PEN_DRAG);
                }
                else
                {
@@ -494,6 +495,14 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (flick != null && flick.pagepos != null)
          flick.pagepos.setPosition(p);
+   }
+   
+   /** Scrolls a page to left or right. Works only if it has a flick and a page position.
+    */
+   public void scrollPage(boolean left)
+   {
+      int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
+      scrollToPage(left ? curPage-1 : curPage+1);
    }
 
    /** Scrolls to the given control. */

@@ -58,9 +58,9 @@ public class Flick implements PenListener, TimerListener
 
    /**
     * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
-    * Defaults to 2.95 for Blackberry and 1.6 for all other platforms.
+    * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
     */
-   public static double defaultFlickAcceleration = Settings.BLACKBERRY.equals(Settings.platform) ? 2.95 : 1.6;
+   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight) > 320 ? 2.95 : 1.6;
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.

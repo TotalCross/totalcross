@@ -18,21 +18,14 @@
 
 package tc.samples.xml.rpc.client;
 
-import totalcross.io.IOException;
-import totalcross.io.IllegalArgumentIOException;
-import totalcross.sys.*;
-import totalcross.util.*;
+import totalcross.io.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
+import totalcross.util.*;
 import totalcross.xml.rpc.*;
 
 public class HelloClient extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Button btn1;
    private Button btn2;
    private ListBox lb;

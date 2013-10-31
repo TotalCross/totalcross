@@ -70,6 +70,10 @@ public class SpinList extends Control
     * @since TotalCross 1.53
     */
    public boolean useCalculatorBox;
+   /** Set to false to disallow the wrap around that happens when the user is at the first or last items.
+    * @since TotalCross 2.0
+    */
+   public boolean wrapAround = true;
    
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
@@ -99,7 +103,7 @@ public class SpinList extends Control
    
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH + Edit.prefH : fmH;
+      return fmH + Edit.prefH;
    }
 
    /** Sets the choices to the given ones. Searches for [i0,if] and then expands the items.
@@ -267,10 +271,13 @@ public class SpinList extends Control
    private void scroll(boolean up, boolean doPostEvent)
    {
       int max = choices.length-1;
+      if (!wrapAround && ((up && selected == 0) || (!up && selected == max)))
+         return;
   	   if (up)
       {
    	   selected--;
-	      if (selected < 0) selected = max;
+	      if (selected < 0) 
+	         selected = max;
       }
       else
       {

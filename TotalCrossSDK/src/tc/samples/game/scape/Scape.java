@@ -36,11 +36,6 @@ import totalcross.util.Properties;
  */
 public class Scape extends GameEngine implements ProdConfig
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    protected final static boolean ARCADE_GAME = true;
 
    protected final static boolean CLEAR_SCREEN = true;
@@ -99,7 +94,7 @@ public class Scape extends GameEngine implements ProdConfig
 
    public Scape()
    {
-      setUIStyle(Settings.PalmOS);
+      setUIStyle(Settings.Flat);
 
       // adjust attributes
       gameName = "Scape";
@@ -210,7 +205,7 @@ public class Scape extends GameEngine implements ProdConfig
                int sy = bs4 + bs4 * (BLOCKS - 1 - i);
                if (DEBUG) Vm.debug("scale to " + sx + " x " + sy);
 
-               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy,-1), ball);
+               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy), ball);
             }
          }
          catch (ImageException e)
@@ -296,8 +291,8 @@ public class Scape extends GameEngine implements ProdConfig
          }
 
          // render level & score
-         levelRenderer.display(16, 2, level, false);
-         scoreRenderer.display(Settings.screenWidth >> 1, 2, score, false);
+         levelRenderer.display(16, 2, level);
+         scoreRenderer.display(Settings.screenWidth >> 1, 2, score);
       }
    }
 

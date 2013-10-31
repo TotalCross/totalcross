@@ -86,7 +86,6 @@ public class TimeBox extends Window
       super(uiAndroid ? "" : "         ", uiAndroid ? ROUND_BORDER : RECT_BORDER);
       setTime(time);
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
-      highResPrepared = true;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       setBackColor(UIColors.timeboxBack);

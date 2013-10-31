@@ -143,7 +143,10 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
       rootDict.put("CFBundleDisplayName", DeploySettings.appTitle);
       if (DeploySettings.appVersion != null)
+      {
          rootDict.put("CFBundleVersion", DeploySettings.appVersion);
+         rootDict.put("CFBundleShortVersionString", DeploySettings.appVersion);
+      }
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
@@ -245,7 +248,7 @@ public class Deployer4IPhoneIPA
       for (int i = Bitmaps.ITUNES_ICONS.length - 1; i >= 0; i--)
       {
          TFile icon = new TFile(targetZip, Bitmaps.ITUNES_ICONS[i].name);
-         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.ITUNES_ICONS[i].size)));
+         icon.input(new ByteArrayInputStream(Bitmaps.ITUNES_ICONS[i].getImage()));
       }
 
       NSDictionary metadata = new NSDictionary();
@@ -269,7 +272,7 @@ public class Deployer4IPhoneIPA
       for (int i = icons.length - 1; i >= 0; i--)
       {
          TFile icon = new TFile(appFolder, Bitmaps.IOS_ICONS[i].name);
-         icon.input(new ByteArrayInputStream(DeploySettings.bitmaps.getIPhoneIcon(Bitmaps.IOS_ICONS[i].size)));
+         icon.input(new ByteArrayInputStream(Bitmaps.IOS_ICONS[i].getImage()));
          icons[i] = new NSString(Bitmaps.IOS_ICONS[i].name);
       }
 
