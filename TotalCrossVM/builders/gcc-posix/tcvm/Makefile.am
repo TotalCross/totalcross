@@ -73,7 +73,7 @@ inst_LTLIBRARIES = libtcvm.la
 else
 inst_LTLIBRARIES =
 endif
-instdir = /home/jeffque/lib/totalcross
+instdir = /usr/lib/totalcross
 
 if LINUX
 libtcvm_la_LDFLAGS = @DIRECTFB_LIBS@ -lm
