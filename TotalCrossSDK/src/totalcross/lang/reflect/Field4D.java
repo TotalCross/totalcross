@@ -2,13 +2,47 @@ package totalcross.lang.reflect;
 
 public class Field4D
 {
-   public native Class getDeclaringClass();
-   public native String getName();
-   public native int getModifiers();
-   public native Class getType();
-   public native boolean equals(Object obj);
-   public native int hashCode();
-   public native String toString();
+   int index;
+   int mod;
+   Object nativeField; // TClass
+   String name;
+   Class declaringClass; // class that owns this field
+   Class type;
+
+   public Class getDeclaringClass()
+   {
+      return declaringClass;
+   }
+   
+   public String getName()
+   {
+      return name;
+   }
+   
+   public int getModifiers()
+   {
+      return mod;
+   }
+   public Class getType()
+   {
+      return type;
+   }
+   public boolean equals(Object obj)
+   {
+      if (!(obj instanceof Field4D))
+         return false;
+      Field4D f = (Field4D)obj;
+      return f.mod == mod && f.name.equals(name) && f.type.getName().equals(type.getName()) && f.declaringClass.getName().equals(declaringClass.getName());
+   }
+   public int hashCode()
+   {
+      return declaringClass.getName().hashCode() ^ name.hashCode();
+   }
+   public String toString()
+   {
+      return super.toString()+" "+Modifier4D.toString(mod)+" "+type.getName()+"."+name+" (@"+declaringClass.getName()+")";
+   }
+   
    public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
    public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
    public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;

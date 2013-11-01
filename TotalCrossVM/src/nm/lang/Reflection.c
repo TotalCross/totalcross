@@ -42,7 +42,7 @@ CharP getTargetArrayClass(Object o, NameBuf namebuf, Context currentContext)
    if (o == *charTYPE   ) name = CHAR_ARRAY; 
    else
    {
-      xmoveptr(&target, ARRAYOBJ_START(Class_targetClass(o)));
+      xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(o)));
       len = xstrlen(target->name);
       if (len > sizeof(NameBuf)-2)
       {
@@ -92,11 +92,29 @@ static Type checkPrimitiveArray(NMParams p, Type from, bool isGet)
       if (from != Type_Null && from != Type_Object && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
          throwException(p->currentContext, IllegalArgumentException, "Argument type mismatch");
       else
-	     return to;
+	      return to;
    }
    return Type_Null;
 }
-static void getRetI(NMParams p, Type targetType)
+static Type checkPrimitiveField(NMParams p, Type from, bool isGet)
+{
+   Object o = p->obj[0];
+   TCClass cto;
+   Type to;
+   if (o == null)
+      throwException(p->currentContext, NullPointerException, "Argument array is null");
+   else
+   {
+      xmoveptr(&cto, ARRAYOBJ_START(Class_nativeStruct(Field_type(o))));
+      to = type2javaType(cto->name);
+      if (from != Type_Null && from != Type_Object && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
+         throwException(p->currentContext, IllegalArgumentException, "Argument type mismatch");
+      else
+         return to;
+   }
+   return Type_Null;
+}
+static void getArrayI32(NMParams p, Type targetType)
 {
    Object array = p->obj[0];
    int32 index = p->i32[0];
@@ -109,7 +127,7 @@ static void getRetI(NMParams p, Type targetType)
       case Type_Int:     p->retI = ((int32*)ARRAYOBJ_START(array))[index]; break;
    }
 }
-static void setI32(NMParams p, Type srcType)
+static void setArrayI32(NMParams p, Type srcType)
 {
    Object array = p->obj[0];
    int32 index = p->i32[0];
@@ -123,7 +141,71 @@ static void setI32(NMParams p, Type srcType)
       case Type_Int:     ((int32*)ARRAYOBJ_START(array))[index] = (int32)value; break;
    }
 }
-
+static void field32(NMParams p, Type srcType, bool isGet, int32 vv)
+{
+   Object f = p->obj[0];
+   Object o = p->obj[1];
+   if (checkPrimitiveField(p, srcType, isGet) != Type_Null)
+   {
+      Field target;
+      xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
+      if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
+      {
+         int32 index = Field_index(f);
+         int32* v = target->flags.isStatic ? &(OBJ_CLASS(o)->i32StaticValues[index]) : &FIELD_I32(o, index);
+         if (isGet)
+            p->retI = *v;
+         else
+            *v = vv;
+      }
+   }
+}
+static void field64(NMParams p, Type srcType, bool isGet, void* vv)
+{
+   Object f = p->obj[0];
+   Object o = p->obj[1];
+   if (checkPrimitiveField(p, srcType, isGet) != Type_Null)
+   {
+      Field target;
+      xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
+      if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
+      {
+         int32 index = Field_index(f);
+         if (srcType == Type_Long)
+         {
+            int64* v = target->flags.isStatic ? (int64*)&(OBJ_CLASS(o)->v64StaticValues[index]) : (int64*)&FIELD_I64(o, OBJ_CLASS(o), index);
+            if (isGet)
+               p->retL = *v;
+            else
+               *v = *((int64*)vv);
+         }
+         else
+         {
+            double* v = target->flags.isStatic ? &(OBJ_CLASS(o)->v64StaticValues[index]) : &FIELD_DBL(o, OBJ_CLASS(o), index);
+            if (isGet)
+               p->retD = *v;
+            else
+               *v = *((double*)vv);
+         }
+      }
+   }
+}
+static void fieldObj(NMParams p, bool isGet, Object vv)
+{
+   Object f = p->obj[0];
+   Object o = p->obj[1];
+   Field target;
+   xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
+   if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
+   {
+      int32 index = Field_index(f);
+      Object* v = target->flags.isStatic ? &(OBJ_CLASS(o)->objStaticValues[index]) : &FIELD_OBJ(o, OBJ_CLASS(o), index);
+      if (isGet)
+         p->retO = *v;
+      else
+         *v = vv;
+   }
+}
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_newInstance_ci(NMParams p) // totalcross/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
 {
@@ -159,7 +241,7 @@ TC_API void jlrA_newInstance_cI(NMParams p) // totalcross/lang/reflect/Array pub
       TCClass target;
       int32 dimsLen = ARRAYOBJ_LEN(dimensions), i;
       int32* dims = (int32*)ARRAYOBJ_START(dimensions);
-      xmoveptr(&target, ARRAYOBJ_START(Class_targetClass(componentType)));
+      xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(componentType)));
       if (dimsLen == 0)
          throwException(p->currentContext, IllegalArgumentException, "dimensions length cannot be 0");
       else
@@ -226,22 +308,22 @@ TC_API void jlrA_getBoolean_oi(NMParams p) // totalcross/lang/reflect/Array publ
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_getByte_oi(NMParams p) // totalcross/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   getRetI(p, Type_Byte);
+   getArrayI32(p, Type_Byte);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_getChar_oi(NMParams p) // totalcross/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   getRetI(p, Type_Char);
+   getArrayI32(p, Type_Char);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_getShort_oi(NMParams p) // totalcross/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   getRetI(p, Type_Short);
+   getArrayI32(p, Type_Short);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_getInt_oi(NMParams p) // totalcross/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   getRetI(p, Type_Int);
+   getArrayI32(p, Type_Int);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_getLong_oi(NMParams p) // totalcross/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
@@ -317,22 +399,22 @@ TC_API void jlrA_setBoolean_oib(NMParams p) // totalcross/lang/reflect/Array pub
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setByte_oib(NMParams p) // totalcross/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   setI32(p, Type_Byte);
+   setArrayI32(p, Type_Byte);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setChar_oic(NMParams p) // totalcross/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   setI32(p, Type_Char);
+   setArrayI32(p, Type_Char);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setShort_ois(NMParams p) // totalcross/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   setI32(p, Type_Short);
+   setArrayI32(p, Type_Short);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setInt_oii(NMParams p) // totalcross/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
-   setI32(p, Type_Int);
+   setArrayI32(p, Type_Int);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setLong_oil(NMParams p) // totalcross/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
@@ -366,180 +448,224 @@ TC_API void jlrA_setFloat_oid(NMParams p) // totalcross/lang/reflect/Array publi
 	jlrA_setDouble_oid(p);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Method public native Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getName(NMParams p) // totalcross/lang/reflect/Method public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getModifiers(NMParams p) // totalcross/lang/reflect/Method public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getReturnType(NMParams p) // totalcross/lang/reflect/Method public native Class getReturnType();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getParameterTypes(NMParams p) // totalcross/lang/reflect/Method public native java.lang.Class[] getParameterTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getExceptionTypes(NMParams p) // totalcross/lang/reflect/Method public native java.lang.Class[] getExceptionTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_equals_o(NMParams p) // totalcross/lang/reflect/Method public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_hashCode(NMParams p) // totalcross/lang/reflect/Method public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_toString(NMParams p) // totalcross/lang/reflect/Method public native String toString();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Constructor public native Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getName(NMParams p) // totalcross/lang/reflect/Constructor public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getModifiers(NMParams p) // totalcross/lang/reflect/Constructor public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getParameterTypes(NMParams p) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getParameterTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getExceptionTypes(NMParams p) // totalcross/lang/reflect/Constructor public native java.lang.Class[] getExceptionTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_equals_o(NMParams p) // totalcross/lang/reflect/Constructor public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_hashCode(NMParams p) // totalcross/lang/reflect/Constructor public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_toString(NMParams p) // totalcross/lang/reflect/Constructor public native String toString();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getDeclaringClass(NMParams p) // totalcross/lang/reflect/Field public native Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getName(NMParams p) // totalcross/lang/reflect/Field public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getModifiers(NMParams p) // totalcross/lang/reflect/Field public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getType(NMParams p) // totalcross/lang/reflect/Field public native Class getType();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_equals_o(NMParams p) // totalcross/lang/reflect/Field public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_hashCode(NMParams p) // totalcross/lang/reflect/Field public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_toString(NMParams p) // totalcross/lang/reflect/Field public native String toString();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getBoolean_o(NMParams p) // totalcross/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Boolean, true,0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getByte_o(NMParams p) // totalcross/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Byte, true,0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getChar_o(NMParams p) // totalcross/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Char, true,0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getShort_o(NMParams p) // totalcross/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Short, true,0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getInt_o(NMParams p) // totalcross/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Int, true,0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getLong_o(NMParams p) // totalcross/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getFloat_o(NMParams p) // totalcross/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
-{
+   field64(p, Type_Long, true, 0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getDouble_o(NMParams p) // totalcross/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   field64(p, Type_Double, true, 0);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+TC_API void jlrF_getFloat_o(NMParams p) // totalcross/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
+   jlrF_getDouble_o(p);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setBoolean_ob(NMParams p) // totalcross/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Boolean, false, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setByte_ob(NMParams p) // totalcross/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Byte, false, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setChar_oc(NMParams p) // totalcross/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Char, false, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setShort_os(NMParams p) // totalcross/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Short, false, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setInt_oi(NMParams p) // totalcross/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
 {
+   field32(p, Type_Int, false, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setLong_ol(NMParams p) // totalcross/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
 {
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_setFloat_of(NMParams p) // totalcross/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
-{
+   field64(p, Type_Long, false, &p->i64[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setDouble_od(NMParams p) // totalcross/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 {
+   field64(p, Type_Double, false, &p->i64[0]);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setFloat_of(NMParams p) // totalcross/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+{
+   jlrF_setDouble_od(p);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   Object o = null;
+   switch (checkPrimitiveField(p, Type_Null, true))
+   {
+      case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) field32(p,Type_Byte,    true, Byte_v     (o)); break;
+      case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) field32(p,Type_Boolean, true, Boolean_v  (o)); break;
+      case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) field32(p,Type_Short,   true, Short_v    (o)); break;
+      case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) field32(p,Type_Char,    true, Character_v(o)); break;
+      case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) field32(p,Type_Int,     true, Integer_v  (o)); break;
+      case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) field64(p,Type_Long,    true, &Long_v     (o)); break;
+      case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) field64(p,Type_Float,   true, &Float_v    (o)); break;
+      case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) field64(p,Type_Double,  true, &Double_v   (o)); break;
+      case Type_Null:    break;
+      default:           fieldObj(p, true, null); return;
+   }
+   setObjectLock(p->retO = o, UNLOCKED);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+   Object value = p->obj[2];
+   if (p->obj[1] == null)
+      throwException(p->currentContext, IllegalArgumentException, "Object is null");
+   else
+      switch (checkPrimitiveField(p, Type_Null, false))
+      {
+         case Type_Byte:    field32(p, Type_Byte   , false, Byte_v     (value)); break;
+         case Type_Boolean: field32(p, Type_Boolean, false, Boolean_v  (value)); break;
+         case Type_Short:   field32(p, Type_Short  , false, Short_v    (value)); break;
+         case Type_Char:    field32(p, Type_Char   , false, Character_v(value)); break;
+         case Type_Int:     field32(p, Type_Int    , false, Integer_v  (value)); break;
+         case Type_Long:    field64(p, Type_Long   , false, &Long_v    (value)); break;
+         case Type_Float:   field64(p, Type_Float  , false, &Float_v   (value)); break;
+         case Type_Double:  field64(p, Type_Double , false, &Double_v  (value)); break;
+         case Type_Null:    break;
+         default:           fieldObj(p, false, value); return;
+      }
+}
+//////////////////////////////////////////////////////////////////////////
+static void invoke(NMParams p, Object m, Object obj, Object args)
+{
+   int32 n = args == null ? 0 : ARRAYOBJ_LEN(args), i;
+   Object* argObjs = args == null ? null : (Object*)ARRAYOBJ_START(args);
+   Method target;
+   TValue* aargs=null;
+   TValue ret;
+   Type from,to;
+
+   xmoveptr(&target, ARRAYOBJ_START(Method_nativeStruct(m)));
+   if (!target->flags.isStatic && obj == null)
+      throwException(p->currentContext, NullPointerException, "Object is null");
+   else
+   if (areClassesCompatible(p->currentContext, OBJ_CLASS(obj), target->class_->name) != COMPATIBLE)
+      throwException(p->currentContext, IllegalArgumentException, "Object type mismatch", target->paramCount, n);
+   else
+   if (target->paramCount != n)
+      throwException(p->currentContext, IllegalArgumentException, "Parameter count mismatch. Needs %d, but only %d was given", target->paramCount, n);
+   else
+   if (argObjs != null)
+   {
+      aargs = newArrayOf(Value, n, null);
+      if (!aargs)
+         throwException(p->currentContext, OutOfMemoryError, "For TValue array");
+      else
+      {
+         TCClass c = target->class_;
+         for (i = 0; i < n; i++)
+         {
+            Object oi = argObjs[i];
+            CharP targetClass = c->cp->cls[target->cpParams[i]];
+            if (areClassesCompatible(p->currentContext, OBJ_CLASS(oi), targetClass) != COMPATIBLE)
+            {
+               throwException(p->currentContext, IllegalArgumentException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
+               break;
+            }
+            from = type2javaType(OBJ_CLASS(oi)->name);
+            to = type2javaType(targetClass);
+            if (!canWideConvert(from, to))
+            {
+               throwException(p->currentContext, IllegalArgumentException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
+               break;
+            }
+            switch (from)
+            {
+               case Type_Byte:    aargs[i].asInt32 = Byte_v     (oi); break;
+               case Type_Boolean: aargs[i].asInt32 = Boolean_v  (oi); break;
+               case Type_Short:   aargs[i].asInt32 = Short_v    (oi); break;
+               case Type_Char:    aargs[i].asInt32 = Character_v(oi); break;
+               case Type_Int:     aargs[i].asInt32 = Integer_v  (oi); break;
+               case Type_Long:    aargs[i].asInt64 = Long_v     (oi); break;
+               case Type_Float:   aargs[i].asDouble = Float_v   (oi); break;
+               case Type_Double:  aargs[i].asDouble = Double_v  (oi); break;
+               case Type_Null:    break;
+               default:           aargs[i].asObj = oi;                break;
+            }
+         }
+         if (p->currentContext->thrownException == null)
+         {
+            Object o;
+            if (target->paramCount > 0)
+               p->currentContext->parametersInArray = true;
+            ret.asInt64 = executeMethod(p->currentContext, target, obj, aargs).asInt64;
+            switch (target->cpReturn)
+            {
+               case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
+               case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
+               case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
+               case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) Character_v(o) = ret.asInt32; break;
+               case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) Integer_v  (o) = ret.asInt32; break;
+               case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) Long_v     (o) = ret.asInt64; break;
+               case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) Float_v    (o) = ret.asDouble; break;
+               case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) Double_v   (o) = ret.asDouble; break;
+               default:           o = ret.asObj; break;
+            }
+            p->retO = o;
+         }
+         freeArray(aargs);
+      }
+   }
+}
+TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   Object m = p->obj[0];
+   Object obj = p->obj[1];
+   Object args = p->obj[2];
+   invoke(p, m, obj, args);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   Object targetClassObj = Method_declaringClass(p->obj[0]), o;
+   TCClass targetClass;
+   xmoveptr(&targetClass, Class_nativeStruct(targetClassObj));
+   o = createObject(p->currentContext, targetClass->name);
+   if (o)
+      invoke(p, p->obj[0], o, p->obj[1]);
+   setObjectLock(p->retO = o, UNLOCKED);
 }
 
 //#ifdef ENABLE_TEST_SUITE

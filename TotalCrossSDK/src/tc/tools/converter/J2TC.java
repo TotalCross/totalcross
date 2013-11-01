@@ -557,7 +557,7 @@ public final class J2TC implements JConstants, TCConstants
       // jm.isStrict - not used
       if (jm.isSynchronized && !syncWarned)
       {
-         System.out.println("Synchronized is not supported for methods nor classes, only for instance objects.");
+         System.out.println("Synchronized is not supported for methods nor classes, only for totalcross.util.concurrent.Lock objects.");
          syncWarned = true;
       }
       return f;

@@ -54,7 +54,7 @@ typedef struct
 typedef struct
 {
    uint16 isArray        : 1;
-   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Oject
+   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Object
    uint16 isPublic       : 1;
    uint16 isPrivate      : 1;
    uint16 isProtected    : 1;
@@ -541,6 +541,19 @@ struct TField
    // The fully qualified class name
    CharP sourceClassName, targetClassName;
 };
+
+// java flags (used during reflection)
+#define JFLAG_PUBLIC       1
+#define JFLAG_PRIVATE      2
+#define JFLAG_PROTECTED    4
+#define JFLAG_STATIC       8
+#define JFLAG_FINAL        16
+#define JFLAG_SYNCHRONIZED 32
+#define JFLAG_VOLATILE     64
+#define JFLAG_TRANSIENT    128
+#define JFLAG_NATIVE       256
+#define JFLAG_INTERFACE    512
+#define JFLAG_ABSTRACT     1024
 
 /// String representing a constructor
 #define CONSTRUCTOR_NAME "<C>" // name of the constructor

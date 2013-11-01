@@ -290,14 +290,32 @@ TC_API TValue executeMethod(Context context, Method method, ...)
          TValue64 *r64 = reg64;
          int32 n = method->paramCount;
          UInt8Array regTypes = method->paramRegs;
-         for (; n-- > 0; regTypes++)
+         if (context->parametersInArray)
          {
-            XSELECT(addrInParam, *regTypes)
+            TValue* aargs = va_arg(vaargs, TValue*);
+            context->parametersInArray = false;
+            for (; n-- > 0; regTypes++, aargs++)
             {
-               XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
-               XOPTION(d,RegO): *rO++ = va_arg(vaargs, Object);        continue;
-               XOPTION(d,RegD):
-               XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               XSELECT(addrInParam, *regTypes)
+               {
+                  XOPTION(d,RegI): *rI++ = aargs->asInt32;         continue;
+                  XOPTION(d,RegO): *rO++ = aargs->asObj;           continue;
+                  XOPTION(d,RegD):
+                  XOPTION(d,RegL): *REGD(r64++) = aargs->asDouble; continue;
+               }
+            }
+         }
+         else
+         {
+            for (; n-- > 0; regTypes++)
+            {
+               XSELECT(addrInParam, *regTypes)
+               {
+                  XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
+                  XOPTION(d,RegO): *rO++ = va_arg(vaargs, Object);        continue;
+                  XOPTION(d,RegD):
+                  XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               }
             }
          }
       }

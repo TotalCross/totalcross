@@ -40,7 +40,7 @@ import java.lang.reflect.*;
 public final class Class4D
 {
    // place holders for the VM
-   Object targetClass; // TClass
+   Object nativeClass; // TClass
    String targetName;  // java.lang.String
 
    /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are

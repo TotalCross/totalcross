@@ -43,32 +43,8 @@ TC_API void jlrA_setInt_oii(NMParams p);
 TC_API void jlrA_setLong_oil(NMParams p);
 TC_API void jlrA_setFloat_oid(NMParams p);
 TC_API void jlrA_setDouble_oid(NMParams p);
-TC_API void jlrM_getDeclaringClass(NMParams p);
-TC_API void jlrM_getName(NMParams p);
-TC_API void jlrM_getModifiers(NMParams p);
-TC_API void jlrM_getReturnType(NMParams p);
-TC_API void jlrM_getParameterTypes(NMParams p);
-TC_API void jlrM_getExceptionTypes(NMParams p);
-TC_API void jlrM_equals_o(NMParams p);
-TC_API void jlrM_hashCode(NMParams p);
-TC_API void jlrM_toString(NMParams p);
 TC_API void jlrM_invoke_oO(NMParams p);
-TC_API void jlrC_getDeclaringClass(NMParams p);
-TC_API void jlrC_getName(NMParams p);
-TC_API void jlrC_getModifiers(NMParams p);
-TC_API void jlrC_getParameterTypes(NMParams p);
-TC_API void jlrC_getExceptionTypes(NMParams p);
-TC_API void jlrC_equals_o(NMParams p);
-TC_API void jlrC_hashCode(NMParams p);
-TC_API void jlrC_toString(NMParams p);
 TC_API void jlrC_newInstance_O(NMParams p);
-TC_API void jlrF_getDeclaringClass(NMParams p);
-TC_API void jlrF_getName(NMParams p);
-TC_API void jlrF_getModifiers(NMParams p);
-TC_API void jlrF_getType(NMParams p);
-TC_API void jlrF_equals_o(NMParams p);
-TC_API void jlrF_hashCode(NMParams p);
-TC_API void jlrF_toString(NMParams p);
 TC_API void jlrF_get_o(NMParams p);
 TC_API void jlrF_getBoolean_o(NMParams p);
 TC_API void jlrF_getByte_o(NMParams p);
@@ -686,107 +662,11 @@ TC_API void jlrA_setDouble_oid(NMParams p) // java/lang/reflect/Array public sta
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getDeclaringClass(NMParams p) // java/lang/reflect/Method public native java.lang.Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getName(NMParams p) // java/lang/reflect/Method public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getModifiers(NMParams p) // java/lang/reflect/Method public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getReturnType(NMParams p) // java/lang/reflect/Method public native java.lang.Class getReturnType();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getParameterTypes(NMParams p) // java/lang/reflect/Method public native java.lang.Class[] getParameterTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_getExceptionTypes(NMParams p) // java/lang/reflect/Method public native java.lang.Class[] getExceptionTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_equals_o(NMParams p) // java/lang/reflect/Method public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_hashCode(NMParams p) // java/lang/reflect/Method public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrM_toString(NMParams p) // java/lang/reflect/Method public native String toString();
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlrM_invoke_oO(NMParams p) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getDeclaringClass(NMParams p) // java/lang/reflect/Constructor public native java.lang.Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getName(NMParams p) // java/lang/reflect/Constructor public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getModifiers(NMParams p) // java/lang/reflect/Constructor public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getParameterTypes(NMParams p) // java/lang/reflect/Constructor public native java.lang.Class[] getParameterTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_getExceptionTypes(NMParams p) // java/lang/reflect/Constructor public native java.lang.Class[] getExceptionTypes();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_equals_o(NMParams p) // java/lang/reflect/Constructor public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_hashCode(NMParams p) // java/lang/reflect/Constructor public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrC_toString(NMParams p) // java/lang/reflect/Constructor public native String toString();
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlrC_newInstance_O(NMParams p) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getDeclaringClass(NMParams p) // java/lang/reflect/Field public native java.lang.Class getDeclaringClass();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getName(NMParams p) // java/lang/reflect/Field public native String getName();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getModifiers(NMParams p) // java/lang/reflect/Field public native int getModifiers();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getType(NMParams p) // java/lang/reflect/Field public native java.lang.Class getType();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_equals_o(NMParams p) // java/lang/reflect/Field public native boolean equals(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_hashCode(NMParams p) // java/lang/reflect/Field public native int hashCode();
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_toString(NMParams p) // java/lang/reflect/Field public native String toString();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2766,132 +2646,12 @@ TESTCASE(jlrA_setDouble_oid) // java/lang/reflect/Array public static native voi
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(jlrM_getDeclaringClass) // java/lang/reflect/Method public native java.lang.Class getDeclaringClass();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_getName) // java/lang/reflect/Method public native String getName();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_getModifiers) // java/lang/reflect/Method public native int getModifiers();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_getReturnType) // java/lang/reflect/Method public native java.lang.Class getReturnType();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_getParameterTypes) // java/lang/reflect/Method public native java.lang.Class[] getParameterTypes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_getExceptionTypes) // java/lang/reflect/Method public native java.lang.Class[] getExceptionTypes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_equals_o) // java/lang/reflect/Method public native boolean equals(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_hashCode) // java/lang/reflect/Method public native int hashCode();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrM_toString) // java/lang/reflect/Method public native String toString();
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(jlrM_invoke_oO) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 {
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(jlrC_getDeclaringClass) // java/lang/reflect/Constructor public native java.lang.Class getDeclaringClass();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_getName) // java/lang/reflect/Constructor public native String getName();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_getModifiers) // java/lang/reflect/Constructor public native int getModifiers();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_getParameterTypes) // java/lang/reflect/Constructor public native java.lang.Class[] getParameterTypes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_getExceptionTypes) // java/lang/reflect/Constructor public native java.lang.Class[] getExceptionTypes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_equals_o) // java/lang/reflect/Constructor public native boolean equals(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_hashCode) // java/lang/reflect/Constructor public native int hashCode();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrC_toString) // java/lang/reflect/Constructor public native String toString();
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(jlrC_newInstance_O) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_getDeclaringClass) // java/lang/reflect/Field public native java.lang.Class getDeclaringClass();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_getName) // java/lang/reflect/Field public native String getName();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_getModifiers) // java/lang/reflect/Field public native int getModifiers();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_getType) // java/lang/reflect/Field public native java.lang.Class getType();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_equals_o) // java/lang/reflect/Field public native boolean equals(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_hashCode) // java/lang/reflect/Field public native int hashCode();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlrF_toString) // java/lang/reflect/Field public native String toString();
 {
    TEST_SKIP;
    finish: ;
