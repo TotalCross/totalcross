@@ -26,6 +26,9 @@ bool setupGL(int width, int height);
    [self setOpaque:YES];
    self.contentMode = UIViewContentModeCenter;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
+   UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+   [self addGestureRecognizer:pinchGesture];
+   [pinchGesture release];
    return self;
 }
 
@@ -122,6 +125,57 @@ void recreateTextures();
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
    [self processEvent: touches withEvent:event];
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
+   {
+      [ (MainViewController*)controller addEvent:
+       [[NSDictionary alloc] initWithObjectsAndKeys:
+        @"multitouchScale", @"type",
+        [NSNumber numberWithInt:(int)1], @"key",
+        [NSNumber numberWithInt:(int)0], @"x",
+        [NSNumber numberWithInt:(int)0], @"y",
+        nil]
+       ];
+   }
+	return YES;
+}
+
+- (BOOL)gestureRecognizerShouldEnd:(UIGestureRecognizer *)gestureRecognizer
+{
+	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
+      [ (MainViewController*)controller addEvent:
+       [[NSDictionary alloc] initWithObjectsAndKeys:
+        @"multitouchScale", @"type",
+        [NSNumber numberWithInt:(int)2], @"key",
+        [NSNumber numberWithInt:(int)0], @"x",
+        [NSNumber numberWithInt:(int)0], @"y",
+        nil]
+       ];
+	return YES;
+}
+
+-(void)handlePinch:(UIPinchGestureRecognizer*)sender
+{
+   // note: unlike android, that sends the step since the last value, ios sends the actual scale value, as the docs says:
+   // The scale value is an absolute value that varies over time. It is not the delta value from the last time that the
+   // scale was reported. Apply the scale value to the state of the view when the gesture is first recognized—
+   // do not concatenate the value each time the handler is called.
+   // -- so we use the velocity to achieve the same results as in android. TODO use sender.scale to compute the steps
+   if (sender.velocity == 0 || sender.velocity > 10 || sender.velocity < -10) return;
+   double dscale = 1+sender.velocity/100;
+   //NSLog(@"scale: %f, real scale: %f, vel: %f",dscale,sender.scale,sender.velocity);
+   int *iscale = (int*)&dscale;
+   [ (MainViewController*)controller addEvent:
+    [[NSDictionary alloc] initWithObjectsAndKeys:
+     @"multitouchScale", @"type",
+     [NSNumber numberWithInt:(int)0], @"key",
+     [NSNumber numberWithInt:(int)iscale[1]], @"x",
+     [NSNumber numberWithInt:(int)iscale[0]], @"y",
+     nil]
+    ];
 }
 
 @end

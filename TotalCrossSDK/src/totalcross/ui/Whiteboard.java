@@ -153,6 +153,18 @@ public class Whiteboard extends Control
 
    TimerEvent te;
    
+   private void drawTo(Graphics g, int pex, int pey)
+   {
+      g.drawLine(oldX,oldY,pex,pey); // guich@580_34: draw directly on screen
+      if (thick)
+      {
+         g.drawLine(oldX+1,oldY+1,pex+1,pey+1);
+         g.drawLine(oldX-1,oldY-1,pex-1,pey-1);
+         g.drawLine(oldX+1,oldY+1,pex-1,pey-1);
+         g.drawLine(oldX-1,oldY-1,pex+1,pey+1);
+      }
+   }
+   
    public void onEvent(Event event)
    {
       PenEvent pe;
@@ -166,33 +178,18 @@ public class Whiteboard extends Control
             pe = (PenEvent)event;
             oldX = pe.x;
             oldY = pe.y;
-            if (gScr != null) gScr.setPixel(pe.x,pe.y);
-            gImg.setPixel(pe.x,pe.y);
+            drawTo(gImg, pe.x,pe.y); // after
+            if (gScr != null) drawTo(gScr,pe.x,pe.y);
             getParentWindow().setGrabPenEvents(this); // guich@tc100: redirect all pen events to here, bypassing other processings
-            te = addTimer(100);
+            if (Settings.isOpenGL) te = addTimer(100);
             break;
          case PenEvent.PEN_DRAG:
             pe = (PenEvent)event;
-            if (gScr != null) gScr.drawLine(oldX,oldY,pe.x,pe.y); // guich@580_34: draw directly on screen
-            gImg.drawLine(oldX,oldY,pe.x,pe.y);
-            if (thick)
-            {
-               if (gScr != null) 
-               {
-                  gScr.drawLine(oldX+1,oldY+1,pe.x+1,pe.y+1);
-                  gScr.drawLine(oldX-1,oldY-1,pe.x-1,pe.y-1);
-                  gScr.drawLine(oldX+1,oldY+1,pe.x-1,pe.y-1);
-                  gScr.drawLine(oldX-1,oldY-1,pe.x+1,pe.y+1);
-               }
-               
-               gImg.drawLine(oldX+1,oldY+1,pe.x+1,pe.y+1);
-               gImg.drawLine(oldX-1,oldY-1,pe.x-1,pe.y-1);
-               gImg.drawLine(oldX+1,oldY+1,pe.x-1,pe.y-1);
-               gImg.drawLine(oldX-1,oldY-1,pe.x+1,pe.y+1);
-            }
+            drawTo(gImg, pe.x,pe.y); // before
+            if (gScr != null) drawTo(gScr,pe.x,pe.y);
             oldX = pe.x;
             oldY = pe.y;
-            if (Settings.onJavaSE) Window.updateScreen(); // important at desktop!
+            if (!Settings.isOpenGL) Window.updateScreen(); // important at desktop!
             break;
          case PenEvent.PEN_UP:
             getParentWindow().setGrabPenEvents(null);

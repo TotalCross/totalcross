@@ -229,16 +229,45 @@ public final class Settings
    /** Constant used in dateFormat: year month day */
    public static final byte DATE_YMD = 3;
 
-   /** Field that represents if the device is in daylight savings mode.
-     * @since SuperWaba 3.4
-     */
+   /** 
+    * Field that represents if the device is in daylight savings mode.
+    * @since SuperWaba 3.4
+    * @deprecated Use daylightSavingsMinutes
+    */
    public static boolean daylightSavings;
+   
+   /**
+    * Daylight savings minutes to add; will be 0 when not in daylight savings.
+	* To compute the difference to GMT+0, use:
+    * <pre>
+    * int dif = Settings.timeZoneMinutes + Settings.daylightSavingsMinutes;
+    * int hours = dif / 60;
+    * int minutes = Math.abs(dif % 60);
+    * </pre>
+    * @since TotalCross 2.0
+    */
+   public static int daylightSavingsMinutes;
 
-   /** Field that represents the timezone used for this device. This is the number of hours
-     * away from GMT (E.g.: for Brazil it will return -3).
-     * @since SuperWaba 3.4
-     */
+   /**
+    * Field that represents the timezone used for this device. This is the number of hours
+    * away from GMT (E.g.: for Brazil it will return -3).
+    * @since SuperWaba 3.4
+    * @deprecated Use timeZoneMinutes
+    */
    public static int timeZone;
+   
+   /**
+    * Timezone in minutes. Some countries have a timezone difference in minutes, like Iran with 3:30.
+    * In this example, timeZoneMinutes will be 210.
+    * To compute the difference to GMT+0, use:
+    * <pre>
+    * int dif = Settings.timeZoneMinutes + Settings.daylightSavingsMinutes;
+    * int hours = dif / 60;
+    * int minutes = Math.abs(dif % 60);
+    * </pre>
+    * @since TotalCross 2.0
+    */
+   public static int timeZoneMinutes;
 
    /** True if this handheld has a virtual keyboard, I.E., like the soft input panel in windows ce devices or in the Tungsten T|X. */
    public static boolean virtualKeyboard;

@@ -744,8 +744,11 @@ void updateDaylightSavings(Context currentContext)
 
    if ((ret=GetTimeZoneInformation(&tzi)) != TIME_ZONE_ID_UNKNOWN)
    {
-      *tcSettings.timeZonePtr = tzi.Bias / -60; // for gmt-3 it returns 180. So i divide by -60 to get -3.
+      *tcSettings.timeZoneMinutesPtr = -tzi.Bias; // for gmt-3 it returns 180
+      *tcSettings.timeZonePtr = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
       *tcSettings.daylightSavingsPtr = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
+      if (*tcSettings.daylightSavingsPtr)
+         *tcSettings.daylightSavingsMinutesPtr = -tzi.DaylightBias;
 
       if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
          JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
