@@ -85,8 +85,10 @@ static bool checkNVFS(int32 *vol)
 
 void updateDaylightSavings(Context currentContext)
 {
-   *tcSettings.timeZonePtr = (int32) PrefGetPreference(prefTimeZone) / 60;
+   *tcSettings.timeZoneMinutesPtr = (int32) PrefGetPreference(prefTimeZone);
+   *tcSettings.timeZonePtr = *tcSettings.timeZoneMinutesPtr / 60;
    *tcSettings.daylightSavingsPtr = PrefGetPreference(prefDaylightSavingAdjustment) != 0;
+   *tcSettings.daylightSavingsMinutesPtr = PrefGetPreference(prefDaylightSavingAdjustment);
 }
 
 bool fillSettings(Context currentContext)

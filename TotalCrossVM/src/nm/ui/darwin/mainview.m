@@ -176,7 +176,7 @@ static bool callingCamera;
    imageH = h;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
-      UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+      imagePicker = [[UIImagePickerController alloc] init];
       if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
       else
@@ -187,14 +187,15 @@ static bool callingCamera;
    while (callingCamera)
       Sleep(100);
    return imageFileName != null;
-}   
+}
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [[picker parentViewController] dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:YES];
    imageFileName = null;
    callingCamera = false;
 }
+
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
    UIImage* finalImage = [info objectForKey:UIImagePickerControllerOriginalImage];
@@ -328,6 +329,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 BOOL invalidated;
 void Sleep(int ms);
+extern bool callingScreenChange;
 
 void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
 {								  
@@ -336,7 +338,8 @@ void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 tran
    {
       invalidated = FALSE;
       [vw invalidateScreen:screen withContext:currentContext];
-      while (!invalidated) Sleep(10);
+      while (!invalidated && !callingScreenChange)
+        Sleep(10);
    }      
 }
 
@@ -355,6 +358,21 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 bool graphicsLock(ScreenSurface screen, bool on)
 {
    return true;
+}
+
+void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr)
+{
+   NSTimeZone* tz = [NSTimeZone systemTimeZone];
+   *daylightSavingsPtr = [tz isDaylightSavingTime];
+   *daylightSavingsMinutesPtr = (int)([tz daylightSavingTimeOffset] / 60);
+   *timeZoneMinutesPtr = (int)(tz.secondsFromGMT / 60) - *daylightSavingsMinutesPtr; // as of 22/10/2013, android returns -180/60 and ios returns -120/60
+   *timeZonePtr = *timeZoneMinutesPtr / 60;
+   NSString *name = tz.name;
+   if (name != nil)
+   {
+      const char* s = [name cStringUsingEncoding:NSASCIIStringEncoding];
+      strncpy(timeZoneStrPtr, s, sizeofTimeZoneStr-1);
+   }
 }
 
 //////////////// interface to mainview methods ///////////////////

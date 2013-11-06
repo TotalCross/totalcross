@@ -290,6 +290,7 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
    if (fref.handle != INVALID_HANDLE_VALUE)
    {
       struct stat statData;
+      fileFlush(fref); // flsobral: must flush before getSize, otherwise the value returned may not be accurate - this fix a bug in ZipStream introduced with the forced flush in setSize.
       if (!fstat(fileno(fref.handle), &statData))
       {
          *size = statData.st_size;

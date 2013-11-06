@@ -1009,11 +1009,12 @@ public class Launcher4B
 
    public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
-      java.util.Calendar cal = java.util.Calendar.getInstance();
-      Settings.daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0; // guich@tc112_1
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
-      Settings.timeZone = tz.getRawOffset() / (60*60*1000);
-      Settings.timeZoneStr = java.util.TimeZone.getDefault().getID(); //flsobral@tc115_54: added field Settings.timeZoneStr
+      Settings.daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      Settings.daylightSavings = Settings.daylightSavingsMinutes != 0;
+      Settings.timeZone = tz.getRawOffset() / (60*60000);
+      Settings.timeZoneMinutes = tz.getRawOffset() / 60000;
+      Settings.timeZoneStr = java.util.TimeZone.getDefault().getID();
       if (callStoreSettings)
          try
          {

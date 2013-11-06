@@ -53,6 +53,7 @@
    // camera
    NSString* imageFileName;
    int imageW,imageH;
+   UIImagePickerController *imagePicker;
    // gps
 @public   
    CLLocationManager* locationManager;

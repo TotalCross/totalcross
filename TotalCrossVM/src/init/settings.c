@@ -60,7 +60,9 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.romVersionPtr               = getStaticFieldInt(settingsClass, "romVersion");
    tcSettings.virtualKeyboardPtr          = getStaticFieldInt(settingsClass, "virtualKeyboard");
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
+   tcSettings.daylightSavingsMinutesPtr   = getStaticFieldInt(settingsClass, "daylightSavingsMinutes");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
+   tcSettings.timeZoneMinutesPtr          = getStaticFieldInt(settingsClass, "timeZoneMinutes");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
    tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
    tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
