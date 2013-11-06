@@ -51,7 +51,7 @@ java/lang/reflect/Field|public native char getChar(Object obj) throws IllegalArg
 java/lang/reflect/Field|public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
-java/lang/reflect/Field|public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+java/lang/reflect/Field|public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
@@ -60,7 +60,7 @@ java/lang/reflect/Field|public native void setChar(Object obj, char c) throws Il
 java/lang/reflect/Field|public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
-java/lang/reflect/Field|public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+java/lang/reflect/Field|public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 totalcross/map/GoogleMaps|native static boolean showAddress(String address, boolean showSatellitePhotos);
 totalcross/map/GoogleMaps|native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);

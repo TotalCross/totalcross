@@ -4,6 +4,7 @@ public class Field4D
 {
    int index;
    int mod;
+   int primitiveType;
    Object nativeField; // TClass
    String name;
    Class declaringClass; // class that owns this field
@@ -40,7 +41,22 @@ public class Field4D
    }
    public String toString()
    {
-      return super.toString()+" "+Modifier4D.toString(mod)+" "+type.getName()+"."+name+" (@"+declaringClass.getName()+")";
+      StringBuffer sb = new StringBuffer(64); // private static final int TCTestWin$TestField.x
+      sb.append(Modifier4D.toString(mod)); if (sb.length() > 0) sb.append(' ');
+      String t;
+      switch (primitiveType)
+      {
+         case /*public static final int BOOLEAN = */ 2: t = "boolean"; break; 
+         case /*public static final int BYTE    = */ 3: t = "byte"; break;
+         case /*public static final int CHAR    = */ 4: t = "char"; break;
+         case /*public static final int SHORT   = */ 5: t = "short"; break;
+         case /*public static final int INT     = */ 6: t = "int"; break;
+         case /*public static final int LONG    = */ 7: t = "long"; break;
+         case /*public static final int FLOAT   = */ 8: t = "float"; break;
+         case /*public static final int DOUBLE  = */ 9: t = "double"; break;
+         default: t = type.getName();
+      }
+      return sb.append(t).append(' ').append(declaringClass.getName()).append('.').append(name).toString();
    }
    
    public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
@@ -59,6 +75,6 @@ public class Field4D
    public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
    public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
    public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
-   public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+   public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
    public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 }

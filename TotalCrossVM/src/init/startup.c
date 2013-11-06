@@ -481,6 +481,14 @@ jumpArgument:
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    loadExceptionClasses(currentContext); // guich@tc112_18
+   booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
+   byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
+   shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short",     false), "TYPE");
+   intTYPE     = getStaticFieldObject(loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
+   longTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Long",      false), "TYPE");
+   floatTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Float",     false), "TYPE");
+   doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double",    false), "TYPE");
+   charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
 
    // Create a Java thread for the main context and call it "TC Event Thread"
    mainContext->threadObj = createObjectWithoutCallingDefaultConstructor(currentContext, "java.lang.Thread");

@@ -92,6 +92,7 @@ typedef enum // this order can't be changed, it impacts the compiler and the Obj
    Type_StringArray,
    Type_ObjectArray,
 } Type;
+#define TYPE_IS_PRIMITIVE(t) (Type_Boolean <= t && t <= Type_Double)
 
 typedef enum
 {
@@ -539,7 +540,7 @@ struct TField
    // The access flags of this field (isPublic, isPrivate, isObject, isArray, etc) and the Type
    FieldFlags flags;
    // The fully qualified class name
-   CharP sourceClassName, targetClassName;
+   CharP sourceClassName, targetClassName; // class where the field is, class type of the field
 };
 
 // java flags (used during reflection)

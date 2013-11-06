@@ -61,7 +61,7 @@ TC_API void jlrF_setChar_oc(NMParams p);
 TC_API void jlrF_setShort_os(NMParams p);
 TC_API void jlrF_setInt_oi(NMParams p);
 TC_API void jlrF_setLong_ol(NMParams p);
-TC_API void jlrF_setFloat_of(NMParams p);
+TC_API void jlrF_setFloat_od(NMParams p);
 TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssb(NMParams p);
@@ -698,7 +698,7 @@ TC_API void jlrF_getLong_o(NMParams p) // java/lang/reflect/Field public native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getFloat_o(NMParams p) // java/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+TC_API void jlrF_getFloat_o(NMParams p) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -734,7 +734,7 @@ TC_API void jlrF_setLong_ol(NMParams p) // java/lang/reflect/Field public native
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_setFloat_of(NMParams p) // java/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+TC_API void jlrF_setFloat_od(NMParams p) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2691,7 +2691,7 @@ TESTCASE(jlrF_getLong_o) // java/lang/reflect/Field public native long getLong(O
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(jlrF_getFloat_o) // java/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+TESTCASE(jlrF_getFloat_o) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
    TEST_SKIP;
    finish: ;
@@ -2736,7 +2736,7 @@ TESTCASE(jlrF_setLong_ol) // java/lang/reflect/Field public native void setLong(
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(jlrF_setFloat_of) // java/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+TESTCASE(jlrF_setFloat_od) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
 {
    TEST_SKIP;
    finish: ;

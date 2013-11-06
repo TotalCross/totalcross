@@ -12,25 +12,12 @@
 #include "tcvm.h"
 
 typedef char NameBuf[256];
-Object *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
-static void loadTYPEs(Context currentContext)
-{
-   booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
-   byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
-   shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short",     false), "TYPE");
-   intTYPE     = getStaticFieldObject(loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
-   longTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Long",      false), "TYPE");
-   floatTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Float",     false), "TYPE");
-   doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double",    false), "TYPE");
-   charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
-}
+
 CharP getTargetArrayClass(Object o, NameBuf namebuf, Context currentContext)
 {
    CharP name = null;
    int32 len=0;
    TCClass target;
-   if (booleanTYPE == null)
-      loadTYPEs(currentContext);
    // test if this is a primitive array
    if (o == *booleanTYPE) name = BOOLEAN_ARRAY; else
    if (o == *byteTYPE   ) name = BYTE_ARRAY; else
@@ -89,28 +76,42 @@ static Type checkPrimitiveArray(NMParams p, Type from, bool isGet)
       if (!checkArrayRange(p->currentContext, array, 0, index))
          ;
       else
-      if (from != Type_Null && from != Type_Object && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
+      if (TYPE_IS_PRIMITIVE(from) && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
          throwException(p->currentContext, IllegalArgumentException, "Argument type mismatch");
       else
 	      return to;
    }
    return Type_Null;
 }
-static Type checkPrimitiveField(NMParams p, Type from, bool isGet)
+static Type checkPrimitiveType(NMParams p, TCClass cto, Type from, bool isGet) // check if the field's type can be wide converted to the given src type
+{
+   Type to;
+   if (strEq(cto->name, "java.lang.Boolean"))   to = Type_Boolean; else
+   if (strEq(cto->name, "java.lang.Byte"))      to = Type_Byte;    else
+   if (strEq(cto->name, "java.lang.Short"))     to = Type_Short;   else
+   if (strEq(cto->name, "java.lang.Integer"))   to = Type_Int;     else
+   if (strEq(cto->name, "java.lang.Long"))      to = Type_Long;    else
+   if (strEq(cto->name, "java.lang.Float"))     to = Type_Float;   else
+   if (strEq(cto->name, "java.lang.Double"))    to = Type_Double;  else
+   if (strEq(cto->name, "java.lang.Character")) to = Type_Char; 
+   else to = type2javaType(cto->name);
+   
+   if (TYPE_IS_PRIMITIVE(from) && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
+      throwException(p->currentContext, IllegalArgumentException, "Argument type mismatch");
+   else
+      return to;
+   return Type_Null;
+}
+static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if the field's type can be wide converted to the given src type
 {
    Object o = p->obj[0];
    TCClass cto;
-   Type to;
    if (o == null)
       throwException(p->currentContext, NullPointerException, "Argument array is null");
    else
    {
       xmoveptr(&cto, ARRAYOBJ_START(Class_nativeStruct(Field_type(o))));
-      to = type2javaType(cto->name);
-      if (from != Type_Null && from != Type_Object && !canWideConvert(!isGet ? from : to, !isGet ? to : from))
-         throwException(p->currentContext, IllegalArgumentException, "Argument type mismatch");
-      else
-         return to;
+      return checkPrimitiveType(p, cto, from, isGet);
    }
    return Type_Null;
 }
@@ -141,69 +142,69 @@ static void setArrayI32(NMParams p, Type srcType)
       case Type_Int:     ((int32*)ARRAYOBJ_START(array))[index] = (int32)value; break;
    }
 }
-static void field32(NMParams p, Type srcType, bool isGet, int32 vv)
+static void field(NMParams p, Type srcType, bool isGet, void* value)
 {
    Object f = p->obj[0];
    Object o = p->obj[1];
-   if (checkPrimitiveField(p, srcType, isGet) != Type_Null)
+   Type destType = TYPE_IS_PRIMITIVE(srcType) ? checkPrimitiveField(p, srcType, isGet) : Type_Object;
+   if (destType != Type_Null)
    {
+      bool isStatic;
       Field target;
+      TCClass fieldsClass, objparamClass;
       xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
-      if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
-      {
-         int32 index = Field_index(f);
-         int32* v = target->flags.isStatic ? &(OBJ_CLASS(o)->i32StaticValues[index]) : &FIELD_I32(o, index);
-         if (isGet)
-            p->retI = *v;
-         else
-            *v = vv;
-      }
-   }
-}
-static void field64(NMParams p, Type srcType, bool isGet, void* vv)
-{
-   Object f = p->obj[0];
-   Object o = p->obj[1];
-   if (checkPrimitiveField(p, srcType, isGet) != Type_Null)
-   {
-      Field target;
-      xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
-      if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
-      {
-         int32 index = Field_index(f);
-         if (srcType == Type_Long)
-         {
-            int64* v = target->flags.isStatic ? (int64*)&(OBJ_CLASS(o)->v64StaticValues[index]) : (int64*)&FIELD_I64(o, OBJ_CLASS(o), index);
-            if (isGet)
-               p->retL = *v;
-            else
-               *v = *((int64*)vv);
-         }
-         else
-         {
-            double* v = target->flags.isStatic ? &(OBJ_CLASS(o)->v64StaticValues[index]) : &FIELD_DBL(o, OBJ_CLASS(o), index);
-            if (isGet)
-               p->retD = *v;
-            else
-               *v = *((double*)vv);
-         }
-      }
-   }
-}
-static void fieldObj(NMParams p, bool isGet, Object vv)
-{
-   Object f = p->obj[0];
-   Object o = p->obj[1];
-   Field target;
-   xmoveptr(&target, ARRAYOBJ_START(Field_nativeStruct(f)));
-   if (areClassesCompatible(p->currentContext, OBJ_CLASS(o), target->targetClassName) == COMPATIBLE)
-   {
-      int32 index = Field_index(f);
-      Object* v = target->flags.isStatic ? &(OBJ_CLASS(o)->objStaticValues[index]) : &FIELD_OBJ(o, OBJ_CLASS(o), index);
-      if (isGet)
-         p->retO = *v;
+      xmoveptr(&fieldsClass, ARRAYOBJ_START(Class_nativeStruct(Field_declaringClass(f))));
+      isStatic = target->flags.isStatic;
+      if (isStatic) // o is ignored for static fields
+         o = null;
+      objparamClass = o == null ? null : OBJ_CLASS(o);
+      // instance fields require the object
+      if (!isStatic && o == null) 
+         throwException(p->currentContext, NullPointerException, "Object is null");
       else
-         *v = vv;
+      // for instance fields, check if the object given is compatible with the class that contains this field x.getClass().getDeclaredField("doubleField").get(new String()) -> String instanceof x
+      if (!isStatic && areClassesCompatible(p->currentContext, objparamClass, fieldsClass->name) == NOT_COMPATIBLE)
+         throwException(p->currentContext, IllegalArgumentException, "Invalid argument class: %s",OBJ_CLASS(o)->name);
+      else
+      // dont allow access of a private field
+      if (target->flags.isPrivate)
+         throwException(p->currentContext, IllegalAccessException, "Private fields cannot be accessed by reflection");
+      else
+      if (!isGet && target->flags.isFinal)
+         throwException(p->currentContext, IllegalAccessException, "Final fields cannot be set by reflection");
+      else
+      {
+         // access allowed!
+         int32 index = Field_index(f);
+         switch (srcType)
+         {
+            case Type_Object:
+            {
+               Object* field = isStatic ? &(fieldsClass->objStaticValues[index]) : &FIELD_OBJ(o, objparamClass, index);
+               if (isGet) *((Object*)value) = *field; else *field = *((Object*)value);
+               break;
+            }
+            case Type_Long:
+            {
+               int64* field = isStatic ? (int64*)&(fieldsClass->v64StaticValues[index]) : (int64*)&FIELD_I64(o, objparamClass, index);
+               if (isGet) *((int64*)value) = *field; else *field = *((int64*)value);
+               break;
+            }
+            case Type_Double:
+            case Type_Float:
+            {
+               double* field = isStatic ? &(fieldsClass->v64StaticValues[index]) : &FIELD_DBL(o, objparamClass, index);
+               if (isGet) *((double*)value) = *field; else *field = *((double*)value);
+               break;
+            }
+            default:
+            {
+               int32* field = isStatic ? &(fieldsClass->i32StaticValues[index]) : &FIELD_I32(o, index);
+               if (isGet) *((int32*)value) = *field; else *field = *((int32*)value);
+               break;
+            }
+         }
+      }
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -450,82 +451,82 @@ TC_API void jlrA_setFloat_oid(NMParams p) // totalcross/lang/reflect/Array publi
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getBoolean_o(NMParams p) // totalcross/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Boolean, true,0);
+   field(p, Type_Boolean, true,&p->retI);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getByte_o(NMParams p) // totalcross/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Byte, true,0);
+   field(p, Type_Byte, true,&p->retI);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getChar_o(NMParams p) // totalcross/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Char, true,0);
+   field(p, Type_Char, true,&p->retI);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getShort_o(NMParams p) // totalcross/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Short, true,0);
+   field(p, Type_Short, true,&p->retI);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getInt_o(NMParams p) // totalcross/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Int, true,0);
+   field(p, Type_Int, true,&p->retI);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getLong_o(NMParams p) // totalcross/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field64(p, Type_Long, true, 0);
+   field(p, Type_Long, true, &p->retL);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_getDouble_o(NMParams p) // totalcross/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   field64(p, Type_Double, true, 0);
+   field(p, Type_Double, true, &p->retD);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_getFloat_o(NMParams p) // totalcross/lang/reflect/Field public native float getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+TC_API void jlrF_getFloat_o(NMParams p) // totalcross/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
 {
-   jlrF_getDouble_o(p);
+   field(p, Type_Float, true, &p->retD);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setBoolean_ob(NMParams p) // totalcross/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Boolean, false, p->i32[0]);
+   field(p, Type_Boolean, false, &p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setByte_ob(NMParams p) // totalcross/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Byte, false, p->i32[0]);
+   field(p, Type_Byte, false, &p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setChar_oc(NMParams p) // totalcross/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Char, false, p->i32[0]);
+   field(p, Type_Char, false, &p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setShort_os(NMParams p) // totalcross/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Short, false, p->i32[0]);
+   field(p, Type_Short, false, &p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setInt_oi(NMParams p) // totalcross/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
 {
-   field32(p, Type_Int, false, p->i32[0]);
+   field(p, Type_Int, false, &p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setLong_ol(NMParams p) // totalcross/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
 {
-   field64(p, Type_Long, false, &p->i64[0]);
+   field(p, Type_Long, false, &p->i64[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_setDouble_od(NMParams p) // totalcross/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 {
-   field64(p, Type_Double, false, &p->i64[0]);
+   field(p, Type_Double, false, &p->i64[0]);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlrF_setFloat_of(NMParams p) // totalcross/lang/reflect/Field public native void setFloat(Object obj, float f) throws IllegalArgumentException, IllegalAccessException;
+TC_API void jlrF_setFloat_od(NMParams p) // totalcross/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
 {
-   jlrF_setDouble_od(p);
+   field(p, Type_Float, false, &p->i64[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
@@ -533,16 +534,16 @@ TC_API void jlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public nativ
    Object o = null;
    switch (checkPrimitiveField(p, Type_Null, true))
    {
-      case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) field32(p,Type_Byte,    true, Byte_v     (o)); break;
-      case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) field32(p,Type_Boolean, true, Boolean_v  (o)); break;
-      case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) field32(p,Type_Short,   true, Short_v    (o)); break;
-      case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) field32(p,Type_Char,    true, Character_v(o)); break;
-      case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) field32(p,Type_Int,     true, Integer_v  (o)); break;
-      case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) field64(p,Type_Long,    true, &Long_v     (o)); break;
-      case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) field64(p,Type_Float,   true, &Float_v    (o)); break;
-      case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) field64(p,Type_Double,  true, &Double_v   (o)); break;
+      case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) field(p,Type_Byte,    true, &Byte_v     (o)); break;
+      case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) field(p,Type_Boolean, true, &Boolean_v  (o)); break;
+      case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) field(p,Type_Short,   true, &Short_v    (o)); break;
+      case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) field(p,Type_Char,    true, &Character_v(o)); break;
+      case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) field(p,Type_Int,     true, &Integer_v  (o)); break;
+      case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) field(p,Type_Long,    true, &Long_v     (o)); break;
+      case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) field(p,Type_Float,   true, &Float_v    (o)); break;
+      case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) field(p,Type_Double,  true, &Double_v   (o)); break;
       case Type_Null:    break;
-      default:           fieldObj(p, true, null); return;
+      default:           field(p, Type_Object, true, &o); return;
    }
    setObjectLock(p->retO = o, UNLOCKED);
 }
@@ -553,19 +554,23 @@ TC_API void jlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public nati
    if (p->obj[1] == null)
       throwException(p->currentContext, IllegalArgumentException, "Object is null");
    else
-      switch (checkPrimitiveField(p, Type_Null, false))
+   {
+      Type srcType = checkPrimitiveField(p, Type_Null, false);
+      if (srcType != Type_Null && (value == null || checkPrimitiveType(p, OBJ_CLASS(value), srcType, true) != Type_Null)) // keep true in checkPrimitiveType!
+      switch (srcType)
       {
-         case Type_Byte:    field32(p, Type_Byte   , false, Byte_v     (value)); break;
-         case Type_Boolean: field32(p, Type_Boolean, false, Boolean_v  (value)); break;
-         case Type_Short:   field32(p, Type_Short  , false, Short_v    (value)); break;
-         case Type_Char:    field32(p, Type_Char   , false, Character_v(value)); break;
-         case Type_Int:     field32(p, Type_Int    , false, Integer_v  (value)); break;
-         case Type_Long:    field64(p, Type_Long   , false, &Long_v    (value)); break;
-         case Type_Float:   field64(p, Type_Float  , false, &Float_v   (value)); break;
-         case Type_Double:  field64(p, Type_Double , false, &Double_v  (value)); break;
+         case Type_Byte:    field(p, Type_Byte   , false, &Byte_v     (value)); break;
+         case Type_Boolean: field(p, Type_Boolean, false, &Boolean_v  (value)); break;
+         case Type_Short:   field(p, Type_Short  , false, &Short_v    (value)); break;
+         case Type_Char:    field(p, Type_Char   , false, &Character_v(value)); break;
+         case Type_Int:     field(p, Type_Int    , false, &Integer_v  (value)); break;
+         case Type_Long:    field(p, Type_Long   , false, &Long_v    (value)); break;
+         case Type_Float:   field(p, Type_Float  , false, &Float_v   (value)); break;
+         case Type_Double:  field(p, Type_Double , false, &Double_v  (value)); break;
          case Type_Null:    break;
-         default:           fieldObj(p, false, value); return;
+         default:           field(p, Type_Object, false, &value); return;
       }
+   }
 }
 //////////////////////////////////////////////////////////////////////////
 static void invoke(NMParams p, Object m, Object obj, Object args)

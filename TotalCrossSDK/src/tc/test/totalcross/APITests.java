@@ -22,7 +22,8 @@ public class APITests extends TestSuite
    {
       super("TotalCross API Test Suite");
       addTestCase( tc.test.totalcross.lang.reflect.ArrayTest.class );
-      addTestCase( tc.test.totalcross.util.VectorTest.class );
+      addTestCase( tc.test.totalcross.lang.reflect.FieldTest.class );
+/*      addTestCase( tc.test.totalcross.util.VectorTest.class );
       addTestCase( tc.test.totalcross.util.IntVectorTest.class );
       addTestCase( tc.test.totalcross.util.HashtableTest.class );
       addTestCase( tc.test.totalcross.util.IntHashtableTest.class );
@@ -40,5 +41,5 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.sys.ConvertTest.class );
       addTestCase( tc.test.totalcross.sys.VmTest.class );
       addTestCase( tc.test.totalcross.io.PDBFileTest.class );
-   }
+*/   }
 }

@@ -71,6 +71,11 @@ public final class Class4D
    	return targetName;
    }
    
+   public boolean equals(Object o)
+   {
+      return o instanceof Class && ((Class)o).getName().equals(getName());
+   }
+   
    public native boolean isAssignableFrom(Class cls);
    public native boolean isInterface();
    public native boolean isArray();

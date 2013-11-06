@@ -60,6 +60,7 @@
 // java.lang.reflect.Field
 #define Field_index(o)              FIELD_I32(o, 0)
 #define Field_mod(o)                FIELD_I32(o, 1)
+#define Field_primitiveType(o)      FIELD_I32(o, 2)
 #define Field_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Field_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define Field_declaringClass(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2)

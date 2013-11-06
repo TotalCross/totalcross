@@ -55,7 +55,6 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegIStatic = 0;
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
-   private static boolean privateStaticFieldRemoved;
    private static boolean syncWarned;
 
    public J2TC(JavaClass jc) throws IOException,Exception
@@ -590,17 +589,6 @@ public final class J2TC implements JConstants, TCConstants
             case CHAR:
             case SHORT:
             {
-               if (flags.isFinal && flags.isPrivate) // ignore static final fields: they are always inlined in the code
-               {
-                  if (flags.isStatic)
-                  {
-                     privateStaticFieldRemoved = true;
-                     Utils.println("The private static final "+jc.className+"."+f.name+" field was removed");
-                     continue;
-                  }
-                  else
-                     System.out.println("Warning: change "+jc.className+"."+f.name+" to static so it can be removed.");
-               }
                TCInt32Field t = new TCInt32Field();
                t.flags = flags;
                t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
@@ -630,17 +618,6 @@ public final class J2TC implements JConstants, TCConstants
             case FLOAT:
             case DOUBLE:
             {
-               if (flags.isFinal && flags.isPrivate) // ignore static final fields: they are always inlined in the code
-               {
-                  if (flags.isStatic)
-                  {
-                     privateStaticFieldRemoved = true;
-                     Utils.println("The private static final "+jc.className+"."+f.name+" field was removed");
-                     continue;
-                  }
-                  else
-                     System.out.println("Warning: change "+jc.className+"."+f.name+" to static so it can be removed.");
-               }
                TCValue64Field t = new TCValue64Field();
                t.flags = flags;
                t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
@@ -1320,14 +1297,6 @@ public final class J2TC implements JConstants, TCConstants
             System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
             if (DeploySettings.fullScreenPlatforms == null || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0)
                Utils.println("Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
-         }
-
-         if (privateStaticFieldRemoved)
-         {
-            if (DeploySettings.quiet)
-               System.out.println("Some unused fields were removed. If you get a NoSuchFieldError, run tc.Deploy again with /v");
-            else
-               System.out.println("One or more private static final fields were removed. This was made because such fields are never referenced by NAME anywhere else in the program, and thus can be removed. HOWEVER, there's a situation where this may lead to problems: if the field was initialized via a METHOD CALL, then it will break at the static initializer, at runtime. A sample is \"private static final int FIELD_COLOR = Color.getRGB(255,0,100);\". To fix this, either change the field to package access (remove the private keyword) or, in this specific case, put the method's result in the code (E.G.: \"private static final int FIELD_COLOR = 0xFF0064;\").");
          }
       }
    }
