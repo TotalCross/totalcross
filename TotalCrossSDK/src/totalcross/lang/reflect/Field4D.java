@@ -5,7 +5,7 @@ public class Field4D
    int index;
    int mod;
    int primitiveType;
-   Object nativeField; // TClass
+   Object nativeStruct; // TClass
    String name;
    Class declaringClass; // class that owns this field
    Class type;

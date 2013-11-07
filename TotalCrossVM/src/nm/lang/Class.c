@@ -19,6 +19,7 @@ static void createClassObject(Context currentContext, CharP className, Type type
    TCClass c;
    switch (type)
    {
+      case Type_Void:    *ret = *voidTYPE;    return;
       case Type_Byte:    *ret = *byteTYPE;    return;
       case Type_Boolean: *ret = *booleanTYPE; return;
       case Type_Short:   *ret = *shortTYPE;   return;
@@ -79,7 +80,7 @@ static void createFieldObject(Context currentContext, Field f, int32 idx, Object
    }
 }
 
-static void createMethodObject(Context currentContext, Method f, TCClass declaringClass, Object* ret, bool isConstructor) // also valid for Constructors
+static void createMethodObject(Context currentContext, Method m, TCClass declaringClass, Object* ret, bool isConstructor) // also valid for Constructors
 {
    Object ptrObj=null;
    *ret = null;
@@ -87,42 +88,43 @@ static void createMethodObject(Context currentContext, Method f, TCClass declari
    {
       // modifiers
       int32 mod=0,i,n;
-      if (f->flags.isFinal    ) mod |= JFLAG_FINAL;
-      if (f->flags.isPrivate  ) mod |= JFLAG_PRIVATE;
-      if (f->flags.isProtected) mod |= JFLAG_PROTECTED;
-      if (f->flags.isPublic   ) mod |= JFLAG_PUBLIC;
-      if (f->flags.isStatic   ) mod |= JFLAG_STATIC;
-      if (f->flags.isAbstract ) mod |= JFLAG_ABSTRACT;
+      if (m->flags.isFinal    ) mod |= JFLAG_FINAL;
+      if (m->flags.isPrivate  ) mod |= JFLAG_PRIVATE;
+      if (m->flags.isProtected) mod |= JFLAG_PROTECTED;
+      if (m->flags.isPublic   ) mod |= JFLAG_PUBLIC;
+      if (m->flags.isStatic   ) mod |= JFLAG_STATIC;
+      if (m->flags.isAbstract ) mod |= JFLAG_ABSTRACT;
       Method_mod(*ret) = mod;
       // ptr
       ptrObj = createByteArray(currentContext, PTRSIZE);
       if (ptrObj)
-         xmoveptr(ARRAYOBJ_START(ptrObj), &f);
+         xmoveptr(ARRAYOBJ_START(ptrObj), &m);
       setObjectLock(Method_nativeStruct(*ret) = ptrObj, UNLOCKED);
       // name and declaring class
-      setObjectLock(Method_name(*ret) = createStringObjectFromCharP(currentContext,isConstructor ? declaringClass->name : f->name,-1),UNLOCKED);
+      setObjectLock(Method_name(*ret) = createStringObjectFromCharP(currentContext,isConstructor ? declaringClass->name : m->name,-1),UNLOCKED);
       createClassObject(currentContext, declaringClass->name, Type_Null, &Method_declaringClass(*ret));
       // parameters and exceptions
-      Method_parameterTypes(*ret) = createArrayObject(currentContext, "java.lang.Class[", n = f->paramCount);
+      Method_parameterTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
       if (Method_parameterTypes(*ret) && n > 0)
       {
          Object* oa = (Object*)ARRAYOBJ_START(Method_parameterTypes(*ret));
          for (i=0; i < n; i++)
-            createClassObject(currentContext, declaringClass->cp->cls[f->cpParams[i]], Type_Null, oa++);
+            createClassObject(currentContext, declaringClass->cp->cls[m->cpParams[i]], m->cpParams[i] < Type_Object ? m->cpParams[i] : Type_Null, oa++);
       }
-      Method_exceptionTypes(*ret) = createArrayObject(currentContext, "java.lang.Class[", n = ARRAYLENV(f->exceptionHandlers));
+      Method_exceptionTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
       if (Method_exceptionTypes(*ret) && n > 0)
       {
          Object* oa = (Object*)ARRAYOBJ_START(Method_exceptionTypes(*ret));
          for (i=0; i < n; i++)
-            createClassObject(currentContext, f->exceptionHandlers[i].className, Type_Null, oa++);
+            createClassObject(currentContext, m->exceptionHandlers[i].className, Type_Null, oa++);
       }
 
       // return and type
       if (!isConstructor)
       {
-         createClassObject(currentContext, declaringClass->cp->cls[f->cpReturn], Type_Null, &Method_returnType(*ret));
-         createClassObject(currentContext, f->class_->name, Type_Null, &Method_type(*ret));
+         CharP nn = m->class_->cp->cls[m->cpReturn];
+         createClassObject(currentContext, nn, m->cpReturn == Type_Null ? Type_Void : m->cpReturn < Type_Object ? m->cpReturn : Type_Null, &Method_returnType(*ret));
+         createClassObject(currentContext, m->class_->name, Type_Null, &Method_type(*ret));
       }
       setObjectLock(*ret, UNLOCKED);
    }
@@ -162,18 +164,34 @@ cont:
       xfree(name);
    }
 }
+CharP getParameterType(TCClass c, Type t)
+{
+   switch (t)
+   {
+      case Type_Byte:    return "java.lang.Byte"; 
+      case Type_Boolean: return "java.lang.Boolean";
+      case Type_Short:   return "java.lang.Short";  
+      case Type_Char:    return "java.lang.Character";
+      case Type_Int:     return "java.lang.Integer";  
+      case Type_Long:    return "java.lang.Long";     
+      case Type_Float:   return "java.lang.Float";    
+      case Type_Double:  return "java.lang.Double";   // if (strEq(pt,"java.lang.Float")) po = pt; 
+      default: return c->cp->cls[t];
+   }
+}
 static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool onlyPublic)
 {
    Object me = p->obj[0], ret=null;
    Object classesObj = p->obj[isConstructor ? 1 : 2];
-   TCClass c = OBJ_CLASS(me);
+   TCClass c;
    bool found=false;
-   int32 i,j;
+   int32 i,j,n;
    int32 nparams = classesObj == null ? 0 : ARRAYOBJ_LEN(classesObj);
    Object* classes = classesObj == null ? null : (Object*)ARRAYOBJ_START(classesObj);
+   xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
    do
    {
-      int32 n = ARRAYLENV(c->methods);
+      n = ARRAYLENV(c->methods);
       for (i = 0; i < n; i++)
       {
          Method mm = &c->methods[i];
@@ -185,18 +203,21 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
             bool found = true;
             for (j = 0; j < nparams; j++)  // do NOT invert the loop!
             {
-               CharP pt = OBJ_CLASS(classes[j])->name;
-               CharP po = c->cp->cls[mm->cpParams[j]];
+               TCClass target;
+               CharP pt, po;
+               xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(classes[j])));
+               pt = target->name;
+               po = getParameterType(c,mm->cpParams[j]);
                if (!strEq(pt,po))
                {
                   found = false;
                   break;
                }
             }
-            if (found && (mm->code || mm->flags.isNative)) // not an abstract class?
+            if (found) // not an abstract class?
             {
                createMethodObject(p->currentContext, mm, c, &p->retO, isConstructor);
-               break;
+               return;
             }
          }
       }
@@ -261,9 +282,10 @@ static void getFields(NMParams p, bool onlyPublic)
 static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
 {
    Object me = p->obj[0], ret=null;
-   TCClass c = OBJ_CLASS(me), o;
+   TCClass c, o;
    int32 count=0,n;
    MethodArray ff;
+   xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
    // count how many PUBLIC fields have in this class and super classes
    for (o = c; o != null; o = o->superClass)
       for (ff = o->methods, n = ARRAYLENV(ff); --n >= 0; ff++) 
@@ -273,7 +295,7 @@ static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
             if (isConstructor == isC)
                count++;
          }
-   ret = createArrayObject(p->currentContext, "java.lang.reflect.Method[", count);
+   ret = createArrayObject(p->currentContext, "[java.lang.reflect.Method", count);
    if (ret)
    {
       Object* oa = (Object*)ARRAYOBJ_START(ret);
@@ -333,77 +355,89 @@ TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
 {
-   Object me = p->obj[0];
-   Object other = p->obj[1];
+   TCClass target;
+   Object me = p->obj[0],other;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   other = p->obj[1];
 
    if (other == null)
       throwException(p->currentContext, NullPointerException,null);
    else
-      p->retI = areClassesCompatible(p->currentContext, OBJ_CLASS(me), OBJ_CLASS(other)->name) == COMPATIBLE;
+      p->retI = areClassesCompatible(p->currentContext, target, OBJ_CLASS(other)->name) == COMPATIBLE;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native boolean isAssignableFrom(Class cls);
 {
+   TCClass metarget,clstarget;
    Object me = p->obj[0];
    Object cls = p->obj[1];
+   xmoveptr(&metarget, ARRAYOBJ_START(Class_nativeStruct(me)));
+   if (cls != null) xmoveptr(&clstarget, ARRAYOBJ_START(Class_nativeStruct(cls)));
    if (cls == null)
       throwException(p->currentContext, NullPointerException, "Argument cls");
    else
-      p->retI = areClassesCompatible(p->currentContext, OBJ_CLASS(me), OBJ_CLASS(cls)->name) == COMPATIBLE;
+      p->retI = areClassesCompatible(p->currentContext, metarget, clstarget->name) == COMPATIBLE;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
 {
+   TCClass target;
    Object me = p->obj[0];
-   p->retI = OBJ_CLASS(me)->flags.isInterface;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   p->retI = target->flags.isInterface;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isArray();
 {
+   TCClass target;
    Object me = p->obj[0];
-   p->retI = OBJ_CLASS(me)->flags.isArray;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   p->retI = target->flags.isArray;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
 {
    Object me = p->obj[0];
-   CharP name = OBJ_CLASS(me)->name;
-   p->retI = strEq(name,"java.lang.Boolean") || strEq(name,"java.lang.Byte") || strEq(name,"java.lang.Short") ||
-      strEq(name,"java.lang.Integer") || strEq(name,"java.lang.Long") || strEq(name,"java.lang.Float") || strEq(name,"java.lang.Double") || strEq(name,"java.lang.Character");
+   p->retI = me == *booleanTYPE || me == *byteTYPE || me == *shortTYPE || me == *intTYPE || me == *longTYPE || me == *floatTYPE || me == *doubleTYPE || me == *charTYPE;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
 {
+   TCClass target;
    Object me = p->obj[0];
-   TCClass c = OBJ_CLASS(me);
-   if (c->superClass != null && !c->flags.isInterface)
-      createClassObject(p->currentContext, c->superClass->name, Type_Null, &p->retO);
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   if (target->superClass != null && !target->flags.isInterface)
+      createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
 {
+   TCClass target;
    Object me = p->obj[0], ret;
-   TCClass c = OBJ_CLASS(me);
-   int32 n = ARRAYLENV(c->interfaces),i;
-   if (n > 0 && (ret = createArrayObject(p->currentContext, "java.lang.Class[", n)) != null)
+   int32 n,i;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   n = ARRAYLENV(target->interfaces);
+   if ((ret = createArrayObject(p->currentContext, "[java.lang.Class", n)) != null)
    {
       Object* objs = (Object*)ARRAYOBJ_START(ret);
       for (i = 0; i < n; i++)
-         createClassObject(p->currentContext, c->interfaces[i]->name, Type_Null, &objs[i]);
+         createClassObject(p->currentContext, target->interfaces[i]->name, Type_Null, &objs[i]);
       setObjectLock(p->retO = ret, UNLOCKED);
    }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Class getComponentType();
 {
+   TCClass target;
    Object me = p->obj[0];
-   TCClass c = OBJ_CLASS(me);
-   if (c->flags.isArray)
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   if (target->flags.isArray)
    {
-      CharP name = c->name;
-      Type to = type2javaType(c->name);
+      CharP name = target->name;
+      Type to = type2javaType(name);
       switch (to)
       {
+         case Type_Void:    p->retO = *voidTYPE; break;
          case Type_Byte:    p->retO = *byteTYPE; break;
          case Type_Boolean: p->retO = *booleanTYPE; break;
          case Type_Short:   p->retO = *shortTYPE; break;
@@ -431,9 +465,12 @@ TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Cl
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int getModifiers();
 {
+   TCClass target;
    Object me = p->obj[0];
-   ClassFlags f = OBJ_CLASS(me)->flags;
+   ClassFlags f;
    int32 ret = 0;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   f = target->flags;
    if (f.isPublic   ) ret |= JFLAG_PUBLIC;
    if (f.isStatic   ) ret |= JFLAG_STATIC;
    if (f.isFinal    )  ret |= JFLAG_FINAL;

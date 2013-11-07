@@ -5,8 +5,8 @@ public class InvocationTargetException4D extends Exception
    public InvocationTargetException4D()
    {
    }
-   public InvocationTargetException4D(String s)
+   public InvocationTargetException4D(Throwable t)
    {
-      super(s);
+      super(t.getClass().getName()+": "+t.getMessage());
    }
 }

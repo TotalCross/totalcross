@@ -573,6 +573,8 @@ TC_API void jlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public nati
    }
 }
 //////////////////////////////////////////////////////////////////////////
+CharP getParameterType(TCClass c, Type t);
+
 static void invoke(NMParams p, Object m, Object obj, Object args)
 {
    int32 n = args == null ? 0 : ARRAYOBJ_LEN(args), i;
@@ -586,7 +588,7 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
    if (!target->flags.isStatic && obj == null)
       throwException(p->currentContext, NullPointerException, "Object is null");
    else
-   if (areClassesCompatible(p->currentContext, OBJ_CLASS(obj), target->class_->name) != COMPATIBLE)
+   if (!target->flags.isStatic && areClassesCompatible(p->currentContext, OBJ_CLASS(obj), target->class_->name) != COMPATIBLE)
       throwException(p->currentContext, IllegalArgumentException, "Object type mismatch", target->paramCount, n);
    else
    if (target->paramCount != n)
@@ -594,24 +596,32 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
    else
    if (argObjs != null)
    {
-      aargs = newArrayOf(Value, n, null);
-      if (!aargs)
+      aargs = n == 0 ? null : newArrayOf(Value, n, null);
+      if (n > 0 && !aargs)
          throwException(p->currentContext, OutOfMemoryError, "For TValue array");
       else
       {
          TCClass c = target->class_;
          for (i = 0; i < n; i++)
          {
+            TCClass oic;
             Object oi = argObjs[i];
-            CharP targetClass = c->cp->cls[target->cpParams[i]];
-            if (areClassesCompatible(p->currentContext, OBJ_CLASS(oi), targetClass) != COMPATIBLE)
+            CharP targetClass = getParameterType(c, target->cpParams[i]);
+            if (oi == null)
             {
-               throwException(p->currentContext, IllegalArgumentException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
+               throwException(p->currentContext, IllegalArgumentException, "Argument %d can't be null",i);
                break;
             }
-            from = type2javaType(OBJ_CLASS(oi)->name);
-            to = type2javaType(targetClass);
-            if (!canWideConvert(from, to))
+            oic = OBJ_CLASS(oi);
+            from = target->cpParams[i];
+            if (TYPE_IS_PRIMITIVE(from))
+            {
+               to = checkPrimitiveType(p, oic, from, true);
+               if (to == Type_Null)
+                  break;
+            }
+            else
+            if (areClassesCompatible(p->currentContext, oic, targetClass) != COMPATIBLE)
             {
                throwException(p->currentContext, IllegalArgumentException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
                break;
@@ -635,20 +645,34 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
             Object o;
             if (target->paramCount > 0)
                p->currentContext->parametersInArray = true;
+
             ret.asInt64 = executeMethod(p->currentContext, target, obj, aargs).asInt64;
-            switch (target->cpReturn)
+
+            if (p->currentContext->thrownException != null)
             {
-               case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
-               case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
-               case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
-               case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) Character_v(o) = ret.asInt32; break;
-               case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) Integer_v  (o) = ret.asInt32; break;
-               case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) Long_v     (o) = ret.asInt64; break;
-               case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) Float_v    (o) = ret.asDouble; break;
-               case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) Double_v   (o) = ret.asDouble; break;
-               default:           o = ret.asObj; break;
+               CharP msg;
+               Object original = p->currentContext->thrownException, omsg = *Throwable_msg(original);
+               p->currentContext->thrownException = null;
+               msg = omsg ? JCharP2CharP(String_charsStart(omsg),-1) : null;
+               throwException(p->currentContext, InvocationTargetException, "Exception %s thrown: %s", OBJ_CLASS(original)->name, msg == null ? "" : msg);
+               xfree(msg);
             }
-            p->retO = o;
+            else
+            {
+               switch (target->cpReturn)
+               {
+                  case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
+                  case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
+                  case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
+                  case Type_Char:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Character"); if (o) Character_v(o) = ret.asInt32; break;
+                  case Type_Int:     o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Integer");   if (o) Integer_v  (o) = ret.asInt32; break;
+                  case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) Long_v     (o) = ret.asInt64; break;
+                  case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) Float_v    (o) = ret.asDouble; break;
+                  case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) Double_v   (o) = ret.asDouble; break;
+                  default:           o = ret.asObj; break;
+               }
+               p->retO = o;
+            }
          }
          freeArray(aargs);
       }

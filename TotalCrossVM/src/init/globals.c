@@ -230,7 +230,7 @@ jmethodID jdial;
 int32 threadCount;
 
 // class.c
-Object *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
+Object *voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
 
 // These are set in the application's constructor

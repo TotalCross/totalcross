@@ -318,5 +318,5 @@ void initException()
    throwableAsCharP[ElementNotFoundException      ] = "totalcross.util.ElementNotFoundException";
    throwableAsCharP[CryptoException               ] = "totalcross.crypto.CryptoException";
    throwableAsCharP[NegativeArraySizeException    ] = "java.lang.NegativeArraySizeException";
-   throwableAsCharP[InvocationTargetException     ] = "java.lang.InvocationTargetException";
+   throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
 }

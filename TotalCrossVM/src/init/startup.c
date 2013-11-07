@@ -481,6 +481,7 @@ jumpArgument:
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    loadExceptionClasses(currentContext); // guich@tc112_18
+   voidTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Void",      false), "TYPE");
    booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
    byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
    shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short",     false), "TYPE");

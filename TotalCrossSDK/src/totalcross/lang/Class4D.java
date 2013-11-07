@@ -40,7 +40,7 @@ import java.lang.reflect.*;
 public final class Class4D
 {
    // place holders for the VM
-   Object nativeClass; // TClass
+   Object nativeStruct; // TClass
    String targetName;  // java.lang.String
 
    /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are
@@ -73,7 +73,7 @@ public final class Class4D
    
    public boolean equals(Object o)
    {
-      return o instanceof Class && ((Class)o).getName().equals(getName());
+      return o instanceof Class4D && ((Class4D)o).targetName.equals(targetName);
    }
    
    public native boolean isAssignableFrom(Class cls);
