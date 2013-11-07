@@ -689,9 +689,9 @@ TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public 
 TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 {
    Object targetClassObj = Method_declaringClass(p->obj[0]), o;
-   TCClass targetClass;
-   xmoveptr(&targetClass, Class_nativeStruct(targetClassObj));
-   o = createObject(p->currentContext, targetClass->name);
+   TCClass target;
+   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(targetClassObj)));
+   o = createObject(p->currentContext, target->name);
    if (o)
       invoke(p, p->obj[0], o, p->obj[1]);
    setObjectLock(p->retO = o, UNLOCKED);

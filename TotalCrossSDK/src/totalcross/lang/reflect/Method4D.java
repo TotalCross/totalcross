@@ -34,7 +34,7 @@ public class Method4D implements Member4D
       if (!(obj instanceof Method4D))
          return false;
       Method4D m = (Method4D)obj;
-      if (m.mod != mod || !m.name.equals(name) || !m.type.getName().equals(type.getName()) || !m.declaringClass.getName().equals(declaringClass.getName()) || parameterTypes.length != m.parameterTypes.length || exceptionTypes.length != m.exceptionTypes.length)
+      if (m.mod != mod || !m.name.equals(name) || !m.type.getName().equals(type.getName()) || !m.declaringClass.getName().equals(declaringClass.getName()) || parameterTypes.length != m.parameterTypes.length/* || exceptionTypes.length != m.exceptionTypes.length*/)
          return false;
       for (int i =0; i < parameterTypes.length; i++) if (!parameterTypes[i].equals(m.parameterTypes[i])) return false;
       //for (int i =0; i < exceptionTypes.length; i++) if (!exceptionTypes[i].equals(m.exceptionTypes[i])) return false; - not needed
@@ -45,7 +45,7 @@ public class Method4D implements Member4D
       return declaringClass.getName().hashCode() ^ name.hashCode();
    }
    
-   private static String toString(Class c)
+   static String toString(Class c)
    {
       if (c == Void.TYPE) return "void";
       if (!c.isPrimitive())

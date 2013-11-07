@@ -223,6 +223,7 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
       }
       c = c->superClass;
    } while (c && !found);
+   throwException(p->currentContext,NoSuchMethodError,"Method not found: %s", methodName);
 }
 static void getFields(NMParams p, bool onlyPublic)
 {

@@ -24,6 +24,7 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.lang.reflect.ArrayTest.class );
       addTestCase( tc.test.totalcross.lang.reflect.FieldTest.class );
       addTestCase( tc.test.totalcross.lang.reflect.MethodTest.class );
+      addTestCase( tc.test.totalcross.lang.reflect.ConstructorTest.class );
       addTestCase( tc.test.totalcross.util.VectorTest.class );
       addTestCase( tc.test.totalcross.util.IntVectorTest.class );
       addTestCase( tc.test.totalcross.util.HashtableTest.class );
