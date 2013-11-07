@@ -87,6 +87,28 @@ public class Image4D extends GfxSurface
       init();
    }
 
+   private Image4D(Image4D src)
+   {
+      this.surfaceType = src.surfaceType;
+      this.width = src.width;
+      this.height = src.height;
+      this.frameCount = src.frameCount;
+      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
+      this.textureId = src.textureId;
+      if (src.changed)
+         src.applyChanges();
+      this.changed = false;
+      this.pixels = src.pixels;
+      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+      this.comment = src.comment;
+      gfx = new Graphics4D(this);
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
+      this.transparentColor = src.transparentColor;
+      this.useAlpha = src.useAlpha; // guich@tc126_12
+      this.instanceCount = src.instanceCount;
+      src.instanceCount[0]++;
+   }
+   
    private void init() throws ImageException
    {
       // frame count information?
@@ -538,28 +560,6 @@ public class Image4D extends GfxSurface
       int h =  isHeight ? newSize : (newSize * height / width);         
       hwScaleW = (double)w / width;
       hwScaleH = (double)h / height;
-   }
-   
-   private Image4D(Image4D src)
-   {
-      this.surfaceType = src.surfaceType;
-      this.width = src.width;
-      this.height = src.height;
-      this.frameCount = src.frameCount;
-      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
-      this.textureId = src.textureId;
-      if (src.changed)
-         src.applyChanges();
-      this.changed = false;
-      this.pixels = src.pixels;
-      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
-      this.comment = src.comment;
-      gfx = new Graphics4D(this);
-      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
-      this.transparentColor = src.transparentColor;
-      this.useAlpha = src.useAlpha; // guich@tc126_12
-      this.instanceCount = src.instanceCount;
-      src.instanceCount[0]++;
    }
    
    public Image4D hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
