@@ -14,12 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.chart;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.chart.Series;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
@@ -48,6 +47,12 @@ public class PieChart extends Chart
 
    /** Perspective vertical distance. */
    public int perspectiveV = 4;
+   
+   /** GAO: keeps track of the currently selected slice */
+   public int selectedSlice = -1;
+   
+   /** GAO: if true, then offset selected pie slice, for visual indicator that its been selected */
+   public boolean offsetSelectedSlice = true;
 
    private ToolTip tip;
    private int lastPenX,lastPenY;
@@ -131,6 +136,9 @@ public class PieChart extends Chart
       this.yy = yy;
       for (int i = 0; i < sCount; i++) // for each series
       {
+         xx = this.xx;
+         yy = this.yy;
+         
          Series s = (Series) series.items[i];
          int color = i == currentSelection ? Color.darker(s.color,32) : is3d ? Color.darker(s.color) : s.color;
          //if (is3d) color = Color.interpolate(backColor,color);
@@ -139,7 +147,7 @@ public class PieChart extends Chart
          current = last+(v*360/sum);
 
          if (i == selectedSeries)
-         {
+         { 
             int half = (int)(last+(v/2*360/sum));
             g.getAnglePoint(xx, yy, distanceOfSelectedPie, distanceOfSelectedPie, half, c);
             xx = c.x;
@@ -220,8 +228,13 @@ public class PieChart extends Chart
                         int r = i == selectedSeries ? (rr + distanceOfSelectedPie) : rr;
                         if (r < distance) // outside the pie?
                            i = sCount; // don't show anything
-                        else
+                        else {
                            setTipText(s);
+
+                           if (offsetSelectedSlice)
+                           	this.selectedSeries = i;	// make the slice user tapped on be the 'selected' one
+                           selectedSlice = i;			// field so after receiving a Pie event, can retrieve selected slice
+                        }
                         break;
                      }
                      last = current;
