@@ -945,7 +945,7 @@ public final class J2TC implements JConstants, TCConstants
                String name = (String)classes[i];
                name = name.replace('.','/')+".class";
                if (!inExclusionList(name))
-                  addAndExpand(temp, name);
+                  addAndExpand(temp, name, false);
             }
             if (temp.size() > 0)
             {
@@ -961,18 +961,21 @@ public final class J2TC implements JConstants, TCConstants
 
    private static Hashtable htVisited = new Hashtable(1000);
 
-   private static void addAndExpand(Vector vin, String name) throws Exception
+   private static void addAndExpand(Vector vin, String name, boolean throwErrorIfInexistant) throws Exception
    {
       JavaClass jc;
       if (htVisited.exists(name) || name.startsWith("tc/tools") || name.startsWith("tc/Deploy") || name.startsWith("net/rim")) // never deploy our tools
          return;
       htVisited.put(name,name);
       byte[] bytes = Utils.findAndLoadFile(name,false);
-      boolean isClass = name.toLowerCase().endsWith(".class");
+      boolean isClass = name.toLowerCase().endsWith(".class") && !isPrimitiveClass(name);
       if (bytes == null)
       {
          if (isClass) // do not throw exceptions in non-class files
-            throw new IllegalArgumentException("File not found: "+name);
+            if (throwErrorIfInexistant)
+               throw new IllegalArgumentException("File not found: "+name);
+            else
+               System.out.println("Class.forName not found: "+name);
          return;
       }
       if (isClass)
@@ -1007,6 +1010,11 @@ public final class J2TC implements JConstants, TCConstants
       }
    }
 
+   private static boolean isPrimitiveClass(String name)
+   {
+      return name.equals("byte.class") || name.equals("short.class") || name.equals("int.class") || name.equals("boolean.class") || name.equals("char.class") || name.equals("long.class") || name.equals("float.class") || name.equals("double.class") || name.equals("void.class");
+   }
+
    private static void expandClass(Vector vin, JavaClass jc) throws Exception
    {
       JavaConstantPool jcp = jc.cp;
@@ -1021,7 +1029,7 @@ public final class J2TC implements JConstants, TCConstants
                   c += ".class";
                case 8: // string
                   if (!inProhibitedList(c,false) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
-                     addAndExpand(vin, c);
+                     addAndExpand(vin, c, true);
                   break;
             }
          }
@@ -1172,7 +1180,7 @@ public final class J2TC implements JConstants, TCConstants
                      DeploySettings.mainClassDir += DeploySettings.SLASH;
                }
                DeploySettings.mainPackage = jc.className;
-               addAndExpand(vin, jc.className+".class");
+               addAndExpand(vin, jc.className+".class", true);
             }
             else
                throw new IllegalArgumentException("Invalid input: only .class/.zip/.jar/.tcz or a folder is supported. Make sure that the file is the FIRST parameter passed to tc.Deploy!");
