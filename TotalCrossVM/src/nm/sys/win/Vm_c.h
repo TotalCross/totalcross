@@ -59,7 +59,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    xmemzero(&si, sizeof(si));
    startInfo = &si;
 #endif
-
+#ifdef WINCE
    if (lstrcmp(szCommand,L"unregister service")==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
@@ -86,6 +86,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       FreeLibrary(dll);
       return srv != 0;
    }
+#endif
    ok = CreateProcess(szCommand, szArgs, null, null, false, 0, null, null, startInfo, &processInfo); // guich@tc100b5_16: iexplore requires this mode.
    err = GetLastError();
 
