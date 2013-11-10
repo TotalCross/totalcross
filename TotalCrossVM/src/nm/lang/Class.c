@@ -13,26 +13,31 @@
 
 #include "tcvm.h"
 
-static void createClassObject(Context currentContext, CharP className, Type type, Object* ret)
+static void createClassObject(Context currentContext, CharP className, Type type, Object* ret, bool* isNew)
 {
    Object ptrObj=null;
    TCClass c;
    switch (type)
    {
-      case Type_Void:    *ret = *voidTYPE;    return;
-      case Type_Byte:    *ret = *byteTYPE;    return;
-      case Type_Boolean: *ret = *booleanTYPE; return;
-      case Type_Short:   *ret = *shortTYPE;   return;
-      case Type_Char:    *ret = *charTYPE;    return;
-      case Type_Int:     *ret = *intTYPE;     return;
-      case Type_Long:    *ret = *longTYPE;    return;
-      case Type_Float:   *ret = *floatTYPE;   return;
-      case Type_Double:  *ret = *doubleTYPE;  return;
+      case Type_Void:    *ret = *voidTYPE;    break;
+      case Type_Byte:    *ret = *byteTYPE;    break;
+      case Type_Boolean: *ret = *booleanTYPE; break;
+      case Type_Short:   *ret = *shortTYPE;   break;
+      case Type_Char:    *ret = *charTYPE;    break;
+      case Type_Int:     *ret = *intTYPE;     break;
+      case Type_Long:    *ret = *longTYPE;    break;
+      case Type_Float:   *ret = *floatTYPE;   break;
+      case Type_Double:  *ret = *doubleTYPE;  break;
    }
-   c = loadClass(currentContext, className, true);
-   if (c != null && c->classObj != null) // if the object was already created, reuse it.
-      *ret = c->classObj; // no need to unlock it
-   else
+   if (*ret == null)
+   {
+      c = loadClass(currentContext, className, true);
+      if (c != null && c->classObj != null) // if the object was already created, reuse it.
+         *ret = c->classObj; // no need to unlock it
+   }
+   if (*ret != null && isNew)
+      *isNew = false;
+   if (*ret == null)
    {
       if (c != null &&
          (*ret = createObject(currentContext, "java.lang.Class")) != null &&
@@ -45,7 +50,10 @@ static void createClassObject(Context currentContext, CharP className, Type type
       {
          setObjectLock(Class_nativeStruct(*ret) = ptrObj, UNLOCKED);
          if (*ret != null)
+         {
+            if (isNew) *isNew = true;
             c->classObj = *ret; // dont unlock the returning object since its cached!
+         }
       }
    }
 }
@@ -74,8 +82,8 @@ static void createFieldObject(Context currentContext, Field f, int32 idx, Object
       setObjectLock(Field_nativeStruct(*ret) = ptrObj, UNLOCKED);
       // name, type and declaring class
       setObjectLock(Field_name(*ret) = createStringObjectFromCharP(currentContext,f->name,-1),UNLOCKED);
-      createClassObject(currentContext, f->targetClassName, f->flags.type, &Field_type(*ret));
-      createClassObject(currentContext, f->sourceClassName, Type_Null, &Field_declaringClass(*ret));
+      createClassObject(currentContext, f->targetClassName, f->flags.type, &Field_type(*ret),null);
+      createClassObject(currentContext, f->sourceClassName, Type_Null, &Field_declaringClass(*ret),null);
       setObjectLock(*ret, UNLOCKED);
    }
 }
@@ -102,29 +110,29 @@ static void createMethodObject(Context currentContext, Method m, TCClass declari
       setObjectLock(Method_nativeStruct(*ret) = ptrObj, UNLOCKED);
       // name and declaring class
       setObjectLock(Method_name(*ret) = createStringObjectFromCharP(currentContext,isConstructor ? declaringClass->name : m->name,-1),UNLOCKED);
-      createClassObject(currentContext, declaringClass->name, Type_Null, &Method_declaringClass(*ret));
+      createClassObject(currentContext, declaringClass->name, Type_Null, &Method_declaringClass(*ret),null);
       // parameters and exceptions
       Method_parameterTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = m->paramCount);
       if (Method_parameterTypes(*ret) && n > 0)
       {
          Object* oa = (Object*)ARRAYOBJ_START(Method_parameterTypes(*ret));
          for (i=0; i < n; i++)
-            createClassObject(currentContext, declaringClass->cp->cls[m->cpParams[i]], m->cpParams[i] < Type_Object ? m->cpParams[i] : Type_Null, oa++);
+            createClassObject(currentContext, declaringClass->cp->cls[m->cpParams[i]], m->cpParams[i] < Type_Object ? m->cpParams[i] : Type_Null, oa++, null);
       }
       Method_exceptionTypes(*ret) = createArrayObject(currentContext, "[java.lang.Class", n = 0); // thrown exceptions is not stored in TCClass!
       if (Method_exceptionTypes(*ret) && n > 0)
       {
          Object* oa = (Object*)ARRAYOBJ_START(Method_exceptionTypes(*ret));
          for (i=0; i < n; i++)
-            createClassObject(currentContext, m->exceptionHandlers[i].className, Type_Null, oa++);
+            createClassObject(currentContext, m->exceptionHandlers[i].className, Type_Null, oa++, null);
       }
 
       // return and type
       if (!isConstructor)
       {
          CharP nn = m->class_->cp->cls[m->cpReturn];
-         createClassObject(currentContext, nn, m->cpReturn == Type_Null ? Type_Void : m->cpReturn < Type_Object ? m->cpReturn : Type_Null, &Method_returnType(*ret));
-         createClassObject(currentContext, m->class_->name, Type_Null, &Method_type(*ret));
+         createClassObject(currentContext, nn, m->cpReturn == Type_Null ? Type_Void : m->cpReturn < Type_Object ? m->cpReturn : Type_Null, &Method_returnType(*ret),null);
+         createClassObject(currentContext, m->class_->name, Type_Null, &Method_type(*ret),null);
       }
       setObjectLock(*ret, UNLOCKED);
    }
@@ -223,7 +231,7 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
       }
       c = c->superClass;
    } while (c && !found);
-   throwException(p->currentContext,NoSuchMethodError,"Method not found: %s", methodName);
+   throwException(p->currentContext,NoSuchMethodException,"Method not found: %s", methodName);
 }
 static void getFields(NMParams p, bool onlyPublic)
 {
@@ -321,13 +329,24 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
       throwException(p->currentContext, NullPointerException,null);
    else
    {
-      CharP className = String2CharP(classNameObj);
+      CharP className = String2CharP(classNameObj), className0 = className;
       if (className == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else
       {
-         createClassObject(p->currentContext, className, Type_Null, &p->retO);
-         xfree(className);
+         bool isNew;
+         // check if user is passing an object in java's format [Ljava.lang.Object; -> [java.lang.Object
+         CharP pv = xstrchr(className, ';');
+         if (pv)
+         {
+            CharP start = className;
+            while (*start == '[') start++;
+            for (; *start; start++) *start = start[1]; // remove L
+            *(pv-1) = 0;
+         }
+         createClassObject(p->currentContext, className, Type_Null, &p->retO, &isNew);
+         // if failed or if the class was already loaded, free the name
+         if (p->retO == null || isNew) xfree(className0); // the classname is stored in the structure!
       }
    }
 }
@@ -408,7 +427,7 @@ TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class
    Object me = p->obj[0];
    xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
    if (target->superClass != null && !target->flags.isInterface)
-      createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO);
+      createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO,null);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
@@ -422,7 +441,7 @@ TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.
    {
       Object* objs = (Object*)ARRAYOBJ_START(ret);
       for (i = 0; i < n; i++)
-         createClassObject(p->currentContext, target->interfaces[i]->name, Type_Null, &objs[i]);
+         createClassObject(p->currentContext, target->interfaces[i]->name, Type_Null, &objs[i],null);
       setObjectLock(p->retO = ret, UNLOCKED);
    }
 }
@@ -435,7 +454,7 @@ TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Cl
    if (target->flags.isArray)
    {
       CharP name = target->name;
-      Type to = type2javaType(name);
+      Type to = type2javaType(++name);
       switch (to)
       {
          case Type_Void:    p->retO = *voidTYPE; break;
@@ -447,19 +466,10 @@ TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Cl
          case Type_Long:    p->retO = *longTYPE; break;
          case Type_Float:   p->retO = *floatTYPE; break;
          case Type_Double:  p->retO = *doubleTYPE; break;
-         default:
-         {
-            int32 len = xstrlen(name);
-            CharP temp = xmalloc(len);
-            if (!temp)
-               throwException(p->currentContext, OutOfMemoryError, "To allocate %d bytes", len);
-            else
-            {
-               xmemmove(temp, name, len-1); // cut the last [
-               createClassObject(p->currentContext, temp, Type_Null, &p->retO);
-               xfree(temp);
-            }
-         }
+         default: 
+            createClassObject(p->currentContext, name, Type_Null, &p->retO,null);
+            if (p->currentContext->thrownException != null)
+               p->retO = p->currentContext->thrownException = null;
       }
    }
 }

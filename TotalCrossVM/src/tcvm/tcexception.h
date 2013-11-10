@@ -47,6 +47,7 @@ typedef enum
    CryptoException,
    NegativeArraySizeException,
    InvocationTargetException,
+   NoSuchMethodException,
    ThrowableCount,
 } Throwable;
 

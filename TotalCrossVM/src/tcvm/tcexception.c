@@ -319,4 +319,5 @@ void initException()
    throwableAsCharP[CryptoException               ] = "totalcross.crypto.CryptoException";
    throwableAsCharP[NegativeArraySizeException    ] = "java.lang.NegativeArraySizeException";
    throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
+   throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
 }
