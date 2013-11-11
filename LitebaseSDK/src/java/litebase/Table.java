@@ -2064,8 +2064,12 @@ class Table
                      switch (booleanTreeEvaluateJoin(list, rightTree))
                      {
                         case VALIDATION_RECORD_NOT_OK:
-                        case VALIDATION_RECORD_INCOMPLETE_OK:
                            return VALIDATION_RECORD_NOT_OK;
+                        
+                        // juliana@270_21: solved a very old join problem when using OR and false constants comparison which would make the join 
+                        // return no results.
+                        case VALIDATION_RECORD_INCOMPLETE_OK: 
+                           return VALIDATION_RECORD_INCOMPLETE_OK;
                         case VALIDATION_RECORD_OK:
                            return VALIDATION_RECORD_OK; // Ther right side returned true.
                         case VALIDATION_RECORD_INCOMPLETE:
