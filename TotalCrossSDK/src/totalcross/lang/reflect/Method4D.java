@@ -10,6 +10,7 @@ public class Method4D implements Member4D
    Class exceptionTypes[];
    Class type;
    Class returnType;
+   String cached;
 
    public Class getDeclaringClass()
    {
@@ -63,16 +64,17 @@ public class Method4D implements Member4D
    
    public String toString()
    {
+      if (cached != null) return cached;
       StringBuffer sb = new StringBuffer(128); // public static final void TCTestWin$TestMethod.printTest(int,short,java.lang.String,boolean,java.lang.Object,long,byte,char,double)
       sb.append(Modifier4D.toString(mod)); if (sb.length() > 0) sb.append(' ');
       sb.append(toString(returnType)).append(' ');
-      sb.append(declaringClass).append('.').append(name).append('(');
+      sb.append(declaringClass.getName()).append('.').append(name).append('(');
       for (int i = 0, last = parameterTypes.length-1; i <= last; i++)
       {
          sb.append(toString(parameterTypes[i]));
          if (i < last) sb.append(',');
       }
-      return sb.append(')').toString();
+      return cached = sb.append(')').toString();
    }
    
    public Class getReturnType()

@@ -173,7 +173,7 @@ public class FieldTest extends TestCase
             }
             else
             {
-               assertTrue(e.getClass().equals(expectedException));
+               test(e.getClass(), expectedException);
             }
          }
          return res;
@@ -226,10 +226,15 @@ public class FieldTest extends TestCase
             }
             else
             {
-               assertTrue(e.getClass().equals(expectedException));
+               test(e.getClass(),expectedException);
             }
          }
       }
+   }
+   
+   private void test(Object i, Object j)
+   {
+      assertEquals(i,j);
    }
 
    /**
@@ -1133,10 +1138,10 @@ public class FieldTest extends TestCase
 
       f = TestField.class.getDeclaredField("x");
 
-      assertEquals(f.toString(),"private static final int FieldTest$TestField.x");
+      assertEquals(f.toString(),"private static final int tc.test.totalcross.lang.reflect.FieldTest$TestField.x");
       Class c = FieldTest.class;
-      assertEquals(c.getDeclaredField("t").toString(), "int FieldTest.t");
-      assertEquals(c.getDeclaredField("it").toString(), "java.lang.Integer FieldTest.it");
+      assertEquals(c.getDeclaredField("t").toString(), "int tc.test.totalcross.lang.reflect.FieldTest.t");
+      assertEquals(c.getDeclaredField("it").toString(), "java.lang.Integer tc.test.totalcross.lang.reflect.FieldTest.it");
 
    }
 
@@ -1177,7 +1182,8 @@ public class FieldTest extends TestCase
       }
       catch (Throwable e) 
       {
-         throw new AssertionFailedError(getClass().getName()+" - "+e.getMessage());
+         String s = Vm.getStackTrace(e);
+         throw new AssertionFailedError(getClass().getName()+" - "+e.getMessage()+" - "+s);
       }
    }
 }

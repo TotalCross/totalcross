@@ -320,4 +320,5 @@ void initException()
    throwableAsCharP[NegativeArraySizeException    ] = "java.lang.NegativeArraySizeException";
    throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
    throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
+   throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
 }

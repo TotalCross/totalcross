@@ -16,18 +16,18 @@
 static void createClassObject(Context currentContext, CharP className, Type type, Object* ret, bool* isNew)
 {
    Object ptrObj=null;
-   TCClass c;
+   TCClass c = null;
    switch (type)
    {
-      case Type_Void:    *ret = *voidTYPE;    break;
-      case Type_Byte:    *ret = *byteTYPE;    break;
-      case Type_Boolean: *ret = *booleanTYPE; break;
-      case Type_Short:   *ret = *shortTYPE;   break;
-      case Type_Char:    *ret = *charTYPE;    break;
-      case Type_Int:     *ret = *intTYPE;     break;
-      case Type_Long:    *ret = *longTYPE;    break;
-      case Type_Float:   *ret = *floatTYPE;   break;
-      case Type_Double:  *ret = *doubleTYPE;  break;
+      case Type_Void:    *ret = *voidTYPE;    return;
+      case Type_Byte:    *ret = *byteTYPE;    return;
+      case Type_Boolean: *ret = *booleanTYPE; return;
+      case Type_Short:   *ret = *shortTYPE;   return;
+      case Type_Char:    *ret = *charTYPE;    return;
+      case Type_Int:     *ret = *intTYPE;     return;
+      case Type_Long:    *ret = *longTYPE;    return;
+      case Type_Float:   *ret = *floatTYPE;   return;
+      case Type_Double:  *ret = *doubleTYPE;  return;
    }
    if (*ret == null)
    {
@@ -35,8 +35,6 @@ static void createClassObject(Context currentContext, CharP className, Type type
       if (c != null && c->classObj != null) // if the object was already created, reuse it.
          *ret = c->classObj; // no need to unlock it
    }
-   if (*ret != null && isNew)
-      *isNew = false;
    if (*ret == null)
    {
       if (c != null &&
@@ -56,6 +54,8 @@ static void createClassObject(Context currentContext, CharP className, Type type
          }
       }
    }
+   if (*ret != null && isNew && c != null && c->name == className)
+      *isNew = false;
 }
 static void createFieldObject(Context currentContext, Field f, int32 idx, Object* ret)
 {
@@ -143,8 +143,8 @@ static void getFieldByName(NMParams p, bool onlyPublic)
    Object me = p->obj[0], ret=null;
    Object nameObj = p->obj[1];
    CharP name;
-   int32 i,n;
-   TCClass c, o;
+   int32 i;
+   TCClass o;
    FieldArray ff;
    Field found=null;
    if (nameObj == NULL)
@@ -154,21 +154,18 @@ static void getFieldByName(NMParams p, bool onlyPublic)
       throwException(p->currentContext, OutOfMemoryError, null);
    else
    {
-      xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
-      for (o = c; o != null; o = o->superClass)
-      {
-         for (ff = o->i32InstanceFields, i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-         for (ff = o->objInstanceFields, i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-         for (ff = o->v64InstanceFields, i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-         for (ff = o->i32StaticFields  , i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-         for (ff = o->objStaticFields  , i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-         for (ff = o->v64StaticFields  , i=0,n = ARRAYLENV(ff); i < n; ff++, i++) if ((!onlyPublic || ff->flags.isPublic) && strEq(ff->name,name)) {found = ff; goto cont;}
-      }
+      xmoveptr(&o, ARRAYOBJ_START(Class_nativeStruct(me)));
+      for (ff = o->i32InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
+      for (ff = o->objInstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
+      for (ff = o->v64InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
+      for (ff = o->i32StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
+      for (ff = o->objStaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
+      for (ff = o->v64StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
 cont:
       if (found)
          createFieldObject(p->currentContext, found, i, &p->retO);
       else
-         throwException(p->currentContext, NoSuchFieldError, "Field not found: %s",name);
+         throwException(p->currentContext, NoSuchFieldException, "Field not found: %s",name);
       xfree(name);
    }
 }
@@ -236,54 +233,45 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
 static void getFields(NMParams p, bool onlyPublic)
 {
    Object cls = p->obj[0], ret=null;
-   TCClass target, o;
-   int32 count=0,i,n;
+   TCClass o;
+   int32 count=0,i;
    FieldArray ff;
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(cls)));
+   xmoveptr(&o, ARRAYOBJ_START(Class_nativeStruct(cls)));
 
-   if (target->flags.isInterface)
+   // fields array already include the ones from superclasses, so we don't need to crawl the hierarchy
+   if (o->flags.isInterface)
    {
       // count how many fields have in this interface and super interfaces
       // an interface has only public static fields.
-      for (o = target; o != null; o = o->superClass)
-         count += ARRAYLENV(o->i32StaticFields) + ARRAYLENV(o->objStaticFields) + ARRAYLENV(o->v64StaticFields);
+      count += ARRAYLENV(o->i32StaticFields) + ARRAYLENV(o->objStaticFields) + ARRAYLENV(o->v64StaticFields);
       ret = createArrayObject(p->currentContext, "[java.lang.reflect.Field", count);
       if (ret)
       {
          Object* oa = (Object*)ARRAYOBJ_START(ret);
-         for (o = target; o != null; o = o->superClass)
-         {
-            for (ff = o->i32StaticFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->objStaticFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->v64StaticFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) createFieldObject(p->currentContext, ff, i, oa++);
-         }                                                        
+         for (ff = o->i32StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->objStaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->v64StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) createFieldObject(p->currentContext, ff, i, oa++);
       }                                                           
    }                                                              
-   else
+   else 
    {
       // count how many PUBLIC fields have in this class and super classes, depending on the flag
-      for (o = target; o != null; o = o->superClass)
-      {
-         for (ff = o->i32StaticFields  , i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-         for (ff = o->objStaticFields  , i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-         for (ff = o->v64StaticFields  , i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-         for (ff = o->i32InstanceFields, i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-         for (ff = o->objInstanceFields, i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-         for (ff = o->v64InstanceFields, i=0, n = ARRAYLENV(ff); --n >= 0; ff++) if (!onlyPublic || ff->flags.isPublic) count++;
-      }
+      for (ff = o->i32InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
+      for (ff = o->objInstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
+      for (ff = o->v64InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
+      for (ff = o->i32StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
+      for (ff = o->objStaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
+      for (ff = o->v64StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) count++;
       ret = createArrayObject(p->currentContext, "[java.lang.reflect.Field", count);
       if (ret)
       {
          Object* oa = (Object*)ARRAYOBJ_START(ret);
-         for (o = target; o != null; o = o->superClass)
-         {
-            for (ff = o->i32StaticFields  , i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->objStaticFields  , i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->v64StaticFields  , i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->i32InstanceFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->objInstanceFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-            for (ff = o->v64InstanceFields, i=0, n = ARRAYLENV(ff); i < n; ff++, i++) if (!onlyPublic || ff->flags.isPublic) createFieldObject(p->currentContext, ff, i, oa++);
-         }
+         for (ff = o->i32InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->objInstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->v64InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->i32StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->objStaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
+         for (ff = o->v64StaticFields  , i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if ((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) createFieldObject(p->currentContext, ff, i, oa++);
       }
    }
    setObjectLock(p->retO = ret, UNLOCKED);
@@ -297,6 +285,7 @@ static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
    xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
    // count how many PUBLIC fields have in this class and super classes
    for (o = c; o != null; o = o->superClass)
+   {
       for (ff = o->methods, n = ARRAYLENV(ff); --n >= 0; ff++) 
          if (!onlyPublic || ff->flags.isPublic) 
          {
@@ -304,11 +293,14 @@ static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
             if (isConstructor == isC)
                count++;
          }
+      if (isConstructor || !onlyPublic) break;
+   }
    ret = createArrayObject(p->currentContext, "[java.lang.reflect.Method", count);
    if (ret)
    {
       Object* oa = (Object*)ARRAYOBJ_START(ret);
       for (o = c; o != null; o = o->superClass)
+      {
          for (ff = o->methods, n = ARRAYLENV(ff); --n >= 0; ff++) 
             if (!onlyPublic || ff->flags.isPublic) 
             {
@@ -316,7 +308,8 @@ static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
                if (isConstructor == isC)
                   createMethodObject(p->currentContext, ff, o, oa++, isConstructor);
             }
-               
+         if (isConstructor || !onlyPublic) break;
+      }
    }
    setObjectLock(p->retO = ret, UNLOCKED);
 }
@@ -329,24 +322,63 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
       throwException(p->currentContext, NullPointerException,null);
    else
    {
-      CharP className = String2CharP(classNameObj), className0 = className;
+      CharP className = String2CharP(classNameObj);
       if (className == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else
       {
-         bool isNew;
-         // check if user is passing an object in java's format [Ljava.lang.Object; -> [java.lang.Object
-         CharP pv = xstrchr(className, ';');
-         if (pv)
+         bool isObj = false, isNew0=false;
+         bool isNew = true, ok = false;
+         CharP pv, start;
+         // check correctness
+         for (start = className; !ok && *start != 0; start++)
+            if (('a' <= *start && *start <= 'z') || ('A' <= *start && *start <= 'Z'))
+               ok = true;
+         if (!ok)
+            throwException(p->currentContext, ClassNotFoundException, "Class '%s' not found", className);
+         else
          {
-            CharP start = className;
-            while (*start == '[') start++;
-            for (; *start; start++) *start = start[1]; // remove L
-            *(pv-1) = 0;
+            // check if user is passing an object in java's format [Ljava.lang.Object; -> [java.lang.Object
+            pv = xstrchr(className, ';');
+            if (pv)
+            {
+               start = className;
+               while (*start == '[') start++;
+               for (; *start; start++) *start = start[1]; // remove L
+               *(pv-1) = 0;
+               isObj = true;
+            }
+            // check if its a primitive type passed in Java's format
+            if (className[0] == '[' && className[1] != '&')
+            {
+               // check if the class that will be instantiated exists
+               CharP cc = className;
+               while (*cc && *cc == '[')
+                  cc++;
+               if (isObj && loadClass(p->currentContext, cc, true) == null)
+                  goto fail;
+               if (!isObj) // convert totalcross' primitive type format to java's
+                  switch (*cc)
+                  {
+                     case 'Z': 
+                     case 'C': 
+                     case 'B': 
+                     case 'S': 
+                     case 'I': 
+                     case 'J': 
+                     case 'F':
+                     case 'D': 
+                        break;
+                     default:
+                        throwException(p->currentContext, ClassNotFoundException, "Class '%s' not found", className);
+                        goto fail;
+                  }
+            }
+            createClassObject(p->currentContext, className, Type_Null, &p->retO, &isNew);
+            // if failed or if the class was already loaded, free the name
          }
-         createClassObject(p->currentContext, className, Type_Null, &p->retO, &isNew);
-         // if failed or if the class was already loaded, free the name
-         if (p->retO == null || isNew) xfree(className0); // the classname is stored in the structure!
+fail:
+         if (p->retO == null || (isNew && !isNew0)) xfree(className); // the classname is stored in the structure!
       }
    }
 }
@@ -361,9 +393,11 @@ TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object 
       throwException(p->currentContext, InstantiationException, target->name);
    else
    {
-      // check if the default constructor is public
       Method m = getMethod(target, false, CONSTRUCTOR_NAME, 0);
-      if (!m || !m->flags.isPublic)
+      if (!m) // check if the default constructor exists
+         throwException(p->currentContext, InstantiationException, "Class %s has no default constructor", target->name);
+      else
+      if (!m->flags.isPublic)
          throwException(p->currentContext, IllegalAccessException, target->name);
       else
       {
@@ -396,7 +430,7 @@ TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native 
    if (cls == null)
       throwException(p->currentContext, NullPointerException, "Argument cls");
    else
-      p->retI = areClassesCompatible(p->currentContext, metarget, clstarget->name) == COMPATIBLE;
+      p->retI = areClassesCompatible(p->currentContext, clstarget, metarget->name) == COMPATIBLE;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
@@ -415,10 +449,14 @@ TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isA
    p->retI = target->flags.isArray;
 }
 //////////////////////////////////////////////////////////////////////////
+static bool isPrimitive(Object me)
+{
+   return me == *booleanTYPE || me == *byteTYPE || me == *shortTYPE || me == *intTYPE || me == *longTYPE || me == *floatTYPE || me == *doubleTYPE || me == *charTYPE;
+}
 TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
 {
    Object me = p->obj[0];
-   p->retI = me == *booleanTYPE || me == *byteTYPE || me == *shortTYPE || me == *intTYPE || me == *longTYPE || me == *floatTYPE || me == *doubleTYPE || me == *charTYPE;
+   p->retI = isPrimitive(me);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
@@ -426,7 +464,7 @@ TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class
    TCClass target;
    Object me = p->obj[0];
    xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
-   if (target->superClass != null && !target->flags.isInterface)
+   if (target->superClass != null && !target->flags.isInterface && !isPrimitive(me))
       createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO,null);
 }
 //////////////////////////////////////////////////////////////////////////

@@ -13,10 +13,16 @@
 
 package tc.test.totalcross;
 
+import totalcross.sys.*;
 import totalcross.unit.*;
 
 public class APITests extends TestSuite
 {
+   static
+   {
+      Settings.resizableWindow = true;
+   }
+   
    /** Need to be used within TotalCross */
    public APITests()
    {
@@ -25,6 +31,7 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.lang.reflect.FieldTest.class );
       addTestCase( tc.test.totalcross.lang.reflect.MethodTest.class );
       addTestCase( tc.test.totalcross.lang.reflect.ConstructorTest.class );
+      addTestCase( tc.test.totalcross.lang.reflect.ClassTest.class );
       addTestCase( tc.test.totalcross.util.VectorTest.class );
       addTestCase( tc.test.totalcross.util.IntVectorTest.class );
       addTestCase( tc.test.totalcross.util.HashtableTest.class );

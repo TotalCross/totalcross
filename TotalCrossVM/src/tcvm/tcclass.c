@@ -500,8 +500,11 @@ static FieldArray readFields(ConstantPool cp, int32 len, TCZFile tcz, FieldArray
    f0 = f = newArrayOf(Field, len+lens, tcz->tempHeap);
 
    // first, get the inherited fields, to keep the same order
-   while (lens-- > 0)
-      *f++ = *super++;
+   for (; lens-- > 0; f++,super++)
+   {
+      *f = *super;
+      f->flags.isInherited = true;
+   }
    // then, get our fields
    for (; len-- > 0; f++)
    {

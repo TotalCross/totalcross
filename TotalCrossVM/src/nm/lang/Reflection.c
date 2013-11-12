@@ -623,7 +623,7 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
             else
             if (areClassesCompatible(p->currentContext, oic, targetClass) != COMPATIBLE)
             {
-               throwException(p->currentContext, IllegalArgumentException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
+               throwException(p->currentContext, /*IllegalArgumentException*/InvocationTargetException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
                break;
             }
             switch (from)
@@ -691,7 +691,7 @@ TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructo
    Object targetClassObj = Method_declaringClass(p->obj[0]), o;
    TCClass target;
    xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(targetClassObj)));
-   o = createObject(p->currentContext, target->name);
+   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, target->name);
    if (o)
       invoke(p, p->obj[0], o, p->obj[1]);
    setObjectLock(p->retO = o, UNLOCKED);

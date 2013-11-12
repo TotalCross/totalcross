@@ -1,5 +1,6 @@
 package tc.test.totalcross.lang.reflect;
 
+import totalcross.sys.*;
 import totalcross.unit.*;
 
 import java.lang.reflect.*;
@@ -613,7 +614,7 @@ public class MethodTest extends TestCase
       Class[] parms = { int.class, short.class, String.class, boolean.class, Object.class, long.class, byte.class, char.class, double.class };
       mth = TestMethod.class.getDeclaredMethod("printTest", parms);
 
-      assertEquals(mth.toString(), "public static final void MethodTest$TestMethod.printTest(int,short,java.lang.String,boolean,java.lang.Object,long,byte,char,double)");
+      assertEquals(mth.toString(), "public static final void tc.test.totalcross.lang.reflect.MethodTest$TestMethod.printTest(int,short,java.lang.String,boolean,java.lang.Object,long,byte,char,double)");
    }
 
    public void testRun()
@@ -634,7 +635,8 @@ public class MethodTest extends TestCase
       }
       catch (Throwable e)
       {
-         throw new AssertionFailedError(getClass().getName() + " - " + e.getMessage());
+         String s = Vm.getStackTrace(e);
+         throw new AssertionFailedError(getClass().getName()+" - "+e.getMessage()+" - "+s);
       }
    }
 }

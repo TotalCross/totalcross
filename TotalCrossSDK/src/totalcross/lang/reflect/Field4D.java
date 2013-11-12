@@ -9,6 +9,7 @@ public class Field4D
    String name;
    Class declaringClass; // class that owns this field
    Class type;
+   String cached;
 
    public Class getDeclaringClass()
    {
@@ -41,6 +42,7 @@ public class Field4D
    }
    public String toString()
    {
+      if (cached != null) return cached;
       StringBuffer sb = new StringBuffer(64); // private static final int TCTestWin$TestField.x
       sb.append(Modifier4D.toString(mod)); if (sb.length() > 0) sb.append(' ');
       String t;
@@ -54,9 +56,20 @@ public class Field4D
          case /*public static final int LONG    = */ 7: t = "long"; break;
          case /*public static final int FLOAT   = */ 8: t = "float"; break;
          case /*public static final int DOUBLE  = */ 9: t = "double"; break;
-         default: t = type.getName();
+         default: 
+         {
+            t = type.getName(); // Class may think that its a primitive, but its an Object, so we convert it back
+            if (t.equals("int"))     t = "java.lang.Integer"; else
+            if (t.equals("char"))    t = "java.lang.Character"; else
+            if (t.equals("byte"))    t = "java.lang.Byte"; else
+            if (t.equals("short"))   t = "java.lang.Short"; else
+            if (t.equals("long"))    t = "java.lang.Long"; else
+            if (t.equals("float"))   t = "java.lang.Float"; else
+            if (t.equals("double"))  t = "java.lang.Double"; else
+            if (t.equals("boolean")) t = "java.lang.Boolean";
+         }
       }
-      return sb.append(t).append(' ').append(declaringClass.getName()).append('.').append(name).toString();
+      return cached = sb.append(t).append(' ').append(declaringClass.getName()).append('.').append(name).toString();
    }
    
    public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;

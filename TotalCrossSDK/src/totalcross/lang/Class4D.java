@@ -42,6 +42,7 @@ public final class Class4D
    // place holders for the VM
    Object nativeStruct; // TClass
    String targetName;  // java.lang.String
+   String ncached,cached;
 
    /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are
     * String constants. If you build the className dynamically, then you must include the file passing it to the tc.Deploy
@@ -62,18 +63,31 @@ public final class Class4D
    /** Returns the fully qualified name of this class. */
    public String getName()
    {
-      return targetName;
+      if (ncached != null) return ncached;
+      if (isPrimitive())
+      {
+         if (targetName.endsWith(".Integer")) return "int";
+         if (targetName.endsWith(".Character")) return "char";
+         if (targetName.endsWith(".Byte")) return "byte";
+         if (targetName.endsWith(".Short")) return "short";
+         if (targetName.endsWith(".Long")) return "long";
+         if (targetName.endsWith(".Float")) return "float";
+         if (targetName.endsWith(".Double")) return "double";
+         if (targetName.endsWith(".Boolean")) return "boolean";
+      }
+      return ncached = targetName;
    }
    
    /** Returns the fully qualified name of this class. */
    public String toString()
    {
-   	return targetName;
+      if (cached != null) return cached;
+   	return cached = isPrimitive() ? getName() : "class "+getName();
    }
    
    public boolean equals(Object o)
    {
-      return o instanceof Class4D && ((Class4D)o).targetName.equals(targetName);
+      return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
    }
    
    public native boolean isAssignableFrom(Class cls);

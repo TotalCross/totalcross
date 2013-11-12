@@ -62,7 +62,8 @@ typedef struct
    uint16 isVolatile     : 1;
    uint16 isTransient    : 1;
    uint16 isFinal        : 1;
-   uint16 __available    : 4; // prefer to fill the gap to prevent structure size optimization
+   uint16 isInherited    : 1;
+   uint16 __available    : 3; // prefer to fill the gap to prevent structure size optimization
 } __attribute_packed__ FieldFlags;
 
 #pragma pack()  // restore structure member alignment to default

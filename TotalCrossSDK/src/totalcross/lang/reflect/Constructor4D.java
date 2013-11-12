@@ -8,6 +8,7 @@ public class Constructor4D implements Member4D
    Class declaringClass; // class that owns this method
    Class parameterTypes[];
    Class exceptionTypes[];
+   String cached;
 
    public Class getDeclaringClass()
    {
@@ -42,6 +43,7 @@ public class Constructor4D implements Member4D
    
    public String toString()
    {
+      if (cached != null) return cached;
       StringBuffer sb = new StringBuffer(128); // public static final void TCTestWin$TestMethod.printTest(int,short,java.lang.String,boolean,java.lang.Object,long,byte,char,double)
       sb.append(Modifier4D.toString(mod)); if (sb.length() > 0) sb.append(' ');
       sb.append(name).append('(');
@@ -50,7 +52,7 @@ public class Constructor4D implements Member4D
          sb.append(Method4D.toString(parameterTypes[i]));
          if (i < last) sb.append(',');
       }
-      return sb.append(')').toString();
+      return cached = sb.append(')').toString();
    }
    
    public Class[] getParameterTypes()

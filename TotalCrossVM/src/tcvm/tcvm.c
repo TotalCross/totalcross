@@ -144,6 +144,7 @@ uint32 *_address[OPCODE_LENGTH];
 uint32 *_addrMtdParam[4];
 uint32 *_addrMtdcParam[4];
 uint32 *_addrMtdbParam[4];
+uint32 *_addrMtdeParam[4];
 uint32 *_addrInParam[4];
 uint32 *_addrNMRet[4];
 #endif
@@ -189,6 +190,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       _addrMtdParam[RegI] = &&aRegI;  _addrMtdParam[RegO] = &&aRegO;  _addrMtdParam[RegD] = &&aRegD;  _addrMtdParam[RegL] = &&aRegL;
       _addrMtdcParam[RegI] = &&cRegI; _addrMtdcParam[RegO] = &&cRegO; _addrMtdcParam[RegD] = &&cRegD; _addrMtdcParam[RegL] = &&cRegL;
       _addrMtdbParam[RegI] = &&bRegI; _addrMtdbParam[RegO] = &&bRegO; _addrMtdbParam[RegD] = &&bRegD; _addrMtdbParam[RegL] = &&bRegL;
+      _addrMtdeParam[RegI] = &&eRegI; _addrMtdeParam[RegO] = &&eRegO; _addrMtdeParam[RegD] = &&eRegD; _addrMtdeParam[RegL] = &&eRegL;
       _addrInParam[RegI] = &&dRegI;   _addrInParam[RegO] = &&dRegO;   _addrInParam[RegD] = &&dRegD;   _addrInParam[RegL] = &&dRegL;
       _addrNMRet[RegI] = &&nmRegI;    _addrNMRet[RegO] = &&nmRegO;    _addrNMRet[RegD] = &&nmRegD;    _addrNMRet[RegL] = &&nmRegL;
       OPADDR(BREAK)               OPADDR(MOV_regI_regI)       OPADDR(MOV_regI_field)      OPADDR(MOV_regI_static)     OPADDR(MOV_regI_aru)       OPADDR(MOV_regI_arc)        OPADDR(MOV_regI_sym)        OPADDR(MOV_regI_s18)        OPADDR(MOV_regI_arlen)     OPADDR(MOV_regO_regO)       OPADDR(MOV_regO_field)      OPADDR(MOV_regO_static)     OPADDR(MOV_regO_aru)       OPADDR(MOV_regO_arc)        OPADDR(MOV_regO_sym)        OPADDR(MOV_reg64_reg64)     OPADDR(MOV_reg64_field)      OPADDR(MOV_reg64_static)    OPADDR(MOV_reg64_aru)       OPADDR(MOV_reg64_arc)       OPADDR(MOV_regD_sym)       OPADDR(MOV_regL_sym)        OPADDR(MOV_regD_s18)        OPADDR(MOV_regL_s18)        OPADDR(MOV_field_regI)     OPADDR(MOV_field_regO)      OPADDR(MOV_field_reg64)     OPADDR(MOV_static_regI)     OPADDR(MOV_static_regO)    OPADDR(MOV_static_reg64)    OPADDR(MOV_arc_regI)        OPADDR(MOV_arc_regO)
@@ -298,10 +300,10 @@ TC_API TValue executeMethod(Context context, Method method, ...)
             {
                XSELECT(addrInParam, *regTypes)
                {
-                  XOPTION(d,RegI): *rI++ = aargs->asInt32;         continue;
-                  XOPTION(d,RegO): *rO++ = aargs->asObj;           continue;
-                  XOPTION(d,RegD):
-                  XOPTION(d,RegL): *REGD(r64++) = aargs->asDouble; continue;
+                  XOPTION(e,RegI): *rI++ = aargs->asInt32;         continue;
+                  XOPTION(e,RegO): *rO++ = aargs->asObj;           continue;
+                  XOPTION(e,RegD):
+                  XOPTION(e,RegL): *REGD(r64++) = aargs->asDouble; continue;
                }
             }
          }
@@ -637,7 +639,10 @@ popStackFrame:
                context->callStack -= 2;
 
                if (context->thrownException != null) // if an exception was thrown by the native method, handle it
+               {
+                  nmp->retO = null;
                   goto handleException;
+               }
 
 #ifdef ENABLE_TRACE
                context->depth--;

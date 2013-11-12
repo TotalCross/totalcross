@@ -1167,7 +1167,7 @@ public final class J2TC implements JConstants, TCConstants
                }
                byte[] bytes = Utils.loadFile(fName, true);
                JavaClass jc = new JavaClass(bytes, false);
-               if (jc.className.indexOf("totalcross/") >= 0)
+               if (jc.className.indexOf("totalcross/") >= 0 && jc.className.indexOf("test/") == -1)
                   throw new IllegalArgumentException("You can't deploy totalcross packages using a single .class. Add it to a "+jc.className.substring(jc.className.lastIndexOf('/')+1)+".jar file and deploy that jar file.");
                setApplicationProperties(jc);
                // if (jc.className.indexOf('/') > 0) // does it have a package? - guich@tc114_84: support class without package
