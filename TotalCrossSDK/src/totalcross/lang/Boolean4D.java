@@ -30,6 +30,6 @@ public class Boolean4D
    }
    public static Boolean4D valueOf(String s) 
    {
-      return new Boolean4D(s != null && s.equalsIgnoreCase(s));
+      return new Boolean4D(s != null && s.equalsIgnoreCase("true"));
    }
 }
