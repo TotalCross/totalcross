@@ -1282,6 +1282,14 @@ public final class J2TC implements JConstants, TCConstants
             cn = cn.substring(0,cn.length()-4);
          if (DeploySettings.filePrefix == null) DeploySettings.filePrefix = cn;
          DeploySettings.tczFileName = ((DeploySettings.targetDir != null ? DeploySettings.targetDir : DeploySettings.currentDir)+"/"+DeploySettings.filePrefix+".tcz").replace('\\','/');
+         
+         if (DeploySettings.targetDir != null && DeploySettings.targetDir.length() > 0)
+         {
+            File outFolder = new File(DeploySettings.targetDir);
+            if (!outFolder.exists())
+               outFolder.createDir();
+         }
+         
          DeploySettings.targetDir = Convert.appendPath(DeploySettings.targetDir!=null ? DeploySettings.targetDir : DeploySettings.currentDir, "/install/"); // don't move from here!
          // create the TCZ file
          if (isEmpty(vout))
