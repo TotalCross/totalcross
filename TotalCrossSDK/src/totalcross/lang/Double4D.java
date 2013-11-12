@@ -30,4 +30,15 @@ public class Double4D
    {
       return super.toString()+" v="+v;
    }
+   public static Double4D valueOf(String s) throws NumberFormatException
+   {
+      try
+      {
+         return new Double4D(Convert.toDouble(s));
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
+   }
 }

@@ -1,5 +1,7 @@
 package totalcross.lang;
 
+import totalcross.sys.*;
+
 public class Short4D
 {
    public static final Class TYPE = Short.class;
@@ -24,5 +26,16 @@ public class Short4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Short4D valueOf(String s) throws NumberFormatException
+   {
+      try
+      {
+         return new Short4D((short)Convert.toInt(s));
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
    }
 }

@@ -1,5 +1,7 @@
 package totalcross.lang;
 
+import totalcross.sys.*;
+
 public class Integer4D
 {
    public static final Class TYPE = Integer.class;
@@ -24,5 +26,16 @@ public class Integer4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Integer4D valueOf(String s) throws NumberFormatException
+   {
+      try
+      {
+         return new Integer4D(Convert.toInt(s));
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
    }
 }

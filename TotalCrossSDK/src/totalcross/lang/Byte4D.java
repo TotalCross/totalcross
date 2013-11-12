@@ -1,5 +1,7 @@
 package totalcross.lang;
 
+import totalcross.sys.*;
+
 public class Byte4D
 {
    public static final Class TYPE = Byte.class;
@@ -24,5 +26,16 @@ public class Byte4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Byte4D valueOf(String s) throws NumberFormatException
+   {
+      try
+      {
+         return new Byte4D((byte)Convert.toInt(s));
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
    }
 }

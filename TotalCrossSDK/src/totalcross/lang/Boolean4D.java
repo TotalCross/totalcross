@@ -1,5 +1,6 @@
 package totalcross.lang;
 
+
 public class Boolean4D
 {
    public static final Class TYPE = Boolean.class;
@@ -26,5 +27,9 @@ public class Boolean4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Boolean4D valueOf(String s) 
+   {
+      return new Boolean4D(s != null && s.equalsIgnoreCase(s));
    }
 }
