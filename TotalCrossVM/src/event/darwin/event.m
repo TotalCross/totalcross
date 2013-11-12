@@ -43,7 +43,7 @@ void iphone_privatePumpEvent(Context currentContext)
 
       if([type isEqualToString:@"multitouchScale"])
       {
-         postEvent(currentContext, MULTITOUCHEVENT_SCALE, [[event objectForKey:@"key"] intValue], [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+         postEvent(currentContext, MULTITOUCHEVENT_SCALE, [[event objectForKey:@"key"] intValue],  [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
       }
       else
       if([type isEqualToString:@"mouseDown"])
