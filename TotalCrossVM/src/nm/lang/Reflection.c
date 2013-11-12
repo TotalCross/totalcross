@@ -181,26 +181,42 @@ static void field(NMParams p, Type srcType, bool isGet, void* value)
             case Type_Object:
             {
                Object* field = isStatic ? &(fieldsClass->objStaticValues[index]) : &FIELD_OBJ(o, objparamClass, index);
-               if (isGet) *((Object*)value) = *field; else *field = *((Object*)value);
+               Object* ovalue = (Object*)value;
+               if (isGet) 
+                  *ovalue = *field; 
+               else 
+                  *field = *ovalue;
                break;
             }
             case Type_Long:
             {
                int64* field = isStatic ? (int64*)&(fieldsClass->v64StaticValues[index]) : (int64*)&FIELD_I64(o, objparamClass, index);
-               if (isGet) *((int64*)value) = *field; else *field = *((int64*)value);
+               int64* ivalue = (int64*)value;
+               if (isGet) 
+                  *ivalue = *field; 
+               else 
+                  *field = *ivalue;
                break;
             }
             case Type_Double:
             case Type_Float:
             {
                double* field = isStatic ? &(fieldsClass->v64StaticValues[index]) : &FIELD_DBL(o, objparamClass, index);
-               if (isGet) *((double*)value) = *field; else *field = *((double*)value);
+               double* dvalue = (double*)value;
+               if (isGet) 
+                  *dvalue = *field; 
+               else 
+                  *field = *dvalue;
                break;
             }
             default:
             {
                int32* field = isStatic ? &(fieldsClass->i32StaticValues[index]) : &FIELD_I32(o, index);
-               if (isGet) *((int32*)value) = *field; else *field = *((int32*)value);
+               int32* ivalue = (int32*)value;
+               if (isGet) 
+                  *ivalue = *field; 
+               else 
+                  *field = *ivalue;
                break;
             }
          }
@@ -543,7 +559,7 @@ TC_API void jlrF_get_o(NMParams p) // totalcross/lang/reflect/Field public nativ
       case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) field(p,Type_Float,   true, &Float_v    (o)); break;
       case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) field(p,Type_Double,  true, &Double_v   (o)); break;
       case Type_Null:    break;
-      default:           field(p, Type_Object, true, &o); return;
+      default:           field(p, Type_Object, true, &p->retO); return;
    }
    setObjectLock(p->retO = o, UNLOCKED);
 }
@@ -568,7 +584,7 @@ TC_API void jlrF_set_oo(NMParams p) // totalcross/lang/reflect/Field public nati
          case Type_Float:   field(p, Type_Float  , false, &Float_v   (value)); break;
          case Type_Double:  field(p, Type_Double , false, &Double_v  (value)); break;
          case Type_Null:    break;
-         default:           field(p, Type_Object, false, &value); return;
+         default:           field(p, Type_Object, false, &value); break;
       }
    }
 }
@@ -594,7 +610,7 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
    if (target->paramCount != n)
       throwException(p->currentContext, IllegalArgumentException, "Parameter count mismatch. Needs %d, but only %d was given", target->paramCount, n);
    else
-   if (argObjs != null)
+   //if (argObjs != null)
    {
       aargs = n == 0 ? null : newArrayOf(Value, n, null);
       if (n > 0 && !aargs)
@@ -661,6 +677,7 @@ static void invoke(NMParams p, Object m, Object obj, Object args)
             {
                switch (target->cpReturn)
                {
+                  case Type_Null:    o = null;
                   case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
                   case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
                   case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
@@ -684,6 +701,7 @@ TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public 
    Object obj = p->obj[1];
    Object args = p->obj[2];
    invoke(p, m, obj, args);
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;

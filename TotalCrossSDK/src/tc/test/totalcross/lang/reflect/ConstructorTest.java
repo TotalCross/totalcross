@@ -279,20 +279,37 @@ public class ConstructorTest extends TestCase
 
       assertEquals(ctor.toString(), "public tc.test.totalcross.lang.reflect.ConstructorTest$ConstructorTestHelper(java.lang.Object)");
    }
+   
+   public void test_ConstructorWithParams() throws Exception
+   {
+      Class data = Class.forName("tc.test.totalcross.lang.reflect.ConstructorData");
+      Constructor c = data.getConstructor(new Class[]{String.class,String.class,int.class,byte.class});
+      Object o = c.newInstance(new Object[]{"Júlia","R Tonelero",new Integer(210),new Byte((byte)1)});
+      
+      Field fname = data.getField("name");
+      Field faddr = data.getField("address");
+      Field fnumb = data.getField("number");
+      Method mage = data.getMethod("getAge",new Class[0]);
+      assertEquals("Júlia",(String)fname.get(o));
+      assertEquals("R Tonelero",(String)faddr.get(o));
+      assertEquals(210,fnumb.getInt(o));
+      assertEquals(1,((Byte)mage.invoke(o, null)).byteValue());
+   }
 
    public void testRun()
    {
       try
       {
-/*         test_equalsLjava_lang_Object();
+         test_equalsLjava_lang_Object();
          test_getDeclaringClass();
          if (false) test_getExceptionTypes();
          test_getModifiers();
          test_getName();
-         test_getParameterTypes();*/
-         //test_newInstance$Ljava_lang_Object();
+         test_getParameterTypes();
+         test_newInstance$Ljava_lang_Object();
          test_newInstance_IAE();
          test_newInstance_InvocationTargetException();
+         test_ConstructorWithParams();
          test_toString();
       }
       catch (Throwable e)
