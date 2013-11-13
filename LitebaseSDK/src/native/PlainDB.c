@@ -422,6 +422,12 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 
             xmove4(&position, buffer);
 
+            if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+            {
+               TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+               return false;
+            }
+
             if (isTempBlob && !*plainDB->name)
             {
                uint8* ptrStr = plainDB->dbo.fbuf + position;
@@ -496,6 +502,13 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 
                // Reads and sets the blob position in the .dbo.
 				   xmove4(&position, buffer);
+
+               if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+               {
+                  TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+                  return false;
+               }
+
 				   plainDB->setPos(dbo, position);
 
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
