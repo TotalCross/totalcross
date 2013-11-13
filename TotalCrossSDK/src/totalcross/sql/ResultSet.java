@@ -1,0 +1,87 @@
+package totalcross.sql;
+
+import totalcross.sys.*;
+import totalcross.util.*;
+import totalcross.util.Date;
+
+import java.util.*;
+
+public interface ResultSet
+{
+   public static final int FETCH_FORWARD = 1000;
+   public static final int FETCH_REVERSE = 1001;
+   public static final int FETCH_UNKNOWN = 1002;
+   public static final int TYPE_FORWARD_ONLY = 1003;
+   public static final int TYPE_SCROLL_INSENSITIVE = 1004;
+   public static final int TYPE_SCROLL_SENSITIVE = 1005;
+   public static final int CONCUR_READ_ONLY = 1007;
+   public static final int CONCUR_UPDATABLE = 1008;
+
+   public boolean next() throws SQLWarning;
+   public void close() throws SQLWarning;
+   public boolean wasNull() throws SQLWarning;
+   public String getString(int columnIndex) throws SQLWarning;
+   public boolean getBoolean(int columnIndex) throws SQLWarning;
+   public byte getByte(int columnIndex) throws SQLWarning;
+   public short getShort(int columnIndex) throws SQLWarning;
+   public int getInt(int columnIndex) throws SQLWarning;
+   public long getLong(int columnIndex) throws SQLWarning;
+   public double getFloat(int columnIndex) throws SQLWarning;
+   public double getDouble(int columnIndex) throws SQLWarning;
+   public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLWarning;
+   public byte[] getBytes(int columnIndex) throws SQLWarning;
+   public Date getDate(int columnIndex) throws SQLWarning;
+   public Time getTime(int columnIndex) throws SQLWarning;
+   public Timestamp getTimestamp(int columnIndex) throws SQLWarning;
+   public String getString(String columnName) throws SQLWarning;
+   public boolean getBoolean(String columnName) throws SQLWarning;
+   public byte getByte(String columnName) throws SQLWarning;
+   public short getShort(String columnName) throws SQLWarning;
+   public int getInt(String columnName) throws SQLWarning;
+   public long getLong(String columnName) throws SQLWarning;
+   public double getFloat(String columnName) throws SQLWarning;
+   public double getDouble(String columnName) throws SQLWarning;
+   public BigDecimal getBigDecimal(String columnName, int scale) throws SQLWarning;
+   public byte[] getBytes(String columnName) throws SQLWarning;
+   public Date getDate(String columnName) throws SQLWarning;
+   public Time getTime(String columnName) throws SQLWarning;
+   public Timestamp getTimestamp(String columnName) throws SQLWarning;
+   public SQLWarning getWarnings() throws SQLWarning;
+   public void clearWarnings() throws SQLWarning;
+   public String getCursorName() throws SQLWarning;
+   public ResultSetMetaData getMetaData() throws SQLWarning;
+   public Object getObject(int columnIndex) throws SQLWarning;
+   public Object getObject(String columnName) throws SQLWarning;
+   public int findColumn(String columnName) throws SQLWarning;
+   public BigDecimal getBigDecimal(int columnIndex) throws SQLWarning;
+   public BigDecimal getBigDecimal(String columnName) throws SQLWarning;
+   public boolean isBeforeFirst() throws SQLWarning;
+   public boolean isAfterLast() throws SQLWarning;
+   public boolean isFirst() throws SQLWarning;
+   public boolean isLast() throws SQLWarning;
+   public void beforeFirst() throws SQLWarning;
+   public void afterLast() throws SQLWarning;
+   public boolean first() throws SQLWarning;
+   public boolean last() throws SQLWarning;
+   public int getRow() throws SQLWarning;
+   public boolean absolute(int row) throws SQLWarning;
+   public boolean relative(int rows) throws SQLWarning;
+   public boolean previous() throws SQLWarning;
+   public void setFetchDirection(int direction) throws SQLWarning;
+   public int getFetchDirection() throws SQLWarning;
+   public void setFetchSize(int rows) throws SQLWarning;
+   public int getFetchSize() throws SQLWarning;
+   public int getType() throws SQLWarning;
+   public int getConcurrency() throws SQLWarning;
+   public Statement getStatement() throws SQLWarning;
+   public Object getObject(int i, Map map) throws SQLWarning;
+   public Blob getBlob(int i) throws SQLWarning;
+   public Object getObject(String colName, Map map) throws SQLWarning;
+   public Blob getBlob(String colName) throws SQLWarning;
+   public Date getDate(int columnIndex, Calendar cal) throws SQLWarning;
+   public Date getDate(String columnName, Calendar cal) throws SQLWarning;
+   public Time getTime(int columnIndex, Calendar cal) throws SQLWarning;
+   public Time getTime(String columnName, Calendar cal) throws SQLWarning;
+   public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLWarning;
+   public Timestamp getTimestamp(String columnName, Calendar cal) throws SQLWarning;
+}
