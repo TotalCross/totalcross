@@ -2215,7 +2215,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          type, 
          offset,
          crc32, // juliana@230_12
-         oldPos; 
+         oldPos,
+         k; // juliana@270_23
    bool changePos,
         addingNewRecord = recPos == -1,
         valueOk,
@@ -2469,6 +2470,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    xmemmove(buffer, columnNulls0, numberOfBytes); // After the columns, stores the bytes of the null values.
 
    // juliana@220_4: added a crc32 code for every record.
+   k = basbuf[3]; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
    basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
    
@@ -2505,7 +2507,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          }
    }
    xmove4(&basbuf[i], &crc32); 
-
+   basbuf[3] = k; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
+ 
    if (rowid > 0) // Now the record's attribute has to be updated.
    {
       int32 id = addingNewRecord? (rowid & ROW_ID_MASK) | ROW_ATTR_NEW : rowUpdated(rowid);

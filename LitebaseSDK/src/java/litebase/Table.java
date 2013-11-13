@@ -2564,9 +2564,11 @@ class Table
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
       byte[] byteArray;
+
+      j = buffer[3]; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
       buffer[3] = (plainDB.useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
       int crc32 = updateCRC32(buffer, bas.getPos(), 0, plainDB.useCrypto); 
-      
+
       if (version == Table.VERSION)
       {
          int[] intArray = oneInt;
@@ -2604,7 +2606,8 @@ class Table
             }
       }
       ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
-
+      buffer[3] = (byte)j; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
+      
       if (rowid > 0) // Now the record's attribute has to be updated.
       {
          bas.reset();
