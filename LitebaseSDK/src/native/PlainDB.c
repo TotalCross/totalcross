@@ -454,8 +454,14 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 		         xmoveptr(&plainDB, ptrStr);
             }
 
+            if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+            {
+               TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+               return false;
+            } 
+
             // juliana@253_8: now Litebase supports weak cryptography.
-            if (position > (dbo = &plainDB->dbo)->finalPos || position < 0)
+            else if (position > (dbo = &plainDB->dbo)->finalPos)
             {
                value->length = 0;
                return true; 
@@ -531,14 +537,18 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 
                // Reads and sets the blob position in the .dbo.
 				   xmove4(&position, buffer);
-				   
-				   // juliana@253_8: now Litebase supports weak cryptography.
-               if (position > dbo->finalPos || position < 0)
+
+               if (position > dbo->finalPos)
                {
                   value->length = 0;
                   return true; 
                }
-				   
+               else if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+               {
+                  TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+                  return false;
+               }
+
 				   plainDB->setPos(dbo, position);
 
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
