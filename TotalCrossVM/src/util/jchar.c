@@ -340,7 +340,7 @@ TC_API TCHARP JCharP2TCHARP(JCharP from, int32 len)
 
 TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf)
 {
-#ifdef WINCE
+#ifdef UNICODE
    tcsncpy(buf, from, len);
    buf[len] = 0;
    return buf;
@@ -351,7 +351,7 @@ TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf)
 
 TC_API JCharP TCHARP2JCharP(TCHARP from, JCharP to, int32 len)
 {
-#ifdef WINCE
+#ifdef UNICODE
    tcsncpy(to, from, len);
    to[len] = 0;
    return to;

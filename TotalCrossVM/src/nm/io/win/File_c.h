@@ -16,7 +16,7 @@
  #include <Projects.h>
 #endif
 
-#ifdef WINCE
+#ifdef UNICODE
    #define IS_DEBUG_CONSOLE(path) (JCharPIndexOfJCharP(path,TEXT("DebugConsole"),0,-1,12) >= 0)
 #else
    #define IS_DEBUG_CONSOLE(path) (strstr(path,"DebugConsole") != null)
@@ -278,7 +278,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
          do
          {
             #if defined (WIN32) && !defined (WINCE)
-            if (findData.cFileName[0] != '.' || (!strEq(findData.cFileName, ".") && !strEq(findData.cFileName, ".."))) // first check is just for speedup
+            if (findData.cFileName[0] != '.' || (tcscmp(findData.cFileName, TEXT(".")) && tcscmp(findData.cFileName, TEXT("..")))) // first check is just for speedup
             #endif
             {     
                *isEmpty = false;
