@@ -76,7 +76,11 @@ VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
    TCHAR szFuncName[128];
    FARPROC procAddress;
 
+#if defined WP8
+   procAddress = (NativeMethod)htGetPtr(&htNativeProcAddresses, hashCode(funcName));
+#else
    CharP2TCHARPBuf(funcName, szFuncName);
    procAddress = GetProcAddress(!module ? GetModuleHandle(TEXT("tcvm.dll")) : module, szFuncName);
+#endif
    return procAddress;
 }
