@@ -56,11 +56,11 @@ static Context initAll(CharP* args)
       *args += xstrlen(appPathTemp) + 1;
    }
 #endif
+   ok = ok && initDebug();
    ok = ok && initGlobals();
    ok = ok && initMem();
    if (ok) firstTS = getTimeStamp();
    ok = ok && (c=initContexts()) != null;
-   ok = ok && initDebug();
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
    initNativeProcAddresses();
