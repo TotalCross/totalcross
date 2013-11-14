@@ -22,7 +22,78 @@
 #define __gl2_h_
 #endif
 
-#if defined(ANDROID)
+#if defined WP8
+ #define GetSystemInfo(a) GetNativeSystemInfo(a)
+
+#define Sleep()
+#define SetErrorMode() 0
+#define GetFileSize() 1
+#define LocalFileTimeToFileTime() 1
+#define FileTimeToLocalFileTime() 1
+#define SetFileTime() 1
+#define SetLocalTime() 1
+#define GetFileTime() 1
+#define Beep() 0
+#define SetThreadPriority() 0
+#define TerminateThread() 0
+#define GetTickCount() 0
+#define ResumeThread() 0
+
+#define LoadLibrary(x) LoadPackagedLibrary(x, 0)
+#define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
+#define MoveFile(a, b) MoveFileEx(a, b, 0)
+#define SetFilePointer(a, b, c, d) SetFilePointerEx(a, b, NULL, d)
+typedef unsigned char boolean;
+#define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
+#define VirtualAlloc(a, b, c, d) malloc(a * b)
+#define GetModuleHandle(a) 0
+#define GetMessage(a, b, c, d) 0
+#define PostMessage(a, b, c, d)
+#define TranslateMessage(a)
+#define DispatchMessage(b)
+#define MessageBox(a, b, c, d)
+#define GetWindowLong(a, b) 0
+#define SetWindowLong(a, b, c)
+#define PeekMessage(a, b, c, d, e) 0
+#define GetDeviceCaps(a, b) 0
+#define DeleteDC(a)
+#define GetSystemMetrics(a) 0
+#define GetClassName(a, b, c)
+#define lstrlen(a) _tcslen(a)
+#define lstrcmpi(a, b) _tcsicmp(a, b)
+#define SetForegroundWindow(a)
+#define GetModuleFileName(a, b, c)
+#define EnumWindows(a, b)
+#define SetWindowPos(a, b, c, d, e, f, g) 0
+//#define GetLocaleInfo(a, b, c, d) 0
+#define ExitWindowsEx(a, b)
+#define RegisterHotKey(a, b, c, d)
+#define UnregisterHotKey(a, b)
+#define ExtEscape(a, b, c, d, e, f) 0
+#define ReleaseDC(a, b)
+#define SystemParametersInfo(a, b, c, d)
+#define GetClientRect(a, b)
+#define SelectPalette(a, b, c)
+#define RealizePalette(a)
+#define SelectObject(a, b) 0
+#define BitBlt(a, b, c, d, e, f, g, h, i)
+#define DeleteObject(a)
+#define DestroyWindow(a)
+#define UnregisterClass(a, b)
+#define SetProcessAffinityMask(a, b)
+#define SetWindowText(a, b)
+#define GlobalMemoryStatus(a)
+#define waveOutPause(a) 0
+#define waveOutRestart(a) 0
+#define waveOutReset(a) 0
+#define GetAsyncKeyState(a) 0
+#define ShowWindow(a, b)
+#define GetLogicalDriveStrings(a, b) 0
+#define GetFileAttributes(a) 0
+#define CreateCompatibleDC(a) 0
+#endif
+
+#ifdef ANDROID
 #include <jni.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -71,8 +142,10 @@
  #if _WIN32_WCE >= 300
   #include <notify.h>
  #endif
+ #if !defined WP8
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
+ #endif
 #endif
 
 #include <stdarg.h>
