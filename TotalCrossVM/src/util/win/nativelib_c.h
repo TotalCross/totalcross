@@ -37,7 +37,7 @@ VoidP privateLoadLibrary(CharP libName)
       library = tryAt("../","",libName,".dll");
    if (library == null)
       library = tryAt(vmPath,"/",libName,".dll");
-#if defined(WIN32) && !defined(WINCE)
+#if defined(WIN32) && !(defined(WINCE) || defined(WP8))
    if (library == null && strEq(libName,"litebase"))
    {
       TCHAR litebasePath[MAX_PATHNAME];
