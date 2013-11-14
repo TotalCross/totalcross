@@ -470,6 +470,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          IF_HEAP_ERROR(idxHeap)
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+            heapDestroy(idxHeap);
+            table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
             goto error;
          }
          
@@ -493,6 +495,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
+               heapDestroy(idxHeap);
+               table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
@@ -511,6 +515,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
+               heapDestroy(idxHeap);
+               table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
@@ -528,7 +534,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
          if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
           || (!exist && flags && (!tableReIndex(context, table, i, false, null) || !setModified(context, table))))
+         {
+            heapDestroy(idxHeap);
+            table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
             goto error;
+         }
       }
    }
 
@@ -622,6 +632,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          IF_HEAP_ERROR(idxHeap)
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+            heapDestroy(idxHeap);
+            table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
             goto error;
          }
          
@@ -657,6 +669,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
+               heapDestroy(idxHeap);
+               table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
@@ -675,6 +689,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
+               heapDestroy(idxHeap);
+               table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
@@ -691,7 +707,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, hasIdr, 
                                                                                                                                   exist, idxHeap) 
           || (!exist && flags && (!tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1]) || !setModified(context, table))))
+         {
+            heapDestroy(idxHeap);
+            table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
             goto error;
+         }
       }
    }
 
@@ -706,7 +726,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 error:
    if (plainDB->headerSize != DEFAULT_HEADER)
       xfree(metadata);
-   heapDestroy(idxHeap);
    return false;
 }
 
