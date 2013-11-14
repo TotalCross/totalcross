@@ -771,10 +771,10 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
    GetVersionEx(&osvi);
 
-   *tcSettings.romVersionPtr   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
+   *(tcSettings.romVersionPtr)   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #ifdef WINCE
    romSerialNumber[0] = 0;
-   if (*tcSettings.romVersionPtr >= 400)
+   if (*(tcSettings.romVersionPtr) >= 400)
    {
       GetSerialNumberPocketPC2002(romSerialNumber);
       if (romSerialNumber[0] == 0)
@@ -787,17 +787,17 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    {
       isMotoQ = tcscmp(wcbuf,TEXT("MotoQ")) == 0;
       TCHARP2CharPBuf(wcbuf, deviceId);
-      *tcSettings.virtualKeyboardPtr = !hasKeyboard(); // guich@584_3
+      *(tcSettings.virtualKeyboardPtr) = !hasKeyboard(); // guich@584_3
    }
    else
-      *tcSettings.virtualKeyboardPtr = true;
+      *(tcSettings.virtualKeyboardPtr) = true;
 
-   if (*tcSettings.romVersionPtr < 300)
+   if (*(tcSettings.romVersionPtr) < 300)
       platform = "WindowsCE";
    else
    {
       #ifdef HAS_SIP
-      *tcSettings.keyboardFocusTraversablePtr = SipStatus() == SIP_STATUS_UNAVAILABLE; // guich@570_39
+      *(tcSettings.keyboardFocusTraversablePtr) = SipStatus() == SIP_STATUS_UNAVAILABLE; // guich@570_39
       #endif
       if (!isWindowsMobile) //flsobral@tc110_37: Our global was already initialized, so let's use it.
          platform = "PocketPC";
@@ -824,7 +824,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
       debug("Unable to retrieve device registration information, please try again or contact support if the problem persists. (%X)", hres);
    else if (romSerialNumber[0] == 0)
    {
-      if (*tcSettings.romVersionPtr < 501)
+      if (*(tcSettings.romVersionPtr) < 501)
          GetMacAddress(romSerialNumber);
       if (romSerialNumber[0] == 0)
       {
@@ -845,18 +845,18 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
    {
       HDC hdc = GetDC(mainHWnd);
-      *tcSettings.deviceFontHeightPtr = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
+      *(tcSettings.deviceFontHeightPtr) = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
       DeleteDC(hdc);
    }
-   *tcSettings.decimalSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
-   *tcSettings.thousandsSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
-   if (*tcSettings.decimalSeparatorPtr == *tcSettings.thousandsSeparatorPtr) // guich@421_12: make sure they differ
-      *tcSettings.decimalSeparatorPtr = *tcSettings.thousandsSeparatorPtr=='.' ? ',' : '.';
-   *tcSettings.dateSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,wcbuf,2) ? (char)wcbuf[0] : '/';
-   *tcSettings.timeSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,wcbuf,2) ? (char)wcbuf[0] : ':';
-   *tcSettings.weekStartPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
-   *tcSettings.is24HourPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
-   *tcSettings.dateFormatPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
+   *(tcSettings.decimalSeparatorPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
+   *(tcSettings.thousandsSeparatorPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
+   if (*(tcSettings.decimalSeparatorPtr) == *(tcSettings.thousandsSeparatorPtr)) // guich@421_12: make sure they differ
+      *(tcSettings.decimalSeparatorPtr) = *(tcSettings.thousandsSeparatorPtr)=='.' ? ',' : '.';
+   *(tcSettings.dateSeparatorPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,wcbuf,2) ? (char)wcbuf[0] : '/';
+   *(tcSettings.timeSeparatorPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,wcbuf,2) ? (char)wcbuf[0] : ':';
+   *(tcSettings.weekStartPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
+   *(tcSettings.is24HourPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
+   *(tcSettings.dateFormatPtr) = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
 
    // guich@340_33: timezone and daylight savings
    updateDaylightSavings(currentContext);
