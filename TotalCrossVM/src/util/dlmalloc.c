@@ -490,7 +490,13 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 
 #define USE_DL_PREFIX
 #if defined(WIN32) || defined(WINCE)
-#define MSPACES 1
+#if defined WP8
+ #define MSPACES 0
+ #define GetTickCount() 0
+ #define GetSystemInfo(a) GetNativeSystemInfo(a)
+#else
+ #define MSPACES 1
+#endif
 #define FOOTERS 1
 #define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
@@ -519,7 +525,12 @@ void debug(char *s, ...);
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#define HAVE_MMAP 1
+#ifdef WP8
+ // WP8 doesn't have VirtualAlloc or VirtualFree
+ #define HAVE_MMAP 0
+#else
+ #define HAVE_MMAP 1
+#endif
 #define HAVE_MORECORE 0
 #define LACKS_UNISTD_H
 #define LACKS_SYS_PARAM_H
