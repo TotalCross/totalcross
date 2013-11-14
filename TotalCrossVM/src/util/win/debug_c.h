@@ -38,7 +38,11 @@ static void privateDestroyDebug()
 
 static bool privateDebug(char* str)
 {
-#if defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE)
+#if 1
+	OutputDebugStringA(str);
+	OutputDebugStringA("\n");
+	return 1;
+#elif defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE)
    if (!consoleAllocated)
    {
       consoleAllocated = true;
