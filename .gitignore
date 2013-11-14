@@ -3,6 +3,11 @@ out.txt
 *.map
 *.user
 *.class
+*.ipch
+*.sdf
+*.suo
+*.ncb
+memmap_*.txt
 DebugConsole.txt
 TotalCrossSDK/etc/tools/android/AndroidManifest_singleapk.xml
 TotalCrossSDK/etc/tools/android/resources_singleapk.arsc
