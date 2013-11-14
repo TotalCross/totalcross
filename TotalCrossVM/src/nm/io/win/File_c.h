@@ -343,8 +343,10 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
+   LARGE_INTEGER off;
+   off.LowPart = position;
 
-   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
+   return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 }
 
@@ -548,13 +550,15 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
 	DWORD posHigh = 0;
 	DWORD fileSize;
+	LARGE_INTEGER off;
+	off.LowPart = newSize;
 
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 		return GetLastError();
 	if (fileSize == newSize)
 		return NO_ERROR;
 
-   if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+   if (SetFilePointer(fref->handle, off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
    if (SetEndOfFile(fref->handle) == 0)
    {

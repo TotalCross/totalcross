@@ -58,7 +58,9 @@ bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 
 bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
-   return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
+	LARGE_INTEGER off;
+	off.LowPart = offset;
+   return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
 }
 
 bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
@@ -68,7 +70,9 @@ bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 
 bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
-   return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
+	LARGE_INTEGER off;
+	off.LowPart = offset;
+   return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
 }
 
 bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
@@ -78,7 +82,9 @@ bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 
 bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
-   return (SetFilePointer(fileRef, oldSize + growSize, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
+	LARGE_INTEGER off;
+	off.LowPart = oldSize + growSize;
+   return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
 }
 
 bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType proc, VoidP userVars)
@@ -106,7 +112,7 @@ bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType pro
       if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && recursive)
       {
 #if defined (WIN32) && !defined (WINCE)
-         if (xstrcmp(findFileData.cFileName, ".") && xstrcmp(findFileData.cFileName, ".."))
+         if (tcscmp(findFileData.cFileName, TEXT(".")) && tcscmp(findFileData.cFileName, TEXT("..")))
          {
 #endif
             tcscpy(searchPath+pathLen+1, findFileData.cFileName);
