@@ -12,7 +12,9 @@
 
 
 #include "../../nm/ui/media_Sound.h"
-#include <Tapi.h>
+#if !defined WP8
+ #include <Tapi.h>
+#endif
 
 #if defined (WINCE)
  #include "../nm/io/device/RadioDevice.h"
@@ -769,7 +771,15 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+#ifndef WP8
    GetVersionEx(&osvi);
+#else
+   osvi.dwMajorVersion = 6;
+   osvi.dwMinorVersion = 2;
+   osvi.dwBuildNumber = 0;
+   osvi.dwPlatformId = 0;
+   osvi.szCSDVersion[0] = '\0';
+#endif
 
    *(tcSettings.romVersionPtr)   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #ifdef WINCE
@@ -817,7 +827,12 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #else
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
+# ifndef WP8
    platform = "Win32";
+# else
+   platform = "WindowsPhone8";
+# endif
+#ifndef WP8
    //use the mac address as the serial number
    hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
    if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
@@ -836,6 +851,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
       }
    }
+#endif
 
    len = sizeof(userName);
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
