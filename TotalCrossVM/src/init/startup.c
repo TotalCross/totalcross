@@ -267,7 +267,7 @@ TC_API int32 startProgram(Context currentContext)
       if (!loadLibraries(currentContext, vmPath, true))
          return exitProgram(115);
          
-#if defined (WIN32) && !defined (WINCE) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
+#if defined (WIN32) && (!defined (WINCE) || !defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
       if (canLoadLitebase())
       {
          TCHAR litebasePath[MAX_PATHNAME];
