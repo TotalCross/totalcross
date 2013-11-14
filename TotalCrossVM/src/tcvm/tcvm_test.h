@@ -26,7 +26,7 @@
 
 #include "tcz.h"
 
-Class testTypesClass;
+TCClass testTypesClass;
 
 TESTCASE(VM_LoadTestTCZ) // #6
 {
@@ -248,7 +248,7 @@ static Object objTestValue;
 static Object newTestTypesInstance(Context currentContext)
 {
    CharP tt = "TestTypes"; // for class definitions, see classinfo.test, function createTestTypesClass
-   Class c;
+   TCClass c;
    Object o;
 
    o = createObjectWithoutCallingDefaultConstructor(currentContext, tt); // do NOT call the default constructor, it is buggy
@@ -905,7 +905,7 @@ TESTCASE(VM_MOV_static_reg64)
 {
    Method m;
    Object ext;
-   Class c;
+   TCClass c;
    Int64Array i64;
 
    // double
@@ -2589,7 +2589,7 @@ static int32 getExtMethodIndex(ConstantPool cp, uint16 nameidx) // this
 }
 
 #if 0
-static int32 getMethodIndex(Class c, uint16 idx)
+static int32 getMethodIndex(TCClass c, uint16 idx)
 {
    int32 n = ARRAYLENV(c->methods);
    while (--n > 0)
@@ -2752,7 +2752,7 @@ TESTCASE(VM_NEWARRAY_multi)
 TESTCASE(VM_NEWOBJ)
 {
    Method m = initMethod(currentContext,NEWOBJ);
-   Class c;
+   TCClass c;
    m->code[0].reg_sym.reg = 1;
    m->code[0].reg_sym.sym = getIndexInCP(testTypesClass->cp, "java.lang.String");
    currentContext->regO[1] = 0;
