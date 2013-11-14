@@ -60,12 +60,17 @@ TCHAR exeName[MAX_PATHNAME];
 #endif
 
 // graphicsprimitives.c
-uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
-int32* controlEnableUpdateScreenPtr;
-TScreenSurface screen;
-TCClass uiColorsClass;
-int32* shiftScreenColorP;
-int32* vistaFadeStepP;
+// on 8 bpp screens BEGIN
+uint8* lookupR = NULL;
+uint8* lookupG = NULL;
+uint8* lookupB = NULL;
+uint8* lookupGray = NULL;
+// on 8 bpp screens END
+int32* controlEnableUpdateScreenPtr = NULL;
+TScreenSurface screen = { 0 };
+TCClass uiColorsClass = { 0 };
+int32* shiftScreenColorP = NULL;
+int32* vistaFadeStepP = NULL;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -74,7 +79,7 @@ uint32 maxAvail = INITIAL_MEM; // in bytes
 bool warnOnExit;
 bool leakCheckingEnabled;
 bool showMemoryMessagesAtExit;
-VoidPs* createdHeaps;
+VoidPs* createdHeaps = NULL;
 int32 totalAllocated, maxAllocated, allocCount, freeCount;
 DECLARE_MUTEX(createdHeaps);
 
@@ -83,7 +88,7 @@ int32 maxFontSize, minFontSize, normalFontSize;
 FontFile defaultFont;
 int32 *tabSizeField;
 Hashtable htUF;
-VoidPs* openFonts;
+VoidPs* openFonts = NULL;
 Heap fontsHeap;
 
 // win/gfx_Graphics_c.h
@@ -94,7 +99,7 @@ bool bSipUp = false; //flsobral@tc114_50: fixed the SIP keyboard button not bein
 
 // Settings.c
 TCClass settingsClass;
-TTCSettings tcSettings;
+TTCSettings tcSettings = { 0 };
 #if defined (WINCE)
 TVirtualKeyboardSettings vkSettings;
 #endif
@@ -128,7 +133,9 @@ Stack objStack2;
 #endif
 
 // context.c
-Context mainContext,gcContext,lifeContext;
+Context mainContext = NULL;
+Context gcContext = NULL;
+Context lifeContext = NULL;
 Context contexts[MAX_CONTEXTS];
 
 // tcvm.c
@@ -166,13 +173,13 @@ jmethodID jalert;
 #endif
 
 // nativelib.c
-VoidPs* openNativeLibs;
+VoidPs* openNativeLibs = NULL;
 
 //native proc addresses for iOS
 Hashtable htNativeProcAddresses;
 
 // tcz.c
-VoidPs* openTCZs;
+VoidPs* openTCZs = NULL;
 #ifdef ANDROID
 jmethodID jreadTCZ, jfindTCZ;
 #endif
@@ -184,7 +191,7 @@ bool eventsInitialized;
 int32 nextTimerTick;
 bool isDragging;
 Method _onTimerTick, _postEvent;
-Int32Array interceptedSpecialKeys;
+Int32Array interceptedSpecialKeys = NULL;
 
 // Vm_c.h
 int32 oldAutoOffValue;
