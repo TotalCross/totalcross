@@ -89,6 +89,7 @@ public class ImageControl extends Control
    {
       this.img = img;
       c.x = c.y = lastX = lastY = 0;
+      tempHwScale=NOTEMP;
       // test if it is really loaded.
       if (img != null && getImageWidth() > 0)
       {
