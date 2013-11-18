@@ -250,6 +250,9 @@ public class Edit extends Control
     * @since TotalCross 1.6
     */
    public boolean virtualKeyboard = Settings.virtualKeyboard;
+   
+   /** Cursor thickness */
+   public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
 
    /** Construct an Edit with FILL as preferred width. Note that you cannot use RIGHT or CENTER at the x coordinate if you use this constructor. */
    public Edit()
@@ -853,7 +856,7 @@ public class Edit extends Control
             {                  
                g.clearClip();
                g.foreColor = Color.interpolate(backColor,foreColor);
-               g.drawRect(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
+               g.drawRect(cursorX - 1, uiAndroid?y+1:y, cursorThickness, fmH);
             }
          }
          cursorShowing = !cursorShowing;
