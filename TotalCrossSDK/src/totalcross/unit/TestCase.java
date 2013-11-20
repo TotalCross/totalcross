@@ -71,6 +71,11 @@ public abstract class TestCase
       TestSuite.updateMem();
    }
 
+   protected static void fail(Throwable e)
+   {
+      fail(e.getClass().getName()+" - "+e.getMessage());
+   }
+      
    protected static void fail(String msg)
    {
       if (learning)

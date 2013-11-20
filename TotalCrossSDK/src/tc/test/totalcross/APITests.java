@@ -21,6 +21,27 @@ public class APITests extends TestSuite
    public APITests()
    {
       super("TotalCross API Test Suite");
+      addTestCase( tc.test.totalcross.sql.sqlite.BackupTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.ConnectionTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.DBMetaDataTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.ExtendedCommandTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.ExtensionTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.FetchSizeTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.InsertQueryTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.JDBCTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.OSInfoTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.PrepStmtTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.QueryTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.ReadUncommittedTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.RSMetaDataTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.SQLiteDataSourceTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.SQLiteConnectionPoolDataSourceTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.SQLiteJDBCLoaderTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.StatementTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.TransactionTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.UDFTest.class );
+
+      if (false) {
       addTestCase( tc.test.totalcross.util.VectorTest.class );
       addTestCase( tc.test.totalcross.util.IntVectorTest.class );
       addTestCase( tc.test.totalcross.util.HashtableTest.class );
@@ -38,6 +59,6 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.sys.TimeTest.class );
       addTestCase( tc.test.totalcross.sys.ConvertTest.class );
       addTestCase( tc.test.totalcross.sys.VmTest.class );
-      addTestCase( tc.test.totalcross.io.PDBFileTest.class );
+      addTestCase( tc.test.totalcross.io.PDBFileTest.class );}
    }
 }
