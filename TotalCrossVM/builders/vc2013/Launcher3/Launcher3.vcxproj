@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCBase.tcz" />
+    <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCFont.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\src\tests\java\install\win32\Test.tcz" />
   </ItemGroup>
   <ItemGroup>

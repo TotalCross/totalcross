@@ -202,6 +202,7 @@
     <ClInclude Include="..\..\..\src\nm\io\File_test.h" />
     <ClInclude Include="..\..\..\src\nm\io\PDBFile.h" />
     <ClInclude Include="..\..\..\src\nm\io\PDBFile_test.h" />
+    <ClInclude Include="..\..\..\src\nm\io\win\File_c.h" />
     <ClInclude Include="..\..\..\src\nm\lang\Class_test.h" />
     <ClInclude Include="..\..\..\src\nm\lang\Object_test.h" />
     <ClInclude Include="..\..\..\src\nm\lang\StringBuffer_test.h" />
@@ -263,6 +264,7 @@
     <ClInclude Include="..\..\..\src\nm\ui\win\media_MediaClip_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\media_Sound_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\Window_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\MainView.h" />
     <ClInclude Include="..\..\..\src\nm\util\zip_ZLib_test.h" />
     <ClInclude Include="..\..\..\src\nm\xml\xml_XmlTokenizer_test.h" />
@@ -277,6 +279,7 @@
     <ClInclude Include="..\..\..\src\tcvm\tcthread.h" />
     <ClInclude Include="..\..\..\src\tcvm\tcvm.h" />
     <ClInclude Include="..\..\..\src\tcvm\tcvm_test.h" />
+    <ClInclude Include="..\..\..\src\tcvm\win\tcthread_c.h" />
     <ClInclude Include="..\..\..\src\tests\tc_testsuite.h" />
     <ClInclude Include="..\..\..\src\util\datastructures.h" />
     <ClInclude Include="..\..\..\src\util\debug.h" />
@@ -426,6 +429,7 @@
     <ClCompile Include="..\..\..\src\nm\ui\media_MediaClip.c" />
     <ClCompile Include="..\..\..\src\nm\ui\media_Sound.c" />
     <ClCompile Include="..\..\..\src\nm\ui\Window.c" />
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\cppwrapper.cpp">
     <ClCompile Include="..\..\..\src\nm\ui\wp8\MainView.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
