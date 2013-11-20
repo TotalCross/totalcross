@@ -1,5 +1,8 @@
 ﻿// WindowsPhoneRuntimeComponent1.cpp
 #include "pch.h"
+
+#define HAS_TCHAR
+
 #include "WindowsPhoneRuntimeComponent1.h"
 #include "tcvm.h"
 
