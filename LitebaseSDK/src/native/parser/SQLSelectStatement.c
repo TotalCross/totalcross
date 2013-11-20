@@ -636,8 +636,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	Table* tempTable3 = null; 
    CharP countAlias = null;
    int8 columnTypes[MAXIMUMS],
-        aggFunctionsCodes[MAXIMUMS],
-        colIndexesTable[MAXIMUMS];        
+        aggFunctionsCodes[MAXIMUMS];        
    uint8 nullsCurRecord[NUMBEROFBYTES(MAXIMUMS + 1)];     
    int16 columnIndexes[MAXIMUMS];	   
 	int32 columnHashes[MAXIMUMS], 
@@ -662,6 +661,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	SQLValue** record1;
 	SQLValue** record2;
    ResultSet* listRsTemp[MAXIMUMS]; //rnovais@200_4
+   Hashtable colHashesTable; // juliana@270_24: corrected a possible application crash or exception when using order by with join.
    Heap heap = null, 
 		  heap_1 = null, 
 		  heap_2 = null, 
@@ -703,8 +703,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       goto error;
    }
 
-	i = -1;		
-	xmemset(colIndexesTable, -1, MAXIMUMS); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+	i = -1;	
+	colHashesTable = TC_htNew(selectFieldsCount, heap);
 	
    while (++i < selectFieldsCount)
    {
@@ -730,7 +730,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             columnHashes[size] = field->aliasHashCode;
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
-            colIndexesTable[param->tableColIndex] = 1; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+
+            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            TC_htPut32(&colHashesTable, param->aliasHashCode, 1);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
          else // Uses the parameter hash and data type.
          {
@@ -746,7 +748,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          columnHashes[size] = field->tableColHashCode;
          columnIndexes[size] = field->tableColIndex;
          columnIndexesTables[size++] = (int32)field->table;
-         colIndexesTable[field->tableColIndex] = 0; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         
+         // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+         TC_htPut32(&colHashesTable, field->aliasHashCode, 0);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
       }
    }
 
@@ -764,8 +768,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
-         if (!colIndexesTable[(field = fieldList[i])->tableColIndex]) 
+         // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+         if (!TC_htGet32Inv(&colHashesTable, (field = fieldList[i])->aliasHashCode))
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
@@ -991,8 +995,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    count = tempTable1->columnCount;
 
    // When creating the new temporary table, removes the extra fields that were created to perform the sorting.
+   // juliana@270_24: corrected a possible application crash or exception when using order by with join.
    if (sortListClause && count != selectFieldsCount)
-      size -= (count - selectFieldsCount);
+      size = selectFieldsCount;
 
    // Also updates the types and hashcodes to reflect the types and aliases of the
    // final temporary table, since they may still reflect the aggregated functions paramList types and hashcodes.
