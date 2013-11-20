@@ -132,5 +132,6 @@ public class SQLite4JPreparedStatement extends SQLite4JStatement implements Prep
 
    public void setNull(int paramIndex, int sqlType, String typeName) throws SQLException
    {
-   }
+      ps.setNull(paramIndex, sqlType, typeName);
+   }   
 }
