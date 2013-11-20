@@ -15,6 +15,8 @@
 
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
+	//XXX
+#if !defined WP8
    int32 id;
    ThreadHandle h = null;
    ThreadArgs targs = ThreadArgsFromObject(this_);
@@ -30,6 +32,9 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
    }
    else throwException(context, RuntimeException, "Can't create thread");
    return h;
+#endif
+   throwException(context, RuntimeException, "Can't create thread");
+   return null;
 }
 
 static ThreadHandle privateThreadGetCurrent()

@@ -48,19 +48,22 @@ typedef HANDLE (__stdcall *GetServiceHandleProc)(LPWSTR szPrefix, LPWSTR szDllNa
 
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
-   PROCESS_INFORMATION processInfo;
    VoidP startInfo = null;
    int32 ret=-1;
    BOOL ok;
    TCHAR pathargs[1024];
    DWORD err;
+
+#if !defined WP8
+   PROCESS_INFORMATION processInfo;
 #ifndef WINCE
    STARTUPINFO si;
    xmemzero(&si, sizeof(si));
    startInfo = &si;
 #endif
+#endif
 
-   if (lstrcmp(szCommand,L"unregister service")==0)
+   if (xstrcmp(szCommand,L"unregister service")==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
       DeregisterServiceProc deregisterService = (DeregisterServiceProc)GetProcAddress(dll, TEXT("DeregisterService"));
@@ -72,7 +75,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       FreeLibrary(dll);
       return ret;
    }
-   if (lstrcmp(szCommand,L"register service")==0)
+   if (xstrcmp(szCommand,L"register service")==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll"));
       RegisterServiceProc registerService = (RegisterServiceProc)GetProcAddress(dll, TEXT("RegisterService"));
@@ -86,6 +89,8 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       FreeLibrary(dll);
       return srv != 0;
    }
+   //XXX all below should be reworked
+#if !defined WP8
    ok = CreateProcess(szCommand, szArgs, null, null, false, 0, null, null, startInfo, &processInfo); // guich@tc100b5_16: iexplore requires this mode.
    err = GetLastError();
 
@@ -188,6 +193,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       CloseHandle(processInfo.hProcess);
    }
    else ret = err;
+#endif
    return ret;
 }
 
@@ -293,16 +299,24 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
  #define ClipboardFree(clipData)    LocalFree(clipData)
  #define ClipboardLock(clipData)    (TCHARP) clipData
  #define ClipboardUnlock(clipData)  clipData = clipData
-#else
+#elif !defined WP8
  #define CF_TCHARTEXT               CF_TEXT
  #define ClipboardAlloc(len)        GlobalAlloc(GPTR, sizeof(TCHAR)*(len + 1))
  #define ClipboardFree(clipData)    GlobalFree(clipData)
  #define ClipboardLock(clipData)    GlobalLock(clipData)
  #define ClipboardUnlock(clipData)  GlobalUnlock(clipData)
+#else
+#define CF_TCHARTEXT               CF_TEXT
+#define ClipboardAlloc(len)        GlobalAlloc(GPTR, sizeof(TCHAR)*(len + 1))
+#define ClipboardFree(clipData)    GlobalFree(clipData)
+#define ClipboardLock(clipData)    GlobalLock(clipData)
+#define ClipboardUnlock(clipData)  GlobalUnlock(clipData)
 #endif
 
 static void vmClipboardCopy(CharP string, int32 stringLen)
 {
+	//XXX
+#if !defined WP8
    HANDLE hClipData;
    TCHARP lpClipData;
 
@@ -336,10 +350,13 @@ static void vmClipboardCopy(CharP string, int32 stringLen)
    if (!SetClipboardData(CF_TCHARTEXT, lpClipData))
       ClipboardFree(hClipData);
    CloseClipboard();
+#endif
 }
 
 static Object vmClipboardPaste(Context currentContext)
 {
+	//XXX
+#if !defined WP8
    HANDLE hClipData;
    TCHARP lpClipData;
    Object o;
@@ -359,6 +376,9 @@ static Object vmClipboardPaste(Context currentContext)
       CloseClipboard();
    }
    return o;
+#else
+	return null;
+#endif
 }
 
 static bool vmIsKeyDown(int32 key)
@@ -385,7 +405,7 @@ static int32 vmGetRemainingBattery()
       }
    }
    return (ret > 100 ? 100 : ret);
-#else // guich@tc115_31
+#elif !defined WP8 // guich@tc115_31
    SYSTEM_POWER_STATUS p;
    int32 ret=100;
 
@@ -395,6 +415,8 @@ static int32 vmGetRemainingBattery()
          ret = p.BatteryLifePercent;
    }
    return (ret > 100 ? 100 : ret);
+#else
+	return 0;
 #endif
 }
 
@@ -427,6 +449,8 @@ typedef struct _VIDEO_POWER_MANAGEMENT
 
 static bool vmTurnScreenOn(bool on)
 {
+	//XXX
+#if !defined WP8
 	HDC gdc;
 	int iESC;
 	bool ret;
@@ -450,6 +474,7 @@ static bool vmTurnScreenOn(bool on)
 		ReleaseDC(NULL, gdc);
 	}	
 	return ret;
+#endif
 }
 
 ////////////////////// guich@tc122_52: added VIBRATION

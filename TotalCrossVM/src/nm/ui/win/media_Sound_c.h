@@ -94,7 +94,8 @@ static void soundSetEnabled(bool enableSound)
       waveOutSetVolume((HWAVEOUT) WAVE_MAPPER, 0xFFFF);
    else
       waveOutSetVolume((HWAVEOUT) WAVE_MAPPER, 0x0000);
-#else
+   //XXX how todo this in WP8?
+#elif !defined WP8
    int32 numDevices, NumControls, DeviceID;
    int32 ControlID;
    HMIXER hMixer = null;

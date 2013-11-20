@@ -4,8 +4,12 @@
 
 void fillNativeProcAddressesTC()
 {
+	//XXX this should be resolved later
+#ifndef WP8
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showRoute_sssb"), &tmGM_showRoute_sssb);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
+#endif
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_destroy"), &tucL_destroy);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZL_deflate_ssiib"), &tuzZL_deflate_ssiib);
@@ -427,5 +431,4 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_gcd_IIi"), &tuBI_gcd_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_i"), &tuBI_intLength_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_Ii"), &tuBI_intLength_Ii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
 }
