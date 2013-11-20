@@ -636,7 +636,9 @@ class SQLSelectStatement extends SQLStatement
       SQLResultSetField field, 
                         param;
       ResultSet rsTemp = null;
-      IntHashtable colIndexesTable = new IntHashtable(selectFieldsCount); // The hash table of the columns.
+      
+      // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+      IntHashtable colHashesTable = new IntHashtable(selectFieldsCount); // The hash table of the columns.
 
       // Maps the aggregated function parameter column indexes to the aggregate function code.
       IntHashtable aggFunctionsTable = new IntHashtable(selectFieldsCount);
@@ -675,7 +677,9 @@ class SQLSelectStatement extends SQLStatement
                columnHashes[size] = field.aliasHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
-               colIndexesTable.put(param.tableColIndex, 1); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+               
+               // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+               colHashesTable.put(param.aliasHashCode, 1); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
             }
          }
          else
@@ -685,7 +689,9 @@ class SQLSelectStatement extends SQLStatement
             columnHashes[size] = field.tableColHashCode;
             columnIndexes[size] = (short)field.tableColIndex;
             columnIndexesTables[size++] = field.table;
-            colIndexesTable.put(field.tableColIndex, 0); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+            
+            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            colHashesTable.put(field.aliasHashCode, 0); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
       }
 
@@ -702,7 +708,8 @@ class SQLSelectStatement extends SQLStatement
          while (++i < count)
          {
             // juliana@253_1: corrected a sort causing AOOIBE if the sort field is in a function.
-            if (colIndexesTable.get((field = fieldList[i]).tableColIndex, -1) == 0)
+            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            if (colHashesTable.get((field = fieldList[i]).aliasHashCode, -1) == 0)
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.
@@ -858,8 +865,9 @@ class SQLSelectStatement extends SQLStatement
          return tempTable;
 
       // When creating the new temporary table, removes the extra fields that were created to perform the sort.
+      // juliana@270_24: corrected a possible application crash or exception when using order by with join.
       if (sortListClause != null && (count = tempTable.columnCount) != selectFieldsCount)
-         size = count - selectFieldsCount;
+         size = selectFieldsCount;
 
       // Also updates the types and hashcodes to reflect the types and aliases of the final temporary table, since they may still reflect the 
       // aggregated functions parameter list types and hashcodes.

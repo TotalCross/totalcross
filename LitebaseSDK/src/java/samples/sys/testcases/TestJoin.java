@@ -39,6 +39,7 @@ public class TestJoin extends TestCase
       testPrimaryKeyAndOrdering(); // Tests join with primary key, clause and table orders.
       testComparisonInTheSameTable(); // Tests comparison of columns of the same table.
       testOrWithFalseConstantComparison(); // Tests join with or and false comparisons with constants.
+      testOrderBy(); // Tests join with order by.
       driver.closeAll();
    }
 
@@ -1330,6 +1331,39 @@ public class TestJoin extends TestCase
 
       assertEquals(2, (resultSet = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where ('1' = '0' or ped.cdcliente = 1) and " 
                                                         + "cli.cdcliente = ped.cdcliente")).getRowCount());
+      resultSet.close();
+   }
+   
+   void testOrderBy()
+   {
+      LitebaseConnection driverAux = driver;
+      
+      // Drops existing tables.
+      if (driverAux.exists("PERGUNTA"))
+         driverAux.executeUpdate("drop table PERGUNTA");
+      if (driverAux.exists("ASSGRUPOPERGUNTA"))
+         driverAux.executeUpdate("drop table ASSGRUPOPERGUNTA");
+      if (driverAux.exists("ASSGRPPERGTITULOCHK"))
+         driverAux.executeUpdate("drop table ASSGRPPERGTITULOCHK");
+      
+      // Creates the tables.
+      driverAux.execute("CREATE TABLE PERGUNTA (IDPERGUNTA LONG PRIMARY KEY, DESCRICAO VARCHAR(115) NOT NULL, SITUACAO INT NOT NULL, " 
+                                             + "FOTO INT NOT NULL)");
+      driverAux.execute("CREATE TABLE ASSGRUPOPERGUNTA(IDASSGRUPOPERGUNTA LONG PRIMARY KEY, IDPERGUNTA LONG NOT NULL, " + 
+                                                      "IDGRUPOPERGUNTA LONG NOT NULL, ORDEM INT NOT NULL, SITUACAO INT NOT NULL)");
+      driverAux.execute("CREATE TABLE ASSGRPPERGTITULOCHK(IDASSGRPPERGTITULOCHK LONG PRIMARY KEY, IDFORMULARIO LONG NOT NULL, " 
+                                                       + "IDASSGRUPOPERGUNTA LONG NOT NULL, SITUACAO INT NOT NULL)");
+      
+      // Populates the tables.
+      driverAux.executeUpdate("insert into pergunta values (57, 'Desligar todas as fontes de tensao', 1, 0)");
+      driverAux.executeUpdate("insert into ASSGRUPOPERGUNTA values (262, 57, 14, 1, 1)");
+      driverAux.executeUpdate("insert into ASSGRPPERGTITULOCHK values (441, 4, 262, 1)");
+      
+      // The join.
+      ResultSet resultSet = driverAux.executeQuery("select ASS.IDASSGRUPOPERGUNTA, P.IDPERGUNTA, P.DESCRICAO, P.FOTO from PERGUNTA P, " 
++ "ASSGRUPOPERGUNTA ASS, ASSGRPPERGTITULOCHK ASS1 where ASS.IDGRUPOPERGUNTA=14 AND ASS1.IDFORMULARIO = 4 AND ASS.SITUACAO = 1 AND ASS1.SITUACAO = 1 " 
++ "AND P.SITUACAO = 1 AND ASS.IDPERGUNTA = P.IDPERGUNTA AND ASS1.IDASSGRUPOPERGUNTA = ASS.IDASSGRUPOPERGUNTA order by ASS.ORDEM");
+      assertEquals(1, resultSet.getRowCount());
       resultSet.close();
    }
 }
