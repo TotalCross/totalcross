@@ -298,7 +298,7 @@ TESTCASE(jlSB_append_l) // java/lang/StringBuffer native public StringBuffer app
 }
 TESTCASE(jlSB_append_d) // java/lang/StringBuffer native public StringBuffer append(double d);
 {
-   char buf[50];
+   char buf[128];
    Object sb;
    TValue v;
 
