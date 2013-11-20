@@ -1,55 +1,58 @@
 package totalcross.sql;
 
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+
 public interface Statement
 {
-   public ResultSet executeQuery(String sql) throws SQLWarning;
+   public ResultSet executeQuery(String sql) throws SQLException;
    
-   public int executeUpdate(String sql) throws SQLWarning;
+   public int executeUpdate(String sql) throws SQLException;
    
-   public void close() throws SQLWarning;
+   public void close() throws SQLException;
    
-   public int getMaxRows() throws SQLWarning;
+   public int getMaxRows() throws SQLException;
    
-   public void setMaxRows(int max) throws SQLWarning;
+   public void setMaxRows(int max) throws SQLException;
    
-   public int getQueryTimeout() throws SQLWarning;
+   public int getQueryTimeout() throws SQLException;
    
-   public void setQueryTimeout(int seconds) throws SQLWarning;
+   public void setQueryTimeout(int seconds) throws SQLException;
    
-   public void cancel() throws SQLWarning;
+   public void cancel() throws SQLException;
    
-   public SQLWarning getWarnings() throws SQLWarning;
+   public SQLWarning getWarnings() throws SQLException;
    
-   public void clearWarnings() throws SQLWarning;
+   public void clearWarnings() throws SQLException;
    
-   public void setCursorName(String name) throws SQLWarning;
+   public void setCursorName(String name) throws SQLException;
    
-   public boolean execute(String sql) throws SQLWarning;
+   public boolean execute(String sql) throws SQLException;
    
-   public ResultSet getResultSet() throws SQLWarning;
+   public ResultSet getResultSet() throws SQLException;
    
-   public int getUpdateCount() throws SQLWarning;
+   public int getUpdateCount() throws SQLException;
    
-   public boolean getMoreResults() throws SQLWarning;
+   public boolean getMoreResults() throws SQLException;
    
-   public void setFetchDirection(int direction) throws SQLWarning;
+   public void setFetchDirection(int direction) throws SQLException;
    
-   public int getFetchDirection() throws SQLWarning;
+   public int getFetchDirection() throws SQLException;
    
-   public void setFetchSize(int rows) throws SQLWarning;
+   public void setFetchSize(int rows) throws SQLException;
    
-   public int getFetchSize() throws SQLWarning;
+   public int getFetchSize() throws SQLException;
    
-   public int getResultSetConcurrency() throws SQLWarning;
+   public int getResultSetConcurrency() throws SQLException;
    
-   public int getResultSetType() throws SQLWarning;
+   public int getResultSetType() throws SQLException;
    
-   public void addBatch(String sql) throws SQLWarning;
+   public void addBatch(String sql) throws SQLException;
    
-   public void clearBatch() throws SQLWarning;
+   public void clearBatch() throws SQLException;
    
-   public int[] executeBatch() throws SQLWarning;
+   public int[] executeBatch() throws SQLException;
    
-   public Connection getConnection() throws SQLWarning;
+   public Connection getConnection() throws SQLException;
 }
 

@@ -44,7 +44,6 @@ public class Date implements Comparable
    private int year;
    private static int epochYear = 1000;
    /** After constructing a date, can be used to verify if the date was valid */
-   private static int parts[] = new int[3];
    private static int[][]part2idx = {{},{1,0,2},{0,1,2},{2,1,0}}; // guich@566_29
 
    public static final int JANUARY = 1;
@@ -107,7 +106,7 @@ public class Date implements Comparable
       {
          int n = strDate.length(), 
          j = 2; 
-         int p[] = parts;
+         int p[] = new int[3];
          char c;
          int value = 0;
          int mult = 1;
@@ -605,5 +604,21 @@ public class Date implements Comparable
    public String getSQLDate()
    {
       return year+"-"+month+"-"+day;
+   }
+   
+   /** Returns the number of millis since 1/1/1970.
+    * @since TotalCross 2.1
+    */
+   public long getTime()
+   {
+      long days=0;
+      try
+      {
+         days = subtract(new Date(1,1,1970));
+      }
+      catch (InvalidDateException e)
+      {
+      }
+      return days * 24*60*60*1000;
    }
 }

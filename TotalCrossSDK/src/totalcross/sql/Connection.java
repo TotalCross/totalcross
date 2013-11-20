@@ -1,5 +1,7 @@
 package totalcross.sql;
 
+import java.sql.SQLException;
+
 public interface Connection
 {
    public static final int TRANSACTION_NONE = 0;
@@ -8,41 +10,41 @@ public interface Connection
    public static final int TRANSACTION_REPEATABLE_READ = 4;
    public static final int TRANSACTION_SERIALIZABLE = 8;
 
-   public Statement createStatement() throws SQLWarning;
+   public Statement createStatement() throws SQLException;
    
-   public PreparedStatement prepareStatement(String sql) throws SQLWarning;
+   public PreparedStatement prepareStatement(String sql) throws SQLException;
    
-   public String nativeSQL(String sql) throws SQLWarning;
+   public String nativeSQL(String sql);
    
-   public void setAutoCommit(boolean autoCommit) throws SQLWarning;
+   public void setAutoCommit(boolean autoCommit) throws SQLException;
    
-   public boolean getAutoCommit() throws SQLWarning;
+   public boolean getAutoCommit() throws SQLException;
    
-   public void commit() throws SQLWarning;
+   public void commit() throws SQLException;
    
-   public void rollback() throws SQLWarning;
+   public void rollback() throws SQLException;
    
-   public void close() throws SQLWarning;
+   public void close() throws SQLException;
    
-   public boolean isClosed() throws SQLWarning;
+   public boolean isClosed() throws SQLException;
    
-   public void setReadOnly(boolean readOnly) throws SQLWarning;
+   public void setReadOnly(boolean readOnly) throws SQLException;
    
-   public boolean isReadOnly() throws SQLWarning;
+   public boolean isReadOnly() throws SQLException;
    
-   public void setCatalog(String catalog) throws SQLWarning;
+   public void setCatalog(String catalog) throws SQLException;
    
-   public String getCatalog() throws SQLWarning;
+   public String getCatalog() throws SQLException;
    
-   public void setTransactionIsolation(int level) throws SQLWarning;
+   public void setTransactionIsolation(int level) throws SQLException;
    
-   public int getTransactionIsolation() throws SQLWarning;
+   public int getTransactionIsolation() throws SQLException;
    
-   public SQLWarning getWarnings() throws SQLWarning;
+   public SQLException getWarnings() throws SQLException;
    
-   public void clearWarnings() throws SQLWarning;
+   public void clearWarnings() throws SQLException;
    
-   public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLWarning;
+   public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException;
    
-   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLWarning;
+   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException;
 }

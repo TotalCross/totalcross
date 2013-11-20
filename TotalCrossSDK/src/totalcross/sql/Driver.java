@@ -2,14 +2,12 @@ package totalcross.sql;
 
 import totalcross.util.*;
 
-import java.sql.*;
+import java.sql.SQLException;
 
 public interface Driver
 {
-   public Connection connect(String url, Properties info) throws SQLWarning;
-   public boolean acceptsURL(String url) throws SQLWarning;
-   public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLWarning;
+   public Connection connect(String url, Properties info) throws SQLException;
+   public boolean acceptsURL(String url) throws SQLException;
    public int getMajorVersion();
    public int getMinorVersion();
-   public boolean jdbcCompliant();
 }

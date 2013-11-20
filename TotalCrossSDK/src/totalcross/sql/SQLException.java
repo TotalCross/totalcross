@@ -18,38 +18,50 @@ package totalcross.sql;
 
 public class SQLException extends Exception
 {
-   public SQLException(String reason, String SQLState, int vendorCode)
+   String reason;
+   String state;
+   int code;
+   SQLException next;
+   
+   public SQLException(String reason, String sqlState, int errorCode)
    {
+      this.reason = reason;
+      this.state = sqlState;
+      this.code = errorCode;
    }
 
-   public SQLException(String reason, String SQLState)
+   public SQLException(String reason, String sqlState)
    {
+      this(reason, sqlState, 0);
    }
 
    public SQLException(String reason)
    {
+      this(reason,null,0);
    }
 
    public SQLException()
    {
+      this(null,null,0);
    }
 
    public String getSQLState()
    {
-      return null;
+      return state;
    }
 
    public int getErrorCode()
    {
-      return 0;
+      return code;
    }
 
-   public SQLWarning getNextException()
+   public SQLException getNextException()
    {
-      return null;
+      return next;
    }
 
-   public void setNextException(SQLWarning ex)
+   public void setNextException(SQLException ex)
    {
+      next = ex;
    }
 }

@@ -18,38 +18,35 @@ package totalcross.sql;
 
 public class SQLWarning extends SQLException
 {
-   public SQLWarning(String reason, String SQLState, int vendorCode)
+   SQLWarning next;
+   
+   public SQLWarning(String reason, String sqlState, int errorCode)
    {
+      super(reason, sqlState, errorCode);
    }
 
-   public SQLWarning(String reason, String SQLState)
+   public SQLWarning(String reason, String sqlState)
    {
+      super(reason, sqlState);
    }
 
    public SQLWarning(String reason)
    {
+      super(reason);
    }
 
    public SQLWarning()
    {
-   }
-
-   public String getSQLState()
-   {
-      return null;
-   }
-
-   public int getErrorCode()
-   {
-      return 0;
+      super();
    }
 
    public SQLWarning getNextWarning()
    {
-      return null;
+      return next;
    }
 
    public void setNextException(SQLWarning ex)
    {
+      next = ex;
    }
 }

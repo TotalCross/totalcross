@@ -1,6 +1,8 @@
 package totalcross.sql;
 
+import totalcross.sql.sqlite4j.*;
 import totalcross.util.*;
+import java.sql.SQLException;
 
 public class DriverManager
 {
@@ -21,6 +23,21 @@ public class DriverManager
    }
    public static Connection getConnection(String url) throws SQLException
    {
+      if (url.startsWith("jdbc:sqlite")) // :sample.db
+      {
+         String dbname = "temp.db";
+         int l = url.length();
+         if (l > 11 && url.endsWith(".db"))
+            dbname = url.substring(12);
+         try
+         {
+            return new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname));
+         }
+         catch (java.sql.SQLException e)
+         {
+            throw new SQLException(e);
+         }
+      }
       return null;
    }
    public static Driver getDriver(String url) throws SQLException
