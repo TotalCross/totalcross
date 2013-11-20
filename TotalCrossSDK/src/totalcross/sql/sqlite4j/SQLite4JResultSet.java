@@ -72,7 +72,7 @@ public class SQLite4JResultSet implements ResultSet
 
    public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
    {
-      return rs.getBigDecimal(columnIndex);
+      return Convert.bigdecimal(rs.getBigDecimal(columnIndex));
    }
 
    public byte[] getBytes(int columnIndex) throws SQLException
@@ -82,17 +82,17 @@ public class SQLite4JResultSet implements ResultSet
 
    public Date getDate(int columnIndex) throws SQLException
    {
-      return rs.getDate(columnIndex);
+      return Convert.date(rs.getDate(columnIndex));
    }
 
    public Time getTime(int columnIndex) throws SQLException
    {
-      return rs.getTime(columnIndex);
+      return Convert.time(rs.getTime(columnIndex));
    }
 
    public Timestamp getTimestamp(int columnIndex) throws SQLException
    {
-      return rs.getTimestamp(columnIndex);
+      return Convert.timestamp(rs.getTimestamp(columnIndex));
    }
 
    public String getString(String columnName) throws SQLException
@@ -137,7 +137,7 @@ public class SQLite4JResultSet implements ResultSet
 
    public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException
    {
-      return rs.getBigDecimal(columnName);
+      return Convert.bigdecimal(rs.getBigDecimal(columnName));
    }
 
    public byte[] getBytes(String columnName) throws SQLException
@@ -147,17 +147,17 @@ public class SQLite4JResultSet implements ResultSet
 
    public Date getDate(String columnName) throws SQLException
    {
-      return rs.getDate(columnName);
+      return Convert.date(rs.getDate(columnName));
    }
 
    public Time getTime(String columnName) throws SQLException
    {
-      return rs.getTime(columnName);
+      return Convert.time(rs.getTime(columnName));
    }
 
    public Timestamp getTimestamp(String columnName) throws SQLException
    {
-      return rs.getTimestamp(columnName);
+      return Convert.timestamp(rs.getTimestamp(columnName));
    }
 
    public SQLException getWarnings() throws SQLException
@@ -175,9 +175,10 @@ public class SQLite4JResultSet implements ResultSet
       return rs.getCursorName();
    }
 
+   SQLite4JResultSetMetaData rsmd;
    public ResultSetMetaData getMetaData() throws SQLException
    {
-      return rs.getMetaData();
+      return rsmd == null ? rsmd = new SQLite4JResultSetMetaData(rs.getMetaData()) : rsmd;
    }
 
    public Object getObject(int columnIndex) throws SQLException
@@ -197,12 +198,12 @@ public class SQLite4JResultSet implements ResultSet
 
    public BigDecimal getBigDecimal(int columnIndex) throws SQLException
    {
-      return rs.getBigDecimal(columnIndex);
+      return Convert.bigdecimal(rs.getBigDecimal(columnIndex));
    }
 
    public BigDecimal getBigDecimal(String columnName) throws SQLException
    {
-      return rs.getBigDecimal(columnName);
+      return Convert.bigdecimal(rs.getBigDecimal(columnName));
    }
 
    public boolean isBeforeFirst() throws SQLException
