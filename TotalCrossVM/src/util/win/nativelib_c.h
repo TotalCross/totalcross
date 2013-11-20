@@ -74,7 +74,7 @@ void privateUnloadLibrary(VoidP libPtr)
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
    TCHAR szFuncName[128];
-   FARPROC procAddress;
+   VoidP procAddress;
 
 #if defined WP8
    procAddress = (NativeMethod)htGetPtr(&htNativeProcAddresses, hashCode(funcName));
