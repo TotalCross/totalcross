@@ -118,8 +118,18 @@ static inline Err fileCreateDir(TCHARP path, int32 slot)
       {
          if (*c == '/')
          {
+#ifdef WP8
+            WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+            int res = 0;
+            f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+            *c = 0;
+            res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+            if ((res == 0) || (f_attr_ex.dwFileAttributes == INVALID_ATTR_VALUE))
+#else
             *c = 0;
             if (GetFileAttributes(path) == INVALID_ATTR_VALUE)
+#endif
             {
                if (!CreateDirectory(path, null))
                   goto error;
@@ -157,7 +167,17 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    if (path[len-1] == '/') // remove leading slash
       path[len-1] = 0;
 
+#ifdef WP8
+   {
+	   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+	   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+	   GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+	   fileAttributes = f_attr_ex.dwFileAttributes;
+   }
+#else
    fileAttributes = GetFileAttributes(path);
+#endif
+
    if (fileAttributes == INVALID_ATTR_VALUE) //Checks if file exists.
       return ERROR_FILE_NOT_FOUND;
    if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) //It's a directory.
@@ -180,14 +200,25 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
  *************************************/
 
 static inline bool fileExists(TCHARP path, int32 slot)
+#if !defined (WINCE) && !defined (WP8)
 {
-#if !defined (WINCE)
    bool result;
    SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
    result = (GetFileAttributes(path) != INVALID_ATTR_VALUE);
    SetErrorMode(0);
    return result;
+#elif defined WP8
+{
+	bool result;
+	WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+	f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+	SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
+	GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+	result = (f_attr_ex.dwFileAttributes != INVALID_ATTR_VALUE);
+	SetErrorMode(0);
+	return result;
 #else
+{
    return (GetFileAttributes(path) != INVALID_ATTR_VALUE);
 #endif
 }
@@ -246,16 +277,36 @@ static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 
 static bool fileIsDir(TCHARP path, int32 slot)
 {
+#ifndef WP8
    DWORD fileAttributes;
    fileAttributes = GetFileAttributes(path);
+#else
+   DWORD fileAttributes;
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+#endif
 
    return ((fileAttributes != INVALID_ATTR_VALUE)&&(fileAttributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpty)
 {
+#ifndef WP8
    DWORD fileAttributes = GetFileAttributes(path);
    Err err = NO_ERROR;
+#else
+   DWORD fileAttributes;
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+   Err err = NO_ERROR;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+#endif
 
    if (fref != INVALID_HANDLE_VALUE)
       return fileGetSize(*fref, path, isEmpty);
@@ -408,11 +459,25 @@ static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttributes)
 
 static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 {
+#ifndef WP8
    DWORD fileAttributes = 0;
    *attributes = 0;
 
    if ((fileAttributes = GetFileAttributes(path)) == INVALID_ATTR_VALUE)
       return GetLastError();
+#else
+   DWORD fileAttributes = 0;
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+   *attributes = 0;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+   if ((res == 0) || (fileAttributes == INVALID_ATTR_VALUE))
+      return GetLastError();
+#endif
 
    if (fileAttributes & FILE_ATTRIBUTE_ARCHIVE)
       *attributes = *attributes | ATTR_ARCHIVE;
