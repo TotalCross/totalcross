@@ -154,6 +154,8 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiF_exists(&p);
+
+   // If p.retI is true, then the test has failed, besaucse "create" should not return true
    if (p.retI)
    {
       tiF_delete(&p);
