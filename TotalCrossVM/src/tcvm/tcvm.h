@@ -23,6 +23,9 @@
 #endif
 
 #if defined WP8
+
+#include "cppwrapper.h"
+
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 
 #define Sleep()

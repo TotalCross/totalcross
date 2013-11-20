@@ -13,18 +13,26 @@ using namespace Windows::UI::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
+static MainView ^lastInstance = nullptr;
+
 MainView::MainView() :
 m_windowClosed(false),
 m_windowVisible(true)
 {
+	lastInstance = this;
 }
 
-MainView::MainView(String ^cmdline) :
+MainView::MainView(String ^cmdline, String ^_appPath) :
 m_windowClosed(false),
 m_windowVisible(true)
 {
 	strcpy(cmdLine, " /cmd ");
 	WideCharToMultiByte(CP_ACP, 0, cmdline->Data(), cmdline->Length(), cmdLine + 7, 512 - 7, NULL, NULL);
+	//WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPath, 1024 , NULL, NULL);
+	appPath = _appPath;
+	_cmdline = cmdline;
+
+	lastInstance = this;
 }
 
 void MainView::Initialize(CoreApplicationView^ applicationView)
@@ -41,7 +49,7 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 
 	vm_err_code = startVM(cmdLine, &local_context);
 	if (vm_err_code != 0) {
-//		abort();
+		abort();
 	}
 	
 }
@@ -138,3 +146,12 @@ void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 	// does not occur if the app was previously terminated.
 }
 
+MainView ^MainView::GetLastInstance()
+{
+	return lastInstance;
+}
+
+String ^MainView::getAppPath()
+{
+	return appPath;
+}

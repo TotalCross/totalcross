@@ -23,8 +23,9 @@ using namespace TotalCross;
 
 IFrameworkView^ MainViewFactory::CreateView()
 {
+	String ^appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
 	// Essa linha daqui de baixo deverá ser apagada; ela deve ser chamada por Settings
-	OutputDebugString(Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data());
+	//OutputDebugString(Windows::Storage::ApplicationData::Current->LocalFolder->Path->Data());
 
 	//char lpCmdLine[512];
 	//memset(cmdline, 0, sizeof(cmdline));
@@ -34,7 +35,7 @@ IFrameworkView^ MainViewFactory::CreateView()
 	//WideCharToMultiByte(CP_ACP, 0, cmdLine->Data(), cmdLine->Length(), cmdline + 7, 512 - 7, NULL, NULL);
 
 	//executeProgram(cmdline);
-	return ref new MainView(cmdLine);
+	return ref new MainView(cmdLine, appPath);
 }
 
 MainViewFactory::MainViewFactory(String^ cmdLine)

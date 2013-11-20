@@ -2,6 +2,7 @@
 
 #pragma once
 
+#define HAS_TCHAR
 
 #include "tcvm.h"
 
@@ -12,14 +13,16 @@ namespace TotalCross
 	{
 	public:
 		MainView();
-		MainView(Platform::String ^cmdline);
+		MainView(Platform::String ^cmdline, Platform::String ^appPath);
 
+		static MainView ^GetLastInstance();
 		// IFrameworkView Methods.
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
 		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
 		virtual void Load(Platform::String^ entryPoint);
 		virtual void Run();
 		virtual void Uninitialize();
+		Platform::String ^getAppPath();
 
 	protected:
 		// Event Handlers.
@@ -38,6 +41,9 @@ namespace TotalCross
 
 		Context local_context;
 		char cmdLine[512];
+		//char appPath[1024];
+		Platform::String ^appPath;
+		Platform::String ^_cmdline;
 	};
 }
 
