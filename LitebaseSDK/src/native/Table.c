@@ -2532,8 +2532,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
 
    // juliana@227_3: improved table files flush dealing.
 	// juliana@202_23: Flushs the files to disk when row increment is the default.
+   // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
    // Flushs .db and .dbo.
-   if (plainDB->rowInc == DEFAULT_ROW_INC)
+   if (!db->dontFlush)
       if ((db->cacheIsDirty && !flushCache(context, db)) || (dbo->cacheIsDirty && !flushCache(context, dbo))) 
          return false;
 

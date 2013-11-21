@@ -366,7 +366,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       return -1;
    
    // juliana@227_3: improved table files flush dealing.
-	if (plainDB->rowInc == DEFAULT_ROW_INC) // juliana@202_23: flushs the files to disk when row increment is the default.
+   // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+   if (!dbFile->dontFlush) // juliana@202_23: flushs the files to disk when row increment is the default.
 	{
       if (dbFile->cacheIsDirty && !flushCache(context, dbFile)) // Flushs .db.
          return -1;
