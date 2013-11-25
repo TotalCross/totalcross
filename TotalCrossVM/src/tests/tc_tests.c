@@ -526,7 +526,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[168] = test_tueE_isAvailable;
    tests[169] = test_tufFM_charWidth_c;
    tests[170] = test_tufFM_stringWidth_Cii;
-   //tests[171] = test_tuiI_imageLoad_s;
+   tests[171] = test_tuiI_imageLoad_s;
    tests[172] = test_Graphics;
    tests[173] = test_tufF_FontTestCleanup_f;
    tests[174] = test_tuiI_imageParse_sB;

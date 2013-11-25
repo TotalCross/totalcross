@@ -42,7 +42,9 @@ void flushAll();
 #endif*/
 #include "GraphicsPrimitives_c.h"
 
-#if defined(WINCE) || defined(WIN32)
+#ifdef WP8
+#include "wp8/gfx_Graphics_c.h"
+#elif defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
 #elif defined(ANDROID) || defined(darwin)
  #include "android/gfx_Graphics_c.h"

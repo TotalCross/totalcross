@@ -37,7 +37,6 @@ m_windowVisible(true)
 
 void MainView::Initialize(CoreApplicationView^ applicationView)
 {
-	int32 vm_err_code;
 	applicationView->Activated +=
 		ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &MainView::OnActivated);
 
@@ -46,16 +45,12 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 
 	CoreApplication::Resuming +=
 		ref new EventHandler<Platform::Object^>(this, &MainView::OnResuming);
-
-	vm_err_code = startVM(cmdLine, &local_context);
-	if (vm_err_code != 0) {
-		abort();
-	}
-	
 }
 
 void MainView::SetWindow(CoreWindow^ window)
 {
+   currentWindow = window;
+
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
 
@@ -70,6 +65,11 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
+
+   int32 vm_err_code = startVM(cmdLine, &local_context);
+   if (vm_err_code != 0) {
+      abort();
+   }
 
 }
 
@@ -154,4 +154,9 @@ MainView ^MainView::GetLastInstance()
 String ^MainView::getAppPath()
 {
 	return appPath;
+}
+
+Windows::UI::Core::CoreWindow^ MainView::GetWindow()
+{
+   return currentWindow.Get();
 }

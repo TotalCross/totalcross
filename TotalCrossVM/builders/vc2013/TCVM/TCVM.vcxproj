@@ -265,6 +265,7 @@
     <ClInclude Include="..\..\..\src\nm\ui\win\media_Sound_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\MainView.h" />
     <ClInclude Include="..\..\..\src\nm\util\zip_ZLib_test.h" />
     <ClInclude Include="..\..\..\src\nm\xml\xml_XmlTokenizer_test.h" />

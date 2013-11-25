@@ -392,6 +392,7 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
  *************************************/
 
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
+#ifdef WP8
 {
    Err err;
    LARGE_INTEGER off;
@@ -400,6 +401,14 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
    return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 }
+#else
+{
+   Err err;
+
+   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
+               NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
+}
+#endif
 
 /*
  *
@@ -615,16 +624,23 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
 	DWORD posHigh = 0;
 	DWORD fileSize;
-	LARGE_INTEGER off;
+	
+#ifdef WP8   
+   LARGE_INTEGER off;
 	off.LowPart = newSize;
+#endif
 
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 		return GetLastError();
 	if (fileSize == newSize)
 		return NO_ERROR;
 
+#ifdef WP8 
    if (SetFilePointer(fref->handle, off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
-		return GetLastError();
+#else
+   if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+#endif
+      return GetLastError();
    if (SetEndOfFile(fref->handle) == 0)
    {
       Err error = GetLastError();

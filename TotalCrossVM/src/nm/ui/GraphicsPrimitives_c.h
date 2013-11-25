@@ -2964,10 +2964,6 @@ static bool startupGraphics(int16 appTczAttr) // there are no threads running at
 
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
-	//XXX gambis
-#ifdef WP8
-	return true;
-#else
    bool ret = false;
    if (screen.screenW <= 0 || screen.screenH <= 0)
       return false;
@@ -2998,7 +2994,6 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
 #endif
    }
    return ret;
-#endif
 }
 
 void markWholeScreenDirty(Context currentContext)

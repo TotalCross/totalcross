@@ -2,7 +2,10 @@
 extern "C" {
 #endif
 
-	char *GetAppPathWP8();
+#include <basetsd.h>
+
+char *GetAppPathWP8();
+void GetWidthAndHeight(DWORD32* width, DWORD32* height);
 
 #ifdef __cplusplus
 }

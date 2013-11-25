@@ -139,21 +139,6 @@ static void testPie(Context currentContext, Object g)
    }
 }
 
-static void testFillCursor(Context currentContext, Object g)
-{
-   int32 y;
-   int32 h = 30;
-   for (y = 0; y < screen.screenH; y+=2)
-   {
-	   fillCursor(currentContext, g, 5, y, screen.screenW - 10, h);
-      updateScreen(mainContext);
-#if defined WIN32 && !defined WINCE
-//      Sleep(2);
-#endif
-	  fillCursor(currentContext, g, 5, y, screen.screenW - 10, h);
-   }
-}
-
 static void drawImage(Context currentContext, Object g, Object img)
 {
    Object gimg;
@@ -270,6 +255,5 @@ TESTCASE(Graphics) // #DEPENDS(tuiI_imageLoad_s)
    s = getTimeStamp();  testDrawVline(currentContext, g);  debugTime(10, s);  blank(currentContext, g);
    s = getTimeStamp();  testDrawHline(currentContext, g);  debugTime(11, s);  blank(currentContext, g);
    s = getTimeStamp();  testFillRect(currentContext, g);  debugTime(12, s);  Sleep(TEST_SLEEP); // no blank
-   s = getTimeStamp();  testFillCursor(currentContext, g);  debugTime(13, s);  blank(currentContext, g);
    finish: ;
 }

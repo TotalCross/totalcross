@@ -57,11 +57,17 @@ bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 }
 
 bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
+#ifdef WP8
 {
 	LARGE_INTEGER off;
 	off.LowPart = offset;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
 }
+#else
+{
+   return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
+}
+#endif
 
 bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 {
@@ -69,11 +75,18 @@ bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 }
 
 bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
+#ifdef WP8
 {
 	LARGE_INTEGER off;
 	off.LowPart = offset;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
 }
+#else
+{
+   return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
+}
+#endif
+
 
 bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
@@ -81,11 +94,17 @@ bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 }
 
 bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
+#ifdef WP8
 {
 	LARGE_INTEGER off;
 	off.LowPart = oldSize + growSize;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
 }
+#else
+{
+   return (SetFilePointer(fileRef, oldSize + growSize, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
+}
+#endif
 
 bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType proc, VoidP userVars)
 {

@@ -1111,6 +1111,9 @@
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h">
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\nm\NativeMethods.txt">
