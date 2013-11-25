@@ -190,6 +190,17 @@ public abstract class TestCase
             assertFailed("Mismatch at "+i+": "+Convert.unsigned2hex(b1[i],2)+" != "+Convert.unsigned2hex(b2[i],2));
    }
 
+   protected static void assertEquals(int[] b1, int[] b2)
+   {
+      assertNotNull(b1);
+      assertNotNull(b2);
+      if (b1.length != b2.length)
+         assertFailed("Array length mismatch: "+b1.length+" != "+b2.length);
+      for (int i =0; i < b1.length; i++)
+         if (b1[i] != b2[i])
+            assertFailed("Mismatch at "+i+": "+Convert.unsigned2hex(b1[i],2)+" != "+Convert.unsigned2hex(b2[i],2));
+   }
+
    protected static void assertEquals(byte expected, byte actual)
    {
       assertionCounter++;
