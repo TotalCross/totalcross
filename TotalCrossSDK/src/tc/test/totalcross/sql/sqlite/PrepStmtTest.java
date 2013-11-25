@@ -227,9 +227,9 @@ public class PrepStmtTest extends TestCase
          prep.setBytes(3, b3);
          prep.executeQuery();
          assertTrue(rs.next());
-         assertArrayEq(rs.getBytes(1), b1);
-         assertArrayEq(rs.getBytes(2), b2);
-         assertArrayEq(rs.getBytes(3), b3);
+         assertEquals(rs.getBytes(1), b1);
+         assertEquals(rs.getBytes(2), b2);
+         assertEquals(rs.getBytes(3), b3);
          assertFalse(rs.next());
          rs.close();
       }
@@ -314,7 +314,7 @@ public class PrepStmtTest extends TestCase
          assertEquals(rs.getLong(4), Long.MAX_VALUE);
          assertFalse(rs.getBoolean(5));
          assertEquals(rs.getByte(6), (byte) 7);
-         assertArrayEq(rs.getBytes(7), b1);
+         assertEquals(rs.getBytes(7), b1);
 
          assertNotNull(rs.getObject(1));
          assertNotNull(rs.getObject(2));
@@ -397,7 +397,7 @@ public class PrepStmtTest extends TestCase
             prep.setDouble(4, Double.MAX_VALUE + i);
             prep.addBatch();
          }
-         assertArrayEq(prep.executeBatch(), new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
+         assertEquals(prep.executeBatch(), new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
          prep.close();
 
          rs = stat.executeQuery("select * from test;");
@@ -488,7 +488,7 @@ public class PrepStmtTest extends TestCase
             prep.setInt(1, Integer.MIN_VALUE + i);
             prep.addBatch();
          }
-         assertArrayEq(new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, prep.executeBatch());
+         assertEquals(new int[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, prep.executeBatch());
          prep.close();
          ResultSet rs = stat.executeQuery("select count(*) from test;");
          assertTrue(rs.next());
@@ -721,24 +721,6 @@ public class PrepStmtTest extends TestCase
       {
          fail(e);
       }
-   }
-
-   private void assertArrayEq(byte[] a, byte[] b)
-   {
-      assertNotNull(a);
-      assertNotNull(b);
-      assertEquals(a.length, b.length);
-      for (int i = 0; i < a.length; i++)
-         assertEquals(a[i], b[i]);
-   }
-
-   private void assertArrayEq(int[] a, int[] b)
-   {
-      assertNotNull(a);
-      assertNotNull(b);
-      assertEquals(a.length, b.length);
-      for (int i = 0; i < a.length; i++)
-         assertEquals(a[i], b[i]);
    }
 
    public void testRun()
