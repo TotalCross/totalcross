@@ -1,24 +1,11 @@
-//--------------------------------------
-// sqlite-jdbc Project
-//
-// ReadCommitedTest.java
-// Since: Jan 19, 2009
-//
-// $URL$ 
-// $Author$
-//--------------------------------------
 package tc.test.totalcross.sql.sqlite;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import totalcross.io.*;
+import totalcross.sql.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 public class ReadUncommittedTest
 {

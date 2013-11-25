@@ -1,23 +1,11 @@
-package org.sqlite;
+package tc.test.totalcross.sql.sqlite;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
-import java.util.Properties;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.sqlite.SQLiteConfig.TransactionMode;
+import totalcross.io.*;
+import totalcross.sql.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 /**
  * These tests assume that Statements and PreparedStatements are working as per

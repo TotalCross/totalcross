@@ -1,20 +1,11 @@
-package org.sqlite;
+package tc.test.totalcross.sql.sqlite;
 
-import static org.junit.Assert.*;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.LinkedList;
-import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import totalcross.io.*;
+import totalcross.sql.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 /** Tests User Defined Functions. */
 public class UDFTest

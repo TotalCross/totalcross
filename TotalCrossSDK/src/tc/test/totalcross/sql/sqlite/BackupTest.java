@@ -20,11 +20,10 @@ public class BackupTest extends TestCase
 
    public void backupAndRestore()
    {
-      File tmpFile = null;
       try
       {
          // create a memory database
-         tmpFile = new File(absPath + "/backup-test.sqlite", File.CREATE_EMPTY);
+         //File tmpFile = new File(absPath + "/backup-test.sqlite", File.CREATE_EMPTY);
 
          // memory DB to file
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");
@@ -54,17 +53,6 @@ public class BackupTest extends TestCase
       catch (Exception e)
       {
          fail(e);
-      }
-      finally
-      {
-         if (tmpFile != null)
-            try
-            {
-               tmpFile.delete();
-            }
-            catch (Exception ee)
-            {
-            }
       }
    }
 

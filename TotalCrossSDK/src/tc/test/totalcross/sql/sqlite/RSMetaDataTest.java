@@ -1,21 +1,11 @@
 package tc.test.totalcross.sql.sqlite;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import totalcross.io.*;
+import totalcross.sql.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 public class RSMetaDataTest
 {

@@ -1,21 +1,11 @@
 package tc.test.totalcross.sql.sqlite;
 
-import static org.junit.Assert.*;
-
-import java.sql.BatchUpdateException;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import totalcross.io.*;
+import totalcross.sql.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 /** These tests are designed to stress Statements on memory databases. */
 public class StatementTest

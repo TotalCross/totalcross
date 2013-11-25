@@ -1,51 +1,16 @@
-//--------------------------------------
-// sqlite-jdbc Project
-//
-// InsertQueryTest.java
-// Since: Apr 7, 2009
-//
-// $URL$ 
-// $Author$
-//--------------------------------------
-package org.sqlite;
+package tc.test.totalcross.sql.sqlite;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import totalcross.sql.Connection;
+import totalcross.sql.DriverManager;
+import totalcross.sql.PreparedStatement;
+import totalcross.sql.ResultSet;
+import totalcross.sql.Statement;
+import totalcross.unit.*;
 
-public class InsertQueryTest
+public class InsertQueryTest extends TestCase
 {
-    @BeforeClass
-    public static void forName() throws Exception
-    {
-        Class.forName("org.sqlite.JDBC");
-    }
-
-    String dbName;
-
-    @Before
-    public void setUp() throws Exception
-    {
-        File tmpFile = File.createTempFile("tmp-sqlite", ".db");
-        tmpFile.deleteOnExit();
-        dbName = tmpFile.getAbsolutePath();
-    }
-
-    @After
-    public void tearDown() throws Exception
-    {
-
-    }
-
     interface ConnectionFactory
     {
         Connection getConnection() throws SQLException;
@@ -57,7 +22,7 @@ public class InsertQueryTest
     {
         public Connection getConnection() throws SQLException
         {
-            return DriverManager.getConnection("jdbc:sqlite:" + dbName);
+            return DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
         }
 
         public void dispose() throws SQLException
@@ -74,7 +39,7 @@ public class InsertQueryTest
         public Connection getConnection() throws SQLException
         {
             if (conn == null)
-                conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+                conn = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
             return conn;
         }
 
@@ -123,19 +88,17 @@ public class InsertQueryTest
 
     }
 
-    @Test
-    public void insertLockTestUsingSharedConnection() throws Exception
+    public void insertLockTestUsingSharedConnection() 
     {
         insertAndQuery(new SharedConnectionFactory());
     }
 
-    @Test
-    public void insertLockTestUsingIndependentConnection() throws Exception
+    public void insertLockTestUsingIndependentConnection() 
     {
         insertAndQuery(new IndependentConnectionFactory());
     }
 
-    void insertAndQuery(ConnectionFactory factory) throws SQLException
+    void insertAndQuery(ConnectionFactory factory) 
     {
         try
         {
@@ -188,31 +151,32 @@ public class InsertQueryTest
 
             //
             PreparedStatement stat;
-            Long result = 0L;
             String query = "SELECT COUNT(fid) FROM data";
 
             stat = factory.getConnection().prepareStatement(query);
             ResultSet rs = stat.executeQuery();
 
             rs.next();
-            result = rs.getLong(1);
+            long result = rs.getLong(1);
+            output(""+result);
             //System.out.println("count = " + result);
 
             rs.close();
             stat.close();
         }
+        catch (Exception e) {fail(e);}
         finally
         {
-            factory.dispose();
+            try {factory.dispose();} catch (Exception e) {fail(e);}
         }
-
     }
 
-    @Test(expected = SQLException.class)
-    public void reproduceDatabaseLocked() throws SQLException
+    public void reproduceDatabaseLocked()
     {
-        Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbName);
-        Connection conn2 = DriverManager.getConnection("jdbc:sqlite:" + dbName);
+       try
+       {
+        Connection conn = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
+        Connection conn2 = DriverManager.getConnection("jdbc:sqlite:tmp-sqlite.db");
         Statement stat = conn.createStatement();
         Statement stat2 = conn2.createStatement();
 
@@ -226,6 +190,13 @@ public class InsertQueryTest
         rs.next();
 
         conn.commit(); // causes "database is locked" (SQLITE_BUSY)
-
+       } catch (Exception e) {fail(e);}
     }
+
+   public void testRun()
+   {
+      insertLockTestUsingSharedConnection();
+      insertLockTestUsingIndependentConnection();
+      reproduceDatabaseLocked();
+   }
 }

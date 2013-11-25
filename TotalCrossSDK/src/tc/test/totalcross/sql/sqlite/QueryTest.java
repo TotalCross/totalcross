@@ -1,18 +1,11 @@
-//--------------------------------------
-// sqlite-jdbc Project
-//
-// QueryTest.java
-// Since: Apr 8, 2009
-//
-// $URL$ 
-// $Author$
-//--------------------------------------
 package tc.test.totalcross.sql.sqlite;
 
-import totalcross.unit.*;
+import java.sql.SQLException;
 
+import totalcross.io.*;
 import totalcross.sql.*;
-import totalcross.util.*;
+import totalcross.sys.*;
+import totalcross.unit.*;
 
 public class QueryTest extends TestCase
 {
