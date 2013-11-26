@@ -34,7 +34,10 @@ class Convert
    {
       try
       {
-         return new Date(x.getDay(), x.getMonth(), x.getYear());
+         int d = x.getDate();
+         int m = x.getMonth()+1;
+         int y = x.getYear()+1900;
+         return new Date(d, m, y);
       }
       catch (InvalidDateException e)
       {

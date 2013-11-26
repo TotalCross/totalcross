@@ -82,7 +82,8 @@ public class SQLite4JResultSet implements ResultSet
 
    public Date getDate(int columnIndex) throws SQLException
    {
-      return Convert.date(rs.getDate(columnIndex));
+      java.sql.Date dd = rs.getDate(columnIndex);
+      return Convert.date(dd);
    }
 
    public Time getTime(int columnIndex) throws SQLException

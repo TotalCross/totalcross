@@ -1,6 +1,7 @@
 package tc.test.totalcross.sql.sqlite;
 
 import totalcross.sql.*;
+import totalcross.sys.*;
 import totalcross.unit.*;
 
 public class RSMetaDataTest extends TestCase
@@ -13,6 +14,7 @@ public class RSMetaDataTest extends TestCase
    {
       conn = DriverManager.getConnection("jdbc:sqlite:");
       stat = conn.createStatement();
+      Vm.gc(); stat.execute("DROP TABLE IF EXISTS people");
       stat.executeUpdate("create table People (pid integer primary key autoincrement, " + " firstname string(255), surname string(25,5), dob date);");
       stat.executeUpdate("insert into people values (null, 'Mohandas', 'Gandhi', " + " '1869-10-02');");
       meta = stat.executeQuery("select pid, firstname, surname from people;").getMetaData();
@@ -65,6 +67,7 @@ public class RSMetaDataTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS tbl");
          stat.executeUpdate("create table tbl (col1 INT, col2 INTEGER, col3 TINYINT, " + "col4 SMALLINT, col5 MEDIUMINT, col6 BIGINT, col7 UNSIGNED BIG INT, "
                + "col8 INT2, col9 INT8, col10 CHARACTER(20), col11 VARCHAR(255), " + "col12 VARYING CHARACTER(255), col13 NCHAR(55), "
                + "col14 NATIVE CHARACTER(70), col15 NVARCHAR(100), col16 TEXT, " + "col17 CLOB, col18 BLOB, col19 REAL, col20 DOUBLE, "
@@ -194,12 +197,12 @@ public class RSMetaDataTest extends TestCase
 
          catalogName();
          columns();
+         scale();
          columnTypes();
          differentRS();
          nullable();
          badCatalogIndex();
          badColumnIndex();
-         scale();
 
          close();
       }

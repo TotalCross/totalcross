@@ -10,6 +10,7 @@ public class FetchSizeTest extends TestCase
       try
       {
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");
+         try {conn.createStatement().execute("drop table s1");} catch (Exception e) {}
          assertEquals(conn.prepareStatement("create table s1 (c1)").executeUpdate(), 0);
          PreparedStatement insertPrep = conn.prepareStatement("insert into s1 values (?)");
          insertPrep.setInt(1, 1);

@@ -1,6 +1,7 @@
 package tc.test.totalcross.sql.sqlite;
 
 import totalcross.sql.*;
+import totalcross.sys.*;
 import totalcross.unit.*;
 import totalcross.util.*;
 
@@ -26,6 +27,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS s1");
          assertEquals(stat.executeUpdate("create table s1 (c1);"), 0);
          assertEquals(stat.executeUpdate("insert into s1 values (0);"), 1);
          assertEquals(stat.executeUpdate("insert into s1 values (1);"), 1);
@@ -143,6 +145,7 @@ public class StatementTest extends TestCase
          assertFalse(stat.getMoreResults());
          assertEquals(stat.getUpdateCount(), -1);
 
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS test");
          assertFalse(stat.execute("create table test (c1);"));
          assertEquals(stat.getUpdateCount(), 0);
          assertFalse(stat.getMoreResults());
@@ -158,6 +161,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS tab");
          assertEquals(stat.executeUpdate("create table tab (id, firstname, surname);"), 0);
          assertEquals(stat.executeUpdate("insert into tab values (0, 'Bob', 'Builder');"), 1);
          assertEquals(stat.executeUpdate("insert into tab values (1, 'Fred', 'Blogs');"), 1);
@@ -210,6 +214,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS myTemp");
          assertEquals(stat.executeUpdate("create temp table myTemp (a);"), 0);
          assertEquals(stat.executeUpdate("insert into myTemp values (2);"), 1);
       }
@@ -223,6 +228,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS in1000");
          assertEquals(stat.executeUpdate("create table in1000 (a);"), 0);
          conn.setAutoCommit(false);
          for (int i = 0; i < 1000; i++)
@@ -233,8 +239,6 @@ public class StatementTest extends TestCase
          assertTrue(rs.next());
          assertEquals(rs.getInt(1), 1000);
          rs.close();
-
-         assertEquals(stat.executeUpdate("drop table in1000;"), 0);
       }
       catch (Exception e)
       {
@@ -246,6 +250,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS batch");
          stat.addBatch("create table batch (c1);");
          stat.addBatch("insert into batch values (1);");
          stat.addBatch("insert into batch values (1);");
@@ -279,9 +284,9 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS t1");
          stat.executeUpdate("create table t1 (c1);");
          conn.createStatement().executeQuery("select * from t1;").next();
-         stat.executeUpdate("drop table t1;");
       }
       catch (Exception e)
       {
@@ -316,6 +321,8 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS t1");
+         stat.execute("DROP TABLE IF EXISTS t2");
          stat.executeUpdate("create table t1 (c1 integer);");
          stat.executeUpdate("create table t2 (c1 integer);");
          stat.executeUpdate("insert into t1 values (1);");
@@ -351,6 +358,8 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS t1");
+         stat.execute("DROP TABLE IF EXISTS t2");
          stat.executeUpdate("create table t1 (c1 int);");
          stat.executeUpdate("create table t2 (c1 int, c2 int);");
          stat.executeUpdate("insert into t1 values (1);");
@@ -370,6 +379,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS t1");
          stat.executeUpdate("create table t1 (c1);");
          stat.executeUpdate("insert into t1 values (4);");
          stat.executeUpdate("insert into t1 values (4);");
@@ -466,6 +476,7 @@ public class StatementTest extends TestCase
       try
       {
          // ; insert into person values(1,'leo')
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS person");
          stat.executeUpdate("create table person (id integer, name string); " + "insert into person values(1, 'leo'); insert into person values(2, 'yui');");
          ResultSet rs = stat.executeQuery("select * from person");
          assertTrue(rs.next());
@@ -481,6 +492,7 @@ public class StatementTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS Foo");
          stat.executeUpdate("CREATE TABLE Foo (KeyId INTEGER, Stuff BLOB)");
       }
       catch (Exception e)
@@ -495,6 +507,7 @@ public class StatementTest extends TestCase
       {
          Date day = new Date();
 
+         Vm.gc(); stat.execute("DROP TABLE IF EXISTS day");
          stat.executeUpdate("create table day (time datatime)");
          PreparedStatement prep = conn.prepareStatement("insert into day values(?)");
          prep.setDate(1, day);

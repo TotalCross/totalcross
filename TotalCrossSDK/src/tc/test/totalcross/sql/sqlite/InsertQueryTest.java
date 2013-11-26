@@ -158,8 +158,7 @@ public class InsertQueryTest extends TestCase
 
             rs.next();
             long result = rs.getLong(1);
-            output(""+result);
-            //System.out.println("count = " + result);
+            assertEquals(result,10);
 
             rs.close();
             stat.close();
@@ -190,7 +189,8 @@ public class InsertQueryTest extends TestCase
         rs.next();
 
         conn.commit(); // causes "database is locked" (SQLITE_BUSY)
-       } catch (Exception e) {fail(e);}
+        fail("should raise exception");
+       } catch (Exception e) {}
     }
 
    public void testRun()

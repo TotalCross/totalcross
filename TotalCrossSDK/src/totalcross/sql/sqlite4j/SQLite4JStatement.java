@@ -74,7 +74,8 @@ public class SQLite4JStatement implements Statement
 
    public ResultSet getResultSet() throws SQLException
    {
-      return new SQLite4JResultSet(stat.getResultSet());
+      java.sql.ResultSet rs = stat.getResultSet();
+      return rs == null ? null : new SQLite4JResultSet(rs);
    }
 
    public int getUpdateCount() throws SQLException

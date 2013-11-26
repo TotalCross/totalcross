@@ -11,7 +11,8 @@ public class ExtensionTest extends TestCase
       {
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");;
          Statement stat = conn.createStatement();
-   
+
+         try {stat.execute("drop table recipe");} catch (Exception e) {}
          stat.execute("create virtual table recipe using fts3(name, ingredients)");
          stat.execute("insert into recipe (name, ingredients) values('broccoli stew', 'broccoli peppers cheese tomatoes')");
          stat.execute("insert into recipe (name, ingredients) values('pumpkin stew', 'pumpkin onions garlic celery')");

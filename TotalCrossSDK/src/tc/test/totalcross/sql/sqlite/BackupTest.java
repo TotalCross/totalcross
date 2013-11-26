@@ -22,12 +22,12 @@ public class BackupTest extends TestCase
    {
       try
       {
-         // create a memory database
-         //File tmpFile = new File(absPath + "/backup-test.sqlite", File.CREATE_EMPTY);
+         Vm.debug(absPath);
 
          // memory DB to file
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");
          Statement stmt = conn.createStatement();
+         try {stmt.executeUpdate("drop table sample");} catch (Exception e) {}
          stmt.executeUpdate("create table sample(id, name)");
          stmt.executeUpdate("insert into sample values(1, \"leo\")");
          stmt.executeUpdate("insert into sample values(2, \"gui\")");

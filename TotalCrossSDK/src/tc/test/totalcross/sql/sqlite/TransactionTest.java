@@ -260,6 +260,7 @@ public class TransactionTest extends TestCase
       try
       {
          stat1.setQueryTimeout(1);
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
@@ -278,6 +279,9 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         stat1.close();
+         stat1 = conn1.createStatement();
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");

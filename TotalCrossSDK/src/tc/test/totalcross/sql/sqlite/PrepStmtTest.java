@@ -43,7 +43,8 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
-         assertEquals(conn.prepareStatement("create table s1 (c1);").executeUpdate(), 0);
+         try {stat.execute("drop table s1");} catch (Exception e) {}
+         assertEquals(conn.prepareStatement("create table s1 (c1);").executeUpdate(), 1);
          PreparedStatement prep = conn.prepareStatement("insert into s1 values (?);");
          prep.setInt(1, 3);
          assertEquals(prep.executeUpdate(), 1);
@@ -70,6 +71,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table test");} catch (Exception e) {}
          stat.executeUpdate("create table test (c1);");
          PreparedStatement prep = conn.prepareStatement("insert into test values (?);");
 
@@ -81,7 +83,6 @@ public class PrepStmtTest extends TestCase
          }
 
          prep.close();
-         stat.executeUpdate("drop table test;");
       }
       catch (Exception e)
       {
@@ -267,6 +268,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table in1000");} catch (Exception e) {}
          stat.executeUpdate("create table in1000 (a);");
          PreparedStatement prep = conn.prepareStatement("insert into in1000 values (?);");
          conn.setAutoCommit(false);
@@ -292,6 +294,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table testobj");} catch (Exception e) {}
          stat.executeUpdate("create table testobj (" + "c1 integer, c2 float, c3, c4 varchar, c5 bit, c6, c7);");
          PreparedStatement prep = conn.prepareStatement("insert into testobj values (?,?,?,?,?,?,?);");
 
@@ -387,6 +390,7 @@ public class PrepStmtTest extends TestCase
       {
          ResultSet rs;
 
+         try {stat.execute("drop table test");} catch (Exception e) {}
          stat.executeUpdate("create table test (c1, c2, c3, c4);");
          PreparedStatement prep = conn.prepareStatement("insert into test values (?,?,?,?);");
          for (int i = 0; i < 10; i++)
@@ -410,7 +414,6 @@ public class PrepStmtTest extends TestCase
             assertEquals(rs.getDouble(4), Double.MAX_VALUE + i, 0.0001);
          }
          rs.close();
-         stat.executeUpdate("drop table test;");
       }
       catch (Exception e)
       {
@@ -422,6 +425,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table t");} catch (Exception e) {}
          stat.executeUpdate("create table t (c text);");
          PreparedStatement prep = conn.prepareStatement("insert into t values (?);");
          prep.setString(1, "a");
@@ -450,10 +454,10 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table test");} catch (Exception e) {}
          stat.executeUpdate("create table test (c1);");
          stat.executeUpdate("insert into test values (1);");
          conn.prepareStatement("select * from test;").executeQuery().close();
-         stat.executeUpdate("drop table test;");
       }
       catch (Exception e)
       {
@@ -468,6 +472,7 @@ public class PrepStmtTest extends TestCase
          conn.prepareStatement("select ?;").setString(1, "Hello World");
          conn.prepareStatement("select null;").close();
          conn.prepareStatement("select null;").executeQuery().close();
+         try {stat.execute("drop table t");} catch (Exception e) {}
          conn.prepareStatement("create table t (c);").executeUpdate();
          conn.prepareStatement("select null;");
       }
@@ -481,6 +486,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table test");} catch (Exception e) {}
          stat.executeUpdate("create table test (c1);");
          PreparedStatement prep = conn.prepareStatement("insert into test values (?);");
          for (int i = 0; i < 10; i++)
@@ -535,6 +541,7 @@ public class PrepStmtTest extends TestCase
       {
          Date d1 = new Date(20130420);
 
+         try {stat.execute("drop table t");} catch (Exception e) {}
          stat.execute("create table t (c1);");
          PreparedStatement prep = conn.prepareStatement("insert into t values(?);");
          prep.setDate(1, d1);
@@ -542,8 +549,11 @@ public class PrepStmtTest extends TestCase
 
          ResultSet rs = stat.executeQuery("select c1 from t;");
          assertTrue(rs.next());
-         assertEquals(rs.getLong(1), d1.getTime());
-         assertEquals(rs.getDate(1), d1);
+         long l = rs.getLong(1);
+         long ld = d1.getTime();
+         assertEquals(l, ld);
+         Date d = rs.getDate(1);
+         assertEquals(d, d1);
          rs.close();
       }
       catch (Exception e)
@@ -557,6 +567,7 @@ public class PrepStmtTest extends TestCase
       try
       {
          Date d1 = new Date(20131225);
+         try {stat.execute("drop table t");} catch (Exception e) {}
          stat.execute("create table t (c1);");
          PreparedStatement prep = conn.prepareStatement("insert into t values (datetime(?/1000, 'unixepoch'));");
          prep.setDate(1, d1);
@@ -577,6 +588,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table t");} catch (Exception e) {}
          stat.execute("create table t (c1);");
          PreparedStatement prep = conn.prepareStatement("insert into t values (?);");
          conn.createStatement().execute("create table t2 (c2);");
@@ -628,6 +640,7 @@ public class PrepStmtTest extends TestCase
    {
       try
       {
+         try {stat.execute("drop table tbl");} catch (Exception e) {}
          stat.executeUpdate("create table tbl (colid integer primary key AUTOINCREMENT, col varchar)");
          stat.executeUpdate("insert into tbl(col) values (\"foo\")");
 
@@ -689,10 +702,10 @@ public class PrepStmtTest extends TestCase
       {
          PreparedStatement prep = conn.prepareStatement("select * from doesnotexist;");
          prep.executeQuery();
+         fail("expected exception raise");
       }
       catch (Exception e)
       {
-         fail(e);
       }
    }
 
@@ -702,10 +715,10 @@ public class PrepStmtTest extends TestCase
       {
          PreparedStatement prep = conn.prepareStatement("select notacol from (select 1);");
          prep.executeQuery();
+         fail("expected exception raise");
       }
       catch (Exception e)
       {
-         fail(e);
       }
    }
 
@@ -716,10 +729,10 @@ public class PrepStmtTest extends TestCase
          ResultSet rs = conn.prepareStatement("select 1;").executeQuery();
          assertTrue(rs.next());
          rs.getInt("noSuchColName");
+         fail("expected exception raise");
       }
       catch (Exception e)
       {
-         fail(e);
       }
    }
 
