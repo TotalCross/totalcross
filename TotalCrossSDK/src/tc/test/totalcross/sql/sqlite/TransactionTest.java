@@ -10,7 +10,6 @@ import totalcross.unit.*;
  */
 public class TransactionTest extends TestCase
 {
-   totalcross.util.concurrent.Lock lock = new totalcross.util.concurrent.Lock();
    private Connection conn1, conn2, conn3;
    private Statement stat1, stat2, stat3;
 
@@ -20,9 +19,9 @@ public class TransactionTest extends TestCase
    public void connect() throws Exception
    {
 
-      conn1 = DriverManager.getConnection("jdbc:sqlite:" + tmpName);
-      conn2 = DriverManager.getConnection("jdbc:sqlite:" + tmpName);
-      conn3 = DriverManager.getConnection("jdbc:sqlite:" + tmpName);
+      conn1 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
+      conn2 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
+      conn3 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
 
       stat1 = conn1.createStatement();
       stat2 = conn2.createStatement();
@@ -43,6 +42,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS test");
          stat1.executeUpdate("create table test (c1);");
          stat1.executeUpdate("insert into test values (1);");
          stat2.executeUpdate("insert into test values (2);");
@@ -68,6 +68,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS test");
          stat1.executeUpdate("create table test (c1);");
          stat1.executeUpdate("begin immediate;");
          stat2.executeUpdate("select * from test;");
@@ -84,9 +85,9 @@ public class TransactionTest extends TestCase
       {
          ResultSet rs;
          String countSql = "select count(*) from trans;";
-
-         stat1.executeUpdate("create table trans (c1);");
          conn1.setAutoCommit(false);
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS trans");
+         stat1.executeUpdate("create table trans (c1);");
 
          assertEquals(1, stat1.executeUpdate("insert into trans values (4);"));
 
@@ -121,6 +122,7 @@ public class TransactionTest extends TestCase
          String select = "select * from trans;";
          ResultSet rs;
 
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS trans");
          stat1.executeUpdate("create table trans (c1);");
          conn1.setAutoCommit(false);
          stat1.executeUpdate("insert into trans values (3);");
@@ -147,6 +149,7 @@ public class TransactionTest extends TestCase
       {
          ResultSet rs;
 
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          conn1.setAutoCommit(false);
          stat1.executeUpdate("insert into t values (1);");
@@ -190,6 +193,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
@@ -212,6 +216,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
@@ -232,22 +237,15 @@ public class TransactionTest extends TestCase
                   e.printStackTrace();
                   return;
                }
-
-               synchronized (lock)
-               {
-                  done = true;
-               }
+               done = true;
             }
          }.start();
 
          Thread.sleep(100);
          rs.close();
 
-         synchronized (lock)
-         {
-            while (!done)
-               Vm.sleep(100);
-         }
+         while (!done)
+            Vm.sleep(100);
       }
       catch (Exception e)
       {
@@ -268,10 +266,11 @@ public class TransactionTest extends TestCase
          assertTrue(rs.next());
 
          stat2.executeUpdate("insert into t values (3);"); // can't be done
+         fail("should raise exception");
       }
       catch (Exception e)
       {
-         fail(e);
+         //stat2.close();
       }
    }
 
@@ -279,17 +278,19 @@ public class TransactionTest extends TestCase
    {
       try
       {
+         Statement stat2 = conn1.createStatement();
          stat1.close();
          stat1 = conn1.createStatement();
          Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
-         ResultSet rs = conn1.createStatement().executeQuery("select * from t;");
+         ResultSet rs = stat2.executeQuery("select * from t;");
          assertTrue(rs.next());
 
          // commit now succeeds since sqlite 3.6.5
          stat1.executeUpdate("insert into t values (3);"); // can't be done
+         stat2.close();
       }
       catch (Exception e)
       {
@@ -325,21 +326,17 @@ public class TransactionTest extends TestCase
    {
       try
       {
-         connect();
-         
-         cantUpdateWhileReading();
-         secondConnMustTimeout();
-         multiConn();
-         locking();
-         insert();
-         rollback();
-         multiRollback();
-         transactionsDontMindReads();
-         secondConnWillWait();
-         cantCommit();
-         cantRollback();
-
-         close();
+         connect(); cantUpdateWhileReading();    close();
+         connect(); secondConnMustTimeout();     close();
+         connect(); multiConn();                 close();
+         connect(); locking();                   close();
+         connect(); insert();                    close();
+         connect(); rollback();                  close();
+         connect(); multiRollback();             close();
+         connect(); transactionsDontMindReads(); close();
+         connect(); cantCommit();                close();
+         connect(); cantRollback();              close();
+         connect(); secondConnWillWait();        close();
       }
       catch (Exception e)
       {

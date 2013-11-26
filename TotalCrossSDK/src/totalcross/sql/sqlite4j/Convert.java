@@ -23,7 +23,7 @@ class Convert
    }
    static totalcross.sys.Time time(java.sql.Time x)
    {
-      return new totalcross.sys.Time(x.getTime());
+      return x == null ? null : new totalcross.sys.Time(x.getTime());
    }
 
    static java.sql.Date date(Date x)
@@ -32,17 +32,18 @@ class Convert
    }
    static Date date(java.sql.Date x)
    {
-      try
-      {
-         int d = x.getDate();
-         int m = x.getMonth()+1;
-         int y = x.getYear()+1900;
-         return new Date(d, m, y);
-      }
-      catch (InvalidDateException e)
-      {
-         return null;
-      }
+      if (x != null)
+         try
+         {
+            int d = x.getDate();
+            int m = x.getMonth()+1;
+            int y = x.getYear()+1900;
+            return new Date(d, m, y);
+         }
+         catch (Exception e)
+         {
+         }
+      return null;
    }
 
    static java.sql.Timestamp timestamp(Timestamp x)

@@ -257,7 +257,7 @@ public class StatementTest extends TestCase
          stat.addBatch("insert into batch values (2);");
          stat.addBatch("insert into batch values (3);");
          stat.addBatch("insert into batch values (4);");
-         assertEquals(new int[] { 0, 1, 1, 1, 1, 1 }, stat.executeBatch());
+         assertEquals(new int[] { 1, 1, 1, 1, 1, 1 }, stat.executeBatch());
          assertEquals(new int[] {}, stat.executeBatch());
          stat.clearBatch();
          stat.addBatch("insert into batch values (9);");
@@ -377,18 +377,21 @@ public class StatementTest extends TestCase
 
    public void failToDropWhenRSOpen()
    {
+      Statement stat2 = null;
+      try {stat2 = conn.createStatement();} catch (Exception ee) {}
       try
       {
          Vm.gc(); stat.execute("DROP TABLE IF EXISTS t1");
          stat.executeUpdate("create table t1 (c1);");
          stat.executeUpdate("insert into t1 values (4);");
          stat.executeUpdate("insert into t1 values (4);");
-         conn.createStatement().executeQuery("select * from t1;").next();
+         stat2.executeQuery("select * from t1;").next();
          stat.executeUpdate("drop table t1;");
          fail("should raise exception");
       }
       catch (Exception e)
       {/* ok */
+         try {stat2.close();} catch (Exception ee) {}
       }
    }
 
@@ -562,7 +565,6 @@ public class StatementTest extends TestCase
          executeUpdate();
          singleRowRS();
          twoRowRS();
-         autoClose();
          stringRS();
          execute();
          colNameAccess();
@@ -586,6 +588,7 @@ public class StatementTest extends TestCase
          blobTest();
          dateTimeTest();
          maxRows();
+         autoClose();
          
          close();
       }
