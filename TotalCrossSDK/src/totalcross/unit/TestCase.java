@@ -73,6 +73,7 @@ public abstract class TestCase
 
    protected static void fail(Throwable e)
    {
+      e.printStackTrace();
       fail(e.getClass().getName()+" - "+e.getMessage());
    }
       
