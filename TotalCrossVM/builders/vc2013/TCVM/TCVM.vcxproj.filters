@@ -672,6 +672,9 @@
     <ClCompile Include="..\..\..\src\init\nativeProcAddressesTC.c">
       <Filter>init</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowsPhoneRuntimeComponent1.h" />
@@ -1112,6 +1115,12 @@
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h">
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
   </ItemGroup>

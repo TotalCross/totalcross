@@ -6,6 +6,8 @@ extern "C" {
 
 char *GetAppPathWP8();
 void GetWidthAndHeight(DWORD32* width, DWORD32* height);
+void SetupDX(void);
+void ReleaseDX(void);
 
 #ifdef __cplusplus
 }
