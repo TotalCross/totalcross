@@ -606,19 +606,18 @@ public class Date implements Comparable
       return year+"-"+month+"-"+day;
    }
    
+   private static Date EPOCH;
+   
+   static 
+   {
+      try {EPOCH = new Date(1,1,1970);} catch (Exception e) {}
+   }
    /** Returns the number of millis since 1/1/1970.
     * @since TotalCross 2.1
     */
    public long getTime()
    {
-      long days=0;
-      try
-      {
-         days = subtract(new Date(1,1,1970));
-      }
-      catch (InvalidDateException e)
-      {
-      }
-      return days * 24*60*60*1000;
+      long days = EPOCH.subtract(this);
+      return days*24*60*60*1000 - Settings.timeZoneMinutes*60*1000;
    }
 }
