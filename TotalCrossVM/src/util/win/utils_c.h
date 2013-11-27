@@ -14,7 +14,7 @@
 static int32 privateGetFreeMemory(bool maxblock)
 {
    int32 result=1;
-   MEMORYSTATUS ms;  // works for most cases
+   MEMORYSTATUS ms = { 0 };  // works for most cases
    GlobalMemoryStatus(&ms);
 #ifdef WINCE
    result = maxblock ? ms.dwTotalVirtual : ms.dwAvailVirtual; // guich@tc115_3: now using dwTotalVirtual instead of dwAvailPhys
