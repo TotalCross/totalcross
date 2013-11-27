@@ -1905,6 +1905,13 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			goto error2;
 		}
 
+      // juliana@270_25: solved a possible crash when an OutOfMemoryError occurs when creating or recreating indices.
+      IF_HEAP_ERROR(index->heap)
+      {
+         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			goto error2;
+      }
+
       type = *types;
       if (column != -1)
          offset = columnOffsets[column];
