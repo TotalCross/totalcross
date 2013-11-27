@@ -9,7 +9,7 @@ extern "C" {
 	void cppsleep(int ms);
 
 	// Threads functions
-	void* cppthread_create(void (*func)(void *a), void *args, void *t_out);
+	void* cppthread_create(void (*func)(void *a), void *args);
 	void cppthread_detach(void *t);
 	void *cppget_current_thread();
 
