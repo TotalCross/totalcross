@@ -338,15 +338,26 @@ struct TestSuite *createTestSuite()
    return &swtc;
 }
 
-void showTestResults()
+void showTestResults(int *testResults)
 {
    char buf[128];
    TCHAR buf2[128];
+   int i;
+
    if (!swtc.abort)
    {
       xstrprintf(buf,"%ld test total\n%ld tests skipped\n%ld cannot run\n%ld tests completed\n%ld succeeded\n%ld failed\n", (long)swtc.total, (long)swtc.skipped, (long)swtc.cannotRun, (long)(swtc.total + swtc.failed - swtc.skipped - swtc.cannotRun), (long)(swtc.total - swtc.skipped - swtc.cannotRun), (long)swtc.failed);
 	  CharP2TCHARPBuf(buf, buf2);
       DISPLAY_RESULT(buf2);
+
+      if (testResults != NULL)
+         for (i = 0; i < (long)swtc.total; i++) {
+            if (testResults[i]) {
+               xstrprintf(buf, "Test %d failed\n", i);
+               CharP2TCHARPBuf(buf, buf2);
+               DISPLAY_RESULT(buf2);
+            }
+         }
    }
 }
 
