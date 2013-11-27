@@ -2723,11 +2723,11 @@ class Table
       }
       
       // juliana@227_3: improved table files flush dealing.
-      if (plainDB.rowInc == Utils.DEFAULT_ROW_INC) // juliana@202_23: Flushs the files to disk when row increment is the default.
-      {  
-         NormalFile dbFile = (NormalFile)plainDB.db,
-                    dboFile = (NormalFile)plainDB.dbo;
-         
+      // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+      NormalFile dbFile = (NormalFile)plainDB.db,
+                 dboFile = (NormalFile)plainDB.dbo;
+      if (!dbFile.dontFlush) // juliana@202_23: Flushs the files to disk when row increment is the default.
+      {           
          if (dbFile.cacheIsDirty)
             dbFile.flushCache(); // Flushs .db.
          if (dboFile.cacheIsDirty)

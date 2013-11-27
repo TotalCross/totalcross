@@ -1920,6 +1920,13 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			goto error2;
 		}
 
+      // juliana@270_25: solved a possible crash when an OutOfMemoryError occurs when creating or recreating indices.
+      IF_HEAP_ERROR(index->heap)
+      {
+         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			goto error2;
+      }
+
       type = *types;
       if (column != -1)
          offset = columnOffsets[column];
@@ -2543,8 +2550,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
 
    // juliana@227_3: improved table files flush dealing.
 	// juliana@202_23: Flushs the files to disk when row increment is the default.
+   // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
    // Flushs .db and .dbo.
-   if (plainDB->rowInc == DEFAULT_ROW_INC)
+   if (!db->dontFlush)
       if ((db->cacheIsDirty && !flushCache(context, db)) || (dbo->cacheIsDirty && !flushCache(context, dbo))) 
          return false;
 
