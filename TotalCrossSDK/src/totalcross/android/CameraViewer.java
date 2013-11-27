@@ -22,6 +22,7 @@ import totalcross.*;
 import totalcross.android.compat.*;
 
 import java.io.*;
+import java.lang.reflect.Method;
 
 import android.app.*;
 import android.content.*;
@@ -103,7 +104,19 @@ public class CameraViewer extends Activity // guich@tc126_34
          try
          {
             // The Surface has been created, acquire the camera and tell it where to draw.
-            camera = Camera.open(); 
+            if ((camera = Camera.open()) == null)
+            {
+               Method getNumberOfCameras = android.hardware.Camera.class.getMethod("getNumberOfCameras");
+               if (getNumberOfCameras != null)
+               {
+                  int i = (Integer) getNumberOfCameras.invoke(null, (Object[]) null);
+                  Method open = android.hardware.Camera.class.getMethod("open", int.class);
+                  if (open != null)
+                     while (--i >= 0)
+                        if ((camera = (Camera) open.invoke(null, i)) != null)
+                           break;
+               }
+            }
             camera.setPreviewDisplay(holder);
          }
          catch (Exception e)
