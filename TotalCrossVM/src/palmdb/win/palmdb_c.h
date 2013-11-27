@@ -58,7 +58,7 @@ bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 
 bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
-	LARGE_INTEGER off;
+	LARGE_INTEGER off = { 0 };
 	off.LowPart = offset;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
 }
@@ -70,7 +70,7 @@ bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 
 bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
-	LARGE_INTEGER off;
+	LARGE_INTEGER off = { 0 };
 	off.LowPart = offset;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
 }
@@ -82,7 +82,7 @@ bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 
 bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
-	LARGE_INTEGER off;
+	LARGE_INTEGER off = { 0 };
 	off.LowPart = oldSize + growSize;
    return (SetFilePointer(fileRef, off, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
 }

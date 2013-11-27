@@ -237,7 +237,7 @@ static inline bool fileExists(TCHARP path, int32 slot)
 
 static Err fileGetFreeSpace(TCHAR* path, int32* freeSpace, int32 slot)
 {
-   ULARGE_INTEGER freeSize;
+   ULARGE_INTEGER freeSize = { 0 };
 
    if (GetDiskFreeSpaceEx(path, null, null, &freeSize))
    {
@@ -394,7 +394,7 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
-   LARGE_INTEGER off;
+   LARGE_INTEGER off = { 0 };
    off.LowPart = position;
 
    return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
@@ -615,7 +615,7 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
 	DWORD posHigh = 0;
 	DWORD fileSize;
-	LARGE_INTEGER off;
+	LARGE_INTEGER off = { 0 };
 	off.LowPart = newSize;
 
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
