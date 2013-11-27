@@ -421,6 +421,11 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              return exitProgram(103);
           }
           waitUntilStarted();
+          mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
+          gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
+          lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+          loadExceptionClasses(currentContext); // guich@tc112_18
+
           startTestSuite(currentContext); // run the testsuite before Graphics test to be able to test for Font and FontMetrics
           destroyGraphics();
          #else
