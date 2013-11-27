@@ -710,6 +710,8 @@ void startTestSuite(Context currentContext)
    int i;
    int from = 0;
    int to = TEST_COUNT-1;
+   int lastNumberOfFail = 0; //How many tests have failed until now?
+   int testsResults[TEST_COUNT] = { 0 }; // This flag vector indicates whether a given test had failed
    testFunc tests[TEST_COUNT];
 
    xmemzero(tests, sizeof(tests));
@@ -720,8 +722,13 @@ void startTestSuite(Context currentContext)
       tc->total++;
       currentContext->thrownException = null;
       if (tests[i]) tests[i](tc, currentContext);
+      if (tc->failed != lastNumberOfFail)
+      {
+         testsResults[i] = 1;
+         lastNumberOfFail = tc->failed;
+      }
    }
-   showTestResults();
+   showTestResults(testsResults);
 }
 
 #endif

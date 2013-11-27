@@ -28,24 +28,20 @@
 
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 
-#define Sleep()
+#define Sleep(ms) cppsleep(ms)
+
 #define SetErrorMode() 0
-#define GetFileSize() 1
 #define LocalFileTimeToFileTime() 1
 #define FileTimeToLocalFileTime() 1
 #define SetFileTime() 1
 #define SetLocalTime() 1
 #define GetFileTime() 1
 #define Beep() 0
-#define SetThreadPriority() 0
-#define TerminateThread() 0
-#define GetTickCount() 0
-#define ResumeThread() 0
+#define GetTickCount() GetTickCount64()
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
 #define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
 #define MoveFile(a, b) MoveFileEx(a, b, 0)
-#define SetFilePointer(a, b, c, d) SetFilePointerEx(a, b, NULL, d)
 typedef unsigned char boolean;
 #define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
 #define VirtualAlloc(a, b, c, d) malloc(a * b)
@@ -68,7 +64,6 @@ typedef unsigned char boolean;
 #define GetModuleFileName(a, b, c)
 #define EnumWindows(a, b)
 #define SetWindowPos(a, b, c, d, e, f, g) 0
-//#define GetLocaleInfo(a, b, c, d) 0
 #define ExitWindowsEx(a, b)
 #define RegisterHotKey(a, b, c, d)
 #define UnregisterHotKey(a, b)

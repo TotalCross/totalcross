@@ -16,13 +16,13 @@
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
 	//XXX
-#if !defined WP8
    int32 id;
    ThreadHandle h = null;
    ThreadArgs targs = ThreadArgsFromObject(this_);
 
    targs->context = context;
    targs->threadObject = this_;
+#if !defined WP8
    h = CreateThread(NULL, 0, t, targs, CREATE_SUSPENDED, &id);
    if (h != null)
    {
@@ -32,20 +32,35 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
    }
    else throwException(context, RuntimeException, "Can't create thread");
    return h;
+#else
+   h = cppthread_create((void (*)(void*))(void*)t, targs);
+   if (h != null)
+   {
+	   ThreadHandleFromObject(this_) = h;
+   }
+   else throwException(context, RuntimeException, "Can't create thread");
+   return h;
 #endif
-   throwException(context, RuntimeException, "Can't create thread");
-   return null;
 }
 
 static ThreadHandle privateThreadGetCurrent()
 {
+#ifndef WP8
    return GetCurrentThread();
+#else
+	return cppget_current_thread();
+#endif
 }
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
+#ifndef WP8
    if (!threadDestroyingItself) TerminateThread(h, 0);
    CloseHandle(h);
+#else
+	//Here we should detach the thread and let it fly away in peace; something like ANDROID, but more guaranteed to free space when die
+	cppthread_detach((void*)h);
+#endif
 }
 
 static DWORD WINAPI privateThreadFunc(VoidP argP)

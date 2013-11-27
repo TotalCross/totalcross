@@ -195,7 +195,11 @@ TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTime
 }
 TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-#if defined (WIN32)
+	//XXX There is no function in WP8 that can set local/system time in C/C++
+#if defined (WP8)
+	TEST_CANNOT_RUN;
+   finish: ;
+#elif defined (WIN32)
    TNMParams p;
    Object currentTime;
    Object testTime;
@@ -362,6 +366,11 @@ TESTCASE(tsV_sleep_i) // totalcross/sys/Vm native public static void sleep(int m
 TESTCASE(tsV_getFreeMemory) // totalcross/sys/Vm native public static int getFreeMemory();
 {
    TNMParams p;
+
+#ifdef WP8
+   TEST_CANNOT_RUN;
+   //XXX In WP8, there were no function that would get free memory in C or C++, only VB and C#
+#endif
 
    tzero(p);
    p.currentContext = currentContext;
