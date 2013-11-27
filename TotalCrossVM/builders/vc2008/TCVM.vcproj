@@ -2601,6 +2601,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="sql"
+				>
+				<File
+					RelativePath="..\..\src\nm\sql\SQL4D.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="ZLib"
@@ -3626,4 +3634,3 @@
 	<Globals>
 	</Globals>
 </VisualStudioProject>
-
