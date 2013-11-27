@@ -661,7 +661,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	SQLValue** record1;
 	SQLValue** record2;
    ResultSet* listRsTemp[MAXIMUMS]; //rnovais@200_4
-   Hashtable colHashesTable; // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+   Hashtable colHashesTable; // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
    Heap heap = null, 
 		  heap_1 = null, 
 		  heap_2 = null, 
@@ -731,7 +731,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
 
-            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
             TC_htPut32(&colHashesTable, param->aliasHashCode, 1);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
          else // Uses the parameter hash and data type.
@@ -749,8 +749,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          columnIndexes[size] = field->tableColIndex;
          columnIndexesTables[size++] = (int32)field->table;
          
-         // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+         // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
          TC_htPut32(&colHashesTable, field->aliasHashCode, 0);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         TC_htPut32(&colHashesTable, field->tableColHashCode, 0);
       }
    }
 
@@ -768,7 +769,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+         // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
          if (!TC_htGet32Inv(&colHashesTable, (field = fieldList[i])->aliasHashCode))
             continue;
 
@@ -995,7 +996,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    count = tempTable1->columnCount;
 
    // When creating the new temporary table, removes the extra fields that were created to perform the sorting.
-   // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+   // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
    if (sortListClause && count != selectFieldsCount)
       size = selectFieldsCount;
 

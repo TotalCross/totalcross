@@ -637,7 +637,7 @@ class SQLSelectStatement extends SQLStatement
                         param;
       ResultSet rsTemp = null;
       
-      // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+      // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
       IntHashtable colHashesTable = new IntHashtable(selectFieldsCount); // The hash table of the columns.
 
       // Maps the aggregated function parameter column indexes to the aggregate function code.
@@ -678,7 +678,7 @@ class SQLSelectStatement extends SQLStatement
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
                
-               // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+               // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
                colHashesTable.put(param.aliasHashCode, 1); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
             }
          }
@@ -690,8 +690,9 @@ class SQLSelectStatement extends SQLStatement
             columnIndexes[size] = (short)field.tableColIndex;
             columnIndexesTables[size++] = field.table;
             
-            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
             colHashesTable.put(field.aliasHashCode, 0); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+            colHashesTable.put(field.tableColHashCode, 0);
          }
       }
 
@@ -708,7 +709,7 @@ class SQLSelectStatement extends SQLStatement
          while (++i < count)
          {
             // juliana@253_1: corrected a sort causing AOOIBE if the sort field is in a function.
-            // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+            // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
             if (colHashesTable.get((field = fieldList[i]).aliasHashCode, -1) == 0)
                continue;
 
@@ -865,7 +866,7 @@ class SQLSelectStatement extends SQLStatement
          return tempTable;
 
       // When creating the new temporary table, removes the extra fields that were created to perform the sort.
-      // juliana@270_24: corrected a possible application crash or exception when using order by with join.
+      // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
       if (sortListClause != null && (count = tempTable.columnCount) != selectFieldsCount)
          size = selectFieldsCount;
 
