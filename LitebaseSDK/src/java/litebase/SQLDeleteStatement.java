@@ -339,7 +339,8 @@ class SQLDeleteStatement extends SQLStatement
          table.tableSaveMetaData(Utils.TSMD_ONLY_DELETEDROWSCOUNT);
  
       // juliana@227_3: improved table files flush dealing.
-      if (plainDB.rowInc == Utils.DEFAULT_ROW_INC) // juliana@202_23: flushs the files to disk when row increment is the default.
+      // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+      if (!dbFile.dontFlush) // juliana@202_23: flushs the files to disk when row increment is the default.
       {  
          if (dbFile.cacheIsDirty)
             dbFile.flushCache(); // Flushs .db.
