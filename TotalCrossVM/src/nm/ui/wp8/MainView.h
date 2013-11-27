@@ -4,6 +4,8 @@
 
 #define HAS_TCHAR
 
+#include <agile.h>
+#include "Direct3DBase.h"
 #include "tcvm.h"
 
 namespace TotalCross
@@ -23,6 +25,9 @@ namespace TotalCross
 		virtual void Run();
 		virtual void Uninitialize();
 		Platform::String ^getAppPath();
+      Windows::UI::Core::CoreWindow^ GetWindow();
+      Direct3DBase^ getDirect3DBase();
+      void setDirect3DBase(Direct3DBase^ direct3DBase);
 
 	protected:
 		// Event Handlers.
@@ -44,6 +49,8 @@ namespace TotalCross
 		//char appPath[1024];
 		Platform::String ^appPath;
 		Platform::String ^_cmdline;
+      Platform::Agile<Windows::UI::Core::CoreWindow> currentWindow;
+      Direct3DBase^ currentDirect3DBase;
 	};
 }
 

@@ -20,6 +20,7 @@ m_windowClosed(false),
 m_windowVisible(true)
 {
 	lastInstance = this;
+   currentDirect3DBase = nullptr;
 }
 
 MainView::MainView(String ^cmdline, String ^_appPath) :
@@ -33,11 +34,11 @@ m_windowVisible(true)
 	_cmdline = cmdline;
 
 	lastInstance = this;
+   currentDirect3DBase = nullptr;
 }
 
 void MainView::Initialize(CoreApplicationView^ applicationView)
 {
-	int32 vm_err_code;
 	applicationView->Activated +=
 		ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &MainView::OnActivated);
 
@@ -46,16 +47,12 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 
 	CoreApplication::Resuming +=
 		ref new EventHandler<Platform::Object^>(this, &MainView::OnResuming);
-
-	vm_err_code = startVM(cmdLine, &local_context);
-	if (vm_err_code != 0) {
-		abort();
-	}
-	
 }
 
 void MainView::SetWindow(CoreWindow^ window)
 {
+   currentWindow = window;
+
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
 
@@ -71,15 +68,28 @@ void MainView::SetWindow(CoreWindow^ window)
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
 
+   int32 vm_err_code = startVM(cmdLine, &local_context);
+   if (vm_err_code != 0) 
+   {
+      m_windowClosed = true;
+   }
+
 }
 
 void MainView::Load(Platform::String^ entryPoint)
 {
+
 }
 
 void MainView::Run()
 {
-	startProgram(local_context);
+   if (m_windowClosed)
+   {
+      Windows::ApplicationModel::Core::CoreApplication::Exit();
+      m_windowClosed = false;
+   }
+   else
+      startProgram(local_context);
 
 	while (!m_windowClosed)
 	{
@@ -130,13 +140,21 @@ void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEvent
 
 void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 {
-	// Save app state asynchronously after requesting a deferral. Holding a deferral
-	// indicates that the application is busy performing suspending operations. Be
-	// aware that a deferral may not be held indefinitely. After about five seconds,
-	// the app will be forced to exit.
-	SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
+   // Save app state asynchronously after requesting a deferral. Holding a deferral
+   // indicates that the application is busy performing suspending operations. Be
+   // aware that a deferral may not be held indefinitely. After about five seconds,
+   // the app will be forced to exit.
+   SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
+   
+   if (currentDirect3DBase)
+      currentDirect3DBase->ReleaseResourcesForSuspending();
 
-	deferral->Complete();
+   //create_task([this, deferral]()
+   //{
+      // Insert your code here.
+
+      deferral->Complete();
+   //});
 }
 
 void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
@@ -154,4 +172,19 @@ MainView ^MainView::GetLastInstance()
 String ^MainView::getAppPath()
 {
 	return appPath;
+}
+
+Windows::UI::Core::CoreWindow^ MainView::GetWindow()
+{
+   return currentWindow.Get();
+}
+
+Direct3DBase^ MainView::getDirect3DBase()
+{
+   return currentDirect3DBase;
+}
+
+void MainView::setDirect3DBase(Direct3DBase^ direct3DBase)
+{
+   currentDirect3DBase = direct3DBase;
 }

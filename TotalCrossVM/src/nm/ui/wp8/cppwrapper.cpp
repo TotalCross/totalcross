@@ -1,5 +1,6 @@
-#include  "cppwrapper.h"
+#include "Direct3DBase.h"
 #include "MainView.h"
+#include "cppwrapper.h"
 #include "tcvm.h"
 
 
@@ -50,4 +51,23 @@ void *cppget_current_thread()
 void cppsleep(int ms)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
+void GetWidthAndHeight(DWORD32* width, DWORD32* height)
+{
+   Windows::UI::Core::CoreWindow^ window = MainView::GetLastInstance()->GetWindow();
+   *width = window->Bounds.Width;
+   *height = window->Bounds.Height;
+}
+
+void SetupDX(void)
+{
+   MainView^ mainView = MainView::GetLastInstance();
+   if (!mainView->getDirect3DBase())
+      mainView->setDirect3DBase(ref new Direct3DBase(mainView->GetWindow()));
+}
+
+void ReleaseDX(void)
+{
+   MainView::GetLastInstance()->getDirect3DBase()->ReleaseDX();
 }

@@ -91,6 +91,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>ole32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <AdditionalDependencies>d3d11.lib;WindowsPhoneCore.lib;RuntimeObject.lib;PhoneAppModelHost.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -265,6 +266,9 @@
     <ClInclude Include="..\..\..\src\nm\ui\win\media_Sound_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\MainView.h" />
     <ClInclude Include="..\..\..\src\nm\util\zip_ZLib_test.h" />
     <ClInclude Include="..\..\..\src\nm\xml\xml_XmlTokenizer_test.h" />
@@ -430,6 +434,16 @@
     <ClCompile Include="..\..\..\src\nm\ui\media_Sound.c" />
     <ClCompile Include="..\..\..\src\nm\ui\Window.c" />
     <ClCompile Include="..\..\..\src\nm\ui\wp8\cppwrapper.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
