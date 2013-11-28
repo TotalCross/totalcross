@@ -89,19 +89,21 @@ void MainView::Run()
       m_windowClosed = false;
    }
    else
+   {
       startProgram(local_context);
 
-	while (!m_windowClosed)
-	{
-		if (m_windowVisible)
-		{
-			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		}
-		else
-		{
-			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-		}
-	}
+      while (!m_windowClosed)
+      {
+         if (m_windowVisible)
+         {
+            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+         }
+         else
+         {
+            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+         }
+      }
+   }
 }
 
 void MainView::Uninitialize()
