@@ -33,8 +33,9 @@ void cppthread_detach(void *t)
 void* cppthread_create(void (*func)(void *a), void *args)
 {
 	try {
-		std::thread *tptr;
-		std::thread t = std::thread(func, args);
+		std::thread t(func, args);
+
+		t.detach();
 
 		return (void*)*(UINT64*)&t.get_id();
 	} catch(std::system_error e) {
