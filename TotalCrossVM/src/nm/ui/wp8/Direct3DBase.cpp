@@ -1,5 +1,8 @@
 ﻿#include "Direct3DBase.h"
+#include "cppwrapper.h"
+#include "MainView.h"
 
+using namespace DX;
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
@@ -8,8 +11,10 @@ using namespace Windows::Graphics::Display;
 
 // Constructor.
 // Initialize the Direct3D resources required to run.
-Direct3DBase::Direct3DBase(CoreWindow^ window)
+Direct3DBase::Direct3DBase(CoreWindow^ window) 
 {
+   m_loadingComplete = false;
+   m_indexCount = 0;
    m_window = window;
 
    CreateDeviceResources();
@@ -52,7 +57,7 @@ void Direct3DBase::CreateDeviceResources()
 	// Create the Direct3D 11 API device object and a corresponding context.
 	ComPtr<ID3D11Device> device;
 	ComPtr<ID3D11DeviceContext> context;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		D3D11CreateDevice(
 			nullptr, // Specify nullptr to use the default adapter.
 			D3D_DRIVER_TYPE_HARDWARE,
@@ -68,23 +73,141 @@ void Direct3DBase::CreateDeviceResources()
 		);
    
 	// Get the Direct3D 11.1 API device and context interfaces.
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		device.As(&m_d3dDevice)
 		);
    
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		context.As(&m_d3dContext)
 		);
+
+   
+   auto loadVSTask = ReadDataAsync("SimpleVertexShader.cso");
+   auto loadPSTask = ReadDataAsync("SimplePixelShader.cso");
+
+   auto createVSTask = loadVSTask.then([this](Platform::Array<byte>^ fileData) {
+      ThrowIfFailed(
+         m_d3dDevice->CreateVertexShader(
+         fileData->Data,
+         fileData->Length,
+         nullptr,
+         &m_vertexShader
+         )
+         );
+
+      const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+      {
+         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+         { "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      };
+
+      ThrowIfFailed(
+         m_d3dDevice->CreateInputLayout(
+         vertexDesc,
+         ARRAYSIZE(vertexDesc),
+         fileData->Data,
+         fileData->Length,
+         &m_inputLayout
+         )
+         );
+   }); 
+
+   auto createPSTask = loadPSTask.then([this](Platform::Array<byte>^ fileData) {
+      ThrowIfFailed(
+         m_d3dDevice->CreatePixelShader(
+         fileData->Data,
+         fileData->Length,
+         nullptr,
+         &m_pixelShader
+         )
+         );
+         
+      CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+      ThrowIfFailed(
+         m_d3dDevice->CreateBuffer(
+         &constantBufferDesc,
+         nullptr,
+         &m_constantBuffer
+         )
+         );
+   });
+      
+   auto createCubeTask = (createPSTask && createVSTask).then([this]() {
+      VertexPositionColor cubeVertices[] =
+      {
+         { XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f) },
+         { XMFLOAT3(-0.5f, -0.5f, 0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+         { XMFLOAT3(-0.5f, 0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+         { XMFLOAT3(-0.5f, 0.5f, 0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f) },
+         { XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+         { XMFLOAT3(0.5f, -0.5f, 0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f) },
+         { XMFLOAT3(0.5f, 0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f) },
+         { XMFLOAT3(0.5f, 0.5f, 0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
+      };
+      
+      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+      vertexBufferData.pSysMem = cubeVertices;
+      vertexBufferData.SysMemPitch = 0;
+      vertexBufferData.SysMemSlicePitch = 0;
+      CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
+      ThrowIfFailed(
+         m_d3dDevice->CreateBuffer(
+         &vertexBufferDesc,
+         &vertexBufferData,
+         &m_vertexBuffer
+         )
+         );
+
+      unsigned short cubeIndices[] =
+      {
+         0, 2, 1, // -x
+         1, 2, 3,
+
+         4, 5, 6, // +x
+         5, 7, 6,
+
+         0, 1, 5, // -y
+         0, 5, 4,
+
+         2, 6, 7, // +y
+         2, 7, 3,
+
+         0, 4, 6, // -z
+         0, 6, 2,
+
+         1, 3, 7, // +z
+         1, 7, 5,
+      };
+      
+      m_indexCount = ARRAYSIZE(cubeIndices);
+      
+      D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
+      indexBufferData.pSysMem = cubeIndices;
+      indexBufferData.SysMemPitch = 0;
+      indexBufferData.SysMemSlicePitch = 0;
+      CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
+      ThrowIfFailed(
+         m_d3dDevice->CreateBuffer(
+         &indexBufferDesc,
+         &indexBufferData,
+         &m_indexBuffer
+         )
+         );
+   });
+   
+   createCubeTask.then([this]() {
+      m_loadingComplete = true;
+   }); 
 }
 
 // Allocate all memory resources that depend on the window size.
 void Direct3DBase::CreateWindowSizeDependentResources()
 {
-	m_windowBounds = m_window->Bounds;
+   m_windowBounds = TotalCross::MainView::GetLastInstance()->getBounds();
 
 	// Calculate the necessary swap chain and render target size in pixels.
-	m_renderTargetSize.Width = ConvertDipsToPixels(m_windowBounds.Width);
-	m_renderTargetSize.Height = ConvertDipsToPixels(m_windowBounds.Height);
+   m_renderTargetSize.Width = ConvertDipsToPixels(m_windowBounds.Width);
+   m_renderTargetSize.Height = ConvertDipsToPixels(m_windowBounds.Height);
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
 	swapChainDesc.Width = static_cast<UINT>(m_renderTargetSize.Width); // Match the size of the window.
@@ -100,17 +223,17 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 	swapChainDesc.Flags = 0;
 
 	ComPtr<IDXGIDevice1> dxgiDevice;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		m_d3dDevice.As(&dxgiDevice)
 		);
 
 	ComPtr<IDXGIAdapter> dxgiAdapter;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		dxgiDevice->GetAdapter(&dxgiAdapter)
 		);
 
 	ComPtr<IDXGIFactory2> dxgiFactory;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		dxgiAdapter->GetParent(
 			__uuidof(IDXGIFactory2), 
 			&dxgiFactory
@@ -118,7 +241,7 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		);
 
 	Windows::UI::Core::CoreWindow^ window = m_window.Get();
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		dxgiFactory->CreateSwapChainForCoreWindow(
 			m_d3dDevice.Get(),
 			reinterpret_cast<IUnknown*>(window),
@@ -130,13 +253,13 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		
 	// Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
 	// ensures that the application will only render after each VSync, minimizing power consumption.
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		dxgiDevice->SetMaximumFrameLatency(1)
 		);
 
 	// Create a render target view of the swap chain back buffer.
 	ComPtr<ID3D11Texture2D> backBuffer;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		m_swapChain->GetBuffer(
 			0,
 			__uuidof(ID3D11Texture2D),
@@ -144,7 +267,7 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 			)
 		);
 
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		m_d3dDevice->CreateRenderTargetView(
 			backBuffer.Get(),
 			nullptr,
@@ -163,7 +286,7 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		);
 
 	ComPtr<ID3D11Texture2D> depthStencil;
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		m_d3dDevice->CreateTexture2D(
 			&depthStencilDesc,
 			nullptr,
@@ -172,7 +295,7 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		);
 
 	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-	DX::ThrowIfFailed(
+	ThrowIfFailed(
 		m_d3dDevice->CreateDepthStencilView(
 			depthStencil.Get(),
 			&depthStencilViewDesc,
@@ -189,6 +312,25 @@ void Direct3DBase::CreateWindowSizeDependentResources()
 		);
 
 	m_d3dContext->RSSetViewports(1, &viewport);
+
+   float aspectRatio = m_windowBounds.Width / m_windowBounds.Height;
+   float fovAngleY = 70.0f * XM_PI / 180.0f;
+   if (aspectRatio < 1.0f)
+   {
+      fovAngleY /= aspectRatio;
+   }
+
+   XMStoreFloat4x4(
+      &m_constantBufferData.projection,
+      XMMatrixTranspose(
+      XMMatrixPerspectiveFovRH(
+      fovAngleY,
+      aspectRatio,
+      0.01f,
+      100.0f
+      )
+      )
+      ); 
 }
 
 // This method is called in the event handler for the SizeChanged event.
@@ -219,7 +361,83 @@ void Direct3DBase::ReleaseResourcesForSuspending()
 
 void Direct3DBase::Render()
 {
+   const float midnightBlue[] = { 0.098f, 0.098f, 0.439f, 1.000f };
+   m_d3dContext->ClearRenderTargetView(
+      m_renderTargetView.Get(),
+      midnightBlue
+      );
 
+   m_d3dContext->ClearDepthStencilView(
+      m_depthStencilView.Get(),
+      D3D11_CLEAR_DEPTH,
+      1.0f,
+      0
+      );
+   
+   // Only draw the cube once it is loaded (loading is asynchronous).
+   if (!m_loadingComplete)
+   {
+      return;
+   }
+  
+   m_d3dContext->OMSetRenderTargets(
+      1,
+      m_renderTargetView.GetAddressOf(),
+      m_depthStencilView.Get()
+      );
+  
+   m_d3dContext->UpdateSubresource(
+      m_constantBuffer.Get(),
+      0,
+      NULL,
+      &m_constantBufferData,
+      0,
+      0
+      );
+
+   UINT stride = sizeof(VertexPositionColor);
+   UINT offset = 0;
+   m_d3dContext->IASetVertexBuffers(
+      0,
+      1,
+      m_vertexBuffer.GetAddressOf(),
+      &stride,
+      &offset
+      );
+
+   m_d3dContext->IASetIndexBuffer(
+      m_indexBuffer.Get(),
+      DXGI_FORMAT_R16_UINT,
+      0
+      );
+
+   m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+   m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+
+   m_d3dContext->VSSetShader(
+      m_vertexShader.Get(),
+      nullptr,
+      0
+      );
+
+   m_d3dContext->VSSetConstantBuffers(
+      0,
+      1,
+      m_constantBuffer.GetAddressOf()
+      );
+
+   m_d3dContext->PSSetShader(
+      m_pixelShader.Get(),
+      nullptr,
+      0
+      );
+
+   m_d3dContext->DrawIndexed(
+      m_indexCount,
+      0,
+      0
+      );
 }
 
 // Method to deliver the final image to the display.
@@ -246,7 +464,7 @@ void Direct3DBase::Present()
 	}
 	else
 	{
-		DX::ThrowIfFailed(hr);
+		ThrowIfFailed(hr);
 	}
 }
 

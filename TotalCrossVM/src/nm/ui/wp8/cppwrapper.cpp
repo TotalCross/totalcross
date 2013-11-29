@@ -1,16 +1,18 @@
+#include <chrono>
+#include <thread>
+#include <system_error>
+
 #include "Direct3DBase.h"
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
 
-
-#include <chrono>
-#include <thread>
-#include <system_error>
-
 using namespace TotalCross;
+using namespace Windows::Foundation;
 
 static char apPath[1024];
+DWORD32 privHeight;
+DWORD32 privWidth;
 
 char *GetAppPathWP8()
 {
@@ -53,18 +55,33 @@ void cppsleep(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void GetWidthAndHeight(DWORD32* width, DWORD32* height)
+void SetBounds()
 {
-   Windows::UI::Core::CoreWindow^ window = MainView::GetLastInstance()->GetWindow();
-   *width = window->Bounds.Width;
-   *height = window->Bounds.Height;
+   MainView::GetLastInstance()->setBounds();
 }
 
-void SetupDX(void)
+void GetWidthAndHeight(DWORD32* width, DWORD32* height)
+{
+   Rect bounds = MainView::GetLastInstance()->getBounds();
+   *width = bounds.Width;
+   *height = bounds.Height;
+}
+
+void InitDX(void)
 {
    MainView^ mainView = MainView::GetLastInstance();
    if (!mainView->getDirect3DBase())
       mainView->setDirect3DBase(ref new Direct3DBase(mainView->GetWindow()));
+}
+
+void DisplayDX(void)
+{
+   Direct3DBase^ direct3DBase = MainView::GetLastInstance()->getDirect3DBase();
+   if (direct3DBase)
+   {
+      direct3DBase->Render();
+      direct3DBase->Present();
+   }
 }
 
 void ReleaseDX(void)

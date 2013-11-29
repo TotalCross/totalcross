@@ -22,12 +22,14 @@ namespace TotalCross
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
 		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
 		virtual void Load(Platform::String^ entryPoint);
-		virtual void Run();
-		virtual void Uninitialize();
-		Platform::String ^getAppPath();
-      Windows::UI::Core::CoreWindow^ GetWindow();
-      Direct3DBase^ getDirect3DBase();
+      virtual void Run(void);
+      virtual void Uninitialize(void);
+      Platform::String ^getAppPath(void);
+      Windows::UI::Core::CoreWindow^ GetWindow(void);
+      Direct3DBase^ getDirect3DBase(void);
       void setDirect3DBase(Direct3DBase^ direct3DBase);
+      void setBounds(void);
+      Windows::Foundation::Rect getBounds(void);
 
 	protected:
 		// Event Handlers.
@@ -50,7 +52,10 @@ namespace TotalCross
 		Platform::String ^appPath;
 		Platform::String ^_cmdline;
       Platform::Agile<Windows::UI::Core::CoreWindow> currentWindow;
+      Windows::Foundation::Rect bounds;
       Direct3DBase^ currentDirect3DBase;
+
+      void MainView::mainLoop();
 	};
 }
 

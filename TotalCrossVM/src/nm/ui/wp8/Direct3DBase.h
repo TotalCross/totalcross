@@ -2,6 +2,19 @@
 
 #include "DirectXHelper.h"
 
+struct ModelViewProjectionConstantBuffer
+{
+   DirectX::XMFLOAT4X4 model;
+   DirectX::XMFLOAT4X4 view;
+   DirectX::XMFLOAT4X4 projection;
+};
+
+struct VertexPositionColor
+{
+   DirectX::XMFLOAT3 pos;
+   DirectX::XMFLOAT3 color;
+};
+
 // Helper class that initializes DirectX APIs for 3D rendering.
 ref class Direct3DBase sealed
 {
@@ -31,4 +44,16 @@ protected private:
 	Windows::Foundation::Size m_renderTargetSize;
 	Windows::Foundation::Rect m_windowBounds;
 	Platform::Agile<Windows::UI::Core::CoreWindow> m_window;
+
+   Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+   Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
+   Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
+   Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
+   Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+   Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
+
+   uint32 m_indexCount;
+   ModelViewProjectionConstantBuffer m_constantBufferData;
+
+   bool m_loadingComplete;
 };

@@ -8,12 +8,18 @@
 extern "C" {
 #endif
 
+extern DWORD32 privHeight;
+extern DWORD32 privWidth;
+
 char *GetAppPathWP8();
 void cppsleep(int ms);
+void SetBounds();
 
 // Graphics functions
 void GetWidthAndHeight(DWORD32* width, DWORD32* height);
-void SetupDX(void);
+void InitDX(void);
+void SetupDX(DWORD32 width, DWORD32 height);
+void DisplayDX(void);
 void ReleaseDX(void);
 
 // Threads functions
