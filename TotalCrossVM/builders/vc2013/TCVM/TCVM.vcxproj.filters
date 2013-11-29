@@ -1149,4 +1149,12 @@
       <Filter>Native methods\ui\darwin</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\SimplePixelShader.hlsl">
+      <Filter>Native methods\ui\wp8</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\SimpleVertexShader.hlsl">
+      <Filter>Native methods\ui\wp8</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>

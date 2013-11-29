@@ -1,5 +1,7 @@
 #include "MainView.h"
 
+#include <thread>
+
 using namespace TotalCross;
 
 using namespace Windows::ApplicationModel::Core;
@@ -14,6 +16,8 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
 static MainView ^lastInstance = nullptr;
+
+std::thread t;
 
 MainView::MainView() :
 m_windowClosed(false),
@@ -52,6 +56,7 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 void MainView::SetWindow(CoreWindow^ window)
 {
    currentWindow = window;
+   SetBounds();
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -67,13 +72,6 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
-
-   int32 vm_err_code = startVM(cmdLine, &local_context);
-   if (vm_err_code != 0) 
-   {
-      m_windowClosed = true;
-   }
-
 }
 
 void MainView::Load(Platform::String^ entryPoint)
@@ -83,31 +81,40 @@ void MainView::Load(Platform::String^ entryPoint)
 
 void MainView::Run()
 {
-   if (m_windowClosed)
-   {
-      Windows::ApplicationModel::Core::CoreApplication::Exit();
-      m_windowClosed = false;
-   }
-   else
-   {
-      startProgram(local_context);
+   auto x = CoreWindow::GetForCurrentThread();
+   t = std::thread([=]{mainLoop(); });
 
-      while (!m_windowClosed)
+   m_windowClosed = false;
+   while (!m_windowClosed)
+   {
+      if (m_windowVisible)
       {
-         if (m_windowVisible)
-         {
-            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-         }
-         else
-         {
-            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-         }
+         x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+         DisplayDX();
+      }
+      else
+      {
+         x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
       }
    }
 }
 
+void MainView::mainLoop()
+{
+   int32 vm_err_code = startVM(cmdLine, &local_context);
+   if (vm_err_code != 0)
+   {
+      m_windowClosed = true;
+   }
+
+   if (!m_windowClosed)
+      startProgram(local_context);
+}
+
 void MainView::Uninitialize()
 {
+   m_windowClosed = true;
+   t.join();
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -189,4 +196,14 @@ Direct3DBase^ MainView::getDirect3DBase()
 void MainView::setDirect3DBase(Direct3DBase^ direct3DBase)
 {
    currentDirect3DBase = direct3DBase;
+}
+
+void MainView::setBounds(void)
+{
+   bounds = currentWindow->Bounds;
+}
+
+Rect MainView::getBounds(void)
+{
+   return bounds;
 }
