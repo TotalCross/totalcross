@@ -82,7 +82,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>false</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\include\GLES2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -555,6 +555,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\..\extlibs\DirectXTK\DirectXTK_WindowsPhone8.vcxproj">
       <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\angleproject\src\libGLESv2\libGLESv2_phone.vcxproj">
+      <Project>{0592f9c3-d727-4d41-bc9e-e43b269ad877}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
