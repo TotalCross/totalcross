@@ -18,19 +18,17 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   SetupDX();
+   InitDX();
    return true;
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
    xfree(screen->pixels);
-   ReleaseDX();
 }
 
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
-
 }
 
 void privateScreenChange(int32 w, int32 h)
