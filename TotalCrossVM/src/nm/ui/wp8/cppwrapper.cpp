@@ -57,8 +57,8 @@ void cppsleep(int ms)
 void GetWidthAndHeight(DWORD32* width, DWORD32* height)
 {
    Windows::UI::Core::CoreWindow^ window = MainView::GetLastInstance()->GetWindow();
-   *width = (DWORD32) window->Bounds.Width;
-   *height = (DWORD32) window->Bounds.Height;
+   *width = window->Bounds.Width;
+   *height = window->Bounds.Height;
 }
 
 void SetupDX(void)
