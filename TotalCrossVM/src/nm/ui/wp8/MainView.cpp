@@ -1,6 +1,8 @@
+#include "CubeRenderer.h"
 #include "MainView.h"
 
 #include <thread>
+#include "winrtangle.h"
 
 using namespace TotalCross;
 
@@ -19,12 +21,95 @@ static MainView ^lastInstance = nullptr;
 
 std::thread t;
 
+//#include "GLES2/gl2.h"
+
+//#include "GLES2/gl2ext.h"
+
+
+//XXX
+
+// Helper class for basic timing.
+ref class BasicTimer sealed
+{
+public:
+	// Initializes internal timer values.
+	BasicTimer()
+	{
+		if (!QueryPerformanceFrequency(&m_frequency))
+		{
+			throw ref new Platform::FailureException();
+		}
+		Reset();
+	}
+
+	// Reset the timer to initial values.
+	void Reset()
+	{
+		Update();
+		m_startTime = m_currentTime;
+		m_total = 0.0f;
+		m_delta = 1.0f / 60.0f;
+	}
+
+	// Update the timer's internal values.
+	void Update()
+	{
+		if (!QueryPerformanceCounter(&m_currentTime))
+		{
+			throw ref new Platform::FailureException();
+		}
+
+		m_total = static_cast<float>(
+			static_cast<double>(m_currentTime.QuadPart - m_startTime.QuadPart) /
+			static_cast<double>(m_frequency.QuadPart)
+			);
+
+		if (m_lastTime.QuadPart == m_startTime.QuadPart)
+		{
+			// If the timer was just reset, report a time delta equivalent to 60Hz frame time.
+			m_delta = 1.0f / 60.0f;
+		}
+		else
+		{
+			m_delta = static_cast<float>(
+				static_cast<double>(m_currentTime.QuadPart - m_lastTime.QuadPart) /
+				static_cast<double>(m_frequency.QuadPart)
+				);
+		}
+
+		m_lastTime = m_currentTime;
+	}
+
+	// Duration in seconds between the last call to Reset() and the last call to Update().
+	property float Total
+	{
+		float get() { return m_total; }
+	}
+
+	// Duration in seconds between the previous two calls to Update().
+	property float Delta
+	{
+		float get() { return m_delta; }
+	}
+
+private:
+	LARGE_INTEGER m_frequency;
+	LARGE_INTEGER m_currentTime;
+	LARGE_INTEGER m_startTime;
+	LARGE_INTEGER m_lastTime;
+	float m_total;
+	float m_delta;
+};
+//XXX
+
+// rotating cube
+
 MainView::MainView() :
 m_windowClosed(false),
 m_windowVisible(true)
 {
 	lastInstance = this;
-   currentDirect3DBase = nullptr;
+   //currentDirect3DBase = nullptr;
 }
 
 MainView::MainView(String ^cmdline, String ^_appPath) :
@@ -38,7 +123,7 @@ m_windowVisible(true)
 	_cmdline = cmdline;
 
 	lastInstance = this;
-   currentDirect3DBase = nullptr;
+   //currentDirect3DBase = nullptr;
 }
 
 void MainView::Initialize(CoreApplicationView^ applicationView)
@@ -72,6 +157,25 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
+
+#if (_MSC_VER >= 1800)
+	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
+	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
+	// Windows Phone 8.0 uses D3D_FEATURE_LEVEL_9_3
+	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_9_3;
+#endif 
+
+	HRESULT result = CreateWinrtEglWindow(WINRT_EGL_IUNKNOWN(CoreWindow::GetForCurrentThread()), featureLevel, m_eglWindow.GetAddressOf());
+	if (SUCCEEDED(result))
+	{
+		m_esContext.hWnd = m_eglWindow;
+
+		//title, width, and height are unused, but included for backwards compatibility
+		esCreateWindow(&m_esContext, nullptr, 0, 0, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
+
+		m_cubeRenderer.CreateResources();
+	}
 }
 
 void MainView::Load(Platform::String^ entryPoint)
@@ -81,6 +185,8 @@ void MainView::Load(Platform::String^ entryPoint)
 
 void MainView::Run()
 {
+	BasicTimer^ timer = ref new BasicTimer();
+
    auto x = CoreWindow::GetForCurrentThread();
    t = std::thread([=]{mainLoop(); });
 
@@ -89,12 +195,18 @@ void MainView::Run()
    {
       if (m_windowVisible)
       {
-         x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-         DisplayDX();
+		  timer->Update();
+		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+		  m_cubeRenderer.Update(timer->Total, timer->Delta);
+		  m_cubeRenderer.Render();
+		  eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface);
+         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+         //DisplayDX();
       }
       else
       {
-         x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
       }
    }
 }
@@ -155,8 +267,8 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
    // the app will be forced to exit.
    SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
    
-   if (currentDirect3DBase)
-      currentDirect3DBase->ReleaseResourcesForSuspending();
+   //if (currentDirect3DBase)
+    //  currentDirect3DBase->ReleaseResourcesForSuspending();
 
    //create_task([this, deferral]()
    //{
@@ -188,7 +300,7 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
    return currentWindow.Get();
 }
 
-Direct3DBase^ MainView::getDirect3DBase()
+/*Direct3DBase^ MainView::getDirect3DBase()
 {
    return currentDirect3DBase;
 }
@@ -196,7 +308,7 @@ Direct3DBase^ MainView::getDirect3DBase()
 void MainView::setDirect3DBase(Direct3DBase^ direct3DBase)
 {
    currentDirect3DBase = direct3DBase;
-}
+}*/
 
 void MainView::setBounds(void)
 {
@@ -206,4 +318,9 @@ void MainView::setBounds(void)
 Rect MainView::getBounds(void)
 {
    return bounds;
+}
+
+LONGLONG MainView::getEglWindow()
+{
+	return (LONGLONG)(void*)m_eglWindow.GetAddressOf();
 }

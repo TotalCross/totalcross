@@ -18,7 +18,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
-   InitDX();
+   //InitDX();
    return true;
 }
 

@@ -1,7 +1,6 @@
 ﻿#pragma once
-
 #include "DirectXHelper.h"
-
+/*
 struct ModelViewProjectionConstantBuffer
 {
    DirectX::XMFLOAT4X4 model;
@@ -56,4 +55,4 @@ protected private:
    ModelViewProjectionConstantBuffer m_constantBufferData;
 
    bool m_loadingComplete;
-};
+};*/

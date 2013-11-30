@@ -5,8 +5,11 @@
 #define HAS_TCHAR
 
 #include <agile.h>
-#include "Direct3DBase.h"
+//#include "Direct3DBase.h"
 #include "tcvm.h"
+#include "esUtil.h"
+#include "winrtangle.h"
+#include "CubeRenderer.h"
 
 namespace TotalCross
 {
@@ -14,6 +17,7 @@ namespace TotalCross
 	ref class MainView sealed : public Windows::ApplicationModel::Core::IFrameworkView
 	{
 	public:
+
 		MainView();
 		MainView(Platform::String ^cmdline, Platform::String ^appPath);
 
@@ -26,10 +30,11 @@ namespace TotalCross
       virtual void Uninitialize(void);
       Platform::String ^getAppPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
-      Direct3DBase^ getDirect3DBase(void);
-      void setDirect3DBase(Direct3DBase^ direct3DBase);
+      //Direct3DBase^ getDirect3DBase(void);
+      //void setDirect3DBase(Direct3DBase^ direct3DBase);
       void setBounds(void);
       Windows::Foundation::Rect getBounds(void);
+	  LONGLONG MainView::getEglWindow();
 
 	protected:
 		// Event Handlers.
@@ -45,6 +50,8 @@ namespace TotalCross
 	private:
 		bool m_windowClosed;
 		bool m_windowVisible;
+		ESContext m_esContext;
+		Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
 
 		Context local_context;
 		char cmdLine[512];
@@ -53,7 +60,12 @@ namespace TotalCross
 		Platform::String ^_cmdline;
       Platform::Agile<Windows::UI::Core::CoreWindow> currentWindow;
       Windows::Foundation::Rect bounds;
-      Direct3DBase^ currentDirect3DBase;
+      //Direct3DBase^ currentDirect3DBase;
+
+	  //XXX paradas RotatingCube
+	  Windows::Graphics::Display::DisplayOrientations m_orientation;
+	  CubeRenderer m_cubeRenderer;
+	  //XXX
 
       void MainView::mainLoop();
 	};

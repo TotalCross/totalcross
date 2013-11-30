@@ -9,9 +9,11 @@
  *                                                                               *
  *********************************************************************************/
 
+#include "CubeRenderer.h"
+#include "MainView.h"
 #include <combaseapi.h>
+
 #include "MainViewFactory.h"
-#include "MainVieW.h"
 
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;

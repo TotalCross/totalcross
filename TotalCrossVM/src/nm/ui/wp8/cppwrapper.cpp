@@ -2,7 +2,8 @@
 #include <thread>
 #include <system_error>
 
-#include "Direct3DBase.h"
+//#include "Direct3DBase.h"
+#include "CubeRenderer.h"
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
@@ -68,7 +69,7 @@ void GetWidthAndHeight(DWORD32* width, DWORD32* height)
    *height = bounds.Height;
 }
 
-void InitDX(void)
+/*void InitDX(void)
 {
    MainView^ mainView = MainView::GetLastInstance();
    if (!mainView->getDirect3DBase())
@@ -88,4 +89,4 @@ void DisplayDX(void)
 void ReleaseDX(void)
 {
    MainView::GetLastInstance()->getDirect3DBase()->ReleaseDX();
-}
+}*/

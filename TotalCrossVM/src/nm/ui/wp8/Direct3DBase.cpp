@@ -1,4 +1,4 @@
-﻿#include "Direct3DBase.h"
+﻿/*#include "Direct3DBase.h"
 #include "cppwrapper.h"
 #include "MainView.h"
 
@@ -478,4 +478,4 @@ float Direct3DBase::ConvertDipsToPixels(float dips)
 void Direct3DBase::ReleaseDX(void)
 {
    ReleaseResourcesForSuspending();
-}
+}*/
