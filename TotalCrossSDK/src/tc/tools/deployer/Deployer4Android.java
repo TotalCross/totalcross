@@ -149,7 +149,7 @@ public class Deployer4Android
       if (adb == null)
          throw new DeployerException("File android/adb.exe not found!");
       String message = Utils.exec(new String[]{adb,"install","-r","*.apk"},targetDir);
-      if (message.indexOf("INPUT:Success") >= 0)
+      if (message != null && message.indexOf("INPUT:Success") >= 0)
          return " (installed)";
       System.out.println(message);
       return " (error on installl)";
