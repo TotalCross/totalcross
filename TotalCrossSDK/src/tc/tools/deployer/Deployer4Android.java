@@ -131,6 +131,8 @@ public class Deployer4Android
          jar2dex();         // 2
       }
       updateResources(); // 3+4+5
+      new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
+      Utils.copyFile(targetDir+"/"+fileName+"_.apk",targetDir+"/"+fileName+".apk",true); 
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
       
       String extraMsg = "";
