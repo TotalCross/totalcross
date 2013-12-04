@@ -26,11 +26,11 @@ char *GetAppPathWP8()
 
 void cppthread_detach(void *t)
 {
-	std::thread *th = (std::thread*)t;
+	//std::thread *th = (std::thread*)t;
 
-	if (th->joinable()) {
-		th->detach();
-	}
+	//if (th != NULL && th->joinable()) {
+	//	th->detach();
+	//}
 }
 
 void* cppthread_create(void (*func)(void *a), void *args)
@@ -48,8 +48,8 @@ void* cppthread_create(void (*func)(void *a), void *args)
 
 void *cppget_current_thread()
 {
-	// get the id (64 bit var), then get its address, transform to a uint64 pointer, derreference it and then cast to voidP
-	return (void*)*(UINT64*)&std::this_thread::get_id();
+	// getting the hash is more reliable then the value of the get_id() return
+	return (void*)std::this_thread::get_id().hash();
 }
 
 void cppsleep(int ms)
