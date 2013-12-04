@@ -21,7 +21,7 @@
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
-        <uses-library android:name="com.google.android.maps" android:required="false" ></uses-library>
+        <uses-library android:name="com.google.android.maps" android:required="false" />
         <activity android:name=".CaptureActivity"
                  android:screenOrientation="landscape"
                  android:clearTaskOnLaunch="true"
@@ -36,33 +36,32 @@
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="11" />
-    <uses-permission android:name="android.permission.READ_LOGS" android:required="false" ></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" android:required="false" ></uses-permission>
-    <uses-permission android:name="android.permission.INTERNET" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.VIBRATE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CAMERA" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.FLASHLIGHT" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CALL_PHONE" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.CALL_PRIVILEGED" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"> </uses-permission>
-    <uses-permission android:name="android.permission.BLUETOOTH" android:required="false"></uses-permission>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="false"> </uses-permission>
-    <uses-feature android:name="android.hardware.camera" android:required="false"></uses-feature>
-    <uses-feature android:name="android.hardware.camera.front" android:required="false"></uses-feature>
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"></uses-feature>
-    <uses-feature android:name="android.hardware.camera.flash" android:required="false"></uses-feature>
+    <uses-permission android:name="android.permission.READ_LOGS" android:required="false"/>
+    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" android:required="false"/>
+    <uses-permission android:name="android.permission.INTERNET" android:required="false"/>
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS" android:required="false"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" android:required="false"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:required="false"/>
+    <uses-permission android:name="android.permission.VIBRATE" android:required="false"/>
+    <uses-permission android:name="android.permission.CAMERA" android:required="false"/>
+    <uses-permission android:name="android.permission.CAMERA_FRONT" android:required="false"/>
+    <uses-permission android:name="android.permission.CAMERA_AUTOFOCUS" android:required="false"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" android:required="false"/>
+    <uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES" android:required="false"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" android:required="false"/>
+    <uses-permission android:name="android.permission.CALL_PRIVILEGED" android:required="false"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" android:required="false"/> 
+    <uses-permission android:name="android.permission.BLUETOOTH" android:required="false"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:required="false"/> 
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:glEsVersion="0x00020000"/>
 </manifest>
