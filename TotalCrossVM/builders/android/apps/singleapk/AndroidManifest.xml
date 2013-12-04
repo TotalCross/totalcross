@@ -9,7 +9,7 @@
     <!-- ATTENTION: THIS IS FOR THE SINGLE APK - THERE'S ANOTHER MANIFEST FILE 
     FOR STANDARD APPLICATIONS THAT USE THE VM
     G:\TotalCross\TotalCrossVM\builders\android\apps\singleapk\AndroidManifest.xml -->
-    
+
     <application android:icon="@drawable/icon" android:label="Stub"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader"
@@ -47,9 +47,10 @@
            <category android:name="android.intent.category.DEFAULT"/>
          </intent-filter>
         </activity>
-
     </application>
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="11" />
+
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="14" />
+    <supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true"/>
     <uses-permission android:name="android.permission.READ_LOGS" android:required="false" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" android:required="false"/>

@@ -35,7 +35,8 @@
          </intent-filter>
         </activity>
     </application>
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="11" />
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="14" />
+    <supports-screens android:smallScreens="true" android:normalScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true"/>
     <uses-permission android:name="android.permission.READ_LOGS" android:required="false"/>
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" android:required="false"/>
     <uses-permission android:name="android.permission.INTERNET" android:required="false"/>
