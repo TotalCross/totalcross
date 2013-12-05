@@ -1068,10 +1068,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.obj[0] = rbP.obj[0];
    rbP.i32[0] = 12;
    tiF_setPos_i(&rbP);
-   //XXX This test had not been updated, asserts thus are for now blocked
-   //ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   //ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
+   
+#ifndef WP8
+   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
+   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
    currentContext->thrownException = null;
+#endif
 
    // #32 Moving the file pointer back to the beggining of the file
    rbP.obj[0] = rbP.obj[0];
@@ -1087,8 +1089,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.i32[1] = ARRAYOBJ_LEN(rbP.obj[1]);
    tiF_readBytes_Bii(&rbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   //ASSERT2_EQUALS(I32, 11, rbP.retI); //XXX also this test is not updated
-   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); //XXX
+
+#ifndef WP8
+   ASSERT2_EQUALS(I32, 11, rbP.retI); 
+#endif
+
+   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); 
 
    // #34 Close the file.
    tiF_nativeClose(&rbP);
