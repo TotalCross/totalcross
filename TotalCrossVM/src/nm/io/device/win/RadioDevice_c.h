@@ -13,7 +13,7 @@
 
 #include "winsockLib.h"
 
-#include "..\RadioDevice.h"
+#include "../RadioDevice.h"
 
 static boolean RdGetStateWIFI();
 
