@@ -115,6 +115,7 @@ public final class Vm
     * require that you add <code>Settings.timeZone</code>.
     * Does not work on Android, which does not allow to do this programatically.
     * @since TotalCross 1.0
+    * @deprecated It won't work on most devices.
     */
    public static void setTime(Time t)
    {

@@ -307,12 +307,35 @@ TESTCASE(jlSB_append_d) // java/lang/StringBuffer native public StringBuffer app
    setObjectLock(sb, UNLOCKED);
    ASSERT1_EQUALS(NotNull, sb);
 
-   v.asDouble = 0             ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.0");
-   v.asDouble = 1234          ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0");
-   v.asDouble = -5321         ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.0");
-   v.asDouble = 0.5432424234  ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234");
-   v.asDouble = -13132.5153513; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234-13132.5153513");
-   v.asDouble = 1E300         ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234-13132.51535131.0E300");
+   v.asDouble = 0;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 3;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.0");
+
+   v.asDouble = 1234;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 9;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0");
+
+   v.asDouble = -5321;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 16;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.0");
+
+   v.asDouble = 0.5432424234;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 28;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234");
+   
+   v.asDouble = -13132.5153513;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 42;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234-13132.5153513");
+
+   v.asDouble = 1E300;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 49;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234-13132.51535131.0E300");
 
    finish: ;
 }

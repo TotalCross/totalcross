@@ -1201,9 +1201,12 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
    ASSERT2_EQUALS(I32, Time_year(time), Time_year(t3));
    ASSERT2_EQUALS(I32, Time_month(time), Time_month(t3));
    ASSERT2_EQUALS(I32, Time_day(time), Time_day(t3));
-   //ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
-   //ASSERT2_EQUALS(I32, jtime->minute(time), Time_minute(t3));
-   //ASSERT2_EQUALS(I32, jtime->second, Time_second(t3));
+   
+#ifdef WP8   
+   ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
+   ASSERT2_EQUALS(I32, Time_minute(time), Time_minute(t3));
+   ASSERT2_EQUALS(I32, Time_second(time), Time_second(t3));
+#endif
 
    finish:
       ;
