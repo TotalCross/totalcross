@@ -9,6 +9,7 @@
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
+using namespace Windows::Phone::Devices::Power;
 
 static char apPath[1024];
 DWORD32 privHeight;
@@ -87,4 +88,9 @@ void DisplayDX(void)
 void ReleaseDX(void)
 {
    MainView::GetLastInstance()->getDirect3DBase()->ReleaseDX();
+}
+
+DWORD32 getRemainingBatery()
+{
+   return Battery::GetDefault()->RemainingChargePercent;
 }

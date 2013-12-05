@@ -27,6 +27,8 @@ void* cppthread_create(void (*func)(void *a), void *args);
 void cppthread_detach(void *t);
 void *cppget_current_thread();
 
+DWORD32 getRemainingBatery();
+
 #ifdef __cplusplus
 }
 #endif
