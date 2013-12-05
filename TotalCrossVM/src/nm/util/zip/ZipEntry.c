@@ -36,7 +36,11 @@ TC_API void tuzZE_setTime_l(NMParams p) // totalcross/util/zip/ZipEntry native p
    fileTimeUTC.u.LowPart  = (DWORD) secs;
    fileTimeUTC.u.HighPart = (DWORD)(secs >> 32);
 
+#ifdef WP8
+   fileTimeLocal = *(FILETIME*)&fileTimeUTC;
+#else
    err = FileTimeToLocalFileTime((FILETIME*) &fileTimeUTC, &fileTimeLocal);
+#endif
    err = FileTimeToSystemTime(&fileTimeLocal, &systemTime);
 
    ZipEntry_time(zipEntryObj) = (systemTime.wYear - 1980) << 25
@@ -83,8 +87,12 @@ TC_API void tuzZE_getTime(NMParams p) // totalcross/util/zip/ZipEntry native pub
       systemTime.wSecond = ((dostime << 1) & 0x3e);
       
       err = SystemTimeToFileTime(&systemTime, &fileTimeLocal);
+#ifdef WP8
+      fileTimeUTC = *(LARGE_INTEGER*)&fileTimeLocal;
+#else
       err = LocalFileTimeToFileTime(&fileTimeLocal, (FILETIME*) &fileTimeUTC);
-      
+#endif
+
       tmp = ((ULONGLONG) fileTimeUTC.u.HighPart << 32) | fileTimeUTC.u.LowPart;
       tmp = tmp / TICKSPERSEC - SECS_1601_TO_1970;
       if (tmp > 0xffffffff)

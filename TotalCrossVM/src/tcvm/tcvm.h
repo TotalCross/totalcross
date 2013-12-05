@@ -30,13 +30,7 @@
 
 #define Sleep(ms) cppsleep(ms)
 
-#define SetErrorMode() 0
-#define LocalFileTimeToFileTime() 1
-#define FileTimeToLocalFileTime() 1
-#define SetFileTime() 1
-#define SetLocalTime() 1
-#define GetFileTime() 1
-#define Beep() 0
+#define Beep() 1
 #define GetTickCount() GetTickCount64()
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
