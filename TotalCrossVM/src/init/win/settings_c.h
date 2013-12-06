@@ -494,9 +494,9 @@ static void fillICCID() // guich@tc126_75
 #endif //WINCE
 }
 
-static bool hasKeyboard() //
+static bool hasKeyboard()
 {
-	//XXX
+	// jeffque: WP8 never has a keyboard.
 #if !defined WP8
    int32 ret;
    return queryRegistry(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Shell"), TEXT("HasKeyboard"), (char*)&ret, sizeof(ret)) && ret == 1;

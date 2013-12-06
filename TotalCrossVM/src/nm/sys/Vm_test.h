@@ -239,8 +239,9 @@ TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(t
       p.obj = &currentTime;
       tsV_setTime_t(&p);
 
-#endif
+#else
    finish: ;
+#endif
 }
 
 TESTCASE(tsV_exitAndReboot) // totalcross/sys/Vm native public static void exitAndReboot();
@@ -420,7 +421,7 @@ TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String cl
    // copy
    tsV_clipboardCopy_s(&p1);
    
-#ifndef WP8   //XXX ver se dá
+#ifndef WP8   //XXX ver se dá para fazer isso de outro modo
    // paste
    tsV_clipboardPaste(&p2);
    ASSERT1_EQUALS(NotNull, p2.retO);

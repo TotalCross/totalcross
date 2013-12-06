@@ -15,7 +15,6 @@
 
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
-	//XXX
    int32 id;
    ThreadHandle h = null;
    ThreadArgs targs = ThreadArgsFromObject(this_);
