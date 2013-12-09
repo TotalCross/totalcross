@@ -2763,7 +2763,7 @@ TESTCASE(VM_NEWOBJ)
 finish: ;
 }
 extern CharP throwableTrace;
-TC_API void jlT_print_s(NMParams p)
+TC_API void TT_printException_s(NMParams p)
 {
    throwableTrace = String2CharP(p->obj[0]);
 }
@@ -2781,10 +2781,10 @@ TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception;
 
    // Test 1: NullPointerException thrown and handled in the same method
    testException = getMethod(testTypesClass, true, "testException", 0);
+   htPutPtr(&htNativeProcAddresses, hashCode("TT_printException_s"), &TT_printException_s);
    ASSERT1_EQUALS(NotNull, testException);
    executeMethod(currentContext, testException);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT1_EQUALS(NotNull, throwableTrace);
    ASSERT2_EQUALS(Sz, "TestTypes.methodC 62\nTestTypes.methodB 56\nTestTypes.methodA 55\nTestTypes.testException 54\n", throwableTrace);
    xfree(throwableTrace);
 
