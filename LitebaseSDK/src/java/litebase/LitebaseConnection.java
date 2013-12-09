@@ -1747,6 +1747,10 @@ public class LitebaseConnection
          byte[] types = table.columnTypes;
          int[] intArray = new int[1];
          
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         int auxRowId = -1,
+             currentRowId = -1;         
+         
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
          while (--i >= 0) // Checks all table records.
@@ -1791,11 +1795,10 @@ public class LitebaseConnection
                      {  
                         intArray[0] = record[j].asInt;
                         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
-                     }
-                  
+                     }                  
                }
                
-               dataStream.skipBytes(len);
+               dataStream.skipBytes(len);               
                if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
                {
                   bas.reset();
@@ -1803,12 +1806,28 @@ public class LitebaseConnection
                   plainDB.rewrite(i);
                   table.deletedRowsCount++;
                   recovered = true;
+                  
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  if (currentRowId < 0)
+                     currentRowId = (rowid & Utils.ROW_ID_MASK) + 1;
                }
                else // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-                  table.auxRowId = (rowid & Utils.ROW_ID_MASK) + 1; 
+               {
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  rowid = (rowid & Utils.ROW_ID_MASK) + 1;
+                  if (currentRowId < 0)
+                     currentRowId = rowid;
+                  if (auxRowId < 0) 
+                     auxRowId = rowid;
+               }
+               
             }
          }
            
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table.currentRowId = currentRowId;
+         table.auxRowId = auxRowId;
+         
          // Recreates the indices.
          // Simple indices.
          i = table.columnIndices.length;
@@ -1824,7 +1843,8 @@ public class LitebaseConnection
             table.tableReIndex(i, compIndices[i], false);
          
          // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-         table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table.tableSaveMetaData(Utils.TSMD_EVERYTHING); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
          plainDB.rowCount = rows;

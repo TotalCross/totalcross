@@ -2048,7 +2048,9 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	            crc32Lido = 0,
                crc32Calc,
                deleted = 0,
-               type;
+               type,
+               auxRowId = -1, // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+               currentRowId = -1; // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
          int8* types;       
          
          // juliana@230_12
@@ -2201,13 +2203,28 @@ LB_API void lLC_recoverTable_s(NMParams p)
 				      if (!plainRewrite(context, plainDB, i))
 					      goto finish;
 				      p->retI = ++deleted;
+
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  if (currentRowId < 0) 
+                     currentRowId = (read & ROW_ID_MASK) + 1;
 			      }
                else // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-                  table->auxRowId = (read & ROW_ID_MASK) + 1; 
+               {
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  read = (read & ROW_ID_MASK) + 1;
+                  if (currentRowId < 0)
+                     currentRowId = read;
+                  if (auxRowId < 0) 
+                     auxRowId = read;
+               }
 		      }
 	      }
 
          table->deletedRowsCount = deleted;
+
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table->currentRowId = currentRowId;
+         table->auxRowId = auxRowId;
 
          // Recreates the indices.
          // Simple indices.
@@ -2227,7 +2244,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
          plainDB->wasNotSavedCorrectly = false;
 
          // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().	   
-         tableSaveMetaData(context, table, TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows.
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves information concerning deleted rows.
       
 finish: 
 	      if (table)
