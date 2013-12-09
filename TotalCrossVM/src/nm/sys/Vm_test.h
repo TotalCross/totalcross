@@ -195,7 +195,7 @@ TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTime
 }
 TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-#if defined (WIN32)
+#if defined (WIN32) && !defined (WP8)
    TNMParams p;
    Object currentTime;
    Object testTime;
