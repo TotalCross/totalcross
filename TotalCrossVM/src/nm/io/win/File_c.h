@@ -405,12 +405,13 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
-   LARGE_INTEGER off = { 0 };
-   off.LowPart = position;
 #ifndef WP8
+   LONG off = 0;
    return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #else
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = position;
    return ((SetFilePointerEx(fref.handle, off, null, FILE_BEGIN) != 0) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #endif
@@ -669,28 +670,28 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
 	DWORD posHigh = 0;
 	DWORD fileSize;
-	LARGE_INTEGER off = { 0 };
-	off.LowPart = newSize;
 
 #ifndef WP8
+   LONG off = 0;
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 	   return GetLastError();
 #else
-	{
+      LARGE_INTEGER off = { 0 };
+	   
 		FILE_STANDARD_INFO finfo = { 0 };
 		fileSize = 0xFFFFFFFF;
+      off.LowPart = newSize;
 		if (GetFileInformationByHandleEx(fref->handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0) {
 			return GetLastError();
 		}
 
 		fileSize = finfo.EndOfFile.QuadPart;
-   }
 #endif
 	if (fileSize == newSize)
 		return NO_ERROR;
 
 #ifndef WP8
-   if (SetFilePointer(fref->handle, off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+   if (SetFilePointer(fref->handle, (LONG)off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
 #else
    if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
