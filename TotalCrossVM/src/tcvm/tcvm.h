@@ -58,9 +58,6 @@ typedef unsigned char boolean;
 #define GetModuleFileName(a, b, c)
 #define EnumWindows(a, b)
 #define SetWindowPos(a, b, c, d, e, f, g) 0
-#define ExitWindowsEx(a, b)
-#define RegisterHotKey(a, b, c, d)
-#define UnregisterHotKey(a, b)
 #define ExtEscape(a, b, c, d, e, f) 0
 #define ReleaseDC(a, b)
 #define SystemParametersInfo(a, b, c, d)
