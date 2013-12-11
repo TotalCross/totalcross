@@ -57,7 +57,7 @@ public class ImageControl extends Control
    
    private static final double NOTEMP = Convert.MIN_DOUBLE_VALUE;
    /** Temporary values to set the hwScaleW/hwScaleH to during draw. */
-   private double tempHwScale=NOTEMP;
+   public double tempHwScale=NOTEMP;
    
    /** Set to true to scale the image to fit the bounds. */
    public boolean scaleToFit;
@@ -89,6 +89,7 @@ public class ImageControl extends Control
    {
       this.img = img;
       c.x = c.y = lastX = lastY = 0;
+      tempHwScale=NOTEMP;
       // test if it is really loaded.
       if (img != null && getImageWidth() > 0)
       {
