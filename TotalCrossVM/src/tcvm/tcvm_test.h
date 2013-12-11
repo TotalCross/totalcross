@@ -2770,10 +2770,6 @@ TC_API void TT_printException_s(NMParams p)
 
 TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception; throw regO;
 {
-#if false
-   TEST_SKIP;
-   finish: ;
-#else
    Method testException;
    Object aioobe;
 
@@ -2815,7 +2811,6 @@ TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception;
 finish:
    xfree(ttprintRes);
    xfree(throwableTrace);
-#endif
 }
 TESTCASE(VM_INSTANCEOF) // if (other instanceof Rect) -> mov regI, regO instanceof sym; jeq regI,1;
 {
