@@ -582,5 +582,7 @@ static void vmVibrate(int32 ms)
    if (vibThread == null && (vibtype == VIB_AYG || vibtype == VIB_CORE))
       vibThread = CreateThread(null, 0, (LPTHREAD_START_ROUTINE) VibrateThread, (int*)ms, 0, null);
 
+#elif defined WP8
+   vibrate(ms);
 #endif
 }

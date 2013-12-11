@@ -28,6 +28,7 @@ void cppthread_detach(void *t);
 void *cppget_current_thread();
 
 DWORD32 getRemainingBatery();
+void vibrate(DWORD32 milliseconds);
 
 #ifdef __cplusplus
 }

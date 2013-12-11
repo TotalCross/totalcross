@@ -10,6 +10,7 @@
 using namespace TotalCross;
 using namespace Windows::Foundation;
 using namespace Windows::Phone::Devices::Power;
+using namespace Windows::Phone::Devices::Notification;
 
 static char apPath[1024];
 DWORD32 privHeight;
@@ -93,4 +94,15 @@ void ReleaseDX(void)
 DWORD32 getRemainingBatery()
 {
    return Battery::GetDefault()->RemainingChargePercent;
+}
+
+void vibrate(DWORD32 milliseconds)
+{
+   VibrationDevice^ vib = VibrationDevice::GetDefault();
+   if (vib != nullptr)
+   {
+      TimeSpan time;
+      time.Duration = min(milliseconds * 10000, 50000000);
+      vib->Vibrate(time);
+   }
 }
