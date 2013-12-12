@@ -38,11 +38,7 @@ static void privateDestroyDebug()
 
 static bool privateDebug(char* str)
 {
-#if 1
-	OutputDebugStringA(str);
-	OutputDebugStringA("\n");
-	return 1;
-#elif defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE)
+#if defined(ENABLE_CONSOLE) && defined(WIN32) && !defined(WINCE) && !defined(WP8)
    if (!consoleAllocated)
    {
       consoleAllocated = true;
@@ -78,6 +74,10 @@ static bool privateDebug(char* str)
          fflush(fdebug);
       }
    }
+#ifdef WP8
+   OutputDebugStringA(str);
+   OutputDebugStringA("\n");
+#endif
    return err;
 #endif
 }
@@ -130,7 +130,7 @@ static void privateAlert(CharP str)
    CloseHandle(h);
    SetForegroundWindow(mainHWnd);
    SetActiveWindow(mainHWnd);
-#else
+#elif !defined(WP8) 
    MessageBox(mainHWnd,str,TEXT("ALERT"),MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
 #endif
 }
