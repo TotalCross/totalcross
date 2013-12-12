@@ -14,6 +14,10 @@
 #include "GraphicsPrimitives.h"
 #include "math.h"
 
+#if defined (WP8)
+#include "openglWrapper.h"
+#endif
+
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
@@ -718,10 +722,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     }
 }
 
+#if !definde(WP8)
 static int32 abs32(int32 a)
 {
    return a < 0 ? -a : a;
 }
+#endif
 
 /* Code taken from http://www.codeproject.com/gdi/antialias.asp */
 static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel color_)
