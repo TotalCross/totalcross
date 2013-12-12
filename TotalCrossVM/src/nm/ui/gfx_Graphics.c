@@ -11,7 +11,7 @@
 
 #include "tcvm.h"
 
-#ifdef __gl2_h_
+#if defined __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
 #define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
