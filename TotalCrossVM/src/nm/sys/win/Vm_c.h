@@ -50,11 +50,11 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 {
    VoidP startInfo = null;
    int32 ret=-1;
-   BOOL ok;
    TCHAR pathargs[1024];
-   DWORD err;
 
-#if !defined WP8
+#if !defined(WP8)
+   BOOL ok;
+   DWORD err;
    PROCESS_INFORMATION processInfo;
 #ifndef WINCE
    STARTUPINFO si;
