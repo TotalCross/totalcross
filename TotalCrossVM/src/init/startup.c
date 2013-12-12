@@ -340,7 +340,7 @@ static void loadExceptionClasses(Context currentContext)
    lockClass = loadClass(currentContext, "totalcross.util.concurrent.Lock", false);
 }
 
-#if defined(ANDROID) && !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
+#if defined(ANDROID) || !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
 #define ALLOW_TEST_SUITE false
 #else
 #define ALLOW_TEST_SUITE true
