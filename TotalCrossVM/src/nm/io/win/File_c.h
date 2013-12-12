@@ -212,10 +212,8 @@ static inline bool fileExists(TCHARP path, int32 slot)
 	bool result;
 	WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
 	f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
-	SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
 	GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
 	result = (f_attr_ex.dwFileAttributes != INVALID_ATTR_VALUE);
-	SetErrorMode(0);
 	return result;
 #else
 {
@@ -407,12 +405,13 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
-   LARGE_INTEGER off = { 0 };
-   off.LowPart = position;
 #ifndef WP8
+   LONG off = 0;
    return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #else
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = position;
    return ((SetFilePointerEx(fref.handle, off, null, FILE_BEGIN) != 0) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #endif
@@ -538,9 +537,10 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
    fileTime.wMilliseconds  = Time_millis(time);
 
    SystemTimeToFileTime(&fileTime, &localFileTime);
-   LocalFileTimeToFileTime(&localFileTime, &systemFileTime);
 #ifdef WP8
-   systemFileTime = localFileTime; //XXX workaround for awhile
+   systemFileTime = localFileTime; 
+#else
+   LocalFileTimeToFileTime(&localFileTime, &systemFileTime);
 #endif
 
    creationTime = lastAccessTime = lastWriteTime = null;
@@ -564,9 +564,9 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
    {
 	  char buff[40];
       FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO*) buff;
-	  int getFinfoRet = 0;
 
-	  getFinfoRet = GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff));
+	  if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
+        return GetLastError();
 
 	  if (creationTime != NULL)
 	     finfo->CreationTime = *(LARGE_INTEGER*)creationTime;
@@ -598,11 +598,25 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
 static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, char whichTime, Object* time)
 {
    FILETIME systemFileTime, localFileTime;
-   FILETIME *creationTime, *lastAccessTime, *lastWriteTime;
    SYSTEMTIME fileTime;
 
-   creationTime = lastAccessTime = lastWriteTime = null;
+#ifdef WP8
+   char buff[40];
+   FILE_BASIC_INFO *finfo = buff;
 
+   if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
+      return GetLastError();
+
+   if (whichTime & TIME_CREATED)
+      systemFileTime = *(FILETIME*)&finfo->CreationTime;
+   else if (whichTime & TIME_MODIFIED)
+      systemFileTime = *(FILETIME*)&finfo->LastAccessTime;
+   else if (whichTime & TIME_ACCESSED)
+      systemFileTime = *(FILETIME*)&finfo->LastWriteTime;
+   
+   localFileTime = systemFileTime;
+#else
+   FILETIME *creationTime = null, *lastAccessTime = null, *lastWriteTime = null;
    if (whichTime & TIME_CREATED)
       creationTime = &systemFileTime;
    else
@@ -621,11 +635,13 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, ch
    if (!GetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime))
       return GetLastError();
 
+   FileTimeToLocalFileTime(&systemFileTime, &localFileTime);
+#endif
+
    *time = createObject(currentContext, "totalcross.sys.Time");
    if (*time == null)
       return NO_ERROR; // OOME was already threw
 
-   FileTimeToLocalFileTime(&systemFileTime, &localFileTime);
    FileTimeToSystemTime(&localFileTime, &fileTime);
 
    Time_year(*time)   = fileTime.wYear;
@@ -654,28 +670,28 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
 	DWORD posHigh = 0;
 	DWORD fileSize;
-	LARGE_INTEGER off = { 0 };
-	off.LowPart = newSize;
 
 #ifndef WP8
+   LONG off = 0;
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 	   return GetLastError();
 #else
-	{
+      LARGE_INTEGER off = { 0 };
+	   
 		FILE_STANDARD_INFO finfo = { 0 };
 		fileSize = 0xFFFFFFFF;
+      off.LowPart = newSize;
 		if (GetFileInformationByHandleEx(fref->handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0) {
 			return GetLastError();
 		}
 
 		fileSize = (DWORD) finfo.EndOfFile.QuadPart;
-   }
 #endif
 	if (fileSize == newSize)
 		return NO_ERROR;
 
 #ifndef WP8
-   if (SetFilePointer(fref->handle, off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+   if (SetFilePointer(fref->handle, (LONG)off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
 #else
    if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)

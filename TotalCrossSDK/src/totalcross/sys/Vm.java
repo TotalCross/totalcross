@@ -115,6 +115,7 @@ public final class Vm
     * require that you add <code>Settings.timeZone</code>.
     * Does not work on Android, which does not allow to do this programatically.
     * @since TotalCross 1.0
+    * @deprecated It won't work on most devices.
     */
    public static void setTime(Time t)
    {
@@ -344,6 +345,8 @@ public final class Vm
    }
    
    /** Vibrates the device for the specified number of milliseconds.
+    * Note that on WP8 the maximum vibration time is 5 seconds. If millis is greater than 5000, it will vibrate only for 5 seconds.
+    * 
     * @since TotalCross 1.22
     */
    public static void vibrate(int millis)

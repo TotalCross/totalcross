@@ -31,13 +31,7 @@
 
 #define Sleep(ms) cppsleep(ms)
 
-#define SetErrorMode() 0
-#define LocalFileTimeToFileTime() 1
-#define FileTimeToLocalFileTime() 1
-#define SetFileTime() 1
-#define SetLocalTime() 1
-#define GetFileTime() 1
-#define Beep() 0
+#define Beep() 1
 #define GetTickCount() GetTickCount64()
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
@@ -51,7 +45,6 @@ typedef unsigned char boolean;
 #define PostMessage(a, b, c, d)
 #define TranslateMessage(a)
 #define DispatchMessage(b)
-#define MessageBox(a, b, c, d)
 #define GetWindowLong(a, b) 0
 #define SetWindowLong(a, b, c)
 #define PeekMessage(a, b, c, d, e) 0
@@ -65,9 +58,6 @@ typedef unsigned char boolean;
 #define GetModuleFileName(a, b, c)
 #define EnumWindows(a, b)
 #define SetWindowPos(a, b, c, d, e, f, g) 0
-#define ExitWindowsEx(a, b)
-#define RegisterHotKey(a, b, c, d)
-#define UnregisterHotKey(a, b)
 #define ExtEscape(a, b, c, d, e, f) 0
 #define ReleaseDC(a, b)
 #define SystemParametersInfo(a, b, c, d)
@@ -78,7 +68,7 @@ typedef unsigned char boolean;
 #define BitBlt(a, b, c, d, e, f, g, h, i)
 #define DeleteObject(a)
 #define SetProcessAffinityMask(a, b)
-#define GlobalMemoryStatus(a)
+//#define GlobalMemoryStatus(a)
 #define waveOutPause(a) 0
 #define waveOutRestart(a) 0
 #define waveOutReset(a) 0

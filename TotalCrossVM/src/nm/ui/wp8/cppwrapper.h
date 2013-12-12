@@ -23,6 +23,11 @@ void* cppthread_create(void (*func)(void *a), void *args);
 void cppthread_detach(void *t);
 void *cppget_current_thread();
 
+// VM
+DWORD32 getRemainingBatery();
+void vibrate(DWORD32 milliseconds);
+DWORD32 getFreeMemoryWP8();
+
 #ifdef __cplusplus
 }
 #endif

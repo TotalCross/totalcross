@@ -21,6 +21,9 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
 #pragma region varDeclaration
+using namespace Windows::Phone::System::Memory;
+using namespace Windows::Phone::Devices::Power;
+using namespace Windows::Phone::Devices::Notification;
 
 static char apPath[1024];
 static DWORD32 privHeight;
@@ -86,4 +89,25 @@ void dispatcher_dispath()
 void setKeyboard(int state)
 {
 	MainView::GetLastInstance()->setKeyboard(state);
+}
+
+DWORD32 getRemainingBatery()
+{
+   return Battery::GetDefault()->RemainingChargePercent;
+}
+
+void vibrate(DWORD32 milliseconds)
+{
+   VibrationDevice^ vib = VibrationDevice::GetDefault();
+   if (vib != nullptr)
+   {
+      TimeSpan time;
+      time.Duration = min(milliseconds * 10000, 50000000); // The time unit is 100ns and the limit is 5 s. More than that, boom!
+      vib->Vibrate(time);
+   }
+}
+
+DWORD32 getFreeMemoryWP8()
+{
+   return (DWORD32)MemoryManager::ProcessCommittedLimit;
 }

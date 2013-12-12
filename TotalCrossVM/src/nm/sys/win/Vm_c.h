@@ -25,8 +25,10 @@ static void vmSetTime(Object time)
    newTime.wMilliseconds = Time_millis(time);
 #endif
 
+#ifndef WP8
    SetLocalTime(&newTime);
    SetLocalTime(&newTime);
+#endif
 }
 
 #define IOCTL_HAL_REBOOT 0x101003C
@@ -416,7 +418,7 @@ static int32 vmGetRemainingBattery()
    }
    return (ret > 100 ? 100 : ret);
 #else
-	return 0;
+   getRemainingBatery();
 #endif
 }
 
@@ -581,5 +583,7 @@ static void vmVibrate(int32 ms)
    if (vibThread == null && (vibtype == VIB_AYG || vibtype == VIB_CORE))
       vibThread = CreateThread(null, 0, (LPTHREAD_START_ROUTINE) VibrateThread, (int*)ms, 0, null);
 
+#elif defined WP8
+   vibrate(ms);
 #endif
 }
