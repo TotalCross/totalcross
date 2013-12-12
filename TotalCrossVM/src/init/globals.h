@@ -14,6 +14,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // tcclass.c
 extern Hashtable htLoadedClasses;
 extern TCClassArray vLoadedClasses;
@@ -272,5 +276,9 @@ extern HINSTANCE aygshellDll, coreDll, cellcoreDll;
 
 bool initGlobals();
 void destroyGlobals();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

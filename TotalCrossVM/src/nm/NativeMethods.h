@@ -12,6 +12,10 @@
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
@@ -436,5 +440,9 @@ TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
 TC_API void tidsS_readBarcode_s(NMParams p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
