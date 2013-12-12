@@ -2,18 +2,32 @@
 #include <thread>
 #include <system_error>
 
-//#include "Direct3DBase.h"
-#include "CubeRenderer.h"
+#include <wrl/client.h>
+
+#include "esUtil.h"
+
+#if (_MSC_VER >= 1800)
+#include <d3d11_2.h>
+#else
+#include <d3d11_1.h>
+#endif
+
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
+using namespace Windows::UI::Core;
+
+#pragma region varDeclaration
 
 static char apPath[1024];
-DWORD32 privHeight;
-DWORD32 privWidth;
+static DWORD32 privHeight;
+static DWORD32 privWidth;
+static CoreDispatcher ^dispatcher = nullptr;
+
+#pragma endregion
 
 char *GetAppPathWP8()
 {
@@ -57,36 +71,8 @@ void cppsleep(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void SetBounds()
-{
-   MainView::GetLastInstance()->setBounds();
-}
 
-void GetWidthAndHeight(DWORD32* width, DWORD32* height)
+void setKeyboard(int state)
 {
-   Rect bounds = MainView::GetLastInstance()->getBounds();
-   *width = bounds.Width;
-   *height = bounds.Height;
+	MainView::GetLastInstance()->setKeyboard(state);
 }
-
-/*void InitDX(void)
-{
-   MainView^ mainView = MainView::GetLastInstance();
-   if (!mainView->getDirect3DBase())
-      mainView->setDirect3DBase(ref new Direct3DBase(mainView->GetWindow()));
-}
-
-void DisplayDX(void)
-{
-   Direct3DBase^ direct3DBase = MainView::GetLastInstance()->getDirect3DBase();
-   if (direct3DBase)
-   {
-      direct3DBase->Render();
-      direct3DBase->Present();
-   }
-}
-
-void ReleaseDX(void)
-{
-   MainView::GetLastInstance()->getDirect3DBase()->ReleaseDX();
-}*/

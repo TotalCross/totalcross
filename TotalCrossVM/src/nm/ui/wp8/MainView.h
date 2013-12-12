@@ -5,11 +5,10 @@
 #define HAS_TCHAR
 
 #include <agile.h>
-//#include "Direct3DBase.h"
 #include "tcvm.h"
 #include "esUtil.h"
 #include "winrtangle.h"
-#include "CubeRenderer.h"
+#include "openglWrapper.h"
 
 namespace TotalCross
 {
@@ -21,6 +20,7 @@ namespace TotalCross
 		MainView();
 		MainView(Platform::String ^cmdline, Platform::String ^appPath);
 
+	  void setKeyboard(bool state);
 		static MainView ^GetLastInstance();
 		// IFrameworkView Methods.
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
@@ -30,11 +30,6 @@ namespace TotalCross
       virtual void Uninitialize(void);
       Platform::String ^getAppPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
-      //Direct3DBase^ getDirect3DBase(void);
-      //void setDirect3DBase(Direct3DBase^ direct3DBase);
-      void setBounds(void);
-      Windows::Foundation::Rect getBounds(void);
-	  LONGLONG MainView::getEglWindow();
 
 	protected:
 		// Event Handlers.
@@ -48,24 +43,23 @@ namespace TotalCross
 		void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
 	private:
-		bool m_windowClosed;
-		bool m_windowVisible;
-		ESContext m_esContext;
-		Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
+      ESContext m_esContext;
+      //Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
+	  Windows::Phone::UI::Core::KeyboardInputBuffer^ m_inputBuffer;
 
-		Context local_context;
-		char cmdLine[512];
-		//char appPath[1024];
-		Platform::String ^appPath;
-		Platform::String ^_cmdline;
+
+      bool m_windowClosed;
+      bool m_windowVisible;
+
+	  float lastX, lastY;
+
+
+      Context local_context;
+      char cmdLine[512];
+      Platform::String ^appPath;
+      Platform::String ^_cmdline;
       Platform::Agile<Windows::UI::Core::CoreWindow> currentWindow;
       Windows::Foundation::Rect bounds;
-      //Direct3DBase^ currentDirect3DBase;
-
-	  //XXX paradas RotatingCube
-	  Windows::Graphics::Display::DisplayOrientations m_orientation;
-	  CubeRenderer m_cubeRenderer;
-	  //XXX
 
       void MainView::mainLoop();
 	};

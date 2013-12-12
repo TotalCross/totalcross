@@ -1,4 +1,13 @@
-#include "CubeRenderer.h"
+#include <wrl/client.h>
+
+#include "esUtil.h"
+
+#if (_MSC_VER >= 1800)
+#include <d3d11_2.h>
+#else
+#include <d3d11_1.h>
+#endif
+
 #include "MainView.h"
 
 #include <thread>
@@ -109,7 +118,6 @@ m_windowClosed(false),
 m_windowVisible(true)
 {
 	lastInstance = this;
-   //currentDirect3DBase = nullptr;
 }
 
 MainView::MainView(String ^cmdline, String ^_appPath) :
@@ -123,7 +131,6 @@ m_windowVisible(true)
 	_cmdline = cmdline;
 
 	lastInstance = this;
-   //currentDirect3DBase = nullptr;
 }
 
 void MainView::Initialize(CoreApplicationView^ applicationView)
@@ -141,7 +148,6 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 void MainView::SetWindow(CoreWindow^ window)
 {
    currentWindow = window;
-   SetBounds();
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -158,24 +164,24 @@ void MainView::SetWindow(CoreWindow^ window)
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
 
-#if (_MSC_VER >= 1800)
-	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
-	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
-#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
-	// Windows Phone 8.0 uses D3D_FEATURE_LEVEL_9_3
-	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_9_3;
-#endif 
-
-	HRESULT result = CreateWinrtEglWindow(WINRT_EGL_IUNKNOWN(CoreWindow::GetForCurrentThread()), featureLevel, m_eglWindow.GetAddressOf());
-	if (SUCCEEDED(result))
-	{
-		m_esContext.hWnd = m_eglWindow;
-
-		//title, width, and height are unused, but included for backwards compatibility
-		esCreateWindow(&m_esContext, nullptr, 0, 0, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
-
-		m_cubeRenderer.CreateResources();
-	}
+//#if (_MSC_VER >= 1800)
+//	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
+//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
+//#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
+//	// Windows Phone 8.0 uses D3D_FEATURE_LEVEL_9_3
+//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_9_3;
+//#endif 
+//
+//	HRESULT result = CreateWinrtEglWindow(WINRT_EGL_IUNKNOWN(CoreWindow::GetForCurrentThread()), featureLevel, m_eglWindow.GetAddressOf());
+//	if (SUCCEEDED(result))
+//	{
+//		m_esContext.hWnd = m_eglWindow;
+//
+//		//title, width, and height are unused, but included for backwards compatibility
+//		esCreateWindow(&m_esContext, nullptr, 0, 0, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
+//
+//		m_cubeRenderer.CreateResources();
+//	}
 }
 
 void MainView::Load(Platform::String^ entryPoint)
@@ -187,7 +193,6 @@ void MainView::Run()
 {
 	BasicTimer^ timer = ref new BasicTimer();
 
-   auto x = CoreWindow::GetForCurrentThread();
    t = std::thread([=]{mainLoop(); });
 
    m_windowClosed = false;
@@ -195,11 +200,13 @@ void MainView::Run()
    {
       if (m_windowVisible)
       {
-		  timer->Update();
+		  //callLastDrawText();
+		  //timer->Update();
 		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		  m_cubeRenderer.Update(timer->Total, timer->Delta);
-		  m_cubeRenderer.Render();
-		  eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface);
+		  //updateScreenANGLE();
+		  //m_cubeRenderer.Update(timer->Total, timer->Delta);
+		  //m_cubeRenderer.Render();
+		  //eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface);
          //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
          //DisplayDX();
       }
@@ -241,17 +248,27 @@ void MainView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 
 void MainView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
-	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	postEvent(mainContext, PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
 }
 
 void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	if (lastX != pos.X || lastY != pos.Y) {
+		debug("lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+		postEvent(mainContext, PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y, -1);
+		isDragging = true;
+	}
 }
 
 void MainView::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 {
-	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	postEvent(mainContext, PENEVENT_PEN_UP, 0, lastX = pos.X, lastY =  pos.Y, -1);
+	isDragging = false;
 }
 
 void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
@@ -300,27 +317,7 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
    return currentWindow.Get();
 }
 
-/*Direct3DBase^ MainView::getDirect3DBase()
+void MainView::setKeyboard(bool state)
 {
-   return currentDirect3DBase;
-}
-
-void MainView::setDirect3DBase(Direct3DBase^ direct3DBase)
-{
-   currentDirect3DBase = direct3DBase;
-}*/
-
-void MainView::setBounds(void)
-{
-   bounds = currentWindow->Bounds;
-}
-
-Rect MainView::getBounds(void)
-{
-   return bounds;
-}
-
-LONGLONG MainView::getEglWindow()
-{
-	return (LONGLONG)(void*)m_eglWindow.GetAddressOf();
+	currentWindow.Get()->IsKeyboardInputEnabled = state;
 }
