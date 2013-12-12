@@ -158,6 +158,15 @@
     <Filter Include="VM Files\win">
       <UniqueIdentifier>{16f98fc4-ed4e-46d2-819e-f5294bd5321f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Native methods\ui\android">
+      <UniqueIdentifier>{04386d29-7c18-4fd3-8e6d-70cfa88c7bd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\tests">
+      <UniqueIdentifier>{15c92927-9c72-4d03-8b90-eea7551c9bd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\wp8\precompiledShaders">
+      <UniqueIdentifier>{153f9817-4a5e-42d9-84d4-ff0008ce78a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsPhoneRuntimeComponent1.cpp" />
@@ -672,13 +681,7 @@
     <ClCompile Include="..\..\..\src\init\nativeProcAddressesTC.c">
       <Filter>init</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
-      <Filter>Native methods\ui\wp8</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\graphics_wrapper.cpp">
-      <Filter>Native methods\ui\wp8</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\openglWrapper.cpp">
       <Filter>Native methods\ui\wp8</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1120,16 +1123,43 @@
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h">
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\gfx_ex.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_Camera_c.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_MediaClip_c.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_Sound_c.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\android\Window_c.h">
+      <Filter>Native methods\ui\android</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\openglWrapper.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\media_MediaClip_test.h">
+      <Filter>Native methods\ui\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_lrp.h">
+      <Filter>Native methods\ui\wp8\precompiledShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_points.h">
+      <Filter>Native methods\ui\wp8\precompiledShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_shade.h">
+      <Filter>Native methods\ui\wp8\precompiledShaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_texture.h">
+      <Filter>Native methods\ui\wp8\precompiledShaders</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h">
-      <Filter>Native methods\ui\wp8</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h">
-      <Filter>Native methods\ui\wp8</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h">
-      <Filter>Native methods\ui\wp8</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h">
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
   </ItemGroup>

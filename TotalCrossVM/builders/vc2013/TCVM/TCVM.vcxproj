@@ -76,7 +76,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;DISABLE_RAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -96,7 +96,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -114,7 +114,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <PreprocessorDefinitions>WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;DISABLE_RAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -135,7 +135,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <PreprocessorDefinitions>WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
@@ -224,6 +224,12 @@
     <ClInclude Include="..\..\..\src\nm\sys\win\Registry_c.h" />
     <ClInclude Include="..\..\..\src\nm\sys\win\Time_c.h" />
     <ClInclude Include="..\..\..\src\nm\sys\win\Vm_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\gfx_ex.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\gfx_Graphics_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_Camera_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_MediaClip_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\media_Sound_c.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\android\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\Control_test.h" />
     <ClInclude Include="..\..\..\src\nm\ui\darwin\childview.h" />
     <ClInclude Include="..\..\..\src\nm\ui\darwin\gfx_ex.h" />
@@ -247,6 +253,7 @@
     <ClInclude Include="..\..\..\src\nm\ui\linux\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\MainWindow_test.h" />
     <ClInclude Include="..\..\..\src\nm\ui\media_MediaClip.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\media_MediaClip_test.h" />
     <ClInclude Include="..\..\..\src\nm\ui\media_Sound.h" />
     <ClInclude Include="..\..\..\src\nm\ui\media_Sound_test.h" />
     <ClInclude Include="..\..\..\src\nm\ui\PalmFont_c.h" />
@@ -266,11 +273,13 @@
     <ClInclude Include="..\..\..\src\nm\ui\win\media_Sound_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h" />
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h" />
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h" />
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\MainView.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\openglWrapper.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_lrp.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_points.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_shade.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\precompiled_texture.h" />
     <ClInclude Include="..\..\..\src\nm\util\zip_ZLib_test.h" />
     <ClInclude Include="..\..\..\src\nm\xml\xml_XmlTokenizer_test.h" />
     <ClInclude Include="..\..\..\src\tcvm\context.h" />
@@ -446,31 +455,6 @@
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GL_GLEXT_PROTOTYPES;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">GL_GLEXT_PROTOTYPES;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">GL_GLEXT_PROTOTYPES;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GL_GLEXT_PROTOTYPES;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
-      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\graphics_wrapper.cpp" />
     <ClCompile Include="..\..\..\src\nm\ui\wp8\MainView.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
@@ -480,6 +464,14 @@
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\openglWrapper.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GL_GLEXT_PROTOTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">GL_GLEXT_PROTOTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\..\..\src\nm\util\BigInteger.c" />
     <ClCompile Include="..\..\..\src\nm\util\concurrent_Lock.c" />
