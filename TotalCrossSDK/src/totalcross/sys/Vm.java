@@ -345,6 +345,8 @@ public final class Vm
    }
    
    /** Vibrates the device for the specified number of milliseconds.
+    * Note that on WP8 the maximum vibration time is 5 seconds. If millis is greater than 5000, it will vibrate only for 5 seconds.
+    * 
     * @since TotalCross 1.22
     */
    public static void vibrate(int millis)
