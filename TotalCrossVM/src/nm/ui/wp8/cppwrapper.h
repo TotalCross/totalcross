@@ -11,6 +11,10 @@ extern "C" {
 char *GetAppPathWP8();
 void cppsleep(int ms);
 
+// WP8 dispatcher fuctions
+void set_dispatcher();
+void dispatcher_dispath();
+
 // WP8 keyboard functions
 void setKeyboard(int state);
 

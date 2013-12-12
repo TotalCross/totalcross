@@ -71,6 +71,17 @@ void cppsleep(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
+void set_dispatcher()
+{
+	CoreWindow::GetForCurrentThread()->Activate();
+	dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
+}
+
+void dispatcher_dispath()
+{
+	if (dispatcher != nullptr)
+		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+}
 
 void setKeyboard(int state)
 {

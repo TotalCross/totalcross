@@ -442,14 +442,14 @@ bool privateInitEvent()
       return false;
    return true;
 #else
-	return false;
+	return true;
 #endif
 }
 
 bool privateIsEventAvailable()
 {
    MSG msg;
-   return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+   return 1;// PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
 }
 
 void privatePumpEvent(Context currentContext)
@@ -459,14 +459,15 @@ void privatePumpEvent(Context currentContext)
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
       SystemIdleTimerReset();
 #endif
-   if (GetMessage(&msg, mainHWnd, 0, 0))
-   {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-   }
-   else
-   if (msg.message == WM_QUIT)
-      keepRunning = false;
+   dispatcher_dispath(); //XXX
+   //if (GetMessage(&msg, mainHWnd, 0, 0))
+   //{
+   //   TranslateMessage(&msg);
+   //   DispatchMessage(&msg);
+   //}
+   //else
+   //if (msg.message == WM_QUIT)
+   //   keepRunning = false;
 }
 
 void privateDestroyEvent()

@@ -28,14 +28,8 @@ using namespace Windows::Graphics::Display;
 
 static MainView ^lastInstance = nullptr;
 
-std::thread t;
-
 //#include "GLES2/gl2.h"
-
 //#include "GLES2/gl2ext.h"
-
-
-//XXX
 
 // Helper class for basic timing.
 ref class BasicTimer sealed
@@ -192,8 +186,19 @@ void MainView::Load(Platform::String^ entryPoint)
 void MainView::Run()
 {
 	BasicTimer^ timer = ref new BasicTimer();
+	int32 vm_err_code = startVM(cmdLine, &local_context);
+	if (vm_err_code != 0)
+	{
+		m_windowClosed = true;
+	}
 
-   t = std::thread([=]{mainLoop(); });
+
+	//currentWindow.Get()->IsKeyboardInputEnabled = true;
+	set_dispatcher();
+
+   if (!m_windowClosed)
+      startProgram(local_context);
+   /*t = std::thread([=]{mainLoop(); });
 
    m_windowClosed = false;
    while (!m_windowClosed)
@@ -215,17 +220,11 @@ void MainView::Run()
 		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
          //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
       }
-   }
+   }*/
 }
 
 void MainView::mainLoop()
 {
-   int32 vm_err_code = startVM(cmdLine, &local_context);
-   if (vm_err_code != 0)
-   {
-      m_windowClosed = true;
-   }
-
    if (!m_windowClosed)
       startProgram(local_context);
 }
@@ -233,7 +232,6 @@ void MainView::mainLoop()
 void MainView::Uninitialize()
 {
    m_windowClosed = true;
-   t.join();
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
