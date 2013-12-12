@@ -76,10 +76,7 @@ typedef unsigned char boolean;
 #define SelectObject(a, b) 0
 #define BitBlt(a, b, c, d, e, f, g, h, i)
 #define DeleteObject(a)
-#define DestroyWindow(a)
-#define UnregisterClass(a, b)
 #define SetProcessAffinityMask(a, b)
-#define SetWindowText(a, b)
 #define GlobalMemoryStatus(a)
 #define waveOutPause(a) 0
 #define waveOutRestart(a) 0
