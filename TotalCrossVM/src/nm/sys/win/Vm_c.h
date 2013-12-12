@@ -449,8 +449,9 @@ typedef struct _VIDEO_POWER_MANAGEMENT
 
 static bool vmTurnScreenOn(bool on)
 {
-	//XXX
-#if !defined WP8
+#if defined WP8
+	return true;
+#else
 	HDC gdc;
 	int iESC;
 	bool ret;
