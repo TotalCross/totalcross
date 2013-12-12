@@ -286,11 +286,15 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    else
    if (Graphics_useOpenGL(dstSurf))
    {
+      int32 fc;
+      int frame;
+
       if (Image_changed(srcSurf))
-         applyChanges(currentContext, srcSurf,true);
-      int32 fc = Image_frameCount(srcSurf);
-      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+         applyChanges(currentContext, srcSurf, true);
+      fc = Image_frameCount(srcSurf);
+      frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
+
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
    }
    else
 #endif
