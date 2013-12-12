@@ -25,6 +25,7 @@
 #if defined WP8
 
 #include "cppwrapper.h"
+#include "GLES2/gl2.h"
 
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 
