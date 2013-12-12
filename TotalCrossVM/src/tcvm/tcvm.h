@@ -44,7 +44,6 @@ typedef unsigned char boolean;
 #define PostMessage(a, b, c, d)
 #define TranslateMessage(a)
 #define DispatchMessage(b)
-#define MessageBox(a, b, c, d)
 #define GetWindowLong(a, b) 0
 #define SetWindowLong(a, b, c)
 #define PeekMessage(a, b, c, d, e) 0
@@ -71,7 +70,6 @@ typedef unsigned char boolean;
 #define UnregisterClass(a, b)
 #define SetProcessAffinityMask(a, b)
 #define SetWindowText(a, b)
-#define GlobalMemoryStatus(a)
 #define waveOutPause(a) 0
 #define waveOutRestart(a) 0
 #define waveOutReset(a) 0
