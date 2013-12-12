@@ -13,6 +13,7 @@
 
 static int32 privateGetFreeMemory(bool maxblock)
 {
+#ifndef WP8
    int32 result=1;
    MEMORYSTATUS ms = { 0 };  // works for most cases
    GlobalMemoryStatus(&ms);
@@ -22,6 +23,10 @@ static int32 privateGetFreeMemory(bool maxblock)
    result = maxblock ? ms.dwTotalPhys : ms.dwAvailPhys;
 #endif
    return result;
+#else
+   return getFreeMemoryWP8();
+#endif
+   
 }
 
 static int32 privateGetTimeStamp()

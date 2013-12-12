@@ -9,6 +9,7 @@
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
+using namespace Windows::Phone::System::Memory;
 using namespace Windows::Phone::Devices::Power;
 using namespace Windows::Phone::Devices::Notification;
 
@@ -102,7 +103,12 @@ void vibrate(DWORD32 milliseconds)
    if (vib != nullptr)
    {
       TimeSpan time;
-      time.Duration = min(milliseconds * 10000, 50000000);
+      time.Duration = min(milliseconds * 10000, 50000000); // The time unit is 100ns and the limit is 5 s. More than that, boom!
       vib->Vibrate(time);
    }
+}
+
+DWORD32 getFreeMemoryWP8()
+{
+   return (DWORD32)MemoryManager::ProcessCommittedLimit;
 }

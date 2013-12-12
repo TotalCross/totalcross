@@ -363,11 +363,6 @@ TESTCASE(tsV_getFreeMemory) // totalcross/sys/Vm native public static int getFre
 {
    TNMParams p;
 
-#ifdef WP8
-   TEST_CANNOT_RUN;
-   //XXX In WP8, there were no function that would get free memory in C or C++, only VB and C#
-#endif
-
    tzero(p);
    p.currentContext = currentContext;
    tsV_getFreeMemory(&p);
