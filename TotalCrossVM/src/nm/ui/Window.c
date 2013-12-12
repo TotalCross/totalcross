@@ -31,7 +31,8 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
    if (sipOption < SIP_HIDE || sipOption > SIP_DISABLE_NUMERICPAD)
       throwIllegalArgumentExceptionI(p->currentContext, "sipOption",sipOption);
    else
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined (WP8)
+#elif defined (WINCE) && _WIN32_WCE >= 300
    if (*tcSettings.virtualKeyboardPtr || sipOption == SIP_ENABLE_NUMERICPAD || sipOption == SIP_DISABLE_NUMERICPAD)
       windowSetSIP(sipOption);
 #elif defined(darwin)

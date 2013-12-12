@@ -479,7 +479,7 @@ jumpArgument:
    traceOn = true;
 #endif
 
-#if defined(darwin) || defined(ANDROID)
+#if defined(darwin) || defined(ANDROID) || defined WP8
    strcat(tczName, ".tcz");
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
