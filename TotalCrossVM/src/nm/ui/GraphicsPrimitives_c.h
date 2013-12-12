@@ -947,6 +947,16 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 
+
+static Context lastContext;
+static Object lastObject;
+static JCharP lastText;
+static Pixel lastForeColor;
+static int lx0;
+static int ly0;
+static int lastJustify;
+static int lastCharCount;
+
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
    Object fontObj = Graphics_font(g);
@@ -967,6 +977,18 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    GLfloat *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
+
+   {
+	   lastContext = currentContext;
+	   lastObject = g;
+	   lastText = text;
+	   lastForeColor = foreColor;
+
+	   lx0 = x0;
+	   ly0 = y0;
+	   lastJustify = justifyWidth;
+	   lastCharCount = chrCount;
+   }
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
@@ -1185,6 +1207,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    else
       currentContext->fullDirty = true;
 #endif
+}
+
+void callLastDrawText()
+{
+	if( lastText != null)
+	drawText(lastContext, lastObject, lastText, lastCharCount, lx0, ly0, lastForeColor, lastJustify);
 }
 
 static SurfaceType getSurfaceType(Context currentContext, Object surface)

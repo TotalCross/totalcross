@@ -118,8 +118,8 @@ MainView::MainView(String ^cmdline, String ^_appPath) :
 m_windowClosed(false),
 m_windowVisible(true)
 {
-	strcpy(cmdLine, " /cmd ");
-	WideCharToMultiByte(CP_ACP, 0, cmdline->Data(), cmdline->Length(), cmdLine + 7, 512 - 7, NULL, NULL);
+	strcpy(cmdLine, "UIControls /cmd ");
+	WideCharToMultiByte(CP_ACP, 0, cmdline->Data(), cmdline->Length(), cmdLine + strlen(cmdLine), 512 - strlen(cmdLine), NULL, NULL);
 	//WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPath, 1024 , NULL, NULL);
 	appPath = _appPath;
 	_cmdline = cmdline;
@@ -142,6 +142,7 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 void MainView::SetWindow(CoreWindow^ window)
 {
    currentWindow = window;
+   m_inputBuffer = ref new Windows::Phone::UI::Core::KeyboardInputBuffer();
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -157,6 +158,8 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->PointerReleased +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
+	window->KeyDown +=
+		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &MainView::OnKeyDown);
 
 //#if (_MSC_VER >= 1800)
 //	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
@@ -232,6 +235,138 @@ void MainView::mainLoop()
 void MainView::Uninitialize()
 {
    m_windowClosed = true;
+}
+
+void MainView::OnKeyDown(CoreWindow ^sender, KeyEventArgs ^args)
+{
+	char buffer[1024];
+	int i, l;
+
+	auto s = args->VirtualKey.ToString();
+	auto cp = s->Data();
+	l = s->Length();
+
+	debug("tecla pressionada len \"%d\"", l);
+
+	for (i = 0; i < l; i++) {
+		buffer[i] = (char)cp[i];
+	}
+	buffer[i] = '\0';
+	debug("buff %s", buffer);
+
+	debug("lalala %d", (int)args->VirtualKey);
+
+	switch (args->VirtualKey) {
+#define macro_key(key) case Windows::System::VirtualKey::##key##: debug("pressionado " #key ", seu hexadecimal: %x", (int)Windows::System::VirtualKey::##key); break
+		macro_key(Accept);
+		macro_key(Add);
+		macro_key(Back);
+		macro_key(Cancel);
+		macro_key(CapitalLock);
+		macro_key(Clear);
+		macro_key(Control);
+		macro_key(Convert);
+		macro_key(Decimal);
+		macro_key(Delete);
+		macro_key(Divide);
+		macro_key(Down);
+		macro_key(End);
+		macro_key(Enter);
+		macro_key(Escape);
+		macro_key(Execute);
+		macro_key(F1);
+		macro_key(F2);
+		macro_key(F3);
+		macro_key(F4);
+		macro_key(F5);
+		macro_key(F6);
+		macro_key(F7);
+		macro_key(F8);
+		macro_key(F9);
+		macro_key(F10);
+		macro_key(F11);
+		macro_key(F12);
+		macro_key(F13);
+		macro_key(F14);
+		macro_key(F15);
+		macro_key(F16);
+		macro_key(F17);
+		macro_key(F18);
+		macro_key(F19);
+		macro_key(F20);
+		macro_key(F21);
+		macro_key(F22);
+		macro_key(F23);
+		macro_key(F24);
+		macro_key(Final);
+		macro_key(Hangul);
+		macro_key(Hanja);
+		macro_key(Help);
+		macro_key(Home);
+		macro_key(Insert);
+		macro_key(Junja);
+		//macro_key(Kana);
+		//macro_key(Kanji);
+		macro_key(Left);
+		macro_key(LeftButton);
+		macro_key(LeftControl);
+		macro_key(LeftMenu);
+		macro_key(LeftShift);
+		macro_key(LeftWindows);
+		macro_key(Menu);
+		macro_key(MiddleButton);
+		macro_key(ModeChange);
+		macro_key(Multiply);
+		macro_key(NonConvert);
+		macro_key(None);
+		macro_key(Number0);
+		macro_key(Number1);
+		macro_key(Number2);
+		macro_key(Number3);
+		macro_key(Number4);
+		macro_key(Number5);
+		macro_key(Number6);
+		macro_key(Number7);
+		macro_key(Number8);
+		macro_key(Number9);
+		macro_key(NumberKeyLock);
+		macro_key(NumberPad0);
+		macro_key(NumberPad1);
+		macro_key(NumberPad2);
+		macro_key(NumberPad3);
+		macro_key(NumberPad4);
+		macro_key(NumberPad5);
+		macro_key(NumberPad6);
+		macro_key(NumberPad7);
+		macro_key(NumberPad8);
+		macro_key(NumberPad9);
+		macro_key(PageUp);
+		macro_key(PageDown);
+		macro_key(Pause);
+		macro_key(Print);
+		macro_key(Right);
+		macro_key(RightButton);
+		macro_key(RightControl);
+		macro_key(RightMenu);
+		macro_key(RightShift);
+		macro_key(RightWindows);
+		macro_key(Scroll);
+		macro_key(Select);
+		macro_key(Separator);
+		macro_key(Shift);
+		macro_key(Sleep);
+		macro_key(Snapshot);
+		macro_key(Space);
+		macro_key(Subtract);
+		macro_key(Tab);
+		macro_key(Up);
+		macro_key(XButton1);
+		macro_key(XButton2);
+		//Windows::System::VirtualKey::
+#undef macro_key
+	default:
+		debug("pressionado não reconhecido, seu hexa %x", (int) args->VirtualKey);
+	}
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -318,4 +453,5 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
 void MainView::setKeyboard(bool state)
 {
 	currentWindow.Get()->IsKeyboardInputEnabled = state;
+//	throw(1);
 }

@@ -397,7 +397,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
-   if (xstrstr(argsLower, "launcher")) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
+   if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
    cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line

@@ -84,6 +84,7 @@ static bool loadSip6()
 static void windowSetSIP(int32 sipOption)
 {
 #if defined (WP8)
+	setKeyboard(true);
 #elif defined (WINCE) && _WIN32_WCE >= 300
    CLSID Clsid;
    RECT sipRect;
