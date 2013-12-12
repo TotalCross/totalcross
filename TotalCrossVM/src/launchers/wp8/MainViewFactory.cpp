@@ -9,12 +9,22 @@
  *                                                                               *
  *********************************************************************************/
 
-#include "CubeRenderer.h"
+#include <wrl/client.h>
+
+#include "esUtil.h"
+
+#if (_MSC_VER >= 1800)
+#include <d3d11_2.h>
+#else
+#include <d3d11_1.h>
+#endif
+
 #include "MainView.h"
 #include <combaseapi.h>
 
 #include "MainViewFactory.h"
 
+using namespace Platform;
 using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
