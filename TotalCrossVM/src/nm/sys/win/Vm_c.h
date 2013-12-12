@@ -30,7 +30,7 @@ static void vmSetTime(Object time)
    SetLocalTime(&newTime);
 #endif
 }
-
+//XXX como carregar a dll do TC
 #define IOCTL_HAL_REBOOT 0x101003C
 void rebootDevice()
 {
@@ -39,8 +39,12 @@ void rebootDevice()
    KernelIoControlProc procKernelIoControl = (KernelIoControlProc)GetProcAddress(coreDll, TEXT("KernelIoControl"));
    if (procKernelIoControl != null)
       procKernelIoControl(IOCTL_HAL_REBOOT, NULL, 0, NULL, 0, NULL);
-#else
+#elif !defined WP8
    ExitWindowsEx(EWX_REBOOT,0);
+#else
+   HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
+   SetSystemPowerStateProc SetSystemPowerState = (SetSystemPowerStateProc)GetProcAddress(dll, TEXT("SetSystemPowerState"));
+   SetSystemPowerState(null, 0x00800000, 4096);
 #endif
 }
 
