@@ -228,7 +228,6 @@ void vmSetAutoOff(bool enable)
 //XXX: O que são hot keys? Não faço a menor idéia do que fazer aqui e acho que nem faz sentido
 void registerHotkeys(Int32Array keys, bool isRegister)
 {
-#ifndef WP8
    int32 n;
    if (mainHWnd != null)
    {
