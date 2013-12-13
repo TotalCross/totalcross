@@ -222,7 +222,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
    
    dir = opendir(path);
    if (!dir)
-      return errno;
+      return NO_ERROR; // guich@tc200: don't throw error, let the user handle it when opening the file. (issue 2254)
    if (recursive)
       pathlen = tcslen(path) + 1;
 

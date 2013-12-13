@@ -12,7 +12,7 @@
 
 
 #include "FiveWay.h"
-#include "P:\extlibs\PalmOS5RE\Incs\System\EventPrv.h"
+#include "P:/extlibs/PalmOS5RE/Incs/System/EventPrv.h"
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
 
