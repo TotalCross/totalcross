@@ -42,9 +42,9 @@ void rebootDevice()
 #elif !defined WP8
    ExitWindowsEx(EWX_REBOOT,0);
 #else
-   HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
+   /*HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
    SetSystemPowerStateProc SetSystemPowerState = (SetSystemPowerStateProc)GetProcAddress(dll, TEXT("SetSystemPowerState"));
-   SetSystemPowerState(null, 0x00800000, 4096);
+   SetSystemPowerState(null, 0x00800000, 4096);*/
 #endif
 }
 
@@ -250,7 +250,7 @@ void registerHotkeys(Int32Array keys, bool isRegister)
          return;
       }
       //throwException(currentContext, RuntimeException, "Could not find entry point for hotkeys registration");
-      #else
+      #elif !defined WP8
       for (n = ARRAYLEN(keys); n-- > 0; keys++)
          if (isRegister)
             RegisterHotKey(mainHWnd, *keys, MOD_WIN, *keys);
@@ -422,7 +422,7 @@ static int32 vmGetRemainingBattery()
    }
    return (ret > 100 ? 100 : ret);
 #else
-   getRemainingBatery();
+   return getRemainingBatery();
 #endif
 }
 
