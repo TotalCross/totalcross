@@ -161,6 +161,9 @@ void MainView::SetWindow(CoreWindow^ window)
 	window->KeyDown +=
 		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &MainView::OnKeyDown);
 
+	window->PointerWheelChanged +=
+		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerWheel);
+
 //#if (_MSC_VER >= 1800)
 //	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
 //	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
@@ -179,6 +182,11 @@ void MainView::SetWindow(CoreWindow^ window)
 //
 //		m_cubeRenderer.CreateResources();
 //	}
+}
+
+void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+{
+	debug("pointer wheel, serah que era isso?");
 }
 
 void MainView::Load(Platform::String^ entryPoint)
