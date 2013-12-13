@@ -19,7 +19,6 @@
 #include "precompiled_lrp.h"
 #include "precompiled_points.h"
 #include "precompiled_shade.h"
-#include "shader.h"
 
 using namespace Windows::UI::Core;
 using namespace TotalCross;
