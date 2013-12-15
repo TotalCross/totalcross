@@ -16,12 +16,12 @@
 
 package totalcross.db.sqlite;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
+import totalcross.util.Hashtable;
+
+import java.sql.*;
 import java.util.Properties;
+
+import org.sqlite.*;
 
 public class JDBC implements Driver
 {
@@ -76,14 +76,14 @@ public class JDBC implements Driver
     /**
      * @see java.sql.Driver#getPropertyInfo(java.lang.String, java.util.Properties)
      */
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+    public DriverPropertyInfo[] getPropertyInfo(String url, Hashtable info) throws SQLException {
         return SQLiteConfig.getDriverPropertyInfo();
     }
 
     /**
      * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
      */
-    public Connection connect(String url, Properties info) throws SQLException {
+    public Connection connect(String url, Hashtable info) throws SQLException {
         return createConnection(url, info);
     }
 
@@ -105,7 +105,7 @@ public class JDBC implements Driver
      * @throws SQLException
      * @see java.sql.Driver#connect(java.lang.String, java.util.Properties)
      */
-    public static Connection createConnection(String url, Properties prop) throws SQLException {
+    public static totalcross.sql.Connection createConnection(String url, Hashtable prop) throws SQLException {
         if (!isValidURL(url))
             throw new SQLException("invalid database address: " + url);
 

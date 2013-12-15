@@ -24,9 +24,15 @@
 //--------------------------------------
 package totalcross.db.sqlite;
 
-import totalcross.sql.*;
+import totalcross.sql.Connection;
+import totalcross.sql.DriverManager;
+import java.sql.SQLException;
+import totalcross.sql.Statement;
+import totalcross.sys.*;
 import totalcross.util.*;
 import totalcross.util.Enum;
+
+import java.sql.*;
 
 /**
  * SQLite Configuration
@@ -38,10 +44,10 @@ import totalcross.util.Enum;
  */
 public class SQLiteConfig
 {
-    private final Properties pragmaTable;
+    private final Hashtable pragmaTable;
     private int openModeFlag = 0x00;
     private TransactionMode transactionMode;
-    protected final int busyTimeout;
+    protected int busyTimeout;
 
     /* Date storage class*/
     public final static String DEFAULT_DATE_STRING_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
@@ -54,7 +60,7 @@ public class SQLiteConfig
      * Default constructor.
      */
     public SQLiteConfig() {
-        this(new Properties());
+        this(new Hashtable(10));
     }
 
     /**
@@ -62,10 +68,10 @@ public class SQLiteConfig
      * property object.
      * @param prop The properties to apply to the configuration.
      */
-    public SQLiteConfig(Properties prop) {
+    public SQLiteConfig(Hashtable prop) {
         this.pragmaTable = prop;
 
-        String openMode = pragmaTable.getProperty(Pragma.OPEN_MODE.pragmaName);
+        String openMode = (String)pragmaTable.get(Pragma.OPEN_MODE.pragmaName);
         if (openMode != null) {
             openModeFlag = Integer.parseInt(openMode);
         }
@@ -74,18 +80,17 @@ public class SQLiteConfig
             setOpenMode(SQLiteOpenMode.READWRITE);
             setOpenMode(SQLiteOpenMode.CREATE);
         }
-        openMode = pragmaTable.getProperty(Pragma.SHARED_CACHE.pragmaName);
+        openMode = (String)pragmaTable.get(Pragma.SHARED_CACHE.pragmaName);
         setOpenMode(SQLiteOpenMode.OPEN_URI); // Enable URI filenames
 
-        transactionMode = TransactionMode.getMode(
-                pragmaTable.getProperty(Pragma.TRANSACTION_MODE.pragmaName, TransactionMode.DEFFERED.name()));
+        transactionMode = TransactionMode.getMode((String)pragmaTable.get(Pragma.TRANSACTION_MODE.pragmaName, TransactionMode.DEFFERED.name));
 
-        dateClass = DateClass.getDateClass(pragmaTable.getProperty(Pragma.DATE_CLASS.pragmaName, DateClass.INTEGER.name()));
-        datePrecision = DatePrecision.getPrecision(pragmaTable.getProperty(Pragma.DATE_PRECISION.pragmaName, DatePrecision.MILLISECONDS.name()));
-        dateMultiplier = (datePrecision == DatePrecision.MILLISECONDS) ? 1L : 1000L;
-        dateStringFormat = pragmaTable.getProperty(Pragma.DATE_STRING_FORMAT.pragmaName, DEFAULT_DATE_STRING_FORMAT);
+        dateClass = DateClass.getDateClass((String)pragmaTable.get(Pragma.DATE_CLASS.pragmaName, DateClass.INTEGER.name));
+        datePrecision = DatePrecision.getPrecision((String)pragmaTable.get(Pragma.DATE_PRECISION.pragmaName, DatePrecision.MILLISECONDS.name));
+        dateMultiplier = datePrecision == DatePrecision.MILLISECONDS ? 1L : 1000L;
+        dateStringFormat = (String)pragmaTable.get(Pragma.DATE_STRING_FORMAT.pragmaName, DEFAULT_DATE_STRING_FORMAT);
 
-        busyTimeout = Integer.parseInt(pragmaTable.getProperty(Pragma.BUSY_TIMEOUT.pragmaName, "3000"));
+        try {busyTimeout = Convert.toInt((String)pragmaTable.get(Pragma.BUSY_TIMEOUT.pragmaName));} catch (Exception e) {busyTimeout = 3000;}
     }
 
     /**
@@ -104,10 +109,10 @@ public class SQLiteConfig
      */
     public void apply(Connection conn) throws SQLException {
 
-        HashSet<String> pragmaParams = new HashSet<String>();
-        for (Pragma each : Pragma.values()) {
-            pragmaParams.add(each.pragmaName);
-        }
+        Hashtable pragmaParams = new Hashtable/*<String>*/(10);
+        Vector v = Pragma.values();
+        for (int i = 0, n = v.size(); i < n; i++)
+            pragmaParams.put(((Pragma)v.items[i]).pragmaName,"");
 
         pragmaParams.remove(Pragma.OPEN_MODE.pragmaName);
         pragmaParams.remove(Pragma.SHARED_CACHE.pragmaName);
@@ -118,15 +123,18 @@ public class SQLiteConfig
 
         Statement stat = conn.createStatement();
         try {
-            for (Object each : pragmaTable.keySet()) {
+           Vector values = pragmaTable.getKeys();
+           
+            for (int i = 0, n = values.size(); i < n; i++) 
+            {
+               Object each = values.items[i];
                 String key = each.toString();
-                if (!pragmaParams.contains(key)) {
+                if (!pragmaParams.exists(key)) 
                     continue;
-                }
 
-                String value = pragmaTable.getProperty(key);
+                String value = (String)pragmaTable.get(key);
                 if (value != null) {
-                    stat.execute(String.format("pragma %s=%s", key, value));
+                    stat.execute("pragma "+key+"="+value);
                 }
             }
         }
@@ -153,7 +161,7 @@ public class SQLiteConfig
      * @param num The int value.
      */
     private void set(Pragma pragma, int num) {
-        setPragma(pragma, Integer.toString(num));
+        setPragma(pragma, Convert.toString(num));
     }
 
     /**
@@ -162,8 +170,8 @@ public class SQLiteConfig
      * @param defaultValue The value to check for.
      * @return True if the given value is the default value; false otherwise.
      */
-    private boolean getBoolean(Pragma pragma, String defaultValue) {
-        return Boolean.parseBoolean(pragmaTable.getProperty(pragma.pragmaName, defaultValue));
+    private boolean getBoolean(Pragma pragma, boolean defaultValue) {
+        return pragmaTable.exists(pragma.pragmaName) ? "true".equalsIgnoreCase((String)pragmaTable.get(pragma.pragmaName)) : defaultValue;
     }
 
     /**
@@ -171,7 +179,7 @@ public class SQLiteConfig
      * @return True if turned on; false otherwise.
      */
     public boolean isEnabledSharedCache() {
-        return getBoolean(Pragma.SHARED_CACHE, "false");
+        return getBoolean(Pragma.SHARED_CACHE, false);
     }
 
     /**
@@ -179,7 +187,7 @@ public class SQLiteConfig
      * @return  True if turned on; false otherwise.
      */
     public boolean isEnabledLoadExtension() {
-        return getBoolean(Pragma.LOAD_EXTENSION, "false");
+        return getBoolean(Pragma.LOAD_EXTENSION, false);
     }
 
     /**
@@ -203,12 +211,12 @@ public class SQLiteConfig
      * passed to the {@link DriverManager#getConnection(String, Properties)}.
      * @return The property object.
      */
-    public Properties toProperties() {
-        pragmaTable.setProperty(Pragma.OPEN_MODE.pragmaName, Integer.toString(openModeFlag));
-        pragmaTable.setProperty(Pragma.TRANSACTION_MODE.pragmaName, transactionMode.getValue());
-        pragmaTable.setProperty(Pragma.DATE_CLASS.pragmaName, dateClass.getValue());
-        pragmaTable.setProperty(Pragma.DATE_PRECISION.pragmaName, datePrecision.getValue());
-        pragmaTable.setProperty(Pragma.DATE_STRING_FORMAT.pragmaName, dateStringFormat);
+    public Hashtable toProperties() {
+        pragmaTable.put(Pragma.OPEN_MODE.pragmaName, Convert.toString(openModeFlag));
+        pragmaTable.put(Pragma.TRANSACTION_MODE.pragmaName, transactionMode.getValue());
+        pragmaTable.put(Pragma.DATE_CLASS.pragmaName, dateClass.getValue());
+        pragmaTable.put(Pragma.DATE_PRECISION.pragmaName, datePrecision.getValue());
+        pragmaTable.put(Pragma.DATE_STRING_FORMAT.pragmaName, dateStringFormat);
 
         return pragmaTable;
     }
@@ -217,10 +225,12 @@ public class SQLiteConfig
      * @return Array of DriverPropertyInfo objects.
      */
     static DriverPropertyInfo[] getDriverPropertyInfo() {
-        Pragma[] pragma = Pragma.values();
-        DriverPropertyInfo[] result = new DriverPropertyInfo[pragma.length];
+        Vector pragma = Pragma.values();
+        DriverPropertyInfo[] result = new DriverPropertyInfo[pragma.size()];
         int index = 0;
-        for (Pragma p : Pragma.values()) {
+        for (int i = 0, n = result.length; i < n; i++)
+        {
+           Pragma p = (Pragma)pragma.items[i];
             DriverPropertyInfo di = new DriverPropertyInfo(p.pragmaName, null);
             di.choices = p.choices;
             di.description = p.description;
@@ -233,60 +243,61 @@ public class SQLiteConfig
 
     private static final String[] OnOff = new String[] { "true", "false" };
 
-    private static class Pragma {
+    private static class Pragma extends Enum {
 
         // Parameters requiring SQLite3 API invocation
-        OPEN_MODE("open_mode", "Database open-mode flag", null),
-        SHARED_CACHE("shared_cache", "Enable SQLite Shared-Cache mode, native driver only", OnOff),
-        LOAD_EXTENSION("enable_load_extension", "Enable SQLite load_extention() function, native driver only", OnOff),
+        public static final Pragma OPEN_MODE = new Pragma("OPEN_MODE","open_mode", "Database open-mode flag", null);
+        public static final Pragma SHARED_CACHE = new Pragma("SHARED_CACHE","shared_cache", "Enable SQLite Shared-Cache mode, native driver only", OnOff);
+        public static final Pragma LOAD_EXTENSION = new Pragma("LOAD_EXTENSION","enable_load_extension", "Enable SQLite load_extention() function, native driver only", OnOff);
 
         // Pragmas that can be set after opening the database
-        CACHE_SIZE("cache_size"),
-        CASE_SENSITIVE_LIKE("case_sensitive_like", OnOff),
-        COUNT_CHANGES("count_changes", OnOff),
-        DEFAULT_CACHE_SIZE("default_cache_size"),
-        EMPTY_RESULT_CALLBACKS("empty_result_callback", OnOff),
-        ENCODING("encoding", toStringArray(Encoding.values())),
-        FOREIGN_KEYS("foreign_keys", OnOff),
-        FULL_COLUMN_NAMES("full_column_names", OnOff),
-        FULL_SYNC("fullsync", OnOff),
-        INCREMENTAL_VACUUM("incremental_vacuum"),
-        JOURNAL_MODE("journal_mode", toStringArray(JournalMode.values())),
-        JOURNAL_SIZE_LIMIT("journal_size_limit"),
-        LEGACY_FILE_FORMAT("legacy_file_format", OnOff),
-        LOCKING_MODE("locking_mode", toStringArray(LockingMode.values())),
-        PAGE_SIZE("page_size"),
-        MAX_PAGE_COUNT("max_page_count"),
-        READ_UNCOMMITED("read_uncommited", OnOff),
-        RECURSIVE_TRIGGERS("recursive_triggers", OnOff),
-        REVERSE_UNORDERED_SELECTS("reverse_unordered_selects", OnOff),
-        SHORT_COLUMN_NAMES("short_column_names", OnOff),
-        SYNCHRONOUS("synchronous", toStringArray(SynchronousMode.values())),
-        TEMP_STORE("temp_store", toStringArray(TempStore.values())),
-        TEMP_STORE_DIRECTORY("temp_store_directory"),
-        USER_VERSION("user_version"),
+        public static final Pragma CACHE_SIZE = new Pragma("CACHE_SIZE","cache_size");
+        public static final Pragma CASE_SENSITIVE_LIKE = new Pragma("CASE_SENSITIVE_LIKE","case_sensitive_like", OnOff);
+        public static final Pragma COUNT_CHANGES = new Pragma("COUNT_CHANGES","count_changes", OnOff);
+        public static final Pragma DEFAULT_CACHE_SIZE = new Pragma("DEFAULT_CACHE_SIZE","default_cache_size");
+        public static final Pragma EMPTY_RESULT_CALLBACKS = new Pragma("EMPTY_RESULT_CALLBACKS","empty_result_callback", OnOff);
+        public static final Pragma ENCODING = new Pragma("ENCODING","encoding", toStringArray(Encoding.values()));
+        public static final Pragma FOREIGN_KEYS = new Pragma("FOREIGN_KEYS","foreign_keys", OnOff);
+        public static final Pragma FULL_COLUMN_NAMES = new Pragma("FULL_COLUMN_NAMES","full_column_names", OnOff);
+        public static final Pragma FULL_SYNC = new Pragma("FULL_SYNC","fullsync", OnOff);
+        public static final Pragma INCREMENTAL_VACUUM = new Pragma("INCREMENTAL_VACUUM","incremental_vacuum");
+        public static final Pragma JOURNAL_MODE = new Pragma("JOURNAL_MODE","journal_mode", toStringArray(JournalMode.values()));
+        public static final Pragma JOURNAL_SIZE_LIMIT = new Pragma("JOURNAL_SIZE_LIMIT","journal_size_limit");
+        public static final Pragma LEGACY_FILE_FORMAT = new Pragma("LEGACY_FILE_FORMAT","legacy_file_format", OnOff);
+        public static final Pragma LOCKING_MODE = new Pragma("LOCKING_MODE","locking_mode", toStringArray(LockingMode.values()));
+        public static final Pragma PAGE_SIZE = new Pragma("PAGE_SIZE","page_size");
+        public static final Pragma MAX_PAGE_COUNT = new Pragma("MAX_PAGE_COUNT","max_page_count");
+        public static final Pragma READ_UNCOMMITED = new Pragma("READ_UNCOMMITED","read_uncommited", OnOff);
+        public static final Pragma RECURSIVE_TRIGGERS = new Pragma("RECURSIVE_TRIGGERS","recursive_triggers", OnOff);
+        public static final Pragma REVERSE_UNORDERED_SELECTS = new Pragma("REVERSE_UNORDERED_SELECTS","reverse_unordered_selects", OnOff);
+        public static final Pragma SHORT_COLUMN_NAMES = new Pragma("SHORT_COLUMN_NAMES","short_column_names", OnOff);
+        public static final Pragma SYNCHRONOUS = new Pragma("SYNCHRONOUS","synchronous", toStringArray(SynchronousMode.values()));
+        public static final Pragma TEMP_STORE = new Pragma("TEMP_STORE","temp_store", toStringArray(TempStore.values()));
+        public static final Pragma TEMP_STORE_DIRECTORY = new Pragma("TEMP_STORE_DIRECTORY","temp_store_directory");
+        public static final Pragma USER_VERSION = new Pragma("USER_VERSION","user_version");
 
         // Others
-        TRANSACTION_MODE("transaction_mode", toStringArray(TransactionMode.values())),
-        DATE_PRECISION("date_precision", "\"seconds\": Read and store integer dates as seconds from the Unix Epoch (SQLite standard).\n\"milliseconds\": (DEFAULT) Read and store integer dates as milliseconds from the Unix Epoch (Java standard).", toStringArray(DatePrecision.values())),
-        DATE_CLASS("date_class", "\"integer\": (Default) store dates as number of seconds or milliseconds from the Unix Epoch\n\"text\": store dates as a string of text\n\"real\": store dates as Julian Dates", toStringArray(DateClass.values())),
-        DATE_STRING_FORMAT("date_string_format", "Format to store and retrieve dates stored as text. Defaults to \"yyyy-MM-dd HH:mm:ss.SSS\"", null),
-        BUSY_TIMEOUT("busy_timeout", null);
+        public static final Pragma TRANSACTION_MODE = new Pragma("TRANSACTION_MODE","transaction_mode", toStringArray(TransactionMode.values()));
+        public static final Pragma DATE_PRECISION = new Pragma("DATE_PRECISION","date_precision", "\"seconds\": Read and store integer dates as seconds from the Unix Epoch (SQLite standard).\n\"milliseconds\": (DEFAULT) Read and store integer dates as milliseconds from the Unix Epoch (Java standard).", toStringArray(DatePrecision.values()));
+        public static final Pragma DATE_CLASS = new Pragma("DATE_CLASS","date_class", "\"integer\": (Default) store dates as number of seconds or milliseconds from the Unix Epoch\n\"text\": store dates as a string of text\n\"real\": store dates as Julian Dates", toStringArray(DateClass.values()));
+        public static final Pragma DATE_STRING_FORMAT = new Pragma("DATE_STRING_FORMAT","date_string_format", "Format to store and retrieve dates stored as text. Defaults to \"yyyy-MM-dd HH:mm:ss.SSS\"", null);
+        public static final Pragma BUSY_TIMEOUT = new Pragma("BUSY_TIMEOUT","busy_timeout", null);
 
-        public final String   pragmaName;
+        public final String pragmaName;
         public final String[] choices;
         public final String   description;
 
-        private Pragma(String pragmaName) {
-            this(pragmaName, null);
+        private Pragma(String id, String pragmaName) {
+            this(id, pragmaName, null);
         }
 
-        private Pragma(String pragmaName, String[] choices) {
-            this(pragmaName, null, choices);
+        private Pragma(String id, String pragmaName, String[] choices) {
+            this(id, pragmaName, null, choices);
         }
 
-        private Pragma(String pragmaName, String description, String[] choices) {
-            this.pragmaName = pragmaName;
+        private Pragma(String id, String pragmaName, String description, String[] choices) {
+           super(id);
+           this.pragmaName = pragmaName;
             this.description = description;
             this.choices = choices;
         }
@@ -298,7 +309,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/c3ref/c_open_autoproxy.html">http://www.sqlite.org/c3ref/c_open_autoproxy.html</a>
      */
     public void setOpenMode(SQLiteOpenMode mode) {
-        openModeFlag |= mode.flag;
+        openModeFlag |= mode.value;
     }
 
     /**
@@ -307,7 +318,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/c3ref/c_open_autoproxy.html">http://www.sqlite.org/c3ref/c_open_autoproxy.html</a>
      */
     public void resetOpenMode(SQLiteOpenMode mode) {
-        openModeFlag &= ~mode.flag;
+        openModeFlag &= ~mode.value;
     }
 
     /**
@@ -423,48 +434,46 @@ public class SQLiteConfig
      * @param list Array if PragmaValue.
      * @return String array of class values
      */
-    private static String[] toStringArray(PragmaValue[] list) {
-        String[] result = new String[list.length];
-        for (int i = 0; i < list.length; i++) {
-            result[i] = list[i].getValue();
-        }
+    private static String[] toStringArray(Vector list) 
+    {
+       int n = list.size();
+        String[] result = new String[n];
+        for (int i = 0; i < n; i++) 
+            result[i] = ((Enum)list.items[i]).name;
         return result;
     }
 
-    public static class Encoding implements PragmaValue {
-        UTF8("'UTF-8'"),
-        UTF16("'UTF-16'"),
-        UTF16_LITTLE_ENDIAN("'UTF-16le'"),
-        UTF16_BIG_ENDIAN("'UTF-16be'"),
-        UTF_8(UTF8),                    // UTF-8
-        UTF_16(UTF16),                  // UTF-16
-        UTF_16LE(UTF16_LITTLE_ENDIAN),  // UTF-16le
-        UTF_16BE(UTF16_BIG_ENDIAN);     // UTF-16be
-
-        public final String typeName;
+    public static class Encoding extends PragmaValue 
+    {
+        public static final Encoding UTF8 = new Encoding("'UTF-8'");
+        public static final Encoding UTF16 = new Encoding("'UTF-16'");
+        public static final Encoding UTF16_LITTLE_ENDIAN = new Encoding("'UTF-16le'");
+        public static final Encoding UTF16_BIG_ENDIAN = new Encoding("'UTF-16be'");
+        public static final Encoding UTF_8 = new Encoding(UTF8.name);                    // UTF-8
+        public static final Encoding UTF_16 = new Encoding(UTF16.name);                  // UTF-16
+        public static final Encoding UTF_16LE = new Encoding(UTF16_LITTLE_ENDIAN.name);  // UTF-16le
+        public static final Encoding UTF_16BE = new Encoding(UTF16_BIG_ENDIAN.name);     // UTF-16be
 
         private Encoding(String typeName) {
-            this.typeName = typeName;
-        }
-
-        private Encoding(Encoding encoding) {
-           this.typeName = encoding.getValue();
-        }
-
-        public String getValue() {
-            return typeName;
+           super(typeName);
         }
 
         public static Encoding getEncoding(String value) {
-           return valueOf(value.replaceAll("-", "_").toUpperCase());
+           return (Encoding)get(value.replaceAll("-", "_").toUpperCase());
         }
     }
 
-    public static class JournalMode implements PragmaValue {
-        DELETE, TRUNCATE, PERSIST, MEMORY, WAL, OFF;
+    public static class JournalMode extends PragmaValue {
+        public static final JournalMode DELETE   = new JournalMode("DELETE");
+        public static final JournalMode TRUNCATE = new JournalMode("TRUNCATE");
+        public static final JournalMode PERSIST  = new JournalMode("PERSIST");
+        public static final JournalMode MEMORY   = new JournalMode("MEMORY");
+        public static final JournalMode WAL      = new JournalMode("WAL");
+        public static final JournalMode OFF      = new JournalMode("OFF");
 
-        public String getValue() {
-            return name();
+        private JournalMode(String n)
+        {
+           super(n);
         }
     }
 
@@ -474,7 +483,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/pragma.html#pragma_encoding">www.sqlite.org/pragma.html#pragma_encoding</a>
      */
     public void setEncoding(Encoding encoding) {
-        setPragma(Pragma.ENCODING, encoding.typeName);
+        setPragma(Pragma.ENCODING, encoding.name);
     }
 
     /**
@@ -529,7 +538,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/pragma.html#pragma_journal_mode">www.sqlite.org/pragma.html#pragma_journal_mode</a>
      */
     public void setJournalMode(JournalMode mode) {
-        setPragma(Pragma.JOURNAL_MODE, mode.name());
+        setPragma(Pragma.JOURNAL_MODE, mode.name);
     }
 
     //    public void setJournalMode(String databaseName, JournalMode mode) {
@@ -560,10 +569,12 @@ public class SQLiteConfig
         set(Pragma.LEGACY_FILE_FORMAT, use);
     }
 
-    public static class LockingMode implements PragmaValue {
-        NORMAL, EXCLUSIVE;
-        public String getValue() {
-            return name();
+    public static class LockingMode extends PragmaValue {
+        public static final LockingMode NORMAL = new LockingMode("NORMAL"); 
+        public static final LockingMode EXCLUSIVE = new LockingMode("EXCLUSIVE");
+        private LockingMode(String s)
+        {
+           super(s);
         }
     }
 
@@ -573,7 +584,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/pragma.html#pragma_locking_mode">www.sqlite.org/pragma.html#pragma_locking_mode</a>
      */
     public void setLockingMode(LockingMode mode) {
-        setPragma(Pragma.LOCKING_MODE, mode.name());
+        setPragma(Pragma.LOCKING_MODE, mode.name);
     }
 
     //    public void setLockingMode(String databaseName, LockingMode mode) {
@@ -640,11 +651,15 @@ public class SQLiteConfig
         set(Pragma.SHORT_COLUMN_NAMES, enable);
     }
 
-    public static class SynchronousMode implements PragmaValue {
-        OFF, NORMAL, FULL;
+    public static class SynchronousMode extends PragmaValue 
+    {
+        public static final SynchronousMode OFF = new SynchronousMode("OFF");
+        public static final SynchronousMode NORMAL = new SynchronousMode("NORMAL");
+        public static final SynchronousMode FULL = new SynchronousMode("FULL");
 
-        public String getValue() {
-            return name();
+        public SynchronousMode(String v)
+        {
+           super(v);
         }
     }
 
@@ -662,14 +677,17 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/pragma.html#pragma_synchronous">www.sqlite.org/pragma.html#pragma_synchronous</a>
      */
     public void setSynchronous(SynchronousMode mode) {
-        setPragma(Pragma.SYNCHRONOUS, mode.name());
+        setPragma(Pragma.SYNCHRONOUS, mode.name);
     }
 
-    public static class TempStore implements PragmaValue {
-        DEFAULT, FILE, MEMORY;
+    public static class TempStore extends PragmaValue {
+        public static final TempStore DEFAULT = new TempStore("DEFAULT");
+        public static final TempStore FILE = new TempStore("FILE");
+        public static final TempStore MEMORY = new TempStore("MEMORY");
 
-        public String getValue() {
-            return name();
+        public TempStore(String v)
+        {
+           super(v);
         }
 
     }
@@ -686,7 +704,7 @@ public class SQLiteConfig
      *      href="http://www.sqlite.org/pragma.html#pragma_temp_store">www.sqlite.org/pragma.html#pragma_temp_store</a>
      */
     public void setTempStore(TempStore storeType) {
-        setPragma(Pragma.TEMP_STORE, storeType.name());
+        setPragma(Pragma.TEMP_STORE, storeType.name);
     }
 
     /**
@@ -696,7 +714,7 @@ public class SQLiteConfig
      * @see <a href="http://www.sqlite.org/pragma.html#pragma_temp_store_directory">www.sqlite.org/pragma.html#pragma_temp_store_directory</a>
      */
     public void setTempStoreDirectory(String directoryName) {
-        setPragma(Pragma.TEMP_STORE_DIRECTORY, String.format("'%s'", directoryName));
+        setPragma(Pragma.TEMP_STORE_DIRECTORY, "'"+directoryName+"'");
     }
 
     /**
@@ -710,15 +728,19 @@ public class SQLiteConfig
         set(Pragma.USER_VERSION, version);
     }
 
-    public static class TransactionMode implements PragmaValue {
-        DEFFERED, IMMEDIATE, EXCLUSIVE;
-
-        public String getValue() {
-            return name();
-        }
+    public static class TransactionMode extends PragmaValue 
+    {
+       public static final TransactionMode DEFFERED = new TransactionMode("DEFFERED");
+       public static final TransactionMode IMMEDIATE = new TransactionMode("IMMEDIATE");
+       public static final TransactionMode EXCLUSIVE = new TransactionMode("EXCLUSIVE");
 
         public static TransactionMode getMode(String mode) {
-            return TransactionMode.valueOf(mode.toUpperCase());
+            return (TransactionMode)get(mode.toUpperCase());
+        }
+        
+        public TransactionMode(String v)
+        {
+           super(v);
         }
     }
 

@@ -27,11 +27,12 @@ package totalcross.util;
  */
 public class Enum
 {
-   protected String name;
-   protected int value;
+   public String name;
+   public int value;
    static Hashtable htv2n = new Hashtable(10); // value to name
    static Hashtable htn2c = new Hashtable(10); // name to Enum
    static int counter;
+   static Vector values;
    
    protected Enum(String name)
    {
@@ -57,5 +58,10 @@ public class Enum
       if (ret == null)
          ret = def;
       return def;
+   }
+   
+   public static Vector values()
+   {
+      return values == null ? values = htn2c.getValues() : values;
    }
 }
