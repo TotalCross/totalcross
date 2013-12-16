@@ -36,7 +36,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Hashtable;
 */
 import totalcross.io.File;
 import totalcross.io.IOException;
@@ -82,7 +82,7 @@ public class SQLiteConnection implements Connection
      * @throws SQLException
      */
     public SQLiteConnection(String url, String fileName) throws SQLException {
-        this(url, fileName, new Properties());
+        this(url, fileName, new Hashtable());
     }
 
     /**
@@ -93,7 +93,7 @@ public class SQLiteConnection implements Connection
      * @param prop The configurations to apply.
      * @throws SQLException
      */
-    public SQLiteConnection(String url, String fileName, Properties prop) throws SQLException {
+    public SQLiteConnection(String url, String fileName, Hashtable prop) throws SQLException {
         this.url = url;
         this.fileName = fileName;
 

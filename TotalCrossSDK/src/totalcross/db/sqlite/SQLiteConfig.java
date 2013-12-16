@@ -24,15 +24,11 @@
 //--------------------------------------
 package totalcross.db.sqlite;
 
-import totalcross.sql.Connection;
-import totalcross.sql.DriverManager;
+import totalcross.sql.*;
 import java.sql.SQLException;
-import totalcross.sql.Statement;
 import totalcross.sys.*;
 import totalcross.util.*;
 import totalcross.util.Enum;
-
-import java.sql.*;
 
 /**
  * SQLite Configuration

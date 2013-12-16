@@ -1,6 +1,7 @@
 package totalcross.sql.sqlite4j;
 
 import totalcross.sql.*;
+import totalcross.sql.SQLConvert;
 import totalcross.sys.*;
 import totalcross.util.*;
 

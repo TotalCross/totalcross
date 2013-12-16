@@ -16,9 +16,12 @@
 
 package totalcross.db.sqlite;
 
+import totalcross.io.*;
 import totalcross.sql.*;
+import totalcross.sys.*;
 import totalcross.util.regex.*;
 import totalcross.util.*;
+
 import java.sql.SQLException;
 
 final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaData, Codes
@@ -275,7 +278,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
      * @return byte array.
      * @throws SQLException
      */
-    private byte[] readBytes(InputStream istream, int length) throws SQLException {
+    private byte[] readBytes(Stream istream, int length) throws SQLException {
         if (length < 0) {
             SQLException exception =
                 new SQLException("Error reading stream. Length should be non-negative");
@@ -287,7 +290,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
 
         try 
         {
-            istream.read(bytes);
+            istream.readBytes(bytes,0,bytes.length);
 
             return bytes;
         } 
@@ -303,7 +306,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream, int)
      */
-    public void setBinaryStream(int pos, InputStream istream, int length) throws SQLException {
+    public void setBinaryStream(int pos, Stream istream, int length) throws SQLException {
         if (istream == null && length == 0) {
             setBytes(pos, null);
         }
@@ -314,14 +317,14 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream, int)
      */
-    public void setAsciiStream(int pos, InputStream istream, int length) throws SQLException {
+    public void setAsciiStream(int pos, Stream istream, int length) throws SQLException {
         setUnicodeStream(pos, istream, length);
     }
 
     /**
      * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
      */
-    public void setUnicodeStream(int pos, InputStream istream, int length) throws SQLException {
+    public void setUnicodeStream(int pos, Stream istream, int length) throws SQLException {
         if (istream == null && length == 0) {
             setString(pos, null);
         }
@@ -399,17 +402,15 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         if (value == null) {
             batch(pos, null);
         }
-        else if (value instanceof java.util.Date) {
-            setDateByMilliseconds(pos, ((java.util.Date) value).getTime());
-        }
         else if (value instanceof Date) {
-            setDateByMilliseconds(pos, new Long(((Date) value).getTime()));
+            setDate(pos, ((Date)value).getDateInt(),0,0);
         }
         else if (value instanceof Time) {
-            setDateByMilliseconds(pos, new Long(((Time) value).getTime()));
+           Time t = (Time)value;
+            setDate(pos, t.year*10000 + t.month*100 + t.day, t.hour * 10000 + t.minute * 100 + t.second,0);
         }
         else if (value instanceof Timestamp) {
-            setDateByMilliseconds(pos, new Long(((Timestamp) value).getTime()));
+            setDate(pos, 0,0,((Timestamp) value).getTime());
         }
         else if (value instanceof Long) {
             batch(pos, value);
@@ -471,7 +472,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader, int)
      */
-    public void setCharacterStream(int pos, Reader reader, int length) throws SQLException {
+    public void setCharacterStream(int pos, CharStream reader, int length) throws SQLException {
         try {
             // copy chars from reader to StringBuffer
             StringBuffer sb = new StringBuffer();
@@ -500,14 +501,14 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setDate(int, java.sql.Date, java.util.Calendar)
      */
-    public void setDate(int pos, Date x, Calendar cal) throws SQLException {
+/*    public void setDate(int pos, Date x, Calendar cal) throws SQLException {
         setObject(pos, x);
     }
-
+*/
     /**
     * Store the date in the user's preferred format (text, int, or real)
     */
-   private void setDateByMilliseconds(int pos, Long value) throws SQLException {
+   private void setDate(int pos, int date, int time, long millis) throws SQLException {
        switch(conn.dateClass) {
            case TEXT:
                batch(pos, conn.dateFormat.format(new Date(value)));
@@ -533,10 +534,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setTime(int, java.sql.Time, java.util.Calendar)
      */
-    public void setTime(int pos, Time x, Calendar cal) throws SQLException {
+/*    public void setTime(int pos, Time x, Calendar cal) throws SQLException {
         setObject(pos, x);
     }
-
+*/
     /**
      * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp)
      */
@@ -547,10 +548,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp, java.util.Calendar)
      */
-    public void setTimestamp(int pos, Timestamp x, Calendar cal) throws SQLException {
+/*    public void setTimestamp(int pos, Timestamp x, Calendar cal) throws SQLException {
         setObject(pos, x);
     }
-
+*/
     /**
      * @see java.sql.PreparedStatement#getMetaData()
      */
@@ -592,4 +593,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     public void addBatch(String sql) throws SQLException {
         throw unused();
     }
+
+   public void setFloat(int parameterIndex, double x) throws SQLException
+   {
+      // TODO Auto-generated method stub
+      
+   }
 }

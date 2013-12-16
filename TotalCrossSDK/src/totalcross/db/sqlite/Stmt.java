@@ -15,7 +15,7 @@
  */
 package totalcross.db.sqlite;
 
-//import java.sql.BatchUpdateException;
+import java.sql.BatchUpdateException;
 import totalcross.sql.Connection;
 import totalcross.sql.ResultSet;
 import java.sql.SQLException;
@@ -196,7 +196,7 @@ class Stmt extends Unused implements Statement, Codes
     static class BackupObserver implements ProgressObserver
     {
         public void progress(int remaining, int pageCount) {
-            System.out.println(String.format("remaining:%d, page count:%d", remaining, pageCount));
+            System.out.println("remaining:"+remaining+", page count:"+pageCount);
         }
     }
 

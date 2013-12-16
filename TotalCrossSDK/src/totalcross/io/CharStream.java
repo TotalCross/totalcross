@@ -3,6 +3,12 @@ package totalcross.io;
 public class CharStream
 {
    DataStream ds;
+   
+   public CharStream(String s)
+   {
+      this(new DataStream(new ByteArrayStream(s.getBytes())));
+   }
+   
    public CharStream(Stream ds)
    {
       this.ds = ds instanceof DataStream ? (DataStream)ds : new DataStream(ds);

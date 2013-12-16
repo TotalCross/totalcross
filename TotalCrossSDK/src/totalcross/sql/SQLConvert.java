@@ -1,12 +1,11 @@
-package totalcross.sql.sqlite4j;
+package totalcross.sql;
 
-import totalcross.sql.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
-class Convert
+class SQLConvert
 {
-   private Convert()
+   private SQLConvert()
    {
    }
 

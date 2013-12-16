@@ -19,6 +19,7 @@ package totalcross.db.sqlite;
 import totalcross.sql.*;
 import totalcross.util.regex.*;
 import totalcross.util.*;
+
 import java.sql.SQLException;
 
 public class JDBC implements Driver
@@ -38,14 +39,14 @@ public class JDBC implements Driver
      * @see java.sql.Driver#getMajorVersion()
      */
     public int getMajorVersion() {
-        return SQLiteJDBCLoader.getMajorVersion();
+        return /*SQLiteJDBCLoader.getMajorVersion()*/1;
     }
 
     /**
      * @see java.sql.Driver#getMinorVersion()
      */
     public int getMinorVersion() {
-        return SQLiteJDBCLoader.getMinorVersion();
+        return /*SQLiteJDBCLoader.getMinorVersion()*/0;
     }
 
     /**
@@ -110,4 +111,10 @@ public class JDBC implements Driver
         url = url.trim();
         return new SQLiteConnection(url, extractAddress(url), prop);
     }
+
+   public Connection connect(String url, Properties info) throws SQLException
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
 }

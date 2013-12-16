@@ -49,7 +49,7 @@ abstract class Unused
 
     // PreparedStatement ////////////////////////////////////////////
 
-    public void setArray(int i, Array x)
+/*    public void setArray(int i, Array x)
         throws SQLException { throw unused(); }
 //    public void setBigDecimal(int parameterIndex, BigDecimal x)
 //        throws SQLException { throw unused(); }
@@ -61,11 +61,11 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void setURL(int pos, URL x)
         throws SQLException { throw unused(); }
-
+*/
 
     // ResultSet ////////////////////////////////////////////////////
 
-    public Array getArray(int i)
+/*    public Array getArray(int i)
         throws SQLException { throw unused(); }
     public Array getArray(String col)
         throws SQLException { throw unused(); }
@@ -73,7 +73,7 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public InputStream getAsciiStream(String col)
         throws SQLException { throw unused(); }
-//    public BigDecimal getBigDecimal(int col)
+*///    public BigDecimal getBigDecimal(int col)
 //        throws SQLException { throw unused(); }
     public BigDecimal getBigDecimal(int col, int s)
         throws SQLException { throw unused(); }
@@ -81,7 +81,7 @@ abstract class Unused
 //        throws SQLException { throw unused(); }
     public BigDecimal getBigDecimal(String col, int s)
         throws SQLException { throw unused(); }
-    public Blob getBlob(int col)
+/*    public Blob getBlob(int col)
         throws SQLException { throw unused(); }
     public Blob getBlob(String col)
         throws SQLException { throw unused(); }
@@ -106,7 +106,7 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public URL getURL(String col)
         throws SQLException { throw unused(); }
-
+*/
     public void insertRow() throws SQLException {
         throw new SQLException("ResultSet is TYPE_FORWARD_ONLY"); }
     public void moveToCurrentRow() throws SQLException {
@@ -133,7 +133,7 @@ abstract class Unused
     public void deleteRow()
         throws SQLException { throw unused(); }
 
-    public void updateArray(int col, Array x)
+/*    public void updateArray(int col, Array x)
         throws SQLException { throw unused(); }
     public void updateArray(String col, Array x)
         throws SQLException { throw unused(); }
@@ -141,11 +141,11 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateAsciiStream(String col, InputStream x, int l)
         throws SQLException { throw unused(); }
-    public void updateBigDecimal(int col, BigDecimal x)
+*/    public void updateBigDecimal(int col, BigDecimal x)
         throws SQLException { throw unused(); }
     public void updateBigDecimal(String col, BigDecimal x)
         throws SQLException { throw unused(); }
-    public void updateBinaryStream(int c, InputStream x, int l)
+/*    public void updateBinaryStream(int c, InputStream x, int l)
         throws SQLException { throw unused(); }
     public void updateBinaryStream(String c, InputStream x, int l)
         throws SQLException { throw unused(); }
@@ -153,7 +153,7 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateBlob(String col, Blob x)
         throws SQLException { throw unused(); }
-    public void updateBoolean(int col, boolean x)
+*/    public void updateBoolean(int col, boolean x)
         throws SQLException { throw unused(); }
     public void updateBoolean(String col, boolean x)
         throws SQLException { throw unused(); }
@@ -165,7 +165,7 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateBytes(String col, byte[] x)
         throws SQLException { throw unused(); }
-    public void updateCharacterStream(int c, Reader x, int l)
+/*    public void updateCharacterStream(int c, Reader x, int l)
         throws SQLException { throw unused(); }
     public void updateCharacterStream(String c, Reader r, int l)
         throws SQLException { throw unused(); }
@@ -173,7 +173,7 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateClob(String col, Clob x)
         throws SQLException { throw unused(); }
-    public void updateDate(int col, Date x)
+*/    public void updateDate(int col, Date x)
         throws SQLException { throw unused(); }
     public void updateDate(String col, Date x)
         throws SQLException { throw unused(); }
@@ -205,11 +205,11 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateObject(String c, Object x, int s)
         throws SQLException { throw unused(); }
-    public void updateRef(int col, Ref x)
+/*    public void updateRef(int col, Ref x)
         throws SQLException { throw unused(); }
     public void updateRef(String c, Ref x)
         throws SQLException { throw unused(); }
-    public void updateRow()
+*/    public void updateRow()
         throws SQLException { throw unused(); }
     public void updateShort(int c, short x)
         throws SQLException { throw unused(); }
@@ -219,11 +219,11 @@ abstract class Unused
         throws SQLException { throw unused(); }
     public void updateString(String c, String x)
         throws SQLException { throw unused(); }
-    public void updateTime(int c, Time x)
+/*    public void updateTime(int c, Time x)
         throws SQLException { throw unused(); }
     public void updateTime(String c, Time x)
         throws SQLException { throw unused(); }
-    public void updateTimestamp(int c, Timestamp x)
+*/    public void updateTimestamp(int c, Timestamp x)
         throws SQLException { throw unused(); }
     public void updateTimestamp(String c, Timestamp x)
         throws SQLException { throw unused(); }

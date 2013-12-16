@@ -18,6 +18,8 @@ package totalcross.db.sqlite;
 import totalcross.sql.*;
 import totalcross.util.regex.*;
 import totalcross.util.*;
+import totalcross.io.*;
+import totalcross.sys.*;
 import java.sql.SQLException;
 
 /**
@@ -273,7 +275,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.lang.Object#finalize()
      */
-    @Override
+    
     protected void finalize() throws SQLException {
         close();
     }
@@ -306,7 +308,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
             try {
                 return new BigDecimal(stringValue);
             }
-            catch (NumberFormatException e) {
+            catch (totalcross.sys.InvalidNumberException e) {
                 throw new SQLException("Bad value for type BigDecimal : " + stringValue);
             }
         }
@@ -336,17 +338,17 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.sql.ResultSet#getBinaryStream(int)
      */
-    public InputStream getBinaryStream(int col) throws SQLException {
+/*    public InputStream getBinaryStream(int col) throws SQLException {
         return new ByteArrayInputStream(getBytes(col));
     }
-
+*/
     /**
      * @see java.sql.ResultSet#getBinaryStream(java.lang.String)
      */
-    public InputStream getBinaryStream(String col) throws SQLException {
+/*    public InputStream getBinaryStream(String col) throws SQLException {
         return getBinaryStream(findColumn(col));
     }
-
+*/
     /**
      * @see java.sql.ResultSet#getByte(int)
      */
@@ -378,14 +380,14 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.sql.ResultSet#getCharacterStream(int)
      */
-    public Reader getCharacterStream(int col) throws SQLException {
-        return new StringReader(getString(col));
+    public CharStream getCharacterStream(int col) throws SQLException {
+        return new CharStream(getString(col));
     }
 
     /**
      * @see java.sql.ResultSet#getCharacterStream(java.lang.String)
      */
-    public Reader getCharacterStream(String col) throws SQLException {
+    public CharStream getCharacterStream(String col) throws SQLException {
         return getCharacterStream(findColumn(col));
     }
 
