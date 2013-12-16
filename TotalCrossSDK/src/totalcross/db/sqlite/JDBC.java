@@ -16,12 +16,10 @@
 
 package totalcross.db.sqlite;
 
-import totalcross.util.Hashtable;
-
-import java.sql.*;
-import java.util.Properties;
-
-import org.sqlite.*;
+import totalcross.sql.*;
+import totalcross.util.regex.*;
+import totalcross.util.*;
+import java.sql.SQLException;
 
 public class JDBC implements Driver
 {

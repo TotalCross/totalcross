@@ -15,7 +15,7 @@
  */
 package totalcross.db.sqlite;
 
-import java.sql.Connection;
+import totalcross.sql.*;
 import java.sql.SQLException;
 
 /** Provides an interface for creating SQLite user-defined functions.

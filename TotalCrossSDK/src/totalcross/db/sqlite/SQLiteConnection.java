@@ -40,19 +40,10 @@ import java.util.Properties;
 */
 import totalcross.io.File;
 import totalcross.io.IOException;
-import totalcross.sql.Connection;
-import totalcross.sql.PreparedStatement;
-import totalcross.sql.ResultSet;
-import totalcross.sql.Statement;
-import totalcross.db.sqlite.SQLiteConfig.DateClass;
-import totalcross.util.Properties;
-
-import java.net.*;
-import java.sql.*;
+import totalcross.sql.*;
+import totalcross.util.regex.*;
+import totalcross.util.*;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.text.*;
-import java.util.*;
 
 public class SQLiteConnection implements Connection
 {

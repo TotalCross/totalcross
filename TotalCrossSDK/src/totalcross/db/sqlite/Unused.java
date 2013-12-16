@@ -16,11 +16,10 @@
 
 package totalcross.db.sqlite;
 
-import java.io.*;
-import java.math.*;
-import java.net.*;
-import java.sql.*;
-import java.util.Map;
+import totalcross.sql.*;
+import totalcross.util.regex.*;
+import totalcross.util.*;
+import java.sql.SQLException;
 
 /**
  * Unused JDBC functions from Statement, PreparedStatement and ResultSet.

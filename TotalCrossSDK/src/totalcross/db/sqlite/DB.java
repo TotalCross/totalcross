@@ -15,12 +15,10 @@
  */
 package totalcross.db.sqlite;
 
-//import java.sql.BatchUpdateException;
+import totalcross.sql.*;
+import totalcross.util.regex.*;
+import totalcross.util.*;
 import java.sql.SQLException;
-/*import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-*/
 /*
  * This class is the interface to SQLite. It provides some helper functions
  * used by other parts of the driver. The goal of the helper functions here

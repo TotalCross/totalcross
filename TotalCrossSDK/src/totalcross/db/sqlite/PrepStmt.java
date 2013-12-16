@@ -16,21 +16,10 @@
 
 package totalcross.db.sqlite;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import totalcross.sql.*;
+import totalcross.util.regex.*;
+import totalcross.util.*;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.Calendar;
 
 final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaData, Codes
 {
@@ -67,7 +56,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#finalize()
      */
-    @Override
+    
     protected void finalize() throws SQLException {
         close();
     }
@@ -132,7 +121,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#executeBatch()
      */
-    @Override
+    
     public int[] executeBatch() throws SQLException {
         if (batchPos == 0) {
             return new int[] {};
@@ -151,7 +140,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#getUpdateCount()
      */
-    @Override
+    
     public int getUpdateCount() throws SQLException {
         if (pointer == 0 || resultsWaiting || rs.isOpen()) {
             return -1;
@@ -575,7 +564,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#execute(java.lang.String)
      */
-    @Override
+    
     public boolean execute(String sql) throws SQLException {
         throw unused();
     }
@@ -583,7 +572,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#executeUpdate(java.lang.String)
      */
-    @Override
+    
     public int executeUpdate(String sql) throws SQLException {
         throw unused();
     }
@@ -591,7 +580,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#executeQuery(java.lang.String)
      */
-    @Override
+    
     public ResultSet executeQuery(String sql) throws SQLException {
         throw unused();
     }
@@ -599,7 +588,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     /**
      * @see org.sqlite.Stmt#addBatch(java.lang.String)
      */
-    @Override
+    
     public void addBatch(String sql) throws SQLException {
         throw unused();
     }
