@@ -15,10 +15,9 @@
  */
 package totalcross.db.sqlite;
 
-import totalcross.sql.*;
-import totalcross.util.regex.*;
 import totalcross.util.*;
 import java.sql.SQLException;
+import java.sql.BatchUpdateException;
 /*
  * This class is the interface to SQLite. It provides some helper functions
  * used by other parts of the driver. The goal of the helper functions here
@@ -41,7 +40,8 @@ abstract class DB implements Codes
     long                          commit;
 
     /** Tracer for statements to avoid unfinalized statements on db close. */
-    private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
+    private Hashtable stmts = new Hashtable(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
+    private totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
     // WRAPPER FUNCTIONS ////////////////////////////////////////////
 
@@ -122,7 +122,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/exec.html">http://www.sqlite.org/c3ref/exec.html</a>
      */
-    final synchronized void exec(String sql) throws SQLException {
+    void exec(String sql) throws SQLException {
         long pointer = 0;
         try {
             pointer = prepare(sql);
@@ -150,7 +150,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/open.html">http://www.sqlite.org/c3ref/open.html</a>
      */
-    final synchronized void open(SQLiteConnection conn, String file, int openFlags) throws SQLException {
+    void open(SQLiteConnection conn, String file, int openFlags) throws SQLException {
         this.conn = conn;
         _open(file, openFlags);
     }
@@ -161,18 +161,19 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/close.html">http://www.sqlite.org/c3ref/close.html</a>
      */
-    final synchronized void close() throws SQLException {
+    void close() throws SQLException {
         // finalize any remaining statements before closing db
-        synchronized (stmts) {
-            Iterator<Map.Entry<Long, Stmt>> i = stmts.entrySet().iterator();
-            while (i.hasNext()) {
-                Map.Entry<Long, Stmt> entry = i.next();
-                Stmt stmt = entry.getValue();
-                finalize(entry.getKey().longValue());
+        synchronized (stmtsLock) {
+            //Iterator<Map.Entry<Long, Stmt>> i = stmts.entrySet().iterator();
+            Vector v = stmts.getKeys();
+            for (int i = 0, n = v.size(); i < n; i++) {
+               Long ll = (Long)v.items[i];
+                Stmt stmt = (Stmt)stmts.get(ll);
+                finalize(ll.longValue());
                 if (stmt != null) {
                     stmt.pointer = 0;
                 }
-                i.remove();
+                stmts.remove(ll);
             }
         }
 
@@ -198,7 +199,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/prepare.html">http://www.sqlite.org/c3ref/prepare.html</a>
      */
-    final synchronized void prepare(Stmt stmt) throws SQLException {
+    void prepare(Stmt stmt) throws SQLException {
         if (stmt.pointer != 0) {
             finalize(stmt);
         }
@@ -213,7 +214,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/finalize.html">http://www.sqlite.org/c3ref/finalize.html</a>
      */
-    final synchronized int finalize(Stmt stmt) throws SQLException {
+    int finalize(Stmt stmt) throws SQLException {
         if (stmt.pointer == 0) {
             return 0;
         }
@@ -668,7 +669,7 @@ abstract class DB implements Codes
      * @return String array of column names.
      * @throws SQLException
      */
-    final synchronized String[] column_names(long stmt) throws SQLException {
+    String[] column_names(long stmt) throws SQLException {
         String[] names = new String[column_count(stmt)];
         for (int i = 0; i < names.length; i++) {
             names[i] = column_name(stmt, i);
@@ -685,7 +686,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/bind_blob.html">http://www.sqlite.org/c3ref/bind_blob.html</a>
      */
-    final synchronized int sqlbind(long stmt, int pos, Object v) throws SQLException {
+    int sqlbind(long stmt, int pos, Object v) throws SQLException {
         pos++;
         if (v == null) {
             return bind_null(stmt, pos);
@@ -726,7 +727,7 @@ abstract class DB implements Codes
      *         commands execute successfully;
      * @throws SQLException
      */
-    final synchronized int[] executeBatch(long stmt, int count, Object[] vals) throws SQLException {
+    int[] executeBatch(long stmt, int count, Object[] vals) throws SQLException {
         if (count < 1) {
             throw new SQLException("count (" + count + ") < 1");
         }
@@ -772,7 +773,7 @@ abstract class DB implements Codes
      * @return True if a row of ResultSet is ready; false otherwise.
      * @throws SQLException
      */
-    final synchronized boolean execute(Stmt stmt, Object[] vals) throws SQLException {
+    boolean execute(Stmt stmt, Object[] vals) throws SQLException {
         if (vals != null) {
             final int params = bind_parameter_count(stmt.pointer);
             if (params != vals.length) {
@@ -813,7 +814,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/exec.html">http://www.sqlite.org/c3ref/exec.html</a>
      */
-    final synchronized boolean execute(String sql) throws SQLException {
+    boolean execute(String sql) throws SQLException {
         int statusCode = _exec(sql);
         switch (statusCode) {
         case SQLITE_OK:
@@ -837,7 +838,7 @@ abstract class DB implements Codes
      *         recently completed SQL.
      * @throws SQLException
      */
-    final synchronized int executeUpdate(Stmt stmt, Object[] vals) throws SQLException {
+    int executeUpdate(Stmt stmt, Object[] vals) throws SQLException {
         if (execute(stmt, vals)) {
             throw new SQLException("query returns results");
         }
@@ -881,7 +882,7 @@ abstract class DB implements Codes
      */
     static SQLException newSQLException(int errorCode, String errorMessage) throws SQLException {
         SQLiteErrorCode code = SQLiteErrorCode.getErrorCode(errorCode);
-        SQLException e = new SQLException(String.format("%s (%s)", code, errorMessage), null, code.code);
+        SQLException e = new SQLException(code+" ("+errorMessage+")", null, code.value);
         return e;
     }
 
