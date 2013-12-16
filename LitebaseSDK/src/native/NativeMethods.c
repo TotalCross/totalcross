@@ -1343,7 +1343,8 @@ LB_API void lLC_purge_s(NMParams p)
             goto finish;
       }
 
-      if (table && (deleted = table->deletedRowsCount) > 0) // Removes the deleted records from the table.
+      // juliana@270_27: now purge will also really purge the table if it only suffers updates.
+      if (table && ((deleted = table->deletedRowsCount) > 0 || table->wasUpdated)) // Removes the deleted records from the table.
       {
          PlainDB* plainDB = &table->db;
          XFile* dbFile = &plainDB->db;
@@ -1510,6 +1511,7 @@ free:
          }
 
          table->deletedRowsCount = 0; // Empties the deletedRows.  
+         table->wasUpdated = false; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
 
          // Recreates the simple indices.
          i = table->columnCount;
@@ -2090,7 +2092,9 @@ LB_API void lLC_recoverTable_s(NMParams p)
                type;
          bool useCrypto = OBJ_LitebaseUseCrypto(driver),
               useOldCrypto;
-         uint32 j;
+         uint32 j,
+               auxRowId = -1, // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+               currentRowId = -1; // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
          int8* types;       
          
          // juliana@230_12
@@ -2258,14 +2262,29 @@ LB_API void lLC_recoverTable_s(NMParams p)
 				      if (!plainRewrite(context, plainDB, i))
 					      goto finish;
 				      p->retI = ++deleted;
+
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  if (currentRowId < 0) 
+                     currentRowId = (read & ROW_ID_MASK) + 1;
 			      }
                else // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-                  table->auxRowId = (read & ROW_ID_MASK) + 1; 
+               {
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  read = (read & ROW_ID_MASK) + 1;
+                  if (currentRowId < 0)
+                     currentRowId = read;
+                  if (auxRowId < 0) 
+                     auxRowId = read;
+               }
 		      }
 	      }
 
          table->deletedRowsCount = deleted;
          plainDB->rowCount = rows;
+
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table->currentRowId = currentRowId;
+         table->auxRowId = auxRowId;
 
          // Recreates the indices.
          // Simple indices.
@@ -2285,8 +2304,11 @@ LB_API void lLC_recoverTable_s(NMParams p)
          plainDB->wasNotSavedCorrectly = false;
 
          // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().	   
+
          plainDB->useOldCrypto = false;
-         tableSaveMetaData(context, table, TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows.
+         
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves information concerning deleted rows.
       
 finish: 
 	      if (table)

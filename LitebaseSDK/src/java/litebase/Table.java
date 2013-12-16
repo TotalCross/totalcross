@@ -145,6 +145,12 @@ class Table
     */
    boolean isModified;
    
+   // juliana@270_27: now purge will also really purge the table if it only suffers updates.
+   /**
+    * Indicates if the table was updated after the last time it was opened.
+    */
+   boolean wasUpdated;
+
    /**
     * The full name of the table.
     */
@@ -2486,6 +2492,7 @@ class Table
          plainDB.read(writePos = recPos);
          rowid = ds.readInt();
          bas.reset();
+         wasUpdated = true; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
       }
 
       int type;

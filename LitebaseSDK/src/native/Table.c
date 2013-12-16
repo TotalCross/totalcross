@@ -2327,6 +2327,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          return false;
       writePos = recPos;
       xmove4(&rowid, basbuf);
+      table->wasUpdated = true; // Indicates if the table was updated after the last time it was opened.
    }
 
    tempKey.keys = &value;
