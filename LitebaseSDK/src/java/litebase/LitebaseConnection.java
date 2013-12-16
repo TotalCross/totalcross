@@ -1275,7 +1275,7 @@ public class LitebaseConnection
          // Removes the deleted records from the table.
          int deleted = table.deletedRowsCount;
 
-         if (deleted > 0)
+         if (deleted > 0 || table.wasUpdated) // juliana@270_27: now purge will also really purge the table if it only suffers updates.
          {
             PlainDB plainDB = table.db;
             NormalFile dbFile = (NormalFile)plainDB.db;
@@ -1393,6 +1393,7 @@ public class LitebaseConnection
 
             // Empties the deletedRows and update the metadata.
             table.deletedRowsCount = 0;
+            table.wasUpdated = false; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
             table.tableSaveMetaData(Utils.TSMD_EVERYTHING); // guich@560_24
 
             Vm.gc(); // Frees some memory.

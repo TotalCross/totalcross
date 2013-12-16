@@ -1316,7 +1316,8 @@ LB_API void lLC_purge_s(NMParams p)
             goto finish;
       }
 
-      if (table && (deleted = table->deletedRowsCount) > 0) // Removes the deleted records from the table.
+      // juliana@270_27: now purge will also really purge the table if it only suffers updates.
+      if (table && ((deleted = table->deletedRowsCount) > 0 || table->wasUpdated)) // Removes the deleted records from the table.
       {
          PlainDB* plainDB = &table->db;
          XFile* dbFile = &plainDB->db;
@@ -1474,6 +1475,7 @@ free:
          }
 
          table->deletedRowsCount = 0; // Empties the deletedRows.  
+         table->wasUpdated = false; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
 
          // Recreates the simple indices.
          i = table->columnCount;

@@ -1237,6 +1237,11 @@ struct Table
    uint8 version; // juliana@230_12
 
    /**
+    * Indicates if the table was updated after the last time it was opened.
+    */
+   uint8 wasUpdated; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
+
+   /**
     * The primary key column.
     */
    int8 primaryKeyCol; // juliana@114_9
