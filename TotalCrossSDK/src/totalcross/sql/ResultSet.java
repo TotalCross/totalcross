@@ -15,7 +15,9 @@ public interface ResultSet
    public static final int TYPE_SCROLL_SENSITIVE = 1005;
    public static final int CONCUR_READ_ONLY = 1007;
    public static final int CONCUR_UPDATABLE = 1008;
-
+   public static final int HOLD_CURSORS_OVER_COMMIT = 1;
+   public static final int CLOSE_CURSORS_AT_COMMIT = 2;
+   
    public boolean next() throws SQLException;
    public void close() throws SQLException;
    public boolean wasNull() throws SQLException;

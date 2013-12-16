@@ -16,8 +16,10 @@
 
 package totalcross.db.sqlite;
 
+import totalcross.sql.*;
 import totalcross.util.regex.*;
 import totalcross.util.*;
+import java.sql.SQLException;
 
 class MetaData implements DatabaseMetaData
 {
@@ -1398,11 +1400,11 @@ class MetaData implements DatabaseMetaData
             return "null";
         }
         else {
-            return String.format("'%s'", tableName);
+            return "'"+tableName+"'";
         }
     }
 
-    private final static Map<String, Integer> RULE_MAP = new HashMap<String, Integer>();
+    private final static IntHashtable RULE_MAP = new IntHashtable(5);
 
     static {
         RULE_MAP.put("NO ACTION", importedKeyNoAction);
@@ -1436,10 +1438,10 @@ class MetaData implements DatabaseMetaData
         if (pkColumns != null) {
             // retrieve table list
             ResultSet rs = stat.executeQuery("select name from sqlite_master where type = 'table'");
-            ArrayList<String> tableList = new ArrayList<String>();
+            Vector tableList = new Vector();
 
             while (rs.next()) {
-                tableList.add(rs.getString(1));
+                tableList.addElement(rs.getString(1));
             }
 
             rs.close();
@@ -1447,7 +1449,8 @@ class MetaData implements DatabaseMetaData
             ResultSet fk = null;
             String target = table.toLowerCase();
             // find imported keys for each table
-            for (String tbl : tableList) {
+            for (int i = 0, n = tableList.size(); i < n; i++) {
+               String tbl = (String)tableList.items[i];
                 try {
                     fk = stat.executeQuery("pragma foreign_key_list('" + escape(tbl) + "')");
                 } catch (SQLException e) {
@@ -1478,8 +1481,8 @@ class MetaData implements DatabaseMetaData
                             .append(escape(tbl)).append("') as fkt, lower('")
                             .append(escape(fk.getString(4))).append("') as fcn, '")
                             .append(escape(PKColName)).append("' as pcn, ")
-                            .append(RULE_MAP.get(fk.getString(6))).append(" as ur, ")
-                            .append(RULE_MAP.get(fk.getString(7))).append(" as dr, ");
+                            .append(RULE_MAP.get(fk.getString(6).hashCode(),-1)).append(" as ur, ")
+                            .append(RULE_MAP.get(fk.getString(7).hashCode(),-1)).append(" as dr, ");
 
                         rs = stat2.executeQuery("select sql from sqlite_master where" +
                             " lower(name) = lower('" + escape(tbl) + "')");
@@ -1635,21 +1638,19 @@ class MetaData implements DatabaseMetaData
             return ((Stmt)stat).executeQuery(sql.toString(), true);
         }
 
-        ArrayList<ArrayList<Object>> indexList = new ArrayList<ArrayList<Object>>();
-        while (rs.next()) {
-            indexList.add(new ArrayList<Object>());
-            indexList.get(indexList.size() - 1).add(rs.getString(2));
-            indexList.get(indexList.size() - 1).add(rs.getInt(3));
-        }
+        Vector indexList = new Vector(20);
+        while (rs.next()) 
+           indexList.addElement(new Object[]{rs.getString(2),new Integer(rs.getInt(3))}); 
         rs.close();
 
         int i = 0;
-        Iterator<ArrayList<Object>> indexIterator = indexList.iterator();
-        ArrayList<Object> currentIndex;
+        Object[] currentIndex;
 
-        while (indexIterator.hasNext()) {
-            currentIndex = indexIterator.next();
-            String indexName = currentIndex.get(0).toString();
+        for (int j = 0, n = indexList.size(); j < n; j++)
+        {
+           currentIndex = (Object[])indexList.items[i];
+            String indexName = (String)currentIndex[0];
+            int indexValue = ((Integer)currentIndex[1]).intValue();
             rs = stat.executeQuery("pragma index_info('" + escape(indexName) + "');");
 
             while(rs.next()) {
@@ -1657,7 +1658,7 @@ class MetaData implements DatabaseMetaData
                     sql.append(" union all ");
                 }
 
-                sql.append("select ").append(Integer.toString(1 - (Integer)currentIndex.get(1))).append(" as un,'")
+                sql.append("select ").append(Integer.toString(1 - indexValue)).append(" as un,'")
                     .append(escape(indexName)).append("' as n,")
                     .append(Integer.toString(rs.getInt(1) + 1)).append(" as op,'")
                     .append(escape(rs.getString(3))).append("' as cn");
@@ -1884,10 +1885,10 @@ class MetaData implements DatabaseMetaData
     }
 
     /** Not implemented yet. */
-    public Struct createStruct(String t, Object[] attr) throws SQLException {
+/*    public Struct createStruct(String t, Object[] attr) throws SQLException {
         throw new SQLException("Not yet implemented by SQLite JDBC driver");
     }
-
+*/
     /** Not implemented yet. */
     public ResultSet getFunctionColumns(String a, String b, String c, String d) throws SQLException {
         throw new SQLException("Not yet implemented by SQLite JDBC driver");
