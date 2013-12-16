@@ -42,9 +42,9 @@ void rebootDevice()
 #elif !defined WP8
    ExitWindowsEx(EWX_REBOOT,0);
 #else
-   HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
+   /*HMODULE dll = LoadLibrary(TEXT("coredll.dll"));
    SetSystemPowerStateProc SetSystemPowerState = (SetSystemPowerStateProc)GetProcAddress(dll, TEXT("SetSystemPowerState"));
-   SetSystemPowerState(null, 0x00800000, 4096);
+   SetSystemPowerState(null, 0x00800000, 4096);*/
 #endif
 }
 
@@ -56,11 +56,11 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 {
    VoidP startInfo = null;
    int32 ret=-1;
-   BOOL ok;
    TCHAR pathargs[1024];
-   DWORD err;
 
-#if !defined WP8
+#if !defined(WP8)
+   BOOL ok;
+   DWORD err;
    PROCESS_INFORMATION processInfo;
 #ifndef WINCE
    STARTUPINFO si;
@@ -228,7 +228,6 @@ void vmSetAutoOff(bool enable)
 //XXX: O que são hot keys? Não faço a menor idéia do que fazer aqui e acho que nem faz sentido
 void registerHotkeys(Int32Array keys, bool isRegister)
 {
-#ifndef WP8
    int32 n;
    if (mainHWnd != null)
    {
@@ -251,7 +250,7 @@ void registerHotkeys(Int32Array keys, bool isRegister)
          return;
       }
       //throwException(currentContext, RuntimeException, "Could not find entry point for hotkeys registration");
-      #else
+      #elif !defined WP8
       for (n = ARRAYLEN(keys); n-- > 0; keys++)
          if (isRegister)
             RegisterHotKey(mainHWnd, *keys, MOD_WIN, *keys);
@@ -423,7 +422,7 @@ static int32 vmGetRemainingBattery()
    }
    return (ret > 100 ? 100 : ret);
 #else
-   getRemainingBatery();
+   return getRemainingBatery();
 #endif
 }
 
@@ -456,8 +455,9 @@ typedef struct _VIDEO_POWER_MANAGEMENT
 
 static bool vmTurnScreenOn(bool on)
 {
-	//XXX
-#if !defined WP8
+#if defined WP8
+	return true;
+#else
 	HDC gdc;
 	int iESC;
 	bool ret;

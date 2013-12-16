@@ -83,7 +83,9 @@ static bool loadSip6()
 
 static void windowSetSIP(int32 sipOption)
 {
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined (WP8)
+	setKeyboard(true);
+#elif defined (WINCE) && _WIN32_WCE >= 300
    CLSID Clsid;
    RECT sipRect;
    int32 scrW = GetSystemMetrics(SM_CXSCREEN);
@@ -191,7 +193,9 @@ static void windowSetSIP(int32 sipOption)
 
 static void windowSetDeviceTitle(Object titleObj)
 {
+#ifndef WP8
    TCHAR buf[30];
    JCharP2TCHARPBuf(String_charsStart(titleObj), min32(String_charsLen(titleObj),29), buf); // guich@tc113_32: limit to buf's size (and reduced to 30 chars)
    SetWindowText(mainHWnd, buf);
+#endif
 }

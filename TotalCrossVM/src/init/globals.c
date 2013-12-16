@@ -173,7 +173,7 @@ jmethodID jgetSDCardPath;
 #endif
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
-#if !defined(WIN32)
+#if !defined(WIN32) || defined WP8
 void *deviceCtx = NULL; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
         

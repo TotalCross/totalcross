@@ -8,19 +8,15 @@
 extern "C" {
 #endif
 
-extern DWORD32 privHeight;
-extern DWORD32 privWidth;
-
 char *GetAppPathWP8();
 void cppsleep(int ms);
-void SetBounds();
 
-// Graphics functions
-void GetWidthAndHeight(DWORD32* width, DWORD32* height);
-void InitDX(void);
-void SetupDX(DWORD32 width, DWORD32 height);
-void DisplayDX(void);
-void ReleaseDX(void);
+// WP8 dispatcher fuctions
+void set_dispatcher();
+void dispatcher_dispath();
+
+// WP8 keyboard functions
+void setKeyboard(int state);
 
 // Threads functions
 void* cppthread_create(void (*func)(void *a), void *args);

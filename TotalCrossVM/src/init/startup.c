@@ -340,7 +340,7 @@ static void loadExceptionClasses(Context currentContext)
    lockClass = loadClass(currentContext, "totalcross.util.concurrent.Lock", false);
 }
 
-#if defined(ANDROID) && !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
+#if defined(ANDROID) || !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
 #define ALLOW_TEST_SUITE false
 #else
 #define ALLOW_TEST_SUITE true
@@ -397,7 +397,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
-   if (xstrstr(argsLower, "launcher")) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
+   if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
    cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line
@@ -479,7 +479,7 @@ jumpArgument:
    traceOn = true;
 #endif
 
-#if defined(darwin) || defined(ANDROID)
+#if defined(darwin) || defined(ANDROID) || defined WP8
    strcat(tczName, ".tcz");
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context

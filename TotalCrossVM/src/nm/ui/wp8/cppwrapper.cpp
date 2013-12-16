@@ -2,20 +2,35 @@
 #include <thread>
 #include <system_error>
 
-#include "Direct3DBase.h"
+#include <wrl/client.h>
+
+#include "esUtil.h"
+
+#if (_MSC_VER >= 1800)
+#include <d3d11_2.h>
+#else
+#include <d3d11_1.h>
+#endif
+
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
+using namespace Windows::UI::Core;
+
+#pragma region varDeclaration
 using namespace Windows::Phone::System::Memory;
 using namespace Windows::Phone::Devices::Power;
 using namespace Windows::Phone::Devices::Notification;
 
 static char apPath[1024];
-DWORD32 privHeight;
-DWORD32 privWidth;
+static DWORD32 privHeight;
+static DWORD32 privWidth;
+static CoreDispatcher ^dispatcher = nullptr;
+
+#pragma endregion
 
 char *GetAppPathWP8()
 {
@@ -28,18 +43,19 @@ char *GetAppPathWP8()
 
 void cppthread_detach(void *t)
 {
-	std::thread *th = (std::thread*)t;
+	//std::thread *th = (std::thread*)t;
 
-	if (th->joinable()) {
-		th->detach();
-	}
+	//if (th != NULL && th->joinable()) {
+	//	th->detach();
+	//}
 }
 
 void* cppthread_create(void (*func)(void *a), void *args)
 {
 	try {
-		std::thread *tptr;
-		std::thread t = std::thread(func, args);
+		std::thread t(func, args);
+
+		t.detach();
 
 		return (void*)*(UINT64*)&t.get_id();
 	} catch(std::system_error e) {
@@ -49,8 +65,8 @@ void* cppthread_create(void (*func)(void *a), void *args)
 
 void *cppget_current_thread()
 {
-	// get the id (64 bit var), then get its address, transform to a uint64 pointer, derreference it and then cast to voidP
-	return (void*)*(UINT64*)&std::this_thread::get_id();
+	// getting the hash is more reliable then the value of the get_id() return
+	return (void*)std::this_thread::get_id().hash();
 }
 
 void cppsleep(int ms)
@@ -58,38 +74,21 @@ void cppsleep(int ms)
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void SetBounds()
+void set_dispatcher()
 {
-   MainView::GetLastInstance()->setBounds();
+	CoreWindow::GetForCurrentThread()->Activate();
+	dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
 }
 
-void GetWidthAndHeight(DWORD32* width, DWORD32* height)
+void dispatcher_dispath()
 {
-   Rect bounds = MainView::GetLastInstance()->getBounds();
-   *width = bounds.Width;
-   *height = bounds.Height;
+	if (dispatcher != nullptr)
+		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 }
 
-void InitDX(void)
+void setKeyboard(int state)
 {
-   MainView^ mainView = MainView::GetLastInstance();
-   if (!mainView->getDirect3DBase())
-      mainView->setDirect3DBase(ref new Direct3DBase(mainView->GetWindow()));
-}
-
-void DisplayDX(void)
-{
-   Direct3DBase^ direct3DBase = MainView::GetLastInstance()->getDirect3DBase();
-   if (direct3DBase)
-   {
-      direct3DBase->Render();
-      direct3DBase->Present();
-   }
-}
-
-void ReleaseDX(void)
-{
-   MainView::GetLastInstance()->getDirect3DBase()->ReleaseDX();
+	MainView::GetLastInstance()->setKeyboard(state);
 }
 
 DWORD32 getRemainingBatery()

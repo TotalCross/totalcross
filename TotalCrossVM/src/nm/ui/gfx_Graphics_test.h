@@ -151,7 +151,7 @@ static void drawImage(Context currentContext, Object g, Object img)
    setObjectLock(gimg, UNLOCKED);
    Graphics_surface(gimg) = img;
    createGfxSurface(w, h, gimg, SURF_IMAGE);
-   drawSurface(currentContext, g, gimg, 0, 0, w, h, 0, 0, 0, fore, back, true);
+   drawSurface(currentContext, g, gimg, 0, 0, w, h, 0, 0, true);
    updateScreen(mainContext);
 }
 

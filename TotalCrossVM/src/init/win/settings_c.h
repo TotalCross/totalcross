@@ -790,7 +790,11 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
    int32 len;
+
+#if !defined(WP8)
    HRESULT hres;
+#endif
+
 #endif
 
    // OS version

@@ -270,7 +270,7 @@ static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 			return GetLastError();
 		}
 
-		*size = finfo.EndOfFile.QuadPart;
+		*size = (int32) finfo.EndOfFile.QuadPart;
 		return NO_ERROR;
 	}
 #endif
@@ -563,7 +563,7 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
 #else
    {
 	  char buff[40];
-     FILE_BASIC_INFO *finfo = buff;
+      FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO*) buff;
 
 	  if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
         return GetLastError();
@@ -685,7 +685,7 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 			return GetLastError();
 		}
 
-		fileSize = finfo.EndOfFile.QuadPart;
+		fileSize = (DWORD) finfo.EndOfFile.QuadPart;
 #endif
 	if (fileSize == newSize)
 		return NO_ERROR;

@@ -442,18 +442,25 @@ bool privateInitEvent()
       return false;
    return true;
 #else
-	return false;
+	return true;
 #endif
 }
 
 bool privateIsEventAvailable()
 {
-   MSG msg;
-   return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#if defined WP8
+   return 1;
+#else
+	MSG msg;
+	return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#endif
 }
 
 void privatePumpEvent(Context currentContext)
 {
+#if defined(WP8)
+   dispatcher_dispath();
+#else
    MSG msg;
 #ifdef WINCE
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
@@ -467,6 +474,7 @@ void privatePumpEvent(Context currentContext)
    else
    if (msg.message == WM_QUIT)
       keepRunning = false;
+#endif
 }
 
 void privateDestroyEvent()
