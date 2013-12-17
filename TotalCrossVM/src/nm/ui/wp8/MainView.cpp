@@ -105,9 +105,6 @@ private:
 	float m_total;
 	float m_delta;
 };
-//XXX
-
-// rotating cube
 
 MainView::MainView() :
 m_windowClosed(false),
@@ -207,24 +204,6 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 	debug("caracter recebido: %c", k);
 	debug("input ateh agora: %s", s);
 	debug("caracter recebido");
-//#if (_MSC_VER >= 1800)
-//	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
-//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
-//#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
-//	// Windows Phone 8.0 uses D3D_FEATURE_LEVEL_9_3
-//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_9_3;
-//#endif 
-//
-//	HRESULT result = CreateWinrtEglWindow(WINRT_EGL_IUNKNOWN(CoreWindow::GetForCurrentThread()), featureLevel, m_eglWindow.GetAddressOf());
-//	if (SUCCEEDED(result))
-//	{
-//		m_esContext.hWnd = m_eglWindow;
-//
-//		//title, width, and height are unused, but included for backwards compatibility
-//		esCreateWindow(&m_esContext, nullptr, 0, 0, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
-//
-//		m_cubeRenderer.CreateResources();
-//	}
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -246,39 +225,8 @@ void MainView::Run()
 		m_windowClosed = true;
 	}
 
-
-	//currentWindow.Get()->IsKeyboardInputEnabled = true;
 	set_dispatcher();
 
-   if (!m_windowClosed)
-      startProgram(local_context);
-   /*t = std::thread([=]{mainLoop(); });
-
-   m_windowClosed = false;
-   while (!m_windowClosed)
-   {
-      if (m_windowVisible)
-      {
-		  //callLastDrawText();
-		  //timer->Update();
-		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		  //updateScreenANGLE();
-		  //m_cubeRenderer.Update(timer->Total, timer->Delta);
-		  //m_cubeRenderer.Render();
-		  //eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface);
-         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-         //DisplayDX();
-      }
-      else
-      {
-		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-      }
-   }*/
-}
-
-void MainView::mainLoop()
-{
    if (!m_windowClosed)
       startProgram(local_context);
 }
