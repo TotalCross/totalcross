@@ -3,6 +3,8 @@
 #pragma once
 
 #include <basetsd.h>
+#include "../Window.h"
+#include "tcclass.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,7 +18,10 @@ void set_dispatcher();
 void dispatcher_dispath();
 
 // WP8 keyboard functions
-void setKeyboard(int state);
+void windowSetSIP(enum TCSIP kb);
+
+// Dummy functions?
+void windowSetDeviceTitle(Object titleObj);
 
 // Threads functions
 void* cppthread_create(void (*func)(void *a), void *args);
