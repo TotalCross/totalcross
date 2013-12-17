@@ -22,6 +22,7 @@ static HMODULE ossvcsLib = null;
 
 bool initWinsock()
 {
+#ifndef WP8
    if (wsLib == null)
    {
 #if defined (WINCE)
@@ -77,7 +78,7 @@ bool initWinsock()
       pFreeDeviceList      = (FreeDeviceListProc)     GetProcAddress(ossvcsLib, MAKEINTRESOURCE(FreeDeviceList_ORDINAL));
    }
 #endif
-
+#endif
    return true;
 }
 
