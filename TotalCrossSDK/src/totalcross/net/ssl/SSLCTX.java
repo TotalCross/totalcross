@@ -235,6 +235,8 @@ public class SSLCTX
                if (pke != null)
                   Keys.push(pke);
             }
+            
+            return Constants.SSL_OK;
          }
          else if (obj_type == Constants.SSL_OBJ_RSA_KEY)
          {
