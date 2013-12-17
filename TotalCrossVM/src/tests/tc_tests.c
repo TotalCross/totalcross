@@ -539,7 +539,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[181] = test_tumS_beep;
    tests[182] = test_tumS_setEnabled_b;
    tests[183] = test_tumS_tone_ii;
-  // tests[184] = test_ZLib;
+   tests[184] = test_ZLib;
    tests[185] = test_XmlTokenizer;
    tests[186] = test_StringObject;
    tests[187] = test_VM_CodeUnion;
