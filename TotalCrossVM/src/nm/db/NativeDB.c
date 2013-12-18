@@ -20,10 +20,18 @@
 //#include "NativeDB.h"
 #include "../../sqlite/sqlite3.h"
 
-static jclass dbclass = 0;
-static jclass  fclass = 0;
-static jclass  aclass = 0;
-static jclass pclass = 0;
+// NativeDB extends DB
+
+#define DB_begin(o)              FIELD_I64(o, OBJ_CLASS(o), 0)
+#define DB_commit(o)             FIELD_I64(o, OBJ_CLASS(o), 1)
+
+#define NativeDB_pointer(o)      FIELD_I64(o, OBJ_CLASS(o), 2)
+#define NativeDB_udfdatalist(o)  FIELD_I64(o, OBJ_CLASS(o), 3)
+
+static TCClass dbclass;
+static TCClass fclass;
+static TCClass aclass;
+static TCClass pclass;
 
 static void * toref(jlong value)
 {
