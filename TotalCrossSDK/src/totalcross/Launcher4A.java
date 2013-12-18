@@ -905,18 +905,25 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void onLocationChanged(Location loc)
    {
-      String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
-      String lon = Double.toString(loc.getLongitude());
-      
-      Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
-      fix.setTimeInMillis(loc.getTime());
-      int satellites = gps.getGpsStatus(gpsStatus).getMaxSatellites();
-      String sat = satellites < 255 && satellites > 0 ? String.valueOf(satellites) : "";
-      String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
-      String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
-      String sfix = fix.get(Calendar.YEAR)+"/"+(fix.get(Calendar.MONTH)+1)+"/"+fix.get(Calendar.DAY_OF_MONTH)+" "+fix.get(Calendar.HOUR_OF_DAY)+":"+fix.get(Calendar.MINUTE)+":"+fix.get(Calendar.SECOND);
-      float pdop = loc.hasAccuracy() ? loc.getAccuracy() : 0; // guich@tc126_66
-      lastGps = lat+";"+lon+";"+sfix+";"+sat+";"+vel+";"+dir+";"+pdop+";";
+      try
+      {
+         String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
+         String lon = Double.toString(loc.getLongitude());
+         
+         Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
+         fix.setTimeInMillis(loc.getTime());
+         int satellites = gps.getGpsStatus(gpsStatus).getMaxSatellites();
+         String sat = satellites < 255 && satellites > 0 ? String.valueOf(satellites) : "";
+         String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
+         String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
+         String sfix = fix.get(Calendar.YEAR)+"/"+(fix.get(Calendar.MONTH)+1)+"/"+fix.get(Calendar.DAY_OF_MONTH)+" "+fix.get(Calendar.HOUR_OF_DAY)+":"+fix.get(Calendar.MINUTE)+":"+fix.get(Calendar.SECOND);
+         float pdop = loc.hasAccuracy() ? loc.getAccuracy() : 0; // guich@tc126_66
+         lastGps = lat+";"+lon+";"+sfix+";"+sat+";"+vel+";"+dir+";"+pdop+";";
+      }
+      catch (Exception exception)
+      {
+         lastGPS = "*";
+      }
    }
 
    public void onProviderDisabled(String provider)

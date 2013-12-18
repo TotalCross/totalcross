@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+import totalcross.sys.Vm;
 
 public class TestTypes extends Object
 {
@@ -63,7 +63,7 @@ public class TestTypes extends Object
       }
       catch (NullPointerException npe)
       {
-         npe.printStackTrace();
+         Vm.debug(npe.getMessage());
       }
    }
 
