@@ -196,7 +196,7 @@ class Stmt extends Unused implements Statement, Codes
     static class BackupObserver implements ProgressObserver
     {
         public void progress(int remaining, int pageCount) {
-            System.out.println("remaining:"+remaining+", page count:"+pageCount);
+            totalcross.sys.Vm.debug("remaining:"+remaining+", page count:"+pageCount);
         }
     }
 
