@@ -14,7 +14,7 @@
 #include "media_MediaClip.h"
 
 #if defined (WIN32) || defined (WINCE)
- #include "win\media_MediaClip_c.h"
+ #include "win/media_MediaClip_c.h"
 #elif defined(darwin)
  #include "darwin/media_MediaClip_c.h"
 #elif defined (linux) || defined(ANDROID)

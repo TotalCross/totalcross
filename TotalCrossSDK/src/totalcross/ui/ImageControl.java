@@ -123,7 +123,6 @@ public class ImageControl extends Control
                   tempHwScale = 1;
                double step = ((MultiTouchEvent)event).scale;
                double newScale = tempHwScale * step;
-               if (newScale < 0.1) newScale = 0.1;
                if (newScale > 0)
                {
                   // -p + s/2
