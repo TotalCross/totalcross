@@ -1,7 +1,6 @@
 package totalcross.sql.sqlite4j;
 
 import totalcross.sql.*;
-import totalcross.sql.SQLConvert;
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -68,7 +67,7 @@ public class SQLite4JPreparedStatement extends SQLite4JStatement implements Prep
 
    public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException
    {
-      ps.setBigDecimal(parameterIndex, Convert.bigdecimal(x));
+      ps.setBigDecimal(parameterIndex, SQLConvert.bigdecimal(x));
    }
 
    public void setString(int parameterIndex, String x) throws SQLException
@@ -83,17 +82,17 @@ public class SQLite4JPreparedStatement extends SQLite4JStatement implements Prep
 
    public void setDate(int parameterIndex, Date x) throws SQLException
    {
-      ps.setDate(parameterIndex,Convert.date(x));
+      ps.setDate(parameterIndex,SQLConvert.date(x));
    }
 
    public void setTime(int parameterIndex, Time x) throws SQLException
    {
-      ps.setTime(parameterIndex,Convert.time(x));
+      ps.setTime(parameterIndex,SQLConvert.time(x));
    }
 
    public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException
    {
-      ps.setTimestamp(parameterIndex,Convert.timestamp(x));
+      ps.setTimestamp(parameterIndex,SQLConvert.timestamp(x));
    }
 
    public void clearParameters() throws SQLException
