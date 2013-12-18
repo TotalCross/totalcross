@@ -47,85 +47,66 @@ static jlong fromref(void * value)
     return ret.j;
 }
 
-static void throwex(JNIEnv *env, jobject this)
+static void throwex(Context currentContext, jobject this_)
 {
-    static jmethodID mth_throwex = 0;
-
+    static TCMethod mth_throwex = 0;
     if (!mth_throwex)
-        mth_throwex = (*env)->GetMethodID(env, dbclass, "throwex", "()V");
-
-    (*env)->CallVoidMethod(env, this, mth_throwex);
+       mth_throwex = getMethod(dbclass, true, "throwex", 0);
+    executeMethod(currentContext, mth_throwex, this_);
 }
 
-static void throw_errorcode(JNIEnv *env, jobject this, int errorCode)
+static void throw_errorcode(Context currentContext, jobject this_, int32 errorCode)
 {
-    static jmethodID mth_throwex = 0;
-
+    static TCMethod mth_throwex = 0;
     if (!mth_throwex)
-        mth_throwex = (*env)->GetMethodID(env, dbclass, "throwex", "(I)V");
-
-    (*env)->CallVoidMethod(env, this, mth_throwex, (jint) errorCode);
+       mth_throwex = getMethod(dbclass, true, "throwex", 1, J_INT);
+    executeMethod(currentContext, mth_throwex, this_, errorCode);
 }
 
-static void throwexmsg(JNIEnv *env, const char *str)
+static void throwexmsg(Context currentContext, jobject this_, const char *str)
 {
-    static jmethodID mth_throwexmsg = 0;
-
-    if (!mth_throwexmsg) mth_throwexmsg = (*env)->GetStaticMethodID(
-            env, dbclass, "throwex", "(Ljava/lang/String;)V");
-
-    (*env)->CallStaticVoidMethod(env, dbclass, mth_throwexmsg,
-                                (*env)->NewStringUTF(env, str));
+    static TCMethod mth_throwex = 0;
+    Object o = createStringObjectFromCharP(currentContext, str, -1);
+    if (!mth_throwex)
+       mth_throwex = getMethod(dbclass, true, "throwex", 1, "java.lang.String");
+    executeMethod(currentContext, mth_throwex, this_, o);
+    setObjectLock(o,UNLOCKED);
 }
 
-static void throw_errorcod_and_msg(JNIEnv *env, int errorCode, const char *str)
+static void throw_errorcod_and_msg(Context currentContext, jobject this_, int32 errorCode, const char *str)
 {
-    static jmethodID mth_throwexmsg = 0;
-
-    if (!mth_throwexmsg) mth_throwexmsg = (*env)->GetStaticMethodID(
-            env, dbclass, "throwex", "(ILjava/lang/String;)V");
-
-    (*env)->CallStaticVoidMethod(env, dbclass, mth_throwexmsg, (jint) errorCode,
-                                (*env)->NewStringUTF(env, str));
+    static TCMethod mth_throwex = 0;
+    Object o = createStringObjectFromCharP(currentContext, str, -1);
+    if (!mth_throwex)
+       mth_throwex = getMethod(dbclass, true, "throwex", 2, J_INT, "java.lang.String");
+    executeMethod(currentContext, mth_throwex, this_, errorCode, o);
+    setObjectLock(o,UNLOCKED);
 }
 
 
-static sqlite3 * gethandle(JNIEnv *env, jobject this)
+static sqlite3 * gethandle(Context currentContext, Object this_)
 {
-    static jfieldID pointer = 0;
-    if (!pointer) pointer = (*env)->GetFieldID(env, dbclass, "pointer", "J");
-
-    return (sqlite3 *)toref((*env)->GetLongField(env, this, pointer));
+   return (sqlite3 *)NativeDB_pointer(this_);
 }
 
-static void sethandle(JNIEnv *env, jobject this, sqlite3 * ref)
+static void sethandle(Context currentContext, jobject this_, sqlite3 * ref)
 {
-    static jfieldID pointer = 0;
-    if (!pointer) pointer = (*env)->GetFieldID(env, dbclass, "pointer", "J");
-
-    (*env)->SetLongField(env, this, pointer, fromref(ref));
-}
-
-/* Returns number of 16-bit blocks in UTF-16 string, not including null. */
-static jsize jstrlen(const jchar *str)
-{
-    const jchar *s;
-    for (s = str; *s; s++);
-    return (jsize)(s - str);
+   NativeDB_pointer(this_) = (int64)ref;
 }
 
 
 // User Defined Function SUPPORT ////////////////////////////////////
 
-struct UDFData {
-    JavaVM *vm;
-    jobject func;
+struct UDFData 
+{
+    Context currentContext;
+    Object func;
     struct UDFData *next;  // linked list of all UDFData instances
 };
 
 /* Returns the sqlite3_value for the given arg of the given function.
  * If 0 is returned, an exception has been thrown to report the reason. */
-static sqlite3_value * tovalue(JNIEnv *env, jobject function, jint arg)
+static sqlite3_value * tovalue(Context currentContext, Object function, int32 arg)
 {
     jlong value_pntr = 0;
     jint numArgs = 0;
@@ -151,7 +132,7 @@ static sqlite3_value * tovalue(JNIEnv *env, jobject function, jint arg)
 }
 
 /* called if an exception occured processing xFunc */
-static void xFunc_error(sqlite3_context *context, JNIEnv *env)
+static void xFunc_error(sqlite3_context *context, Context currentContext)
 {
     const char *strmsg = 0;
     jstring msg = 0;
@@ -192,7 +173,7 @@ static void xCall(
     static jfieldID fld_context = 0,
                      fld_value = 0,
                      fld_args = 0;
-    JNIEnv *env = 0;
+    Context currentContext = 0;
     struct UDFData *udf = 0;
 
     udf = (struct UDFData*)sqlite3_user_data(context);
@@ -227,7 +208,7 @@ void xFunc(sqlite3_context *context, int args, sqlite3_value** value)
 {
     static jmethodID mth = 0;
     if (!mth) {
-        JNIEnv *env;
+        Context currentContext;
         struct UDFData *udf = (struct UDFData*)sqlite3_user_data(context);
         (*udf->vm)->AttachCurrentThread(udf->vm, (void **)&env, 0);
         mth = (*env)->GetMethodID(env, fclass, "xFunc", "()V");
@@ -237,7 +218,7 @@ void xFunc(sqlite3_context *context, int args, sqlite3_value** value)
 
 void xStep(sqlite3_context *context, int args, sqlite3_value** value)
 {
-    JNIEnv *env;
+    Context currentContext;
     struct UDFData *udf;
     jobject *func = 0;
     static jmethodID mth = 0;
@@ -268,7 +249,7 @@ void xStep(sqlite3_context *context, int args, sqlite3_value** value)
 
 void xFinal(sqlite3_context *context)
 {
-    JNIEnv *env = 0;
+    Context currentContext = 0;
     struct UDFData *udf = 0;
     jobject *func = 0;
     static jmethodID mth = 0;
@@ -320,21 +301,21 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 // WRAPPERS for sqlite_* functions //////////////////////////////////
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_shared_1cache(
-        JNIEnv *env, jobject this, jboolean enable)
+        Context currentContext, jobject this, jboolean enable)
 {
     return sqlite3_enable_shared_cache(enable ? 1 : 0);
 }
 
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_enable_1load_1extension(
-        JNIEnv *env, jobject this, jboolean enable)
+        Context currentContext, jobject this, jboolean enable)
 {
 	return sqlite3_enable_load_extension(gethandle(env, this), enable ? 1 : 0);
 }
 
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB__1open(
-        JNIEnv *env, jobject this, jstring file, jint flags)
+        Context currentContext, jobject this, jstring file, jint flags)
 {
     int ret;
     sqlite3 *db = gethandle(env, this);
@@ -359,26 +340,26 @@ JNIEXPORT void JNICALL Java_org_sqlite_NativeDB__1open(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB__1close(
-        JNIEnv *env, jobject this)
+        Context currentContext, jobject this)
 {
     if (sqlite3_close(gethandle(env, this)) != SQLITE_OK)
         throwex(env, this);
     sethandle(env, this, 0);
 }
 
-JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_interrupt(JNIEnv *env, jobject this)
+JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_interrupt(Context currentContext, jobject this)
 {
     sqlite3_interrupt(gethandle(env, this));
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_busy_1timeout(
-    JNIEnv *env, jobject this, jint ms)
+    Context currentContext, jobject this, jint ms)
 {
     sqlite3_busy_timeout(gethandle(env, this), ms);
 }
 
 JNIEXPORT jlong JNICALL Java_org_sqlite_NativeDB_prepare(
-        JNIEnv *env, jobject this, jstring sql)
+        Context currentContext, jobject this, jstring sql)
 {
     sqlite3* db = gethandle(env, this);
     sqlite3_stmt* stmt;
@@ -395,7 +376,7 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_NativeDB_prepare(
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB__1exec(
-        JNIEnv *env, jobject this, jstring sql)
+        Context currentContext, jobject this, jstring sql)
 {
     sqlite3* db = gethandle(env, this);
     const char *strsql;
@@ -422,101 +403,101 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB__1exec(
 
 
 
-JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_errmsg(JNIEnv *env, jobject this)
+JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_errmsg(Context currentContext, jobject this)
 {
     return (*env)->NewStringUTF(env, sqlite3_errmsg(gethandle(env, this)));
 }
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_libversion(
-        JNIEnv *env, jobject this)
+        Context currentContext, jobject this)
 {
     return (*env)->NewStringUTF(env, sqlite3_libversion());
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_changes(
-        JNIEnv *env, jobject this)
+        Context currentContext, jobject this)
 {
     return sqlite3_changes(gethandle(env, this));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_total_1changes(
-        JNIEnv *env, jobject this)
+        Context currentContext, jobject this)
 {
     return sqlite3_total_changes(gethandle(env, this));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_finalize(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_finalize(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_step(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_step(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_reset(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_reset(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_clear_1bindings(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_clear_bindings(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1parameter_1count(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_bind_parameter_count(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_column_1count(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     return sqlite3_column_count(toref(stmt));
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_column_1type(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     return sqlite3_column_type(toref(stmt), col);
 }
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_column_1decltype(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     const char *str = sqlite3_column_decltype(toref(stmt), col);
     return (*env)->NewStringUTF(env, str);
 }
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_column_1table_1name(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     const void *str = sqlite3_column_table_name16(toref(stmt), col);
     return str ? (*env)->NewString(env, str, jstrlen(str)) : NULL;
 }
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_column_1name(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     const void *str = sqlite3_column_name16(toref(stmt), col);
     return str ? (*env)->NewString(env, str, jstrlen(str)) : NULL;
 }
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_column_1text(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     return (*env)->NewStringUTF(
         env, (const char*)sqlite3_column_text(toref(stmt), col));
 }
 
 JNIEXPORT jbyteArray JNICALL Java_org_sqlite_NativeDB_column_1blob(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     jsize length;
     jbyteArray jBlob;
@@ -536,49 +517,49 @@ JNIEXPORT jbyteArray JNICALL Java_org_sqlite_NativeDB_column_1blob(
 }
 
 JNIEXPORT jdouble JNICALL Java_org_sqlite_NativeDB_column_1double(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     return sqlite3_column_double(toref(stmt), col);
 }
 
 JNIEXPORT jlong JNICALL Java_org_sqlite_NativeDB_column_1long(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     return sqlite3_column_int64(toref(stmt), col);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_column_1int(
-        JNIEnv *env, jobject this, jlong stmt, jint col)
+        Context currentContext, jobject this, jlong stmt, jint col)
 {
     return sqlite3_column_int(toref(stmt), col);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1null(
-        JNIEnv *env, jobject this, jlong stmt, jint pos)
+        Context currentContext, jobject this, jlong stmt, jint pos)
 {
     return sqlite3_bind_null(toref(stmt), pos);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1int(
-        JNIEnv *env, jobject this, jlong stmt, jint pos, jint v)
+        Context currentContext, jobject this, jlong stmt, jint pos, jint v)
 {
     return sqlite3_bind_int(toref(stmt), pos, v);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1long(
-        JNIEnv *env, jobject this, jlong stmt, jint pos, jlong v)
+        Context currentContext, jobject this, jlong stmt, jint pos, jlong v)
 {
     return sqlite3_bind_int64(toref(stmt), pos, v);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1double(
-        JNIEnv *env, jobject this, jlong stmt, jint pos, jdouble v)
+        Context currentContext, jobject this, jlong stmt, jint pos, jdouble v)
 {
     return sqlite3_bind_double(toref(stmt), pos, v);
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1text(
-        JNIEnv *env, jobject this, jlong stmt, jint pos, jstring v)
+        Context currentContext, jobject this, jlong stmt, jint pos, jstring v)
 {
     const char *chars = (*env)->GetStringUTFChars(env, v, 0);
     int rc = sqlite3_bind_text(toref(stmt), pos, chars, -1, SQLITE_TRANSIENT);
@@ -587,7 +568,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1text(
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1blob(
-        JNIEnv *env, jobject this, jlong stmt, jint pos, jbyteArray v)
+        Context currentContext, jobject this, jlong stmt, jint pos, jbyteArray v)
 {
     jint rc;
     void *a;
@@ -599,13 +580,13 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_bind_1blob(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1null(
-        JNIEnv *env, jobject this, jlong context)
+        Context currentContext, jobject this, jlong context)
 {
     sqlite3_result_null(toref(context));
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1text(
-        JNIEnv *env, jobject this, jlong context, jstring value)
+        Context currentContext, jobject this, jlong context, jstring value)
 {
     const jchar *str;
     jsize size;
@@ -620,7 +601,7 @@ JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1text(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1blob(
-        JNIEnv *env, jobject this, jlong context, jobject value)
+        Context currentContext, jobject this, jlong context, jobject value)
 {
     jbyte *bytes;
     jsize size;
@@ -636,19 +617,19 @@ JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1blob(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1double(
-        JNIEnv *env, jobject this, jlong context, jdouble value)
+        Context currentContext, jobject this, jlong context, jdouble value)
 {
     sqlite3_result_double(toref(context), value);
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1long(
-        JNIEnv *env, jobject this, jlong context, jlong value)
+        Context currentContext, jobject this, jlong context, jlong value)
 {
     sqlite3_result_int64(toref(context), value);
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1int(
-        JNIEnv *env, jobject this, jlong context, jint value)
+        Context currentContext, jobject this, jlong context, jint value)
 {
     sqlite3_result_int(toref(context), value);
 }
@@ -657,7 +638,7 @@ JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_result_1int(
 
 
 JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_value_1text(
-        JNIEnv *env, jobject this, jobject f, jint arg)
+        Context currentContext, jobject this, jobject f, jint arg)
 {
     jint length = 0;
     const void *str = 0;
@@ -670,7 +651,7 @@ JNIEXPORT jstring JNICALL Java_org_sqlite_NativeDB_value_1text(
 }
 
 JNIEXPORT jbyteArray JNICALL Java_org_sqlite_NativeDB_value_1blob(
-        JNIEnv *env, jobject this, jobject f, jint arg)
+        Context currentContext, jobject this, jobject f, jint arg)
 {
     jsize length;
     jbyteArray jBlob;
@@ -694,35 +675,35 @@ JNIEXPORT jbyteArray JNICALL Java_org_sqlite_NativeDB_value_1blob(
 }
 
 JNIEXPORT jdouble JNICALL Java_org_sqlite_NativeDB_value_1double(
-        JNIEnv *env, jobject this, jobject f, jint arg)
+        Context currentContext, jobject this, jobject f, jint arg)
 {
     sqlite3_value *value = tovalue(env, f, arg);
     return value ? sqlite3_value_double(value) : 0;
 }
 
 JNIEXPORT jlong JNICALL Java_org_sqlite_NativeDB_value_1long(
-        JNIEnv *env, jobject this, jobject f, jint arg)
+        Context currentContext, jobject this, jobject f, jint arg)
 {
     sqlite3_value *value = tovalue(env, f, arg);
     return value ? sqlite3_value_int64(value) : 0;
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_value_1int(
-        JNIEnv *env, jobject this, jobject f, jint arg)
+        Context currentContext, jobject this, jobject f, jint arg)
 {
     sqlite3_value *value = tovalue(env, f, arg);
     return value ? sqlite3_value_int(value) : 0;
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_value_1type(
-        JNIEnv *env, jobject this, jobject func, jint arg)
+        Context currentContext, jobject this, jobject func, jint arg)
 {
     return sqlite3_value_type(tovalue(env, func, arg));
 }
 
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_create_1function(
-        JNIEnv *env, jobject this, jstring name, jobject func)
+        Context currentContext, jobject this, jstring name, jobject func)
 {
     jint ret = 0;
     const char *strname = 0;
@@ -764,7 +745,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_create_1function(
 }
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_destroy_1function(
-        JNIEnv *env, jobject this, jstring name)
+        Context currentContext, jobject this, jstring name)
 {
     jint ret = 0;
     const char* strname = (*env)->GetStringUTFChars(env, name, 0);
@@ -778,7 +759,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_destroy_1function(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_free_1functions(
-        JNIEnv *env, jobject this)
+        Context currentContext, jobject this)
 {
     // clean up all the malloc()ed UDFData instances using the
     // linked list stored in DB.udfdatalist
@@ -801,7 +782,7 @@ JNIEXPORT void JNICALL Java_org_sqlite_NativeDB_free_1functions(
 // COMPOUND FUNCTIONS ///////////////////////////////////////////////
 
 JNIEXPORT jobjectArray JNICALL Java_org_sqlite_NativeDB_column_1metadata(
-        JNIEnv *env, jobject this, jlong stmt)
+        Context currentContext, jobject this, jlong stmt)
 {
     const char *zTableName, *zColumnName;
     int pNotNull, pPrimaryKey, pAutoinc, i, colCount;
@@ -893,7 +874,7 @@ void reportProgress(JNIEnv* env, jobject func, int remaining, int pageCount) {
 */
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_backup(
-  JNIEnv *env, jobject this, 
+  Context currentContext, jobject this, 
   jstring zDBName,
   jstring zFilename,      	  /* Name of file to back up to */
   jobject observer			  /* Progress function to invoke */     
@@ -933,7 +914,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_backup(
 } 
 
 JNIEXPORT jint JNICALL Java_org_sqlite_NativeDB_restore(
-  JNIEnv *env, jobject this, 
+  Context currentContext, jobject this, 
   jstring zDBName,
   jstring zFilename,      	  /* Name of file to back up to */
   jobject observer			  /* Progress function to invoke */     
