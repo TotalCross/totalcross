@@ -1048,7 +1048,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       catch (Exception exception)
       {
-         lastGPS = "*";
+         lastGps = "*";
       }
    }
 
