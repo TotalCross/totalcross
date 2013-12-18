@@ -9,6 +9,7 @@ import totalcross.util.*;
 import totalcross.util.Date;
 
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public class SQLite4JResultSet implements ResultSet
 {
@@ -165,7 +166,7 @@ public class SQLite4JResultSet implements ResultSet
       return SQLConvert.timestamp(rs.getTimestamp(columnName));
    }
 
-   public SQLException getWarnings() throws SQLException
+   public SQLWarning getWarnings() throws SQLException
    {
       return rs.getWarnings();
    }

@@ -2060,7 +2060,6 @@ public interface DatabaseMetaData
 * @return <code>true</code> if the database supports savepoints,
 * <code>false</code> if it does not.
 * @exception SQLException If an error occurs.
-* @see Savepoint
 * @since 1.4
 */
   boolean supportsSavepoints() throws SQLException;

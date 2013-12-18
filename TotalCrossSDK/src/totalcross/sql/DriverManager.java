@@ -2,7 +2,6 @@ package totalcross.sql;
 
 import java.sql.SQLException;
 
-import totalcross.sql.sqlite4d.*;
 import totalcross.sql.sqlite4j.*;
 import totalcross.sys.*;
 import totalcross.util.*;
@@ -36,7 +35,7 @@ public class DriverManager
          {
             return Settings.onJavaSE ? 
                   (Connection)new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname))
-                : (Connection)new SQLite4DConnection(url, dbname);
+                : (Connection)new totalcross.db.sqlite.SQLiteConnection(url, dbname);
          }
          catch (java.sql.SQLException e)
          {
