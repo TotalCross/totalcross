@@ -17,10 +17,16 @@
 package totalcross.db.sqlite;
 
 import totalcross.io.*;
-import totalcross.sql.*;
-import totalcross.sys.*;
-import totalcross.util.regex.*;
+import totalcross.sql.ParameterMetaData;
+import totalcross.sql.PreparedStatement;
+import totalcross.sql.ResultSet;
+import totalcross.sql.ResultSetMetaData;
+import totalcross.sql.Statement;
+import totalcross.sql.Timestamp;
+import totalcross.sql.Types;
+import totalcross.sys.Time;
 import totalcross.util.*;
+import totalcross.util.Date;
 
 import java.sql.SQLException;
 
@@ -240,9 +246,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         return true;
     }
 
-    /**
-     * @return
-     */
     public Statement getStatement() {
         return this;
     }
@@ -322,7 +325,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream, int)
      */
     public void setUnicodeStream(int pos, Stream istream, int length) throws SQLException {
         if (istream == null && length == 0) {
@@ -509,20 +511,15 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     * Store the date in the user's preferred format (text, int, or real)
     */
    private void setDate(int pos, int date, int time, long millis) throws SQLException {
-       switch(conn.dateClass) {
-           case TEXT:
-               batch(pos, conn.dateFormat.format(new Date(value)));
-               break;
-
-           case REAL:
-               // long to Julian date
-               batch(pos, new Double((value/86400000.0) + 2440587.5));
-               break;
-
-           default: //INTEGER:
-               batch(pos, new Long(value / conn.dateMultiplier));
-       }
-   }
+      throw new SQLException("*** IMPLEMENTAR ***");
+/*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
+          batch(pos, conn.dateFormat.format(new Date(value)));
+       else
+       if (conn.dateClass == SQLiteConfig.DateClass.REAL) // long to Julian date
+          batch(pos, new Double((value/86400000.0) + 2440587.5));
+       else //INTEGER:
+          batch(pos, new Long(value / conn.dateMultiplier));
+*/   }
 
    /**
      * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)

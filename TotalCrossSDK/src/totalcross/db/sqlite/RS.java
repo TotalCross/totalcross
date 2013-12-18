@@ -21,6 +21,7 @@ import totalcross.util.*;
 import totalcross.io.*;
 import totalcross.sys.*;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 /**
  * Implements a JDBC ResultSet.
@@ -395,7 +396,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getDate(int)
      */
     public Date getDate(int col) throws SQLException {
-        switch(db.column_type(stmt.pointer, markCol(col))) {
+       throw new SQLException("*** IMPLEMENTAR ***");
+/*        switch(db.column_type(stmt.pointer, markCol(col))) {
             case SQLITE_NULL:
                 return null;
     
@@ -416,13 +418,15 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
             default: //SQLITE_INTEGER:
                 return new Date(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
         }
-    }
+*/    }
 
     /**
      * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
      */
-    public Date getDate(int col, Calendar cal) throws SQLException {
-        checkCalendar(cal);
+    public Date getDate(int col, /*Calendar*/Date cal) throws SQLException 
+    {
+       throw new SQLException("*** IMPLEMENTAR ***");
+/*        checkCalendar(cal);
 
         switch (db.column_type(stmt.pointer, markCol(col))) {
             case SQLITE_NULL:
@@ -449,22 +453,23 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                 cal.setTimeInMillis(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
                 return new Date(cal.getTime().getTime());
         }
-    }
+*/    }
 
     /**
      * @see java.sql.ResultSet#getDate(java.lang.String)
      */
     public Date getDate(String col) throws SQLException {
-        return getDate(findColumn(col), Calendar.getInstance());
+       throw new SQLException("*** IMPLEMENTAR ***");
+//        return getDate(findColumn(col), Calendar.getInstance());
     }
 
-    /**
+/*    *//**
      * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
-     */
+     *//*
     public Date getDate(String col, Calendar cal) throws SQLException {
         return getDate(findColumn(col), cal);
     }
-
+*/
     /**
      * @see java.sql.ResultSet#getDouble(int)
      */
@@ -485,7 +490,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.sql.ResultSet#getFloat(int)
      */
-    public float getFloat(int col) throws SQLException {
+    public double getFloat(int col) throws SQLException {
         if (db.column_type(stmt.pointer, markCol(col)) == SQLITE_NULL) {
             return 0;
         }
@@ -495,7 +500,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.sql.ResultSet#getFloat(java.lang.String)
      */
-    public float getFloat(String col) throws SQLException {
+    public double getFloat(String col) throws SQLException {
         return getFloat(findColumn(col));
     }
 
@@ -575,58 +580,19 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                 }
     
             case SQLITE_FLOAT:
-                return new Time(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col))).getTimeInMillis());
+                return julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)));
     
             default:// SQLITE_INTEGER
                 return new Time(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
         }
     }
 
-    /**
-     * @see java.sql.ResultSet#getTime(int, java.util.Calendar)
-     */
-    public Time getTime(int col, Calendar cal) throws SQLException {
-        checkCalendar(cal);
-
-        switch (db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-
-            case SQLITE_TEXT:
-                try {
-                    DateFormat dateFormat = (DateFormat) stmt.conn.dateFormat.clone();
-                    dateFormat.setCalendar(cal);
-
-                    return new Time(dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing time");
-                    error.initCause(e);
-
-                    throw error;
-                }
-    
-            case SQLITE_FLOAT:
-                return new Time(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)), cal).getTimeInMillis());
-
-            default: //SQLITE_INTEGER
-                cal.setTimeInMillis(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-                return new Time(cal.getTime().getTime());
-        }
-    }
 
     /**
      * @see java.sql.ResultSet#getTime(java.lang.String)
      */
     public Time getTime(String col) throws SQLException {
         return getTime(findColumn(col));
-    }
-
-    /**
-     * @see java.sql.ResultSet#getTime(java.lang.String, java.util.Calendar)
-     */
-    public Time getTime(String col, Calendar cal) throws SQLException {
-        return getTime(findColumn(col), cal);
     }
 
     /**
@@ -649,46 +615,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                 }
     
             case SQLITE_FLOAT:
-                return new Timestamp(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col))).getTimeInMillis());
+                return new Timestamp(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col))));
     
             default: //SQLITE_INTEGER:
                 return new Timestamp(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-        }
-    }
-
-    /**
-     * @see java.sql.ResultSet#getTimestamp(int, java.util.Calendar)
-     */
-    public Timestamp getTimestamp(int col, Calendar cal) throws SQLException {
-        if (cal == null) {
-            return getTimestamp(col);
-        }
-
-        switch (db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-    
-            case SQLITE_TEXT:
-                try {
-                    DateFormat dateFormat = (DateFormat)stmt.conn.dateFormat.clone();
-                    dateFormat.setCalendar(cal);
-
-                    return new Timestamp(dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing time stamp");
-                    error.initCause(e);
-
-                    throw error;
-                }
-            
-            case SQLITE_FLOAT:
-                return new Timestamp(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)), cal).getTimeInMillis());
-    
-            default: //SQLITE_INTEGER
-                cal.setTimeInMillis(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-
-                return new Timestamp(cal.getTime().getTime());
         }
     }
 
@@ -697,13 +627,6 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      */
     public Timestamp getTimestamp(String col) throws SQLException {
         return getTimestamp(findColumn(col));
-    }
-
-    /**
-     * @see java.sql.ResultSet#getTimestamp(java.lang.String, java.util.Calendar)
-     */
-    public Timestamp getTimestamp(String c, Calendar ca) throws SQLException {
-        return getTimestamp(findColumn(c), ca);
     }
 
     /**
@@ -944,7 +867,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
             Matcher matcher = COLUMN_TYPENAME.matcher(declType);
 
             matcher.find();
-            return matcher.group(1).toUpperCase(Locale.ENGLISH);
+            return matcher.group(1).toUpperCase();
         }
 
         switch (db.column_type(stmt.pointer, checkCol(col))) {
@@ -1117,20 +1040,10 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
 
     /**
      * Transforms a Julian Date to java.util.Calendar object.
-     */
-    private Calendar julianDateToCalendar(Double jd) {
-        return julianDateToCalendar(jd, Calendar.getInstance());
-    }
-
-    /**
-     * Transforms a Julian Date to java.util.Calendar object.
      * Based on Guine Christian's function found here:
      * http://java.ittoolbox.com/groups/technical-functional/java-l/java-function-to-convert-julian-date-to-calendar-date-1947446
      */
-    private Calendar julianDateToCalendar(Double jd, Calendar cal) {
-        if (jd == null) {
-            return null;
-        }
+    private Time julianDateToCalendar(double jd) {
 
         int yyyy, dd, mm, hh, mn, ss, ms , A;
 
@@ -1177,24 +1090,13 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         double msd = (60 * ssd) - ss;
         ms = (int)(1000 * msd);
 
-        cal.set(yyyy, mm-1, dd, hh, mn, ss);
-        cal.set(Calendar.MILLISECOND, ms);
+        Time t = new Time(yyyy, mm, dd, hh, mn, ss, ms);
 
-        if (yyyy<1) {
+/*        if (yyyy<1) {
             cal.set(Calendar.ERA, GregorianCalendar.BC);
             cal.set(Calendar.YEAR, -(yyyy-1));
         }
-
-        return cal;
-    }
-
-    public void checkCalendar(Calendar cal) throws SQLException {
-        if (cal != null)
-            return;
-
-        SQLException e = new SQLException("Expected a calendar instance.");
-        e.initCause(new NullPointerException());
-
-        throw e;
+*/
+        return t;
     }
 }

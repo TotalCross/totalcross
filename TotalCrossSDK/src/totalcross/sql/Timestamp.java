@@ -1,11 +1,16 @@
 package totalcross.sql;
 
+import totalcross.sys.*;
 import totalcross.util.*;
 
 public class Timestamp extends Date
 {
    long t;
 
+   public Timestamp(Time t)
+   {
+   }
+   
    public Timestamp(long time)
    {
       t = time;

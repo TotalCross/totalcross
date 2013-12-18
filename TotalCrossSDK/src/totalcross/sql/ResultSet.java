@@ -3,7 +3,9 @@ package totalcross.sql;
 import totalcross.sys.*;
 import totalcross.util.*;
 import totalcross.util.Date;
+
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public interface ResultSet
 {
@@ -47,7 +49,7 @@ public interface ResultSet
    public Date getDate(String columnName) throws SQLException;
    public Time getTime(String columnName) throws SQLException;
    public Timestamp getTimestamp(String columnName) throws SQLException;
-   public SQLException getWarnings() throws SQLException;
+   public SQLWarning getWarnings() throws SQLException;
    public void clearWarnings() throws SQLException;
    public String getCursorName() throws SQLException;
    public ResultSetMetaData getMetaData() throws SQLException;

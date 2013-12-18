@@ -25,7 +25,9 @@
 package totalcross.db.sqlite;
 
 import totalcross.sql.*;
+
 import java.sql.SQLException;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 import totalcross.util.Enum;
@@ -788,6 +790,19 @@ public class SQLiteConfig
         setPragma(Pragma.DATE_PRECISION, DatePrecision.getPrecision(datePrecision).getValue());
     }
 
+    public static class DateFormat
+    {
+       public DateFormat(String s)
+       {
+       }
+
+      public totalcross.util.Date parse(String column_text)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+    }
+    
     public static class DateClass extends PragmaValue 
     {
         public static final DateClass INTEGER = new DateClass("INTEGER");

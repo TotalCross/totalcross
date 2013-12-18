@@ -38,16 +38,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Hashtable;
 */
-import totalcross.io.File;
-import totalcross.io.IOException;
 import totalcross.sql.*;
-import totalcross.util.regex.*;
 import totalcross.util.*;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public class SQLiteConnection implements Connection
 {
-    private static final String RESOURCE_NAME_PREFIX = ":resource:";
+//    private static final String RESOURCE_NAME_PREFIX = ":resource:";
 
     private final String url;
     private String       fileName;
@@ -57,23 +55,22 @@ public class SQLiteConnection implements Connection
     private int          transactionIsolation = TRANSACTION_SERIALIZABLE;
     private int          busyTimeout              = 0;
     private final int    openModeFlags;
-    private TransactionMode
-                         transactionMode      = TransactionMode.DEFFERED;
+    private SQLiteConfig.TransactionMode transactionMode      = SQLiteConfig.TransactionMode.DEFFERED;
 
-    private final static Map<TransactionMode, String> beginCommandMap =
-        new HashMap<SQLiteConfig.TransactionMode, String>();
+    private final static Hashtable/*<TransactionMode, String>*/ beginCommandMap =
+        new Hashtable/*<SQLiteConfig.TransactionMode, String>*/(10);
 
     static {
-        beginCommandMap.put(TransactionMode.DEFFERED, "begin;");
-        beginCommandMap.put(TransactionMode.IMMEDIATE, "begin immediate;");
-        beginCommandMap.put(TransactionMode.EXCLUSIVE, "begin exclusive;");
+        beginCommandMap.put(SQLiteConfig.TransactionMode.DEFFERED, "begin;");
+        beginCommandMap.put(SQLiteConfig.TransactionMode.IMMEDIATE, "begin immediate;");
+        beginCommandMap.put(SQLiteConfig.TransactionMode.EXCLUSIVE, "begin exclusive;");
     }
 
     /* Date storage configuration */
-    public final DateClass dateClass;
-    public final DatePrecision datePrecision; //Calendar.SECOND or Calendar.MILLISECOND
+    public final SQLiteConfig.DateClass dateClass;
+    public final SQLiteConfig.DatePrecision datePrecision; //Calendar.SECOND or Calendar.MILLISECOND
     public final long dateMultiplier;
-    public final DateFormat dateFormat;
+    public final SQLiteConfig.DateFormat dateFormat;
 
     /**
      * Constructor to create a connection to a database at the given location.
@@ -82,7 +79,7 @@ public class SQLiteConnection implements Connection
      * @throws SQLException
      */
     public SQLiteConnection(String url, String fileName) throws SQLException {
-        this(url, fileName, new Hashtable());
+        this(url, fileName, new Hashtable(10));
     }
 
     /**
@@ -100,7 +97,7 @@ public class SQLiteConnection implements Connection
         SQLiteConfig config = new SQLiteConfig(prop);
         this.dateClass = config.dateClass;
         this.dateMultiplier = config.dateMultiplier;
-        this.dateFormat = new SimpleDateFormat(config.dateStringFormat);
+        this.dateFormat = new SQLiteConfig.DateFormat(config.dateStringFormat);
         this.datePrecision = config.datePrecision;
         this.transactionMode = config.getTransactionMode();
         this.openModeFlags = config.getOpenModeFlags();
@@ -126,7 +123,7 @@ public class SQLiteConnection implements Connection
     private void open(int openModeFlags, int busyTimeout) throws SQLException {
         // check the path to the file exists
         if (!":memory:".equals(fileName) && !fileName.startsWith("file:") && !fileName.contains("mode=memory")) {
-            if (fileName.startsWith(RESOURCE_NAME_PREFIX)) {
+/*            if (fileName.startsWith(RESOURCE_NAME_PREFIX)) {
                 String resourceName = fileName.substring(RESOURCE_NAME_PREFIX.length());
 
                 // search the class path
@@ -148,8 +145,8 @@ public class SQLiteConnection implements Connection
                     throw new SQLException(String.format("failed to load %s: %s", resourceName, e));
                 }
             }
-            else {
-                File file = new File(fileName).getAbsoluteFile();
+            else */{
+/*                File file = new File(fileName).getAbsoluteFile();
                 File parent = file.getParentFile();
                 if (parent != null && !parent.exists()) {
                     for (File up = parent; up != null && !up.exists();) {
@@ -158,9 +155,9 @@ public class SQLiteConnection implements Connection
                     }
                     throw new SQLException("path to '" + fileName + "': '" + parent + "' does not exist");
                 }
-
+*/
                 // check write access if file does not exist
-                try {
+/*                try {
                     // The extra check to exists() is necessary as createNewFile()
                     // does not follow the JavaDoc when used on read-only shares.
                     if (!file.exists() && file.createNewFile())
@@ -169,13 +166,13 @@ public class SQLiteConnection implements Connection
                 catch (Exception e) {
                     throw new SQLException("opening db: '" + fileName + "': " + e.getMessage());
                 }
-                fileName = file.getAbsolutePath();
-            }
+                fileName = file.AbsolutePath();
+*/            }
         }
 
         // load the native DB
         try {
-            NativeDB.load();
+//            NativeDB.load();
             db = new NativeDB();
         }
         catch (Exception e) {
@@ -194,7 +191,7 @@ public class SQLiteConnection implements Connection
      * @return The extracted file name.
      * @throws IOException
      */
-    private File extractResource(URL resourceAddr) throws IOException {
+/*    private File extractResource(URL resourceAddr) throws IOException {
         if (resourceAddr.getProtocol().equals("file")) {
             try {
                 return new File(resourceAddr.toURI());
@@ -248,7 +245,7 @@ public class SQLiteConnection implements Connection
         }
 
     }
-
+*/
     /**
      * @return The busy timeout value for the connection.
      * @see <a href="http://www.sqlite.org/c3ref/busy_timeout.html">http://www.sqlite.org/c3ref/busy_timeout.html</a>
@@ -296,7 +293,6 @@ public class SQLiteConnection implements Connection
 
     /**
      * Whether an SQLite library interface to the database has been established.
-     * @throws SQLException.
      */
     private void checkOpen() throws SQLException {
         if (db == null)
@@ -327,7 +323,7 @@ public class SQLiteConnection implements Connection
     /**
      * @see java.lang.Object#finalize()
      */
-    @Override
+    
     public void finalize() throws SQLException {
         close();
     }
@@ -415,22 +411,21 @@ public class SQLiteConnection implements Connection
      * @param mode One of {@link TransactionMode}
      * @see <a href="http://www.sqlite.org/lang_transaction.html">http://www.sqlite.org/lang_transaction.html</a>
      */
-    protected void setTransactionMode(TransactionMode mode) {
+    protected void setTransactionMode(SQLiteConfig.TransactionMode mode) {
         this.transactionMode = mode;
     }
 
     /**
      * @see java.sql.Connection#getTypeMap()
      */
-    public Map<String,Class<?>> getTypeMap() throws SQLException {
+    public Hashtable getTypeMap() throws SQLException {
         throw new SQLException("not yet implemented");
     }
 
     /**
      * @see java.sql.Connection#setTypeMap(java.util.Map)
      */
-    @SuppressWarnings("rawtypes")
-    public void setTypeMap(Map map) throws SQLException {
+    public void setTypeMap(Hashtable map) throws SQLException {
         throw new SQLException("not yet implemented");
     }
 
@@ -438,7 +433,7 @@ public class SQLiteConnection implements Connection
      * @see java.sql.Connection#isReadOnly()
      */
     public boolean isReadOnly() throws SQLException {
-        return (openModeFlags & SQLiteOpenMode.READONLY.flag) != 0;
+        return (openModeFlags & SQLiteOpenMode.READONLY.value) != 0;
     }
 
     /**
@@ -502,7 +497,7 @@ public class SQLiteConnection implements Connection
         if (autoCommit == ac)
             return;
         autoCommit = ac;
-        db.exec(autoCommit ? "commit;" : beginCommandMap.get(transactionMode));
+        db.exec(autoCommit ? "commit;" : (String)beginCommandMap.get(transactionMode));
     }
 
     /**
@@ -513,7 +508,7 @@ public class SQLiteConnection implements Connection
         if (autoCommit)
             throw new SQLException("database in auto-commit mode");
         db.exec("commit;");
-        db.exec(beginCommandMap.get(transactionMode));
+        db.exec((String)beginCommandMap.get(transactionMode));
     }
 
     /**
@@ -524,7 +519,7 @@ public class SQLiteConnection implements Connection
         if (autoCommit)
             throw new SQLException("database in auto-commit mode");
         db.exec("rollback;");
-        db.exec(beginCommandMap.get(transactionMode));
+        db.exec((String)beginCommandMap.get(transactionMode));
     }
 
     /**
@@ -555,26 +550,26 @@ public class SQLiteConnection implements Connection
     /**
      * @see java.sql.Connection#prepareCall(java.lang.String)
      */
-    public CallableStatement prepareCall(String sql) throws SQLException {
+/*    public CallableStatement prepareCall(String sql) throws SQLException {
         return prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
                 ResultSet.CLOSE_CURSORS_AT_COMMIT);
     }
-
+*/
     /**
      * @see java.sql.Connection#prepareCall(java.lang.String, int, int)
      */
-    public CallableStatement prepareCall(String sql, int rst, int rsc) throws SQLException {
+/*    public CallableStatement prepareCall(String sql, int rst, int rsc) throws SQLException {
         return prepareCall(sql, rst, rsc, ResultSet.CLOSE_CURSORS_AT_COMMIT);
     }
-
+*/
     /**
      * @see java.sql.Connection#prepareCall(java.lang.String, int, int, int)
      */
-    public CallableStatement prepareCall(String sql, int rst, int rsc, int rsh) throws SQLException {
+/*    public CallableStatement prepareCall(String sql, int rst, int rsc, int rsh) throws SQLException {
         throw new SQLException("SQLite does not support Stored Procedures");
     }
 
-    /**
+*/    /**
      * @see java.sql.Connection#prepareStatement(java.lang.String)
      */
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -632,32 +627,32 @@ public class SQLiteConnection implements Connection
     /**
      * @see java.sql.Connection#setSavepoint()
      */
-    public Savepoint setSavepoint() throws SQLException {
+/*    public Savepoint setSavepoint() throws SQLException {
         throw new SQLException("unsupported by SQLite: savepoints");
     }
-
+*/
     /**
      * @see java.sql.Connection#setSavepoint(java.lang.String)
      */
-    public Savepoint setSavepoint(String name) throws SQLException {
+/*    public Savepoint setSavepoint(String name) throws SQLException {
         throw new SQLException("unsupported by SQLite: savepoints");
     }
-
+*/
     /**
      * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
      */
-    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+/*    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
         throw new SQLException("unsupported by SQLite: savepoints");
     }
-
+*/
     /**
      * @see java.sql.Connection#rollback(java.sql.Savepoint)
      */
-    public void rollback(Savepoint savepoint) throws SQLException {
+/*    public void rollback(Savepoint savepoint) throws SQLException {
         throw new SQLException("unsupported by SQLite: savepoints");
     }
-
-    public Struct createStruct(String t, Object[] attr) throws SQLException {
+*/
+/*    public Struct createStruct(String t, Object[] attr) throws SQLException {
         throw new SQLException("unsupported by SQLite");
     }
-}
+*/}

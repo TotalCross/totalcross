@@ -17,7 +17,6 @@
 package totalcross.db.sqlite;
 
 import totalcross.sql.*;
-import totalcross.util.regex.*;
 import totalcross.util.*;
 import java.sql.SQLException;
 
