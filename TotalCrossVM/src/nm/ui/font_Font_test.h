@@ -17,7 +17,7 @@ TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCr
    TNMParams p;
    int32 *style, *size, *maxfs, *minfs, *normal, *tabSize;
    Object *name, *hvUserFont;
-   Class c;
+   TCClass c;
    Object font;
    font = createObject(currentContext, "totalcross.ui.font.Font");
    setObjectLock(font, UNLOCKED);
