@@ -108,13 +108,12 @@ struct UDFData
  * If 0 is returned, an exception has been thrown to report the reason. */
 static sqlite3_value * tovalue(Context currentContext, Object function, int32 arg)
 {
-    jlong value_pntr = 0;
-    jint numArgs = 0;
-    static jfieldID func_value = 0,
-                    func_args = 0;
+    int64 value_pntr = 0;
+    int32 numArgs = 0;
+    static Field func_value, func_args;
 
     if (!func_value || !func_args) {
-        func_value = (*env)->GetFieldID(env, fclass, "value", "J");
+       func_value = getInstanceFieldLong(v, fclass, "value", "J");
         func_args  = (*env)->GetFieldID(env, fclass, "args", "I");
     }
 
