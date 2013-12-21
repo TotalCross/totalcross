@@ -2608,10 +2608,6 @@
 					RelativePath="G:\TotalCross\TotalCrossVM\src\nm\db\NativeDB.c"
 					>
 				</File>
-				<File
-					RelativePath="G:\TotalCross\TotalCrossVM\src\nm\db\NativeDB4D.c"
-					>
-				</File>
 			</Filter>
 		</Filter>
 		<Filter
