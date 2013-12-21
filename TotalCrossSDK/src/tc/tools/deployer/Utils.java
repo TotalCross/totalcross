@@ -51,10 +51,11 @@ public class Utils
       File out = new File(dest, File.CREATE_EMPTY);
       while ((r=in.readBytes(bytebuf,0,bytebuf.length)) > 0)
          out.writeBytes(bytebuf,0,r);
-      in.close();
-      out.close();
       if (deleteSource)
          in.delete();
+      else
+         in.close();
+      out.close();
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static void processInstallFile(String file, Hashtable ht)

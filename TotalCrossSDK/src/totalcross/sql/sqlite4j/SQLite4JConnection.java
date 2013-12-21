@@ -2,6 +2,7 @@ package totalcross.sql.sqlite4j;
 
 import totalcross.sql.*;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public class SQLite4JConnection implements Connection
 {
@@ -87,7 +88,7 @@ public class SQLite4JConnection implements Connection
       return con.getTransactionIsolation();
    }
 
-   public SQLException getWarnings() throws SQLException
+   public SQLWarning getWarnings() throws SQLException
    {
       return con.getWarnings();
    }

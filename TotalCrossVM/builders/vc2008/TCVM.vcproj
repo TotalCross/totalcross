@@ -2602,10 +2602,14 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="sql"
+				Name="db"
 				>
 				<File
-					RelativePath="..\..\src\nm\sql\SQL4D.c"
+					RelativePath="G:\TotalCross\TotalCrossVM\src\nm\db\NativeDB.c"
+					>
+				</File>
+				<File
+					RelativePath="G:\TotalCross\TotalCrossVM\src\nm\db\NativeDB4D.c"
 					>
 				</File>
 			</Filter>

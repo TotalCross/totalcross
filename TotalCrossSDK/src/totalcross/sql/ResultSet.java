@@ -3,7 +3,9 @@ package totalcross.sql;
 import totalcross.sys.*;
 import totalcross.util.*;
 import totalcross.util.Date;
+
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public interface ResultSet
 {
@@ -15,7 +17,9 @@ public interface ResultSet
    public static final int TYPE_SCROLL_SENSITIVE = 1005;
    public static final int CONCUR_READ_ONLY = 1007;
    public static final int CONCUR_UPDATABLE = 1008;
-
+   public static final int HOLD_CURSORS_OVER_COMMIT = 1;
+   public static final int CLOSE_CURSORS_AT_COMMIT = 2;
+   
    public boolean next() throws SQLException;
    public void close() throws SQLException;
    public boolean wasNull() throws SQLException;
@@ -45,7 +49,7 @@ public interface ResultSet
    public Date getDate(String columnName) throws SQLException;
    public Time getTime(String columnName) throws SQLException;
    public Timestamp getTimestamp(String columnName) throws SQLException;
-   public SQLException getWarnings() throws SQLException;
+   public SQLWarning getWarnings() throws SQLException;
    public void clearWarnings() throws SQLException;
    public String getCursorName() throws SQLException;
    public ResultSetMetaData getMetaData() throws SQLException;

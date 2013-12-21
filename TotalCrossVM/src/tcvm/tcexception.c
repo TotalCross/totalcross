@@ -317,4 +317,6 @@ void initException()
    throwableAsCharP[InvalidNumberException        ] = "totalcross.sys.InvalidNumberException";
    throwableAsCharP[ElementNotFoundException      ] = "totalcross.util.ElementNotFoundException";
    throwableAsCharP[CryptoException               ] = "totalcross.crypto.CryptoException";
+   throwableAsCharP[SQLException                  ] = "totalcross.sql.SQLException";
+   throwableAsCharP[SQLWarning                    ] = "totalcross.sql.SQLWarning";
 }

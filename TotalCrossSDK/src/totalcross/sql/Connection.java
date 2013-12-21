@@ -1,6 +1,7 @@
 package totalcross.sql;
 
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public interface Connection
 {
@@ -40,7 +41,7 @@ public interface Connection
    
    public int getTransactionIsolation() throws SQLException;
    
-   public SQLException getWarnings() throws SQLException;
+   public SQLWarning getWarnings() throws SQLException;
    
    public void clearWarnings() throws SQLException;
    
