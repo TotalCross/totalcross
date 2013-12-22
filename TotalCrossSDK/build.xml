@@ -166,7 +166,7 @@ target: compile
   <mkdir dir="${output}/classes" />
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*" />
+     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*,totalcross/sql/sqlite4j/**" />
      <fileset dir="${src}" includes="ras/CompilationDate4B.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
@@ -184,6 +184,7 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
+        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -421,7 +422,7 @@ target: javadoc
   <mkdir dir="${output}/javadoc" />
   <copy todir="${output}/javadoc">
     <fileset dir="${src}"
-    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**"/>
+    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
   </copy>
 
   <echo message="Removing 4D and 4B methods" />
