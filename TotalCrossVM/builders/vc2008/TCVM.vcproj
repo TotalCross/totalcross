@@ -2605,6 +2605,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="db"
+				>
+				<File
+					RelativePath="..\..\src\nm\db\NativeDB.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="ZLib"
@@ -3609,6 +3617,18 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="sqlite"
+			>
+			<File
+				RelativePath="..\..\src\sqlite\shell.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3.c"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
