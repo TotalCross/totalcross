@@ -131,6 +131,8 @@ public class Deployer4Android
          jar2dex();         // 2
       }
       updateResources(); // 3+4+5
+      new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
+      Utils.copyFile(targetDir+"/"+fileName+"_.apk",targetDir+"/"+fileName+".apk",true); 
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
       
       String extraMsg = "";
@@ -147,7 +149,7 @@ public class Deployer4Android
       if (adb == null)
          throw new DeployerException("File android/adb.exe not found!");
       String message = Utils.exec(new String[]{adb,"install","-r","*.apk"},targetDir);
-      if (message.indexOf("INPUT:Success") >= 0)
+      if (message != null && message.indexOf("INPUT:Success") >= 0)
          return " (installed)";
       System.out.println(message);
       return " (error on installl)";

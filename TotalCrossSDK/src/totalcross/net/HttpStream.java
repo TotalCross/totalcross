@@ -519,7 +519,13 @@ public class HttpStream extends Stream
       contentType = UNKNOWN_TYPE;
       buffer = new byte[BUFSIZE];
 
-      if (port <= 0) port = 80;
+      if (port <= 0)
+      {
+         if (uri.scheme.toString().equals("https")) //flsobral@tc170: use 443 for https if not specified, fallback to 80 otherwise
+            port = 443;
+         else
+            port = 80;
+      }
       state = -1;
 
       socket = options.socketFactory.createSocket(strUri, port, options.openTimeOut);
