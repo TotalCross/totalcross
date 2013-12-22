@@ -24,9 +24,8 @@ import totalcross.sql.ResultSetMetaData;
 import totalcross.sql.Statement;
 import totalcross.sql.Timestamp;
 import totalcross.sql.Types;
-import totalcross.sys.Time;
+import totalcross.sys.*;
 import totalcross.util.*;
-import totalcross.util.Date;
 
 import java.sql.SQLException;
 
@@ -166,10 +165,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         batchPos += paramCount;
         if (batchPos + paramCount > batch.length) {
             Object[] nb = new Object[batch.length * 2];
-            System.arraycopy(batch, 0, nb, 0, batch.length);
+            Vm.arrayCopy(batch, 0, nb, 0, batch.length);
             batch = nb;
         }
-        System.arraycopy(batch, batchPos - paramCount, batch, batchPos, paramCount);
+        Vm.arrayCopy(batch, batchPos - paramCount, batch, batchPos, paramCount);
     }
 
     // ParameterMetaData FUNCTIONS //////////////////////////////////
@@ -299,10 +298,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         } 
         catch (IOException cause)
         {
-            SQLException exception = new SQLException("Error reading stream");
-
-            exception.initCause(cause);
-            throw(exception);
+           throw new SQLException("Error reading stream."+RS.initCause(cause));
         }
     }
 
@@ -421,7 +417,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
             batch(pos, value);
         }
         else if (value instanceof Short) {
-            batch(pos, new Integer(((Short) value).intValue()));
+            batch(pos, new Integer(((Short) value).shortValue()));
         }
         else if (value instanceof Float) {
             batch(pos, value);

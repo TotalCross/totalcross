@@ -344,4 +344,9 @@ public final class String4D
 
    /** Returns the hashcode for this string */
    native public int hashCode();
+   
+   public String[] split(String sep)
+   {
+      return Convert.tokenizeString(toString(), sep);
+   }
 }

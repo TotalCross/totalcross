@@ -166,7 +166,7 @@ target: compile
   <mkdir dir="${output}/classes" />
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*,totalcross/sql/sqlite4j/**" />
+     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*" />
      <fileset dir="${src}" includes="ras/CompilationDate4B.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />

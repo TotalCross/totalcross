@@ -71,7 +71,12 @@ public class SQLiteConfig
 
         String openMode = (String)pragmaTable.get(Pragma.OPEN_MODE.pragmaName);
         if (openMode != null) {
-            openModeFlag = Integer.parseInt(openMode);
+           try {
+            openModeFlag = Convert.toInt(openMode);
+        }
+        catch (InvalidNumberException ine)
+        {
+        }
         }
         else {
             // set the default open mode of SQLite3
@@ -150,7 +155,7 @@ public class SQLiteConfig
      * @param flag The boolean value.
      */
     private void set(Pragma pragma, boolean flag) {
-        setPragma(pragma, Boolean.toString(flag));
+        setPragma(pragma, Convert.toString(flag));
     }
 
     /**
@@ -457,7 +462,7 @@ public class SQLiteConfig
         }
 
         public static Encoding getEncoding(String value) {
-           return (Encoding)get(value.replaceAll("-", "_").toUpperCase());
+           return (Encoding)get(value.replace('-', '_').toUpperCase());
         }
     }
 

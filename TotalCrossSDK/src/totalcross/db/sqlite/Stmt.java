@@ -16,14 +16,15 @@
 package totalcross.db.sqlite;
 
 import java.sql.BatchUpdateException;
-import totalcross.sql.Connection;
-import totalcross.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import totalcross.sql.Statement;
 
 import totalcross.db.sqlite.DB.ProgressObserver;
 import totalcross.db.sqlite.ExtendedCommand.SQLExtension;
+import totalcross.sql.Connection;
+import totalcross.sql.ResultSet;
+import totalcross.sql.Statement;
+import totalcross.sys.*;
 
 class Stmt extends Unused implements Statement, Codes
 {
@@ -34,11 +35,11 @@ class Stmt extends Unused implements Statement, Codes
     private MetaData metadata;
 
     long       pointer;
-    String     sql            = null;
+    String     sql;
 
     int        batchPos;
-    Object[]   batch          = null;
-    boolean    resultsWaiting = false;
+    Object[]   batch;
+    boolean    resultsWaiting;
 
     Stmt(SQLiteConnection c) {
         conn = c;
@@ -276,7 +277,7 @@ class Stmt extends Unused implements Statement, Codes
         if (batch == null || batchPos + 1 >= batch.length) {
             Object[] nb = new Object[Math.max(10, batchPos * 2)];
             if (batch != null)
-                System.arraycopy(batch, 0, nb, 0, batch.length);
+                Vm.arrayCopy(batch, 0, nb, 0, batch.length);
             batch = nb;
         }
         batch[batchPos++] = sql;

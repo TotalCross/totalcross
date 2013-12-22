@@ -241,9 +241,7 @@ public abstract class Function
      * Provides an interface for creating SQLite user-defined aggregate functions.
      * @see Function
      */
-    public static abstract class Aggregate
-            extends Function
-            implements Cloneable
+    public static abstract class Aggregate extends Function
     {
         /**
          * @see org.sqlite.Function#xFunc()
@@ -263,12 +261,5 @@ public abstract class Function
          * @see <a href="http://www.sqlite.org/c3ref/aggregate_context.html">http://www.sqlite.org/c3ref/aggregate_context.html</a>
          */
         protected abstract void xFinal() throws SQLException;
-
-        /**
-         * @see java.lang.Object#clone()
-         */
-        public Object clone() throws CloneNotSupportedException {
-            return super.clone();
-        }
     }
 }

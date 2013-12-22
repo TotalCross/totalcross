@@ -466,6 +466,12 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (htCls.exists(value))
          return ((TCValue)htCls.get(value)).index;
 
+      if (value.equals("java.sql.SQLException"))
+         value = "totalcross.sql.SQLException";
+      else
+      if (value.equals("java.sql.SQLWarning"))
+         value = "totalcross.sql.SQLWarning";
+      else
       if (value.startsWith("totalcross.lang."))
          value = totalcross.sys.Convert.replace(value, "totalcross.lang.", "java.lang.");
       int idx = put(value, POOL_CLS, htCls, vCls);

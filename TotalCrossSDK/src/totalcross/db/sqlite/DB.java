@@ -695,13 +695,13 @@ abstract class DB implements Codes
             return bind_int(stmt, pos, ((Integer) v).intValue());
         }
         else if (v instanceof Short) {
-            return bind_int(stmt, pos, ((Short) v).intValue());
+            return bind_int(stmt, pos, ((Short) v).shortValue());
         }
         else if (v instanceof Long) {
             return bind_long(stmt, pos, ((Long) v).longValue());
         }
         else if (v instanceof Float) {
-            return bind_double(stmt, pos, ((Float) v).doubleValue());
+            return bind_double(stmt, pos, ((Float) v).floatValue());
         }
         else if (v instanceof Double) {
             return bind_double(stmt, pos, ((Double) v).doubleValue());

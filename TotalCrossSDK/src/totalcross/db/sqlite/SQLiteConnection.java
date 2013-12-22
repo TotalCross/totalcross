@@ -104,7 +104,7 @@ public class SQLiteConnection implements Connection
 
         open(openModeFlags, config.busyTimeout);
 
-        if (fileName.startsWith("file:") && !fileName.contains("cache="))
+        if (fileName.startsWith("file:") && fileName.indexOf("cache=") == -1)
         {   // URI cache overrides flags
             db.shared_cache(config.isEnabledSharedCache());
         }
@@ -122,7 +122,7 @@ public class SQLiteConnection implements Connection
      */
     private void open(int openModeFlags, int busyTimeout) throws SQLException {
         // check the path to the file exists
-        if (!":memory:".equals(fileName) && !fileName.startsWith("file:") && !fileName.contains("mode=memory")) {
+        if (!":memory:".equals(fileName) && !fileName.startsWith("file:") && fileName.indexOf("mode=memory") == -1) {
 /*            if (fileName.startsWith(RESOURCE_NAME_PREFIX)) {
                 String resourceName = fileName.substring(RESOURCE_NAME_PREFIX.length());
 
@@ -177,9 +177,7 @@ public class SQLiteConnection implements Connection
             db = new NativeDB();
         }
         catch (Exception e) {
-            SQLException err = new SQLException("Error opening connection");
-            err.initCause(e);
-            throw err;
+            throw new SQLException("Error opening connection"+RS.initCause(e));
         }
 
         db.open(this, fileName, openModeFlags);

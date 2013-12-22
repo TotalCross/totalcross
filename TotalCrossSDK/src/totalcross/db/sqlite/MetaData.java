@@ -25,20 +25,20 @@ class MetaData implements DatabaseMetaData
 {
     private SQLiteConnection              conn;
     private PreparedStatement
-            getTables             = null,   getTableTypes        = null,
-            getTypeInfo           = null,   getCatalogs          = null,
-            getSchemas            = null,   getUDTs              = null,
-            getColumnsTblName     = null,   getSuperTypes        = null,
-            getSuperTables        = null,   getTablePrivileges   = null,
-            getIndexInfo          = null,   getProcedures        = null,
-            getProcedureColumns   = null,   getAttributes        = null,
-            getBestRowIdentifier  = null,   getVersionColumns    = null,
-            getColumnPrivileges   = null;
+            getTables             ,   getTableTypes        ,
+            getTypeInfo           ,   getCatalogs          ,
+            getSchemas            ,   getUDTs              ,
+            getColumnsTblName     ,   getSuperTypes        ,
+            getSuperTables        ,   getTablePrivileges   ,
+            getIndexInfo          ,   getProcedures        ,
+            getProcedureColumns   ,   getAttributes        ,
+            getBestRowIdentifier  ,   getVersionColumns    ,
+            getColumnPrivileges   ;
 
     /**
      * Used to save generating a new statement every call.
      */
-    private PreparedStatement getGeneratedKeys = null;
+    private PreparedStatement getGeneratedKeys ;
 
     /**
      * Reference count.
@@ -1216,7 +1216,7 @@ class MetaData implements DatabaseMetaData
     public ResultSet getColumns(String c, String s, String tblNamePattern, String colNamePattern) throws SQLException {
         Statement stat = conn.createStatement();
         ResultSet rs;
-        StringBuilder sql = new StringBuilder(700);
+        StringBuffer sql = new StringBuffer(700);
 
         checkOpen();
 
@@ -1325,13 +1325,13 @@ class MetaData implements DatabaseMetaData
             return getImportedKeys(pc, ps, pt);
         }
 
-        StringBuilder query = new StringBuilder();
+        StringBuffer query = new StringBuffer();
         query.append("select ").append(quote(pc)).append(" as PKTABLE_CAT, ")
             .append(quote(ps)).append(" as PKTABLE_SCHEM, ").append(quote(pt)).append(" as PKTABLE_NAME, ")
             .append("'' as PKCOLUMN_NAME, ").append(quote(fc)).append(" as FKTABLE_CAT, ")
             .append(quote(fs)).append(" as FKTABLE_SCHEM, ").append(quote(ft)).append(" as FKTABLE_NAME, ")
             .append("'' as FKCOLUMN_NAME, -1 as KEY_SEQ, 3 as UPDATE_RULE, 3 as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
-            .append(Integer.toString(importedKeyInitiallyDeferred)).append(" as DEFERRABILITY limit 0 ");
+            .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY limit 0 ");
 
         return ((Stmt)conn.createStatement()).executeQuery(query.toString(), true);
     }
@@ -1367,7 +1367,7 @@ class MetaData implements DatabaseMetaData
         String[] columns = pkFinder.getColumns();
 
         Statement stat = conn.createStatement();
-        StringBuilder sql = new StringBuilder(512);
+        StringBuffer sql = new StringBuffer(512);
         sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '")
            .append(escape(table))
            .append("' as TABLE_NAME, cn as COLUMN_NAME, ks as KEY_SEQ, pk as PK_NAME from (");
@@ -1432,7 +1432,7 @@ class MetaData implements DatabaseMetaData
         catalog = (catalog != null) ? quote(catalog) : null;
         schema = (schema != null) ? quote(schema) : null;
 
-        StringBuilder exportedKeysQuery = new StringBuilder(512);
+        StringBuffer exportedKeysQuery = new StringBuffer(512);
 
         int count = 0;
         if (pkColumns != null) {
@@ -1477,7 +1477,7 @@ class MetaData implements DatabaseMetaData
 
                         exportedKeysQuery
                             .append(count > 0 ? " union all select " : "select ")
-                            .append(Integer.toString(keySeq)).append(" as ks, lower('")
+                            .append(keySeq).append(" as ks, lower('")
                             .append(escape(tbl)).append("') as fkt, lower('")
                             .append(escape(fk.getString(4))).append("') as fcn, '")
                             .append(escape(PKColName)).append("' as pcn, ")
@@ -1517,7 +1517,7 @@ class MetaData implements DatabaseMetaData
         }
 
         boolean hasImportedKey = (count > 0);
-        StringBuilder sql = new StringBuilder(512);
+        StringBuffer sql = new StringBuffer(512);
         sql.append("select ")
             .append(catalog).append(" as PKTABLE_CAT, ")
             .append(schema).append(" as PKTABLE_SCHEM, ")
@@ -1532,7 +1532,7 @@ class MetaData implements DatabaseMetaData
             .append(hasImportedKey ? "dr" : "3").append(" as DELETE_RULE, ")
             .append(hasImportedKey ? "fkn" : "''").append(" as FK_NAME, ")
             .append(pkFinder.getName() != null ? pkFinder.getName() : "''").append(" as PK_NAME, ")
-            .append(Integer.toString(importedKeyInitiallyDeferred)) // FIXME: Check for pragma foreign_keys = true ?
+            .append(importedKeyInitiallyDeferred) // FIXME: Check for pragma foreign_keys = true ?
             .append(" as DEFERRABILITY ");
 
         if (hasImportedKey) {
@@ -1552,7 +1552,7 @@ class MetaData implements DatabaseMetaData
     public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
         ResultSet rs = null;
         Statement stat = conn.createStatement();
-        StringBuilder sql = new StringBuilder(700);
+        StringBuffer sql = new StringBuffer(700);
 
         sql.append("select ").append(quote(catalog)).append(" as PKTABLE_CAT, ")
             .append(quote(schema)).append(" as PKTABLE_SCHEM, ")
@@ -1561,7 +1561,7 @@ class MetaData implements DatabaseMetaData
             .append(quote(schema)).append(" as FKTABLE_SCHEM, ")
             .append(quote(table)).append(" as FKTABLE_NAME, ") 
             .append("fcn as FKCOLUMN_NAME, ks as KEY_SEQ, ur as UPDATE_RULE, dr as DELETE_RULE, '' as FK_NAME, '' as PK_NAME, ")
-            .append(Integer.toString(importedKeyInitiallyDeferred)).append(" as DEFERRABILITY from (");
+            .append(importedKeyInitiallyDeferred).append(" as DEFERRABILITY from (");
 
         // Use a try catch block to avoid "query does not return ResultSet" error
         try {
@@ -1621,11 +1621,11 @@ class MetaData implements DatabaseMetaData
     public ResultSet getIndexInfo(String c, String s, String t, boolean u, boolean approximate) throws SQLException {
         ResultSet rs = null;
         Statement stat = conn.createStatement();
-        StringBuilder sql = new StringBuilder(500);
+        StringBuffer sql = new StringBuffer(500);
 
         sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, '")
             .append(escape(t)).append("' as TABLE_NAME, un as NON_UNIQUE, null as INDEX_QUALIFIER, n as INDEX_NAME, ")
-            .append(Integer.toString(tableIndexOther)).append(" as TYPE, op as ORDINAL_POSITION, ")
+            .append(tableIndexOther).append(" as TYPE, op as ORDINAL_POSITION, ")
             .append("cn as COLUMN_NAME, null as ASC_OR_DESC, 0 as CARDINALITY, 0 as PAGES, null as FILTER_CONDITION from (");
 
         // Use a try catch block to avoid "query does not return ResultSet" error
@@ -1658,9 +1658,9 @@ class MetaData implements DatabaseMetaData
                     sql.append(" union all ");
                 }
 
-                sql.append("select ").append(Integer.toString(1 - indexValue)).append(" as un,'")
+                sql.append("select ").append(1 - indexValue).append(" as un,'")
                     .append(escape(indexName)).append("' as n,")
-                    .append(Integer.toString(rs.getInt(1) + 1)).append(" as op,'")
+                    .append(rs.getInt(1) + 1).append(" as op,'")
                     .append(escape(rs.getString(3))).append("' as cn");
             }
 
@@ -1746,7 +1746,7 @@ class MetaData implements DatabaseMetaData
 
         tblNamePattern = (tblNamePattern == null || "".equals(tblNamePattern)) ? "%" : escape(tblNamePattern);
 
-        StringBuilder sql = new StringBuilder();
+        StringBuffer sql = new StringBuffer();
         sql.append("select null as TABLE_CAT, null as TABLE_SCHEM, name as TABLE_NAME,")
            .append(" upper(type) as TABLE_TYPE, null as REMARKS, null as TYPE_CAT, null as TYPE_SCHEM,")
            .append(" null as TYPE_NAME, null as SELF_REFERENCING_COL_NAME, null as REF_GENERATION")
@@ -1874,7 +1874,7 @@ class MetaData implements DatabaseMetaData
         //       don't have to worry about Unicode 4, other characters needing
         //       escaping, etc.
         int len = val.length();
-        StringBuilder buf = new StringBuilder(len);
+        StringBuffer buf = new StringBuffer(len);
         for (int i = 0; i < len; i++) {
             if (val.charAt(i) == '\'') {
                 buf.append('\'');

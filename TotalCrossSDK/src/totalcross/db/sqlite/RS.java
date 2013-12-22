@@ -20,6 +20,7 @@ import totalcross.util.regex.*;
 import totalcross.util.*;
 import totalcross.io.*;
 import totalcross.sys.*;
+
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 
@@ -31,14 +32,14 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     private final Stmt stmt;
     private final DB   db;
 
-    boolean            open     = false; // true means have results and can iterate them
+    boolean            open; // true means have results and can iterate them
     int                maxRows;         // max. number of rows as set by a Statement
-    String[]           cols     = null; // if null, the RS is closed()
-    String[]           colsMeta = null; // same as cols, but used by Meta interface
-    boolean[][]        meta     = null;
+    String[]           cols; // if null, the RS is closed()
+    String[]           colsMeta; // same as cols, but used by Meta interface
+    boolean[][]        meta;
 
     private int        limitRows;       // 0 means no limit, must check against maxRows
-    private int        row      = 0;    // number of current row, starts at 1 (0 is for before loading data)
+    private int        row;    // number of current row, starts at 1 (0 is for before loading data)
     private int        lastCol;         // last column accessed, for wasNull(). -1 if none
 
     boolean closeStmt;
@@ -406,10 +407,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                     return new Date(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
                 }
                 catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing date");
-                    error.initCause(e);
-
-                    throw error;
+                    throw new SQLException("Error parsing date"+initCause(e));
                 }
     
             case SQLITE_FLOAT:
@@ -440,10 +438,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                     return new java.sql.Date(dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
                 }
                 catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing time stamp");
-                    error.initCause(e);
-
-                    throw error;
+                    throw new SQLException("Error parsing time stamp"+initCause(e));
                 }
     
             case SQLITE_FLOAT:
@@ -559,6 +554,11 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     public String getString(String col) throws SQLException {
         return getString(findColumn(col));
     }
+    
+    static String initCause(Throwable e)
+    {
+       return " Cause: "+e.getMessage()+"\n trace: "+Vm.getStackTrace(e);
+    }
 
     /**
      * @see java.sql.ResultSet#getTime(int)
@@ -573,10 +573,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                     return new Time(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
                 }
                 catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing time");
-                    error.initCause(e);
-
-                    throw error;
+                   throw new SQLException("Error parsing time."+initCause(e));
                 }
     
             case SQLITE_FLOAT:
@@ -608,10 +605,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                     return new Timestamp(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
                 }
                 catch (Exception e) {
-                    SQLException error = new SQLException("Error parsing time stamp");
-                    error.initCause(e);
-
-                    throw error;
+                    throw new SQLException("Error parsing time stamp"+initCause(e));
                 }
     
             case SQLITE_FLOAT:
@@ -894,7 +888,14 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         if (declType != null) {
             Matcher matcher = COLUMN_PRECISION.matcher(declType);
 
-            return matcher.find() ? Integer.parseInt(matcher.group(1).split(",")[0].trim()) : 0;
+            try
+            {
+               return matcher.find() ? Convert.toInt(matcher.group(1).split(",")[0].trim()) : 0;
+            }
+            catch (InvalidNumberException ine)
+            {
+               throw new SQLException("Invalid precision."+initCause(ine));
+            }
         }
 
         return 0;
@@ -923,7 +924,14 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                 String array[] = matcher.group(1).split(",");
 
                 if (array.length == 2) {
-                    return Integer.parseInt(array[1].trim());
+                   try
+                   {
+                    return Convert.toInt(array[1].trim());
+                   }
+                   catch (InvalidNumberException ine)
+                   {
+                      throw new SQLException("Invalid scale."+initCause(ine));
+                   }
                 }
             }
         }

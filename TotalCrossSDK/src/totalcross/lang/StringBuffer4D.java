@@ -269,4 +269,9 @@ public final class StringBuffer4D
       }
       return this;
    }
+   
+   public StringBuffer4D append(StringBuffer4D s)
+   {
+      return this.append(s.toString());
+   }
 }

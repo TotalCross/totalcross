@@ -23,6 +23,11 @@ public class DriverManager
    {
       return null;
    }
+   static String initCause(Throwable e)
+   {
+      return " Cause: "+e.getMessage()+"\n trace: "+Vm.getStackTrace(e);
+   }
+
    public static Connection getConnection(String url) throws SQLException
    {
       if (url.startsWith("jdbc:sqlite")) // :sample.db
@@ -33,16 +38,22 @@ public class DriverManager
             dbname = url.substring(12);
          try
          {
-            return Settings.onJavaSE ? 
-                  (Connection)new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname))
-                : (Connection)new totalcross.db.sqlite.SQLiteConnection(url, dbname);
+            return newConnection(url, dbname);
          }
          catch (java.sql.SQLException e)
          {
-            throw new SQLException(e);
+            throw new SQLException("Can't get connection: "+url+initCause(e));
          }
       }
       return null;
+   }
+   static Connection newConnection(String url, String dbname) throws SQLException
+   {
+      return new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname));
+   }
+   static Connection newConnection4D(String url, String dbname) throws SQLException
+   {
+      return new totalcross.db.sqlite.SQLiteConnection(url, dbname);
    }
    public static Driver getDriver(String url) throws SQLException
    {
