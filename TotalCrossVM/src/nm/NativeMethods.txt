@@ -476,3 +476,4 @@ totalcross/db/sqlite/NativeDB|native void free_functions();
 totalcross/db/sqlite/NativeDB|native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 totalcross/db/sqlite/NativeDB|native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 totalcross/db/sqlite/NativeDB|native boolean[][] column_metadata(long stmt);
+totalcross/db/sqlite/NativeDB|native static void load() throws Exception;

@@ -490,5 +490,6 @@ TC_API void tdsNDB_free_functions(NMParams p);
 TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
+TC_API void tdsNDB_load(NMParams p);
 
 #endif

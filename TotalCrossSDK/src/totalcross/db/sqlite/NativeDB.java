@@ -22,35 +22,17 @@ import java.sql.SQLException;
 final class NativeDB extends DB
 {
     /** SQLite connection handle. */
-    long                   pointer;
-
-/*    private static boolean isLoaded;
-    private static boolean loadSucceeded;
-*/
-/*    static 
-    {
-        if ("The Android Project".equals(System.getProperty("java.vm.vendor"))) 
-        {
-            System.loadLibrary("sqlitejdbc");
-            isLoaded = loadSucceeded = true;
-        }
-    }
-
-    *//**
-     * Loads the SQLite interface backend.
-     * @return True if the SQLite JDBC driver is successfully loaded; false otherwise.
-     *//*
-    static boolean load() throws Exception {
-        if (isLoaded)
-            return loadSucceeded == true;
-
-        loadSucceeded = SQLiteJDBCLoader.initialize();
-        isLoaded = true;
-        return loadSucceeded;
-    }
-*/
+    long pointer;
     /** linked list of all instanced UDFDatas */
     long udfdatalist;
+
+    static boolean isLoaded;
+
+    /**
+     * Loads the SQLite interface backend.
+     * @return True if the SQLite JDBC driver is successfully loaded; false otherwise.
+     */
+    native static void load() throws Exception; 
 
     // WRAPPER FUNCTIONS ////////////////////////////////////////////
 

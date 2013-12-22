@@ -172,7 +172,8 @@ public class SQLiteConnection implements Connection
 
         // load the native DB
         try {
-//            NativeDB.load();
+           if (!NativeDB.isLoaded)
+              NativeDB.load();
             db = new NativeDB();
         }
         catch (Exception e) {

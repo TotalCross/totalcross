@@ -477,6 +477,7 @@ TC_API void tdsNDB_free_functions(NMParams p);
 TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
+TC_API void tdsNDB_load(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
@@ -2388,6 +2389,10 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
 }
 
@@ -4777,6 +4782,11 @@ TESTCASE(tdsNDB_restore_ssp) // totalcross/db/sqlite/NativeDB native int restore
    finish: ;
 }
 TESTCASE(tdsNDB_column_metadata_l) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_load) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
    TEST_SKIP;
    finish: ;

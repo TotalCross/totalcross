@@ -228,7 +228,7 @@ void xFinal(sqlite3_context *context)
 
 // INITIALISATION ///////////////////////////////////////////////////
 
-void sqliteInitialise(Context currentContext)
+TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
     dbclass = loadClass(currentContext, "totalcross.db.sqlite.NativeDB", false);
     fclass  = loadClass(currentContext, "totalcross.db.sqlite.Function", false);
