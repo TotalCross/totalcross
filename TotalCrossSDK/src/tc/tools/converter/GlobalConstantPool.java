@@ -466,12 +466,6 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (htCls.exists(value))
          return ((TCValue)htCls.get(value)).index;
 
-      if (value.equals("java.sql.SQLException"))
-         value = "totalcross.sql.SQLException";
-      else
-      if (value.equals("java.sql.SQLWarning"))
-         value = "totalcross.sql.SQLWarning";
-      else
       if (value.startsWith("totalcross.lang."))
          value = totalcross.sys.Convert.replace(value, "totalcross.lang.", "java.lang.");
       int idx = put(value, POOL_CLS, htCls, vCls);
@@ -806,6 +800,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       for (i = 1; i < clsCount; i++)
       {
          v = (TCValue)vCls.items[i];
+         // convert sql classes
+         if (v.asStr.equals("java.sql.SQLException"))
+            v.asStr = "totalcross.sql.SQLException";
+         else
+         if (v.asStr.equals("java.sql.SQLWarning"))
+            v.asStr = "totalcross.sql.SQLWarning";
+
          String s = v.asStr.charAt(0) == '&' ? v.asStr.substring(1) : v.asStr; // remove the & from the primitives
          partSize += 1 + s.length();
       }
