@@ -29,6 +29,7 @@
 
 package totalcross.util.regex;
 
+import totalcross.sys.*;
 import totalcross.util.*;
 
 class Term implements REFlags{
@@ -278,9 +279,9 @@ class Term implements REFlags{
                int id;
                if(Character.isDigit(gname.charAt(0))){
                   try{
-                     id=Integer.parseInt(gname);
+                     id=Convert.toInt(gname);
                   }
-                  catch(NumberFormatException e){
+                  catch(Exception e){
                      throw new PatternSyntaxException("group name starts with digit but is not a number");
                   }
                   if(groupNames.exists(new Integer(id))){

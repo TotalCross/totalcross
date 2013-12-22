@@ -65,7 +65,7 @@ class MetaData implements DatabaseMetaData
     /**
      * @throws SQLException
      */
-    synchronized void close() throws SQLException {
+    void close() throws SQLException {
         if (conn == null || refCount > 0) {
             return;
         }
@@ -1741,7 +1741,7 @@ class MetaData implements DatabaseMetaData
      * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String,
      *      java.lang.String, java.lang.String[])
      */
-    public synchronized ResultSet getTables(String c, String s, String tblNamePattern, String types[]) throws SQLException {
+    public ResultSet getTables(String c, String s, String tblNamePattern, String types[]) throws SQLException {
         checkOpen();
 
         tblNamePattern = (tblNamePattern == null || "".equals(tblNamePattern)) ? "%" : escape(tblNamePattern);

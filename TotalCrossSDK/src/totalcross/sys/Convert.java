@@ -124,6 +124,10 @@ public final class Convert
       return ok;
    }
 
+   /** The minimum char value: '\u0000' */
+   public static final char MIN_CHAR_VALUE = '\u0000';
+   /** The maximum char value:  */
+   public static final char MAX_CHAR_VALUE = '\uFFFF';
    /** The maximum short value: 32767 */
    public static final short MAX_SHORT_VALUE = 32767;
    /** The minimum short value: -32768 */
@@ -144,11 +148,34 @@ public final class Convert
    public static final int MAX_DOUBLE_DIGITS = 15;
    private static final double DOUBLE_MAX_NON_EXP = 9.007199254740992E15; // 2^53
    private static final double DOUBLE_MIN_NON_EXP = 1.1102230246251565E-16; // 2^-53
-   
+
+   static final char[] TITLE = "\u01c4\u01c5\u01c5\u01c5\u01c6\u01c5\u01c7\u01c8\u01c8\u01c8\u01c9\u01c8\u01ca\u01cb\u01cb\u01cb\u01cc\u01cb\u01f1\u01f2\u01f2\u01f2\u01f3\u01f2".toCharArray();
+
    static final boolean useNative = !Settings.onJavaSE;
 
    private Convert()
    {
+   }
+
+   /**
+    * Converts a Unicode character into its titlecase equivalent mapping.
+    * If a mapping does not exist, then the character passed is returned.
+    * Note that isTitleCase(toTitleCase(ch)) does not always return true.
+    *
+    * @param ch character to convert to titlecase
+    * @return titlecase mapping of ch, or ch if titlecase mapping does
+    *         not exist
+    * @see #toLowerCase(char)
+    * @see #toUpperCase(char)
+    */
+   public static char toTitleCase(char ch)
+   {
+      char[] title = TITLE;
+     // As title is short, it doesn't hurt to exhaustively iterate over it.
+     for (int i = title.length - 2; i >= 0; i -= 2)
+       if (title[i] == ch)
+         return title[i + 1];
+     return toUpperCase(ch);
    }
 
    /** Creates a copy of the given array. */

@@ -30,6 +30,7 @@
 package totalcross.util.regex;
 
 import totalcross.io.*;
+import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -321,7 +322,7 @@ public class Matcher implements MatchResult{
          if(free==0){
             int newsize=count*3;
             char[] newchars=new char[newsize];
-            System.arraycopy(mychars,0,newchars,0,count);
+            Vm.arrayCopy(mychars,0,newchars,0,count);
             mychars=newchars;
             free=newsize-count;
             shared=false;

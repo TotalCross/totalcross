@@ -221,8 +221,8 @@ class CharacterClass extends Term implements UnicodeConstants{
          for (int i = 0, n = st.length; i < n;)
          {
          try{
-            int first=Integer.parseInt(st[i++],16);
-            int last=Integer.parseInt(st[i++],16);
+            int first=(int)Convert.toLong(st[i++],16);
+            int last=(int)Convert.toLong(st[i++],16);
             String name=st[i++];
             initNamedBlock(name,first,last);
          }
@@ -238,8 +238,8 @@ class CharacterClass extends Term implements UnicodeConstants{
    }
    
    private static void initNamedBlock(String name,int first,int last){
-      if(first<Character.MIN_VALUE || first>Character.MAX_VALUE) throw new IllegalArgumentException("wrong start code ("+first+") in block "+name);
-      if(last<Character.MIN_VALUE || last>Character.MAX_VALUE) throw new IllegalArgumentException("wrong end code ("+last+") in block "+name);
+      if(first<Convert.MIN_CHAR_VALUE || first>Convert.MAX_CHAR_VALUE) throw new IllegalArgumentException("wrong start code ("+first+") in block "+name);
+      if(last<Convert.MIN_CHAR_VALUE || last>Convert.MAX_CHAR_VALUE) throw new IllegalArgumentException("wrong end code ("+last+") in block "+name);
       if(last<first) throw new IllegalArgumentException("end code < start code in block "+name);
       Bitset bs=(Bitset)namedClasses.get(name);
       if(bs==null){
@@ -270,9 +270,9 @@ class CharacterClass extends Term implements UnicodeConstants{
    
    static void makeICase(Term term,char c){
       Bitset bs=new Bitset();
-      bs.setChar(Character.toLowerCase(c));
-      bs.setChar(Character.toUpperCase(c));
-      bs.setChar(Character.toTitleCase(c));
+      bs.setChar(Convert.toLowerCase(c));
+      bs.setChar(Convert.toUpperCase(c));
+      bs.setChar(Convert.toTitleCase(c));
       Bitset.unify(bs,term);
    }
    
@@ -390,9 +390,9 @@ class CharacterClass extends Term implements UnicodeConstants{
                if(prev>=0){
                   char c1=(char)prev;
                   if(icase){
-                     bs.setChar(Character.toLowerCase(c1));
-                     bs.setChar(Character.toUpperCase(c1));
-                     bs.setChar(Character.toTitleCase(c1));
+                     bs.setChar(Convert.toLowerCase(c1));
+                     bs.setChar(Convert.toUpperCase(c1));
+                     bs.setChar(Convert.toTitleCase(c1));
                   }
                   else bs.setChar(c1);
                }
@@ -601,9 +601,9 @@ class CharacterClass extends Term implements UnicodeConstants{
          if(!inRange){
             char c1=(char)prev;
             if(icase){
-               bs.setChar(Character.toLowerCase(c1));
-               bs.setChar(Character.toUpperCase(c1));
-               bs.setChar(Character.toTitleCase(c1));
+               bs.setChar(Convert.toLowerCase(c1));
+               bs.setChar(Convert.toUpperCase(c1));
+               bs.setChar(Convert.toTitleCase(c1));
             }
             else bs.setChar(c1);
             prev=c;
@@ -614,9 +614,9 @@ class CharacterClass extends Term implements UnicodeConstants{
             inRange=false;
             prev=-1;
             if(icase){
-               bs.setRange(Character.toLowerCase(c0),Character.toLowerCase(c));
-               bs.setRange(Character.toUpperCase(c0),Character.toUpperCase(c));
-               bs.setRange(Character.toTitleCase(c0),Character.toTitleCase(c));
+               bs.setRange(Convert.toLowerCase(c0),Convert.toLowerCase(c));
+               bs.setRange(Convert.toUpperCase(c0),Convert.toUpperCase(c));
+               bs.setRange(Convert.toTitleCase(c0),Convert.toTitleCase(c));
             }
             else bs.setRange(c0,c);
          }
@@ -757,7 +757,7 @@ System.out.println();
       else{
          b.append('\\');
          b.append('x');
-         b.append(Integer.toHexString(c));
+         b.append(Convert.unsigned2hex(c,4));
       }
       return b.toString();
    }
@@ -788,8 +788,8 @@ System.out.println();
       }
 */      /*
       int[][] data=new int[CATEGORY_COUNT][BLOCK_SIZE+2];
-      for(int i=Character.MIN_VALUE;i<=Character.MAX_VALUE;i++){
-         int cat=Character.getType((char)i);
+      for(int i=Convert.MIN_CHAR_VALUE;i<=Convert.MAX_CHAR_VALUE;i++){
+         int cat=CharacterType.getType((char)i);
          data[cat][BLOCK_SIZE]++;
          int b=(i>>8)&0xff;
          if(data[cat][b]==0){

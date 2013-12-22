@@ -29,6 +29,8 @@
 
 package totalcross.util.regex;
 
+import totalcross.sys.*;
+
 interface UnicodeConstants{
    int CATEGORY_COUNT=32;
    int Cc=Character.CONTROL;
@@ -65,6 +67,6 @@ interface UnicodeConstants{
    int BLOCK_COUNT=256;
    int BLOCK_SIZE=256;
    
-   int MAX_WEIGHT=Character.MAX_VALUE+1;
+   int MAX_WEIGHT=Convert.MAX_CHAR_VALUE+1;
    int[] CATEGORY_WEIGHTS=new int[CATEGORY_COUNT];
 }

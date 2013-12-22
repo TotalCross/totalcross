@@ -29,21 +29,23 @@
 
 package totalcross.util.regex;
 
+import totalcross.sys.*;
+
 class Bitset implements UnicodeConstants{
+   
    private static final Block[][] categoryBits=new Block[CATEGORY_COUNT][BLOCK_COUNT];
    static{
-      for(int i=Character.MIN_VALUE;i<=Character.MAX_VALUE;i++){
+      for(int i=0;i<=65535;i++){
          int cat=Character.getType((char)i);
          int blockNo=(i>>8)&0xff;
          Block b=categoryBits[cat][blockNo];
          if(b==null) categoryBits[cat][blockNo]=b=new Block();
-//if(i>32 && i<127)System.out.println((char)i+" -> ["+cat+"]["+blockNo+"].("+i+")");
          b.set(i&0xff);
       }
    }
    
    private boolean positive=true;
-   private boolean isLarge=false;
+   private boolean isLarge;
    
    boolean[] block0;  //1-byte bit set
    private static final boolean[] emptyBlock0=new boolean[BLOCK_SIZE];
@@ -144,7 +146,6 @@ class Bitset implements UnicodeConstants{
       if(!isLarge) enableLargeMode();
       Block[] catBits=categoryBits[c];
       weight+=Block.add(this.blocks,catBits,0,BLOCK_COUNT-1,false);
-//System.out.println("["+this+"].setCategory("+c+"): weight="+weight);
    }
    
    final void setChars(String chars){
@@ -156,9 +157,6 @@ class Bitset implements UnicodeConstants{
    }
    
    final void setRange(char c1,char c2){
-//System.out.println("["+this+"].setRange("+c1+","+c2+"):");
-//if(c1>31 && c1<=126 && c2>31 && c2<=126) System.out.println("setRange('"+c1+"','"+c2+"'):");
-//else System.out.println("setRange(["+Integer.toHexString(c1)+"],["+Integer.toHexString(c2)+"]):");
       if(c2>=256 || isLarge){
          int s=0;
          if(!isLarge){
@@ -215,7 +213,6 @@ class Bitset implements UnicodeConstants{
    }
    
    final void subtract(Bitset bs,boolean inverse){
-//System.out.println("["+this+"].subtract(["+bs+"],"+inverse+"):");
       weight+=subtractImpl(this,bs,!bs.positive^inverse);
    }
    
@@ -342,7 +339,6 @@ class Block implements UnicodeConstants{
    }
    
    final boolean set(int c){
-//System.out.println("Block.add("+CharacterClass.stringValue2(toBitset2(targets))+","+CharacterClass.stringValue2(toBitset2(addends))+","+from*BLOCK_SIZE+","+to*BLOCK_SIZE+","+inv+"):");
       if(isFull) return false;
       boolean[] bits=this.bits;
       if(bits==null){
@@ -370,14 +366,9 @@ class Block implements UnicodeConstants{
    }
    
    final static int add(Block[] targets,Block[] addends,int from,int to,boolean inv){
-//System.out.println("Block.add("+CharacterClass.stringValue2(toBitset2(targets))+","+CharacterClass.stringValue2(toBitset2(addends))+","+from*BLOCK_SIZE+","+to*BLOCK_SIZE+","+inv+"):");
-//System.out.println("Block.add():");
       int s=0;
       for(int i=from;i<=to;i++){
          Block addend=addends[i];
-//System.out.println("   "+i+": ");
-//System.out.println("     target="+(target==null? "null": i==0? CharacterClass.stringValue0(target.bits): "{"+count(target.bits,0,BLOCK_SIZE-1)+"}"));
-//System.out.println("     addend="+(addend==null? "null": i==0? CharacterClass.stringValue0(addend.bits): "{"+count(addend.bits,0,BLOCK_SIZE-1)+"}"));
          if(addend==null){ 
             if(!inv) continue;
          }
@@ -388,15 +379,11 @@ class Block implements UnicodeConstants{
          else if(target.isFull) continue;
          
          s+=add(target,addend,inv);
-//System.out.println("     result="+(target==null? "null": i==0? CharacterClass.stringValue0(target.bits): "{"+count(target.bits,0,BLOCK_SIZE-1)+"}"));
-//System.out.println("     s="+s);
       }
-//System.out.println("   s="+s);
       return s;
    }
    
    private final static int add(Block target,Block addend,boolean inv){
-//System.out.println("Block.add(Block,Block):");
       //there is provided that !target.isFull
       boolean[] targetbits,addbits;
       if(addend==null){
@@ -453,17 +440,13 @@ class Block implements UnicodeConstants{
    }
    
    final static int subtract(Block[] targets,Block[] subtrahends,int from,int to,boolean inv){
-//System.out.println("Block.subtract(Block[],Block[],"+inv+"):");
       int s=0;
       for(int i=from;i<=to;i++){
-//System.out.println("   "+i+": ");
          
          Block target=targets[i];
          if(target==null || (!target.isFull && target.bits==null)) continue;
-//System.out.println("     target="+(target==null? "null": i==0? CharacterClass.stringValue0(target.bits): "{"+ (target.isFull? BLOCK_SIZE: count(target.bits,0,BLOCK_SIZE-1))+"}"));
          
          Block subtrahend=subtrahends[i];
-//System.out.println("     subtrahend="+(subtrahend==null? "null": i==0? CharacterClass.stringValue0(subtrahend.bits): "{"+(subtrahend.isFull? BLOCK_SIZE: count(subtrahend.bits,0,BLOCK_SIZE-1))+"}"));
          
          if(subtrahend==null){
             if(!inv) continue;
@@ -482,16 +465,12 @@ class Block implements UnicodeConstants{
          else{
             s+=subtract(target,subtrahend,inv);
          }
-//System.out.println("     result="+(target==null? "null": i==0? CharacterClass.stringValue0(target.bits): "{"+ (target.isFull? BLOCK_SIZE: target.bits==null? 0: count(target.bits,0,BLOCK_SIZE-1))+"}"));
-//System.out.println("     s="+s);
       }
-//System.out.println("   s="+s);
       return s;
    }
    
    private final static int subtract(Block target,Block subtrahend,boolean inv){
       boolean[] targetbits,subbits;
-//System.out.println("subtract(Block,Block,"+inv+")");
       //there is provided that target.isFull or target.bits!=null
       if(subtrahend.isFull){
          if(inv) return 0;
@@ -540,7 +519,7 @@ class Block implements UnicodeConstants{
    
    private static boolean[] copyBits(Block block){
       boolean[] bits=new boolean[BLOCK_SIZE];
-      System.arraycopy(block.bits,0,bits,0,BLOCK_SIZE);
+      Vm.arrayCopy(block.bits,0,bits,0,BLOCK_SIZE);
       block.bits=bits;
       block.shared=false;
       return bits;
@@ -548,13 +527,13 @@ class Block implements UnicodeConstants{
    
    private static boolean[] fullBits(boolean[] bits){
       if(bits==null) bits=new boolean[BLOCK_SIZE];
-      System.arraycopy(FULL_BITS,0,bits,0,BLOCK_SIZE);
+      Vm.arrayCopy(FULL_BITS,0,bits,0,BLOCK_SIZE);
       return bits;
    }
    
    private static boolean[] emptyBits(boolean[] bits){
       if(bits==null) bits=new boolean[BLOCK_SIZE];
-      else System.arraycopy(EMPTY_BITS,0,bits,0,BLOCK_SIZE);
+      else Vm.arrayCopy(EMPTY_BITS,0,bits,0,BLOCK_SIZE);
       return bits;
    }
    

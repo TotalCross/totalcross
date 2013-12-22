@@ -113,104 +113,104 @@ public abstract class Function
      * Returns the number of arguments passed to the function.
      * Can only be called from <tt>xFunc()</tt>.
      */
-    protected synchronized final int args()
+    protected final int args()
         throws SQLException { checkContext(); return args; }
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      * @param value
      */
-    protected synchronized final void result(byte[] value)
+    protected final void result(byte[] value)
         throws SQLException { checkContext(); db.result_blob(context, value); }
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      * @param value
      */
-    protected synchronized final void result(double value)
+    protected final void result(double value)
         throws SQLException { checkContext(); db.result_double(context,value);}
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      * @param value
      */
-    protected synchronized final void result(int value)
+    protected final void result(int value)
         throws SQLException { checkContext(); db.result_int(context, value); }
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      * @param value
      */
-    protected synchronized final void result(long value)
+    protected final void result(long value)
         throws SQLException { checkContext(); db.result_long(context, value); }
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      */
-    protected synchronized final void result()
+    protected final void result()
         throws SQLException { checkContext(); db.result_null(context); }
 
     /**
      * Called by <tt>xFunc</tt> to return a value.
      * @param value
      */
-    protected synchronized final void result(String value)
+    protected final void result(String value)
         throws SQLException { checkContext(); db.result_text(context, value); }
 
     /**
      * Called by <tt>xFunc</tt> to throw an error.
      * @param err
      */
-    protected synchronized final void error(String err)
+    protected final void error(String err)
         throws SQLException { checkContext(); db.result_error(context, err); }
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final int value_bytes(int arg)
+    protected final int value_bytes(int arg)
         throws SQLException {checkValue(arg); return db.value_bytes(this,arg);}
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final String value_text(int arg)
+    protected final String value_text(int arg)
         throws SQLException {checkValue(arg); return db.value_text(this,arg);}
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final byte[] value_blob(int arg)
+    protected final byte[] value_blob(int arg)
         throws SQLException {checkValue(arg); return db.value_blob(this,arg); }
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final double value_double(int arg)
+    protected final double value_double(int arg)
         throws SQLException {checkValue(arg); return db.value_double(this,arg);}
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final int value_int(int arg)
+    protected final int value_int(int arg)
         throws SQLException {checkValue(arg); return db.value_int(this, arg); }
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final long value_long(int arg)
+    protected final long value_long(int arg)
         throws SQLException { checkValue(arg); return db.value_long(this,arg); }
 
     /**
      * Called by <tt>xFunc</tt> to access the value of an argument.
      * @param arg
      */
-    protected synchronized final int value_type(int arg)
+    protected final int value_type(int arg)
         throws SQLException {checkValue(arg); return db.value_type(this,arg); }
 
 

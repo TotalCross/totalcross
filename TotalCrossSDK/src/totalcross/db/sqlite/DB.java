@@ -43,6 +43,11 @@ abstract class DB implements Codes
     private Hashtable stmts = new Hashtable(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
     private totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
+    public static interface ProgressObserver
+    {
+        public void progress(int remaining, int pageCount);
+    }
+
     // WRAPPER FUNCTIONS ////////////////////////////////////////////
 
     /**
@@ -644,11 +649,6 @@ abstract class DB implements Codes
      *
      */
     abstract int restore(String dbName, String sourceFileName, ProgressObserver observer) throws SQLException;
-
-    public static interface ProgressObserver
-    {
-        public void progress(int remaining, int pageCount);
-    }
 
     /**
      * Returns an array describing the attributes (not null, primary key and auto increment) of columns.

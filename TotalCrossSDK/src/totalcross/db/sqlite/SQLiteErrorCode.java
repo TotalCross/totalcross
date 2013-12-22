@@ -83,7 +83,7 @@ public class SQLiteErrorCode extends Enum
      */
     public static SQLiteErrorCode getErrorCode(int errorCode)
     {
-       return (SQLiteErrorCode)get(errorCode, UNKNOWN_ERROR);
+       return (SQLiteErrorCode)get(SQLiteErrorCode.class, errorCode, UNKNOWN_ERROR);
     }
 
     /**

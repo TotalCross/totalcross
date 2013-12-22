@@ -29,6 +29,8 @@
 
 package totalcross.util.regex;
 
+import totalcross.sys.*;
+
 /**
  * An implementation of the Substitution interface. Performs substitutions in accordance with Perl-like substitution scripts.<br>
  * The latter is a string, containing a mix of memory register references and plain text blocks.<br>
@@ -104,7 +106,15 @@ public class PerlSubstitution implements Substitution{
                element=new IntRefHandler(refMatcher.prefix(),new Integer(0));
             }
             else if(Character.isDigit(c)){
-               element=new IntRefHandler(refMatcher.prefix(),new Integer(refMatcher.group(NAME_ID)));
+               int v = 0;
+               try
+               {
+                  v = Convert.toInt(refMatcher.group(NAME_ID));
+               }
+               catch (InvalidNumberException e)
+               {
+               }
+               element=new IntRefHandler(refMatcher.prefix(),new Integer(v));
             }
             else 
                element=new StringRefHandler(refMatcher.prefix(),refMatcher.group(NAME_ID));
@@ -194,9 +204,9 @@ abstract class GReference{
       if(match.length(grp)==0) throw new IllegalArgumentException("arg name cannot be an empty string");
       if(Character.isDigit(match.charAt(0,grp))){
          try{
-            return new IntReference(Integer.parseInt(match.group(grp)));
+            return new IntReference(totalcross.sys.Convert.toInt(match.group(grp)));
          }
-         catch(NumberFormatException e){
+         catch(Exception e){
             throw new IllegalArgumentException("illegal arg name, starts with digit but is not a number");
          }
       }
