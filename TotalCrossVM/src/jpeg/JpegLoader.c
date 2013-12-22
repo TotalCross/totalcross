@@ -308,15 +308,14 @@ bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj,
    struct jpeg_compress_struct cinfo;
    volatile Heap heap;
    Object bufObj;
-   uint8* bufP;
    uint8* bufAux;
-   int32 i, p,scanLineOut;
+   int32 i, scanLineOut;
    volatile bool ret = false;                  
    
    Object pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int32 width = (Image_frameCount(srcImageObj) > 1) ? Image_widthOfAllFrames(srcImageObj) : Image_width(srcImageObj);
-   int32 height = Image_height(srcImageObj), n;
+   int32 height = Image_height(srcImageObj);
    scanLineOut = width * 3;
 
    // initialize structs

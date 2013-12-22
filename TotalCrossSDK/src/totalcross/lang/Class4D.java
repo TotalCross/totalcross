@@ -19,6 +19,8 @@
 
 package totalcross.lang;
 
+import java.lang.reflect.*;
+
 /** 
  * This class contains utility methods that are used to load classes by name 
  * and get information about their fields and methods. 
@@ -38,8 +40,9 @@ package totalcross.lang;
 public final class Class4D
 {
    // place holders for the VM
-   Object targetClass; // TClass
+   Object nativeStruct; // TClass
    String targetName;  // java.lang.String
+   String ncached,cached;
 
    /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are
     * String constants. If you build the className dynamically, then you must include the file passing it to the tc.Deploy
@@ -60,12 +63,53 @@ public final class Class4D
    /** Returns the fully qualified name of this class. */
    public String getName()
    {
-      return targetName;
+      if (ncached != null) return ncached;
+      if (isPrimitive())
+      {
+         if (targetName.endsWith(".Integer")) return "int";
+         if (targetName.endsWith(".Character")) return "char";
+         if (targetName.endsWith(".Byte")) return "byte";
+         if (targetName.endsWith(".Short")) return "short";
+         if (targetName.endsWith(".Long")) return "long";
+         if (targetName.endsWith(".Float")) return "float";
+         if (targetName.endsWith(".Double")) return "double";
+         if (targetName.endsWith(".Boolean")) return "boolean";
+      }
+      return ncached = targetName;
    }
    
    /** Returns the fully qualified name of this class. */
    public String toString()
    {
-   	return targetName;
+      if (cached != null) return cached;
+   	return cached = isPrimitive() ? getName() : "class "+getName();
    }
+   
+   public boolean equals(Object o)
+   {
+      return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
+   }
+   
+   public native boolean isAssignableFrom(Class cls);
+   public native boolean isInterface();
+   public native boolean isArray();
+   public native boolean isPrimitive();
+   public native Class getSuperclass();
+   public native Class[] getInterfaces();
+   public native Class getComponentType();
+   public native int getModifiers();
+   public native Object[] getSigners();
+   public native Field[] getFields() throws SecurityException;
+   public native Method[] getMethods() throws SecurityException;
+   public native Constructor[] getConstructors() throws SecurityException;
+   public native Field getField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor getConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Field[] getDeclaredFields() throws SecurityException;
+   public native Method[] getDeclaredMethods() throws SecurityException;
+   public native Constructor[] getDeclaredConstructors() throws SecurityException;
+   public native Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getDeclaredMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor getDeclaredConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   
 }

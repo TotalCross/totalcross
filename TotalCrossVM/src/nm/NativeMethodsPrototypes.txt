@@ -1,4 +1,68 @@
 
+TC_API void jlC_forName_s(NMParams p);
+TC_API void jlC_newInstance(NMParams p);
+TC_API void jlC_isInstance_o(NMParams p);
+TC_API void jlC_isAssignableFrom_c(NMParams p);
+TC_API void jlC_isInterface(NMParams p);
+TC_API void jlC_isArray(NMParams p);
+TC_API void jlC_isPrimitive(NMParams p);
+TC_API void jlC_getSuperclass(NMParams p);
+TC_API void jlC_getInterfaces(NMParams p);
+TC_API void jlC_getComponentType(NMParams p);
+TC_API void jlC_getModifiers(NMParams p);
+TC_API void jlC_getFields(NMParams p);
+TC_API void jlC_getMethods(NMParams p);
+TC_API void jlC_getConstructors(NMParams p);
+TC_API void jlC_getField_s(NMParams p);
+TC_API void jlC_getMethod_sC(NMParams p);
+TC_API void jlC_getConstructor_C(NMParams p);
+TC_API void jlC_getDeclaredFields(NMParams p);
+TC_API void jlC_getDeclaredMethods(NMParams p);
+TC_API void jlC_getDeclaredConstructors(NMParams p);
+TC_API void jlC_getDeclaredField_s(NMParams p);
+TC_API void jlC_getDeclaredMethod_sC(NMParams p);
+TC_API void jlC_getDeclaredConstructor_C(NMParams p);
+TC_API void jlrA_newInstance_ci(NMParams p);
+TC_API void jlrA_newInstance_cI(NMParams p);
+TC_API void jlrA_getLength_o(NMParams p);
+TC_API void jlrA_get_oi(NMParams p);
+TC_API void jlrA_getBoolean_oi(NMParams p);
+TC_API void jlrA_getByte_oi(NMParams p);
+TC_API void jlrA_getChar_oi(NMParams p);
+TC_API void jlrA_getShort_oi(NMParams p);
+TC_API void jlrA_getInt_oi(NMParams p);
+TC_API void jlrA_getLong_oi(NMParams p);
+TC_API void jlrA_getFloat_oi(NMParams p);
+TC_API void jlrA_getDouble_oi(NMParams p);
+TC_API void jlrA_set_oio(NMParams p);
+TC_API void jlrA_setBoolean_oib(NMParams p);
+TC_API void jlrA_setByte_oib(NMParams p);
+TC_API void jlrA_setChar_oic(NMParams p);
+TC_API void jlrA_setShort_ois(NMParams p);
+TC_API void jlrA_setInt_oii(NMParams p);
+TC_API void jlrA_setLong_oil(NMParams p);
+TC_API void jlrA_setFloat_oid(NMParams p);
+TC_API void jlrA_setDouble_oid(NMParams p);
+TC_API void jlrM_invoke_oO(NMParams p);
+TC_API void jlrC_newInstance_O(NMParams p);
+TC_API void jlrF_get_o(NMParams p);
+TC_API void jlrF_getBoolean_o(NMParams p);
+TC_API void jlrF_getByte_o(NMParams p);
+TC_API void jlrF_getChar_o(NMParams p);
+TC_API void jlrF_getShort_o(NMParams p);
+TC_API void jlrF_getInt_o(NMParams p);
+TC_API void jlrF_getLong_o(NMParams p);
+TC_API void jlrF_getFloat_o(NMParams p);
+TC_API void jlrF_getDouble_o(NMParams p);
+TC_API void jlrF_set_oo(NMParams p);
+TC_API void jlrF_setBoolean_ob(NMParams p);
+TC_API void jlrF_setByte_ob(NMParams p);
+TC_API void jlrF_setChar_oc(NMParams p);
+TC_API void jlrF_setShort_os(NMParams p);
+TC_API void jlrF_setInt_oi(NMParams p);
+TC_API void jlrF_setLong_ol(NMParams p);
+TC_API void jlrF_setFloat_od(NMParams p);
+TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
@@ -248,9 +312,6 @@ TC_API void tpD_number_s(NMParams p);
 TC_API void tpD_hangup(NMParams p);
 TC_API void tpSMS_send_ss(NMParams p);
 TC_API void tpSMS_receive(NMParams p);
-TC_API void jlC_forName_s(NMParams p);
-TC_API void jlC_newInstance(NMParams p);
-TC_API void jlC_isInstance_o(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);
@@ -479,6 +540,262 @@ TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
 TC_API void tdsNDB_load(NMParams p);
 
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isArray();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Class getComponentType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_ci(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_cI(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLength_o(NMParams p) // java/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_get_oi(NMParams p) // java/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getBoolean_oi(NMParams p) // java/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getByte_oi(NMParams p) // java/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getChar_oi(NMParams p) // java/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getShort_oi(NMParams p) // java/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getInt_oi(NMParams p) // java/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLong_oi(NMParams p) // java/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getFloat_oi(NMParams p) // java/lang/reflect/Array public static native double getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getDouble_oi(NMParams p) // java/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_set_oio(NMParams p) // java/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setBoolean_oib(NMParams p) // java/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setByte_oib(NMParams p) // java/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setChar_oic(NMParams p) // java/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setShort_ois(NMParams p) // java/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setInt_oii(NMParams p) // java/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setLong_oil(NMParams p) // java/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setFloat_oid(NMParams p) // java/lang/reflect/Array public static native void setFloat(Object array, int index, double f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setDouble_oid(NMParams p) // java/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrM_invoke_oO(NMParams p) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrC_newInstance_O(NMParams p) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_get_o(NMParams p) // java/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getBoolean_o(NMParams p) // java/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getByte_o(NMParams p) // java/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getChar_o(NMParams p) // java/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getShort_o(NMParams p) // java/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getInt_o(NMParams p) // java/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getLong_o(NMParams p) // java/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getFloat_o(NMParams p) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getDouble_o(NMParams p) // java/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_set_oo(NMParams p) // java/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setBoolean_ob(NMParams p) // java/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setByte_ob(NMParams p) // java/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setChar_oc(NMParams p) // java/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setShort_os(NMParams p) // java/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setInt_oi(NMParams p) // java/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setLong_ol(NMParams p) // java/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setFloat_od(NMParams p) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setDouble_od(NMParams p) // java/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+}
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
@@ -1476,18 +1793,6 @@ TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public stat
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private String toStringNative();
 {
 }
@@ -2396,6 +2701,326 @@ TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native stat
 {
 }
 
+TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isAssignableFrom_c) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInterface) // java/lang/Class public native boolean isInterface();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isArray) // java/lang/Class public native boolean isArray();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isPrimitive) // java/lang/Class public native boolean isPrimitive();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getSuperclass) // java/lang/Class public native Class getSuperclass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getInterfaces) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getComponentType) // java/lang/Class public native Class getComponentType();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getModifiers) // java/lang/Class public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getFields) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethods) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getField_s) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethod_sC) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredFields) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethods) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredField_s) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethod_sC) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_newInstance_ci) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_newInstance_cI) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getLength_o) // java/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_get_oi) // java/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getBoolean_oi) // java/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getByte_oi) // java/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getChar_oi) // java/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getShort_oi) // java/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getInt_oi) // java/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getLong_oi) // java/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getFloat_oi) // java/lang/reflect/Array public static native double getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getDouble_oi) // java/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_set_oio) // java/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setBoolean_oib) // java/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setByte_oib) // java/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setChar_oic) // java/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setShort_ois) // java/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setInt_oii) // java/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setLong_oil) // java/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setFloat_oid) // java/lang/reflect/Array public static native void setFloat(Object array, int index, double f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setDouble_oid) // java/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrM_invoke_oO) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrC_newInstance_O) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_get_o) // java/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getBoolean_o) // java/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getByte_o) // java/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getChar_o) // java/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getShort_o) // java/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getInt_o) // java/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getLong_o) // java/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getFloat_o) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getDouble_o) // java/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_set_oo) // java/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setBoolean_ob) // java/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setByte_ob) // java/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setChar_oc) // java/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setShort_os) // java/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setInt_oi) // java/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setLong_ol) // java/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setFloat_od) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setDouble_od) // java/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tmGM_showAddress_sb) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
    TEST_SKIP;
@@ -3637,21 +4262,6 @@ TESTCASE(tpSMS_send_ss) // totalcross/phone/SMS native public static void send(S
    finish: ;
 }
 TESTCASE(tpSMS_receive) // totalcross/phone/SMS native public static String[] receive() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
 {
    TEST_SKIP;
    finish: ;

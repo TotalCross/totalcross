@@ -222,6 +222,7 @@ public class Control extends GfxSurface
     */
    protected boolean focusLess;
 
+   protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    boolean eventsEnabled = true;
 
    static Rect cli = new Rect();
@@ -1043,7 +1044,6 @@ public class Control extends GfxSurface
       event.consumed = false; // set to false again bc some controls reuse event objects
    }
 
-   protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    /** Sets if this control can or not accept events.
      * It changes the appearance of many controls to indicate they are disabled.
      */

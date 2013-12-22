@@ -877,7 +877,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\sqlite;..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;_MSC_VER=1200;ENABLE_RAS"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -983,7 +983,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\sqlite"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;ENABLE_TEST_SUITE;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -2011,6 +2011,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\nm\lang\Reflection.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\nm\lang\String.c"
 					>
 				</File>
@@ -2598,14 +2602,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\nm\crypto\SHA256Digest.c"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="db"
-				>
-				<File
-					RelativePath="G:\TotalCross\TotalCrossVM\src\nm\db\NativeDB.c"
 					>
 				</File>
 			</Filter>
@@ -3613,22 +3609,6 @@
 					>
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="sqlite"
-			>
-			<File
-				RelativePath="..\..\src\sqlite\sqlite3.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\sqlite\sqlite3.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\sqlite\sqlite3ext.h"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

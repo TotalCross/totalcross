@@ -500,8 +500,11 @@ static FieldArray readFields(ConstantPool cp, int32 len, TCZFile tcz, FieldArray
    f0 = f = newArrayOf(Field, len+lens, tcz->tempHeap);
 
    // first, get the inherited fields, to keep the same order
-   while (lens-- > 0)
-      *f++ = *super++;
+   for (; lens-- > 0; f++,super++)
+   {
+      *f = *super;
+      f->flags.isInherited = true;
+   }
    // then, get our fields
    for (; len-- > 0; f++)
    {
@@ -753,7 +756,7 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    return ret == CLASS_OUT_OF_MEMORY ? null : ret;
 }
 
-static Type type2javaType(CharP type)
+Type type2javaType(CharP type)
 {
    if (*type == '[')
       type++;
@@ -770,6 +773,7 @@ static Type type2javaType(CharP type)
       case 'b': return Type_Boolean;
       case 'L': return Type_Long;
       case 'D': return Type_Double;
+      case 'F': return Type_Double;
       default : return Type_Object;
    }
 }
