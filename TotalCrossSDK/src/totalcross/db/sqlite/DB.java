@@ -41,7 +41,7 @@ abstract class DB implements Codes
 
     /** Tracer for statements to avoid unfinalized statements on db close. */
     private Hashtable stmts = new Hashtable(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
-    private totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
+    public totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
     public static interface ProgressObserver
     {

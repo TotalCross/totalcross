@@ -33,6 +33,7 @@ public class Enum
    {
       Hashtable htv2n = new Hashtable(10); // value to name
       Hashtable htn2c = new Hashtable(10); // name to Enum
+      Hashtable htv2c = new Hashtable(10); // name to Enum
       int counter;
       Vector values;
    }
@@ -64,6 +65,7 @@ public class Enum
       this.name = name;
       eg.htv2n.put(value,name);
       eg.htn2c.put(name, this);
+      eg.htv2c.put(value, this);
    }
    
    protected static Enum get(Class c, String name)
@@ -73,7 +75,7 @@ public class Enum
    
    protected static Enum get(Class c, int value, Enum def)
    {
-      Enum ret = (Enum)getGroup(c).htv2n.get(value);
+      Enum ret = (Enum)getGroup(c).htv2c.get(value);
       if (ret == null)
          ret = def;
       return def;

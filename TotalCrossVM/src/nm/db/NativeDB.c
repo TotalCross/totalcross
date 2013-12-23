@@ -104,26 +104,29 @@ TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native stat
 
 TC_API void tdsNDB_shared_cache_b(NMParams p) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
 {
+   Object this_ = p->obj[0];
    bool enable = p->i32[0];
    p->retI = sqlite3_enable_shared_cache(enable);
 }
 TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/NativeDB native int enable_load_extension(boolean enable);
 {
+   Object this_ = p->obj[0];
    bool enable = p->i32[0];
-	p->retI = sqlite3_enable_load_extension(gethandle(p->currentContext, p->obj[0]), enable);
+	p->retI = sqlite3_enable_load_extension(gethandle(p->currentContext, this_), enable);
 }
 
 TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
 {
     int32 ret;
     int32 flags = p->i32[0];
+    Object this_ = p->obj[0];
     Object file = p->obj[1];
-    sqlite3 *db = gethandle(p->currentContext, p->obj[0]);
+    sqlite3 *db = gethandle(p->currentContext, this_);
     CharP str;
 
     if (db)
     {
-        throwexmsg(p->currentContext, p->obj[0], "DB already open");
+        throwexmsg(p->currentContext, this_, "DB already open");
         sqlite3_close(db);
         return;
     }
@@ -132,37 +135,41 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
     ret = sqlite3_open_v2(str, &db, flags, NULL);
     if (ret) 
     {
-        throw_errorcode(p->currentContext, p->obj[0], ret);
+        throw_errorcode(p->currentContext, this_, ret);
         sqlite3_close(db);
         return;
     }
     xfree(str);
 
-    sethandle(p->currentContext, p->obj[0], db);
+    sethandle(p->currentContext, this_, db);
 }
 
 TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
 {
-    if (sqlite3_close(gethandle(p->currentContext, p->obj[0])) != SQLITE_OK)
-        throwex(p->currentContext, p->obj[0]);
-    sethandle(p->currentContext, p->obj[0], 0);
+   Object this_ = p->obj[0];
+    if (sqlite3_close(gethandle(p->currentContext, this_)) != SQLITE_OK)
+        throwex(p->currentContext, this_);
+    sethandle(p->currentContext, this_, 0);
 }
 
 TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native void interrupt();
 {
-    sqlite3_interrupt(gethandle(p->currentContext, p->obj[0]));
+   Object this_ = p->obj[0];
+    sqlite3_interrupt(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
 {                                                                
+   Object this_ = p->obj[0];
    int32 ms = p->i32[0];
-    sqlite3_busy_timeout(gethandle(p->currentContext, p->obj[0]), ms);
+    sqlite3_busy_timeout(gethandle(p->currentContext, this_), ms);
 }
 
 TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native long prepare(String sql) throws SQLException;
 {
+   Object this_ = p->obj[0];
    Object sql = p->obj[1];
-    sqlite3* db = gethandle(p->currentContext, p->obj[0]);
+    sqlite3* db = gethandle(p->currentContext, this_);
     sqlite3_stmt* stmt;
 
     char *strsql = String2CharP(sql);
@@ -171,7 +178,7 @@ TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protec
 
     if (status != SQLITE_OK) 
     {
-        throw_errorcode(p->currentContext, p->obj[0], status);
+        throw_errorcode(p->currentContext, this_, status);
         p->retL = fromref(0);
     }
     p->retL = fromref(stmt);
@@ -179,15 +186,16 @@ TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protec
 
 TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
 {
+   Object this_ = p->obj[0];
    Object sql = p->obj[1];
-    sqlite3* db = gethandle(p->currentContext, p->obj[0]);
+    sqlite3* db = gethandle(p->currentContext, this_);
     char *strsql;
     char* errorMsg;
     int status;
 
 	if(!db)
 	{
-		throw_errorcode(p->currentContext, p->obj[0], 21);
+		throw_errorcode(p->currentContext, this_, 21);
 		p->retI = 21;
 		return;
 	}
@@ -198,7 +206,7 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
 
     if (status != SQLITE_OK) 
     {
-        throwexmsg(p->currentContext, p->obj[0], errorMsg);
+        throwexmsg(p->currentContext, this_, errorMsg);
         sqlite3_free(errorMsg);
     }
     p->retI = status;
@@ -206,7 +214,8 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
 
 TC_API void tdsNDB_errmsg(NMParams p) // totalcross/db/sqlite/NativeDB native String errmsg();
 {
-    setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_errmsg(gethandle(p->currentContext, p->obj[0])),-1), UNLOCKED);
+   Object this_ = p->obj[0];
+    setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_errmsg(gethandle(p->currentContext, this_)),-1), UNLOCKED);
 }
 
 TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB native String libversion();
@@ -216,12 +225,14 @@ TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB nativ
 
 TC_API void tdsNDB_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int changes();
 {
-    p->retI = sqlite3_changes(gethandle(p->currentContext, p->obj[0]));
+   Object this_ = p->obj[0];
+    p->retI = sqlite3_changes(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_total_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int total_changes();
 {
-    p->retI = sqlite3_total_changes(gethandle(p->currentContext, p->obj[0]));
+   Object this_ = p->obj[0];
+    p->retI = sqlite3_total_changes(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_finalize_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int finalize(long stmt);
@@ -296,7 +307,7 @@ TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    char* str = (char*)sqlite3_column_text(toref(stmt), col);
-   setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, str,-1), UNLOCKED);
+   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
@@ -448,6 +459,7 @@ TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
 {
+   Object this_ = p->obj[0];
    int64 stmt = p->i64[0];
     char *zTableName, *zColumnName;
     int32 pNotNull, pPrimaryKey, pAutoinc, i, colCount;
@@ -458,7 +470,7 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
     sqlite3_stmt *dbstmt;
     int8* ab;
 
-    db = gethandle(p->currentContext, p->obj[0]);
+    db = gethandle(p->currentContext, this_);
     dbstmt = toref(stmt);
 
     colCount = sqlite3_column_count(dbstmt);
@@ -528,6 +540,7 @@ void reportProgress(Context currentContext, Object func, int remaining, int page
 
 TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
+   Object this_ = p->obj[0];
    Object dbName = p->obj[1];
    Object destFileName = p->obj[2];
    Object observer = p->obj[3];
@@ -538,7 +551,7 @@ TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nativ
   char *dFileName;
   char *dDBName;
 
-  pDb = gethandle(p->currentContext, p->obj[0]);
+  pDb = gethandle(p->currentContext, this_);
 
   dFileName = String2CharP(destFileName);
   dDBName = String2CharP(dbName);
@@ -568,6 +581,7 @@ TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nativ
 
 TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
+   Object this_ = p->obj[0];
    Object dbName = p->obj[1];
    Object sourceFileName = p->obj[2];
    Object observer = p->obj[3];
@@ -579,7 +593,7 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
   char *dDBName;
   int32 nTimeout = 0;
 
-  pDb = gethandle(p->currentContext, p->obj[0]);
+  pDb = gethandle(p->currentContext, this_);
 
   dFileName = String2CharP(sourceFileName);
   dDBName = String2CharP(dbName);

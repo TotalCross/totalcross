@@ -304,7 +304,7 @@ class Stmt extends Unused implements Statement, Codes
 
         int[] changes = new int[batchPos];
 
-        synchronized (db) {
+        synchronized (db.stmtsLock) {
             try {
                 for (int i = 0; i < changes.length; i++) {
                     try {
