@@ -525,16 +525,6 @@ TC_API void tdsNDB_result_double_ld(NMParams p);
 TC_API void tdsNDB_result_long_ll(NMParams p);
 TC_API void tdsNDB_result_int_li(NMParams p);
 TC_API void tdsNDB_result_error_ls(NMParams p);
-TC_API void tdsNDB_value_bytes_fi(NMParams p);
-TC_API void tdsNDB_value_text_fi(NMParams p);
-TC_API void tdsNDB_value_blob_fi(NMParams p);
-TC_API void tdsNDB_value_double_fi(NMParams p);
-TC_API void tdsNDB_value_long_fi(NMParams p);
-TC_API void tdsNDB_value_int_fi(NMParams p);
-TC_API void tdsNDB_value_type_fi(NMParams p);
-TC_API void tdsNDB_create_function_sf(NMParams p);
-TC_API void tdsNDB_destroy_function_s(NMParams p);
-TC_API void tdsNDB_free_functions(NMParams p);
 TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
@@ -2642,46 +2632,6 @@ TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB na
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tdsNDB_result_error_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_bytes_fi(NMParams p) // totalcross/db/sqlite/NativeDB native int value_bytes(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_text_fi(NMParams p) // totalcross/db/sqlite/NativeDB native String value_text(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_blob_fi(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] value_blob(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_double_fi(NMParams p) // totalcross/db/sqlite/NativeDB native double value_double(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_long_fi(NMParams p) // totalcross/db/sqlite/NativeDB native long value_long(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_int_fi(NMParams p) // totalcross/db/sqlite/NativeDB native int value_int(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_value_type_fi(NMParams p) // totalcross/db/sqlite/NativeDB native int value_type(totalcross.db.sqlite.Function f, int arg);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_create_function_sf(NMParams p) // totalcross/db/sqlite/NativeDB native int create_function(String name, totalcross.db.sqlite.Function func);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_destroy_function_s(NMParams p) // totalcross/db/sqlite/NativeDB native int destroy_function(String name);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tdsNDB_free_functions(NMParams p) // totalcross/db/sqlite/NativeDB native void free_functions();
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -5327,56 +5277,6 @@ TESTCASE(tdsNDB_result_int_li) // totalcross/db/sqlite/NativeDB native void resu
    finish: ;
 }
 TESTCASE(tdsNDB_result_error_ls) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_bytes_fi) // totalcross/db/sqlite/NativeDB native int value_bytes(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_text_fi) // totalcross/db/sqlite/NativeDB native String value_text(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_blob_fi) // totalcross/db/sqlite/NativeDB native byte[] value_blob(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_double_fi) // totalcross/db/sqlite/NativeDB native double value_double(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_long_fi) // totalcross/db/sqlite/NativeDB native long value_long(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_int_fi) // totalcross/db/sqlite/NativeDB native int value_int(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_value_type_fi) // totalcross/db/sqlite/NativeDB native int value_type(totalcross.db.sqlite.Function f, int arg);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_create_function_sf) // totalcross/db/sqlite/NativeDB native int create_function(String name, totalcross.db.sqlite.Function func);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_destroy_function_s) // totalcross/db/sqlite/NativeDB native int destroy_function(String name);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tdsNDB_free_functions) // totalcross/db/sqlite/NativeDB native void free_functions();
 {
    TEST_SKIP;
    finish: ;

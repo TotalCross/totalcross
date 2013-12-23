@@ -183,7 +183,7 @@ abstract class DB implements Codes
         }
 
         // remove memory used by user-defined functions
-        free_functions();
+        //free_functions();
 
         // clean up commit object
         if (begin != 0) {
@@ -548,7 +548,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract int value_bytes(Function f, int arg) throws SQLException;
+    //abstract int value_bytes(Function f, int arg) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -557,7 +557,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract String value_text(Function f, int arg) throws SQLException;
+    //abstract String value_text(Function f, int arg) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -566,7 +566,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract byte[] value_blob(Function f, int arg) throws SQLException;
+    //abstract byte[] value_blob(Function f, int arg) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -575,7 +575,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract double value_double(Function f, int arg) throws SQLException;
+    //abstract double value_double(Function f, int arg) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -584,7 +584,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract long value_long(Function f, int arg) throws SQLException;
+    //abstract long value_long(Function f, int arg) throws SQLException;
 
     /**
      * Accesses the parameter values on the function or aggregate in int data type with the function
@@ -595,7 +595,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract int value_int(Function f, int arg) throws SQLException;
+    //abstract int value_int(Function f, int arg) throws SQLException;
 
     /**
      * @param f SQLite function object.
@@ -604,7 +604,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/value_blob.html">http://www.sqlite.org/c3ref/value_blob.html</a>
      */
-    abstract int value_type(Function f, int arg) throws SQLException;
+    //abstract int value_type(Function f, int arg) throws SQLException;
 
     /**
      * Create a user defined function with given function name and the function object.
@@ -614,7 +614,7 @@ abstract class DB implements Codes
      * @throws SQLException
      * @see <a href="http://www.sqlite.org/c3ref/create_function.html">http://www.sqlite.org/c3ref/create_function.html</a>
      */
-    abstract int create_function(String name, Function f) throws SQLException;
+    //abstract int create_function(String name, Function f) throws SQLException;
 
     /**
      * De-registers a user defined function
@@ -622,13 +622,13 @@ abstract class DB implements Codes
      * @return <a href="http://www.sqlite.org/c3ref/c_abort.html">Result Codes</a>
      * @throws SQLException
      */
-    abstract int destroy_function(String name) throws SQLException;
+    //abstract int destroy_function(String name) throws SQLException;
 
     /**
      * Unused as we use the user_data pointer to store a single word.
      * @throws SQLException
      */
-    abstract void free_functions() throws SQLException;
+    //abstract void free_functions() throws SQLException;
 
     /**
      * @param dbName Database name to be backed up.

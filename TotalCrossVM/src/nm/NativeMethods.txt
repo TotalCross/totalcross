@@ -524,16 +524,6 @@ totalcross/db/sqlite/NativeDB|native void result_double(long context, double val
 totalcross/db/sqlite/NativeDB|native void result_long(long context, long val);
 totalcross/db/sqlite/NativeDB|native void result_int(long context, int val);
 totalcross/db/sqlite/NativeDB|native void result_error(long context, String err);
-totalcross/db/sqlite/NativeDB|native int value_bytes(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native String value_text(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native byte[] value_blob(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native double value_double(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native long value_long(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native int value_int(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native int value_type(totalcross.db.sqlite.Function f, int arg);
-totalcross/db/sqlite/NativeDB|native int create_function(String name, totalcross.db.sqlite.Function func);
-totalcross/db/sqlite/NativeDB|native int destroy_function(String name);
-totalcross/db/sqlite/NativeDB|native void free_functions();
 totalcross/db/sqlite/NativeDB|native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 totalcross/db/sqlite/NativeDB|native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 totalcross/db/sqlite/NativeDB|native boolean[][] column_metadata(long stmt);

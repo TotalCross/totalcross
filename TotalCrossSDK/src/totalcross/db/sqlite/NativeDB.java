@@ -30,7 +30,6 @@ final class NativeDB extends DB
 
     /**
      * Loads the SQLite interface backend.
-     * @return True if the SQLite JDBC driver is successfully loaded; false otherwise.
      */
     native static void load() throws Exception; 
 
@@ -281,61 +280,61 @@ final class NativeDB extends DB
      * @see org.sqlite.DB#value_bytes(org.sqlite.Function, int)
      */
     
-    native int value_bytes(Function f, int arg);
+    //native int value_bytes(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_text(org.sqlite.Function, int)
      */
     
-    native String value_text(Function f, int arg);
+    //native String value_text(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_blob(org.sqlite.Function, int)
      */
     
-    native byte[] value_blob(Function f, int arg);
+    //native byte[] value_blob(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_double(org.sqlite.Function, int)
      */
     
-    native double value_double(Function f, int arg);
+    //native double value_double(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_long(org.sqlite.Function, int)
      */
     
-    native long value_long(Function f, int arg);
+    //native long value_long(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_int(org.sqlite.Function, int)
      */
     
-    native int value_int(Function f, int arg);
+    //native int value_int(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#value_type(org.sqlite.Function, int)
      */
     
-    native int value_type(Function f, int arg);
+    //native int value_type(Function f, int arg);
 
     /**
      * @see org.sqlite.DB#create_function(java.lang.String, org.sqlite.Function)
      */
     
-    native int create_function(String name, Function func);
+    //native int create_function(String name, Function func);
 
     /**
      * @see org.sqlite.DB#destroy_function(java.lang.String)
      */
     
-    native int destroy_function(String name);
+    //native int destroy_function(String name);
 
     /**
      * @see org.sqlite.DB#free_functions()
      */
     
-    native void free_functions();
+    //native void free_functions();
 
     /**
      * @see org.sqlite.DB#backup(java.lang.String, java.lang.String, org.sqlite.DB.ProgressObserver)

@@ -27,7 +27,7 @@ public class APITests extends TestSuite
    public APITests()
    {
       super("TotalCross API Test Suite");
-/*      addTestCase( tc.test.totalcross.sql.sqlite.BackupTest.class );
+      addTestCase( tc.test.totalcross.sql.sqlite.BackupTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.ConnectionTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.ExtensionTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.FetchSizeTest.class );
@@ -38,7 +38,6 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.sql.sqlite.SQLiteJDBCLoaderTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.StatementTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.TransactionTest.class );
-*/      addTestCase( tc.test.totalcross.sql.sqlite.UDFTest.class );
 
       if (false) 
       {
