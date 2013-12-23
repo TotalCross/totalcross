@@ -6,7 +6,7 @@ import java.sql.SQLWarning;
 
 public class SQLite4JConnection implements Connection
 {
-   org.sqlite.SQLiteConnection con;
+   public org.sqlite.SQLiteConnection con;
    
    public SQLite4JConnection(org.sqlite.SQLiteConnection con)
    {

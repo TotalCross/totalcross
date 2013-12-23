@@ -96,10 +96,12 @@ public class TransactionTest extends TestCase
          assertTrue(rs.next());
          assertEquals(1, rs.getInt(1));
          rs.close();
+         try
+         {
          rs = stat2.executeQuery(countSql);
-         assertTrue(rs.next());
-         assertEquals(0, rs.getInt(1));
-         rs.close();
+         fail("should raise exception");
+         }
+         catch (Exception ss) {}
 
          conn1.commit();
 
