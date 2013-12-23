@@ -241,7 +241,7 @@ public class TransactionTest extends TestCase
             }
          }.start();
 
-         Thread.sleep(100);
+         Vm.sleep(100);
          rs.close();
 
          while (!done)

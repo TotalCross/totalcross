@@ -1,13 +1,9 @@
 package tc.test.totalcross.sql.sqlite;
 
-import totalcross.sql.Connection;
-import totalcross.sql.DriverManager;
-import totalcross.sql.PreparedStatement;
-import totalcross.sql.ResultSet;
-import totalcross.sql.ResultSetMetaData;
-import totalcross.sql.Statement;
+import totalcross.sql.*;
+import totalcross.sys.*;
 import totalcross.unit.*;
-import totalcross.util.Date;
+import totalcross.util.*;
 
 /** These tests are designed to stress PreparedStatements on memory dbs. */
 public class PrepStmtTest extends TestCase
@@ -115,8 +111,8 @@ public class PrepStmtTest extends TestCase
          ResultSet rs = prep.executeQuery();
          assertTrue(rs.next());
          assertEquals(rs.getInt(1), Integer.MAX_VALUE);
-         assertEquals(rs.getString(1), Integer.toString(Integer.MAX_VALUE));
-         assertEquals(rs.getDouble(1), new Integer(Integer.MAX_VALUE).doubleValue(), 0.0001);
+         assertEquals(rs.getString(1), Convert.toString(Integer.MAX_VALUE));
+         assertEquals(rs.getDouble(1), new Integer(Integer.MAX_VALUE).intValue(), 0.0001);
          assertFalse(rs.next());
          rs.close();
          prep.close();

@@ -7,6 +7,7 @@ import totalcross.sql.DriverManager;
 import totalcross.sql.PreparedStatement;
 import totalcross.sql.ResultSet;
 import totalcross.sql.Statement;
+import totalcross.sys.*;
 import totalcross.unit.*;
 
 public class InsertQueryTest extends TestCase
@@ -121,7 +122,7 @@ public class InsertQueryTest extends TestCase
 
             for (int i = 0; i < 10; i++)
             {
-                BD item = new BD(Integer.toHexString(i), Integer.toString(i));
+                BD item = new BD(Convert.unsigned2hex(i,4), Convert.toString(i));
 
                 // SQLite database insertion
                 statAddBD.setString(1, item.getFullId());

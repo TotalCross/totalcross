@@ -71,8 +71,8 @@ public class StatementTest extends TestCase
          ResultSet rs = stat.executeQuery("select " + Integer.MAX_VALUE + ";");
          assertTrue(rs.next());
          assertEquals(rs.getInt(1), Integer.MAX_VALUE);
-         assertEquals(rs.getString(1), Integer.toString(Integer.MAX_VALUE));
-         assertEquals(rs.getDouble(1), new Integer(Integer.MAX_VALUE).doubleValue(), 0.001);
+         assertEquals(rs.getString(1), Convert.toString(Integer.MAX_VALUE));
+         assertEquals(rs.getDouble(1), new Integer(Integer.MAX_VALUE).intValue(), 0.001);
          assertFalse(rs.next());
          rs.close();
       }
