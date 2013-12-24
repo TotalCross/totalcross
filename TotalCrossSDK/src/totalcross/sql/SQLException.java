@@ -18,14 +18,13 @@ package totalcross.sql;
 
 public class SQLException extends Exception
 {
-   String reason;
    String state;
    int code;
    SQLException next;
    
    public SQLException(String reason, String sqlState, int errorCode)
    {
-      this.reason = reason;
+      super(reason);
       this.state = sqlState;
       this.code = errorCode;
    }

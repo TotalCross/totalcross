@@ -638,7 +638,7 @@ abstract class DB implements Codes
      * @throws SQLException
      *
      */
-    abstract int backup(String dbName, String destFileName, ProgressObserver observer) throws SQLException;
+    abstract int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 
     /**
      * @param dbName Database name for restoring data.
@@ -648,7 +648,7 @@ abstract class DB implements Codes
      * @throws SQLException
      *
      */
-    abstract int restore(String dbName, String sourceFileName, ProgressObserver observer) throws SQLException;
+    abstract int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 
     /**
      * Returns an array describing the attributes (not null, primary key and auto increment) of columns.

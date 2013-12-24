@@ -340,14 +340,14 @@ final class NativeDB extends DB
      * @see org.sqlite.DB#backup(java.lang.String, java.lang.String, org.sqlite.DB.ProgressObserver)
      */
     
-    native int backup(String dbName, String destFileName, ProgressObserver observer) throws SQLException;
+    native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 
     /**
      * @see org.sqlite.DB#restore(java.lang.String, java.lang.String,
      *      org.sqlite.DB.ProgressObserver)
      */
     
-    native int restore(String dbName, String sourceFileName, ProgressObserver observer) throws SQLException;
+    native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 

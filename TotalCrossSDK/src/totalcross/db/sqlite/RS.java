@@ -397,74 +397,24 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getDate(int)
      */
     public Date getDate(int col) throws SQLException {
-       throw new SQLException("*** IMPLEMENTAR ***");
-/*        switch(db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-    
-            case SQLITE_TEXT:
-                try {
-                    return new Date(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                    throw new SQLException("Error parsing date"+initCause(e));
-                }
-    
-            case SQLITE_FLOAT:
-                return new Date(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col))).getTimeInMillis());
-    
-            default: //SQLITE_INTEGER:
-                return new Date(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-        }
-*/    }
-
-    /**
-     * @see java.sql.ResultSet#getDate(int, java.util.Calendar)
-     */
-    public Date getDate(int col, /*Calendar*/Date cal) throws SQLException 
-    {
-       throw new SQLException("*** IMPLEMENTAR ***");
-/*        checkCalendar(cal);
-
-        switch (db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-    
-            case SQLITE_TEXT:
-                try {
-                    DateFormat dateFormat = (DateFormat) stmt.conn.dateFormat.clone();
-                    dateFormat.setCalendar(cal);
-
-                    return new java.sql.Date(dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                    throw new SQLException("Error parsing time stamp"+initCause(e));
-                }
-    
-            case SQLITE_FLOAT:
-                return new Date(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)), cal).getTimeInMillis());
-    
-            default: // SQLITE_INTEGER: 
-                cal.setTimeInMillis(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-                return new Date(cal.getTime().getTime());
-        }
-*/    }
+       Time t = getTime(col);
+      try
+      {
+         return t == null ? null : new Date(t);
+      }
+      catch (InvalidDateException e)
+      {
+         throw new SQLException("Invalid date."+initCause(e));
+      }
+    }
 
     /**
      * @see java.sql.ResultSet#getDate(java.lang.String)
      */
     public Date getDate(String col) throws SQLException {
-       throw new SQLException("*** IMPLEMENTAR ***");
-//        return getDate(findColumn(col), Calendar.getInstance());
+        return getDate(findColumn(col));
     }
 
-/*    *//**
-     * @see java.sql.ResultSet#getDate(java.lang.String, java.util.Calendar)
-     *//*
-    public Date getDate(String col, Calendar cal) throws SQLException {
-        return getDate(findColumn(col), cal);
-    }
-*/
     /**
      * @see java.sql.ResultSet#getDouble(int)
      */
@@ -564,24 +514,35 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getTime(int)
      */
     public Time getTime(int col) throws SQLException {
-        switch (db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-    
-            case SQLITE_TEXT:
-                try {
-                    return new Time(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                   throw new SQLException("Error parsing time."+initCause(e));
-                }
-    
-            case SQLITE_FLOAT:
-                return julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)));
-    
-            default:// SQLITE_INTEGER
-                return new Time(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-        }
+       switch(db.column_type(stmt.pointer, markCol(col))) {
+          case SQLITE_NULL:
+              return null;
+  
+          case SQLITE_TEXT:
+              try 
+              {
+                 String s = db.column_text(stmt.pointer, markCol(col));
+                 //Date t = stmt.conn.dateFormat.parse(s);
+                 Vm.debug("getTime.text("+col+"): "+s);
+                  return null; // t.getTime();
+              }
+              catch (Exception e) {
+                  throw new SQLException("Error parsing date"+initCause(e));
+              }
+  
+          case SQLITE_FLOAT:
+          {
+             Time t = julianDateToCalendar(db.column_double(stmt.pointer, markCol(col)));
+             Vm.debug("getTime.float("+col+"): "+t);
+              return t;//new Date(t).getTimeInMillis());
+          }
+          default: //SQLITE_INTEGER:
+          {
+             long l = db.column_long(stmt.pointer, markCol(col));
+             Vm.debug("getTime.int("+col+"): "+l);
+              return new Time(l * stmt.conn.dateMultiplier);
+          }
+      }
     }
 
 
@@ -596,24 +557,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getTimestamp(int)
      */
     public Timestamp getTimestamp(int col) throws SQLException {
-        switch (db.column_type(stmt.pointer, markCol(col))) {
-            case SQLITE_NULL:
-                return null;
-    
-            case SQLITE_TEXT:
-                try {
-                    return new Timestamp(stmt.conn.dateFormat.parse(db.column_text(stmt.pointer, markCol(col))).getTime());
-                }
-                catch (Exception e) {
-                    throw new SQLException("Error parsing time stamp"+initCause(e));
-                }
-    
-            case SQLITE_FLOAT:
-                return new Timestamp(julianDateToCalendar(db.column_double(stmt.pointer, markCol(col))));
-    
-            default: //SQLITE_INTEGER:
-                return new Timestamp(db.column_long(stmt.pointer, markCol(col)) * stmt.conn.dateMultiplier);
-        }
+       Time t = getTime(col);
+       return t == null ? null : new Timestamp(t);
     }
 
     /**

@@ -224,12 +224,12 @@ public class QueryTest extends TestCase
 
    public void testRun()
    {
-      createTable();
-      concatTest();
-      setFloatTest();
-      dateTimeTest();
-      viewTest();
-      timeoutTest();
+      output("createTable");  createTable();
+      output("concatTest");   concatTest();
+      output("setFloatTest"); setFloatTest();
+      output("dateTimeTest"); dateTimeTest();
+      output("viewTest");     viewTest();
+      output("timeoutTest");  timeoutTest();
    }
 
 }

@@ -64,8 +64,8 @@ static void throwexmsg(Context currentContext, Object this_, char *str)
     static Method mth_throwex = 0;
     Object o = createStringObjectFromCharP(currentContext, str, -1);
     if (!mth_throwex)
-       mth_throwex = getMethod(dbclass, true, "throwex", 1, "java.lang.String");
-    executeMethod(currentContext, mth_throwex, this_, o);
+       mth_throwex = getMethod(dbclass, true, "throwex", 1, "java.lang.String"); // method is static!
+    executeMethod(currentContext, mth_throwex, o);
     setObjectLock(o,UNLOCKED);
 }
 
@@ -179,9 +179,9 @@ TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protec
     if (status != SQLITE_OK) 
     {
         throw_errorcode(p->currentContext, this_, status);
-        p->retL = fromref(0);
+        p->retL = 0;
     }
-    p->retL = fromref(stmt);
+    else p->retL = fromref(stmt);
 }
 
 TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
@@ -564,8 +564,12 @@ TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nativ
     pBackup = sqlite3_backup_init(pFile, "main", pDb, dDBName);
     if( pBackup )
     {
-	   while((rc = sqlite3_backup_step(pBackup,100))==SQLITE_OK ) {}
+	   while((rc = sqlite3_backup_step(pBackup,100))==SQLITE_OK ) 
+      {
+         reportProgress(p->currentContext, observer, sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup));
+      }
       /* Release resources allocated by backup_init(). */
+      reportProgress(p->currentContext, observer, sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup));
       (void)sqlite3_backup_finish(pBackup);
     }
     rc = sqlite3_errcode(pFile);
@@ -608,6 +612,7 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
     {
 	    while( (rc = sqlite3_backup_step(pBackup,100))==SQLITE_OK || rc==SQLITE_BUSY  )
        {
+         reportProgress(p->currentContext, observer, sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup));
      	 	if( rc==SQLITE_BUSY )
          {
         		if( nTimeout++ >= 3 ) break;
@@ -615,6 +620,7 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
     		}
 	    }
       /* Release resources allocated by backup_init(). */
+      reportProgress(p->currentContext, observer, sqlite3_backup_remaining(pBackup), sqlite3_backup_pagecount(pBackup));
       (void)sqlite3_backup_finish(pBackup);
     }
     rc = sqlite3_errcode(pFile);

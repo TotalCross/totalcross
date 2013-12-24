@@ -22,7 +22,7 @@ public class BackupTest extends TestCase
    {
       try
       {
-         Vm.debug(absPath);
+         output("Backup path "+absPath);
 
          // memory DB to file
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");
@@ -32,13 +32,13 @@ public class BackupTest extends TestCase
          stmt.executeUpdate("insert into sample values(1, \"leo\")");
          stmt.executeUpdate("insert into sample values(2, \"gui\")");
 
-         stmt.executeUpdate("backup to " + absPath);
+         stmt.executeUpdate("backup to '" + absPath+"/bak.db'");
          stmt.close();
 
          // open another memory database
          Connection conn2 = DriverManager.getConnection("jdbc:sqlite:");
          Statement stmt2 = conn2.createStatement();
-         stmt2.execute("restore from " + absPath);
+         stmt2.execute("restore from '" + absPath+"/bak.db'");
          ResultSet rs = stmt2.executeQuery("select * from sample");
          int count = 0;
          while (rs.next())
@@ -66,15 +66,14 @@ public class BackupTest extends TestCase
 
          Connection conn = DriverManager.getConnection("jdbc:sqlite:");
          Statement stmt = conn.createStatement();
+         try {stmt.executeUpdate("drop table sample");} catch (Exception e) {}
          stmt.executeUpdate("create table sample(id integer primary key autoincrement, name)");
-         for (int i = 0; i < 10000; i++)
+         for (int i = 0; i < 1000; i++)
             stmt.executeUpdate("insert into sample(name) values(\"leo\")");
 
-         tmpFile = new File(absPath + "/backup-test.sqlite", File.CREATE_EMPTY);
-         // System.err.println("backup start");
-         stmt.executeUpdate("backup to " + absPath);
+         String p = absPath + "/backup-test.sqlite";
+         stmt.executeUpdate("backup to '" + p +"'");
          stmt.close();
-         // System.err.println("backup done.");
       }
       catch (Exception e)
       {
