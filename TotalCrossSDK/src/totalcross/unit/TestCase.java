@@ -73,8 +73,7 @@ public abstract class TestCase
 
    protected static void fail(Throwable e)
    {
-      e.printStackTrace();
-      fail(e.getClass().getName()+" - "+e.getMessage());
+      fail("\nOriginal exception: "+e.getClass().getName()+" - "+e.getMessage()+"\nOriginal stackTrace:\n"+Vm.getStackTrace(e));
    }
       
    protected static void fail(String msg)
