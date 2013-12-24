@@ -357,9 +357,9 @@ static CharP createMethodSignature(Method m, Heap h)
             if (isUp && *pname == '&') // array of primitive?
                *c = *++pname;
             else
-               for (*c = *pname++; *pname; pname++)
-                  if (*pname == '.')
-                     *c = *(pname+1);
+               for (*c = *pname++; *pname; pname++) // guich@20131224: fix support for totalcross.db.sqlite.DB$ProgressObserver
+                  if (*pname == '.' || *pname == '$')
+                     *c = *(pname+1); // don't break! we want the last piece
             *c = isUp ? toUpper(*c) : toLower(*c);
          }
       }
