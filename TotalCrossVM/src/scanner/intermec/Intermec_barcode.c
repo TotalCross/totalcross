@@ -244,49 +244,87 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean scannerActivate();
 {
-   JNIEnv* env = getJNIEnv();
-   jclass applicationClass;
-   jmethodID method;
-
-   p->retI = false;
-   
-   if (!(applicationClass = androidFindClass(env, "totalcross/android/Scanner4A")))
-      return;
-   if (!(method = (*env)->GetStaticMethodID(env, applicationClass, "scannerActivate", "()Z")))
-      return;
-   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, method);
+   p->retI = callBoolMethodWithoutParams("scannerActivate");
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_setBarcodeParam_ib(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeParam(int barcodeType, boolean enable);
 {
+   JNIEnv* env = getJNIEnv();
+   jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
+   int32* intArray = p->i32;
+   
+   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, "setBarcodeParam", "(IZ)Z"), intArray[0], intArray[1]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setParam(int type, int barcodeType, int value);
 {
+   JNIEnv* env = getJNIEnv();
+   jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
+   int32* intArray = p->i32;
+   
+   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, "setParam", "(III)Z"), intArray[0], intArray[1], intArray[2]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_setBarcodeLength_iiii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max);
 {
+   JNIEnv* env = getJNIEnv();
+   jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
+   int32* intArray = p->i32;
+
+   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, "setBarcodeLength", "(IIII)Z"), intArray[0], intArray[1], intArray[2], intArray[3]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_commitBarcodeParams(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean commitBarcodeParams();
 {
+   p->retI = callBoolMethodWithoutParams("commitBarcodeParams");
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getData();
 {
+   setObjectLock(p->retO = callStringMethodWithoutParams(p->currentContext, "getData"), UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_getScanManagerVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanManagerVersion();
 {
+   setObjectLock(p->retO = callStringMethodWithoutParams(p->currentContext, "getScanManagerVersion"), UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_getScanPortDriverVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanPortDriverVersion();
 {
+   setObjectLock(p->retO = callStringMethodWithoutParams(p->currentContext, "getScanPortDriverVersion"), UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean deactivate();
 {
+   p->retI = callBoolMethodWithoutParams("deactivate");
+}
+
+bool callBoolMethodWithoutParams(CharP name)
+{
+   JNIEnv* env = getJNIEnv();
+   jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
+   return (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, name, "()Z"));
+}
+
+Object callStringMethodWithoutParams(Context context, CharP name)
+{
+   JNIEnv* env = getJNIEnv();
+   jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
+   jstring string = (*env)->CallStaticObjectMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, name, "()Ljava/lang/String"));
+
+   if (string)
+   {
+      CharP charP = (*env)->GetStringUTFChars(env, string, 0);
+      if (charP) 
+      {
+         Object ret = createStringObjectFromCharP(context, charP , -1);
+         
+         (*env)->ReleaseStringUTFChars(env, string, charP);
+         return ret; 
+      }
+      (*env)->DeleteLocalRef(env, string); 
+   }
+   return null;
 }
 #endif
 

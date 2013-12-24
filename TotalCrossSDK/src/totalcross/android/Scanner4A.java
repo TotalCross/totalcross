@@ -27,46 +27,54 @@ public class Scanner4A
    static boolean scannerActivate()
    {
       AndroidUtils.debug("scannerActivate");
-      return false;
+      return true;
    }
    
    static boolean setBarcodeParam()
    {
-      return false;
+      AndroidUtils.debug("setBarcodeParam");
+      return true;
    }
    
    static boolean setParam(int type, int barcodeType, int value)
    {
-      return false;
+      AndroidUtils.debug("setParam");
+      return true;
    }
    
    static boolean commitBarcodeParams()
    {
-      return false;
+      AndroidUtils.debug("commitBarcodeParams");
+      return true;
    }
    
    static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max)
    {
-      return false;
+      AndroidUtils.debug("setBarcodeLength");
+      return true;
    }
    
    static String getData()
    {
-      return null;
+      AndroidUtils.debug("getData");
+      return "";
    }
    
    static String getScanManagerVersion()
    {
-      return null;
+      AndroidUtils.debug("getScanManagerVersion");
+      return "";
    }
    
    static String getScanPortDriverVersion()
    {
-      return null;
+      AndroidUtils.debug("getScanPortDriverVersion");
+      return "";
    }
    
    static boolean deactivate()
    {
-      return false;
+      AndroidUtils.debug("deactivate");
+      return true;
    }
 }
