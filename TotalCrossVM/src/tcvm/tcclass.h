@@ -12,6 +12,11 @@
 #ifndef CLASS_H
 #define CLASS_H
 
+#include "tcapi.h"
+#include "xtypes.h"
+#include "mem.h"
+
+
 /** IMPORTANT: there's a main difference between the XXX and XXXInfo structures:
  * the XXXInfo are PACKED at 2 bytes, which make it use less memory main memory,
  * but it makes the C compiled code bigger and slower. Due to this, we decided to

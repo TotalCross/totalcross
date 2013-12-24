@@ -86,9 +86,14 @@ void dispatcher_dispath()
 		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 }
 
-void setKeyboard(int state)
+void windowSetDeviceTitle(Object titleObj)
 {
-	MainView::GetLastInstance()->setKeyboard(state);
+
+}
+
+void windowSetSIP(enum TCSIP kb)
+{
+	MainView::GetLastInstance()->setKeyboard(kb);
 }
 
 DWORD32 getRemainingBatery()

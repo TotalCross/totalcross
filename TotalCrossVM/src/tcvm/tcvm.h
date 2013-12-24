@@ -102,30 +102,7 @@ typedef unsigned char boolean;
 #include "config.h"
 #endif
 
-/** The following ifdef block is the standard way of creating macros which make exporting
- from a DLL simpler. All files within this DLL are compiled with the TESTE_EXPORTS
- symbol defined on the command line. this symbol should not be defined on any project
- that uses this DLL. This way any other project whose source files include this file see
- TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols
- defined with this macro as being exported.
- */
-#if defined(WIN32) || defined(WINCE)
- #ifdef TC_EXPORTS
- #define TC_API __declspec(dllexport)
- #else
- #define TC_API __declspec(dllimport)
- #endif
-#else
- #define TC_API extern
-#endif
-
-#if defined(TC_EXPORTS) || defined(DONT_PREFIX_WITH_TC_FOR_LIBRARIES)
-#define TCAPI_FUNC(x) x
-#else
-#define TCAPI_FUNC(x) TC_##x
-#endif
-
-#define NATIVE_METHOD(x) TC_API void x(NMParams p)
+#include "tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
  #define INCL_WINSOCK_API_PROTOTYPES 0

@@ -1159,6 +1159,9 @@
     <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h">
       <Filter>Native methods\ui\wp8</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\tcvm\tcapi.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\nm\NativeMethods.txt">
