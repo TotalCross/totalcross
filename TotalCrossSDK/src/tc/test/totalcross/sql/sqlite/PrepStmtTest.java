@@ -11,14 +11,6 @@ public class PrepStmtTest extends TestCase
    static byte[] b1 = new byte[] { 1, 2, 7, 4, 2, 6, 2, 8, 5, 2, 3, 1, 5, 3, 6, 3, 3, 6, 2, 5 };
    static byte[] b2 = "To be or not to be.".getBytes();
    static byte[] b3 = "Question!#$%".getBytes();
-   static String utf01 = "\uD840\uDC40";
-   static String utf02 = "\uD840\uDC47 ";
-   static String utf03 = " \uD840\uDC43";
-   static String utf04 = " \uD840\uDC42 ";
-   static String utf05 = "\uD840\uDC40\uD840\uDC44";
-   static String utf06 = "Hello World, \uD840\uDC40 \uD880\uDC99";
-   static String utf07 = "\uD840\uDC41 testing \uD880\uDC99";
-   static String utf08 = "\uD840\uDC40\uD840\uDC44 testing";
 
    private Connection conn;
    private Statement stat;
@@ -337,50 +329,6 @@ public class PrepStmtTest extends TestCase
       }
    }
 
-   public void utf()
-   {
-      if (true) return;
-      try
-      {
-         ResultSet rs = stat.executeQuery("select '" + utf01 + "','" + utf02 + "','" + utf03 + "','" + utf04 + "','" + utf05 + "','" + utf06 + "','" + utf07
-               + "','" + utf08 + "';");
-         assertEquals(rs.getString(1), utf01);
-         assertEquals(rs.getString(2), utf02);
-         assertEquals(rs.getString(3), utf03);
-         assertEquals(rs.getString(4), utf04);
-         assertEquals(rs.getString(5), utf05);
-         assertEquals(rs.getString(6), utf06);
-         assertEquals(rs.getString(7), utf07);
-         assertEquals(rs.getString(8), utf08);
-         rs.close();
-
-         PreparedStatement prep = conn.prepareStatement("select ?,?,?,?,?,?,?,?;");
-         prep.setString(1, utf01);
-         prep.setString(2, utf02);
-         prep.setString(3, utf03);
-         prep.setString(4, utf04);
-         prep.setString(5, utf05);
-         prep.setString(6, utf06);
-         prep.setString(7, utf07);
-         prep.setString(8, utf08);
-         rs = prep.executeQuery();
-         assertTrue(rs.next());
-         assertEquals(rs.getString(1), utf01);
-         assertEquals(rs.getString(2), utf02);
-         assertEquals(rs.getString(3), utf03);
-         assertEquals(rs.getString(4), utf04);
-         assertEquals(rs.getString(5), utf05);
-         assertEquals(rs.getString(6), utf06);
-         assertEquals(rs.getString(7), utf07);
-         assertEquals(rs.getString(8), utf08);
-         rs.close();
-      }
-      catch (Exception e)
-      {
-         fail(e);
-      }
-   }
-
    public void batch()
    {
       try
@@ -514,10 +462,6 @@ public class PrepStmtTest extends TestCase
          assertEquals(meta.getColumnName(1), "col1");
          assertEquals(meta.getColumnName(2), "col2");
          assertEquals(meta.getColumnName(3), "delta");
-         /*
-          * assertEquals(meta.getColumnType(1), Types.INTEGER); assertEquals(meta.getColumnType(2), Types.INTEGER);
-          * assertEquals(meta.getColumnType(3), Types.INTEGER);
-          */
 
          prep.setInt(1, 2);
          prep.setInt(2, 3);
@@ -727,7 +671,6 @@ public class PrepStmtTest extends TestCase
          colNameAccess();
          insert1000();
          getObject();
-         utf();
          batch();
          testExecuteBatch();
          dbclose();
