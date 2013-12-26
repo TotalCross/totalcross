@@ -403,7 +403,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
       }
       catch (InvalidDateException e)
       {
-         throw new SQLException("Invalid date."+initCause(e));
+         throw new SQLException("Invalid date from time "+t.getTimeLong()+"."+initCause(e));
       }
     }
 
