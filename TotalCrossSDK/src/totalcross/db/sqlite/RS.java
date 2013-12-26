@@ -18,6 +18,7 @@ package totalcross.db.sqlite;
 import totalcross.sql.*;
 import totalcross.util.regex.*;
 import totalcross.util.*;
+import totalcross.db.sqlite.SQLiteConfig.*;
 import totalcross.io.*;
 import totalcross.sys.*;
 
@@ -126,14 +127,12 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         row = 0;
         lastCol = -1;
 
-        if (stmt == null) {
-            return;
-        }
-
-        if (stmt != null && stmt.pointer != 0) {
+        if (stmt != null && stmt.pointer != 0) 
+        {
             db.reset(stmt.pointer);
 
-            if (closeStmt) {
+            if (closeStmt) 
+            {
                 closeStmt = false; // break recursive call
                 stmt.close();
             }
@@ -433,23 +432,6 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     }
 
     /**
-     * @see java.sql.ResultSet#getFloat(int)
-     */
-    public double getFloat(int col) throws SQLException {
-        if (db.column_type(stmt.pointer, markCol(col)) == SQLITE_NULL) {
-            return 0;
-        }
-        return (float) db.column_double(stmt.pointer, markCol(col));
-    }
-
-    /**
-     * @see java.sql.ResultSet#getFloat(java.lang.String)
-     */
-    public double getFloat(String col) throws SQLException {
-        return getFloat(findColumn(col));
-    }
-
-    /**
      * @see java.sql.ResultSet#getInt(int)
      */
     public int getInt(int col) throws SQLException {
@@ -514,7 +496,25 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getTime(int)
      */
     public Time getTime(int col) throws SQLException {
-       switch(db.column_type(stmt.pointer, markCol(col))) {
+       switch(db.column_type(stmt.pointer, markCol(col))) 
+       {
+          case SQLITE_NULL:
+              return null;
+          default:
+             // guich: always store as long
+             long l = db.column_long(stmt.pointer, markCol(col));
+             int millis = 0;
+             if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
+             {
+                millis = (int)(l % 1000);
+                l /= 1000;
+             }
+             Time t = new Time(l);
+             t.millis = millis;
+             return t;
+       }
+       
+/*       switch(db.column_type(stmt.pointer, markCol(col))) {
           case SQLITE_NULL:
               return null;
   
@@ -542,7 +542,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
              Vm.debug("getTime.int("+col+"): "+l);
               return new Time(l * stmt.conn.dateMultiplier);
           }
-      }
+      }*/
     }
 
 
@@ -557,8 +557,13 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      * @see java.sql.ResultSet#getTimestamp(int)
      */
     public Timestamp getTimestamp(int col) throws SQLException {
-       Time t = getTime(col);
-       return t == null ? null : new Timestamp(t);
+       switch(db.column_type(stmt.pointer, markCol(col))) 
+       {
+          case SQLITE_NULL:
+              return null;
+          default:
+             return new Timestamp(db.column_long(stmt.pointer, markCol(col)));
+       }
     }
 
     /**
@@ -989,67 +994,5 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
      */
     public boolean rowUpdated() throws SQLException {
         return false;
-    }
-
-    /**
-     * Transforms a Julian Date to java.util.Calendar object.
-     * Based on Guine Christian's function found here:
-     * http://java.ittoolbox.com/groups/technical-functional/java-l/java-function-to-convert-julian-date-to-calendar-date-1947446
-     */
-    private Time julianDateToCalendar(double jd) {
-
-        int yyyy, dd, mm, hh, mn, ss, ms , A;
-
-        double w = jd + 0.5;
-        int Z = (int)w;
-        double F = w - Z;
-
-        if (Z < 2299161) {
-            A = Z;
-        }
-        else {
-            int alpha = (int)((Z - 1867216.25) / 36524.25);
-            A = Z + 1 + alpha - (int)(alpha / 4.0);
-        }
-
-        int B = A + 1524;
-        int C = (int)((B - 122.1) / 365.25);
-        int D = (int)(365.25 * C);
-        int E = (int)((B - D) / 30.6001);
-
-        //  month
-        mm = E - ((E < 13.5) ? 1 : 13);
-
-        // year
-        yyyy = C - ((mm > 2.5) ? 4716 : 4715);
-
-        // Day
-        double jjd = B - D - (int)(30.6001 * E) + F;
-        dd = (int)jjd;
-
-        // Hour
-        double hhd = jjd - dd;
-        hh = (int)(24 * hhd);
-
-        // Minutes
-        double mnd = (24 * hhd) - hh;
-        mn = (int)(60 * mnd);
-
-        // Seconds
-        double ssd = (60 * mnd) - mn;
-        ss = (int)(60 * ssd);
-
-        // Milliseconds
-        double msd = (60 * ssd) - ss;
-        ms = (int)(1000 * msd);
-
-        Time t = new Time(yyyy, mm, dd, hh, mn, ss, ms);
-
-/*        if (yyyy<1) {
-            cal.set(Calendar.ERA, GregorianCalendar.BC);
-            cal.set(Calendar.YEAR, -(yyyy-1));
-        }
-*/
-        return t;
     }
 }

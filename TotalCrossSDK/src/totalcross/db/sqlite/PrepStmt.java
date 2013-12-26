@@ -16,6 +16,7 @@
 
 package totalcross.db.sqlite;
 
+import totalcross.db.sqlite.SQLiteConfig.*;
 import totalcross.io.*;
 import totalcross.sql.ParameterMetaData;
 import totalcross.sql.PreparedStatement;
@@ -359,13 +360,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see java.sql.PreparedStatement#setFloat(int, float)
-     */
-    public void setFloat(int pos, float value) throws SQLException {
-        batch(pos, new Float(value));
-    }
-
-    /**
      * @see java.sql.PreparedStatement#setInt(int, int)
      */
     public void setInt(int pos, int value) throws SQLException {
@@ -401,14 +395,15 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
             batch(pos, null);
         }
         else if (value instanceof Date) {
-            setDate(pos, ((Date)value).getDateInt(),0,0);
+            setDate(pos, new Time(((Date)value)));
         }
         else if (value instanceof Time) {
            Time t = (Time)value;
-            setDate(pos, t.year*10000 + t.month*100 + t.day, t.hour * 10000 + t.minute * 100 + t.second,0);
+           setDate(pos, t);
         }
         else if (value instanceof Timestamp) {
-            setDate(pos, 0,0,((Timestamp) value).getTime());
+           long l = ((Timestamp) value).getTime();
+           batch(pos, new Long(l));
         }
         else if (value instanceof Long) {
             batch(pos, value);
@@ -497,25 +492,21 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see java.sql.PreparedStatement#setDate(int, java.sql.Date, java.util.Calendar)
-     */
-/*    public void setDate(int pos, Date x, Calendar cal) throws SQLException {
-        setObject(pos, x);
-    }
-*/
-    /**
     * Store the date in the user's preferred format (text, int, or real)
     */
-   private void setDate(int pos, int date, int time, long millis) throws SQLException {
-      throw new SQLException("*** IMPLEMENTAR ***");
+   private void setDate(int pos, Time t) throws SQLException {
+      long l = t.getTimeLong();
+      if (conn.datePrecision == DatePrecision.MILLISECONDS)
+         l = l * 1000 + t.millis;
+      batch(pos, new Long(l));
 /*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
           batch(pos, conn.dateFormat.format(new Date(value)));
        else
        if (conn.dateClass == SQLiteConfig.DateClass.REAL) // long to Julian date
           batch(pos, new Double((value/86400000.0) + 2440587.5));
        else //INTEGER:
-          batch(pos, new Long(value / conn.dateMultiplier));
-*/   }
+          batch(pos, new Long(value / conn.dateMultiplier));*/
+   }
 
    /**
      * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)
@@ -525,26 +516,12 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see java.sql.PreparedStatement#setTime(int, java.sql.Time, java.util.Calendar)
-     */
-/*    public void setTime(int pos, Time x, Calendar cal) throws SQLException {
-        setObject(pos, x);
-    }
-*/
-    /**
      * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp)
      */
     public void setTimestamp(int pos, Timestamp x) throws SQLException {
         setObject(pos, x);
     }
 
-    /**
-     * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp, java.util.Calendar)
-     */
-/*    public void setTimestamp(int pos, Timestamp x, Calendar cal) throws SQLException {
-        setObject(pos, x);
-    }
-*/
     /**
      * @see java.sql.PreparedStatement#getMetaData()
      */
@@ -586,10 +563,4 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     public void addBatch(String sql) throws SQLException {
         throw unused();
     }
-
-   public void setFloat(int parameterIndex, double x) throws SQLException
-   {
-      // TODO Auto-generated method stub
-      
-   }
 }

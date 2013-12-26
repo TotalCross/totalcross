@@ -55,11 +55,6 @@ public class SQLite4JPreparedStatement extends SQLite4JStatement implements Prep
       ps.setLong(parameterIndex,x);
    }
 
-   public void setFloat(int parameterIndex, double x) throws SQLException
-   {
-      ps.setFloat(parameterIndex,(float)x);
-   }
-
    public void setDouble(int parameterIndex, double x) throws SQLException
    {
       ps.setDouble(parameterIndex,x);

@@ -22,8 +22,6 @@ public interface PreparedStatement extends Statement
 
    public void setLong(int parameterIndex, long x) throws SQLException;
 
-   public void setFloat(int parameterIndex, double x) throws SQLException;
-
    public void setDouble(int parameterIndex, double x) throws SQLException;
 
    public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException;

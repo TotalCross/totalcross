@@ -29,7 +29,6 @@ public interface ResultSet
    public short getShort(int columnIndex) throws SQLException;
    public int getInt(int columnIndex) throws SQLException;
    public long getLong(int columnIndex) throws SQLException;
-   public double getFloat(int columnIndex) throws SQLException;
    public double getDouble(int columnIndex) throws SQLException;
    public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException;
    public byte[] getBytes(int columnIndex) throws SQLException;
@@ -42,7 +41,6 @@ public interface ResultSet
    public short getShort(String columnName) throws SQLException;
    public int getInt(String columnName) throws SQLException;
    public long getLong(String columnName) throws SQLException;
-   public double getFloat(String columnName) throws SQLException;
    public double getDouble(String columnName) throws SQLException;
    public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException;
    public byte[] getBytes(String columnName) throws SQLException;
