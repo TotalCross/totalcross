@@ -520,7 +520,7 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
     dbstmt = toref(stmt);
 
     colCount = sqlite3_column_count(dbstmt);
-    boolArray = createArrayObject(p->currentContext, MATRIX_OF(BOOLEAN_ARRAY), colCount) ;
+    boolArray = createArrayObject(p->currentContext, BOOLEAN_MATRIX, colCount) ;
     oa = (Object*)ARRAYOBJ_START(boolArray);
 
     for (i = 0; i < colCount; i++) {

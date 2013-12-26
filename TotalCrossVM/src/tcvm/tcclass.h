@@ -582,11 +582,9 @@ struct TField
 #define DOUBLE_ARRAY  "[&D"
 /// A string representing a Java boolean array
 #define BOOLEAN_ARRAY "[&b"
+#define BOOLEAN_MATRIX "[[&b"
 /// A string representing a Java float array
 #define FLOAT_ARRAY   "[&F"
-
-#define MATRIX_OF(x) "["##x
-
 /// A string representing a Java int
 #define J_INT "I"
 /// A string representing a Java double
