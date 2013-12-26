@@ -547,10 +547,8 @@ public class PrepStmtTest extends TestCase
          ResultSet rs = stat.executeQuery("select c1 from t;");
          assertTrue(rs.next());
          long l = rs.getLong(1);
-         long ld = new Time(d1).getTimeLong()*1000;
-         assertEquals(l, ld);
-         Date d = rs.getDate(1);
-         assertEquals(d, d1);
+         assertEquals(l, Settings.onJavaSE ? d1.getTime() : new Time(d1).getTimeLong()*1000); // in java, the date type is stored in a different format
+         assertEquals(rs.getDate(1), d1);
          rs.close();
       }
       catch (Exception e)
