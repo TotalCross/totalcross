@@ -46,24 +46,24 @@ public class QueryTest extends TestCase
       }
    }
 
-   public void setFloatTest() 
+   public void setDoubleTest() 
    {
       try
       {
-         float f = 3.141597f;
+         double f = 3.141597;
          Connection conn = getConnection();
 
          try {conn.createStatement().execute("drop table sample");} catch (Exception e) {}
          conn.createStatement().execute("create table sample (data NOAFFINITY)");
          PreparedStatement prep = conn.prepareStatement("insert into sample values(?)");
-         prep.setFloat(1, f);
+         prep.setDouble(1, f);
          prep.executeUpdate();
 
          PreparedStatement stmt = conn.prepareStatement("select * from sample where data > ?");
-         stmt.setObject(1, new Float(3.0f));
+         stmt.setObject(1, new Double(3.0f));
          ResultSet rs = stmt.executeQuery();
          assertTrue(rs.next());
-         double f2 = rs.getFloat(1);
+         double f2 = rs.getDouble(1);
          assertEquals(f, f2, 0.0000001);
       }
       catch (Exception e)
@@ -149,7 +149,7 @@ public class QueryTest extends TestCase
          // create a database connection
          conn = getConnection();
          Statement statement = conn.createStatement();
-         statement.setQueryTimeout(30); // set timeout to 30 sec.
+         //statement.setQueryTimeout(10); // set timeout to 10 sec.
 
          statement.executeUpdate("drop table if exists person");
          statement.executeUpdate("create table person (id integer, name string, shortname string)");
@@ -224,12 +224,12 @@ public class QueryTest extends TestCase
 
    public void testRun()
    {
-      output("createTable");  createTable();
-      output("concatTest");   concatTest();
-      output("setFloatTest"); setFloatTest();
-      output("dateTimeTest"); dateTimeTest();
-      output("viewTest");     viewTest();
-      output("timeoutTest");  timeoutTest();
+      status("createTable");  createTable();
+      status("concatTest");   concatTest();
+      status("setDoubleTest"); setDoubleTest();
+      status("dateTimeTest"); dateTimeTest();
+      status("viewTest");     viewTest();
+      status("timeoutTest");  timeoutTest();
    }
 
 }
