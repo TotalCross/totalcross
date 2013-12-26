@@ -241,9 +241,11 @@ PALMDB_FILES =                                \
 	$(TC_SRCDIR)/palmdb/palmdb.c
 	
 SQLITE_FILES =                               \
-	$(TC_SRCDIR)/sqlite/sqlite3.c               
+	$(TC_SRCDIR)/sqlite/sqlite3.c             \
+	$(TC_SRCDIR)/nm/db/NativeDB.c               
 
 SOURCE_FILES =                                \
+	$(SQLITE_FILES)                            \
 	$(NM_UI_FILES)                             \
 	$(EVENT_FILES)                             \
 	$(XML_FILES)                               \
@@ -268,7 +270,6 @@ SOURCE_FILES =                                \
 	$(MAP_FILES)                               \
 	$(AXTLS_FILES)                             \
 	$(PALMDB_FILES)                            \
-	$(SQLITE_FILES)                            \
 	$(TEST_SUITE_FILES)
 
 

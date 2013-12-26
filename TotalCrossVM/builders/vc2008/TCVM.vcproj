@@ -3622,10 +3622,6 @@
 			Name="sqlite"
 			>
 			<File
-				RelativePath="..\..\src\sqlite\shell.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\sqlite\sqlite3.c"
 				>
 			</File>
