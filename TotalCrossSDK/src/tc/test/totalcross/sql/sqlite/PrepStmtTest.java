@@ -532,7 +532,7 @@ public class PrepStmtTest extends TestCase
       }
    }
 
-   public void date1()
+   public void date()
    {
       try
       {
@@ -550,31 +550,6 @@ public class PrepStmtTest extends TestCase
          assertEquals(l, Settings.onJavaSE ? d1.getTime() : new Time(d1).getTimeLong()*1000); // in java, the date type is stored in a different format
          assertEquals(rs.getDate(1), d1);
          rs.close();
-      }
-      catch (Exception e)
-      {
-         fail(e);
-      }
-   }
-
-   public void date2()
-   {
-      try
-      {
-         Date d1 = new Date(20131225);
-         try {stat.execute("drop table t");} catch (Exception e) {}
-         stat.execute("create table t (c1);");
-         PreparedStatement prep = conn.prepareStatement("insert into t values (datetime(?/1000, 'unixepoch'));");
-         prep.setDate(1, d1);
-         prep.executeUpdate();
-
-         /* GUICH AFAZER
-         ResultSet rs = stat.executeQuery("select strftime('%s', c1) * 1000 from t;");
-         assertTrue(rs.next());
-         assertEquals(rs.getDate(1), d1);
-         assertEquals(rs.getLong(1), d1.getTime()); // -106751991168000 == 1387940400000
-         }
-          */
       }
       catch (Exception e)
       {
@@ -758,8 +733,7 @@ public class PrepStmtTest extends TestCase
          dbclose();
          batchOneParam();
          metaData();
-         date1();
-         date2();
+         date();
          changeSchema();
          reusingSetValues();
          clearParameters();
