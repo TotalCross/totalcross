@@ -1233,7 +1233,7 @@ class LitebaseParser
          
          return auxToken;
       }
-      else // single expression = pure field.
+      else if (token != TK_NULL) // single expression = pure field.
       {
          token = pureField(token);
          
@@ -1258,6 +1258,9 @@ class LitebaseParser
          
          return token;
       } 
+      
+      yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);  
+      return -1;
    }
    
    /**

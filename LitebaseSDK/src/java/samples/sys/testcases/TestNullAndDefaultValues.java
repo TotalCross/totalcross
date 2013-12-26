@@ -1217,6 +1217,20 @@ public class TestNullAndDefaultValues extends TestCase
       
       assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
       rs.close();
+      
+      // Can't accept = null or != null.
+      try
+      {
+         driver.executeQuery("select * from person where birth != null");
+         fail("27");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeQuery("select * from person where birth = null");
+         fail("28");
+      }
+      catch (SQLParseException exception) {}
    }
 
 }
