@@ -110,19 +110,16 @@ class Stmt extends Unused implements Statement, Codes
     }
 
     protected void internalClose() throws SQLException {
-        if (db.conn.isClosed())
-            throw DB.newSQLException(SQLITE_ERROR, "Connection is closed");
-
-        if (pointer == 0)
-            return;
+        if (pointer == 0 || db.conn.isClosed())
+           return; //throw DB.newSQLException(SQLITE_ERROR, "Connection is closed");
 
         rs.close();
         batch = null;
         batchPos = 0;
-        int resp = db.finalize(this);
-
-        if (resp != SQLITE_OK && resp != SQLITE_MISUSE)
-            db.throwex();
+        /*int resp = */db.finalize(this);
+        pointer = 0;
+//        if (resp != SQLITE_OK && resp != SQLITE_MISUSE)
+//            db.throwex(resp);
     }
 
     // PUBLIC INTERFACE /////////////////////////////////////////////
@@ -134,10 +131,8 @@ class Stmt extends Unused implements Statement, Codes
         if (metadata != null) {
             metadata.refCount--;
             metadata.close();
-
             metadata = null;
         }
-
         internalClose();
     }
 
@@ -145,7 +140,7 @@ class Stmt extends Unused implements Statement, Codes
      * @see java.lang.Object#finalize()
      */
     protected void finalize() throws SQLException {
-        close();
+        if (pointer != 0) close();
     }
 
     /**
@@ -304,7 +299,7 @@ class Stmt extends Unused implements Statement, Codes
 
         int[] changes = new int[batchPos];
 
-        synchronized (db.stmtsLock) {
+        /*synchronized (db.stmtsLock) */{
             try {
                 for (int i = 0; i < changes.length; i++) {
                     try {
