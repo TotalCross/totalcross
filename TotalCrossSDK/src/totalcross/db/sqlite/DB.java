@@ -40,7 +40,7 @@ abstract class DB implements Codes
     long                          commit;
 
     /** Tracer for statements to avoid unfinalized statements on db close. */
-    private Hashtable stmts = new Hashtable(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
+    private Vector stmts = new Vector(10);//private final Map<Long, Stmt> stmts  = new HashMap<Long, Stmt>();
     public totalcross.util.concurrent.Lock stmtsLock = new totalcross.util.concurrent.Lock();
 
     public static interface ProgressObserver
@@ -160,6 +160,7 @@ abstract class DB implements Codes
         _open(file, openFlags);
     }
 
+    boolean closed;
     /**
      * Closes a database connection and finalizes any remaining statements before
      * the closing operation.
@@ -167,19 +168,13 @@ abstract class DB implements Codes
      * @see <a href="http://www.sqlite.org/c3ref/close.html">http://www.sqlite.org/c3ref/close.html</a>
      */
     void close() throws SQLException {
+       if (closed) return;
+       closed = true;
         // finalize any remaining statements before closing db
-        synchronized (stmtsLock) {
-            //Iterator<Map.Entry<Long, Stmt>> i = stmts.entrySet().iterator();
-            Vector v = stmts.getKeys();
-            for (int i = 0, n = v.size(); i < n; i++) {
-               Long ll = (Long)v.items[i];
-                Stmt stmt = (Stmt)stmts.get(ll);
-                finalize(ll.longValue());
-                if (stmt != null) {
-                    stmt.pointer = 0;
-                }
-                stmts.remove(ll);
-            }
+        synchronized (stmtsLock) 
+        {
+            for (int i = stmts.size(); --i >= 0;)
+               ((Stmt)stmts.items[i]).close();
         }
 
         // remove memory used by user-defined functions
@@ -209,7 +204,15 @@ abstract class DB implements Codes
             finalize(stmt);
         }
         stmt.pointer = prepare(stmt.sql);
-        stmts.put(new Long(stmt.pointer), stmt);
+        synchronized (stmtsLock) 
+        {
+           stmts.addElement(stmt);
+        }
+    }
+    
+    public void finalize()
+    {
+       try {close();} catch (Throwable t) {}
     }
 
     /**
@@ -220,16 +223,18 @@ abstract class DB implements Codes
      * @see <a href="http://www.sqlite.org/c3ref/finalize.html">http://www.sqlite.org/c3ref/finalize.html</a>
      */
     int finalize(Stmt stmt) throws SQLException {
-        if (stmt.pointer == 0) {
+        if (stmt.pointer == 0) 
             return 0;
-        }
         int rc = SQLITE_ERROR;
-        try {
-            rc = finalize(stmt.pointer);
+        long pointer = stmt.pointer;
+        try 
+        {
+            rc = finalize(pointer);
         }
-        finally {
-            stmts.remove(new Long(stmt.pointer));
-            stmt.pointer = 0;
+        finally 
+        {
+           stmt.pointer = 0;
+           stmts.removeElement(stmt);
         }
         return rc;
     }
