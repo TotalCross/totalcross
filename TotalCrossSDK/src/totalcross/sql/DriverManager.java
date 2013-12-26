@@ -30,12 +30,10 @@ public class DriverManager
 
    public static Connection getConnection(String url) throws SQLException
    {
-      if (url.startsWith("jdbc:sqlite")) // :sample.db
+      if (url.startsWith("jdbc:sqlite:")) // :sample.db
       {
-         String dbname = "temp.db";
          int l = url.length();
-         if (l > 11 && url.endsWith(".db"))
-            dbname = url.substring(12);
+         String dbname = l == 12 ? "temp.db" : url.substring(12);
          try
          {
             return newConnection(url, dbname);
