@@ -19,6 +19,8 @@
 
 package totalcross.sys;
 
+import totalcross.util.*;
+
 /**
  * Time identifies a date and time.
  * <p>
@@ -82,6 +84,13 @@ public final class Time
 
    public native void update4D();
 
+   /** Constructs a time object from a Date, zeroing the hour/minute/second and millis
+    * @since TotalCross 2.0
+    */
+   public Time(Date d)
+   {
+      this(d.getDateInt(),0);
+   }
    /** Constructs a time object from the given value. 
     * @see #getTimeLong
     * @since SuperWaba 4.0
