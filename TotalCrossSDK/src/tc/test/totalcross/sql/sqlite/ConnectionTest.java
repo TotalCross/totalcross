@@ -129,13 +129,17 @@ public class ConnectionTest extends TestCase
          assertEquals(100, rs.getInt(1));
          stmt2.close();
 
-         try {stmt1.executeUpdate("drop table tbl2");} catch (Exception e) {}
-         stmt1.executeUpdate("create table tbl2(col int)");
-         stmt1.executeUpdate("insert into tbl2 values(200)");
-         stmt1.close();
+         Connection conn3 = DriverManager.getConnection("jdbc:sqlite:file::memory:?cache=shared");
+         Statement stmt3 = conn3.createStatement();
+         stmt3.executeUpdate("attach 'file:memdb1?mode=memory&cache=shared' as memdb1");
+         rs = stmt3.executeQuery("select * from memdb1.tbl");
+         assertTrue(rs.next());
+         assertEquals(100, rs.getInt(1));
+         stmt3.executeUpdate("create table tbl2(col int)");
+         stmt3.executeUpdate("insert into tbl2 values(200)");
+         stmt3.close();
 
-/*  GUICH AFAZER
-        Connection conn4 = DriverManager.getConnection("jdbc:sqlite:file::memory:?cache=shared");
+         Connection conn4 = DriverManager.getConnection("jdbc:sqlite:file::memory:?cache=shared");
          Statement stmt4 = conn4.createStatement();
          rs = stmt4.executeQuery("select * from tbl2");
          assertTrue(rs.next());
@@ -143,7 +147,7 @@ public class ConnectionTest extends TestCase
          rs.close();
          stmt4.close();
          conn4.close();
-*/      }
+      }
       catch (Exception e)
       {
          fail(e);
