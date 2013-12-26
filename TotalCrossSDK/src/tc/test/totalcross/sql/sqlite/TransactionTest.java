@@ -236,8 +236,7 @@ public class TransactionTest extends TestCase
                }
                catch (Exception e)
                {
-                  e.printStackTrace();
-                  return;
+                  fail(e);
                }
                done = true;
             }
