@@ -121,55 +121,6 @@ public class SQLiteConnection implements Connection
      * @see <a href="http://www.sqlite.org/c3ref/c_open_autoproxy.html">http://www.sqlite.org/c3ref/c_open_autoproxy.html</a>
      */
     private void open(int openModeFlags, int busyTimeout) throws SQLException {
-        // check the path to the file exists
-        if (!":memory:".equals(fileName) && !fileName.startsWith("file:") && fileName.indexOf("mode=memory") == -1) {
-/*            if (fileName.startsWith(RESOURCE_NAME_PREFIX)) {
-                String resourceName = fileName.substring(RESOURCE_NAME_PREFIX.length());
-
-                // search the class path
-                ClassLoader contextCL = Thread.currentThread().getContextClassLoader();
-                URL resourceAddr = contextCL.getResource(resourceName);
-                if (resourceAddr == null) {
-                    try {
-                        resourceAddr = new URL(resourceName);
-                    }
-                    catch (MalformedURLException e) {
-                        throw new SQLException(String.format("resource %s not found: %s", resourceName, e));
-                    }
-                }
-
-                try {
-                    fileName = extractResource(resourceAddr).getAbsolutePath();
-                }
-                catch (IOException e) {
-                    throw new SQLException(String.format("failed to load %s: %s", resourceName, e));
-                }
-            }
-            else */{
-/*                File file = new File(fileName).getAbsoluteFile();
-                File parent = file.getParentFile();
-                if (parent != null && !parent.exists()) {
-                    for (File up = parent; up != null && !up.exists();) {
-                        parent = up;
-                        up = up.getParentFile();
-                    }
-                    throw new SQLException("path to '" + fileName + "': '" + parent + "' does not exist");
-                }
-*/
-                // check write access if file does not exist
-/*                try {
-                    // The extra check to exists() is necessary as createNewFile()
-                    // does not follow the JavaDoc when used on read-only shares.
-                    if (!file.exists() && file.createNewFile())
-                        file.delete();
-                }
-                catch (Exception e) {
-                    throw new SQLException("opening db: '" + fileName + "': " + e.getMessage());
-                }
-                fileName = file.AbsolutePath();
-*/            }
-        }
-
         // load the native DB
         try {
            if (!isLoaded)
@@ -185,67 +136,6 @@ public class SQLiteConnection implements Connection
     }
     static boolean isLoaded;
 
-    /**
-     * Returns a file name from the given resource address.
-     * @param resourceAddr The resource address.
-     * @return The extracted file name.
-     * @throws IOException
-     */
-/*    private File extractResource(URL resourceAddr) throws IOException {
-        if (resourceAddr.getProtocol().equals("file")) {
-            try {
-                return new File(resourceAddr.toURI());
-            }
-            catch (URISyntaxException e) {
-                throw new IOException(e.getMessage());
-            }
-        }
-
-        String tempFolder = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
-        String dbFileName = String.format("sqlite-jdbc-tmp-%d.db", resourceAddr.hashCode());
-        File dbFile = new File(tempFolder, dbFileName);
-
-        if (dbFile.exists()) {
-            long resourceLastModified = resourceAddr.openConnection().getLastModified();
-            long tmpFileLastModified = dbFile.lastModified();
-            if (resourceLastModified < tmpFileLastModified) {
-                return dbFile;
-            }
-            else {
-                // remove the old DB file
-                boolean deletionSucceeded = dbFile.delete();
-                if (!deletionSucceeded) {
-                    throw new IOException("failed to remove existing DB file: " + dbFile.getAbsolutePath());
-                }
-            }
-
-            //            String md5sum1 = SQLiteJDBCLoader.md5sum(resourceAddr.openStream());
-            //            String md5sum2 = SQLiteJDBCLoader.md5sum(new FileInputStream(dbFile));
-            //
-            //            if (md5sum1.equals(md5sum2))
-            //                return dbFile; // no need to extract the DB file
-            //            else
-            //            {
-            //            }
-        }
-
-        byte[] buffer = new byte[8192]; // 8K buffer
-        FileOutputStream writer = new FileOutputStream(dbFile);
-        InputStream reader = resourceAddr.openStream();
-        try {
-            int bytesRead = 0;
-            while ((bytesRead = reader.read(buffer)) != -1) {
-                writer.write(buffer, 0, bytesRead);
-            }
-            return dbFile;
-        }
-        finally {
-            writer.close();
-            reader.close();
-        }
-
-    }
-*/
     /**
      * @return The busy timeout value for the connection.
      * @see <a href="http://www.sqlite.org/c3ref/busy_timeout.html">http://www.sqlite.org/c3ref/busy_timeout.html</a>
@@ -548,28 +438,6 @@ public class SQLiteConnection implements Connection
     }
 
     /**
-     * @see java.sql.Connection#prepareCall(java.lang.String)
-     */
-/*    public CallableStatement prepareCall(String sql) throws SQLException {
-        return prepareCall(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
-                ResultSet.CLOSE_CURSORS_AT_COMMIT);
-    }
-*/
-    /**
-     * @see java.sql.Connection#prepareCall(java.lang.String, int, int)
-     */
-/*    public CallableStatement prepareCall(String sql, int rst, int rsc) throws SQLException {
-        return prepareCall(sql, rst, rsc, ResultSet.CLOSE_CURSORS_AT_COMMIT);
-    }
-*/
-    /**
-     * @see java.sql.Connection#prepareCall(java.lang.String, int, int, int)
-     */
-/*    public CallableStatement prepareCall(String sql, int rst, int rsc, int rsh) throws SQLException {
-        throw new SQLException("SQLite does not support Stored Procedures");
-    }
-
-*/    /**
      * @see java.sql.Connection#prepareStatement(java.lang.String)
      */
     public PreparedStatement prepareStatement(String sql) throws SQLException {
@@ -621,38 +489,4 @@ public class SQLiteConnection implements Connection
         // Used to supply DatabaseMetaData.getDriverVersion()
         return  db != null ? "native" : "unloaded";
     }
-
-    // UNUSED FUNCTIONS /////////////////////////////////////////////
-
-    /**
-     * @see java.sql.Connection#setSavepoint()
-     */
-/*    public Savepoint setSavepoint() throws SQLException {
-        throw new SQLException("unsupported by SQLite: savepoints");
-    }
-*/
-    /**
-     * @see java.sql.Connection#setSavepoint(java.lang.String)
-     */
-/*    public Savepoint setSavepoint(String name) throws SQLException {
-        throw new SQLException("unsupported by SQLite: savepoints");
-    }
-*/
-    /**
-     * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
-     */
-/*    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        throw new SQLException("unsupported by SQLite: savepoints");
-    }
-*/
-    /**
-     * @see java.sql.Connection#rollback(java.sql.Savepoint)
-     */
-/*    public void rollback(Savepoint savepoint) throws SQLException {
-        throw new SQLException("unsupported by SQLite: savepoints");
-    }
-*/
-/*    public Struct createStruct(String t, Object[] attr) throws SQLException {
-        throw new SQLException("unsupported by SQLite");
-    }
-*/}
+}
