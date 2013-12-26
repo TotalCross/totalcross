@@ -172,7 +172,7 @@ public class SQLiteConnection implements Connection
 
         // load the native DB
         try {
-           if (!NativeDB.isLoaded)
+           if (!isLoaded)
               NativeDB.load();
             db = new NativeDB();
         }
@@ -183,6 +183,7 @@ public class SQLiteConnection implements Connection
         db.open(this, fileName, openModeFlags);
         setBusyTimeout(busyTimeout);
     }
+    static boolean isLoaded;
 
     /**
      * Returns a file name from the given resource address.

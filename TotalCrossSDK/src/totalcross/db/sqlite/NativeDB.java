@@ -23,10 +23,6 @@ final class NativeDB extends DB
 {
     /** SQLite connection handle. */
     long pointer;
-    /** linked list of all instanced UDFDatas */
-    long udfdatalist;
-
-    static boolean isLoaded;
 
     /**
      * Loads the SQLite interface backend.
