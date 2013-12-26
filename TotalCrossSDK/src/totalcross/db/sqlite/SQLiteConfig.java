@@ -43,7 +43,7 @@ import totalcross.util.Enum;
 public class SQLiteConfig
 {
     private final Hashtable pragmaTable;
-    private int openModeFlag = 0x00;
+    private int openModeFlag;
     private TransactionMode transactionMode;
     protected int busyTimeout;
 
@@ -93,7 +93,9 @@ public class SQLiteConfig
         dateMultiplier = datePrecision == DatePrecision.MILLISECONDS ? 1L : 1000L;
         dateStringFormat = (String)pragmaTable.get(Pragma.DATE_STRING_FORMAT.pragmaName, DEFAULT_DATE_STRING_FORMAT);
 
-        try {busyTimeout = Convert.toInt((String)pragmaTable.get(Pragma.BUSY_TIMEOUT.pragmaName));} catch (Exception e) {busyTimeout = 3000;}
+        String s = (String)pragmaTable.get(Pragma.BUSY_TIMEOUT.pragmaName);
+        if (s != null)
+           try {busyTimeout = Convert.toInt(s);} catch (Exception e) {busyTimeout = 3000;}
     }
 
     /**
