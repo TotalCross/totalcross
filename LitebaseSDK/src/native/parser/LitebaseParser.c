@@ -894,7 +894,7 @@ int32 singleExp(int32 token, LitebaseParser* parser)
       
       return auxToken;
    }
-   else // single expression = pure field.
+   else if (token != TK_NULL)// single expression = pure field.
    {
       SQLBooleanClause* booleanClause = getInstanceBooleanClause(parser);                  
       int32 i = 1, 
@@ -931,6 +931,7 @@ int32 singleExp(int32 token, LitebaseParser* parser)
       
       return token;
    } 
+   return lbError(ERR_SYNTAX_ERROR, parser);
 }
 
 /**
