@@ -18,10 +18,9 @@ public class TransactionTest extends TestCase
 
    public void connect() throws Exception
    {
-
-      conn1 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
-      conn2 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
-      conn3 = DriverManager.getConnection("jdbc:sqlite:" + tmpName + "?cache=private");
+      conn1 = DriverManager.getConnection("jdbc:sqlite:file:" + tmpName + "?cache=private");
+      conn2 = DriverManager.getConnection("jdbc:sqlite:file:" + tmpName + "?cache=private");
+      conn3 = DriverManager.getConnection("jdbc:sqlite:file:" + tmpName + "?cache=private");
 
       stat1 = conn1.createStatement();
       stat2 = conn2.createStatement();
@@ -42,7 +41,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS test");
+         stat1.execute("DROP TABLE IF EXISTS test");
          stat1.executeUpdate("create table test (c1);");
          stat1.executeUpdate("insert into test values (1);");
          stat2.executeUpdate("insert into test values (2);");
@@ -68,7 +67,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS test");
+         stat1.execute("DROP TABLE IF EXISTS test");
          stat1.executeUpdate("create table test (c1);");
          stat1.executeUpdate("begin immediate;");
          stat2.executeUpdate("select * from test;");
@@ -85,8 +84,8 @@ public class TransactionTest extends TestCase
       {
          ResultSet rs;
          String countSql = "select count(*) from trans;";
+         stat1.execute("DROP TABLE IF EXISTS trans;");
          conn1.setAutoCommit(false);
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS trans");
          stat1.executeUpdate("create table trans (c1);");
 
          assertEquals(1, stat1.executeUpdate("insert into trans values (4);"));
@@ -124,7 +123,7 @@ public class TransactionTest extends TestCase
          String select = "select * from trans;";
          ResultSet rs;
 
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS trans");
+         stat1.execute("DROP TABLE IF EXISTS trans");
          stat1.executeUpdate("create table trans (c1);");
          conn1.setAutoCommit(false);
          stat1.executeUpdate("insert into trans values (3);");
@@ -151,7 +150,7 @@ public class TransactionTest extends TestCase
       {
          ResultSet rs;
 
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
+         stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          conn1.setAutoCommit(false);
          stat1.executeUpdate("insert into t values (1);");
@@ -195,7 +194,7 @@ public class TransactionTest extends TestCase
    {
       try
       {
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
+         stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
@@ -214,15 +213,17 @@ public class TransactionTest extends TestCase
       }
    }
 
+   Exception secondError;
    public void secondConnWillWait() 
    {
+      if (Settings.onJavaSE) // guich: AFAZER: no pda esta passando direto
       try
       {
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
+         stat1.execute("DROP TABLE IF EXISTS t;");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
-         ResultSet rs = stat1.executeQuery("select * from t;");
+         ResultSet rs = stat1.executeQuery("select * from t;"); // this will lock the database
          assertTrue(rs.next());
 
          done = false;
@@ -230,23 +231,25 @@ public class TransactionTest extends TestCase
          {
             public void run()
             {
-               try
+               try               
                {
-                  stat2.executeUpdate("insert into t values (3);");
+                  stat2.executeUpdate("insert into t values (3);"); // this should wait until *** is called
                }
                catch (Exception e)
                {
-                  fail(e);
+                  secondError = e;
                }
                done = true;
             }
          }.start();
-
-         Vm.sleep(100);
-         rs.close();
+         
+         Vm.sleep(100); // wait the thread start
+         rs.close(); // ***
 
          while (!done)
             Vm.sleep(100);
+         if (secondError != null)
+            fail(secondError);
       }
       catch (Exception e)
       {
@@ -259,7 +262,7 @@ public class TransactionTest extends TestCase
       try
       {
          stat1.setQueryTimeout(1);
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
+         stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
@@ -282,7 +285,7 @@ public class TransactionTest extends TestCase
          Statement stat2 = conn1.createStatement();
          stat1.close();
          stat1 = conn1.createStatement();
-         Vm.gc(); stat1.execute("DROP TABLE IF EXISTS t");
+         stat1.execute("DROP TABLE IF EXISTS t");
          stat1.executeUpdate("create table t (c1);");
          stat1.executeUpdate("insert into t values (1);");
          stat1.executeUpdate("insert into t values (2);");
