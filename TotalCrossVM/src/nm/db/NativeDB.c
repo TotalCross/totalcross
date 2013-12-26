@@ -26,12 +26,14 @@
 #define DB_commit(o)             FIELD_I64(o, OBJ_CLASS(o), 1)
 
 #define NativeDB_pointer(o)      FIELD_I64(o, OBJ_CLASS(o), 2)
-#define NativeDB_udfdatalist(o)  FIELD_I64(o, OBJ_CLASS(o), 3)
 
 static TCClass dbclass;
 static TCClass fclass;
 static TCClass aclass;
 static TCClass pclass;
+
+#define TRACE(x)
+//#define TRACE(x) bool xxx = debug("%s: i64: %X, obj: %X",x,(int)p->i64[0],(int)p->obj[0]);
 
 static void * toref(int64 value)
 {
@@ -94,22 +96,28 @@ static void sethandle(Context currentContext, Object this_, sqlite3 * ref)
 
 TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
+   TRACE("tdsNDB_load")
+   if (dbclass == null)
+   {
     dbclass = loadClass(p->currentContext, "totalcross.db.sqlite.NativeDB", false);
     fclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function", false);
     aclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function$Aggregate", false);
 	 pclass  = loadClass(p->currentContext, "totalcross.db.sqlite.DB$ProgressObserver", false);
+   }
 }
 
 // WRAPPERS for sqlite_* functions //////////////////////////////////
 
 TC_API void tdsNDB_shared_cache_b(NMParams p) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
 {
+   TRACE("tdsNDB_shared_cache_b")
    Object this_ = p->obj[0];
    bool enable = p->i32[0];
    p->retI = sqlite3_enable_shared_cache(enable);
 }
 TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/NativeDB native int enable_load_extension(boolean enable);
 {
+   TRACE("tdsNDB_enable_load_extension_b")
    Object this_ = p->obj[0];
    bool enable = p->i32[0];
 	p->retI = sqlite3_enable_load_extension(gethandle(p->currentContext, this_), enable);
@@ -117,6 +125,7 @@ TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/N
 
 TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
 {
+   TRACE("tdsNDB__open_si")
     int32 ret;
     int32 flags = p->i32[0];
     Object this_ = p->obj[0];
@@ -146,20 +155,23 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
 
 TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
 {
+   TRACE("!!!!!! tdsNDB__close")
    Object this_ = p->obj[0];
-    if (sqlite3_close(gethandle(p->currentContext, this_)) != SQLITE_OK)
-        throwex(p->currentContext, this_);
-    sethandle(p->currentContext, this_, 0);
+    if (sqlite3_close(gethandle(p->currentContext, this_)) == SQLITE_OK)
+        //throwex(p->currentContext, this_);
+       sethandle(p->currentContext, this_, 0);
 }
 
 TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native void interrupt();
 {
+   TRACE("tdsNDB_interrupt")
    Object this_ = p->obj[0];
     sqlite3_interrupt(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
 {                                                                
+   TRACE("tdsNDB_busy_timeout_i")
    Object this_ = p->obj[0];
    int32 ms = p->i32[0];
     sqlite3_busy_timeout(gethandle(p->currentContext, this_), ms);
@@ -167,6 +179,7 @@ TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native long prepare(String sql) throws SQLException;
 {
+   TRACE("tdsNDB_prepare_s")
    Object this_ = p->obj[0];
    Object sql = p->obj[1];
     sqlite3* db = gethandle(p->currentContext, this_);
@@ -186,6 +199,7 @@ TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protec
 
 TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
 {
+   TRACE("tdsNDB__exec_s")
    Object this_ = p->obj[0];
    Object sql = p->obj[1];
     sqlite3* db = gethandle(p->currentContext, this_);
@@ -214,65 +228,76 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
 
 TC_API void tdsNDB_errmsg(NMParams p) // totalcross/db/sqlite/NativeDB native String errmsg();
 {
+   TRACE("tdsNDB_errmsg")
    Object this_ = p->obj[0];
     setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_errmsg(gethandle(p->currentContext, this_)),-1), UNLOCKED);
 }
 
 TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB native String libversion();
 {
+   TRACE("tdsNDB_libversion")
     setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_libversion(), -1), UNLOCKED);
 }
 
 TC_API void tdsNDB_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int changes();
 {
+   TRACE("tdsNDB_changes")
    Object this_ = p->obj[0];
     p->retI = sqlite3_changes(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_total_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int total_changes();
 {
+   TRACE("tdsNDB_total_changes")
    Object this_ = p->obj[0];
     p->retI = sqlite3_total_changes(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_finalize_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int finalize(long stmt);
 {
+   TRACE("@@@@ tdsNDB_finalize_l")
    int64 stmt = p->i64[0];
    p->retI = sqlite3_finalize(toref(stmt));
 }
 
 TC_API void tdsNDB_step_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int step(long stmt);
 {
+   TRACE("tdsNDB_step_l")
    int64 stmt = p->i64[0];
    p->retI = sqlite3_step(toref(stmt));
 }
 
 TC_API void tdsNDB_reset_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int reset(long stmt);
 {
+   TRACE("tdsNDB_reset_l")
    int64 stmt = p->i64[0];
     p->retI = sqlite3_reset(toref(stmt));
 }
 
 TC_API void tdsNDB_clear_bindings_l(NMParams p) // totalcross/db/sqlite/NativeDB native int clear_bindings(long stmt);
 {
+   TRACE("tdsNDB_clear_bindings_l")
    int64 stmt = p->i64[0];
     p->retI = sqlite3_clear_bindings(toref(stmt));
 }
 
 TC_API void tdsNDB_bind_parameter_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_parameter_count(long stmt);
 {
+   TRACE("tdsNDB_bind_parameter_count_l")
    int64 stmt = p->i64[0];
     p->retI = sqlite3_bind_parameter_count(toref(stmt));
 }
 
 TC_API void tdsNDB_column_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int column_count(long stmt);
 {
+   TRACE("tdsNDB_column_count_l")
    int64 stmt = p->i64[0];
     p->retI = sqlite3_column_count(toref(stmt));
 }
 
 TC_API void tdsNDB_column_type_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_type(long stmt, int col);
 {
+   TRACE("tdsNDB_column_type_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
     p->retI = sqlite3_column_type(toref(stmt), col);
@@ -280,14 +305,16 @@ TC_API void tdsNDB_column_type_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_column_decltype_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_decltype(long stmt, int col);
 {
+   TRACE("tdsNDB_column_decltype_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    char *str = (char*)sqlite3_column_decltype(toref(stmt), col);
-   setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, str,-1), UNLOCKED);
+   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_table_name(long stmt, int col);
 {
+   TRACE("tdsNDB_column_table_name_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    JChar *str = (JChar*)sqlite3_column_table_name16(toref(stmt), col);
@@ -296,6 +323,7 @@ TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/Nati
 
 TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_name(long stmt, int col);
 {
+   TRACE("tdsNDB_column_name_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    JChar *str = (JChar*)sqlite3_column_name16(toref(stmt), col);
@@ -304,6 +332,7 @@ TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
 {
+   TRACE("tdsNDB_column_text_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    char* str = (char*)sqlite3_column_text(toref(stmt), col);
@@ -312,6 +341,7 @@ TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
 {
+   TRACE("tdsNDB_column_blob_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
     int32 length;
@@ -331,6 +361,7 @@ TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_column_double_li(NMParams p) // totalcross/db/sqlite/NativeDB native double column_double(long stmt, int col);
 {
+   TRACE("tdsNDB_column_double_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    p->retD = sqlite3_column_double(toref(stmt), col);
@@ -338,6 +369,7 @@ TC_API void tdsNDB_column_double_li(NMParams p) // totalcross/db/sqlite/NativeDB
 
 TC_API void tdsNDB_column_long_li(NMParams p) // totalcross/db/sqlite/NativeDB native long column_long(long stmt, int col);
 {
+   TRACE("tdsNDB_column_long_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0]; 
    p->retL = sqlite3_column_int64(toref(stmt), col);
@@ -345,6 +377,7 @@ TC_API void tdsNDB_column_long_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_column_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_int(long stmt, int col);
 {
+   TRACE("tdsNDB_column_int_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
     p->retI = sqlite3_column_int(toref(stmt), col);
@@ -352,6 +385,7 @@ TC_API void tdsNDB_column_int_li(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_bind_null_li(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_null(long stmt, int pos);
 {
+   TRACE("tdsNDB_bind_null_li")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
     p->retI = sqlite3_bind_null(toref(stmt), pos);
@@ -359,6 +393,7 @@ TC_API void tdsNDB_bind_null_li(NMParams p) // totalcross/db/sqlite/NativeDB nat
 
 TC_API void tdsNDB_bind_int_lii(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_int(long stmt, int pos, int v);
 {
+   TRACE("tdsNDB_bind_int_lii")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    int32 v = p->i32[1];
@@ -367,6 +402,7 @@ TC_API void tdsNDB_bind_int_lii(NMParams p) // totalcross/db/sqlite/NativeDB nat
 
 TC_API void tdsNDB_bind_long_lil(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_long(long stmt, int pos, long v);
 {
+   TRACE("tdsNDB_bind_long_lil")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    int64 v = p->i64[1];
@@ -375,6 +411,7 @@ TC_API void tdsNDB_bind_long_lil(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_bind_double_lid(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_double(long stmt, int pos, double v);
 {
+   TRACE("tdsNDB_bind_double_lid")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    double v = p->dbl[1];
@@ -383,6 +420,7 @@ TC_API void tdsNDB_bind_double_lid(NMParams p) // totalcross/db/sqlite/NativeDB 
 
 TC_API void tdsNDB_bind_text_lis(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_text(long stmt, int pos, String v);
 {
+   TRACE("tdsNDB_bind_text_lis")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    Object v = p->obj[1];
@@ -394,6 +432,7 @@ TC_API void tdsNDB_bind_text_lis(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_bind_blob_liB(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_blob(long stmt, int pos, byte []v);
 {
+   TRACE("tdsNDB_bind_blob_liB")
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    Object v = p->obj[1];
@@ -404,12 +443,14 @@ TC_API void tdsNDB_bind_blob_liB(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_result_null_l(NMParams p) // totalcross/db/sqlite/NativeDB native void result_null(long context);
 {
+   TRACE("tdsNDB_result_null_l")
     int64 context = p->i64[0];
     sqlite3_result_null(toref(context));
 }
 
 TC_API void tdsNDB_result_text_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_text(long context, String val);
 {
+   TRACE("tdsNDB_result_text_ls")
     JChar *str;
     int32 size;
     int64 context = p->i64[0];
@@ -423,6 +464,7 @@ TC_API void tdsNDB_result_text_ls(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_result_blob_lB(NMParams p) // totalcross/db/sqlite/NativeDB native void result_blob(long context, byte []val);
 {
+   TRACE("tdsNDB_result_blob_lB")
     int8 *bytes;
     int32 size;
     int64 context = p->i64[0];
@@ -436,6 +478,7 @@ TC_API void tdsNDB_result_blob_lB(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_result_double_ld(NMParams p) // totalcross/db/sqlite/NativeDB native void result_double(long context, double val);
 {
+   TRACE("tdsNDB_result_double_ld")
     int64 context = p->i64[0];
     double value = p->dbl[0];
     sqlite3_result_double(toref(context), value);
@@ -443,6 +486,7 @@ TC_API void tdsNDB_result_double_ld(NMParams p) // totalcross/db/sqlite/NativeDB
 
 TC_API void tdsNDB_result_long_ll(NMParams p) // totalcross/db/sqlite/NativeDB native void result_long(long context, long val);
 {
+   TRACE("tdsNDB_result_long_ll")
     int64 context = p->i64[0];
     int64 value = p->i64[1];
     sqlite3_result_int64(toref(context), value);
@@ -450,6 +494,7 @@ TC_API void tdsNDB_result_long_ll(NMParams p) // totalcross/db/sqlite/NativeDB n
 
 TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native void result_int(long context, int val);
 {
+   TRACE("tdsNDB_result_int_li")
     int64 context = p->i64[0];
     int32 value = p->i32[0];
     sqlite3_result_int(toref(context), value);
@@ -459,6 +504,7 @@ TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB na
 
 TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
 {
+   TRACE("tdsNDB_column_metadata_l")
    Object this_ = p->obj[0];
    int64 stmt = p->i64[0];
     char *zTableName, *zColumnName;
@@ -474,7 +520,7 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
     dbstmt = toref(stmt);
 
     colCount = sqlite3_column_count(dbstmt);
-    boolArray = createArrayObject(p->currentContext, BOOLEAN_ARRAY, colCount) ;
+    boolArray = createArrayObject(p->currentContext, MATRIX_OF(BOOLEAN_ARRAY), colCount) ;
     oa = (Object*)ARRAYOBJ_START(boolArray);
 
     for (i = 0; i < colCount; i++) {
@@ -508,7 +554,6 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
 // backup function
 
 void reportProgress(Context currentContext, Object func, int remaining, int pageCount) {
-
   static Method mth = 0;
   if (!mth) 
       mth = getMethod(pclass, true, "progress", 2, J_INT, J_INT);
@@ -540,6 +585,7 @@ void reportProgress(Context currentContext, Object func, int remaining, int page
 
 TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
+   TRACE("tdsNDB_backup_ssp")
    Object this_ = p->obj[0];
    Object dbName = p->obj[1];
    Object destFileName = p->obj[2];
@@ -585,6 +631,7 @@ TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nativ
 
 TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
+   TRACE("tdsNDB_restore_ssp")
    Object this_ = p->obj[0];
    Object dbName = p->obj[1];
    Object sourceFileName = p->obj[2];
