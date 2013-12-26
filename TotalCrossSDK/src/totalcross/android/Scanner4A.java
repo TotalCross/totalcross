@@ -30,7 +30,7 @@ public class Scanner4A
       return true;
    }
    
-   static boolean setBarcodeParam()
+   static boolean setBarcodeParam(int barcodeType, boolean enable)
    {
       AndroidUtils.debug("setBarcodeParam");
       return true;

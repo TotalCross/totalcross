@@ -310,21 +310,21 @@ Object callStringMethodWithoutParams(Context context, CharP name)
 {
    JNIEnv* env = getJNIEnv();
    jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
-   jstring string = (*env)->CallStaticObjectMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, name, "()Ljava/lang/String"));
+   jstring string = (*env)->CallStaticObjectMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, name, "()Ljava/lang/String;"));
+   Object ret = null;
 
    if (string)
    {
       CharP charP = (*env)->GetStringUTFChars(env, string, 0);
+      
       if (charP) 
       {
-         Object ret = createStringObjectFromCharP(context, charP , -1);
-         
+         ret = createStringObjectFromCharP(context, charP , -1);        
          (*env)->ReleaseStringUTFChars(env, string, charP);
-         return ret; 
       }
       (*env)->DeleteLocalRef(env, string); 
    }
-   return null;
+   return ret;
 }
 #endif
 
