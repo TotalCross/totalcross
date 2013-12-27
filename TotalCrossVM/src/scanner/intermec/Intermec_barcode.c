@@ -9,11 +9,8 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
-#include "barcode.h"
-
 #if defined WINCE
+#include "barcode.h"
 #include "itcscan.h"
 
 #define MAX_MESSAGE_LENGTH 4096
@@ -241,6 +238,8 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
 }
 
 #elif defined (ANDROID)
+#include "barcode.h"
+
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean scannerActivate();
 {
