@@ -12,6 +12,7 @@
 
 #include <thread>
 #include "winrtangle.h"
+#include "../Window.h"
 
 using namespace TotalCross;
 
@@ -23,6 +24,7 @@ using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
+using namespace Windows::Phone::UI::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
@@ -103,9 +105,6 @@ private:
 	float m_total;
 	float m_delta;
 };
-//XXX
-
-// rotating cube
 
 MainView::MainView() :
 m_windowClosed(false),
@@ -142,7 +141,12 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 void MainView::SetWindow(CoreWindow^ window)
 {
    currentWindow = window;
+
    m_inputBuffer = ref new Windows::Phone::UI::Core::KeyboardInputBuffer();
+   m_inputBuffer->InputScope = CoreInputScope::Text;
+   m_inputBuffer->TextChanged +=
+	   ref new TypedEventHandler<KeyboardInputBuffer^, CoreTextChangedEventArgs^>(this, &MainView::OnTextChange);
+   window->KeyboardInputBuffer = m_inputBuffer;
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -160,33 +164,51 @@ void MainView::SetWindow(CoreWindow^ window)
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerReleased);
 	window->KeyDown +=
 		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &MainView::OnKeyDown);
+	window->KeyUp +=
+		ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &MainView::OnKeyUp);
 
 	window->PointerWheelChanged +=
 		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerWheel);
 
-//#if (_MSC_VER >= 1800)
-//	// WinRT on Windows 8.1 can compile shaders at run time so we don't care about the DirectX feature level
-//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_ANY;
-//#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE)
-//	// Windows Phone 8.0 uses D3D_FEATURE_LEVEL_9_3
-//	auto featureLevel = ANGLE_D3D_FEATURE_LEVEL::ANGLE_D3D_FEATURE_LEVEL_9_3;
-//#endif 
-//
-//	HRESULT result = CreateWinrtEglWindow(WINRT_EGL_IUNKNOWN(CoreWindow::GetForCurrentThread()), featureLevel, m_eglWindow.GetAddressOf());
-//	if (SUCCEEDED(result))
-//	{
-//		m_esContext.hWnd = m_eglWindow;
-//
-//		//title, width, and height are unused, but included for backwards compatibility
-//		esCreateWindow(&m_esContext, nullptr, 0, 0, ES_WINDOW_RGB | ES_WINDOW_DEPTH);
-//
-//		m_cubeRenderer.CreateResources();
-//	}
+	window->CharacterReceived +=
+		ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &MainView::OnCharacterReceived);
+
+	window->PointerCaptureLost +=
+		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerWheel); 
+	window->PointerExited +=
+		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &MainView::OnPointerWheel);
+
+	window->InputEnabled +=
+		ref new TypedEventHandler<CoreWindow^, InputEnabledEventArgs^>(this, &MainView::OnInputEnabled);
+}
+
+void MainView::OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args)
+{
+	debug("OnInputEnabled");
+}
+
+void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
+{
+	auto k = args->KeyCode;
+
+	auto x = m_inputBuffer->ToString()->Data();
+	auto len = m_inputBuffer->ToString()->Length();
+	int i;
+	char s[1024];
+
+	for (i = 0; i < len; i++) {
+		s[i] = (char)x[i];
+	}
+	s[i] = '\0';
+
+	debug("caracter recebido: %c", k);
+	debug("input ateh agora: %s", s);
+	debug("caracter recebido");
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
-	debug("pointer wheel, serah que era isso?");
+	debug("NÃO APENAS pointer wheel, serah que era isso?");
 }
 
 void MainView::Load(Platform::String^ entryPoint)
@@ -203,39 +225,8 @@ void MainView::Run()
 		m_windowClosed = true;
 	}
 
-
-	//currentWindow.Get()->IsKeyboardInputEnabled = true;
 	set_dispatcher();
 
-   if (!m_windowClosed)
-      startProgram(local_context);
-   /*t = std::thread([=]{mainLoop(); });
-
-   m_windowClosed = false;
-   while (!m_windowClosed)
-   {
-      if (m_windowVisible)
-      {
-		  //callLastDrawText();
-		  //timer->Update();
-		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		  //updateScreenANGLE();
-		  //m_cubeRenderer.Update(timer->Total, timer->Delta);
-		  //m_cubeRenderer.Render();
-		  //eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface);
-         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-         //DisplayDX();
-      }
-      else
-      {
-		  CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-         //x->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-      }
-   }*/
-}
-
-void MainView::mainLoop()
-{
    if (!m_windowClosed)
       startProgram(local_context);
 }
@@ -247,134 +238,27 @@ void MainView::Uninitialize()
 
 void MainView::OnKeyDown(CoreWindow ^sender, KeyEventArgs ^args)
 {
-	char buffer[1024];
-	int i, l;
+}
 
-	auto s = args->VirtualKey.ToString();
-	auto cp = s->Data();
-	l = s->Length();
+void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
+{
+}
 
-	debug("tecla pressionada len \"%d\"", l);
+void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
+{
+	debug("text change");
 
-	for (i = 0; i < l; i++) {
-		buffer[i] = (char)cp[i];
+	auto x = m_inputBuffer->Text->Data();
+	auto len = m_inputBuffer->Text->Length();
+	int i;
+	char s[1024];
+
+	for (i = 0; i < len; i++) {
+		s[i] = (char)x[i];
 	}
-	buffer[i] = '\0';
-	debug("buff %s", buffer);
+	s[i] = '\0';
 
-	debug("lalala %d", (int)args->VirtualKey);
-
-	switch (args->VirtualKey) {
-#define macro_key(key) case Windows::System::VirtualKey::##key##: debug("pressionado " #key ", seu hexadecimal: %x", (int)Windows::System::VirtualKey::##key); break
-		macro_key(Accept);
-		macro_key(Add);
-		macro_key(Back);
-		macro_key(Cancel);
-		macro_key(CapitalLock);
-		macro_key(Clear);
-		macro_key(Control);
-		macro_key(Convert);
-		macro_key(Decimal);
-		macro_key(Delete);
-		macro_key(Divide);
-		macro_key(Down);
-		macro_key(End);
-		macro_key(Enter);
-		macro_key(Escape);
-		macro_key(Execute);
-		macro_key(F1);
-		macro_key(F2);
-		macro_key(F3);
-		macro_key(F4);
-		macro_key(F5);
-		macro_key(F6);
-		macro_key(F7);
-		macro_key(F8);
-		macro_key(F9);
-		macro_key(F10);
-		macro_key(F11);
-		macro_key(F12);
-		macro_key(F13);
-		macro_key(F14);
-		macro_key(F15);
-		macro_key(F16);
-		macro_key(F17);
-		macro_key(F18);
-		macro_key(F19);
-		macro_key(F20);
-		macro_key(F21);
-		macro_key(F22);
-		macro_key(F23);
-		macro_key(F24);
-		macro_key(Final);
-		macro_key(Hangul);
-		macro_key(Hanja);
-		macro_key(Help);
-		macro_key(Home);
-		macro_key(Insert);
-		macro_key(Junja);
-		//macro_key(Kana);
-		//macro_key(Kanji);
-		macro_key(Left);
-		macro_key(LeftButton);
-		macro_key(LeftControl);
-		macro_key(LeftMenu);
-		macro_key(LeftShift);
-		macro_key(LeftWindows);
-		macro_key(Menu);
-		macro_key(MiddleButton);
-		macro_key(ModeChange);
-		macro_key(Multiply);
-		macro_key(NonConvert);
-		macro_key(None);
-		macro_key(Number0);
-		macro_key(Number1);
-		macro_key(Number2);
-		macro_key(Number3);
-		macro_key(Number4);
-		macro_key(Number5);
-		macro_key(Number6);
-		macro_key(Number7);
-		macro_key(Number8);
-		macro_key(Number9);
-		macro_key(NumberKeyLock);
-		macro_key(NumberPad0);
-		macro_key(NumberPad1);
-		macro_key(NumberPad2);
-		macro_key(NumberPad3);
-		macro_key(NumberPad4);
-		macro_key(NumberPad5);
-		macro_key(NumberPad6);
-		macro_key(NumberPad7);
-		macro_key(NumberPad8);
-		macro_key(NumberPad9);
-		macro_key(PageUp);
-		macro_key(PageDown);
-		macro_key(Pause);
-		macro_key(Print);
-		macro_key(Right);
-		macro_key(RightButton);
-		macro_key(RightControl);
-		macro_key(RightMenu);
-		macro_key(RightShift);
-		macro_key(RightWindows);
-		macro_key(Scroll);
-		macro_key(Select);
-		macro_key(Separator);
-		macro_key(Shift);
-		macro_key(Sleep);
-		macro_key(Snapshot);
-		macro_key(Space);
-		macro_key(Subtract);
-		macro_key(Tab);
-		macro_key(Up);
-		macro_key(XButton1);
-		macro_key(XButton2);
-		//Windows::System::VirtualKey::
-#undef macro_key
-	default:
-		debug("pressionado não reconhecido, seu hexa %x", (int) args->VirtualKey);
-	}
+	debug("input ateh agora: %s", s);
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -399,7 +283,7 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 	// Insert your code here.
 	auto pos = args->CurrentPoint->Position;
 	if (lastX != pos.X || lastY != pos.Y) {
-		debug("lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
 		postEvent(mainContext, PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y, -1);
 		isDragging = true;
 	}
@@ -458,8 +342,25 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
    return currentWindow.Get();
 }
 
-void MainView::setKeyboard(bool state)
+void MainView::setKeyboard(int kb)
 {
-	currentWindow.Get()->IsKeyboardInputEnabled = state;
-//	throw(1);
+	currentWindow.Get()->KeyboardInputBuffer;// = m_inputBuffer;
+
+	switch ((enum TCSIP) kb)
+	{
+	case SIP_ENABLE_NUMERICPAD:
+		//m_inputBuffer->InputScope = CoreInputScope::Number;
+		break;
+	case SIP_DISABLE_NUMERICPAD:
+		//m_inputBuffer->InputScope = CoreInputScope::Text;
+		break;
+	case SIP_HIDE:
+		currentWindow.Get()->IsKeyboardInputEnabled = false;
+		break;
+	case SIP_TOP:
+	case SIP_BOTTOM:
+	case SIP_SHOW:
+		currentWindow.Get()->IsKeyboardInputEnabled = true;
+		break;
+	}
 }

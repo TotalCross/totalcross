@@ -20,7 +20,7 @@ namespace TotalCross
 		MainView();
 		MainView(Platform::String ^cmdline, Platform::String ^appPath);
 
-	  void setKeyboard(bool state);
+		void setKeyboard(int kb); // enum TCSIP
 		static MainView ^GetLastInstance();
 		// IFrameworkView Methods.
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
@@ -42,7 +42,12 @@ namespace TotalCross
 		void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 		void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 	  void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+	  void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 	  void OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+	  void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
+	  void OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args);
+
+	  void OnTextChange(Windows::Phone::UI::Core::KeyboardInputBuffer ^sender, Windows::Phone::UI::Core::CoreTextChangedEventArgs ^args);
 
 	private:
       ESContext m_esContext;

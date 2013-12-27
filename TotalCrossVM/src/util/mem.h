@@ -20,6 +20,8 @@ extern "C" {
 
 #include <setjmp.h>
 
+#include "tcapi.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // Atomic memory allocation
 // The pointer is handled as a unique pointer, which must be freed separatedly.

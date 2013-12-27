@@ -289,6 +289,7 @@
     <ClInclude Include="..\..\..\src\tcvm\objectmemorymanager.h" />
     <ClInclude Include="..\..\..\src\tcvm\objectmemorymanager_test.h" />
     <ClInclude Include="..\..\..\src\tcvm\opcodes.h" />
+    <ClInclude Include="..\..\..\src\tcvm\tcapi.h" />
     <ClInclude Include="..\..\..\src\tcvm\tcclass.h" />
     <ClInclude Include="..\..\..\src\tcvm\tcexception.h" />
     <ClInclude Include="..\..\..\src\tcvm\tcfield.h" />
