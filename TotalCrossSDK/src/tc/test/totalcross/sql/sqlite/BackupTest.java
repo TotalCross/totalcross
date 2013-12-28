@@ -68,7 +68,7 @@ public class BackupTest extends TestCase
          Statement stmt = conn.createStatement();
          try {stmt.executeUpdate("drop table sample");} catch (Exception e) {}
          stmt.executeUpdate("create table sample(id integer primary key autoincrement, name)");
-         for (int i = 0; i < 1000; i++)
+         for (int i = 0, n = Settings.platform.equals(Settings.ANDROID) ? 100 : 1000; i < n; i++)
             stmt.executeUpdate("insert into sample(name) values(\"leo\")");
 
          String p = absPath + "/backup-test.sqlite";
