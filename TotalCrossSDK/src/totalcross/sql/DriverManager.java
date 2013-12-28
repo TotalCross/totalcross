@@ -34,6 +34,14 @@ public class DriverManager
       {
          int l = url.length();
          String dbname = l == 12 ? "temp.db" : url.substring(12);
+         if ((Settings.isIOS() || Settings.platform.equals(Settings.ANDROID)) && dbname.indexOf("/") == -1 && dbname.indexOf(":memory:") == -1 && dbname.indexOf("mode=memory") == -1)
+         {
+            boolean isfile = dbname.startsWith("file:");
+            if (isfile) dbname = dbname.substring(5);
+            dbname = Convert.appendPath(Settings.appPath,dbname);
+            if (isfile) dbname = "file:".concat(dbname);
+            Vm.debug("changing dbname to "+dbname);
+         }
          try
          {
             return newConnection(url, dbname);
