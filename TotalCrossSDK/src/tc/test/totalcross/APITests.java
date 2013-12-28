@@ -27,6 +27,7 @@ public class APITests extends TestSuite
    public APITests()
    {
       super("TotalCross API Test Suite");
+      Vm.debug(Vm.ALTERNATIVE_DEBUG);
       addTestCase( tc.test.totalcross.sql.sqlite.BackupTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.ConnectionTest.class );
       addTestCase( tc.test.totalcross.sql.sqlite.ExtensionTest.class );
