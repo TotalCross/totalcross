@@ -216,7 +216,7 @@ public class TransactionTest extends TestCase
    Exception secondError;
    public void secondConnWillWait() 
    {
-      if (Settings.onJavaSE) // guich: AFAZER: no pda esta passando direto
+      if (Settings.onJavaSE) // guich: AFAZER: no pda esta passando direto na thread ao inves de bloquear
       try
       {
          stat1.execute("DROP TABLE IF EXISTS t;");
