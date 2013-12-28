@@ -84,17 +84,15 @@ public class QueryTest extends TestCase
 
          Date now = new Date();
 
-         conn.createStatement().execute("insert into sample values(" + now.getTime() + ")");
-         conn.createStatement().execute("insert into sample values('" + now.getSQLDate() + "')");
+         conn.createStatement().execute("insert into sample values(" + (Settings.onJavaSE ? now.getTime() : now.getSQLDateLong()) + ")");
+         conn.createStatement().execute("insert into sample values('" + now.getSQLDate() + " 00:00:00.000')");
 
-/* 
- * GUICH AFAZER
          ResultSet rs = conn.createStatement().executeQuery("select * from sample");
          assertTrue(rs.next());
          assertEquals(now, rs.getDate(1));
          assertTrue(rs.next());
-         output("FIX RS.GETDATE LATER!"); //assertEquals(now, rs.getDate(1)); 
-*/
+         assertEquals(now, rs.getDate(1)); 
+
          PreparedStatement stmt = conn.prepareStatement("insert into sample values(?)");
          stmt.setDate(1, new Date(now.getDateInt()));
       }

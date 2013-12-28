@@ -16,7 +16,8 @@
 
 package totalcross.db.sqlite;
 
-import totalcross.db.sqlite.SQLiteConfig.*;
+import java.sql.SQLException;
+
 import totalcross.io.*;
 import totalcross.sql.ParameterMetaData;
 import totalcross.sql.PreparedStatement;
@@ -26,9 +27,9 @@ import totalcross.sql.Statement;
 import totalcross.sql.Timestamp;
 import totalcross.sql.Types;
 import totalcross.sys.*;
+import totalcross.sys.Time;
 import totalcross.util.*;
-
-import java.sql.SQLException;
+import totalcross.util.Date;
 
 final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaData, Codes
 {
@@ -496,8 +497,9 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     */
    private void setDate(int pos, Time t) throws SQLException {
       long l = t.getTimeLong();
-      if (conn.datePrecision == DatePrecision.MILLISECONDS)
+      //if (conn.datePrecision == DatePrecision.MILLISECONDS)
          l = l * 1000 + t.millis;
+         Vm.debug("setting date "+l);
       batch(pos, new Long(l));
 /*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
           batch(pos, conn.dateFormat.format(new Date(value)));

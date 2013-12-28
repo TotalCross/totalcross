@@ -605,7 +605,16 @@ public class Date implements Comparable
    {
       return year+"-"+month+"-"+day;
    }
+
+   /** Returns this date in the Time.getTimeLong format
+    * @since TotalCross 2.0 
+    */
+   public long getSQLDateLong()
+   {
+      return year * 10000000000000L + month * 100000000000L + day * 1000000000L;
+   }
    
+
    private static Date EPOCH;
    
    static 

@@ -15,15 +15,18 @@
  */
 package totalcross.db.sqlite;
 
-import totalcross.sql.*;
-import totalcross.util.regex.*;
-import totalcross.util.*;
-import totalcross.db.sqlite.SQLiteConfig.*;
-import totalcross.io.*;
-import totalcross.sys.*;
-
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+
+import totalcross.io.*;
+import totalcross.sql.ResultSet;
+import totalcross.sql.ResultSetMetaData;
+import totalcross.sql.Statement;
+import totalcross.sql.Timestamp;
+import totalcross.sql.Types;
+import totalcross.sys.*;
+import totalcross.util.*;
+import totalcross.util.regex.*;
 
 /**
  * Implements a JDBC ResultSet.
@@ -500,11 +503,39 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
        {
           case SQLITE_NULL:
               return null;
+          case SQLITE_TEXT:
+             try 
+             {
+                String time = db.column_text(stmt.pointer, markCol(col));
+                StringBuffer seps = new StringBuffer(1); // guich@sqlite: accept any kind of separator
+                for (int i = 0, n = time.length(); i < n; i++)
+                {
+                   char ch = time.charAt(i);
+                   if (!('0' <= ch && ch <= '9'))
+                      seps.append(ch);
+                }
+                String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
+                int l = parts.length;
+                Time t = new Time(0L);
+                if (l >= 1) t.year = Convert.toInt(parts[0]);
+                if (l >= 2) t.month = Convert.toInt(parts[1]);
+                if (l >= 3) t.day = Convert.toInt(parts[2]);
+                if (l >= 4) t.hour += Convert.toInt(parts[3]);
+                if (l >= 5) t.minute = Convert.toInt(parts[4]);
+                if (l >= 6) t.second = Convert.toInt(parts[5]);
+                if (l >= 7) t.millis = Convert.toInt(parts[6]);
+                return t;
+             }
+             catch (Exception e)
+             {
+                throw new SQLException("Error parsing date"+initCause(e));
+             }
           default:
              // guich: always store as long
              long l = db.column_long(stmt.pointer, markCol(col));
+             Vm.debug("getTime returning "+l);
              int millis = 0;
-             if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
+             //if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
              {
                 millis = (int)(l % 1000);
                 l /= 1000;

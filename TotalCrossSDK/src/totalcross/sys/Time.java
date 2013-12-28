@@ -154,7 +154,14 @@ public final class Time
          
       try
       {
-         String[] parts = Convert.tokenizeString(time, Settings.timeSeparator);
+         StringBuffer seps = new StringBuffer(1); // guich@sqlite: accept any kind of separator
+         for (int i = 0, n = time.length(); i < n; i++)
+         {
+            char ch = time.charAt(i);
+            if (!('0' <= ch && ch <= '9'))
+               seps.append(ch);
+         }
+         String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
          int idx = 0;
          if (hasYear) year = Convert.toInt(parts[idx++]);
          if (hasMonth) month = Convert.toInt(parts[idx++]);
