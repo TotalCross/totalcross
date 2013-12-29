@@ -598,18 +598,18 @@ public class Date implements Comparable
       return (year - d.year) * 10000 + (month - d.month) * 100 + (day - d.day);
    }
 
-   /** Returns this date in the format YYYY-MM-DD
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
     * @since TotalCross 2.0 
     */
-   public String getSQLDate()
+   public String getSQLString()
    {
-      return year+"-"+month+"-"+day;
+      return year+"-"+month+"-"+day+ " 00:00:00.000";
    }
 
-   /** Returns this date in the Time.getTimeLong format
+   /** Returns this date in the Time.getTimeLong format, with hour/minute/second/millis equal to 0.
     * @since TotalCross 2.0 
     */
-   public long getSQLDateLong()
+   public long getSQLLong()
    {
       return year * 10000000000000L + month * 100000000000L + day * 1000000000L;
    }

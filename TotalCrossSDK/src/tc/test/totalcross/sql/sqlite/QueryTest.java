@@ -84,8 +84,8 @@ public class QueryTest extends TestCase
 
          Date now = new Date();
 
-         conn.createStatement().execute("insert into sample values(" + (Settings.onJavaSE ? now.getTime() : now.getSQLDateLong()) + ")");
-         conn.createStatement().execute("insert into sample values('" + now.getSQLDate() + " 00:00:00.000')");
+         conn.createStatement().execute("insert into sample values(" + (Settings.onJavaSE ? now.getTime() : now.getSQLLong()) + ")");
+         conn.createStatement().execute("insert into sample values('" + now.getSQLLong() + "')");
 
          ResultSet rs = conn.createStatement().executeQuery("select * from sample");
          assertTrue(rs.next());

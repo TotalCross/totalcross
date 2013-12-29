@@ -183,6 +183,23 @@ public final class Time
       return year * 10000000000L + month * 100000000L + day * 1000000 + i;
    }
 
+   /** Returns the time in the format YYYYMMDDHHmmSSmmm as a long value. It does
+    * include the millis.
+    * @since TotalCross 2.0
+    */
+  public long getSQLLong()
+  {
+     return year * 10000000000000L + month * 100000000000L + day * 1000000000L + hour * 10000000L + minute * 100000L + second * 1000L + millis;
+  }
+
+  /** Returns this date in the format <code>YYYY-MM-DD HH:mm:SS.mmm</code>
+    * @since TotalCross 2.0
+    */
+   public String getSQLString() // guich@tc115_22
+   {
+      return dump(new StringBuffer(20), "-", true).toString();
+   }
+
    /** Constructs a new time with the given values. The values are not checked.
      * @since SuperWaba 3.5
      */
@@ -252,6 +269,7 @@ public final class Time
       sb.append(second);
       if (includeMillis)
       {
+         sb.append(".");
          if (millis < 10)
             sb.append("00");
          else
