@@ -217,7 +217,7 @@ public class SSLCTX
          else if (obj_type == Constants.SSL_OBJ_PKCS12)
          {
             KeyStore ks12 = KeyStore.getInstance("pkcs12");
-            ks12.load(new ByteArrayInputStream(data, 0, len), ks_pass);
+            ks12.load(new ByteArrayInputStream(data, 0, len), password.toCharArray());
 
             java.util.Enumeration aliases = ks12.aliases();
             while (aliases.hasMoreElements())
@@ -235,6 +235,8 @@ public class SSLCTX
                if (pke != null)
                   Keys.push(pke);
             }
+            
+            return Constants.SSL_OK;
          }
          else if (obj_type == Constants.SSL_OBJ_RSA_KEY)
          {
