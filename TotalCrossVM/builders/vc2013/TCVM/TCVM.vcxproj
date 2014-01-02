@@ -168,6 +168,7 @@
     <ClInclude Include="..\..\..\src\axtls\ssl.h" />
     <ClInclude Include="..\..\..\src\axtls\tls1.h" />
     <ClInclude Include="..\..\..\src\axtls\version.h" />
+    <ClInclude Include="..\..\..\src\event\wp8\specialkeys_c.h" />
     <ClInclude Include="..\..\..\src\init\demo.h" />
     <ClInclude Include="..\..\..\src\init\globals.h" />
     <ClInclude Include="..\..\..\src\init\settings.h" />

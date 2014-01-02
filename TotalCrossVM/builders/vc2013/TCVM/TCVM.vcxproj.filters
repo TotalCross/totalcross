@@ -167,6 +167,9 @@
     <Filter Include="Native methods\ui\wp8\precompiledShaders">
       <UniqueIdentifier>{153f9817-4a5e-42d9-84d4-ff0008ce78a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Event\wp8">
+      <UniqueIdentifier>{587e68ae-02d1-40b5-aaba-94873d331120}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsPhoneRuntimeComponent1.cpp" />
@@ -1161,6 +1164,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\tcvm\tcapi.h">
       <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\event\wp8\specialkeys_c.h">
+      <Filter>Event\wp8</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
