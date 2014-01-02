@@ -13,7 +13,8 @@
         />
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />
-        <activity android:name=".MapViewer" />
+        <activity android:name=".BarCodeActivity" />
+        <activity android:name=".MapViewer" />        
         <uses-library android:name="com.google.android.maps" android:required="false" />
     </application>
     <uses-sdk android:minSdkVersion="4" />
