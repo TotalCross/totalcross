@@ -250,7 +250,7 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 
 	auto x = m_inputBuffer->Text->Data();
 	auto len = m_inputBuffer->Text->Length();
-	int i;
+	unsigned int i;
 	char s[1024];
 
 	for (i = 0; i < len; i++) {
