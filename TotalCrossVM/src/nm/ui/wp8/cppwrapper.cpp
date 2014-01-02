@@ -19,11 +19,11 @@
 using namespace TotalCross;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
-
-#pragma region varDeclaration
 using namespace Windows::Phone::System::Memory;
 using namespace Windows::Phone::Devices::Power;
 using namespace Windows::Phone::Devices::Notification;
+
+#pragma region varDeclaration
 
 static char apPath[1024];
 static DWORD32 privHeight;
