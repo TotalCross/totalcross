@@ -31,6 +31,8 @@ namespace TotalCross
       Platform::String ^getAppPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
 
+	  int GetSIPHeight(void);
+
 	protected:
 		// Event Handlers.
 		void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);

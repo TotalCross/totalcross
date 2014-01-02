@@ -208,6 +208,11 @@ void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args
 	debug("onHidingSIP");
 }
 
+int MainView::GetSIPHeight(void)
+{
+	return InputPane::GetForCurrentView()->OccludedRect.Height;
+}
+
 void MainView::OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args)
 {
 	debug("OnInputEnabled");
