@@ -222,8 +222,13 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 {
 	auto k = args->KeyCode;
 
+	// When enter is pressed, only a single character \r is sent; as TC recognizes '\n', we change its value beforehand
+	if (k == '\r')
+		k = '\n';
 	debug("caracter recebido: %c", k);
 	debug("caracter recebido: %hhd", k);
+
+	postEvent(mainContext, KEYEVENT_KEY_PRESS, k, k, 0, -1);
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -262,7 +267,11 @@ void MainView::OnKeyDown(CoreWindow ^sender, KeyEventArgs ^args)
 
 void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
 {
+	auto k = args->VirtualKey;
+
 	debug("keyup");
+	if (k == Windows::System::VirtualKey::Back)
+		postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, SK_BACKSPACE, 0, -1);
 }
 
 void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
