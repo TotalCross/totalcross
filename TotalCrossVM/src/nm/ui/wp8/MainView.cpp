@@ -299,6 +299,18 @@ void MainView::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
 {
 	CoreWindow::GetForCurrentThread()->Activate();
+	HardwareButtons::BackPressed +=
+		ref new EventHandler<BackPressedEventArgs^>(this, &MainView::OnBackPressed);
+	debug("onActivate");
+}
+
+void MainView::OnBackPressed(Object ^sender, BackPressedEventArgs ^args)
+{
+	debug("onBackPressed");
+	if (currentWindow.Get()->IsKeyboardInputEnabled) {
+		postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
+	}
+	args->Handled = true;
 }
 
 void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)

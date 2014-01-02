@@ -48,6 +48,7 @@ namespace TotalCross
 	  void OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args);
 
 	  void OnTextChange(Windows::Phone::UI::Core::KeyboardInputBuffer ^sender, Windows::Phone::UI::Core::CoreTextChangedEventArgs ^args);
+	  void OnBackPressed(Platform::Object ^sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
 	private:
       ESContext m_esContext;
