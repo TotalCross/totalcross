@@ -385,11 +385,15 @@ bool checkWindowsMobile()
 
 bool hasVirtualKeyboard()
 {
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined (WP8)
+	return true;
+#else
+ #if defined (WINCE) && _WIN32_WCE >= 300
    if (SipStatus() == SIP_STATUS_AVAILABLE)
       return true;
-#endif
+ #endif
    return false;
+#endif
 }
 
 void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInstance, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3)
@@ -917,6 +921,12 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    *(tcSettings.weekStartPtr)            = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
    *(tcSettings.is24HourPtr)             = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
    *(tcSettings.dateFormatPtr)           = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
+
+#if defined(WP8)
+   *(tcSettings.virtualKeyboardPtr)      = true;
+   *(tcSettings.fingerTouchPtr)          = true;
+   *(tcSettings.unmovableSIP)            = true;
+#endif
 
    // guich@340_33: timezone and daylight savings
    updateDaylightSavings(currentContext);
