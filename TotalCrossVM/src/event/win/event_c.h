@@ -114,6 +114,12 @@ static bool minimized;
 void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
 void applyPalette();
 
+#if defined (WP8)
+static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
+{
+	return 0L;
+}
+#else
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -425,7 +431,7 @@ def:
    }
    return 0L;
 }
-
+#endif
 bool privateInitEvent()
 {
 	//XXX
