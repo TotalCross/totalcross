@@ -146,7 +146,7 @@ void MainView::SetWindow(CoreWindow^ window)
    m_inputBuffer->InputScope = CoreInputScope::Text;
    m_inputBuffer->TextChanged +=
 	   ref new TypedEventHandler<KeyboardInputBuffer^, CoreTextChangedEventArgs^>(this, &MainView::OnTextChange);
-   window->KeyboardInputBuffer = m_inputBuffer;
+   //window->KeyboardInputBuffer = m_inputBuffer; //XXX when we learn how to treat perfectly text change events, we set this on again
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -259,6 +259,7 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 	s[i] = '\0';
 
 	debug("input ateh agora: %s", s);
+//	postEvent(mainContext, PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -356,7 +357,7 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
 
 void MainView::setKeyboard(int kb)
 {
-	currentWindow.Get()->KeyboardInputBuffer;// = m_inputBuffer;
+	currentWindow.Get()->KeyboardInputBuffer = nullptr;// = m_inputBuffer;
 
 	switch ((enum TCSIP) kb)
 	{
