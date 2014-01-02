@@ -201,11 +201,14 @@ void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^arg
 void MainView::OnShowingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
 {
 	debug("onShowingSIP");
+	setShiftYonNextUpdateScreen = true;
 }
 
 void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
 {
 	debug("onHidingSIP");
+	setShiftYonNextUpdateScreen = true;
+	postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
 }
 
 int MainView::GetSIPHeight(void)
