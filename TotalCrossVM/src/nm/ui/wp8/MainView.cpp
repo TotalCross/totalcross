@@ -24,7 +24,9 @@ using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
+using namespace Windows::UI::ViewManagement;
 using namespace Windows::Phone::UI::Core;
+using namespace Windows::Phone::UI::Input;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
@@ -180,6 +182,30 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->InputEnabled +=
 		ref new TypedEventHandler<CoreWindow^, InputEnabledEventArgs^>(this, &MainView::OnInputEnabled);
+
+	window->SizeChanged +=
+		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &MainView::OnSizeChanged);
+
+	auto inputPane = InputPane::GetForCurrentView();
+	inputPane->Hiding +=
+		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnHidingSIP);
+	inputPane->Showing +=
+		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnShowingSIP);
+}
+
+void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^args)
+{
+	debug("onSizeChanged");
+}
+
+void MainView::OnShowingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
+{
+	debug("onShowingSIP");
+}
+
+void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
+{
+	debug("onHidingSIP");
 }
 
 void MainView::OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args)
@@ -191,19 +217,8 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 {
 	auto k = args->KeyCode;
 
-	auto x = m_inputBuffer->ToString()->Data();
-	auto len = m_inputBuffer->ToString()->Length();
-	int i;
-	char s[1024];
-
-	for (i = 0; i < len; i++) {
-		s[i] = (char)x[i];
-	}
-	s[i] = '\0';
-
 	debug("caracter recebido: %c", k);
-	debug("input ateh agora: %s", s);
-	debug("caracter recebido");
+	debug("caracter recebido: %hhd", k);
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -242,6 +257,7 @@ void MainView::OnKeyDown(CoreWindow ^sender, KeyEventArgs ^args)
 
 void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
 {
+	debug("keyup");
 }
 
 void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
@@ -265,11 +281,13 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
 	m_windowVisible = args->Visible;
+	debug("onVisibilityChange");
 }
 
 void MainView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
 	m_windowClosed = true;
+	debug("onWindowClose");
 }
 
 void MainView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
@@ -320,6 +338,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
    // indicates that the application is busy performing suspending operations. Be
    // aware that a deferral may not be held indefinitely. After about five seconds,
    // the app will be forced to exit.
+	debug("onSuspending");
    SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
    
    //if (currentDirect3DBase)
@@ -335,6 +354,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 
 void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
+	debug("onResuming");
 	// Restore any data or state that was unloaded on suspend. By default, data
 	// and state are persisted when resuming from suspend. Note that this event
 	// does not occur if the app was previously terminated.
