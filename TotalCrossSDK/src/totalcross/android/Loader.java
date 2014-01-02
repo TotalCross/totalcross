@@ -43,6 +43,7 @@ public class Loader extends Activity
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
+   private static final int BAR_CODE_RETURN = 1234324333;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -146,6 +147,19 @@ public class Loader extends Activity
    {
       startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+number)));
    }
+   
+   private void initBarCode()
+   {
+      try
+      {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".BarCodeActivity"));
+         startActivityForResult(intent, BAR_CODE_RETURN);
+      }
+      catch (Throwable throwable)
+      {
+         AndroidUtils.handleException(throwable, false);
+      }
+   }
 
    public static final int DIAL = 1;
    public static final int CAMERA = 2;
@@ -155,6 +169,7 @@ public class Loader extends Activity
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
    public static final int INVERT_ORIENTATION = 8;
+   public static final int BAR_CODE = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -254,6 +269,9 @@ public class Loader extends Activity
                }
                break;
             }
+            case BAR_CODE:
+               initBarCode();
+               break;
          }
       }
    }
