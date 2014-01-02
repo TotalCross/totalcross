@@ -31,6 +31,7 @@ import totalcross.*;
              }
 
          });
+         AndroidUtils.debug("consegui!");
      }
 
      public void doBarcodReader()
