@@ -27,7 +27,6 @@ public class Scanner4A
 { 
    static boolean scannerActivate()
    {
-      Launcher4A.initBarCode();
       return true;
    }
    
