@@ -113,7 +113,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          static Method scannerPostEvent;
          if (scannerPostEvent == null)
             scannerPostEvent = getMethod(loadClass(mainContext,"totalcross.io.device.scanner.Scanner",false),false,"_onEvent",1,J_INT);
-         executeMethod(mainContext, scannerPostEvent, SCANEVENT_SCANNED);
+         executeMethod(mainContext, scannerPostEvent, 1);
          break;
       }
    }
