@@ -399,13 +399,11 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onResume();
    }
 
-   String strDeviceId, strBarcodeData, strSymbologyId;    
+   String strBarcodeData;    
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {
-        strDeviceId =  aBarcodeReadEvent.getDeviceId();
-        strBarcodeData =  aBarcodeReadEvent.getBarcodeData();
-        strSymbologyId = aBarcodeReadEvent.getSymbolgyId();
-        Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
+      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }

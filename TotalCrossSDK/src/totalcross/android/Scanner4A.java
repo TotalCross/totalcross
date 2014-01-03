@@ -51,45 +51,38 @@ public class Scanner4A
    }
    
    static boolean setBarcodeParam(int barcodeType, boolean enable)
-   {
-      AndroidUtils.debug("setBarcodeParam");
-      return true;
+   {     
+      return false;
    }
    
    static boolean setParam(int type, int barcodeType, int value)
    {
-      AndroidUtils.debug("setParam");
-      return true;
+      return false;
    }
    
    static boolean commitBarcodeParams()
    {
-      AndroidUtils.debug("commitBarcodeParams");
       return true;
    }
    
    static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max)
    {
-      AndroidUtils.debug("setBarcodeLength");
-      return true;
+      return false;
    }
    
    static String getData()
    {
-      AndroidUtils.debug("getData");
       return Launcher4A.loader.strBarcodeData;
    }
    
    static String getScanManagerVersion()
    {
-      AndroidUtils.debug("getScanManagerVersion");
-      return "";
+      return "1.0";
    }
    
    static String getScanPortDriverVersion()
    {
-      AndroidUtils.debug("getScanPortDriverVersion");
-      return "";
+      return "UNKNOWN";
    }
    
    static boolean deactivate()
