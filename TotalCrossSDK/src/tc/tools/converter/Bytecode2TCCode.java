@@ -1509,11 +1509,14 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case ATHROW: //191
          {
-            OperandReg regO = (OperandReg) stack.pop();
-            Reg code = new Reg(THROW, lineOfPC);
-            code.set(regO.index);
-            vcode.addElement(code);
-            stack.push(regO);
+            if (!stack.empty())
+            {
+               OperandReg regO = (OperandReg) stack.pop();
+               Reg code = new Reg(THROW, lineOfPC);
+               code.set(regO.index);
+               vcode.addElement(code);
+               stack.push(regO);
+            }
             break;
          }
          case JCHECKCAST: //192
