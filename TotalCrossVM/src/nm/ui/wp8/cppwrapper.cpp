@@ -26,6 +26,7 @@ using namespace Windows::Phone::Devices::Notification;
 #pragma region varDeclaration
 
 static char apPath[1024];
+static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
 static CoreDispatcher ^dispatcher = nullptr;
@@ -51,6 +52,13 @@ void cppthread_detach(void *t)
 }
 
 void* cppthread_create(void (*func)(void *a), void *args)
+char *GetDisplayNameWP8()
+{
+	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
+	WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
+	debug_jeff("display name %s", devId);
+	return devId;
+}
 {
 	try {
 		std::thread t(func, args);

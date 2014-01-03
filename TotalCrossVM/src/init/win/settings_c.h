@@ -863,8 +863,8 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    platform = "Win32";
 # else
    //XXX deviceId must be getted automatically
-   platform = "WindowsPhone8";
-   xstrcpy(deviceId, "tmp dummy");
+   platform = "WP8";
+   xstrcpy(deviceId, GetDisplayNameWP8());
 # endif
 #endif
 #ifndef WP8
@@ -926,6 +926,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    *(tcSettings.virtualKeyboardPtr)      = true;
    *(tcSettings.fingerTouchPtr)          = true;
    *(tcSettings.unmovableSIP)            = true;
+   //*(tcSettings.keyboardFocusTraversablePtr) = true;
 #endif
 
    // guich@340_33: timezone and daylight savings

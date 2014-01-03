@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 char *GetAppPathWP8();
+char *GetDisplayNameWP8();
 void cppsleep(int ms);
 
 // WP8 dispatcher fuctions
