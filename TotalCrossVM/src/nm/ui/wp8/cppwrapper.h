@@ -10,6 +10,14 @@
 extern "C" {
 #endif
 
+struct eventQueueMember {
+	int type;
+	int key;
+	int x;
+	int y;
+	int modifiers;
+};
+
 char *GetAppPathWP8();
 char *GetDisplayNameWP8();
 void cppsleep(int ms);
@@ -34,8 +42,14 @@ DWORD32 getRemainingBatery();
 void vibrate(DWORD32 milliseconds);
 DWORD32 getFreeMemoryWP8();
 
+//Event Queue functions
+void eventQueuePush(int type, int key, int x, int y, int modifiers);
+struct eventQueueMember eventQueuePop(void);
+int eventQueueEmpty(void);
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif

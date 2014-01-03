@@ -208,7 +208,7 @@ void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args
 {
 	debug("onHidingSIP");
 	setShiftYonNextUpdateScreen = true;
-	postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
+	eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
 }
 
 int MainView::GetSIPHeight(void)
@@ -231,7 +231,7 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 	debug("caracter recebido: %c", k);
 	debug("caracter recebido: %hhd", k);
 
-	postEvent(mainContext, KEYEVENT_KEY_PRESS, k, k, 0, -1);
+	eventQueuePush(KEYEVENT_KEY_PRESS, k, k, 0, -1);
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -274,7 +274,7 @@ void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
 
 	debug("keyup");
 	if (k == Windows::System::VirtualKey::Back)
-		postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, SK_BACKSPACE, 0, -1);
+		eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, SK_BACKSPACE, 0, -1);
 }
 
 void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
@@ -292,7 +292,7 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 	s[i] = '\0';
 
 	debug("input ateh agora: %s", s);
-//	postEvent(mainContext, PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
+//	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
@@ -311,7 +311,7 @@ void MainView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
 	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
-	postEvent(mainContext, PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
+	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 }
 
 void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
@@ -320,7 +320,7 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 	auto pos = args->CurrentPoint->Position;
 	if (lastX != pos.X || lastY != pos.Y) {
 		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
-		postEvent(mainContext, PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y, -1);
+		eventQueuePush(PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 		isDragging = true;
 	}
 }
@@ -328,13 +328,14 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 void MainView::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-	postEvent(mainContext, PENEVENT_PEN_UP, 0, lastX = pos.X, lastY =  pos.Y, -1);
+	eventQueuePush(PENEVENT_PEN_UP, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 	isDragging = false;
 }
 
 void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
 {
 	CoreWindow::GetForCurrentThread()->Activate();
+
 	HardwareButtons::BackPressed +=
 		ref new EventHandler<BackPressedEventArgs^>(this, &MainView::OnBackPressed);
 	debug("onActivate");
@@ -344,7 +345,7 @@ void MainView::OnBackPressed(Object ^sender, BackPressedEventArgs ^args)
 {
 	debug("onBackPressed");
 	if (currentWindow.Get()->IsKeyboardInputEnabled) {
-		postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
+		eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
 	}
 	args->Handled = true;
 }

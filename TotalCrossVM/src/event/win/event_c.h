@@ -455,7 +455,10 @@ bool privateInitEvent()
 bool privateIsEventAvailable()
 {
 #if defined WP8
-   return 1;
+   bool ret;
+   dispatcher_dispath();
+   ret = !eventQueueEmpty();
+   return ret;
 #else
 	MSG msg;
 	return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
@@ -465,7 +468,9 @@ bool privateIsEventAvailable()
 void privatePumpEvent(Context currentContext)
 {
 #if defined(WP8)
-   dispatcher_dispath();
+	struct eventQueueMember q_member = eventQueuePop();
+
+	postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
 #else
    MSG msg;
 #ifdef WINCE

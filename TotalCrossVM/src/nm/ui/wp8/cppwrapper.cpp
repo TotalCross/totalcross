@@ -1,5 +1,6 @@
 #include <chrono>
 #include <thread>
+#include <queue>
 #include <system_error>
 
 #include <wrl/client.h>
@@ -15,6 +16,7 @@
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
+#include "tcclass.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
@@ -31,7 +33,45 @@ static DWORD32 privHeight;
 static DWORD32 privWidth;
 static CoreDispatcher ^dispatcher = nullptr;
 
+static std::queue<eventQueueMember> eventQueue;
+
 #pragma endregion
+
+// Not a concurrent queue
+void eventQueuePush(int type, int key, int x, int y, int modifiers)
+{
+	static int32 *ignoreEventOfType = null;
+	struct eventQueueMember newEvent;
+	if (ignoreEventOfType == null)
+		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
+	if (type == *ignoreEventOfType) {
+		return;
+	}
+	newEvent.type = type;
+	newEvent.key = key;
+	newEvent.x = x;
+	newEvent.y = y;
+	newEvent.modifiers = modifiers;
+
+	eventQueue.push(newEvent);
+}
+
+struct eventQueueMember eventQueuePop(void)
+{
+	struct eventQueueMember top;
+
+	top = eventQueue.front();
+	eventQueue.pop();
+
+	debug("popping event from queue; queue size %d", eventQueue.size());
+
+	return top;
+}
+
+int eventQueueEmpty(void)
+{
+	return (int)eventQueue.empty();
+}
 
 char *GetAppPathWP8()
 {
