@@ -362,25 +362,7 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
          quitVM();
-      super.onDestroy();
-      
-      if(bcr != null)
-      {
-          try
-          { 
-             bcr.removeBarcodeReadListener(this);
-          }
-          catch (BarcodeReaderException exception)
-          {
-             
-          }
-          bcr.close();
-          bcr = null;
-      }
-                     
-      wedg = null;
-      //disconnect from data collection service
-      AidcManager.disconnectService();
+      super.onDestroy(); 
    }
    
    protected void onPause()
@@ -416,44 +398,8 @@ public class Loader extends Activity implements BarcodeReadListener
       Launcher4A.appPaused = false;
       super.onResume();
    }
-   
-   private com.intermec.aidc.BarcodeReader bcr;
-   private com.intermec.aidc.VirtualWedge wedg;
+
    String strDeviceId, strBarcodeData, strSymbologyId;    
-
-   public void doBarcodReader()
-   {
-        try
-        { 
-            //disable virtual wedge
-            wedg = new VirtualWedge();
-            wedg.setEnable(false);  
-                        
-            //set barcode reader object for internal scanner
-            bcr = new BarcodeReader();
-
-            //add barcode reader listener
-            bcr.addBarcodeReadListener(this);
-
-        }
-        catch (BarcodeReaderException bcrexp)
-        {
-            int errCode = bcrexp.getErrorCode();
-            String errMessage = bcrexp.getErrorMessage();
-        }
-        catch (SymbologyException sym)
-        {
-            String errMessage = sym.getErrorMessage();
-        }
-        catch (SymbologyOptionsException symOp)
-        {
-            String errMessage = symOp.getErrorMessage();
-        }
-        catch (VirtualWedgeException exception)
-        {
-           String errMessage = exception.getErrorMessage();
-        }
-   }
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {

@@ -26,6 +26,9 @@ import com.intermec.aidc.*;
  */
 public class Scanner4A
 { 
+   private static BarcodeReader bcr;
+   private static VirtualWedge wedg;
+   
    static boolean scannerActivate()
    {
       // Make sure the BarcodeReader dependent service is connected and
@@ -36,7 +39,7 @@ public class Scanner4A
           {
               // The dependent service is connected and it is ready
               // to receive barcode requests.
-             Launcher4A.loader.doBarcodReader();
+             doBarcodReader();
           }
 
           public void onDisconnect()
@@ -92,6 +95,44 @@ public class Scanner4A
    static boolean deactivate()
    {
       AndroidUtils.debug("deactivate");
+      if (bcr != null)
+      {
+          try
+          { 
+             bcr.removeBarcodeReadListener(Launcher4A.loader);
+          }
+          catch (Exception exception)
+          {
+             exception.printStackTrace();
+             return false;
+          }
+          bcr.close();
+          bcr = null;
+      }
+                     
+      wedg = null;
+      //disconnect from data collection service
+      AidcManager.disconnectService();
       return true;
+   }
+   
+   public static void doBarcodReader()
+   {
+      try
+      { 
+         //disable virtual wedge
+         wedg = new VirtualWedge();
+         wedg.setEnable(false);  
+                     
+         //set barcode reader object for internal scanner
+         bcr = new BarcodeReader();
+
+         //add barcode reader listener
+         bcr.addBarcodeReadListener(Launcher4A.loader);
+      }
+      catch (Exception exception)
+      {
+         exception.printStackTrace();
+      }
    }
 }
