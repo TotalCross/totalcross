@@ -16,6 +16,9 @@
 #include "xtypes.h"
 #include "mem.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** IMPORTANT: there's a main difference between the XXX and XXXInfo structures:
  * the XXXInfo are PACKED at 2 bytes, which make it use less memory main memory,
@@ -607,4 +610,8 @@ typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, 
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
 
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
+
+#ifdef __cplusplus
+}
+#endif
 #endif
