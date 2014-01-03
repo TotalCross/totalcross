@@ -28,7 +28,6 @@ public class Scanner4A
    static boolean scannerActivate()
    {
       Launcher4A.initBarCode();
-      AndroidUtils.debug("scannerActivate");
       return true;
    }
    
