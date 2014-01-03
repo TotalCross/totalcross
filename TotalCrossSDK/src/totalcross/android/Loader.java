@@ -64,8 +64,6 @@ public class Loader extends Activity implements BarcodeReadListener
          AndroidUtils.debug(stack);
          AndroidUtils.error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
       }
-      
-
    }
    
    private void checkLitebase()
