@@ -51,7 +51,6 @@ void cppthread_detach(void *t)
 	//}
 }
 
-void* cppthread_create(void (*func)(void *a), void *args)
 char *GetDisplayNameWP8()
 {
 	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
@@ -59,9 +58,13 @@ char *GetDisplayNameWP8()
 	debug_jeff("display name %s", devId);
 	return devId;
 }
+
+extern "C" DWORD WINAPI privateThreadFunc(VoidP argP);
+
+void* cppthread_create(void *args)
 {
 	try {
-		std::thread t(func, args);
+		std::thread t(privateThreadFunc, args);
 
 		t.detach();
 
