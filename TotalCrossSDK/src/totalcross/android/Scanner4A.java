@@ -50,39 +50,9 @@ public class Scanner4A
       return true;
    }
    
-   static boolean setBarcodeParam(int barcodeType, boolean enable)
-   {     
-      return false;
-   }
-   
-   static boolean setParam(int type, int barcodeType, int value)
-   {
-      return false;
-   }
-   
-   static boolean commitBarcodeParams()
-   {
-      return true;
-   }
-   
-   static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max)
-   {
-      return false;
-   }
-   
    static String getData()
    {
       return Launcher4A.loader.strBarcodeData;
-   }
-   
-   static String getScanManagerVersion()
-   {
-      return "1.0";
-   }
-   
-   static String getScanPortDriverVersion()
-   {
-      return "UNKNOWN";
    }
    
    static boolean deactivate()

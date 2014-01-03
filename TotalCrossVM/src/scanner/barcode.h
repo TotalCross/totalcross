@@ -54,7 +54,6 @@ extern "C" {
    TC_API void tidsS_getScanManagerVersion(NMParams p);
    TC_API void tidsS_deactivate(NMParams p);
    bool callBoolMethodWithoutParams(CharP name);
-   Object callStringMethodWithoutParams(Context context, CharP name);
 #endif   
 #ifdef __cplusplus
 }
