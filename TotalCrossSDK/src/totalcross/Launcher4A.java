@@ -1158,7 +1158,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("type", Loader.BAR_CODE);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
-      AndroidUtils.debug("iniciou");
    }
    
    public static int[] cellinfoUpdate()

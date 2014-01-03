@@ -23,7 +23,9 @@ import totalcross.*;
              {
                  // The dependent service is connected and it is ready
                  // to receive barcode requests.
-                 doBarcodReader();
+                AndroidUtils.debug("entrada"); 
+                doBarcodReader();
+                AndroidUtils.debug("saida");
              }
  
              public void onDisconnect()
@@ -31,7 +33,6 @@ import totalcross.*;
              }
 
          });
-         AndroidUtils.debug("consegui!");
      }
 
      public void doBarcodReader()
