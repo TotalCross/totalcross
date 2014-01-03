@@ -406,15 +406,6 @@ public class Loader extends Activity implements BarcodeReadListener
         strDeviceId =  aBarcodeReadEvent.getDeviceId();
         strBarcodeData =  aBarcodeReadEvent.getBarcodeData();
         strSymbologyId = aBarcodeReadEvent.getSymbolgyId();
-
-        //update data to edit fields
-        runOnUiThread(new Runnable() {
-
-            public void run() {
-                 AndroidUtils.debug(strDeviceId);
-                 AndroidUtils.debug(strBarcodeData);
-                 AndroidUtils.debug(strSymbologyId);
-            }
-        });
+        Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }

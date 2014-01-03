@@ -77,7 +77,7 @@ public class Scanner4A
    static String getData()
    {
       AndroidUtils.debug("getData");
-      return "";
+      return Launcher4A.loader.strBarcodeData;
    }
    
    static String getScanManagerVersion()
@@ -94,7 +94,6 @@ public class Scanner4A
    
    static boolean deactivate()
    {
-      AndroidUtils.debug("deactivate");
       if (bcr != null)
       {
           try
