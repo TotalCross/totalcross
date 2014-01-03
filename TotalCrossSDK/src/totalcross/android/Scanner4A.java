@@ -18,6 +18,7 @@ package totalcross.android;
 
 import totalcross.*;
 import android.content.*;
+import com.intermec.aidc.*; 
 
 /**
  * Scanner class for Android.
@@ -27,7 +28,22 @@ public class Scanner4A
 { 
    static boolean scannerActivate()
    {
-      Launcher4A.initBarCode();
+      // Make sure the BarcodeReader dependent service is connected and
+      // register a callback to service connect and disconnect events.
+      AidcManager.connectService(Launcher4A.loader, new AidcManager.IServiceListener() 
+      {
+          public void onConnect()
+          {
+              // The dependent service is connected and it is ready
+              // to receive barcode requests.
+             Launcher4A.loader.doBarcodReader();
+          }
+
+          public void onDisconnect()
+          {
+          }
+
+      });
       return true;
    }
    

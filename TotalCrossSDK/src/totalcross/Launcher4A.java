@@ -1151,15 +1151,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return false;
    }
    
-   public static void initBarCode()
-   {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putInt("type", Loader.BAR_CODE);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
-   }
-   
    public static int[] cellinfoUpdate()
    {
       if (phoneListener == null)

@@ -34,7 +34,9 @@ import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
 
-public class Loader extends Activity
+import com.intermec.aidc.*; 
+
+public class Loader extends Activity implements BarcodeReadListener
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
@@ -43,7 +45,6 @@ public class Loader extends Activity
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
-   private static final int BAR_CODE_RETURN = 1234324333;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -63,6 +64,8 @@ public class Loader extends Activity
          AndroidUtils.debug(stack);
          AndroidUtils.error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
       }
+      
+
    }
    
    private void checkLitebase()
@@ -147,19 +150,6 @@ public class Loader extends Activity
    {
       startActivity(new Intent(Intent.ACTION_CALL, Uri.parse("tel:"+number)));
    }
-   
-   private void initBarCode()
-   {
-      try
-      {
-         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".BarCodeActivity"));
-         startActivityForResult(intent, BAR_CODE_RETURN);
-      }
-      catch (Throwable throwable)
-      {
-         AndroidUtils.handleException(throwable, false);
-      }
-   }
 
    public static final int DIAL = 1;
    public static final int CAMERA = 2;
@@ -169,7 +159,6 @@ public class Loader extends Activity
    public static final int MAP = 6;
    public static final int FULLSCREEN = 7;
    public static final int INVERT_ORIENTATION = 8;
-   public static final int BAR_CODE = 9;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -269,9 +258,6 @@ public class Loader extends Activity
                }
                break;
             }
-            case BAR_CODE:
-               initBarCode();
-               break;
          }
       }
    }
@@ -379,6 +365,24 @@ public class Loader extends Activity
       if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
          quitVM();
       super.onDestroy();
+      
+      if(bcr != null)
+      {
+          try
+          { 
+             bcr.removeBarcodeReadListener(this);
+          }
+          catch (BarcodeReaderException exception)
+          {
+             
+          }
+          bcr.close();
+          bcr = null;
+      }
+                     
+      wedg = null;
+      //disconnect from data collection service
+      AidcManager.disconnectService();
    }
    
    protected void onPause()
@@ -413,5 +417,60 @@ public class Loader extends Activity
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
+   }
+   
+   private com.intermec.aidc.BarcodeReader bcr;
+   private com.intermec.aidc.VirtualWedge wedg;
+   String strDeviceId, strBarcodeData, strSymbologyId;    
+
+   public void doBarcodReader()
+   {
+        try
+        { 
+            //disable virtual wedge
+            wedg = new VirtualWedge();
+            wedg.setEnable(false);  
+                        
+            //set barcode reader object for internal scanner
+            bcr = new BarcodeReader();
+
+            //add barcode reader listener
+            bcr.addBarcodeReadListener(this);
+
+        }
+        catch (BarcodeReaderException bcrexp)
+        {
+            int errCode = bcrexp.getErrorCode();
+            String errMessage = bcrexp.getErrorMessage();
+        }
+        catch (SymbologyException sym)
+        {
+            String errMessage = sym.getErrorMessage();
+        }
+        catch (SymbologyOptionsException symOp)
+        {
+            String errMessage = symOp.getErrorMessage();
+        }
+        catch (VirtualWedgeException exception)
+        {
+           String errMessage = exception.getErrorMessage();
+        }
+   }
+
+   public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
+   {
+        strDeviceId =  aBarcodeReadEvent.getDeviceId();
+        strBarcodeData =  aBarcodeReadEvent.getBarcodeData();
+        strSymbologyId = aBarcodeReadEvent.getSymbolgyId();
+
+        //update data to edit fields
+        runOnUiThread(new Runnable() {
+
+            public void run() {
+                 AndroidUtils.debug(strDeviceId);
+                 AndroidUtils.debug(strBarcodeData);
+                 AndroidUtils.debug(strSymbologyId);
+            }
+        });
    }
 }

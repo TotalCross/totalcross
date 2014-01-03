@@ -23,9 +23,7 @@ import totalcross.*;
              {
                  // The dependent service is connected and it is ready
                  // to receive barcode requests.
-                AndroidUtils.debug("entrada"); 
                 doBarcodReader();
-                AndroidUtils.debug("saida");
              }
  
              public void onDisconnect()
