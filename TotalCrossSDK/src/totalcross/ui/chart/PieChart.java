@@ -129,13 +129,18 @@ public class PieChart extends Chart
 
    private void drawPie(Graphics g, int xx, int yy, int rr, boolean is3d)
    {
+      if (sum == 0) // juliana@168: an empty chart was drawing spurious lines.
+         return;
+      
       g.foreColor = 0;
       int sCount = series.size();
       double last=0,current;
       this.xx = xx;
       this.yy = yy;
+      
       for (int i = 0; i < sCount; i++) // for each series
       {
+         // juliana@268: it is necessary to save the old positions to correctly offset the selected pie.
          xx = this.xx;
          yy = this.yy;
          
@@ -257,29 +262,14 @@ public class PieChart extends Chart
          case KeyEvent.SPECIAL_KEY_PRESS:
          {
             KeyEvent ke = (KeyEvent)e;
-            if (ke.isNextKey())
+            
+            if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER)
             {
-               if (currentSelection == -1)
-                  currentSelection = 0;
-               else
-               if (--currentSelection < 0)
-                  currentSelection = series.size()-1;
+               parent.setHighlighting();
+               tip.penUp(null);
             }
-            else
-            if (ke.isPrevKey())
-               currentSelection = (currentSelection+1) % series.size();
-            else
-            {
-               if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER)
-               {
-                  parent.setHighlighting();
-                  tip.penUp(null);
-               }
-               break;
-            }
-            tip.penUp(null); // remove previous
-            tip.penDown(null);
             break;
+            
          }
       }
    }

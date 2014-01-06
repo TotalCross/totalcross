@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+import totalcross.sys.Vm;
 
 public class TestTypes extends Object
 {
