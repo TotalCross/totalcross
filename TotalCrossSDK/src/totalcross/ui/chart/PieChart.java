@@ -262,29 +262,14 @@ public class PieChart extends Chart
          case KeyEvent.SPECIAL_KEY_PRESS:
          {
             KeyEvent ke = (KeyEvent)e;
-            if (ke.isNextKey())
+            
+            if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER)
             {
-               if (currentSelection == -1)
-                  currentSelection = 0;
-               else
-               if (--currentSelection < 0)
-                  currentSelection = series.size()-1;
+               parent.setHighlighting();
+               tip.penUp(null);
             }
-            else
-            if (ke.isPrevKey())
-               currentSelection = (currentSelection+1) % series.size();
-            else
-            {
-               if (ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ENTER)
-               {
-                  parent.setHighlighting();
-                  tip.penUp(null);
-               }
-               break;
-            }
-            tip.penUp(null); // remove previous
-            tip.penDown(null);
             break;
+            
          }
       }
    }
