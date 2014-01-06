@@ -18,7 +18,7 @@ namespace TotalCross
 	public:
 
 		MainView();
-		MainView(Platform::String ^cmdline, Platform::String ^appPath);
+		MainView(Platform::String ^cmdline, Platform::String ^vmPath, Platform::String ^appPath);
 
 		void setKeyboard(int kb); // enum TCSIP
 		static MainView ^GetLastInstance();
@@ -29,6 +29,7 @@ namespace TotalCross
       virtual void Run(void);
       virtual void Uninitialize(void);
       Platform::String ^getAppPath(void);
+	  Platform::String ^getVmPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
 
 	  int GetSIPHeight(void);
@@ -69,6 +70,7 @@ namespace TotalCross
 
       Context local_context;
       char cmdLine[512];
+	  Platform::String ^vmPath;
       Platform::String ^appPath;
       Platform::String ^_cmdline;
       Platform::Agile<Windows::UI::Core::CoreWindow> currentWindow;
