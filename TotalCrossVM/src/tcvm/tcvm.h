@@ -22,13 +22,58 @@
 #define __gl2_h_
 #endif
 
+
+
+#ifdef ANDROID
+#include <jni.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#endif
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "tcapi.h"
+
+#if defined(WINCE) || defined(WIN32)
+ #define INCL_WINSOCK_API_PROTOTYPES 0
+ #define INCL_WINSOCK_API_TYPEDEFS 1
+ #include "winsock2.h"
+ #include <windows.h>
+ #include <winnt.h>
+ #include <Mmsystem.h>
+ #if defined (WIN32) && !defined (WINCE) && _MSC_VER < 1500 && !defined __cplusplus
+  #include <stdint.h>
+ #endif
+ #if _WIN32_WCE >= 300
+  #include <notify.h>
+ #endif
+ #if !defined WP8
+ typedef HWAVEOUT MediaClipHandle;
+ typedef WAVEHDR  MediaClipHeader;
+ #endif
+#endif
+
+#include <stdarg.h>
+#include <stdio.h>
+
+#if defined(DISABLE_RAS)
+#include "../init/noras_ids/noras.inc"
+#endif
+
+#ifdef darwin
+#define inline
+#endif
+
 #if defined WP8
 
 #include "cppwrapper.h"
 #include "GLES2/gl2.h"
 #include <winsock2.h>
 
- #define GetSystemInfo(a) GetNativeSystemInfo(a)
+#define GetSystemInfo(a) GetNativeSystemInfo(a)
 
 #define Sleep(ms) cppsleep(ms)
 
@@ -38,7 +83,7 @@
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
 #define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
 #define MoveFile(a, b) MoveFileEx(a, b, 0)
-typedef unsigned char boolean;
+ typedef unsigned char boolean;
 #define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
 #define VirtualAlloc(a, b, c, d) malloc(a * b)
 #define GetModuleHandle(a) 0
@@ -70,51 +115,6 @@ typedef unsigned char boolean;
 #define DeleteObject(a)
 #define GetLogicalDriveStrings(a, b) 0
 
-#endif
-
-#ifdef ANDROID
-#include <jni.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#endif
-
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "tcapi.h"
-
-#if defined(WINCE) || defined(WIN32)
-#ifndef WP8
- #define INCL_WINSOCK_API_PROTOTYPES 0
- #define INCL_WINSOCK_API_TYPEDEFS 1
-#endif
- #include "winsock2.h"
- #include <windows.h>
- #include <winnt.h>
- #include <Mmsystem.h>
- #if defined (WIN32) && !defined (WINCE) && _MSC_VER < 1500 && !defined __cplusplus
-  #include <stdint.h>
- #endif
- #if _WIN32_WCE >= 300
-  #include <notify.h>
- #endif
- #if !defined WP8
- typedef HWAVEOUT MediaClipHandle;
- typedef WAVEHDR  MediaClipHeader;
- #endif
-#endif
-
-#include <stdarg.h>
-#include <stdio.h>
-
-#if defined(DISABLE_RAS)
-#include "../init/noras_ids/noras.inc"
-#endif
-
-#ifdef darwin
-#define inline
 #endif
 
 #if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
