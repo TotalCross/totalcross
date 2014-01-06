@@ -113,7 +113,7 @@ public final class Settings4A
             }
          romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16
       }
-      deviceId = Build.MANUFACTURER + " " + Build.MODEL;
+      deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
       
       // userName
       userName = null; // still looking for a way to retrieve this on droid.	   
