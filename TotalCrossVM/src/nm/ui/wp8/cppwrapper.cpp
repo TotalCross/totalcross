@@ -95,7 +95,6 @@ char *GetDisplayNameWP8()
 {
 	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
 	WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
-	debug_jeff("display name %s", devId);
 	return devId;
 }
 
