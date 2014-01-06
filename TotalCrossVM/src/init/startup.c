@@ -365,12 +365,14 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif defined WIN32
+#if !defined(WP8)
    {
       SYSTEM_INFO systemInfo;
       GetSystemInfo(&systemInfo);
       if (systemInfo.dwNumberOfProcessors > 1)  // flsobral@tc110_91: On Win32, TotalCross applications will run only in one processor. This should fix our problems with multi-core processors while thread synchronization is not supported.
          SetProcessAffinityMask(GetCurrentProcess(), 1L);
    }
+#endif
    if (xstrstr(argsOriginal,"/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);

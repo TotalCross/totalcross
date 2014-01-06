@@ -10,7 +10,16 @@
 extern "C" {
 #endif
 
+struct eventQueueMember {
+	int type;
+	int key;
+	int x;
+	int y;
+	int modifiers;
+};
+
 char *GetAppPathWP8();
+char *GetDisplayNameWP8();
 void cppsleep(int ms);
 
 // WP8 dispatcher fuctions
@@ -24,7 +33,7 @@ void windowSetSIP(enum TCSIP kb);
 void windowSetDeviceTitle(Object titleObj);
 
 // Threads functions
-void* cppthread_create(void (*func)(void *a), void *args);
+void* cppthread_create(void *args);
 void cppthread_detach(void *t);
 void *cppget_current_thread();
 
@@ -33,8 +42,14 @@ DWORD32 getRemainingBatery();
 void vibrate(DWORD32 milliseconds);
 DWORD32 getFreeMemoryWP8();
 
+//Event Queue functions
+void eventQueuePush(int type, int key, int x, int y, int modifiers);
+struct eventQueueMember eventQueuePop(void);
+int eventQueueEmpty(void);
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif

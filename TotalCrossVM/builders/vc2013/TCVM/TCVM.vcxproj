@@ -171,6 +171,7 @@
     <ClInclude Include="..\..\..\src\axtls\ssl.h" />
     <ClInclude Include="..\..\..\src\axtls\tls1.h" />
     <ClInclude Include="..\..\..\src\axtls\version.h" />
+    <ClInclude Include="..\..\..\src\event\wp8\specialkeys_c.h" />
     <ClInclude Include="..\..\..\src\init\demo.h" />
     <ClInclude Include="..\..\..\src\init\globals.h" />
     <ClInclude Include="..\..\..\src\init\settings.h" />
@@ -225,7 +226,6 @@
     <ClInclude Include="..\..\..\src\nm\sys\Time_test.h" />
     <ClInclude Include="..\..\..\src\nm\sys\Vm_test.h" />
     <ClInclude Include="..\..\..\src\nm\sys\win\Registry_c.h" />
-    <ClInclude Include="..\..\..\src\nm\sys\win\Time_c.h" />
     <ClInclude Include="..\..\..\src\nm\sys\win\Vm_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\android\gfx_ex.h" />
     <ClInclude Include="..\..\..\src\nm\ui\android\gfx_Graphics_c.h" />

@@ -31,6 +31,8 @@ namespace TotalCross
       Platform::String ^getAppPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
 
+	  int GetSIPHeight(void);
+
 	protected:
 		// Event Handlers.
 		void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
@@ -48,6 +50,10 @@ namespace TotalCross
 	  void OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args);
 
 	  void OnTextChange(Windows::Phone::UI::Core::KeyboardInputBuffer ^sender, Windows::Phone::UI::Core::CoreTextChangedEventArgs ^args);
+	  void OnBackPressed(Platform::Object ^sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
+	  void OnHidingSIP(Windows::UI::ViewManagement::InputPane ^sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^args);
+	  void OnShowingSIP(Windows::UI::ViewManagement::InputPane ^sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^args);
+	  void OnSizeChanged(Windows::UI::Core::CoreWindow ^sender, Windows::UI::Core::WindowSizeChangedEventArgs ^args);
 
 	private:
       ESContext m_esContext;

@@ -36,7 +36,7 @@ extern bool dontPostOnChar;
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
 #endif
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
 extern int32 deviceFontHeight,iosScale;
 #endif
 

@@ -145,11 +145,12 @@ static bool surfaceWillChange;
 //extern int32 *shiftScreenColorP;
 
 static int32 desiredglShiftY;
-static bool setShiftYonNextUpdateScreen;
 
 #pragma endregion
 
 #pragma region NonStaticVars
+
+bool setShiftYonNextUpdateScreen;
 
 VoidPs* imgTextures;
 int32 realAppH, appW, appH, glShiftY;
@@ -477,11 +478,13 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #else
 	graphicsUpdateScreenIOS();
 #endif
+#if !defined(WP8)
 	// erase buffer with keyboard's background color
 	PixelConv gray;
 	gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
 	glClearColor(f255[gray.r], f255[gray.g], f255[gray.b], 1); GL_CHECK_ERROR
-		//xxx glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+	glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+#endif
 }
 
 bool setupGL(int width, int height)
@@ -835,7 +838,7 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
-#if defined ANDROID || defined WP8
+#if defined ANDROID
 	if (setShiftYonNextUpdateScreen && needsPaint != null)
 	{
 		setShiftYonNextUpdateScreen = false;
@@ -846,9 +849,22 @@ void setShiftYgl()
 	}
 	if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
 		glShiftY = 0;
+#elif defined (WP8)
+	if (setShiftYonNextUpdateScreen) {
+		int32 componentPos;
+		int siph = MainView::GetLastInstance()->GetSIPHeight();
+		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
+		setShiftYonNextUpdateScreen = false;
+
+		if (componentPos <= MainView::GetLastInstance()->GetSIPHeight())
+			glShiftY = 0;
+		else
+			glShiftY = -(componentPos - MainView::GetLastInstance()->GetSIPHeight());
+	}
 #else
 	glShiftY = -desiredScreenShiftY;
 #endif    
+
 }
 
 

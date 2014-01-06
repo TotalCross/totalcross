@@ -114,6 +114,12 @@ static bool minimized;
 void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
 void applyPalette();
 
+#if defined (WP8)
+static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
+{
+	return 0L;
+}
+#else
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -425,7 +431,7 @@ def:
    }
    return 0L;
 }
-
+#endif
 bool privateInitEvent()
 {
 	//XXX
@@ -449,7 +455,10 @@ bool privateInitEvent()
 bool privateIsEventAvailable()
 {
 #if defined WP8
-   return 1;
+   bool ret;
+   dispatcher_dispath();
+   ret = !eventQueueEmpty();
+   return ret;
 #else
 	MSG msg;
 	return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
@@ -459,7 +468,9 @@ bool privateIsEventAvailable()
 void privatePumpEvent(Context currentContext)
 {
 #if defined(WP8)
-   dispatcher_dispath();
+	struct eventQueueMember q_member = eventQueuePop();
+
+	postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
 #else
    MSG msg;
 #ifdef WINCE

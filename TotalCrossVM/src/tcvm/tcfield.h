@@ -14,6 +14,9 @@
 #ifndef FIELD_H
 #define FIELD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define UNBOUND 65535U
 #define UNBOUND_ERROR 65534U
@@ -71,4 +74,7 @@ extern VoidP getSField_Ref(Context currentContext, TCClass c, int32 classAndFiel
 /// Returns the index to the given instance field.
 extern inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, Object o, RegType t);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
