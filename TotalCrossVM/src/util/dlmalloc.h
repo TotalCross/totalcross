@@ -35,7 +35,8 @@
 #endif
 
 #if defined WP8
-#undef MSPACES FOOTERS
+#undef MSPACES
+#undef FOOTERS
 #endif
 // TOTALCROSS END
 
