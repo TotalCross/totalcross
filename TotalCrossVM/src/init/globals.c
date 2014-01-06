@@ -36,7 +36,7 @@ jmethodID jeventIsAvailable;
 jmethodID jpumpEvents;
 bool appPaused = false;
 #endif
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
 int32 deviceFontHeight = 0;
 int32 iosScale = 0;
 #endif

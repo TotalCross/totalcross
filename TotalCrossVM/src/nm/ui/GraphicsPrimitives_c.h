@@ -103,7 +103,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    }
    // post the event to the vm
    if (mainClass != null)
-      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
+      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
    repaintActiveWindows(mainContext);
 }
 

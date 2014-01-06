@@ -14,7 +14,9 @@
 #include "tcvm.h"
 
 // Platform-specific code
-#if defined(WINCE) || defined(WIN32)
+#if defined(WP8)
+ #include "wp8/specialkeys_c.h"
+#elif defined(WINCE) || defined(WIN32)
  #include "win/specialkeys_c.h"
 #elif defined(darwin)
  #include "darwin/specialkeys_c.h"

@@ -389,8 +389,12 @@ static Object vmClipboardPaste(Context currentContext)
 
 static bool vmIsKeyDown(int32 key)
 {
+#if !defined(WP8)
    key = keyPortable2Device(key);
    return (GetAsyncKeyState(key) & 0x8000) != 0;
+#else
+   return false;
+#endif
 }
 
 static int32 vmGetRemainingBattery()

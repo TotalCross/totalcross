@@ -24,7 +24,9 @@ using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::UI::Core;
+using namespace Windows::UI::ViewManagement;
 using namespace Windows::Phone::UI::Core;
+using namespace Windows::Phone::UI::Input;
 using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 
@@ -146,7 +148,7 @@ void MainView::SetWindow(CoreWindow^ window)
    m_inputBuffer->InputScope = CoreInputScope::Text;
    m_inputBuffer->TextChanged +=
 	   ref new TypedEventHandler<KeyboardInputBuffer^, CoreTextChangedEventArgs^>(this, &MainView::OnTextChange);
-   window->KeyboardInputBuffer = m_inputBuffer;
+   //window->KeyboardInputBuffer = m_inputBuffer; //XXX when we learn how to treat perfectly text change events, we set this on again
 
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &MainView::OnVisibilityChanged);
@@ -180,6 +182,38 @@ void MainView::SetWindow(CoreWindow^ window)
 
 	window->InputEnabled +=
 		ref new TypedEventHandler<CoreWindow^, InputEnabledEventArgs^>(this, &MainView::OnInputEnabled);
+
+	window->SizeChanged +=
+		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &MainView::OnSizeChanged);
+
+	auto inputPane = InputPane::GetForCurrentView();
+	inputPane->Hiding +=
+		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnHidingSIP);
+	inputPane->Showing +=
+		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnShowingSIP);
+}
+
+void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^args)
+{
+	debug("onSizeChanged");
+}
+
+void MainView::OnShowingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
+{
+	debug("onShowingSIP");
+	setShiftYonNextUpdateScreen = true;
+}
+
+void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
+{
+	debug("onHidingSIP");
+	setShiftYonNextUpdateScreen = true;
+	eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
+}
+
+int MainView::GetSIPHeight(void)
+{
+	return InputPane::GetForCurrentView()->OccludedRect.Height;
 }
 
 void MainView::OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args)
@@ -191,19 +225,13 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 {
 	auto k = args->KeyCode;
 
-	auto x = m_inputBuffer->ToString()->Data();
-	auto len = m_inputBuffer->ToString()->Length();
-	int i;
-	char s[1024];
-
-	for (i = 0; i < len; i++) {
-		s[i] = (char)x[i];
-	}
-	s[i] = '\0';
-
+	// When enter is pressed, only a single character \r is sent; as TC recognizes '\n', we change its value beforehand
+	if (k == '\r')
+		k = '\n';
 	debug("caracter recebido: %c", k);
-	debug("input ateh agora: %s", s);
-	debug("caracter recebido");
+	debug("caracter recebido: %hhd", k);
+
+	eventQueuePush(KEYEVENT_KEY_PRESS, k, k, 0, -1);
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
@@ -242,6 +270,11 @@ void MainView::OnKeyDown(CoreWindow ^sender, KeyEventArgs ^args)
 
 void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
 {
+	auto k = args->VirtualKey;
+
+	debug("keyup");
+	if (k == Windows::System::VirtualKey::Back)
+		eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, SK_BACKSPACE, 0, -1);
 }
 
 void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
@@ -250,7 +283,7 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 
 	auto x = m_inputBuffer->Text->Data();
 	auto len = m_inputBuffer->Text->Length();
-	int i;
+	unsigned int i;
 	char s[1024];
 
 	for (i = 0; i < len; i++) {
@@ -259,23 +292,26 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 	s[i] = '\0';
 
 	debug("input ateh agora: %s", s);
+//	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
 	m_windowVisible = args->Visible;
+	debug("onVisibilityChange");
 }
 
 void MainView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
 	m_windowClosed = true;
+	debug("onWindowClose");
 }
 
 void MainView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
 	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
-	postEvent(mainContext, PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
+	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 }
 
 void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
@@ -284,7 +320,7 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 	auto pos = args->CurrentPoint->Position;
 	if (lastX != pos.X || lastY != pos.Y) {
 		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
-		postEvent(mainContext, PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y, -1);
+		eventQueuePush(PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 		isDragging = true;
 	}
 }
@@ -292,13 +328,26 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 void MainView::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-	postEvent(mainContext, PENEVENT_PEN_UP, 0, lastX = pos.X, lastY =  pos.Y, -1);
+	eventQueuePush(PENEVENT_PEN_UP, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 	isDragging = false;
 }
 
 void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
 {
 	CoreWindow::GetForCurrentThread()->Activate();
+
+	HardwareButtons::BackPressed +=
+		ref new EventHandler<BackPressedEventArgs^>(this, &MainView::OnBackPressed);
+	debug("onActivate");
+}
+
+void MainView::OnBackPressed(Object ^sender, BackPressedEventArgs ^args)
+{
+	debug("onBackPressed");
+	if (currentWindow.Get()->IsKeyboardInputEnabled) {
+		eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
+	}
+	args->Handled = true;
 }
 
 void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
@@ -307,6 +356,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
    // indicates that the application is busy performing suspending operations. Be
    // aware that a deferral may not be held indefinitely. After about five seconds,
    // the app will be forced to exit.
+	debug("onSuspending");
    SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
    
    //if (currentDirect3DBase)
@@ -322,6 +372,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 
 void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
+	debug("onResuming");
 	// Restore any data or state that was unloaded on suspend. By default, data
 	// and state are persisted when resuming from suspend. Note that this event
 	// does not occur if the app was previously terminated.
@@ -344,7 +395,7 @@ Windows::UI::Core::CoreWindow^ MainView::GetWindow()
 
 void MainView::setKeyboard(int kb)
 {
-	currentWindow.Get()->KeyboardInputBuffer;// = m_inputBuffer;
+	currentWindow.Get()->KeyboardInputBuffer = nullptr;// = m_inputBuffer;
 
 	switch ((enum TCSIP) kb)
 	{

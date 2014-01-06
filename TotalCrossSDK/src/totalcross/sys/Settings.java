@@ -90,6 +90,8 @@ public final class Settings
    public static final String WINDOWSMOBILE = "WindowsMobile";
    /** Underlying platform is desktop Windows. To be used with the <code>platform</code> member. */
    public static final String WIN32         = "Win32";
+   /** Underlying platform is desktop Windows Phone 8. To be used with the <code>platform</code> member. */
+   public static final String WP8           = "WP8";
    /** Underlying platform is Linux. To be used with the <code>platform</code> member. */
    public static final String LINUX         = "Linux";
    /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */

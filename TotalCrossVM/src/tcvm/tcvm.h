@@ -67,27 +67,7 @@ typedef unsigned char boolean;
 #define SelectObject(a, b) 0
 #define BitBlt(a, b, c, d, e, f, g, h, i)
 #define DeleteObject(a)
-#define SetProcessAffinityMask(a, b)
-//#define GlobalMemoryStatus(a)
-#define waveOutPause(a) 0
-#define waveOutRestart(a) 0
-#define waveOutReset(a) 0
-#define GetAsyncKeyState(a) 0
-#define ShowWindow(a, b)
 #define GetLogicalDriveStrings(a, b) 0
-
-//#define GetDC */
-// CreateWindowEx
-// CreatePalette
-// CreateDIBSection
-//#define fillCursor */
-#define GetDC() 0
-#define CreateWindowExW() 0
-#define CreatePalette() 0
-#define CreateDIBSection() 0
-#define fillCursor() 0
-
-#define CreateCompatibleDC(a) 0
 
 #endif
 

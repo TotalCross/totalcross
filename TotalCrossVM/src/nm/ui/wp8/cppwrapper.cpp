@@ -1,5 +1,6 @@
 #include <chrono>
 #include <thread>
+#include <queue>
 #include <system_error>
 
 #include <wrl/client.h>
@@ -15,22 +16,62 @@
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
+#include "tcclass.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
-
-#pragma region varDeclaration
 using namespace Windows::Phone::System::Memory;
 using namespace Windows::Phone::Devices::Power;
 using namespace Windows::Phone::Devices::Notification;
 
+#pragma region varDeclaration
+
 static char apPath[1024];
+static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
 static CoreDispatcher ^dispatcher = nullptr;
 
+static std::queue<eventQueueMember> eventQueue;
+
 #pragma endregion
+
+// Not a concurrent queue
+void eventQueuePush(int type, int key, int x, int y, int modifiers)
+{
+	static int32 *ignoreEventOfType = null;
+	struct eventQueueMember newEvent;
+	if (ignoreEventOfType == null)
+		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
+	if (type == *ignoreEventOfType) {
+		return;
+	}
+	newEvent.type = type;
+	newEvent.key = key;
+	newEvent.x = x;
+	newEvent.y = y;
+	newEvent.modifiers = modifiers;
+
+	eventQueue.push(newEvent);
+}
+
+struct eventQueueMember eventQueuePop(void)
+{
+	struct eventQueueMember top;
+
+	top = eventQueue.front();
+	eventQueue.pop();
+
+	debug("popping event from queue; queue size %d", eventQueue.size());
+
+	return top;
+}
+
+int eventQueueEmpty(void)
+{
+	return (int)eventQueue.empty();
+}
 
 char *GetAppPathWP8()
 {
@@ -50,10 +91,20 @@ void cppthread_detach(void *t)
 	//}
 }
 
-void* cppthread_create(void (*func)(void *a), void *args)
+char *GetDisplayNameWP8()
+{
+	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
+	WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
+	debug_jeff("display name %s", devId);
+	return devId;
+}
+
+extern "C" DWORD WINAPI privateThreadFunc(VoidP argP);
+
+void* cppthread_create(void *args)
 {
 	try {
-		std::thread t(func, args);
+		std::thread t(privateThreadFunc, args);
 
 		t.detach();
 

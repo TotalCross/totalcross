@@ -45,6 +45,7 @@ extern GLfloat ftransp[16];
 extern GLfloat* glcoords;//[flen*2]; x,y
 extern GLfloat* glcolors;//[flen];   alpha
 extern int32 desiredScreenShiftY;
+extern bool setShiftYonNextUpdateScreen;
 
 extern VoidPs* imgTextures;
 

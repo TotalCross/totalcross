@@ -13,6 +13,8 @@
 
 #define CONVERT_PRIORITY(v) (7 - ((v-1)*7/9)) // java 1=min, 10=max; windows: 7=min, 0=max
 
+DWORD WINAPI privateThreadFunc(VoidP argP);
+
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
    int32 id;
@@ -32,7 +34,10 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
    else throwException(context, RuntimeException, "Can't create thread");
    return h;
 #else
-   h = cppthread_create((void (*)(void*))(void*)t, targs);
+   if ((void*)t != (void*)privateThreadFunc) {
+	   debug("Thread func is not privateThreadFunc!");
+   }
+   h = cppthread_create(targs);
    if (h != null)
    {
 	   ThreadHandleFromObject(this_) = h;
@@ -62,7 +67,7 @@ static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 #endif
 }
 
-static DWORD WINAPI privateThreadFunc(VoidP argP)
+DWORD WINAPI privateThreadFunc(VoidP argP)
 {
    ThreadArgs targs = (ThreadArgs)argP;
    executeThreadRun(targs->context, targs->threadObject);
