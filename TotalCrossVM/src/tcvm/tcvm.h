@@ -26,6 +26,7 @@
 
 #include "cppwrapper.h"
 #include "GLES2/gl2.h"
+#include <winsock2.h>
 
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 
@@ -85,8 +86,10 @@ typedef unsigned char boolean;
 #include "tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
+#ifndef WP8
  #define INCL_WINSOCK_API_PROTOTYPES 0
  #define INCL_WINSOCK_API_TYPEDEFS 1
+#endif
  #include "winsock2.h"
  #include <windows.h>
  #include <winnt.h>

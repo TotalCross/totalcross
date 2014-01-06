@@ -229,5 +229,5 @@ TC_API void tuzZL_inflate_ssib(NMParams p) // totalcross/util/zip/ZLib native pu
 }
 
 #ifdef ENABLE_TEST_SUITE
-//#include "zip_ZLib_test.h"
+#include "zip_ZLib_test.h"
 #endif

@@ -28,7 +28,7 @@ static void testDrawHline(Context currentContext, Object g)
    for (y = 0; y < screen.screenH; y++)
    {
       Pixel color = makePixel(255,y>255?255:y,255);
-	  drawHLine(currentContext, g, y, y, screen.screenW - y, color, color);
+	   drawHLine(currentContext, g, y, y, screen.screenW - y, color, color);
       updateScreen(mainContext);
    }
 }
@@ -39,7 +39,7 @@ static void testDrawVline(Context currentContext, Object g)
    for (x = 0; x < screen.screenW; x++)
    {
       Pixel color = makePixel(x>255?255:x,255,255);
-	  drawVLine(currentContext, g, x, 0, screen.screenH - x, color, color);
+	   drawVLine(currentContext, g, x, 0, screen.screenH - x, color, color);
       updateScreen(mainContext);
    }
 }
@@ -54,9 +54,9 @@ static void testFillRect(Context currentContext, Object g)
    for (x = 0; x < 256; x+=2)
    {
       bb.b = gg.g = rr.r = (uint8)x;
-	  fillRect(currentContext, g, 10, 10 + k * 0, screen.screenW - 20, k, rr.pixel);
-	  fillRect(currentContext, g, 10, 10 + k * 1, screen.screenW - 20, k, gg.pixel);
-	  fillRect(currentContext, g, 10, 10 + k * 2, screen.screenW - 20, k, bb.pixel);
+	   fillRect(currentContext, g, 10, 10 + k * 0, screen.screenW - 20, k, rr.pixel);
+	   fillRect(currentContext, g, 10, 10 + k * 1, screen.screenW - 20, k, gg.pixel);
+	   fillRect(currentContext, g, 10, 10 + k * 2, screen.screenW - 20, k, bb.pixel);
       updateScreen(mainContext);
    }
 }
@@ -71,7 +71,7 @@ static void testFillCircle(Context currentContext, Object g)
    for (r = 160; r >= 0; r-=3)
    {
       color = makePixel(r,r,0xAA);
-	  ellipseDrawAndFill(currentContext, g, mx, my, r, r, color, color, true, false);
+	   ellipseDrawAndFill(currentContext, g, mx, my, r, r, color, color, true, false);
       updateScreen(mainContext);
    }
 }
@@ -86,7 +86,7 @@ static void testDrawCircle(Context currentContext, Object g)
    for (r = 0; r < 160; r++)
    {
       color = makePixel(0x55,r,0x88);
-	  ellipseDrawAndFill(currentContext, g, mx, my, r, r, color, color, false, false);
+	   ellipseDrawAndFill(currentContext, g, mx, my, r, r, color, color, false, false);
       updateScreen(mainContext);
    }
 }
@@ -101,7 +101,7 @@ static void testDrawEllipse(Context currentContext, Object g)
    for (r = 0; r < 160; r++)
    {
       color = makePixel(0xAA,0xFF,r);
-	  ellipseDrawAndFill(currentContext, g, mx, my, r / 2, r, color, color, false, false);
+	   ellipseDrawAndFill(currentContext, g, mx, my, r / 2, r, color, color, false, false);
       updateScreen(mainContext);
    }
 }
@@ -116,7 +116,7 @@ static void testFillEllipse(Context currentContext, Object g)
    for (r = 160; r >= 0; r -= 2)
    {
       color = makePixel(0xAA,r,0xFF);
-	  ellipseDrawAndFill(currentContext, g, mx, my, r, r / 2, color, color, true, false);
+	   ellipseDrawAndFill(currentContext, g, mx, my, r, r / 2, color, color, true, false);
       updateScreen(mainContext);
    }
 }
@@ -135,7 +135,7 @@ static void testPie(Context currentContext, Object g)
    {
 	   arcPiePointDrawAndFill(currentContext, g, mx, my, r, r, d - 45, d, black, color, true, true, false);
       updateScreen(mainContext);
-	  fillRect(currentContext, g, mx - r - 1, my - r - 1, r + r + 2, r + r + 2, white);
+	   fillRect(currentContext, g, mx - r - 1, my - r - 1, r + r + 2, r + r + 2, white);
    }
 }
 
@@ -179,7 +179,7 @@ static void testPalette(Context currentContext, Object g)
       {
          x = 0; y += wh;
       }
-	  fillRect(currentContext, g, x, y, wh, wh, makePixelRGB(c));
+	   fillRect(currentContext, g, x, y, wh, wh, makePixelRGB(c));
       x += wh;
    }
    updateScreen(mainContext);
@@ -200,7 +200,7 @@ static void testText(Context currentContext, Object g)
          drawText(currentContext, g, text, 7, x, y, p,0);
       x1 = x; x2 = currentContext->dirtyX2; y1 = currentContext->dirtyY1; y2 = currentContext->dirtyY2; // save dirty area to erase it
       updateScreen(mainContext);
-	  fillRect(currentContext, g, x1, y1, x2 - x1, y2 - y1, white); // erase dirty area
+	   fillRect(currentContext, g, x1, y1, x2 - x1, y2 - y1, white); // erase dirty area
    }
    Graphics_clipX1(g) = 0;
    Graphics_clipX2(g) = screen.screenW;

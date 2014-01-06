@@ -25,7 +25,7 @@ typedef HRESULT (__stdcall *DMProcessConfigXMLProc)( LPCWSTR , DWORD , LPWSTR* )
 
 #define NATIVE_CONNECTION HANDLE
 
-#include "..\..\io\device\win\RadioDevice_c.h"
+#include "../../io/device/win/RadioDevice_c.h"
 
 TCHARP parseArgs(TCHARP line, TCHARP argument, TCHARP argValue)
 {

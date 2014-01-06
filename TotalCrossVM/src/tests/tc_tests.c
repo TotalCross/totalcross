@@ -26,11 +26,11 @@ void test_tiF_setTime_bt(struct TestSuite *tc, Context currentContext);// nm/io/
 void test_tiF_writeBytes_Bii(struct TestSuite *tc, Context currentContext);// nm/io/File_test.h - depends on testtiF_create_sii
 void test_tiPDBF_addRecord_i(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_addRecord_ii(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
-void test_tiPDBF_create_si(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
+void test_tiPDBF_create_sssi(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_delete(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_deleteRecord(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_getRecordCount(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
-void test_tiPDBF_inspectRecord_Bi(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
+void test_tiPDBF_inspectRecord_Bii(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_listPDBs_ii(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_nativeClose(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
 void test_tiPDBF_readBytes_Bii(struct TestSuite *tc, Context currentContext);// nm/io/PDBFile_test.h
@@ -378,11 +378,11 @@ void fillTestCaseArray(testFunc *tests)
    tests[20] = test_tiF_writeBytes_Bii;
    tests[21] = test_tiPDBF_addRecord_i;
    tests[22] = test_tiPDBF_addRecord_ii;
-   tests[23] = test_tiPDBF_create_si;
+   tests[23] = test_tiPDBF_create_sssi;
    tests[24] = test_tiPDBF_delete;
    tests[25] = test_tiPDBF_deleteRecord;
    tests[26] = test_tiPDBF_getRecordCount;
-   tests[27] = test_tiPDBF_inspectRecord_Bi;
+   tests[27] = test_tiPDBF_inspectRecord_Bii;
    tests[28] = test_tiPDBF_listPDBs_ii;
    tests[29] = test_tiPDBF_nativeClose;
    tests[30] = test_tiPDBF_readBytes_Bii;
@@ -539,7 +539,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[181] = test_tumS_beep;
    tests[182] = test_tumS_setEnabled_b;
    tests[183] = test_tumS_tone_ii;
-  // tests[184] = test_ZLib;
+   tests[184] = test_ZLib;
    tests[185] = test_XmlTokenizer;
    tests[186] = test_StringObject;
    tests[187] = test_VM_CodeUnion;

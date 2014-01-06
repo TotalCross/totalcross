@@ -34,7 +34,7 @@ TESTCASE(tufFM_fontMetricsCreate) // totalcross/ui/font/FontMetrics native void 
    // call the create function
    p.obj = &fm; // this
    tufFM_fontMetricsCreate(&p);
-   ASSERT2_EQUALS(I32, *ascent, 9);
+   ASSERT2_EQUALS(I32, *ascent, 7);
    ASSERT2_EQUALS(I32, *descent, 2);
 
    testfm = fm;
@@ -52,15 +52,15 @@ TESTCASE(tufFM_charWidth_c) // totalcross/ui/font/FontMetrics native public int 
 
    c = ' ';
    tufFM_charWidth_c(&p);
-   ASSERT2_EQUALS(I32, p.retI, 3);
+   ASSERT2_EQUALS(I32, p.retI, 2);
 
    c = 'b';
    tufFM_charWidth_c(&p);
-   ASSERT2_EQUALS(I32, p.retI, 6);
+   ASSERT2_EQUALS(I32, p.retI, 5);
 
    c = 0x1234; // invalid char
    tufFM_charWidth_c(&p);
-   ASSERT2_EQUALS(I32, p.retI, 3); // same of space
+   ASSERT2_EQUALS(I32, p.retI, 2); // same of space
 
    finish: ;
 }
@@ -83,7 +83,7 @@ TESTCASE(tufFM_stringWidth_Cii) // totalcross/ui/font/FontMetrics native public 
    sc[0] = 3; // start
    sc[1] = 7; // count
    tufFM_stringWidth_Cii(&p);
-   ASSERT2_EQUALS(I32, p.retI, 41);
+   ASSERT2_EQUALS(I32, p.retI, 34);
 
    finish: ;
 }
