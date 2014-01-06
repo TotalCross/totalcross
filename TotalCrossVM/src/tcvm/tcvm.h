@@ -82,7 +82,6 @@
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)
 #define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
-#define MoveFile(a, b) MoveFileEx(a, b, 0)
  typedef unsigned char boolean;
 #define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
 #define VirtualAlloc(a, b, c, d) malloc(a * b)
