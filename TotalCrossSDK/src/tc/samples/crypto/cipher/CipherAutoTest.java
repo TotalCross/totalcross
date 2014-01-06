@@ -14,7 +14,6 @@ package tc.samples.crypto.cipher;
 
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.cipher.*;
-import totalcross.sys.Convert;
 import totalcross.ui.MainWindow;
 
 public class CipherAutoTest extends MainWindow
@@ -107,8 +106,7 @@ public class CipherAutoTest extends MainWindow
       }
       catch (CryptoException exception) 
       {
-         exception.printStackTrace();
-         //throw new RuntimeException();
+         throw new RuntimeException();
       }
       try
       {
