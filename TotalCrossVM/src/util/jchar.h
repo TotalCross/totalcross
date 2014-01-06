@@ -14,6 +14,9 @@
 #ifndef JCHAR_H
 #define JCHAR_H
 
+#include "tcapi.h"
+#include "xtypes.h"
+
 /// In the functions below, if len is < 0, it is computed from the given input (J)CharP.
 /// If (J)CharP is NOT terminated with 0, then you MUST provide its length
 
