@@ -1,4 +1,4 @@
-#if (defined (darwin) && !defined (THEOS))  || defined WP8
+#if (defined (darwin) && !defined (THEOS))
 #define initNativeProcAddresses() do{ htNativeProcAddresses = htNew(512, null); fillNativeProcAddressesTC(); }while(0)
 #define destroyNativeProcAddresses() htFree(&htNativeProcAddresses, null)
 
