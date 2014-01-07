@@ -232,7 +232,6 @@ class LitebaseLex
          if ((is[yycurrent] & IS_ALPHA) != 0) // The first character must be a letter.
          {
             int hashCode = 0;
-            boolean isLowerCase = true;
 
             initialPos = yyposition - 1;
             nameToken.setLength(0); // Initializes the current identifier token.
@@ -240,10 +239,7 @@ class LitebaseLex
             while (yycurrent >= 0 && (is[yycurrent] & IS_ALPHA_DIGIT) != 0) // The other characters must be a letter, digit, or '_'.
             { 
                if ('A' <= yycurrent && yycurrent <= 'Z') // Converts to lower case.
-               {
                   nameToken.append((char)(yycurrent += 32));
-                  isLowerCase = false;
-               }
                else
                   nameToken.append((char)yycurrent);
                hashCode = (hashCode << 5) - hashCode + yycurrent;
@@ -253,11 +249,8 @@ class LitebaseLex
             // juliana@213_7: changed to Hashtable and tests for colision.
             // Sees if the identifier is a reserved word or just an identifier.
             if ((value = reserved.get(hashCode, nameToken)) != -1)
-               return value;
-            if (isLowerCase)
-               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
-            else
-               yyparser.yylval.sval = nameToken.toString();
+               return value;           
+            yyparser.yylval.sval = nameToken.toString();
             return LitebaseParser.TK_IDENT;
          }
 
