@@ -760,8 +760,8 @@ public class Scanner
                         Vm.attachNativeLibrary("Symbol") || 
                         Vm.attachNativeLibrary("Dolphin") || 
                         Vm.attachNativeLibrary("OpticonH16") || 
-                     Vm.attachNativeLibrary("Intermec") || 
-                     Vm.attachNativeLibrary("Bematech");
+                        Vm.attachNativeLibrary("Intermec") || 
+                        Vm.attachNativeLibrary("Bematech");
          if (!driverLoaded && tries++ == 0)
             throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
