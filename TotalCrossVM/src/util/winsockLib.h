@@ -90,6 +90,7 @@ ChangeRadioStateProc    pChangeRadioState;
 FreeDeviceListProc      pFreeDeviceList;
 #endif
 
+#ifndef WP8
 #ifdef UNICODE
 #define _WSALookupServiceBegin_ TEXT("WSALookupServiceBeginW")
 #define _WSALookupServiceNext_  TEXT("WSALookupServiceNextW")
@@ -100,7 +101,6 @@ FreeDeviceListProc      pFreeDeviceList;
 #define _WSASetService_         TEXT("WSASetServiceA")
 #endif /* !UNICODE */
 
-#ifndef WP8
 #define WSAStartup(a, b)      (WSAStartupProc         == null ? WSAVERNOTSUPPORTED : WSAStartupProc(a, b))
 #define socket(a, b, c)       (socketProc             == null ? INVALID_SOCKET : socketProc(a, b, c))
 #define inet_addr(a)          (inet_addrProc          == null ? INADDR_NONE : inet_addrProc(a))
