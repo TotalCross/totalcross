@@ -1218,11 +1218,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
             p->retI = lbfileExists(fullName, slot);
          
             // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
-#ifdef WINCE
-            length = TC_JCharPLen(fullName);
-#else
-            length = xstrlen(fullName);
-#endif
+            length = tcslen(fullName);
             fullName[length] = 'o';
             fullName[length + 1] = 0;
             if (p->retI && !lbfileExists(fullName, slot))
