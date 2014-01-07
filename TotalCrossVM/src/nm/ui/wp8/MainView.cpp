@@ -115,13 +115,14 @@ m_windowVisible(true)
 	lastInstance = this;
 }
 
-MainView::MainView(String ^cmdline, String ^_appPath) :
+MainView::MainView(String ^cmdline, String ^_vmPath, String ^_appPath) :
 m_windowClosed(false),
 m_windowVisible(true)
 {
 	strcpy(cmdLine, "UIControls /cmd ");
 	WideCharToMultiByte(CP_ACP, 0, cmdline->Data(), cmdline->Length(), cmdLine + strlen(cmdLine), 512 - strlen(cmdLine), NULL, NULL);
 	//WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPath, 1024 , NULL, NULL);
+	vmPath = _vmPath;
 	appPath = _appPath;
 	_cmdline = cmdline;
 
@@ -386,6 +387,11 @@ MainView ^MainView::GetLastInstance()
 String ^MainView::getAppPath()
 {
 	return appPath;
+}
+
+String ^MainView::getVmPath()
+{
+	return vmPath;
 }
 
 Windows::UI::Core::CoreWindow^ MainView::GetWindow()

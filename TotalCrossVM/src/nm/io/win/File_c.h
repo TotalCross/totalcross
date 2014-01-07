@@ -389,7 +389,11 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 {
    if (isOpen)
       CloseHandle(fref.handle);
+#if defined (WP8)
+   return (MoveFileEx(currPath, newPath, 0) ? NO_ERROR : GetLastError());
+#else
    return (MoveFile(currPath, newPath) ? NO_ERROR : GetLastError());
+#endif
 }
 
 /*

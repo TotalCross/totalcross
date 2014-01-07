@@ -4,7 +4,6 @@
 
 #include "tcvm.h"
 
-#include "esUtil.h"
 #include "../GraphicsPrimitives.h"
 
 #ifdef __cplusplus

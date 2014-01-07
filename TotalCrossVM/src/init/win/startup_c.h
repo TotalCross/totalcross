@@ -84,12 +84,14 @@ static void getWorkingDir()
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
 #else
    char *_path;
-   _path = GetAppPathWP8();
-
+   _path = GetVmPathWP8();
    for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
       if (*sl == '\\') *sl = '/';
-
    xstrcpy(vmPath, _path);
+
+   _path = GetAppPathWP8();
+   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
+	   if (*sl == '\\') *sl = '/';
    xstrcpy(appPath, _path);
 #endif
 }

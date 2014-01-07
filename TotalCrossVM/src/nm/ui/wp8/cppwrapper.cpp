@@ -27,7 +27,8 @@ using namespace Windows::Phone::Devices::Notification;
 
 #pragma region varDeclaration
 
-static char apPath[1024];
+static char appPathWP8[1024];
+static char vmPathWP8[1024];
 static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
@@ -78,8 +79,17 @@ char *GetAppPathWP8()
 	MainView ^mv = MainView::GetLastInstance();
 	Platform::String ^_appPath = mv->getAppPath();
 
-	WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), apPath, 1024, NULL, NULL);
-	return apPath;
+	WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPathWP8, 1024, NULL, NULL);
+	return appPathWP8;
+}
+
+char *GetVmPathWP8()
+{
+	MainView ^mv = MainView::GetLastInstance();
+	Platform::String ^_vmPath = mv->getVmPath();
+
+	WideCharToMultiByte(CP_ACP, 0, _vmPath->Data(), _vmPath->Length(), vmPathWP8, 1024, NULL, NULL);
+	return vmPathWP8;
 }
 
 void cppthread_detach(void *t)
@@ -95,7 +105,6 @@ char *GetDisplayNameWP8()
 {
 	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
 	WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
-	debug_jeff("display name %s", devId);
 	return devId;
 }
 

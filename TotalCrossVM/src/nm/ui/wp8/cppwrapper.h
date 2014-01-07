@@ -19,6 +19,7 @@ struct eventQueueMember {
 };
 
 char *GetAppPathWP8();
+char *GetVmPathWP8();
 char *GetDisplayNameWP8();
 void cppsleep(int ms);
 

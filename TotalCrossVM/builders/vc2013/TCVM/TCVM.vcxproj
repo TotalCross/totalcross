@@ -567,9 +567,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\extlibs\DirectXTK\DirectXTK_WindowsPhone8.vcxproj">
-      <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\..\angleproject\samples\gles2_book\Common\esUtil_phone.vcxproj">
       <Project>{d2d857bf-346e-4014-b9cf-50d5e1f8a357}</Project>
     </ProjectReference>

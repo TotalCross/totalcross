@@ -23,7 +23,7 @@
 using namespace Windows::UI::Core;
 using namespace TotalCross;
 
-extern TC_API void throwException(Context currentContext, Throwable t, CharP message, ...);
+TC_API void throwException(Context currentContext, Throwable t, CharP message, ...);
 
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
 #define stringfy(x) #x

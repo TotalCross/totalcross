@@ -43,7 +43,11 @@ bool inline PDBCloseFile(PDBFileRef fileRef)
 
 bool inline PDBRename(TCHARP oldName, TCHARP newName)
 {
-   return MoveFile(oldName, newName);
+#if defined (WP8)
+   return MoveFileEx(oldName, newName, 0);
+#else
+	return MoveFile(oldName, newName);
+#endif
 }
 
 bool inline PDBRemove(TCHARP fileName)
