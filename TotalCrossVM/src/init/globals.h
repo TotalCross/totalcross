@@ -32,6 +32,7 @@ extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
+extern HANDLE hModuleTCVM;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
