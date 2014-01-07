@@ -150,6 +150,7 @@
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCBase.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCFont.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\Litebase\LitebaseSDK\dist\lib\LitebaseLib.tcz" />
+    <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\AllTests.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\UIControls.tcz" />
   </ItemGroup>
   <ItemGroup>
