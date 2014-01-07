@@ -149,6 +149,7 @@
   <ItemGroup>
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCBase.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCFont.tcz" />
+    <XapFilesInputCollection Include="P:\gitrepo\Litebase\LitebaseSDK\dist\lib\LitebaseLib.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\UIControls.tcz" />
   </ItemGroup>
   <ItemGroup>
@@ -163,13 +164,11 @@
     <None Include="..\..\..\..\TotalCrossSDK\dist\vm\TCBase.tcz" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Litebase\LitebaseSDK\builders\vc2013\litebase.vcxproj">
+      <Project>{66ee456c-e926-4933-8f55-c2f572ce7444}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\TCVM\TCVM.vcxproj">
       <Project>{77979d12-6a24-48b2-84ce-85e56cd5f2d1}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
