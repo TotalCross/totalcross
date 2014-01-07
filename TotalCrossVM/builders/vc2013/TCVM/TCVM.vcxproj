@@ -567,9 +567,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\angleproject\samples\gles2_book\Common\esUtil_phone.vcxproj">
-      <Project>{d2d857bf-346e-4014-b9cf-50d5e1f8a357}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\..\angleproject\src\libEGL\libEGL_phone.vcxproj">
       <Project>{ab42a170-e370-4707-8cc6-1c51349c146f}</Project>
     </ProjectReference>
