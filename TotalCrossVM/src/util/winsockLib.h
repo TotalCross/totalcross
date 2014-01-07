@@ -15,7 +15,7 @@
 #ifndef __WINSOCKLIB__
 #define __WINSOCKLIB__
 
-#include "tcvm.h"
+#include <winsock2.h>
 
 #ifndef WP8
 LPFN_WSASTARTUP        WSAStartupProc;
