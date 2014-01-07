@@ -31,6 +31,7 @@ int32 ascrVRes = 0;
 #if defined(WIN32)
 uint8 keyIsDown[256] = { 0 };
 bool dontPostOnChar = false;
+HANDLE hModuleTCVM = INVALID_HANDLE_VALUE;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable;
 jmethodID jpumpEvents;

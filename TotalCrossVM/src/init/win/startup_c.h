@@ -61,7 +61,7 @@ static void getWorkingDir()
 #ifndef WP8
    TCHAR d1[MAX_PATH], d2[MAX_PATH];
    // get the path to the vm
-   GetModuleFileName(GetModuleHandle(TEXT("TCVM.DLL")), d1, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
+   GetModuleFileName(hModuleTCVM, d1, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
    TCHARP2CharPBuf(d1, vmPath);
    // get the path to the exe
    GetModuleFileName(GetModuleHandle(null), d2, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
