@@ -6,110 +6,89 @@
 
 static ScreenSurface gscreen;
 int getTimeStamp();
-char* createPixelsBuffer(int width, int height);
 int realAppH;
+extern int appW,appH;
+void Sleep(int ms);
+void checkGlError(const char* op, int line);
+
+
++ (Class)layerClass 
+{
+   return [CAEAGLLayer class];
+}
+
+bool setupGL(int width, int height);
 
 - (id)init:(UIViewController*) ctrl
 {                                    
    controller = ctrl;
    self = [ super init ];
-   if (self != nil )
-   {
-      // initialize the screen bitmap with the full width and height
-      CGRect rect = [[UIScreen mainScreen] bounds];
-      int w = rect.size.width, h = rect.size.height;
-      int s = w > h ? w : h;
-      screenBuffer = (char*)createPixelsBuffer(s, s);
-      colorSpace = CGColorSpaceCreateDeviceRGB();
-      provider = CGDataProviderCreateWithData(NULL, screenBuffer, 4*w*h, NULL);
-      [self setOpaque:YES];
-      [self setClearsContextBeforeDrawing:NO];
-      [self setClipsToBounds:NO];
-      //[self setContentMode:UIViewContentModeRedraw];
-      UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-      [self addGestureRecognizer:pinchGesture];
-      [pinchGesture release];
-   }  
-   return self; 
+   [self setOpaque:YES];
+   self.contentMode = UIViewContentModeCenter;
+   self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
+   UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
+   [self addGestureRecognizer:pinchGesture];
+   [pinchGesture release];
+   return self;
 }
 
-- (void)updateScreen: (void*)scr
+extern int32 deviceFontHeight,iosScale;
+
+- (void)setScreenValues: (void*)scr
 {
-   ScreenSurface screen = gscreen = scr;
-   screen->screenW = self.frame.size.width;
-   screen->screenH = self.frame.size.height;
+   ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
+   iosScale = [UIScreen mainScreen].scale;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ( == 2.0)) ?2:1;
+   screen->screenW = self.bounds.size.width *iosScale;
+   screen->screenH = self.bounds.size.height*iosScale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
+   screen->pixels = (uint8*)1;
+   if (iosScale == 2) deviceFontHeight = 38;
 }
 
-void Sleep(int ms);
-BOOL invalidated;
-
-extern BOOL callingScreenChange;
-
-- (void)drawRect:(CGRect)frame
+- (void)doRotate
 {
-   // when rotated, the UIViewController still thinks that we want to draw it horizontally, so we invert the size.
-   int orientation = [[UIDevice currentDevice] orientation];
-   if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceDown || orientation == UIDeviceOrientationFaceUp)
-      orientation = lastOrientation;
-   lastOrientation = orientation;
-   bool landscape = orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight;
-   int w = self.frame.size.width;
-   int h = self.frame.size.height;
-   if (landscape && w < h)
-   {
-      int temp = w; w = h; h = temp;
-   }
-   if (w != clientW)
-   {
-      realAppH = h;
-      if (cgImage != null) CGImageRelease(cgImage);
-      cgImage = CGImageCreate(w, h, 8, 32, w*4, colorSpace, kCGImageAlphaNoneSkipLast|kCGBitmapByteOrder32Little, provider, NULL, false, kCGRenderingIntentDefault);
-      if (clientW != 0)
-      {
-         callingScreenChange = true;
-         [self updateScreen: gscreen];
-         [ (MainView*)controller addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: 
-           @"screenChange", @"type", [NSNumber numberWithInt:w], @"width", [NSNumber numberWithInt:h], @"height", nil] ];         
-         while (callingScreenChange)
-            Sleep(10); // let these 2 events be processed - use Sleep, not sleep. 10, not 1.
-      }
-   }
-   clientW = w;
-   // CGContext: 6.5s; CGLayer: 3.5s
-   CGSize s = CGSizeMake(w,h);
-   CGContextRef context = UIGraphicsGetCurrentContext();
-   CGLayerRef layer = CGLayerCreateWithContext(context, s, NULL);
-   
-   CGContextRef layerContext = CGLayerGetContext(layer);
-   CGContextTranslateCTM(layerContext, 0, h-shiftY);
-   CGContextScaleCTM(layerContext, 1, -1);
-   CGContextDrawImage(layerContext, (CGRect){ CGPointZero, s }, cgImage);
-   CGContextDrawLayerAtPoint(context, CGPointZero, layer);
-   CGLayerRelease(layer);
-   invalidated = TRUE;
+   [self createGLcontext]; // recreate buffers at the new screen layout
 }
 
-void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2, int* dirtyY2);
-
-- (void)invalidateScreen:(void*)vscreen withContext:(void*)context
+void graphicsSetupIOS()
 {
-   ScreenSurface screen = (ScreenSurface)vscreen;
-   int dirtyX1,dirtyY1,dirtyX2,dirtyY2;
-   getDirtyFromContext(context, &dirtyX1,&dirtyY1,&dirtyX2,&dirtyY2);
-   
-   shiftY = screen->shiftY;
-   
-   CGRect r = CGRectMake(dirtyX1,dirtyY1,dirtyX2-dirtyX1,dirtyY2-dirtyY1);
-   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
-                              [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
-   [redrawInv setTarget:self];
-   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
-   [redrawInv setArgument:&r atIndex:2];
-   [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
-}    
+   [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
+}
+
+void recreateTextures();
+
+- (void)createGLcontext
+{
+   CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+   eaglLayer.opaque = TRUE;
+   if (glcontext != null)
+   {
+      glDeleteFramebuffers(1, &defaultFramebuffer);
+      glDeleteRenderbuffers(1, &colorRenderbuffer);
+      [glcontext release];
+   }
+   glcontext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+   [EAGLContext setCurrentContext:glcontext];
+   glGenFramebuffers(1, &defaultFramebuffer); GL_CHECK_ERROR
+   glGenRenderbuffers(1, &colorRenderbuffer); GL_CHECK_ERROR
+   // Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
+   glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer); GL_CHECK_ERROR
+   glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer); GL_CHECK_ERROR
+
+   [glcontext renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer];
+   int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+   if (stat != GL_FRAMEBUFFER_COMPLETE)
+      NSLog(@"Failed to make complete framebuffer object %x", stat);
+   setupGL(gscreen->screenW,gscreen->screenH);
+   realAppH = appH;
+   recreateTextures();
+}
+- (void)updateScreen
+{
+   [glcontext presentRenderbuffer:GL_RENDERBUFFER];
+}
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -123,56 +102,14 @@ void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2
             return;
          lastEventTS = ts;
          CGPoint point = [touch locationInView: self];
-         [ (MainView*)controller addEvent:
+         [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
            touch.phase == UITouchPhaseBegan ? @"mouseDown" : touch.phase == UITouchPhaseMoved ? @"mouseMoved" : @"mouseUp", @"type",
-           [NSNumber numberWithInt:(int)point.x], @"x",
-           [NSNumber numberWithInt:(int)point.y], @"y", nil]
+           [NSNumber numberWithInt:(int)point.x * iosScale], @"x",
+           [NSNumber numberWithInt:(int)point.y * iosScale], @"y", nil]
           ];
       }
    }
-}
-
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
-{
-	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
-      [ (MainView*)controller addEvent:
-       [[NSDictionary alloc] initWithObjectsAndKeys:
-        @"multitouchScale", @"type",
-        [NSNumber numberWithInt:(int)1], @"key",
-        [NSNumber numberWithInt:(int)0], @"x",
-        [NSNumber numberWithInt:(int)0], @"y",
-        nil]
-       ];
-	return YES;
-}
-
-- (BOOL)gestureRecognizerShouldEnd:(UIGestureRecognizer *)gestureRecognizer
-{
-	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
-      [ (MainView*)controller addEvent:
-       [[NSDictionary alloc] initWithObjectsAndKeys:
-        @"multitouchScale", @"type",
-        [NSNumber numberWithInt:(int)2], @"key",
-        [NSNumber numberWithInt:(int)0], @"x",
-        [NSNumber numberWithInt:(int)0], @"y",
-        nil]
-       ];
-	return YES;
-}
-
--(void)handlePinch:(UIPinchGestureRecognizer*)sender
-{
-   double dscale = sender.scale;
-   int *iscale = (int*)&dscale;
-   [ (MainView*)controller addEvent:
-     [[NSDictionary alloc] initWithObjectsAndKeys:
-      @"multitouchScale", @"type",
-      [NSNumber numberWithInt:(int)0], @"key",
-      [NSNumber numberWithInt:(int)iscale[0]], @"x",
-      [NSNumber numberWithInt:(int)iscale[1]], @"y",
-      nil]
-   ];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -188,6 +125,57 @@ void getDirtyFromContext(void* context, int* dirtyX1, int* dirtyY1, int* dirtyX2
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
    [self processEvent: touches withEvent:event];
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
+   {
+      [ (MainViewController*)controller addEvent:
+       [[NSDictionary alloc] initWithObjectsAndKeys:
+        @"multitouchScale", @"type",
+        [NSNumber numberWithInt:(int)1], @"key",
+        [NSNumber numberWithInt:(int)0], @"x",
+        [NSNumber numberWithInt:(int)0], @"y",
+        nil]
+       ];
+   }
+	return YES;
+}
+
+- (BOOL)gestureRecognizerShouldEnd:(UIGestureRecognizer *)gestureRecognizer
+{
+	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
+      [ (MainViewController*)controller addEvent:
+       [[NSDictionary alloc] initWithObjectsAndKeys:
+        @"multitouchScale", @"type",
+        [NSNumber numberWithInt:(int)2], @"key",
+        [NSNumber numberWithInt:(int)0], @"x",
+        [NSNumber numberWithInt:(int)0], @"y",
+        nil]
+       ];
+	return YES;
+}
+
+-(void)handlePinch:(UIPinchGestureRecognizer*)sender
+{
+   // note: unlike android, that sends the step since the last value, ios sends the actual scale value, as the docs says:
+   // The scale value is an absolute value that varies over time. It is not the delta value from the last time that the
+   // scale was reported. Apply the scale value to the state of the view when the gesture is first recognized—
+   // do not concatenate the value each time the handler is called.
+   // -- so we use the velocity to achieve the same results as in android. TODO use sender.scale to compute the steps
+   if (sender.velocity == 0 || sender.velocity > 10 || sender.velocity < -10) return;
+   double dscale = 1+sender.velocity/100;
+   //NSLog(@"scale: %f, real scale: %f, vel: %f",dscale,sender.scale,sender.velocity);
+   int *iscale = (int*)&dscale;
+   [ (MainViewController*)controller addEvent:
+    [[NSDictionary alloc] initWithObjectsAndKeys:
+     @"multitouchScale", @"type",
+     [NSNumber numberWithInt:(int)0], @"key",
+     [NSNumber numberWithInt:(int)iscale[1]], @"x",
+     [NSNumber numberWithInt:(int)iscale[0]], @"y",
+     nil]
+    ];
 }
 
 @end

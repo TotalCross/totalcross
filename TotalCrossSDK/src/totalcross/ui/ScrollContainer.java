@@ -354,6 +354,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void reposition()
    {
+      int vx = bag.x, vy = bag.y; // keep position when changing size
       int curPage = flick != null && flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
@@ -363,11 +364,10 @@ public class ScrollContainer extends Container implements Scrollable
          scrollToPage(curPage);
       else
       {
-         if (sbH != null) 
-            sbH.setValue(0);
-         if (sbV != null) 
-            sbV.setValue(0);
-         bag.x = bag.y = 0;
+         if (sbH != null)
+            sbH.setValue(bag.x = vx);
+         if (sbV != null)
+            sbV.setValue(bag.y = vy);
       }
    }
    
