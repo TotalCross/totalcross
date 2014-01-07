@@ -38,7 +38,7 @@
 #include "tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
- #define INCL_WINSOCK_API_PROTOTYPES 0
+ #define INCL_WINSOCK_API_PROTOTYPES 1
  #define INCL_WINSOCK_API_TYPEDEFS 1
  #include "winsock2.h"
  #include <windows.h>
