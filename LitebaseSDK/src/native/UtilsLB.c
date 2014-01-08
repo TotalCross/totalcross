@@ -626,7 +626,7 @@ void getFullFileName(CharP fileName, CharP sourcePath, TCHARP buffer)
    int32 endChar = xstrlen(sourcePath) - 1;
 
 // juliana@223_6: Corrected a bug that would create spourious paths if they had a stress on Windows CE. 
-#ifdef WINCE
+#if defined WINCE || defined WP8
    TC_CharP2JCharPBuf(sourcePath, endChar + 1, buffer, true);
    if (sourcePath[endChar] != PATH_SEPARATOR && sourcePath[endChar] != NO_PATH_SEPARATOR)
    {

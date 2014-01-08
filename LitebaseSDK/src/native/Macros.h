@@ -40,7 +40,7 @@
 #endif
 
 // Macros for path separators.
-#if defined (WIN32) || defined (WINCE)
+#if defined (WIN32)
    #define PATH_SEPARATOR    '\\'
    #define NO_PATH_SEPARATOR '/'
 #else

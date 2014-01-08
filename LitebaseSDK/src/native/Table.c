@@ -324,7 +324,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    bool exist;
    PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
-#ifdef WINCE
+#if defined WINCE || defined WP8
    TCHAR indexNameTCHARP[MAX_PATHNAME];
 #endif
    char indexName[MAX_PATHNAME];
@@ -472,7 +472,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    table->columnNulls = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
 
    // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
-#ifdef WINCE
+#if defined WINCE || defined WP8
    getFullFileName(tableName, sourcePath, indexNameTCHARP);
    TC_JCharP2CharPBuf(indexNameTCHARP, -1, indexName); 
 #else
@@ -503,7 +503,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-#ifdef WINCE
+#if defined WINCE || defined WP8
          TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
@@ -665,7 +665,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-#ifdef WINCE
+#if defined WINCE || defined WP8
          TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
@@ -3031,7 +3031,7 @@ bool tableExistsByName(Context context, Object driver, CharP name)
    char bufName[DBNAME_SIZE];
    CharP sourcePath = getLitebaseSourcePath(driver);
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
    TCHAR fullNameTCHARP[MAX_PATHNAME];
 #endif
 
@@ -3049,7 +3049,7 @@ bool tableExistsByName(Context context, Object driver, CharP name)
    xstrcat(fullName, bufName);
    xstrcat(fullName, DB_EXT);
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
    TC_CharP2JCharPBuf(fullName, -1, fullNameTCHARP, true);
    if (lbfileExists(fullNameTCHARP, 0))
 #else

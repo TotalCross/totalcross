@@ -823,7 +823,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
    CharP sourcePathCharP = getLitebaseSourcePath(driver);
 
 // The source path type depends on the platform.
-#ifndef WINCE
+#if !defined WINCE && !defined WP8 
    CharP sourcePath = sourcePathCharP;
 #else
    TCHAR sourcePath[MAX_PATHNAME];
@@ -875,7 +875,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
       TCHARPs* list = null;
       TCHAR buffer[MAX_PATHNAME];
 
-#ifdef WINCE // A file name in char for Windows CE, which uses TCHAR.
+#if defined WINCE || defined WP8 // A file name in char for Windows CE, which uses TCHAR.
       char value[DBNAME_SIZE];
 #else
       CharP value;
@@ -898,7 +898,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
 
       while (--count >= 0) // Erases the table files.
       {
-#ifndef WINCE         
+#if !defined WINCE && !defined WP8         
          value = list->value;
 #else
          TC_JCharP2CharPBuf(list->value, -1, value);
@@ -1606,7 +1606,7 @@ bool testRIClosed(NMParams params)
 int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@214_1
 {
 	TRACE("checkApppath")
-#ifdef WINCE
+#if defined WINCE || defined WP8
    TCHAR appPathTCHARP[MAX_PATHNAME];
 #endif
    char buffer[MAX_PATHNAME];
@@ -1648,7 +1648,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 #endif 
 
 // juliana@214_1: relative paths can't be used with Litebase.
-#ifndef WINCE
+#if !defined WINCE && !defined WP8
    if (!TC_validatePath(sourcePath))
 	{
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
@@ -1698,7 +1698,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 		fileError(context, ret, sourcePath);
 		return 0;
 	}
-#elif !defined(WINCE) // WIN32 and POSIX
+#elif !defined(WINCE) && !defined(WP8) // WIN32 and POSIX
    // Creates the path folder if it does not exist; it can't be empty.
    if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
@@ -1805,7 +1805,7 @@ void encDecTables(NMParams params, bool toEncrypt)
          {
             TCHARPs* list = null;
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
             JCharP cridStr;
             JChar pathStr[MAX_PATHNAME]; // juliana@230_6
             char value[DBNAME_SIZE],
@@ -1844,7 +1844,7 @@ error:
                return;
             }
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
             cridStr = String_charsStart(cridObj);
             xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
             pathStr[i] = 0;
@@ -1864,7 +1864,7 @@ error:
             i = count;
             while (--i >= 0)
             {
-#ifndef WINCE         
+#if !defined WINCE && !defined WP8         
                value = list->value;
                if (xstrstr(value, cridStr) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
 #else
@@ -1895,7 +1895,7 @@ fileError:
             encByte = toEncrypt? 1 : 0;
             while (--i >= 0)
             {
-#ifndef WINCE         
+#if !defined WINCE && !defined WP8        
                value = list->value;
                if (xstrstr(value, cridStr) == value)
 #else

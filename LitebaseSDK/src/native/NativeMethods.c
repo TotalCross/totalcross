@@ -1223,7 +1223,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
             fullName[length + 1] = 0;
             if (p->retI && !lbfileExists(fullName, slot))
             {
-#ifdef WINCE
+#if defined WINCE || defined WP8
                char path[MAX_PATHNAME];
                TC_JCharP2CharPBuf(fullName, -1, path);
                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
@@ -1825,7 +1825,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
          ret;
    Heap heap = heapCreate();                                                                                                                         
                                                                                                                                                      
-#ifdef WINCE // A file name in char for Windows CE, which uses TCHAR.                                                                                
+#if defined WINCE || defined WP8 // A file name in char for Windows CE, which uses TCHAR.                                                                                
    char value[DBNAME_SIZE];                                                                                                                          
    JChar pathTCHARP[MAX_PATHNAME];                                                                                                                   
 #else                                                                                                                                                
@@ -1842,7 +1842,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
    }                                                                                                                                                 
    getCurrentPath(pathCharP);                                                                                                                        
                                                                                                                                                      
-#ifdef WINCE                                                                                                                                         
+#if defined WINCE || defined WP8                                                                                                                                         
    TC_CharP2JCharPBuf(pathCharP, -1, pathTCHARP, true);                                                                                              
 #else                                                                                                                                                
    pathTCHARP = pathCharP;                                                                                                                           
@@ -1870,7 +1870,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
                                                                                                                                            
    while (--count >= 0)                                                                                                                              
    {                                                                                                                                                 
-#ifndef WINCE                                                                                                                                        
+#if !defined WINCE && !defined WP8                                                                                                                                       
       value = list->value;                                                                                                                           
 #else                                                                                                                                                
       TC_JCharP2CharPBuf(list->value, -1, value);                                                                                                    
@@ -2622,7 +2622,7 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
          {
             TCHARPs* list = null;
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
             JCharP cridStr;
             JChar pathStr[MAX_PATHNAME]; // juliana@230_6
             char value[DBNAME_SIZE],
@@ -2655,7 +2655,7 @@ error:
                goto finish;
             }
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
             cridStr = String_charsStart(cridObj);
             
             // juliana@230_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
@@ -2675,7 +2675,7 @@ error:
 
             while (--count >= 0) // Deletes only the files of the chosen database.
             {
-#ifndef WINCE         
+#if !defined WINCE && !defined WP8        
                value = list->value;
                if (xstrstr(value, cridStr) == value)
 #else
@@ -2830,7 +2830,7 @@ LB_API void lLC_listAllTables(NMParams p)
       Context context = p->currentContext;
       char crid[5];      
 
-#ifdef WINCE
+#if defined WINCE || defined WP8
       char value[DBNAME_SIZE];
       JChar path[MAX_PATHNAME];
 #else
@@ -2844,7 +2844,7 @@ LB_API void lLC_listAllTables(NMParams p)
             slot = OBJ_LitebaseSlot(driver);
       Heap heap = heapCreate();
       
-#ifdef WINCE
+#if defined WINCE || defined WP8 
    TC_CharP2JCharPBuf(getLitebaseSourcePath(driver), -1, path, true);
 #endif
 
@@ -2870,7 +2870,7 @@ error:
       while (--j >= 0) // Deletes only the files of the chosen database.
       {
       
-#ifndef WINCE         
+#if !defined WINCE && !defined WP8         
          value = list->value;
 #else
          TC_JCharP2CharPBuf(list->value, -1, value);        
