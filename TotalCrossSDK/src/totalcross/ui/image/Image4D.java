@@ -548,9 +548,7 @@ public class Image4D extends GfxSurface
       this.frameCount = src.frameCount;
       this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
       this.textureId = src.textureId;
-      if (src.changed)
-         src.applyChanges();
-      this.changed = false;
+      this.changed = true;
       this.pixels = src.pixels;
       this.pixelsOfAllFrames = src.pixelsOfAllFrames;
       this.comment = src.comment;
@@ -566,6 +564,7 @@ public class Image4D extends GfxSurface
    {
       Image4D copy = new Image4D(this);
       copy.setHwScaleFixedAspectRatio(newSize,isHeight);
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }
 
@@ -574,6 +573,7 @@ public class Image4D extends GfxSurface
       Image4D copy = new Image4D(this);
       copy.hwScaleW = (double)width / this.width;
       copy.hwScaleH = (double)height / this.height;
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }
 
@@ -582,6 +582,7 @@ public class Image4D extends GfxSurface
       Image4D copy = new Image4D(this);
       copy.hwScaleW = scaleX;
       copy.hwScaleH = scaleY;
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }   
 }
