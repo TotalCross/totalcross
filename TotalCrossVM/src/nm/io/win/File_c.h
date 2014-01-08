@@ -410,8 +410,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
 #ifndef WP8
-   LONG off = 0;
-   return ((SetFilePointer(fref.handle, off, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
+   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #else
    LARGE_INTEGER off = { 0 };
@@ -676,7 +675,6 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 	DWORD fileSize;
 
 #ifndef WP8
-   LONG off = 0;
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 	   return GetLastError();
 #else
@@ -695,7 +693,7 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 		return NO_ERROR;
 
 #ifndef WP8
-   if (SetFilePointer(fref->handle, (LONG)off, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+   if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
 #else
    if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
