@@ -200,13 +200,9 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
  *************************************/
 
 static inline bool fileExists(TCHARP path, int32 slot)
-#if !defined (WINCE) && !defined (WP8)
+#if defined WINCE
 {
-   bool result;
-   SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
-   result = (GetFileAttributes(path) != INVALID_ATTR_VALUE);
-   SetErrorMode(0);
-   return result;
+	return (GetFileAttributes(path) != INVALID_ATTR_VALUE);
 #elif defined WP8
 {
 	bool result;
@@ -217,7 +213,11 @@ static inline bool fileExists(TCHARP path, int32 slot)
 	return result;
 #else
 {
-   return (GetFileAttributes(path) != INVALID_ATTR_VALUE);
+	bool result;
+	SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
+	result = (GetFileAttributes(path) != INVALID_ATTR_VALUE);
+	SetErrorMode(0);
+	return result;
 #endif
 }
 
