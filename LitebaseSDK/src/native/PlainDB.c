@@ -451,7 +451,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
                uint8* ptrStr = plainDB->dbo.fbuf + position;
                xmove4(&position, ptrStr);
                ptrStr += 4; 
-		         xmoveptr(&plainDB, ptrStr);
+               xmoveptr(&plainDB, ptrStr);
             }
 
             if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
@@ -658,6 +658,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			      else if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 2) 
                      || (length && !plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length << 1)))
                    return false;
+               TC_debug("%S", value->asChars); 
                dbo->finalPos = dbo->position; // juliana@202_21: the final positon now is always the new positon.
                return ret;
             }
