@@ -396,7 +396,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -521,7 +521,7 @@
       <MapFileName>$(IntDir)litebase.map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <HeapReserveSize>10000000</HeapReserveSize>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -641,7 +641,7 @@
       <MapFileName>$(IntDir)litebase.map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <HeapReserveSize>10000000</HeapReserveSize>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -754,7 +754,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -876,7 +876,7 @@
       <MapFileName>$(IntDir)litebase.map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <HeapReserveSize>10000000</HeapReserveSize>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -989,7 +989,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
@@ -1109,7 +1109,7 @@
       <MapFileName>$(IntDir)litebase.map</MapFileName>
       <SubSystem>Windows</SubSystem>
       <HeapReserveSize>10000000</HeapReserveSize>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)litebase.lib</ImportLibrary>
