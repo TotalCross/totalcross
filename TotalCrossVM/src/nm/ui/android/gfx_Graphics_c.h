@@ -370,9 +370,12 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
 }
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)
-{         
-   glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
-   *textureId = 0;                               
+{
+	 if (textureId)        
+	 {
+      glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
+      *textureId = 0;                               
+   }
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }

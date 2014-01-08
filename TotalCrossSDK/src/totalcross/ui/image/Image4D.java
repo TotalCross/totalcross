@@ -24,24 +24,29 @@ import totalcross.util.zip.ZLib;
 
 public class Image4D extends GfxSurface
 {
+   // int
    public int surfaceType = 1; // don't move from here! must be static at position 0
    protected int width;
    protected int height;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
    private boolean changed = true;
+   public int transparentColor = Color.WHITE;
+   public boolean useAlpha; // guich@tc126_12
    
+   // object
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
    int[] textureId = new int[1];
    public String comment;
    private Graphics4D gfx;
-
-   public static final int NO_TRANSPARENT_COLOR = -2;
-   public int transparentColor = Color.WHITE;
-   public boolean useAlpha; // guich@tc126_12
-   public double hwScaleW=1,hwScaleH=1;
    private int []instanceCount = new int[1];
+
+   // double
+   public double hwScaleW=1,hwScaleH=1;
+
+   // statics
+   public static final int NO_TRANSPARENT_COLOR = -2;
    
    public Image4D(int width, int height) throws ImageException
    {
@@ -517,8 +522,8 @@ public class Image4D extends GfxSurface
    
    public void finalize()
    {
-      if (--instanceCount[0] <= 0)
-         freeTexture();
+      instanceCount[0]--;
+      freeTexture(); // must call always to remove the object from the linked list
    }
    
    public void lockChanges()
@@ -547,7 +552,7 @@ public class Image4D extends GfxSurface
       this.height = src.height;
       this.frameCount = src.frameCount;
       this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
-      this.textureId = src.textureId;
+      this.textureId = src.textureId; // shared among all instances
       this.changed = true;
       this.pixels = src.pixels;
       this.pixelsOfAllFrames = src.pixelsOfAllFrames;
@@ -556,7 +561,7 @@ public class Image4D extends GfxSurface
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       this.transparentColor = src.transparentColor;
       this.useAlpha = src.useAlpha; // guich@tc126_12
-      this.instanceCount = src.instanceCount;
+      this.instanceCount = src.instanceCount; // shared among all instances
       src.instanceCount[0]++;
    }
    
