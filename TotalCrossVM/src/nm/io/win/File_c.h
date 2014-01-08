@@ -263,16 +263,15 @@ static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 #ifndef WP8
    return (((*size = GetFileSize(fref.handle, null)) != 0xFFFFFFFF) ? NO_ERROR : GetLastError());
 #else
-	{
-		FILE_STANDARD_INFO finfo = { 0 };
-		*size = 0xFFFFFFFF;
-		if (GetFileInformationByHandleEx(fref.handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0) {
-			return GetLastError();
-		}
+   FILE_STANDARD_INFO finfo = { 0 };
+   *size = 0xFFFFFFFF;
+   if (GetFileInformationByHandleEx(fref.handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return GetLastError();
+   }
 
-		*size = (int32) finfo.EndOfFile.QuadPart;
-		return NO_ERROR;
-	}
+   *size = (int32) finfo.EndOfFile.QuadPart;
+   return NO_ERROR;
 #endif
 }
 
@@ -306,14 +305,13 @@ static bool fileIsDir(TCHARP path, int32 slot)
 
 static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpty)
 {
+   Err err = NO_ERROR;
 #ifndef WP8
    DWORD fileAttributes = GetFileAttributes(path);
-   Err err = NO_ERROR;
 #else
    DWORD fileAttributes;
    WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
    int res = 0;
-   Err err = NO_ERROR;
 
    res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
    fileAttributes = f_attr_ex.dwFileAttributes;
@@ -478,25 +476,21 @@ static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttributes)
 
 static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 {
-#ifndef WP8
    DWORD fileAttributes = 0;
-   *attributes = 0;
-
+#ifndef WP8
    if ((fileAttributes = GetFileAttributes(path)) == INVALID_ATTR_VALUE)
       return GetLastError();
 #else
-   DWORD fileAttributes = 0;
    WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
    int res = 0;
    f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
-
-   *attributes = 0;
 
    res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
    fileAttributes = f_attr_ex.dwFileAttributes;
    if ((res == 0) || (fileAttributes == INVALID_ATTR_VALUE))
       return GetLastError();
 #endif
+   *attributes = 0;
 
    if (fileAttributes & FILE_ATTRIBUTE_ARCHIVE)
       *attributes = *attributes | ATTR_ARCHIVE;
@@ -565,20 +559,20 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
    return (SetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime) ? NO_ERROR : GetLastError());
 #else
    {
-	  char buff[40];
+      char buff[40];
       FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO*) buff;
 
-	  if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
-        return GetLastError();
+      if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
+         return GetLastError();
 
-	  if (creationTime != NULL)
-	     finfo->CreationTime = *(LARGE_INTEGER*)creationTime;
-	  if (lastAccessTime != NULL)
-	     finfo->LastAccessTime = *(LARGE_INTEGER*)lastAccessTime;
-	  if (lastWriteTime != NULL)
-	     finfo->LastWriteTime = *(LARGE_INTEGER*)lastWriteTime;
+      if (creationTime != NULL)
+         finfo->CreationTime = *(LARGE_INTEGER*)creationTime;
+      if (lastAccessTime != NULL)
+         finfo->LastAccessTime = *(LARGE_INTEGER*)lastAccessTime;
+      if (lastWriteTime != NULL)
+         finfo->LastWriteTime = *(LARGE_INTEGER*)lastWriteTime;
 
-	  return SetFileInformationByHandle(fref.handle, FileBasicInfo, finfo, sizeof(buff)) ? NO_ERROR : GetLastError();
+      return SetFileInformationByHandle(fref.handle, FileBasicInfo, finfo, sizeof(buff)) ? NO_ERROR : GetLastError();
    }
 #endif
 }
