@@ -693,8 +693,8 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
 }
 
 void freeTexture(Object img, bool updateList)
-{                                      
-   glDeleteTexture(img,Image_instanceCount(img)[0] <= 0 ? Image_textureId(img) : null, updateList);
+{            
+   glDeleteTexture(img,Image_instanceCount(img) <= 0 ? Image_textureId(img) : null, updateList);
 }
 
 extern VoidPs* imgTextures;

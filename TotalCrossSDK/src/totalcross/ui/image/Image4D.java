@@ -30,7 +30,6 @@ public class Image4D extends GfxSurface
    protected int height;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
-   private boolean changed = true;
    public int transparentColor = Color.WHITE;
    public boolean useAlpha; // guich@tc126_12
    
@@ -40,6 +39,7 @@ public class Image4D extends GfxSurface
    int[] textureId = new int[1];
    public String comment;
    private Graphics4D gfx;
+   private boolean[] changed = {true};
    private int []instanceCount = new int[1];
 
    // double
@@ -530,7 +530,7 @@ public class Image4D extends GfxSurface
    {
       if (Settings.isOpenGL)
       {
-         if (changed)
+         if (changed[0])
             applyChanges();
          pixels = pixelsOfAllFrames = null;
       }
@@ -553,7 +553,7 @@ public class Image4D extends GfxSurface
       this.frameCount = src.frameCount;
       this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
       this.textureId = src.textureId; // shared among all instances
-      this.changed = true;
+      this.changed = src.changed;
       this.pixels = src.pixels;
       this.pixelsOfAllFrames = src.pixelsOfAllFrames;
       this.comment = src.comment;
