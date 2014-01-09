@@ -22,6 +22,16 @@
    #define IS_DEBUG_CONSOLE(path) (strstr(path,"DebugConsole") != null)
 #endif
 
+// Must use SetFilePointer is not defined on the ARM headers
+#if defined WP8 && defined ARM
+DWORD WINAPI SetFilePointer(
+      HANDLE hFile,
+      LONG lDistanceToMove,
+      PLONG lpDistanceToMoveHigh,
+      DWORD dwMoveMethod
+   );
+#endif
+
 /*
  *
  * Always return true on WinCE and Win32.
@@ -408,13 +418,14 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
-#ifndef WP8
-   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
-               NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
-#else
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
    LARGE_INTEGER off = { 0 };
    off.LowPart = position;
    return ((SetFilePointerEx(fref.handle, off, null, FILE_BEGIN) != 0) ?
+               NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
+#else
+   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #endif
 }
@@ -687,12 +698,18 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 	if (fileSize == newSize)
 		return NO_ERROR;
 
-#ifndef WP8
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   {
+      LARGE_INTEGER off = { 0 };
+      off.LowPart = newSize;
+
+      if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
+         return GetLastError();
+   }
+#else
    if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
-#else
-   if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
-      return GetLastError();
 #endif
    if (SetEndOfFile(fref->handle) == 0)
    {
