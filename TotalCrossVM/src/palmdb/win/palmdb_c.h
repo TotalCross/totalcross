@@ -105,18 +105,16 @@ bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 #ifndef WP8
    return (*size = GetFileSize(fileRef, null)) != 0xFFFFFFFFL;
 #else
+   FILE_STANDARD_INFO finfo = { 0 };
+   *size = 0xFFFFFFFF;
+   if (GetFileInformationByHandleEx(fileRef, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
    {
-      int l;
-      int x;
-	  FILE_STANDARD_INFO finfo = { 0 };
-	  *size = 0xFFFFFFFF;
-	  if (GetFileInformationByHandleEx(fileRef, FileStandardInfo, &finfo, sizeof(finfo)) == 0) {
-		  return false;
-	  }
+      return false;
+   }
 
-	  *size = finfo.EndOfFile.QuadPart;
-	  return true;
-	}
+   // Size cannot exceed 32 bits
+   *size = finfo.EndOfFile.LowPart;
+   return true;
 #endif
 }
 

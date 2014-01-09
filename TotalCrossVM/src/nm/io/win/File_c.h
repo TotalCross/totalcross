@@ -270,7 +270,8 @@ static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
       return GetLastError();
    }
 
-   *size = (int32) finfo.EndOfFile.QuadPart;
+   // Size cannot exceed 32 bits
+   *size = (int32) finfo.EndOfFile.LowPart;
    return NO_ERROR;
 #endif
 }
@@ -672,16 +673,16 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
 	   return GetLastError();
 #else
-      LARGE_INTEGER off = { 0 };
-	   
-		FILE_STANDARD_INFO finfo = { 0 };
-		fileSize = 0xFFFFFFFF;
-      off.LowPart = newSize;
-		if (GetFileInformationByHandleEx(fref->handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0) {
-			return GetLastError();
-		}
+   FILE_STANDARD_INFO finfo = { 0 };
+   fileSize = 0xFFFFFFFF;
+   
+   if (GetFileInformationByHandleEx(fref->handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return GetLastError();
+   }
 
-		fileSize = (DWORD) finfo.EndOfFile.QuadPart;
+   // Size cannot exceed 32 bits
+   fileSize = finfo.EndOfFile.LowPart;
 #endif
 	if (fileSize == newSize)
 		return NO_ERROR;
