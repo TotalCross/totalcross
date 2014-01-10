@@ -57,7 +57,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\util" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Fr /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\util" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Fr /YX /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -80,7 +80,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -102,7 +102,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "WIN32_PLATFORM_HPCPRO" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -124,7 +124,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /FAs /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /FAs /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -147,7 +147,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
 CPP=clmips.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -169,7 +169,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
 CPP=shcl.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -198,7 +198,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Ob2 /FR /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -232,7 +232,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clmips.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -264,7 +264,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -296,7 +296,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -328,7 +328,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=shcl.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -360,7 +360,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Ob2 /FAs /FR /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -394,7 +394,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clmips.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -426,7 +426,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -458,7 +458,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -490,7 +490,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=shcl.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "..\..\src\axtls" /I "..\..\src\nm" /I "P:\extlibs\WindowsCE\winsock2" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32

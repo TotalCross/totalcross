@@ -12,7 +12,7 @@
 
 
 
-#include "winsockLib.h"]
+#include "winsockLib.h"
 #if !defined WP8
 #include <Ras.h>
 #endif
