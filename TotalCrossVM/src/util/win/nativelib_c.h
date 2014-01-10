@@ -57,7 +57,7 @@ VoidP privateLoadLibrary(CharP libName)
 
 void privateUnloadLibrary(VoidP libPtr)
 {
-#if !defined (WINCE)
+#if !defined (WINCE) && !defined (WP8) //XXX
    // do not free the synchronization dll please
    TCHAR libPath[MAX_PATH];
    char libName[MAX_PATH];
