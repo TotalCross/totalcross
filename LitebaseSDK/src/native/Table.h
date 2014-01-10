@@ -266,7 +266,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
                                                                                                          bool throwException, Heap heap); 
 
 /**

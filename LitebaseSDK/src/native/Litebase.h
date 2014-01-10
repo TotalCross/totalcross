@@ -236,7 +236,7 @@ bool testRIClosed(NMParams params);
  * @return The slot number for palm, -1 for the other devices or 0 in case of error.
  * @throws DriverException if the path passed as a parameter is invalid. 
  */
-int32 checkApppath(Context context, CharP sourcePath, CharP pathParam);
+int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam);
 
 /**
  * Verifies if the function can be applied to a data type field.

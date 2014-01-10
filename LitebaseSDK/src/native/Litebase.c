@@ -204,8 +204,9 @@ Object create(Context context, int32 crid, Object objParams)
          slot;
    bool isAscii = false,
         useCrypto = false;
-   char sourcePath[MAX_PATHNAME];
-	CharP path = null;
+   TCHAR sourcePath[1024];
+	TCHARP path = null;
+   char params[1024];
 
    if (logger) // juliana@230_30: reduced log files size.
    {
@@ -242,7 +243,6 @@ error:
    if (objParams)
 	{
 	   CharP tempParams[3];
-      char params[300];
 		int32 i = 1,
 		      numParams;
 		
@@ -275,11 +275,11 @@ error:
 			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
             isAscii = (xstrstr(tempParams[i], "ascii") != null);
 			else if (xstrstr(tempParams[i], "path")) // Path param.
-				path = &xstrchr(tempParams[i], '=')[1];
+            path = TC_CharP2TCHARPBuf(&xstrchr(tempParams[i], '=')[1], sourcePath);
 			else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
 			   useCrypto = true;   
 	      else if (numParams == 1) 
-	         path = tempParams[0]; // Things do not change if there is only one parameter.
+            path = TC_CharP2TCHARPBuf(tempParams[0], sourcePath); // Things do not change if there is only one parameter.
 		   else // juliana@253_11: now a DriverException will be throw if an incorrect parameter is passed in LitebaseConnection.getInstance().
 		   {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER), tempParams[i]);
@@ -297,7 +297,7 @@ error:
 
    // fdie@555_2: driver not already created? Creates one.
    // If there is no connections with this key, creates a new one.
-   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixiis", crid, context->thread, isAscii, useCrypto, path? path: "null"))))) 
+   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixiis", crid, context->thread, isAscii, useCrypto, sourcePath? TC_TCHARP2CharPBuf(sourcePath, params): "null"))))) 
    {
 		Hashtable htTables,
                 htPS;
@@ -312,7 +312,7 @@ error:
 	   OBJ_LitebaseKey(driver) = hash;
 		
       // SourcePath.
-		if (!(setLitebaseSourcePath(driver, xmalloc(xstrlen(sourcePath) + 1))))
+      if (!(setLitebaseSourcePath(driver, xmalloc(sizeof(TCHAR) * (tcslen(sourcePath) + 1)))))
 		{
 error1:
 		   freeLitebase(context, (int32)driver);
@@ -320,7 +320,7 @@ error1:
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-      xstrcpy(getLitebaseSourcePath(driver), sourcePath);
+      tcscpy(getLitebaseSourcePath(driver), sourcePath);
 
       // Current loaded tables.
       if (!(htTables = TC_htNew(10, null)).items)
@@ -359,7 +359,7 @@ error1:
 void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
-   CharP sourcePath = getLitebaseSourcePath(driver);
+   TCHARP sourcePath = getLitebaseSourcePath(driver);
    int32* nodes = getLitebaseNodes(driver); // juliana@253_6: the maximum number of keys of a index was duplicated.
 	Hashtable* htTables = getLitebaseHtTables(driver);
    Hashtable* htPs = getLitebaseHtPS(driver);
@@ -820,15 +820,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
          hashCode;
 	Hashtable* htTables = getLitebaseHtTables(driver);
    Heap heap = parser->heap;
-   CharP sourcePathCharP = getLitebaseSourcePath(driver);
-
-// The source path type depends on the platform.
-#if !defined WINCE && !defined WP8 
-   CharP sourcePath = sourcePathCharP;
-#else
-   TCHAR sourcePath[MAX_PATHNAME];
-   TC_CharP2JCharPBuf(sourcePathCharP, -1, sourcePath, true);
-#endif
+   TCHARP sourcePath = getLitebaseSourcePath(driver);
    
    if (xstrlen(tableName) > 23) // The table name has a maximum length because of palm os.
    {
@@ -874,12 +866,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
 		     fileCompIdxName[DBNAME_SIZE];
       TCHARPs* list = null;
       TCHAR buffer[MAX_PATHNAME];
-
-#if defined WINCE || defined WP8 // A file name in char for Windows CE, which uses TCHAR.
       char value[DBNAME_SIZE];
-#else
-      CharP value;
-#endif
 
       getDiskTableName(context, OBJ_LitebaseAppCrid(driver), tableName, fileName);
 		
@@ -898,14 +885,11 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
 
       while (--count >= 0) // Erases the table files.
       {
-#if !defined WINCE && !defined WP8         
-         value = list->value;
-#else
-         TC_JCharP2CharPBuf(list->value, -1, value);
-#endif
+         TC_TCHARP2CharPBuf(list->value, value);
+
          if (xstrstr(value, fileName) == value || xstrstr(value, fileSimpIdxName) == value || xstrstr(value, fileCompIdxName) == value)
          {
-            getFullFileName(value, sourcePathCharP, buffer);
+            getFullFileName(value, sourcePath, buffer);
             if ((i = lbfileDelete(null, buffer, slot, false)))
             {
                fileError(context, i, value);
@@ -1603,118 +1587,67 @@ bool testRIClosed(NMParams params)
  * @return The slot number for palm, -1 for the other devices or 0 in case of error.
  * @throws DriverException if the path passed as a parameter is invalid. 
  */
-int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@214_1
+int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juliana@214_1
 {
 	TRACE("checkApppath")
-#if defined WINCE || defined WP8
-   TCHAR appPathTCHARP[MAX_PATHNAME];
-#endif
-   char buffer[MAX_PATHNAME];
+   TCHAR buffer[MAX_PATHNAME];
    int32 endCh,
          lenAppPath,
          slot = -1,
          ret = 0;
 
-   if (params)
+   if (pathParam)
 	{
 	   // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-	   if (xstrlen(params) + 1 > MAX_PATHNAME)
+      if (tcslen(pathParam) + 1 > MAX_PATHNAME)
 		{
-		   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), params);
+         char pathCharP[1024];
+         TC_TCHARP2CharPBuf(pathParam, pathCharP);
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
 		   return 0;
 		}   
-		xstrcpy(sourcePath, strTrim(params));
+      tcscpy(sourcePath, tstrTrim(pathParam));
 
-#ifndef PALMOS // The path passed for palm os can't be empty.
 		if (!sourcePath[0])
 		{
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), "");
 			return 0;
 		}
-#else
-      if (!sourcePath[0] && params[0])
-      {
-			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), "");
-			return 0;
-		}
-#endif
-
 	}
    else // Since no path was passed by the user, gets it from dataPath or appPath. 
       getCurrentPath(sourcePath);
-#ifndef PALMOS
-   xstrcpy(buffer, strTrim(sourcePath));
-   xstrcpy(sourcePath, buffer);
-#endif 
+
+   tcscpy(buffer, tstrTrim(sourcePath));
+   
+   tcscpy(sourcePath, buffer);
 
 // juliana@214_1: relative paths can't be used with Litebase.
-#if !defined WINCE && !defined WP8
    if (!TC_validatePath(sourcePath))
 	{
-		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+      char pathCharP[1024];
+      TC_TCHARP2CharPBuf(sourcePath, pathCharP);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
 		return 0;
 	}
-#else
-   TC_CharP2JCharPBuf(sourcePath, -1, appPathTCHARP, true);
-   if (!TC_validatePath(appPathTCHARP))
-	{
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
-		return 0;
-	}
-   TC_JCharP2CharPBuf(appPathTCHARP, -1, sourcePath);
 
    // Creates the path folder if it does not exist.
-   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !lbfileExists(appPathTCHARP, 0) && (ret = lbfileCreateDir(appPathTCHARP, 0))))
-   {
-      if (!ret)
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
-      else
-         fileError(context, ret, sourcePath);
-		return 0;
-	}
-#endif
-
-#if defined(PALMOS)
-   // Finds the correct folder and its slot.
-   slot = 1;
-   if (!sourcePath[0]) // 1:/Litebase_DBs/
-      xstrcpy(sourcePath, "/Litebase_DBs/");
-   else if (sourcePath[0] == '-' && sourcePath[1] == '1' && sourcePath[2] == ':') // -1:/sourcePath
-   {
-      slot = TC_getLastVolume();
-      xstrcpy(buffer, &sourcePath[3]);
-      xstrcpy(sourcePath, buffer);
-   }
-   else if (sourcePath[1] == ':') // v:/sourcePath
-   {
-      slot = sourcePath[0] - '0';
-      xstrcpy(buffer, &sourcePath[2]);
-      xstrcpy(sourcePath, buffer);
-   }
-
-   // Creates the path folder if it does not exist.
-   if (!lbfileExists(sourcePath, slot) && (ret = lbfileCreateDir(sourcePath, slot))) // Creates the path folder if it does not exist.
-   {
-		fileError(context, ret, sourcePath);
-		return 0;
-	}
-#elif !defined(WINCE) && !defined(WP8) // WIN32 and POSIX
-   // Creates the path folder if it does not exist; it can't be empty.
    if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
+      char pathCharP[1024];
+
+      TC_TCHARP2CharPBuf(sourcePath, pathCharP);
       if (!ret)
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
       else
-	      fileError(context, ret, sourcePath);
+         fileError(context, ret, pathCharP);
 		return 0;
 	}
-#endif
 
    // Puts a '/' at the end of the path.
-   lenAppPath = xstrlen(sourcePath);
+   lenAppPath = tcslen(sourcePath);
    endCh = lenAppPath > 0? sourcePath[lenAppPath - 1] : -1;
    if ((endCh != '\\' && endCh != '/') || endCh == -1)
-      xstrcat(sourcePath, "/");
+      tcscat(sourcePath, TEXT("/"));
 
 	return slot;
 }
@@ -1800,23 +1733,13 @@ void encDecTables(NMParams params, bool toEncrypt)
    if (cridObj) 
       if (pathObj)
          if (String_charsLen(pathObj) >= MAX_PATHNAME - 4 - DBNAME_SIZE) // The path length can't be greater than the buffer size.
-            TC_throwExceptionNamed(params->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH));
+            TC_throwExceptionNamed(params->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), "");
          else
          {
             TCHARPs* list = null;
-
-#if defined WINCE || defined WP8
-            JCharP cridStr;
-            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
-            char value[DBNAME_SIZE],
-            fullPath[MAX_PATHNAME];
-#else
+            TCHAR pathStr[MAX_PATHNAME]; // juliana@230_6
             char cridStr[5],
-                 pathStr[MAX_PATHNAME]; 
-            CharP fullPath;
-            CharP value;
-#endif
-
+                 value[DBNAME_SIZE];
             int32 i,
                   j,
                   k,
@@ -1830,11 +1753,6 @@ void encDecTables(NMParams params, bool toEncrypt)
             NATIVE_FILE file;
             uint8 bytes[CACHE_INITIAL_SIZE];
 
-#ifdef PALMOS
-            if (slot == -1)
-               slot = TC_getLastVolume();
-#endif
-
             IF_HEAP_ERROR(heap)
             {
                TC_throwExceptionNamed(params->currentContext, "java.lang.OutOfMemoryError", null);
@@ -1844,15 +1762,8 @@ error:
                return;
             }
 
-#if defined WINCE || defined WP8
-            cridStr = String_charsStart(cridObj);
-            xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
-            pathStr[i] = 0;
-            TC_JCharP2CharPBuf(pathStr, i, fullPath);
-#else
-            TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
-            TC_JCharP2CharPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath = pathStr);
-#endif
+            TC_JCharP2CharPBuf(String_charsStart(cridObj), String_charsLen(cridObj), cridStr);
+            TC_JCharP2TCHARPBuf(String_charsStart(pathObj), String_charsLen(pathObj), pathStr);
 
             if ((error = TC_listFiles(pathStr, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
             {
@@ -1864,15 +1775,10 @@ error:
             i = count;
             while (--i >= 0)
             {
-#if !defined WINCE && !defined WP8         
-               value = list->value;
+               TC_TCHARP2CharPBuf(list->value, value);
                if (xstrstr(value, cridStr) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
-#else
-               TC_JCharP2CharPBuf(list->value, -1, value);
-               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false) && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
-#endif
                {
-                  getFullFileName(value, fullPath, buffer);
+                  getFullFileName(value, pathStr, buffer);
                   if ((error = lbfileCreate(&file, buffer, READ_ONLY, &slot)))
                   {
 fileError:
@@ -1895,15 +1801,11 @@ fileError:
             encByte = toEncrypt? 1 : 0;
             while (--i >= 0)
             {
-#if !defined WINCE && !defined WP8        
-               value = list->value;
-               if (xstrstr(value, cridStr) == value)
-#else
-               TC_JCharP2CharPBuf(list->value, -1, value);
-               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false))
-#endif         
+      
+               TC_TCHARP2CharPBuf(list->value, value);
+               if (xstrstr(value, cridStr) == value)         
                {
-                  getFullFileName(value, fullPath, buffer);
+                  getFullFileName(value, pathStr, buffer);
                   if ((error = lbfileCreate(&file, buffer, READ_WRITE, &slot)))
                      goto fileError;
                   
@@ -1990,9 +1892,11 @@ TESTCASE(LibOpen)
    // The TCVM functions needed by Litebase.
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharP);
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_CharP2TCHARPBuf);
    ASSERT1_EQUALS(NotNull, TC_CharPToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharP);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_JCharP2TCHARPBuf);
 	ASSERT1_EQUALS(NotNull, TC_JCharPEqualsJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPEqualsIgnoreCaseJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPHashCode);
@@ -2000,6 +1904,7 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_TCHARP2CharPBuf);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
    ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30
@@ -2793,9 +2698,11 @@ TESTCASE(initVars)
    // The TCVM functions needed by Litebase.
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharP);
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_CharP2TCHARPBuf);
    ASSERT1_EQUALS(NotNull, TC_CharPToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharP);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_JCharP2TCHARPBuf);
 	ASSERT1_EQUALS(NotNull, TC_JCharPEqualsJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPEqualsIgnoreCaseJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPHashCode);
@@ -2803,6 +2710,7 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_TCHARP2CharPBuf);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
    ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30

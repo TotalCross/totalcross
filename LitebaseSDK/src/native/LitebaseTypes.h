@@ -1395,7 +1395,7 @@ struct Table
    /**
     * The path where the table is stored if it is stored in disk.
     */
-	CharP sourcePath;
+	TCHARP sourcePath;
 
    /**
     * The column names. If <code>null</code>, the column names are not available because it is a temporary table.

@@ -58,7 +58,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    int32 keyRecSize = VALREC_SIZE,
          slot = table->slot;
    char buffer[DBNAME_SIZE];
-   CharP sourcePath = table->sourcePath;
+   TCHARP sourcePath = table->sourcePath;
    XFile* fnodes = &index->fnodes;
 
    index->numberColumns = numberColumns;
@@ -874,7 +874,7 @@ bool indexRename(Context context, Index* index, CharP newName)
 {
 	TRACE("indexRename")
    char buffer[DBNAME_SIZE];
-   CharP sourcePath = index->table->sourcePath;
+   TCHARP sourcePath = index->table->sourcePath;
    int32 slot = index->table->slot;
 
    // Renames the keys.

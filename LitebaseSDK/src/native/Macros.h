@@ -22,7 +22,7 @@
  * project whose source files include this file see TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols defined with this 
  * macro as being exported.
  */
-#if defined (WIN32) || defined (WINCE)
+#if defined (WIN32)
 	#ifdef LB_EXPORTS
 	#define LB_API __declspec(dllexport)
 	#else
@@ -76,7 +76,7 @@
 #define setLitebaseHtTables(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
 
 // LitebaseConnection.sourcePath
-#define getLitebaseSourcePath(o)    ((CharP)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
+#define getLitebaseSourcePath(o)    ((TCHARP)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
 #define setLitebaseSourcePath(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (intptr_t)v)
 
 // LitebaseConnection.htPS // juliana@226_16

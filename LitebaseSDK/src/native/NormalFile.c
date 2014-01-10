@@ -30,7 +30,7 @@
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
 {
 	TRACE("nfCreateFile")
    TCHAR buffer[MAX_PATHNAME];
@@ -40,9 +40,11 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
    fileInvalidate(xFile->file);
 	
 	// juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-	if (xstrlen(name) + xstrlen(sourcePath) + 1 > MAX_PATHNAME)
+   if (xstrlen(name) + tcslen(sourcePath) + 1 > MAX_PATHNAME)
 	{
-	   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+      char buffer[1024];
+      TC_TCHARP2CharPBuf(sourcePath, buffer);
+	   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), buffer);
 	   return false;
 	}
 	
@@ -245,7 +247,7 @@ void nfSetPos(XFile* xFile, int32 newPos)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to rename the file.
  */
-bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, int32 slot)
+bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath, int32 slot)
 {  
    TRACE("nfRename")
    TCHAR oldPath[MAX_PATHNAME];
@@ -339,7 +341,7 @@ bool nfClose(Context context, XFile* xFile)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to remove the file.
  */
-bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
+bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath, int32 slot)
 {
 	TRACE("nfRemove")
    TCHAR buffer[MAX_PATHNAME]; 

@@ -503,7 +503,7 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
-	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
+      TC_setObjectLock(p->retO = TC_createStringObjectFromTCHARP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
 
    MEMORY_TEST_END
 }
@@ -1204,11 +1204,15 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
       {
          int32 length = String_charsLen(tableNameObj),
                slot = OBJ_LitebaseSlot(driver);
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-         if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+         if (length + tcslen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            char buffer[1024];
+            TC_TCHARP2CharPBuf(sourcePath, buffer);
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), buffer);
+         }
          else
          {
             TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
@@ -1223,13 +1227,9 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
             fullName[length + 1] = 0;
             if (p->retI && !lbfileExists(fullName, slot))
             {
-#if defined WINCE || defined WP8
                char path[MAX_PATHNAME];
-               TC_JCharP2CharPBuf(fullName, -1, path);
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
-#else
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
-#endif                         
+               TC_TCHARP2CharPBuf(fullName, path);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);                      
             }
          }
       }
@@ -1382,7 +1382,7 @@ LB_API void lLC_purge_s(NMParams p)
                   numberOfBytes = NUMBEROFBYTES(columnCount),
                   slot = table->slot;
             bool useCrypto = dbFile->useCrypto;
-            CharP sourcePath = getLitebaseSourcePath(driver);
+            TCHARP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
             Heap heap = heapCreate(); 
 
@@ -1722,7 +1722,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
    Object nameStr,                                                                                                                                   
           logger,                                                                                                                                    
           file = null;                                                                                                                                      
-   char nameCharP[MAX_PATHNAME];                                                                                                                     
+   TCHAR name[MAX_PATHNAME];                                                                                                                     
                                                                                                                                                      
    MEMORY_TEST_START                                                                                                                                 
 	LOCKVAR(log);                                                                                                                                      
@@ -1746,18 +1746,18 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
             second,                                                                                                                                  
             millis;                                                                                                                                  
                                                                                                                                                      
-      getCurrentPath(nameCharP);                                                                                                                     
-		xstrcat(nameCharP, "/LITEBASE_");                                                                                                                
+      getCurrentPath(name);                                                                                                                     
+      tcscat(name, TEXT("/LITEBASE_"));
       TC_getDateTime(&year, &month, &day, &hour, &minute, &second, &millis);                                                                         
-		xstrcat(nameCharP, TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong));                                                  
-		xstrcat(nameCharP, ".");                                                                                                                         
+      TC_CharP2TCHARPBuf(TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong), &name[tcslen(name)]);
+      tcscat(name, TEXT("."));
       TC_int2CRID(TC_getApplicationId(), strAppId);                                                                                                  
-		xstrcat(nameCharP, strAppId);                                                                                                                    
-		xstrcat(nameCharP, ".LOGS");
+      TC_CharP2TCHARPBuf(strAppId, &name[tcslen(name)]);
+      tcscat(name, TEXT(".LOGS"));
 		TC_setObjectLock(nameStr, UNLOCKED);
 		nameStr = null;                                                                                                                     
 		if (!(file = TC_createObject(context, "totalcross.io.File"))                                                     
-       || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
+       || !(nameStr = TC_createStringObjectFromTCHARP(context, name, -1)))                                                                       
          goto finish;                                                                                                                                
          
       FIELD_OBJ(p->obj[0] = file, OBJ_CLASS(file), 0) = p->obj[1] = nameStr; // path
@@ -1815,24 +1815,17 @@ finish: ;
 LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection public static native int deleteLogFiles();                          
 {                                                                                                                                                    
 	TRACE("lLC_privateDeleteLogFiles")                                                                                                                 
-   Context context = p->currentContext;                                                                                                              
-   char pathCharP[MAX_PATHNAME];                                                                                                                     
+   Context context = p->currentContext;                                                                                                                                                                                                                                 
    TCHARPs* list = null;                                                                                                                             
-   TCHAR fullPath[MAX_PATHNAME];
-   char name[MAX_PATHNAME];
+   TCHAR fullPath[MAX_PATHNAME],
+         path[MAX_PATHNAME];
+   char name[MAX_PATHNAME],
+        value[DBNAME_SIZE];
    int32 count = 0,                                                                                                                                  
          i = 0,
          ret;
    Heap heap = heapCreate();                                                                                                                         
-                                                                                                                                                     
-#if defined WINCE || defined WP8 // A file name in char for Windows CE, which uses TCHAR.                                                                                
-   char value[DBNAME_SIZE];                                                                                                                          
-   JChar pathTCHARP[MAX_PATHNAME];                                                                                                                   
-#else                                                                                                                                                
-   CharP value;                                                                                                                                      
-   CharP pathTCHARP;                                                                                                                                 
-#endif                                                                                                                                               
-	                                                                                                                                                   
+                                                                                                                                             	                                                                                                                                                   
    MEMORY_TEST_START                                                                                                                                 
    LOCKVAR(log);                                                                                                                                     
    IF_HEAP_ERROR(heap)                                                                                                                               
@@ -1840,15 +1833,9 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);                                                                           
       goto finish;                                                                                                                                   
    }                                                                                                                                                 
-   getCurrentPath(pathCharP);                                                                                                                        
-                                                                                                                                                     
-#if defined WINCE || defined WP8                                                                                                                                         
-   TC_CharP2JCharPBuf(pathCharP, -1, pathTCHARP, true);                                                                                              
-#else                                                                                                                                                
-   pathTCHARP = pathCharP;                                                                                                                           
-#endif                                                                                                                                               
+   getCurrentPath(path);                                                                                                                                                                                                                                                                                                                                                                                                                      
 	                                                                                                                                                   
-   if ((ret = TC_listFiles(pathTCHARP, 1, &list, &count, heap, 0))) // Lists all the files of the folder.                                              
+   if ((ret = TC_listFiles(path, 1, &list, &count, heap, 0))) // Lists all the files of the folder.                                              
    {                                                                                                                                                 
       fileError(context, ret, "");                                                                                                                     
       goto finish;                                                                                                                                   
@@ -1869,16 +1856,11 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
    }
                                                                                                                                            
    while (--count >= 0)                                                                                                                              
-   {                                                                                                                                                 
-#if !defined WINCE && !defined WP8                                                                                                                                       
-      value = list->value;                                                                                                                           
-#else                                                                                                                                                
-      TC_JCharP2CharPBuf(list->value, -1, value);                                                                                                    
-#endif                                                                                                                                               
-                                                                                                                                                     
+   {                                                                                                                                                                                                                                                                                                
+      TC_TCHARP2CharPBuf(list->value, value);                                                                                                                                                                                                                                                   
       if (xstrstr(value, "LITEBASE") == value && xstrstr(value, ".LOGS") && !xstrstr(name, value)) // Deletes only the closed log files.                                      
       {  
-         getFullFileName(value, pathCharP, fullPath);                                                                                                
+         getFullFileName(value, path, fullPath);                                                                                                
          if ((ret = lbfileDelete(null, fullPath, 1, false)))                                                                                                  
          {                                                                                                                                                 
             fileError(context, ret, "");                                                                                                                     
@@ -2061,7 +2043,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          Object driver = p->obj[0],
 	             logger = litebaseConnectionClass->objStaticValues[1];
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];
          Heap heap = null;
          Table* table = null;
@@ -2115,7 +2097,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                goto finish;
 	      }
 
-         if ((j = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         if ((j = String_charsLen(tableName)) + tcslen(sourcePath) + 10 > MAX_PATHNAME)
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
 	         goto finish;
@@ -2351,7 +2333,7 @@ LB_API void lLC_convert_s(NMParams p)
                 logger = litebaseConnectionClass->objStaticValues[1];
          Heap heap;
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];
          Table* table = null;
 	      PlainDB* plainDB;
@@ -2402,9 +2384,11 @@ LB_API void lLC_convert_s(NMParams p)
                goto finish;
 	      }
 	      
-	      if ((i = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         if ((i = String_charsLen(tableName)) + tcslen(sourcePath) + 10 > MAX_PATHNAME)
          {
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+            char buffer[1024];
+            TC_TCHARP2CharPBuf(sourcePath, buffer);
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), buffer);
 	         goto finish;
          }
     
@@ -2621,30 +2605,15 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
          else
          {
             TCHARPs* list = null;
-
-#if defined WINCE || defined WP8
-            JCharP cridStr;
-            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
-            char value[DBNAME_SIZE],
-            fullPath[MAX_PATHNAME];
-#else
-            char cridStr[5],
-                 pathStr[MAX_PATHNAME]; 
-            CharP fullPath;
-            CharP value;
-#endif
-
+            char cridStr[5];
+            TCHAR fullPath[MAX_PATHNAME], // juliana@230_6
+                  buffer[MAX_PATHNAME];
+            char value[DBNAME_SIZE];
             int32 i,
                   count = 0,
                   slot = p->i32[0];
             bool deleted = false;
             Heap heap = heapCreate();
-            TCHAR buffer[MAX_PATHNAME];
-
-#ifdef PALMOS
-            if (slot == -1)
-               slot = TC_getLastVolume();
-#endif
 
             IF_HEAP_ERROR(heap)
             {
@@ -2655,19 +2624,10 @@ error:
                goto finish;
             }
 
-#if defined WINCE || defined WP8
-            cridStr = String_charsStart(cridObj);
-            
-            // juliana@230_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
-            xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
-            pathStr[i] = 0;
-            TC_JCharP2CharPBuf(pathStr, i, fullPath);
-#else
             TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
-            TC_JCharP2CharPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath = pathStr);
-#endif
+            TC_JCharP2TCHARPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath);
 
-            if ((i = TC_listFiles(pathStr, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+            if ((i = TC_listFiles(fullPath, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
             {
                fileError(p->currentContext, i, "");
                goto error;
@@ -2675,13 +2635,8 @@ error:
 
             while (--count >= 0) // Deletes only the files of the chosen database.
             {
-#if !defined WINCE && !defined WP8        
-               value = list->value;
+               TC_TCHARP2CharPBuf(list->value, value);
                if (xstrstr(value, cridStr) == value)
-#else
-               TC_JCharP2CharPBuf(list->value, -1, value);
-               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false))
-#endif
                {
                   getFullFileName(value, fullPath, buffer);
                   if ((i = lbfileDelete(null, buffer, slot, false)))
@@ -2744,7 +2699,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
 #endif
 
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];         
          NATIVE_FILE tableDb;
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
@@ -2828,25 +2783,14 @@ LB_API void lLC_listAllTables(NMParams p)
       TCHARPs* list = null; 
       Object* array;
       Context context = p->currentContext;
-      char crid[5];      
-
-#if defined WINCE || defined WP8
-      char value[DBNAME_SIZE];
-      JChar path[MAX_PATHNAME];
-#else
-      CharP value;
-      CharP path = getLitebaseSourcePath(driver);
-#endif
-
+      char crid[5],      
+           value[DBNAME_SIZE];
+      TCHARP path = getLitebaseSourcePath(driver);
       int32 i,
             j,
             count = 0,
             slot = OBJ_LitebaseSlot(driver);
       Heap heap = heapCreate();
-      
-#if defined WINCE || defined WP8 
-   TC_CharP2JCharPBuf(getLitebaseSourcePath(driver), -1, path, true);
-#endif
 
       IF_HEAP_ERROR(heap)
       {
@@ -2869,13 +2813,8 @@ error:
       j = count;
       while (--j >= 0) // Deletes only the files of the chosen database.
       {
-      
-#if !defined WINCE && !defined WP8         
-         value = list->value;
-#else
-         TC_JCharP2CharPBuf(list->value, -1, value);        
-#endif          
-
+         TC_TCHARP2CharPBuf(list->value, value);        
+         
          // Selects the .db files that are from the tables of the current connection. 
          if (xstrstr(value, crid) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
          { 
