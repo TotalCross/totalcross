@@ -605,7 +605,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, ch
 
 #ifdef WP8
    char buff[40];
-   FILE_BASIC_INFO *finfo = buff;
+   FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO *)buff;
 
    if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
       return GetLastError();
