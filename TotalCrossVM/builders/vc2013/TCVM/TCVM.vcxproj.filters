@@ -170,6 +170,9 @@
     <Filter Include="Event\wp8">
       <UniqueIdentifier>{587e68ae-02d1-40b5-aaba-94873d331120}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VM Files\wp8">
+      <UniqueIdentifier>{bda423bb-c037-408f-9cda-442681f07a7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsPhoneRuntimeComponent1.cpp" />
@@ -686,6 +689,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\nm\ui\wp8\openglWrapper.cpp">
       <Filter>Native methods\ui\wp8</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
+      <Filter>VM Files\wp8</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

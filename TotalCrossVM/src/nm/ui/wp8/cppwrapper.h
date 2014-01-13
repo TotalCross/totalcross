@@ -21,7 +21,6 @@ struct eventQueueMember {
 char *GetAppPathWP8();
 char *GetVmPathWP8();
 char *GetDisplayNameWP8();
-void cppsleep(int ms);
 
 // WP8 dispatcher fuctions
 void set_dispatcher();
@@ -32,11 +31,6 @@ void windowSetSIP(enum TCSIP kb);
 
 // Dummy functions?
 void windowSetDeviceTitle(Object titleObj);
-
-// Threads functions
-void* cppthread_create(void *args);
-void cppthread_detach(void *t);
-void *cppget_current_thread();
 
 // VM
 DWORD32 getRemainingBatery();

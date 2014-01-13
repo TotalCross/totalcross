@@ -82,7 +82,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
@@ -102,7 +102,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
@@ -143,7 +143,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -1216,6 +1216,12 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
     </ClCompile>
     <ClCompile Include="..\..\..\src\tests\tc_tests.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>

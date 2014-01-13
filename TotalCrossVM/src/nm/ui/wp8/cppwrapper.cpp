@@ -3,10 +3,6 @@
 #include <queue>
 #include <system_error>
 
-#include <wrl/client.h>
-
-#include "esUtil.h"
-
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
 #else
@@ -16,6 +12,7 @@
 #include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
+#include <wrl/client.h>
 #include "tcclass.h"
 
 using namespace TotalCross;
@@ -92,46 +89,11 @@ char *GetVmPathWP8()
 	return vmPathWP8;
 }
 
-void cppthread_detach(void *t)
-{
-	//std::thread *th = (std::thread*)t;
-
-	//if (th != NULL && th->joinable()) {
-	//	th->detach();
-	//}
-}
-
 char *GetDisplayNameWP8()
 {
-	Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
-	WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
-	return devId;
-}
-
-extern "C" DWORD WINAPI privateThreadFunc(VoidP argP);
-
-void* cppthread_create(void *args)
-{
-	try {
-		std::thread t(privateThreadFunc, args);
-
-		t.detach();
-
-		return (void*)*(UINT64*)&t.get_id();
-	} catch(std::system_error e) {
-		return null;
-	}
-}
-
-void *cppget_current_thread()
-{
-	// getting the hash is more reliable then the value of the get_id() return
-	return (void*)std::this_thread::get_id().hash();
-}
-
-void cppsleep(int ms)
-{
-	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+   Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
+   WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
+   return devId;
 }
 
 void set_dispatcher()
