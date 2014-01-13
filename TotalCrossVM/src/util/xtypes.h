@@ -100,14 +100,16 @@ typedef double TDouble;
 typedef uint16 JChar; // Java char
 typedef JChar* JCharP;
 
-#if defined(WINCE) || defined(WIN32)
- #define inline __inline
- #if defined(UNICODE)
+#if !defined HAS_TCHAR
+ #if defined(WINCE) || defined(WIN32)
+  #define inline __inline
+  #if defined(UNICODE)
   typedef uint16 TCHAR;
- #endif
-#else
+  #endif
+ #else
     #define TEXT(x) x
     typedef char TCHAR;
+ #endif
 #endif
 typedef TCHAR* TCHARP;
 

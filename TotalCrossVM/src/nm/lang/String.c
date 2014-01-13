@@ -12,6 +12,7 @@
 
 
 #include "tcvm.h"
+#include "NativeMethods.h"
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_valueOf_d(NMParams p) // java/lang/String native public static String valueOf(double d);

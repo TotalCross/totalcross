@@ -74,8 +74,13 @@ Pthreads on Posix (iPhone, Linux, ...)
 #if defined(WIN32)
  #define MUTEX_TYPE CRITICAL_SECTION
  #define SETUP_MUTEX
+#if defined (WP8)
+ // spinCount (semaphore number) initialized with 1
+#define INIT_MUTEX_VAR(x)     do { /*debug("INIT_MUTEX_VAR %s", #x);*/ InitializeCriticalSectionEx(&(x), 1, 0); } while(0)
+#else
  #define INIT_MUTEX_VAR(x)    InitializeCriticalSection(&(x))
- #define RESERVE_MUTEX_VAR(x) EnterCriticalSection(&(x))
+#endif
+#define RESERVE_MUTEX_VAR(x)  do { /*debug("LOCKVAR %s", #x);*/ EnterCriticalSection(&(x)); } while(0)
  #define RELEASE_MUTEX_VAR(x) LeaveCriticalSection(&(x))
  #define DESTROY_MUTEX_VAR(x) DeleteCriticalSection(&(x))
 #elif defined(POSIX) || defined(ANDROID)

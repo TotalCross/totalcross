@@ -22,6 +22,10 @@
 /////////////////////////////////////////////////////////////////////////
 // Hashtable
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct HTEntryType
 {
    int32 key;
@@ -271,5 +275,9 @@ typedef void (*stackPushFunc)(Stack s, VoidP in);
 
 #define stackPeek(s) *s->pos
 #define stackDestroy(s) heapDestroy(s->heap)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DATASTRUCTURES_H

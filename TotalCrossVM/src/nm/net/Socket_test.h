@@ -9,15 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
-#define DEBUG_SOCKET true
-
 TESTCASE(Socket)
 {
-#if !DEBUG_SOCKET
-   TEST_CANNOT_RUN;
-#elif defined (WIN32) || defined(ANDROID)
+#if defined (WIN32) || defined(ANDROID)
    TNMParams p;
    Object objArray[2];
    int32 i32Array[3];

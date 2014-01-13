@@ -14,40 +14,48 @@
 #include "tcvm.h"
 
 // tcclass.c
-Hashtable htLoadedClasses;
-TCClassArray vLoadedClasses;
+Hashtable htLoadedClasses = { 0 };
+TCClassArray vLoadedClasses = { 0 };
 
 // tcexception.c
-CharP throwableAsCharP[(int32)ThrowableCount];
+CharP throwableAsCharP[(int32)ThrowableCount] = { 0 };
 
 // event_c.h
-int32 lastPenX, lastPenY, actionStart;
-int32 lastW = -2,lastH;
-int32 ascrHRes,ascrVRes;
+int32 lastPenX = 0;
+int32 lastPenY = 0;
+int32 actionStart = 0;
+int32 lastW = -2;
+int32 lastH = 0;
+int32 ascrHRes = 0;
+int32 ascrVRes = 0;
 #if defined(WIN32)
-uint8 keyIsDown[256];
-bool dontPostOnChar;
+uint8 keyIsDown[256] = { 0 };
+bool dontPostOnChar = false;
+HANDLE hModuleTCVM = INVALID_HANDLE_VALUE;
 #elif defined(ANDROID)
-jmethodID jeventIsAvailable,jpumpEvents;
-bool appPaused;                         
+jmethodID jeventIsAvailable;
+jmethodID jpumpEvents;
+bool appPaused = false;
 #endif
-#if defined(ANDROID) || defined(darwin)
-int32 deviceFontHeight,iosScale;
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
+int32 deviceFontHeight = 0;
+int32 iosScale = 0;
 #endif
 
 // GoogleMaps.c
 #ifdef ANDROID
-jmethodID jshowGoogleMaps, jshowRoute;
+jmethodID jshowGoogleMaps;
+jmethodID jshowRoute;
 #endif
 
 // startup.c
-bool traceOn;
-char commandLine[256];
-int32 exitCode;
-bool rebootOnExit;
-bool destroyingApplication;
-Object mainClass;  // the instance being executed
-bool isMainWindow;   // extends MainWindow ?
+bool traceOn = false;
+char commandLine[256] = { 0 };
+int32 exitCode = 0;
+bool rebootOnExit = false;
+bool destroyingApplication = false;
+Object mainClass = { 0 };  // the instance being executed
+bool isMainWindow = false;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
@@ -60,41 +68,52 @@ TCHAR exeName[MAX_PATHNAME];
 #endif
 
 // graphicsprimitives.c
-uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
-int32* controlEnableUpdateScreenPtr;
-TScreenSurface screen;
-TCClass uiColorsClass;
-int32* shiftScreenColorP;
-int32* vistaFadeStepP;
+// on 8 bpp screens BEGIN
+uint8* lookupR = NULL;
+uint8* lookupG = NULL;
+uint8* lookupB = NULL;
+uint8* lookupGray = NULL;
+// on 8 bpp screens END
+int32* controlEnableUpdateScreenPtr = NULL;
+TScreenSurface screen = { 0 };
+TCClass uiColorsClass = { 0 };
+int32* shiftScreenColorP = NULL;
+int32* vistaFadeStepP = NULL;
 
 // mem.c
 #ifdef INITIAL_MEM
 uint32 maxAvail = INITIAL_MEM; // in bytes
 #endif
-bool warnOnExit;
-bool leakCheckingEnabled;
-bool showMemoryMessagesAtExit;
-VoidPs* createdHeaps;
-int32 totalAllocated, maxAllocated, allocCount, freeCount;
+bool warnOnExit = false;
+bool leakCheckingEnabled = false;
+bool showMemoryMessagesAtExit = false;
+VoidPs* createdHeaps = NULL;
+int32 totalAllocated = 0;
+int32 maxAllocated = 0;
+int32 allocCount = 0;
+int32 freeCount = 0;
 DECLARE_MUTEX(createdHeaps);
 
 // PalmFont_c.h
-int32 maxFontSize, minFontSize, normalFontSize;
-FontFile defaultFont;
-int32 *tabSizeField;
-Hashtable htUF;
-VoidPs* openFonts;
-Heap fontsHeap;
+int32 maxFontSize = 0;
+int32 minFontSize = 0;
+int32 normalFontSize = 0;
+
+FontFile defaultFont = NULL;
+int32 *tabSizeField = NULL;
+Hashtable htUF = { 0 };
+VoidPs* openFonts = NULL;
+Heap fontsHeap = NULL;
 
 // win/gfx_Graphics_c.h
 #ifdef WIN32
-HWND mainHWnd;
+HWND mainHWnd = NULL;
 bool bSipUp = false; //flsobral@tc114_50: fixed the SIP keyboard button not being properly displayed on some WinCE devices.
 #endif
 
 // Settings.c
-TCClass settingsClass;
-TTCSettings tcSettings;
+TCClass settingsClass = { 0 };
+TTCSettings tcSettings = { 0 };
 #if defined (WINCE)
 TVirtualKeyboardSettings vkSettings;
 #endif
@@ -105,37 +124,49 @@ jmethodID jsetElapsed;
 #endif
 
 // objectmemorymanager.c
-bool runningGC,runningFinalizer;
-ObjectArray freeList; // the array with lists of free objects
-ObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
-ObjectArray lockList; // locked objects list
-uint32 markedAsUsed; // starts as 1
-uint32 objCreated,skippedGC,objLocked; // a few counters
-int32 lastGC;
-Heap ommHeap;
-Heap chunksHeap;
-Stack objStack;
+bool runningGC = 0;
+bool runningFinalizer = 0;
+ObjectArray freeList = { 0 }; // the array with lists of free objects
+ObjectArray usedList = { 0 }; // the array with lists of used objects (allocated after the last GC)
+ObjectArray lockList = { 0 }; // locked objects list
+uint32 markedAsUsed = 1; // starts as 1
+uint32 objCreated = 0;
+uint32 skippedGC = 0;
+uint32 objLocked = 0; // a few counters
+int32 lastGC = 0;
+Heap ommHeap = NULL;
+Heap chunksHeap = NULL;
+Stack objStack = NULL;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 bool canTraverse=true;
-ObjectArray freeList2; // the array with lists of free objects
-ObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
-ObjectArray lockList2; // locked objects list
-uint32 markedAsUsed2; // starts as 1
-uint32 gcCount2,objCreated2,skippedGC2,objLocked2; // the current gc count
-Heap ommHeap2,chunksHeap2;
-Stack objStack2;
+ObjectArray freeList2 = { 0 }; // the array with lists of free objects
+ObjectArray usedList2 = { 0 }; // the array with lists of used objects (allocated after the last GC)
+ObjectArray lockList2 = { 0 }; // locked objects list
+uint32 markedAsUsed2 = 1; // starts as 1
+// the current gc count
+uint32 gcCount2 = 0;
+uint32 objCreated2 = 0;
+uint32 skippedGC2 = 0;
+uint32 objLocked2 = 0;
+
+
+Heap ommHeap2 = NULL;
+Heap chunksHeap2 = NULL;
+Stack objStack2 = NULL;
 #endif
 
 // context.c
-Context mainContext,gcContext,lifeContext;
-Context contexts[MAX_CONTEXTS];
+Context mainContext = NULL;
+Context gcContext = NULL;
+Context lifeContext = NULL;
+Context contexts[MAX_CONTEXTS] = { 0 };
 
 // tcvm.c
-int32 vmTweaks;
-bool showKeyCodes;
-int32 profilerMaxMem; // guich@tc111_4 - also on mem.c
-TCClass lockClass;
+int32 vmTweaks = 0;
+bool showKeyCodes = false;
+int32 profilerMaxMem = 0; // guich@tc111_4 - also on mem.c
+TCClass lockClass = { 0 };
 
 // file.c
 #ifdef ANDROID
@@ -143,51 +174,54 @@ jmethodID jgetSDCardPath;
 #endif
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
-#if !defined(WIN32)
-void *deviceCtx; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
+#if !defined(WIN32) || defined WP8
+void *deviceCtx = NULL; // The device context points a structure containing platform specific data that have to handled in platform specific code only, that's why we don't define a structure here insofar some platform specific data can't be defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...) Currently this pointer is mirrored in ScreenSurface in the extension field but this may change sooner or later.
 #endif
         
 // vm.c
 #ifdef ANDROID
-jmethodID jvmFuncI,jvmExec;
+jmethodID jvmFuncI;
+jmethodID jvmExec;
 #endif
 
 // utils.c
-int32 firstTS;
+int32 firstTS = 0;
 #ifdef ANDROID
 jmethodID jlistTCZs;
 #endif
 
 // debug.c
-CharP debugstr;
-bool consoleAllocated;
+CharP debugstr = NULL;
+bool consoleAllocated = false;
 #ifdef ANDROID
 jmethodID jalert;
 #endif
 
 // nativelib.c
-VoidPs* openNativeLibs;
+VoidPs* openNativeLibs = NULL;
 
 //native proc addresses for iOS
-Hashtable htNativeProcAddresses;
+Hashtable htNativeProcAddresses = { 0 };
 
 // tcz.c
-VoidPs* openTCZs;
+VoidPs* openTCZs = NULL;
 #ifdef ANDROID
-jmethodID jreadTCZ, jfindTCZ;
+jmethodID jreadTCZ;
+jmethodID jfindTCZ;
 #endif
 
 // event.c
-bool appExitThrown;
+bool appExitThrown = false;
 bool keepRunning = true; // don't remove from here!
-bool eventsInitialized;
-int32 nextTimerTick;
-bool isDragging;
-Method _onTimerTick, _postEvent;
-Int32Array interceptedSpecialKeys;
+bool eventsInitialized = false;
+int32 nextTimerTick = 0;
+bool isDragging = false;
+Method _onTimerTick = NULL;
+Method _postEvent = NULL;
+Int32Array interceptedSpecialKeys = NULL;
 
 // Vm_c.h
-int32 oldAutoOffValue;
+int32 oldAutoOffValue = 0;
 #ifdef ANDROID
 jmethodID jclipboard;
 #endif
@@ -195,31 +229,35 @@ jmethodID jclipboard;
 // media_Sound.c
 TSoundSettings soundSettings;
 #ifdef ANDROID
-jmethodID jtone,jsoundEnable;
+jmethodID jtone;
+jmethodID jsoundEnable;
 #endif
 
 
 // ConnectionManager.c
-TCClass connMgrClass;
+TCClass connMgrClass = { 0 };
 
 // win/Socket_c.h
 #ifdef WIN32
-int32 WSACount;
+int32 WSACount = 0;
 #endif
 
 // xml/xml_Tokenizer.c
-bool xmlInitialized;
+bool xmlInitialized = false;
 
 // ssl_SSL.c
-Hashtable htSSLSocket;
-Heap heapSSLSocket;
+Hashtable htSSLSocket = { 0 };
+Heap heapSSLSocket = NULL;
 DECLARE_MUTEX(htSSL);
 
 #ifdef ANDROID
-jmethodID jshowCamera,jgetNativeResolutions,jzxing;
+jmethodID jshowCamera;
+jmethodID jgetNativeResolutions;
+jmethodID jzxing;
 
 // android/GPS_c.h
-jmethodID jgpsFunc,jcellinfoUpdate;
+jmethodID jgpsFunc;
+jmethodID jcellinfoUpdate;
 
 // android/Dial_c.h
 jmethodID jdial;
@@ -227,28 +265,30 @@ jmethodID jdial;
 #endif
 
 // tcthread.c
-int32 threadCount;
+int32 threadCount = 0;
 
 // class.c
 Object *voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
 
 // These are set in the application's constructor
-uint32 applicationId;
-char applicationIdStr[5];
+uint32 applicationId = 0;
+char applicationIdStr[5] = { 0 };
 
 // These are set when the VM is initialized, and their values are copied into totalcross.sys.Settings.
-CharP platform; // always a constant
-char userName[42];
-char appPath[MAX_PATHNAME];
-char vmPath[MAX_PATHNAME];
-char dataPath[MAX_PATHNAME];
-char mainClassName[MAX_PATHNAME];
-bool isMotoQ;
-bool isWindowsMobile;
+CharP platform = NULL; // always a constant
+char userName[42] = { 0 };
+char appPath[MAX_PATHNAME] = { 0 };
+char vmPath[MAX_PATHNAME] = { 0 };
+char dataPath[MAX_PATHNAME] = { 0 };
+char mainClassName[MAX_PATHNAME] = { 0 };
+bool isMotoQ = false;
+bool isWindowsMobile = false;
 
 #ifdef WINCE
-HINSTANCE aygshellDll, coreDll, cellcoreDll;
+HINSTANCE aygshellDll;
+HINSTANCE coreDll;
+HINSTANCE cellcoreDll;
 #endif
 
 DECLARE_MUTEX(omm);

@@ -899,7 +899,7 @@ TC_API TCHARP CharP2TCHARP(CharP from)
    int32 bufLen = xstrlen(from);
 
    if ((buf = (TCHARP) xmalloc((bufLen+1)*sizeof(TCHARP))) != null)
-#ifdef WINCE
+#ifdef UNICODE
       CharP2JCharPBuf(from, bufLen, buf, true);
 #else
       xstrncpy(buf, from, bufLen);
@@ -910,7 +910,7 @@ TC_API TCHARP CharP2TCHARP(CharP from)
 TC_API TCHARP CharP2TCHARPBuf(CharP from, TCHARP to)
 {
    int32 fromLen = xstrlen(from);
-#ifdef WINCE
+#ifdef UNICODE
    CharP2JCharPBuf(from, fromLen, to, true);
 #else
    xstrncpy(to, from, fromLen);
@@ -920,7 +920,7 @@ TC_API TCHARP CharP2TCHARPBuf(CharP from, TCHARP to)
 
 TC_API CharP TCHARP2CharPBuf(TCHARP from, CharP to)
 {
-#if defined (WINCE)
+#if defined (UNICODE)
   return JCharP2CharPBuf(from, -1, to);
 #else
   return xstrcpy(to, from);

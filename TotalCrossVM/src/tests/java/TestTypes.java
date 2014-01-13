@@ -63,7 +63,7 @@ public class TestTypes extends Object
       }
       catch (NullPointerException npe)
       {
-         Vm.debug(npe.getMessage());
+         printException(npe.getMessage());
       }
    }
 
@@ -80,7 +80,7 @@ public class TestTypes extends Object
       }
       catch (NullPointerException npe)
       {
-         npe.printStackTrace();
+         printException(npe.getMessage());
       }
    }
    public static void methodB2()
@@ -106,7 +106,7 @@ public class TestTypes extends Object
       }
       catch (Exception e)
       {
-         print(e.getMessage());
+         printException(e.getMessage());
       }
    }
    public static void methodB3() throws Exception
@@ -118,4 +118,5 @@ public class TestTypes extends Object
       throw new Exception("Testing exceptions (3)");
    }
    public static native boolean print(String s);
+   public static native boolean printException(String s);
 }

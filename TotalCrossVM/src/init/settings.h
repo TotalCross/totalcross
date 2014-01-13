@@ -80,6 +80,7 @@ typedef struct
    int32* windowFont;                    // int 
    int32* isOpenGL;                      // boolean
    Object* lineNumber;                   // java.lang.String
+   int32 *unmovableSIP;                  // boolean
 } TTCSettings, *TCSettings;
 
 typedef struct

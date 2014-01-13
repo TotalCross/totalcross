@@ -13,7 +13,8 @@
 
 #include "Window.h"
 
-#if defined (WINCE) || defined (WIN32)
+#if defined (WP8)
+#elif defined (WINCE) || defined (WIN32)
  #include "win/Window_c.h"
 #elif defined (darwin)
  #include "darwin/Window_c.h"
@@ -31,7 +32,9 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
    if (sipOption < SIP_HIDE || sipOption > SIP_DISABLE_NUMERICPAD)
       throwIllegalArgumentExceptionI(p->currentContext, "sipOption",sipOption);
    else
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined (WP8)
+	   windowSetSIP(sipOption);
+#elif defined (WINCE) && _WIN32_WCE >= 300
    if (*tcSettings.virtualKeyboardPtr || sipOption == SIP_ENABLE_NUMERICPAD || sipOption == SIP_DISABLE_NUMERICPAD)
       windowSetSIP(sipOption);
 #elif defined(darwin)

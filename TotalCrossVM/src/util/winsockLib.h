@@ -15,8 +15,9 @@
 #ifndef __WINSOCKLIB__
 #define __WINSOCKLIB__
 
-#include "tcvm.h"
+#include <winsock2.h>
 
+#ifndef WP8
 LPFN_WSASTARTUP        WSAStartupProc;
 LPFN_SOCKET            socketProc;
 LPFN_INET_ADDR         inet_addrProc;
@@ -45,6 +46,7 @@ LPFN_WSALOOKUPSERVICEBEGIN   WSALookupServiceBeginProc;
 LPFN_WSALOOKUPSERVICENEXT    WSALookupServiceNextProc;
 LPFN_WSALOOKUPSERVICEEND     WSALookupServiceEndProc;
 LPFN_WSASETSERVICE           WSASetServiceProc;
+#endif
 
 #if defined (WINCE)
 // Types of radio device
@@ -88,6 +90,7 @@ ChangeRadioStateProc    pChangeRadioState;
 FreeDeviceListProc      pFreeDeviceList;
 #endif
 
+#ifndef WP8
 #ifdef UNICODE
 #define _WSALookupServiceBegin_ TEXT("WSALookupServiceBeginW")
 #define _WSALookupServiceNext_  TEXT("WSALookupServiceNextW")
@@ -126,6 +129,7 @@ FreeDeviceListProc      pFreeDeviceList;
 #define WSALookupServiceNext(a, b, c, d)  (WSALookupServiceNextProc  == null ? SOCKET_ERROR : WSALookupServiceNextProc(a, b, c, d))
 #define WSALookupServiceEnd(a)            (WSALookupServiceEndProc   == null ? SOCKET_ERROR : WSALookupServiceEndProc(a))
 #define WSASetService(a, b, c)            (WSASetServiceProc         == null ? SOCKET_ERROR : WSASetServiceProc(a, b, c))
+#endif
 
 bool initWinsock();
 void closeWinsock();

@@ -12,6 +12,7 @@
 
 
 #include "winsockLib.h"
+#if !defined WP8
 #pragma pack(8)
 #include <ws2bth.h>
 #pragma pack()
@@ -22,6 +23,7 @@
 
 #else
  #include <BluetoothAPIs.h>
+#endif
 #endif
 
 #define NATIVE_HANDLE SOCKET

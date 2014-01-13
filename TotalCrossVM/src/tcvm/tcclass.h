@@ -12,6 +12,14 @@
 #ifndef CLASS_H
 #define CLASS_H
 
+#include "tcapi.h"
+#include "xtypes.h"
+#include "mem.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** IMPORTANT: there's a main difference between the XXX and XXXInfo structures:
  * the XXXInfo are PACKED at 2 bytes, which make it use less memory main memory,
  * but it makes the C compiled code bigger and slower. Due to this, we decided to
@@ -621,4 +629,8 @@ bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2,
 Type type2javaType(CharP type);
 
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
+
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -42,7 +42,7 @@ TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
    CharP buf=null;
    TCClass c;
 
-   // test "Class c = new Object().getClass()"
+   // test "TCClass c = new Object().getClass()"
    tzero(p);
    p.currentContext = currentContext;
    obj = createObject(currentContext, "java.lang.Object");

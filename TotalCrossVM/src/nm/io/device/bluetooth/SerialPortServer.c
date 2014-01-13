@@ -14,7 +14,9 @@
 #include "tcvm.h"
 #include "guid.h"
 
-#if defined (WIN32) || defined (WINCE)
+#if defined (WP8)
+
+#elif defined (WIN32) || defined (WINCE)
  #include "win/SerialPortServer_c.h"
 #elif defined ANDROID
  #include "android/SerialPortServer_c.h"
@@ -23,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPS_createSerialPortServer_s(NMParams p) // totalcross/io/device/bluetooth/SerialPortServer native private void createSerialPortServer(String uuid, String []params) throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined(ANDROID)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
    Object serialPortServerObj = p->obj[0];
    Object uuidObj = p->obj[1];
    Object paramsArray = p->obj[2];
@@ -50,7 +52,7 @@ TC_API void tidbSPS_createSerialPortServer_s(NMParams p) // totalcross/io/device
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPS_accept(NMParams p) // totalcross/io/device/bluetooth/SerialPortServer native public totalcross.io.Stream accept() throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined(ANDROID)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
    Object serialPortServerObj = p->obj[0];
    Object nativeHandleObj = SerialPortServer_nativeHandle(serialPortServerObj);
    NATIVE_HANDLE* nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
@@ -85,7 +87,7 @@ TC_API void tidbSPS_accept(NMParams p) // totalcross/io/device/bluetooth/SerialP
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPS_close(NMParams p) // totalcross/io/device/bluetooth/SerialPortServer native public void close() throws throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined(ANDROID)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
    Object serialPortServerObj = p->obj[0];
    Object nativeHandleObj = SerialPortServer_nativeHandle(serialPortServerObj);
    NATIVE_HANDLE* nativeHandle;

@@ -11,6 +11,10 @@
 
 #include <math.h>
 
+#if defined WP8
+#include "openglWrapper.h"
+#endif
+
 void applyChanges(Context currentContext, Object obj, bool updateList);
 void freeTexture(Object obj, bool updateList);
 

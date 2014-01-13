@@ -261,7 +261,7 @@ static bool InitializeTAPI()
 
    // Initialize the application's use of Tapi.dll. Keep trying until the
    // user cancels or stops getting LINEERR_REINIT.
-   while ((dwReturn = lineInitialize(&hLineApp, GetModuleHandle(TEXT("tcvm.dll")),(LINECALLBACK) lineCallbackFunc, TEXT("TotalCross"), &dwNumDevs)) == LINEERR_REINIT)
+   while ((dwReturn = lineInitialize(&hLineApp, hModuleTCVM, (LINECALLBACK)lineCallbackFunc, TEXT("TotalCross"), &dwNumDevs)) == LINEERR_REINIT)
    {
       Sleep(50);
       // Bring up the message box if 5 seconds have passed.

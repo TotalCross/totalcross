@@ -2589,7 +2589,7 @@ static int32 getExtMethodIndex(ConstantPool cp, uint16 nameidx) // this
 }
 
 #if 0
-static int32 getMethodIndex(Class c, uint16 idx)
+static int32 getMethodIndex(TCClass c, uint16 idx)
 {
    int32 n = ARRAYLENV(c->methods);
    while (--n > 0)
@@ -2763,17 +2763,13 @@ TESTCASE(VM_NEWOBJ)
 finish: ;
 }
 extern CharP throwableTrace;
-TC_API void jlT_print_s(NMParams p)
+TC_API void TT_printException_s(NMParams p)
 {
    throwableTrace = String2CharP(p->obj[0]);
 }
 
 TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception; throw regO;
 {
-#if false
-   TEST_SKIP;
-   finish: ;
-#else
    Method testException;
    Object aioobe;
 
@@ -2781,10 +2777,10 @@ TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception;
 
    // Test 1: NullPointerException thrown and handled in the same method
    testException = getMethod(testTypesClass, true, "testException", 0);
+   htPutPtr(&htNativeProcAddresses, hashCode("TT_printException_s"), &TT_printException_s);
    ASSERT1_EQUALS(NotNull, testException);
    executeMethod(currentContext, testException);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT1_EQUALS(NotNull, throwableTrace);
    ASSERT2_EQUALS(Sz, "TestTypes.methodC 62\nTestTypes.methodB 56\nTestTypes.methodA 55\nTestTypes.testException 54\n", throwableTrace);
    xfree(throwableTrace);
 
@@ -2815,7 +2811,6 @@ TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception;
 finish:
    xfree(ttprintRes);
    xfree(throwableTrace);
-#endif
 }
 TESTCASE(VM_INSTANCEOF) // if (other instanceof Rect) -> mov regI, regO instanceof sym; jeq regI,1;
 {

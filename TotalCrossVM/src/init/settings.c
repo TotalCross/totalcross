@@ -85,7 +85,8 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
    tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
-   tcSettings.lineNumber                 = getStaticFieldObject(settingsClass, "lineNumber");
+   tcSettings.lineNumber                  = getStaticFieldObject(settingsClass, "lineNumber");
+   tcSettings.unmovableSIP                = getStaticFieldInt(settingsClass, "unmovableSIP");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
@@ -236,7 +237,7 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
     *tcSettings.deviceFontHeightPtr = deviceFontHeight;
     *tcSettings.isOpenGL = true;
 #endif

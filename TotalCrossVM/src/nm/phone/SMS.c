@@ -13,7 +13,9 @@
 
 #include "tcvm.h"
 
-#if defined (WIN32) || defined (WINCE)
+#if defined WP8
+
+#elif defined (WIN32) || defined (WINCE)
  #include "win/SMS_c.h"
 #endif
 

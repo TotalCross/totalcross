@@ -56,11 +56,11 @@ static Context initAll(CharP* args)
       *args += xstrlen(appPathTemp) + 1;
    }
 #endif
+   ok = ok && initDebug();
    ok = ok && initGlobals();
    ok = ok && initMem();
    if (ok) firstTS = getTimeStamp();
    ok = ok && (c=initContexts()) != null;
-   ok = ok && initDebug();
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
    initNativeProcAddresses();
@@ -267,7 +267,7 @@ TC_API int32 startProgram(Context currentContext)
       if (!loadLibraries(currentContext, vmPath, true))
          return exitProgram(115);
          
-#if defined (WIN32) && !defined (WINCE) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
+#if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
       if (canLoadLitebase())
       {
          TCHAR litebasePath[MAX_PATHNAME];
@@ -340,7 +340,7 @@ static void loadExceptionClasses(Context currentContext)
    lockClass = loadClass(currentContext, "totalcross.util.concurrent.Lock", false);
 }
 
-#if defined(ANDROID) && !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
+#if defined(ANDROID) || !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
 #define ALLOW_TEST_SUITE false
 #else
 #define ALLOW_TEST_SUITE true
@@ -365,12 +365,14 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif defined WIN32
+#if !defined(WP8)
    {
       SYSTEM_INFO systemInfo;
       GetSystemInfo(&systemInfo);
       if (systemInfo.dwNumberOfProcessors > 1)  // flsobral@tc110_91: On Win32, TotalCross applications will run only in one processor. This should fix our problems with multi-core processors while thread synchronization is not supported.
          SetProcessAffinityMask(GetCurrentProcess(), 1L);
    }
+#endif
    if (xstrstr(argsOriginal,"/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
@@ -397,7 +399,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
 
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
-   if (xstrstr(argsLower, "launcher")) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
+   if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
    cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line
@@ -421,6 +423,11 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              return exitProgram(103);
           }
           waitUntilStarted();
+          mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
+          gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
+          lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+          loadExceptionClasses(currentContext); // guich@tc112_18
+
           startTestSuite(currentContext); // run the testsuite before Graphics test to be able to test for Font and FontMetrics
           destroyGraphics();
          #else
@@ -474,7 +481,7 @@ jumpArgument:
    traceOn = true;
 #endif
 
-#if defined(darwin) || defined(ANDROID)
+#if defined(darwin) || defined(ANDROID) || defined WP8
    strcat(tczName, ".tcz");
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context

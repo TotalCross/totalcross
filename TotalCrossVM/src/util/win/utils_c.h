@@ -13,8 +13,9 @@
 
 static int32 privateGetFreeMemory(bool maxblock)
 {
+#ifndef WP8
    int32 result=1;
-   MEMORYSTATUS ms;  // works for most cases
+   MEMORYSTATUS ms = { 0 };  // works for most cases
    GlobalMemoryStatus(&ms);
 #ifdef WINCE
    result = maxblock ? ms.dwTotalVirtual : ms.dwAvailVirtual; // guich@tc115_3: now using dwTotalVirtual instead of dwAvailPhys
@@ -22,6 +23,10 @@ static int32 privateGetFreeMemory(bool maxblock)
    result = maxblock ? ms.dwTotalPhys : ms.dwAvailPhys;
 #endif
    return result;
+#else
+   return getFreeMemoryWP8();
+#endif
+   
 }
 
 static int32 privateGetTimeStamp()
@@ -65,7 +70,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
    do
    {
 #if defined (WIN32) && !defined (WINCE)
-      if (findData.cFileName[0] != '.' || (!strEq(findData.cFileName, ".") && !strEq(findData.cFileName, ".."))) // first check is just for speedup
+	   if (findData.cFileName[0] != '.' || (tcscmp(findData.cFileName, TEXT(".")) && tcscmp(findData.cFileName, TEXT("..")))) // first check is just for speedup
 #endif
       {                                             
          fileNameSize = tcslen(findData.cFileName)+2; //One for null and one extra in case it is a directory.

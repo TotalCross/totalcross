@@ -14,6 +14,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // tcclass.c
 extern Hashtable htLoadedClasses;
 extern TCClassArray vLoadedClasses;
@@ -28,11 +32,12 @@ extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
+extern HANDLE hModuleTCVM;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
 #endif
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
 extern int32 deviceFontHeight,iosScale;
 #endif
 
@@ -275,5 +280,9 @@ extern HINSTANCE aygshellDll, coreDll, cellcoreDll;
 
 bool initGlobals();
 void destroyGlobals();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

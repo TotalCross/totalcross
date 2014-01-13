@@ -13,7 +13,9 @@
 
 #include "device_PortConnector.h"
 
-#if defined (WINCE) || defined (WIN32)
+#if defined (WP8)
+
+#elif defined (WINCE) || defined (WIN32)
  #include "win/device_PortConnector_c.h"
 #elif defined SYMBIAN
  #include "symbian/device_PortConnector_c.h"
@@ -41,6 +43,7 @@ static void invalidate(Object obj)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector native void create(int number, int baudRate, int bits, int parity, int stopBits);
 {
+#if !defined WP8
    Object portConnector = p->obj[0];
    int32 number = p->i32[0];
    int32 baudRate = p->i32[1];
@@ -71,10 +74,12 @@ TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector
       }
    }
    else invalidate(portConnector);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_nativeClose(NMParams p) // totalcross/io/device/PortConnector native private void nativeClose();
 {
+#if !defined WP8
    Object portConnector = p->obj[0];
 
    Object portConnectorRef = PortConnector_portConnector(portConnector);
@@ -88,10 +93,12 @@ TC_API void tidPC_nativeClose(NMParams p) // totalcross/io/device/PortConnector 
    if ((err = portConnectorClose(*portConnectorHandle, *receiveBuffer, portNumber)) != NO_ERROR)
       throwExceptionWithCode(p->currentContext, IOException, err);
    invalidate(portConnector);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConnector native public void setFlowControl(boolean on);
 {
+#if !defined WP8
    Object portConnector = p->obj[0];
    bool flowOn = p->i32[0]; // note: this is also used in Palm OS!
 
@@ -108,10 +115,12 @@ TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConne
       if ((err = portConnectorSetFlowControl(*portConnectorHandle, flowOn)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
    }
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_readWriteBytes_Biib(NMParams p)
 {
+#if !defined WP8
    Object portConnector = p->obj[0];
    Object byteArray = p->obj[1];
    int32 start = p->i32[0];
@@ -136,11 +145,13 @@ TC_API void tidPC_readWriteBytes_Biib(NMParams p)
       throwExceptionWithCode(p->currentContext, IOException, err);
    else
       p->retI = retCount;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidPC_readCheck(NMParams p) // totalcross/io/device/PortConnector native public int readCheck();
 {
+#if !defined WP8
    Object portConnector = p->obj[0];
 
    Object portConnectorRef = PortConnector_portConnector(portConnector);
@@ -159,6 +170,7 @@ TC_API void tidPC_readCheck(NMParams p) // totalcross/io/device/PortConnector na
       else
          p->retI = inQueue;
    }
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

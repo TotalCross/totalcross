@@ -42,7 +42,8 @@ bool getElapsed(int32 *value)
 {
    int32 err = 0;
 
-#if defined WIN32
+//XXX WP8 should not use registry
+#if defined WIN32 && ! defined WP8
    uint32 size=4;
    HKEY handle=(HKEY)0;
    err = RegOpenKeyEx(HKEY_CURRENT_USER, getKey(), 0, KEY_READ, &handle);
@@ -60,7 +61,8 @@ bool setElapsed(int32 value)
 {
    int32 err = 0;
 
-#if defined WIN32
+//XXX WP8 should not use registry
+#if defined WIN32 && !defined WP8
    uint32 size=4;
    HKEY handle=(HKEY)0;
    err = RegCreateKeyEx(HKEY_CURRENT_USER, getKey(), 0, 0, 0, KEY_WRITE, 0, &handle, &size);

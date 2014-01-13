@@ -12,6 +12,10 @@
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 TC_API void jlC_forName_s(NMParams p);
 TC_API void jlC_newInstance(NMParams p);
 TC_API void jlC_isInstance_o(NMParams p);
@@ -542,5 +546,9 @@ TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
 TC_API void tdsNDB_load(NMParams p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

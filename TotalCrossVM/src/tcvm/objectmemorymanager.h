@@ -46,7 +46,7 @@ typedef Object (*createStringObjectFromTCHARPFunc)(Context currentContext, TCHAR
 TC_API Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len);
 typedef Object (*createStringObjectFromCharPFunc)(Context currentContext, CharP srcChars, int32 len);
 /// if len<0, len is computed from srcChars length, use when creating code for both WinCE and Win32
-#if defined(WINCE)
+#if defined(UNICODE)
 #define createStringObjectFromTCHAR createStringObjectFromJCharP
 #else
 #define createStringObjectFromTCHAR createStringObjectFromCharP
