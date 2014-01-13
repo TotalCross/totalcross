@@ -726,7 +726,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     }
 }
 
-#if !definde(WP8)
+#if !defined(WP8)
 static int32 abs32(int32 a)
 {
    return a < 0 ? -a : a;
