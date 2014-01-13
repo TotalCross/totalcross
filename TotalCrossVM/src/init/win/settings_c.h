@@ -28,7 +28,7 @@
  // COBJMACROS must be defined to include the macros from wbemcli.h that are used
  // to invoke methods of WBEM objects when the code is in C.
  #define COBJMACROS
-#if !defined WP8 && !defined WINCE
+#if !defined WP8
  #include <wbemcli.h>
 #endif
  
@@ -792,10 +792,12 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 {
    OSVERSIONINFO osvi;
    TCHAR wcbuf[MAX_PATH+1];
+#if !defined (WINCE)
+   int32 len;
 #if !defined(WP8)
    HRESULT hres;
 #endif
-	int32 len;
+#endif
 
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -862,8 +864,8 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    platform = "WP8";
    xstrcpy(deviceId, GetDisplayNameWP8());
 # endif
-#endif
-#if !defined WP8 && !defined WINCE
+
+#if !defined WP8
    //use the mac address as the serial number
    hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
    if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
@@ -885,15 +887,15 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
 
    len = sizeof(userName);
-#if defined WINCE
-   xstrcpy(userName, "Windows CE temporary"); //XXX
-#elif !defined WP8 
+   
+#if !defined WP8 
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
       queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
 #else
    xstrcpy(userName, "Windows Phone 8 User");
+#endif
 #endif
    {
 	   //XXX WP8 does not have GetDC or similar...
