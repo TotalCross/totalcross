@@ -36,7 +36,7 @@
 #include "config.h"
 #endif
 
-#include "tcapi.h"
+#include "../tcvm/tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
 #if defined WP8
