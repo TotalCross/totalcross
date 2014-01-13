@@ -361,7 +361,7 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
       {
-         if (updateList)
+         if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
             imgTextures = VoidPsAdd(imgTextures, img, null);
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
       }
@@ -370,9 +370,12 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
 }
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)
-{         
-   glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
-   *textureId = 0;                               
+{
+	 if (textureId)        
+	 {
+      glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
+      *textureId = 0;                               
+   }
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
