@@ -203,7 +203,7 @@ public class Grid extends Container implements Scrollable
     * Defaults to 3 on pen devices, and 5 on touch devices (must be ODD!)
     * @since TotalCross 1.22
     */
-   public static int columnResizeMargin = Settings.fingerTouch ? 13 : 3; // guich@tc122_27
+   public static int columnResizeMargin = Settings.fingerTouch ? Font.NORMAL_SIZE / 2 + Font.NORMAL_SIZE % 2 : 3;  // the %2 to keep it ODD
    
    /**
     * The column captions. Can be directly assigned, but always make sure it has the same

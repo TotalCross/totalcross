@@ -115,6 +115,7 @@ typedef struct type##s                                 \
 } type##s;                                             \
 type##s* type##sAdd(type##s *l, type value, Heap h);   \
 type##s* type##sRemove(type##s *l, type value, Heap h);\
+bool type##sContains(type##s *l, type value);          \
 void type##sDestroy(type##s *l, Heap h);
 
 // List implementation
@@ -186,6 +187,18 @@ type##s* type##sRemove(type##s *l, type value, Heap h)\
          l = l->next;                               \
       } while (head != l);                          \
    return head;                                     \
+}                                                   \
+bool type##sContains(type##s *l, type value)        \
+{                                                   \
+   type##s* head = l;                               \
+   if (head)                                        \
+      do                                            \
+      {                                             \
+      	if (l->value == value)                      \
+      		 return true;                             \
+        l = l->next;                                \
+      } while (head != l);                          \
+   return false;                                    \
 }
 
 // Returns the number of elements added to this list.
