@@ -29,8 +29,11 @@ import java.util.*;
 
 import totalcross.*;
 import totalcross.android.compat.*;
+import com.intermec.aidc.*; 
 
 public class Loader extends Activity 
+
+public class Loader extends Activity implements BarcodeReadListener
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
@@ -455,7 +458,7 @@ public class Loader extends Activity
    {
       if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
          quitVM();
-      super.onDestroy();
+      super.onDestroy(); 
    }
    
    protected void onPause()
@@ -490,5 +493,13 @@ public class Loader extends Activity
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
+   }
+
+   String strBarcodeData;    
+
+   public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
+   {
+      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }
