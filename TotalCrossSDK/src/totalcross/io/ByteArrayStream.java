@@ -167,12 +167,12 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public int skipBytes(int n)
    {
-      int off = pos + n;
+      int off = pos + n; // This here is for performance reason
 
-      if (off < 0)
+      if (off < 0) // pos + n < 0 --> if the new position would be negative
          off = -pos;
-      else if (off > len)
-         off = len - pos - 1;
+      else if (off > len) // pos + n > len --> if the new position would be out of bounds
+         off = len - pos; // jeffque@tc200: skip to the end of the buffer, not the last readable byte
       else
          off = n;
       pos += off;
