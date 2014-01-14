@@ -39,7 +39,9 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public ByteArrayStream(byte []buffer)
    {
-      this.len = buffer.length; //flsobral@tc100b4: fail-fast, throws NPE.
+      if (buffer == null)
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
+      this.len = buffer.length;
       this.buffer = buffer;
       pos = 0;
    }
@@ -50,7 +52,7 @@ public class ByteArrayStream extends RandomAccessStream
    public ByteArrayStream(byte []buffer, int len)
    {
       if (buffer == null)
-         throw new NullPointerException("Argument 'buffer' cannot be null");
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
       if (len < 0)
          throw new IllegalArgumentException("Argument 'len' must be greater or equal than 0");
       if (len > buffer.length)
@@ -112,7 +114,9 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public void setBuffer(byte[] buffer)
    {
-      len = buffer.length; //flsobral@tc100b4: fail-fast, throws NPE.
+      if (buffer == null)
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
+      len = buffer.length;
       this.buffer = buffer;
       pos = 0;
    }
