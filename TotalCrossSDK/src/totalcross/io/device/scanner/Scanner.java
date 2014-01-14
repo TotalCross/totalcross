@@ -753,12 +753,13 @@ public class Scanner
 
    static
    {
-      if (!Settings.platform.equals(Settings.ANDROID))
+      if (Settings.isWindowsDevice())
       {
          driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
                         Vm.attachNativeLibrary("Motorola") || 
                         Vm.attachNativeLibrary("Symbol") || 
                         Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("OpticonH16") || 
                         Vm.attachNativeLibrary("OpticonH16") || 
                         Vm.attachNativeLibrary("Intermec") || 
                         Vm.attachNativeLibrary("Bematech");

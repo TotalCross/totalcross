@@ -308,7 +308,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
    private static final int MULTITOUCHEVENT_SCALE = 10;
-   
+   public static final int BARCODE_READ = 11;
+
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape

@@ -81,7 +81,9 @@ public class BufferedStream extends Stream
          throw new IllegalArgumentIOException("mode", Convert.toString(mode));
       if (bufferSize < 0)
          throw new IllegalArgumentIOException("bufferSize", Convert.toString(bufferSize));
-
+      if (stream == null)
+         throw new NullPointerException("Argument 'stream' cannot be null");
+      
       this.stream = stream;
       this.mode = mode;
 
@@ -98,7 +100,9 @@ public class BufferedStream extends Stream
          throw new IllegalArgumentIOException("start", Convert.toString(start));
       if (count <= 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
-
+      if (buf == null)
+         throw new NullPointerException("Argument 'buf' cannot be null");
+      
       int r = 0, step, max;
       if (pos == size) // read next block, if needed
       {
@@ -137,7 +141,9 @@ public class BufferedStream extends Stream
          throw new IllegalArgumentIOException("start", Convert.toString(start));
       if (count <= 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
-
+      if (buf == null)
+         throw new NullPointerException("Argument 'buf' cannot be null");
+      
       int w = 0, step, max;
       while (w != count)
       {

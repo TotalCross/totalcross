@@ -1,4 +1,4 @@
-package tc.samples.crypto.digest;
+package tc.test.totalcross.crypto;
 
 import totalcross.crypto.NoSuchAlgorithmException;
 import totalcross.crypto.digest.*;
