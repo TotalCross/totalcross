@@ -3605,6 +3605,22 @@
 				</File>
 			</Filter>
 		</Filter>
+		<Filter
+			Name="scanner"
+			>
+			<File
+				RelativePath="..\..\src\scanner\barcode.h"
+				>
+			</File>
+			<Filter
+				Name="intermec"
+				>
+				<File
+					RelativePath="..\..\src\scanner\intermec\Intermec_barcode.c"
+					>
+				</File>
+			</Filter>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

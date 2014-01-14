@@ -73,6 +73,7 @@ public class ScannerDemo extends MainWindow
    public ScannerDemo()
    {
       super("Scanner Demo",TAB_ONLY_BORDER);
+      Vm.debug(Vm.ALTERNATIVE_DEBUG);
    }
    
    public void initUI()

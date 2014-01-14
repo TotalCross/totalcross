@@ -359,6 +359,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int APP_RESUMED = 7;
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
+   public static final int BARCODE_READ = 10;
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
