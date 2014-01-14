@@ -753,9 +753,11 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
    // NOCASE, VARCHAR, or VARCHAR NOCASE.
    typeCol = rsBag->table->columnTypes[col];
+   
+   // juliana@270_28: now it is not allowed to fetch a string field in ResultSet with methods that aren't getString() or getChars().
 	if (type != UNDEFINED_TYPE)
 	   if (!(field->isDataTypeFunction && type == SHORT_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
-       && (typeCol != type && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE))
+       && (typeCol != type && ((typeCol != CHARS_NOCASE && typeCol != CHARS) || (type != CHARS_NOCASE && type != CHARS))))
 	   {
 		   TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
          return;
