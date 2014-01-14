@@ -235,6 +235,40 @@ public class TestByteArrayStream extends TestCase
 		assertEquals(10, bas.getPos());
 		assertEquals(bufferConst, ba);
 
+		bytesRead = bas.readBytes(ba, 0, 0);
+		assertEquals(0, bytesRead);
+		assertEquals(10, bas.getPos());
+
+		bytesRead = bas.readBytes(ba, 0, 1);
+		assertEquals(-1, bytesRead);
+		assertEquals(10, bas.getPos());
+
+		bytesRead = bas.readBytes(ba, 0, 0);
+		assertEquals(0, bytesRead);
+		assertEquals(10, bas.getPos());
+
+		bas.reset();
+		assertEquals(0, bas.getPos());
+
+		bytesRead = bas.readBytes(ba, 0, 0);
+		assertEquals(0, bytesRead);
+		assertEquals(0, bas.getPos());
+
+		bytesRead = bas.readBytes(ba, 0, 1);
+		assertEquals(1, bytesRead);
+		assertEquals(1, bas.getPos());
+		assertEquals(bufferConst[0], ba[0]);
+
+		bytesRead = bas.readBytes(ba, 0, 0);
+		assertEquals(0, bytesRead);
+		assertEquals(1, bas.getPos());
+
+		try {
+			bytesRead = bas.readBytes(ba, 0, -10);
+			fail();
+		} catch (IllegalArgumentException ex) {}
+		assertEquals(1, bas.getPos());
+
 		bytesSkipped = bas.skipBytes(-20);
 		assertEquals(-10, bytesSkipped);
 		assertEquals(0, bas.getPos());
