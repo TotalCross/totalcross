@@ -658,7 +658,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			      else if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 2) 
                      || (length && !plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length << 1)))
                    return false;
-               TC_debug("%S", value->asChars); 
+
                dbo->finalPos = dbo->position; // juliana@202_21: the final positon now is always the new positon.
                return ret;
             }
