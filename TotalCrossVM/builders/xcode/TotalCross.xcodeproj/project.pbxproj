@@ -43,6 +43,7 @@
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
+		15CB0F16186CB8EB00856CF7 /* TCSamples.tcz */ = {isa = PBXFileReference; lastKnownFileType = file; path = TCSamples.tcz; sourceTree = "<group>"; };
 		3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+MD5Addition.m"; path = "../../../src/init/darwin/NSString+MD5Addition.m"; sourceTree = "<group>"; };
 		3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+IdentifierAddition.m"; path = "../../../src/init/darwin/UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
 		3A52AAD1162739C000DCEE4A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -76,6 +77,7 @@
 		0F5AF4F81507FA3600D6142B = {
 			isa = PBXGroup;
 			children = (
+				15CB0F16186CB8EB00856CF7 /* TCSamples.tcz */,
 				3AE3BF87162764B900BDDBF8 /* libLitebase.a */,
 				3AE3BF851627649C00BDDBF8 /* libtcvm.a */,
 				3A52AAD3162739D900DCEE4A /* QuartzCore.framework */,
@@ -255,7 +257,7 @@
 				);
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -292,7 +294,7 @@
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -325,7 +327,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -355,7 +357,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

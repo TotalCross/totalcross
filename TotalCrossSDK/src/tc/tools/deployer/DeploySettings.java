@@ -174,7 +174,7 @@ public class DeploySettings
 
       // find the demo and release folders for totalcross and litebase
       String f;
-      f = System.getenv("TOTALCROSS2_DEMO");
+      f = "//Users//bruno//Documents//dev//TotalCross//TotalCross_200.8.1";//System.getenv("TOTALCROSS2_DEMO");
       if (f == null)
          f = System.getenv("TOTALCROSS_DEMO");
       if (f != null)
@@ -187,7 +187,7 @@ public class DeploySettings
                folderTotalCrossSDKDistVM = f;
          }
       }
-      f = System.getenv("TOTALCROSS2_RELEASE");
+      f = f+"_vms";//System.getenv("TOTALCROSS2_RELEASE");
       if (f == null)
          f = System.getenv("TOTALCROSS_RELEASE");
       if (f != null)
@@ -200,7 +200,7 @@ public class DeploySettings
                folderTotalCrossVMSDistVM = f;
          }
       }
-      f = System.getenv("LITEBASE_DEMO"); // either one works
+      f = "//Users//bruno//Documents//dev//TotalCross//Litebase_200.8.1";//System.getenv("LITEBASE_DEMO"); // either one works
       if (f == null)
          f = System.getenv("LITEBASE_RELEASE");
       if (f != null)
