@@ -512,7 +512,7 @@ public abstract class TestCase
       double diff = Math.abs(expected-actual); // guich@552_33
       boolean ok = diff > delta;
       if (!ok)
-         fail("asser("+expected+" != "+actual);
+         assertFailed(expected+" != "+actual);
    }
 
    protected static void assertNotEquals(long expected, long actual)
