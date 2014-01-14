@@ -1,4 +1,4 @@
-package tc.samples.crypto.signature;
+package tc.test.crypto;
 
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.cipher.*;
