@@ -14,7 +14,7 @@
 #ifndef JCHAR_H
 #define JCHAR_H
 
-#include "tcapi.h"
+#include "../tcvm/tcapi.h"
 #include "xtypes.h"
 
 /// In the functions below, if len is < 0, it is computed from the given input (J)CharP.

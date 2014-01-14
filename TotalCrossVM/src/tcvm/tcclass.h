@@ -12,7 +12,7 @@
 #ifndef CLASS_H
 #define CLASS_H
 
-#include "tcapi.h"
+#include "../tcvm/tcapi.h"
 #include "xtypes.h"
 #include "mem.h"
 

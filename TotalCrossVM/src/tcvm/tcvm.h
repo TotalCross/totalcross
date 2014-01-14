@@ -18,7 +18,6 @@
 
 
 #ifdef darwin
-#error
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #define __gl2_h_
@@ -37,7 +36,7 @@
 #include "config.h"
 #endif
 
-#include "tcapi.h"
+#include "../tcvm/tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
 #if defined WP8

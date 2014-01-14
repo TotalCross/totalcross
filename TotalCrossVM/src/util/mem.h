@@ -20,7 +20,7 @@ extern "C" {
 
 #include <setjmp.h>
 
-#include "tcapi.h"
+#include "../tcvm/tcapi.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Atomic memory allocation
