@@ -51,8 +51,10 @@ public class ByteArrayStream extends RandomAccessStream
    {
       if (buffer == null)
          throw new NullPointerException("Argument 'buffer' cannot be null");
-      if (len <= 0)
-         throw new IllegalArgumentException("Argument 'len' must be greater than 0");
+      if (len < 0)
+         throw new IllegalArgumentException("Argument 'len' must be greater or equal than 0");
+      if (len > buffer.length)
+          throw new IllegalArgumentException("Argument 'len' must not be greater than 'buffer.length'");
       this.len = len;
       this.buffer = buffer;
       pos = 0;
