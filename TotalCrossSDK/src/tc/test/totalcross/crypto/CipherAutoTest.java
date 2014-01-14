@@ -10,7 +10,7 @@
  *********************************************************************************/
 
 
-package tc.test.crypto;
+package tc.test.totalcross.crypto;
 
 import totalcross.crypto.CryptoException;
 import totalcross.crypto.cipher.*;

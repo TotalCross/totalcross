@@ -1,4 +1,4 @@
-package tc.test.io;
+package tc.test.totalcross.io;
 
 import totalcross.io.*;
 import totalcross.sys.*;
