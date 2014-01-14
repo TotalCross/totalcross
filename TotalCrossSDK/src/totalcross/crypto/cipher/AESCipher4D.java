@@ -39,7 +39,7 @@ public class AESCipher4D extends Cipher
    
    protected final boolean isChainingSupported(int chaining)
    {
-      return chaining == CHAINING_CBC;
+      return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
    }
    
    protected final boolean isPaddingSupported(int padding)

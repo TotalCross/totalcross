@@ -112,7 +112,7 @@ public class AESCipher extends Cipher
    
    protected final boolean isChainingSupported(int chaining)
    {
-      return true;
+      return chaining == CHAINING_ECB || chaining == CHAINING_CBC;
    }
    
    protected final boolean isPaddingSupported(int padding)

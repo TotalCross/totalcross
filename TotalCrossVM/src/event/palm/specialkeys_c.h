@@ -11,7 +11,7 @@
 
 
 
-#include "P:\extlibs\PalmOS5RE\Incs\System\EventPrv.h"
+#include "P:/extlibs/PalmOS5RE/Incs/System/EventPrv.h"
 
 int32 privateKeyPortable2Device(PortableSpecialKeys key)
 {

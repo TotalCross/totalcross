@@ -397,7 +397,7 @@ int iphone_cameraClick(int w, int h, char* fileName)
 
 int iphone_gpsStart()
 {
-   return [DEVICE_CTX->_mainview gpsStart];
+   return ![CLLocationManager locationServicesEnabled] ? 2 : [DEVICE_CTX->_mainview gpsStart];
 }
 void iphone_gpsStop()
 {

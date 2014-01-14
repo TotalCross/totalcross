@@ -365,7 +365,7 @@ public class Deployer4IPhone
                         new String[] { "Applications" + java.io.File.separatorChar + "**" }, // includes 
                         new String[0], // excludes
                         new Mapper[] { mapper });
-      String debName = "install/ios/" + name + ".deb";
+      String debName = targetDir + '/' + name + ".deb";
       java.io.File debOut = new java.io.File(debName);
 
       PackageDescriptor pdsc = debProc.createDeb(ctrlFiles, dataProd, debOut, "bzip2");
