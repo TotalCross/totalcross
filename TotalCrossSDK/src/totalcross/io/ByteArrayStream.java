@@ -138,6 +138,8 @@ public class ByteArrayStream extends RandomAccessStream
    public int readBytes(byte buf[], int start, int count)
    {
       int remains = len - pos;
+      if (count < 0)
+         throw new IllegalArgumentException();
       if (count > remains)
       {
          if (remains <= 0)
