@@ -261,9 +261,10 @@ public class ByteArrayStream extends RandomAccessStream
 
       if (newPos < 0)
          throw new IOException();
-      this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
-      if (newPos >= this.len)
+      if (newPos >= this.len) {
+         this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
          setSize(newPos + 1, true);
+      }
       this.pos = newPos;
    }
 
@@ -271,9 +272,11 @@ public class ByteArrayStream extends RandomAccessStream
    {
       if (newPos < 0)
          throw new IOException();
-      this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
-      if (newPos >= this.len)
+
+      if (newPos >= this.len) {
+         this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
          setSize(newPos + 1, true);
+      }
       this.pos = newPos;
    }
 
