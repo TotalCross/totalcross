@@ -537,7 +537,7 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      isAndroidStyle = uiAndroid && this.border == BORDER_3D;
+      isAndroidStyle = uiAndroid && this.border >= BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();
       npback = null;
