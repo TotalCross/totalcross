@@ -361,6 +361,14 @@ public class TestByteArrayStream extends TestCase
 		assertEquals(10, bas.available());
 	}
 
+	// As close does nothing, there is no thing to test
+	// When behavior of close change, so this method should change
+	public void testClose() {
+		ByteArrayStream bas = new ByteArrayStream(bufferConst);
+
+		bas.close();
+	}
+
 	public void testRun() {
 		for (int i = 0; i  < 10; i++) {
 			bufferConst[i] = (byte) i;
@@ -369,6 +377,7 @@ public class TestByteArrayStream extends TestCase
 		testConstruct(); // If passed here, all constructors work as expected
 		testReadBytesAndSkip();
 		testMarkAndReset();
+		testClose();
 
 	}
 
