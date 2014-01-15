@@ -260,6 +260,13 @@ public class TestByteArrayStream extends TestCase
 		} catch (IllegalArgumentException ex) {}
 		assertEquals(1, bas.getPos());
 
+		bytesRead = bas.readBytes(ba, 0, 10);
+		assertEquals(9, bytesRead);
+		assertEquals(10, bas.getPos());
+		for (i = 0; i < 9; i++) {
+			assertEquals(bufferConst[1 + i], ba[i]);
+		}
+
 		bytesSkipped = bas.skipBytes(-20);
 		assertEquals(-10, bytesSkipped);
 		assertEquals(0, bas.getPos());
@@ -288,6 +295,14 @@ public class TestByteArrayStream extends TestCase
 
 		bytesSkipped = bas.skipBytes(-4);
 		assertEquals(-4, bytesSkipped);
+		assertEquals(6, bas.getPos());
+
+		bytesSkipped = bas.skipBytes(-4);
+		assertEquals(-4, bytesSkipped);
+		assertEquals(2, bas.getPos());
+
+		bytesSkipped = bas.skipBytes(4);
+		assertEquals(4, bytesSkipped);
 		assertEquals(6, bas.getPos());
 
 		bytesRead = bas.readBytes(ba, 0, 10);
