@@ -757,7 +757,7 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    // juliana@270_28: now it is not allowed to fetch a string field in ResultSet with methods that aren't getString() or getChars().
 	if (type != UNDEFINED_TYPE)
 	   if (!(field->isDataTypeFunction && type == SHORT_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
-       && (typeCol != type && ((typeCol != CHARS_NOCASE && typeCol != CHARS) || (type != CHARS_NOCASE && type != CHARS))))
+       && (typeCol != type && ((typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE) || (type != CHARS_NOCASE_TYPE && type != CHARS_TYPE))))
 	   {
 		   TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
          return;
