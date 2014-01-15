@@ -35,16 +35,12 @@ public class Scanner4A
       // register a callback to service connect and disconnect events.
       AidcManager.connectService(Launcher4A.loader, new AidcManager.IServiceListener() 
       {
-          public void onConnect()
-          {
-              // The dependent service is connected and it is ready
-              // to receive barcode requests.
-             doBarcodReader();
-          }
+         public void onConnect()
+         {            
+            doBarcodReader(); // The dependent service is connected and it is ready to receive barcode requests.
+         }
 
-          public void onDisconnect()
-          {
-          }
+         public void onDisconnect() {}
 
       });
       return true;
@@ -57,25 +53,32 @@ public class Scanner4A
    
    static boolean deactivate()
    {
-      if (bcr != null)
-      {
-          try
-          { 
-             bcr.removeBarcodeReadListener(Launcher4A.loader);
-          }
-          catch (Exception exception)
-          {
-             exception.printStackTrace();
-             return false;
-          }
-          bcr.close();
-          bcr = null;
+      try
+      { 
+         if (bcr != null)
+         {             
+             bcr.removeBarcodeReadListener(Launcher4A.loader);             
+             bcr.setScannerEnable(false);
+             bcr.close();
+             bcr = null;
+         }
+         
+         if (wedg != null)
+         {
+            wedg.setEnable(true);
+            wedg = null;
+         }
+         wedg = null;
+         
+         //disconnect from data collection service
+         AidcManager.disconnectService();
+         return true;
       }
-                     
-      wedg = null;
-      //disconnect from data collection service
-      AidcManager.disconnectService();
-      return true;
+      catch (Exception exception)
+      {
+         exception.printStackTrace();
+         return false;
+      }
    }
    
    public static void doBarcodReader()
@@ -83,11 +86,10 @@ public class Scanner4A
       try
       { 
          //disable virtual wedge
-         wedg = new VirtualWedge();
-         wedg.setEnable(false);  
+         (wedg = new VirtualWedge()).setEnable(false);  
                      
          //set barcode reader object for internal scanner
-         bcr = new BarcodeReader();
+         (bcr = new BarcodeReader()).setScannerEnable(true);
 
          //add barcode reader listener
          bcr.addBarcodeReadListener(Launcher4A.loader);
