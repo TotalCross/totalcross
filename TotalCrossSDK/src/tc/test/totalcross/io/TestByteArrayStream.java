@@ -369,6 +369,58 @@ public class TestByteArrayStream extends TestCase
 		bas.close();
 	}
 
+	public void testGetAndSetBufferAndToByteArray() {
+		ByteArrayStream bas = new ByteArrayStream(bufferConst);
+		byte ba[];
+		byte br[] = new byte[1];
+		int bytesRead;
+		int i;
+
+		ba = bas.getBuffer();
+
+		assertEquals((Object)bufferConst, (Object)ba);
+
+		ba = bas.toByteArray();
+		assertEquals(0, bas.getPos());
+		assertEquals(0, ba.length);
+
+		bas.skipBytes(3);
+		assertEquals(3, bas.getPos());
+		ba = bas.toByteArray();
+		assertEquals(3, bas.getPos());
+		assertEquals(3, ba.length);
+		for (i = 0; i < 3;i++) {
+			assertEquals(bufferConst[i], ba[i]);
+		}
+
+		bas.skipBytes(10);
+		assertEquals(10, bas.getPos());
+		ba = bas.toByteArray();
+		assertEquals(10, bas.getPos());
+		assertEquals(bufferConst, ba);
+
+		ba[9] = (byte) -1;
+		assertNotEquals(bufferConst, ba);
+		for (i = 0; i < 9;i++) {
+			assertEquals(bufferConst[i], ba[i]);
+		}
+
+		bas.skipBytes(-1);
+		assertEquals(9, bas.getPos());
+		bytesRead = bas.readBytes(br, 0, 1);
+		assertEquals(1, bytesRead);
+		assertEquals(bufferConst[9], br[0]);
+
+		try {
+			bas.setBuffer(null);
+			fail();
+		} catch (IllegalArgumentException ex) {}
+
+		bas.setBuffer(br);
+		assertEquals(0, bas.getPos());
+		assertEquals((Object) br, (Object) bas.getBuffer());
+	}
+
 	public void testRun() {
 		for (int i = 0; i  < 10; i++) {
 			bufferConst[i] = (byte) i;
@@ -378,6 +430,7 @@ public class TestByteArrayStream extends TestCase
 		testReadBytesAndSkip();
 		testMarkAndReset();
 		testClose();
+		testGetAndSetBufferAndToByteArray();
 
 	}
 
