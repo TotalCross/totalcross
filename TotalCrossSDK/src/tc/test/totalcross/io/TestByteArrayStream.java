@@ -150,15 +150,6 @@ public class TestByteArrayStream extends TestCase
 		}
 	}
 
-	public void testRun() {
-		for (int i = 0; i  < 10; i++) {
-			bufferConst[i] = (byte) i;
-		}
-
-		testConstruct(); // If passed here, all constructors work as expected
-		testReadBytesAndSkip();
-	}
-
 	private void testReadBytesAndSkip() {
 		ByteArrayStream bas;
 		byte ba[] = new byte[10];
@@ -305,6 +296,16 @@ public class TestByteArrayStream extends TestCase
 		for (i = 0; i < 4; i++) {
 			assertEquals(bufferConst[6 + i], ba[i]);
 		}
+	}
+
+	public void testRun() {
+		for (int i = 0; i  < 10; i++) {
+			bufferConst[i] = (byte) i;
+		}
+
+		testConstruct(); // If passed here, all constructors work as expected
+		testReadBytesAndSkip();
+
 	}
 
 	public static void main(String[] args) {
