@@ -250,7 +250,8 @@ TC_API void tidsS_setBarcodeParam_ib(NMParams p) // totalcross/io/device/scanner
 {  
    JNIEnv* env = getJNIEnv();
    jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
-   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, "setBarcodeParam", "(IZ)Z"),                                                                                        (jint)p->i32[0], (jboolean)p->i32[1]);
+   p->retI = (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, "setBarcodeParam", "(IZ)Z"), 
+                                                                                              (jint)p->i32[0], (jboolean)p->i32[1]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setParam(int type, int barcodeType, int value);
