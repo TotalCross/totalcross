@@ -313,6 +313,54 @@ public class TestByteArrayStream extends TestCase
 		}
 	}
 
+	public void testMarkAndReset() {
+		ByteArrayStream bas;
+		byte ba[] = new byte[10];
+		int bytesRead;
+		int i;
+		int bytesSkipped;
+
+		for (i = 0; i < 10; i++) {
+			ba[i] = (byte) (10 - i);
+		}
+
+		bas = new ByteArrayStream(bufferConst);
+		assertEquals(0, bas.getPos());
+
+		bytesRead = bas.readBytes(ba, 0, 4);
+		assertEquals(4, bytesRead);
+		assertEquals(4, bas.getPos());
+		for (i = 0; i < 4; i++) {
+			assertEquals(bufferConst[i], ba[i]);
+		}
+
+		bas.mark();
+		assertEquals(0, bas.getPos());
+		assertEquals(4, bas.available());
+
+		bytesRead = bas.readBytes(ba, 0, 1);
+		assertEquals(1, bytesRead);
+		assertEquals(1, bas.getPos());
+		assertEquals(3, bas.available());
+		assertEquals(bufferConst[0], ba[0]);
+
+		bytesSkipped = bas.skipBytes(-1);
+		assertEquals(-1, bytesSkipped);
+		assertEquals(0, bas.getPos());
+		assertEquals(4, bas.available());
+
+		bytesRead = bas.readBytes(ba, 0, 40);
+		assertEquals(4, bytesRead);
+		assertEquals(4, bas.getPos());
+		for (i = 0; i < 4; i++) {
+			assertEquals(bufferConst[i], ba[i]);
+		}
+
+		bas.reset();
+		assertEquals(0, bas.getPos());
+		assertEquals(10, bas.available());
+	}
+
 	public void testRun() {
 		for (int i = 0; i  < 10; i++) {
 			bufferConst[i] = (byte) i;
@@ -320,6 +368,7 @@ public class TestByteArrayStream extends TestCase
 
 		testConstruct(); // If passed here, all constructors work as expected
 		testReadBytesAndSkip();
+		testMarkAndReset();
 
 	}
 
