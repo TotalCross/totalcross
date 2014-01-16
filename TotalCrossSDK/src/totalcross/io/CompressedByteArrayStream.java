@@ -169,8 +169,10 @@ public class CompressedByteArrayStream extends Stream
     * Creates a new CompressedByteArrayStream, using the given compression level (0 =
     * no compression, 9 = max compression).
     */
-   public CompressedByteArrayStream(int compressionLevel)
+   public CompressedByteArrayStream(int compressionLevel) throws IllegalArgumentException
    {
+      if (compressionLevel < 0 || compressionLevel > 9)
+         throw new IllegalArgumentException("Argument 'compressionLevel' must be >= 0 and <= 9");
       this.compressionLevel = compressionLevel;
    }
 
