@@ -19,6 +19,8 @@ package totalcross.android;
 import totalcross.*;
 import android.content.*;
 import com.intermec.aidc.*; 
+import totalcross.android.*;
+import java.util.concurrent.*;
 
 /**
  * Scanner class for Android.
@@ -227,6 +229,7 @@ public class Scanner4A
    
    private static BarcodeReader bcr;
    private static VirtualWedge wedg;
+   private static Semaphore semaphore = new Semaphore(0);
    
    static boolean scannerActivate()
    {
@@ -235,9 +238,10 @@ public class Scanner4A
       AidcManager.connectService(Launcher4A.loader, new AidcManager.IServiceListener() 
       {
          public void onConnect()
-         {            
+         {  		 
             doBarcodReader(); // The dependent service is connected and it is ready to receive barcode requests.
-         }
+            semaphore.release();
+		 }
 
          public void onDisconnect() {}
 
@@ -247,6 +251,16 @@ public class Scanner4A
    
    static boolean setBarcodeParam(int barcodeType, boolean enable)
    {
+      try
+	  {
+         semaphore.acquire();
+      }
+	  catch (InterruptedException exception)
+	  {
+	     AndroidUtils.debug(exception.getMessage());
+         return false;
+	  }
+		 
       switch (barcodeType)
       {
          case INTERMEC_AUSTRALIAN_POST:
@@ -384,7 +398,7 @@ public class Scanner4A
       try
       { 
          if (bcr != null)
-         {             
+         {           	 
              bcr.removeBarcodeReadListener(Launcher4A.loader);             
              bcr.setScannerEnable(false);
              bcr.close();
@@ -404,7 +418,7 @@ public class Scanner4A
       }
       catch (Exception exception)
       {
-         exception.printStackTrace();
+         AndroidUtils.debug(exception.getMessage());
          return false;
       }
    }
@@ -412,7 +426,7 @@ public class Scanner4A
    public static void doBarcodReader()
    {
       try
-      { 
+      {  
          //disable virtual wedge
          (wedg = new VirtualWedge()).setEnable(false);  
                      
@@ -424,7 +438,7 @@ public class Scanner4A
       }
       catch (Exception exception)
       {
-         exception.printStackTrace();
+         AndroidUtils.debug(exception.getMessage());
       }
    }
 }
