@@ -179,6 +179,13 @@ public class TestResultSet extends TestCase
          }
          catch (DriverException exception) {}
          catch (IllegalArgumentException exception) {}
+         try
+         {
+            resultSet.getInt("name");
+            fail("14");
+         }
+         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
       }
       
       // Tests first() and next().
@@ -512,7 +519,7 @@ public class TestResultSet extends TestCase
       try // It is not possible use getStrings() with negative numbers other than -1.
       {
          resultSet.getStrings(-2);
-         fail("14");
+         fail("15");
       }
       catch (IllegalArgumentException exception) {}
       
@@ -520,103 +527,103 @@ public class TestResultSet extends TestCase
       try
       {
          resultSet.absolute(1);
-         fail("15");
-      } 
-      catch (IllegalStateException exception) {}
-      try
-      {
-         resultSet.afterLast();
          fail("16");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.close();
+         resultSet.afterLast();
          fail("17");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.first();
+         resultSet.close();
          fail("18");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getString(1);
+         resultSet.first();
          fail("19");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getString("name");
+         resultSet.getString(1);
          fail("20");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getResultSetMetaData();
+         resultSet.getString("name");
          fail("21");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getRow();
+         resultSet.getResultSetMetaData();
          fail("22");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getRowCount();
+         resultSet.getRow();
          fail("23");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getStrings();
+         resultSet.getRowCount();
          fail("24");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.isNull(1);
+         resultSet.getStrings();
          fail("25");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.isNull("name");
+         resultSet.isNull(1);
          fail("26");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.last();
+         resultSet.isNull("name");
          fail("27");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.next();
+         resultSet.last();
          fail("28");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.prev();
+         resultSet.next();
          fail("29");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.relative(1);
+         resultSet.prev();
          fail("30");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.setDecimalPlaces(1, 1);
+         resultSet.relative(1);
          fail("31");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         resultSet.setDecimalPlaces(1, 1);
+         fail("32");
       } 
       catch (IllegalStateException exception) {} 
    } 

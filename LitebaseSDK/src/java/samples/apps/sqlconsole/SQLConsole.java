@@ -193,6 +193,12 @@ public class SQLConsole extends MainWindow
          }
          else databaseId = Settings.applicationId;
          connChanged();
+         ResultSet rs = conn.executeQuery("select IDEMPRESA from atividade");
+         while(rs.next())
+         {
+            Vm.debug("" + rs.getInt(1));
+         }
+
          
          Container bottomBar = new Container();
          add(bottomBar, LEFT, BOTTOM, FILL, (int) (fmH * 1.25));
