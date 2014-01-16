@@ -31,8 +31,6 @@ import totalcross.*;
 import totalcross.android.compat.*;
 import com.intermec.aidc.*; 
 
-public class Loader extends Activity 
-
 public class Loader extends Activity implements BarcodeReadListener
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;

@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-#define APPNAME "TCSamples"
+//#define APPNAME "TCSamples"
 
 -(void) initApp
 {

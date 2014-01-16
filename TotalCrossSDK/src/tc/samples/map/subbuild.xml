@@ -22,7 +22,7 @@
 
 <property name="app.srcdir" value="map"/>
 <property name="app.name" value="${ant.project.name}"/>
-<import file="/Users/bruno/git/TotalCross/TotalCrossSDK/build.xml"/>
+<import file="${sdk.root}/build.xml"/>
 <property name="supportedPlatforms" value="-ios -android"/>
 
 </project>
