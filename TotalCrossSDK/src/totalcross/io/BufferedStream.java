@@ -74,8 +74,9 @@ public class BufferedStream extends Stream
     * @param bufferSize The buffer size.
     * @throws IllegalArgumentIOException if the mode is invalid or the bufferSize is not
     * a positive number.
+    * @throws NullPointerException if stream is null.
     */
-   public BufferedStream(Stream stream, int mode, int bufferSize) throws IllegalArgumentIOException
+   public BufferedStream(Stream stream, int mode, int bufferSize) throws IllegalArgumentIOException, NullPointerException
    {
       if (mode != READ && mode != WRITE)
          throw new IllegalArgumentIOException("mode", Convert.toString(mode));
@@ -92,7 +93,7 @@ public class BufferedStream extends Stream
       size = mode == READ ? 0 : bufferSize;
    }
 
-   public final int readBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException
+   public final int readBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException, NullPointerException
    {
       if (mode != READ)
          throw new IOException("Operation can only be used in READ mode");
@@ -133,7 +134,7 @@ public class BufferedStream extends Stream
       return r;
    }
 
-   public final int writeBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException
+   public final int writeBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException, NullPointerException
    {
       if (mode != WRITE)
          throw new IOException("Operation can only be used in WRITE mode");
@@ -184,8 +185,10 @@ public class BufferedStream extends Stream
     * Reusing a BufferedStream throught this method can preserve memory.
     * @since TotalCross 1.23
     */
-   public void setStream(Stream f) throws IOException // guich@tc123_34
+   public void setStream(Stream f) throws IOException, NullPointerException // guich@tc123_34
    {
+      if (f == null)
+         throw new NullPointerException("Argument 'f' cannot be null");
       this.stream = f;
       pos = 0;
       size = mode == READ ? 0 : buffer.length;
