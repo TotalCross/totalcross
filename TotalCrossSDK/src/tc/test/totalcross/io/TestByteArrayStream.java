@@ -7,7 +7,12 @@ import totalcross.unit.TestCase;
 public class TestByteArrayStream extends TestCase
 {
 	protected static byte[] bufferConst = new byte[10];
+	protected static byte[] bufferCopy;
 
+	protected void copyTheBuffer() {
+		bufferCopy = new byte[bufferConst.length];
+		Vm.arrayCopy(bufferConst,0,bufferCopy,0,bufferConst.length);
+	}
 
 	private void testConstruct() {
 		testConstruct_B();
