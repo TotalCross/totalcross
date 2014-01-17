@@ -8,6 +8,7 @@ public class TestByteArrayStream extends TestCase
 {
 	protected static byte[] bufferConst = new byte[10];
 	protected static byte[] bufferCopy;
+	protected boolean buggousBehavior = true;
 
 	protected void copyTheBuffer() {
 		bufferCopy = new byte[bufferConst.length];
@@ -455,6 +456,73 @@ public class TestByteArrayStream extends TestCase
 		assertEquals(0, bas.getPos());
 		assertEquals((Object) br, (Object) bas.getBuffer());
 	}
+	
+	public void testSetPos() {
+		ByteArrayStream bas;
+		int i;
+		int oldPos;
+		
+		bas = new ByteArrayStream(bufferCopy);
+		for (i = -3; i < bufferCopy.length; i++) {
+			oldPos = bas.getPos();
+			try {
+				bas.setPos(i);
+				assertEquals(i, bas.getPos());
+			} catch (IOException e) {
+				assertLower(i, 0);
+				assertEquals(oldPos, bas.getPos());
+			}
+		}
+		
+		try {
+			bas.setPos(0);
+			assertEquals(0, bas.getPos());
+		} catch (IOException e) {
+			fail();
+		}
+		
+		int seekPos[] = new int[3];
+		seekPos[0] = totalcross.io.RandomAccessStream.SEEK_SET;
+		seekPos[1] = totalcross.io.RandomAccessStream.SEEK_CUR;
+		seekPos[2] = totalcross.io.RandomAccessStream.SEEK_END;
+		int max = bufferCopy.length * 2;
+		int min = -bufferCopy.length * 2;
+		int j;
+		int seekUsed;
+		int expectedPos;
+		
+		for (j = 0; j < seekPos.length; j++) {
+			seekUsed = seekPos[j];
+			for (i = min; i < max; i++) {
+				oldPos = bas.getPos();
+				switch (seekUsed) {
+				case totalcross.io.RandomAccessStream.SEEK_SET:
+					expectedPos = i;
+					break;
+				case totalcross.io.RandomAccessStream.SEEK_CUR:
+					expectedPos = oldPos + i;
+					break;
+				case totalcross.io.RandomAccessStream.SEEK_END:
+					if (buggousBehavior) {
+						expectedPos =  bas.getPos() + bas.available() + i - 1;
+					} else {
+						expectedPos =  bas.getPos() + bas.available() + i;
+					}
+					break;
+				default:
+					expectedPos = 0;
+				}
+				
+				try {
+					bas.setPos(i, seekUsed);
+					assertEquals(expectedPos, bas.getPos());
+				} catch (IOException e) {
+					assertLower(expectedPos, 0);
+					assertEquals(oldPos, bas.getPos());
+				}
+			}
+		}
+	}
 
 	public void testRun() {
 		for (int i = 0; i  < 10; i++) {
@@ -467,6 +535,8 @@ public class TestByteArrayStream extends TestCase
 		testClose();
 		testGetAndSetBufferAndToByteArray();
 
+		copyTheBuffer();
+		testSetPos();
 	}
 
 	public static void main(String[] args) {
