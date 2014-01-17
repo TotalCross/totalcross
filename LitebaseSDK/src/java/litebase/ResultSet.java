@@ -1342,9 +1342,11 @@ public class ResultSet
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
       int typeCol = table.columnTypes[column - 1];
       
+      // juliana@270_28: now it is not allowed to fetch a string field in ResultSet with methods that aren't getString() or getChars().
       if (type != SQLElement.UNDEFINED)
          if (!(field.isDataTypeFunction && type == SQLElement.SHORT && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
-          && (typeCol != type && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+          && (typeCol != type 
+          && ((typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS) || (type != SQLElement.CHARS_NOCASE && type != SQLElement.CHARS))))
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
       if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
