@@ -524,6 +524,93 @@ public class TestByteArrayStream extends TestCase
 		}
 	}
 
+	public void testResetAndReuse() {
+		int i;
+		int bytesShifted;
+		ByteArrayStream bas = new ByteArrayStream(bufferCopy, 5);
+		assertEquals(0, bas.getPos());
+		assertEquals(5, bas.available());
+		
+		try {
+			bas.setPos(2);
+		} catch (IOException e) {
+			fail();
+		}
+		assertEquals(2, bas.getPos());
+		
+		bas.reset();
+		assertEquals(0, bas.getPos());
+		assertEquals(10, bas.available());
+		assertEquals(bufferConst, bas.getBuffer());
+		
+		try {
+			bas.setPos(2);
+		} catch (IOException e) {
+			fail();
+		}
+		assertEquals(2, bas.getPos());
+		bytesShifted = bas.reuse();
+		assertEquals(0, bas.getPos());
+		assertEquals(2, bytesShifted);
+		for (i = 0; i < 8; i++) {
+			assertEquals(bufferConst[2 + i], bas.getBuffer()[i]);
+		}
+		// available does not change
+		
+		bytesShifted = bas.reuse();
+		assertEquals(0, bas.getPos());
+		assertEquals(0, bytesShifted);
+	}
+	
+	public void testSetSize() {
+		ByteArrayStream bas;
+		int i;
+		
+		bas = new ByteArrayStream(bufferCopy, 5);
+		assertEquals(5, bas.available());
+		
+		bas.setSize(3,  true);
+		assertEquals(0, bas.getPos());
+		assertEquals(5, bas.available());
+		
+		bas.skipBytes(2);
+		assertEquals(2, bas.getPos());
+		assertEquals(3, bas.available());
+
+		bas.setSize(4, true);
+		assertEquals(2, bas.getPos());
+		assertEquals(3, bas.available());
+
+		bas.setSize(5, true);
+		assertEquals(2, bas.getPos());
+		assertEquals(3, bas.available());
+
+		try {
+			bas.setPos(4);
+		} catch (IOException e) {
+			fail();
+		}
+		assertEquals(4, bas.getPos());
+		
+		bas.setSize(10, true);
+		assertEquals(4, bas.getPos());
+		assertEquals(6, bas.available());
+		
+		assertNotEquals(bufferCopy, bas.getBuffer());
+		for (i = 0; i < 4; i++) {
+			assertEquals(bufferCopy[i], bas.getBuffer()[i]);
+		}
+		
+		bas = new ByteArrayStream(bufferCopy, 9);
+		assertEquals(0, bas.getPos());
+		assertEquals(9, bas.available());
+		
+		bas.setSize(10, false);
+		assertEquals(0, bas.getPos());
+		assertEquals(10, bas.available());
+		assertNotEquals(bufferCopy, bas.getBuffer());
+	}
+	
 	public void testRun() {
 		for (int i = 0; i  < 10; i++) {
 			bufferConst[i] = (byte) i;
@@ -537,6 +624,12 @@ public class TestByteArrayStream extends TestCase
 
 		copyTheBuffer();
 		testSetPos();
+		
+		copyTheBuffer();
+		testResetAndReuse();
+		
+		copyTheBuffer();
+		testSetSize();
 	}
 
 	public static void main(String[] args) {
