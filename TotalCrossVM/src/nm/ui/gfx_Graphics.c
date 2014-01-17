@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-#include "tcvm.h"
+#include "tcvm.h"	
 
 #if defined __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
@@ -496,7 +496,7 @@ TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native
 {
    Object surfDest = p->obj[0];
    Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], (bool)p->i32[2]);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, Image_width(surfOrig) * Image_hwScaleW(surfOrig), Image_height(surfOrig) * Image_hwScaleH(surfOrig), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
@@ -530,8 +530,8 @@ TC_API void tugG_refresh_iiiiiif(NMParams p) // totalcross/ui/gfx/Graphics nativ
    int32 scrW,scrH;
    if (Surface_isImage(surf)) // update everything, because a screen rotation may have occured
    {
-      scrW = Graphics_clipX2(g) = Graphics_width (g) = Graphics_pitch(g) = Image_width(surf);
-      scrH = Graphics_clipY2(g) = Graphics_height(g) = Image_height(surf);
+      scrW = Graphics_clipX2(g) = Graphics_width (g) = Graphics_pitch(g) = Image_width(surf) * Image_hwScaleW(surf);
+      scrH = Graphics_clipY2(g) = Graphics_height(g) = Image_height(surf) * Image_hwScaleH(surf);
    }
    else
    {
@@ -670,7 +670,7 @@ TC_API void tugG_drawImage_iii(NMParams p) // totalcross/ui/gfx/Graphics native 
    //copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
    Object surfDest = p->obj[0];
    Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, Image_width(surfOrig), Image_height(surfOrig), p->i32[0], p->i32[1], true);
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, Image_width(surfOrig) * Image_hwScaleW(surfOrig), Image_height(surfOrig) * Image_hwScaleH(surfOrig), p->i32[0], p->i32[1], true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int getRGB(int []data, int offset, int x, int y, int w, int h);

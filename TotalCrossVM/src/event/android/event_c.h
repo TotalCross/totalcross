@@ -111,6 +111,14 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
             screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
          break;
       }
+      case totalcross_Launcher4A_BARCODE_READ:
+      {
+         static Method scannerPostEvent;
+         if (scannerPostEvent == null)
+            scannerPostEvent = getMethod(loadClass(mainContext,"totalcross.io.device.scanner.Scanner",false),false,"_onEvent",1,J_INT);
+         executeMethod(mainContext, scannerPostEvent, 1);
+         break;
+      }
    }
 }
 

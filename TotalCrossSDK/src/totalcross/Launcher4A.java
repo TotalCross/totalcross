@@ -308,7 +308,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
    private static final int MULTITOUCHEVENT_SCALE = 10;
-   
+   public static final int BARCODE_READ = 11;
+
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
@@ -435,7 +436,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public boolean onTouchEvent(MotionEvent event)
    {
-      sgd.onTouchEvent(event);
+      if (sgd != null)
+         sgd.onTouchEvent(event);
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
@@ -1113,6 +1115,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
+      AndroidUtils.debug("**** AT APP PAUSED: "+appPaused);
       appPaused = true;
       if (eventThread != null)
       {
@@ -1123,6 +1126,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
+      AndroidUtils.debug("**** AT APP RESUMED: "+appPaused);
       appPaused = false;
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
