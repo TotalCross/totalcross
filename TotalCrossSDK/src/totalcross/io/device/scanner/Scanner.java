@@ -743,6 +743,206 @@ public class Scanner
    /** To be used SocketScan scanners, in the setBarcodeParam method. */
    public final static int SOCKET_US_POSTNET_POSTAL  = 39;
 
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Australian Post barcode type.
+    */
+   public final static int INTERMEC_AUSTRALIAN_POST = 1;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Aztec barcode type.
+    */
+   public final static int INTERMEC_AZTEC = 2;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable BPO barcode type.
+    */
+   public final static int INTERMEC_BPO = 3;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Canada Post barcode type.
+    */
+   public final static int INTERMEC_CANADA_POST = 4;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Codabar barcode type.
+    */
+   public final static int INTERMEC_CODABAR = 5;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Codablock A barcode type.
+    */
+   public final static int INTERMEC_CODABLOCK_A = 6;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Codablock F barcode type.
+    */
+   public final static int INTERMEC_CODABLOCK_F = 7;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Code 11 barcode type.
+    */
+   public final static int INTERMEC_CODE_11 = 8;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Code 128 barcode type.
+    */
+   public final static int INTERMEC_CODE_128 = 9;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Code 39 barcode type.
+    */
+   public final static int INTERMEC_CODE_39 = 10;
+          
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Code 93 barcode type.
+    */
+   public final static int INTERMEC_CODE_93 = 11;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Data Matrix barcode type.
+    */
+   public final static int INTERMEC_DATA_MATRIX = 12;
+      
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Dutch Post barcode type.
+    */
+   public final static int INTERMEC_DUTCH_POST = 13;
+      
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable EAN/UPC EAN-13 barcode type.
+    */
+   public final static int INTERMEC_EAN_UPC_EAN_13 = 14;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable EAN/UPC EAN-8 barcode type.
+    */
+   public final static int INTERMEC_EAN_UPC_EAN_8 = 15;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable EAN/UPC UPCA barcode type.
+    */
+   public final static int INTERMEC_EAN_UPC_UPCA = 16;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable EAN/UPC UPC-E barcode type.
+    */
+   public final static int INTERMEC_EAN_UPC_UPC_E = 17;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable EAN/UPC UPC-E1 barcode type.
+    */
+   public final static int INTERMEC_EAN_UPC_UPC_E1 = 18;
+            
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable GS1 Composite barcode type.
+    */
+   public final static int INTERMEC_GS1_COMPOSITE = 19;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Expanded barcode type.
+    */
+   public final static int INTERMEC_GS1_DATA_BAR_EXPANDED = 20;            
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Limited barcode type.
+    */
+   public final static int INTERMEC_GS1_DATA_BAR_LIMITED = 21;            
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable GS1 DataBar Omnidirectional barcode type.
+    */
+   public final static int INTERMEC_GS1_OMINI_DIRECTIONAL = 22;            
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable HanXin barcode type.
+    */
+   public final static int INTERMEC_HAN_XIN = 23;            
+     
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Infomail barcode type.
+    */
+   public final static int INTERMEC_INFOMAIL = 24;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Intelligent Mail barcode type.
+    */
+   public final static int INTERMEC_INTELLIGENT_MAIL = 25;
+
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Interleaved 2 of 5 barcode type.
+    */
+   public final static int INTERMEC_INTERLEAVED_2_OF_5 = 26;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Japan Post barcode type.
+    */
+   public final static int INTERMEC_JAPAN_POST = 27;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Matrix 2 of 5 barcode type.
+    */
+   public final static int INTERMEC_MATRIX_2_OF_5 = 28;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Maxicode barcode type.
+    */
+   public final static int INTERMEC_MAXICODE = 29;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Micro PDF 417 barcode type.
+    */
+   public final static int INTERMEC_MICRO_PDF_417 = 30;
+
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable MSI barcode type.
+    */
+   public final static int INTERMEC_MSI = 31;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable PDF 417 barcode type.
+    */
+   public final static int INTERMEC_PDF_417 = 32;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Planet barcode type.
+    */
+   public final static int INTERMEC_PLANET = 33;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Plessey barcode type.
+    */
+   public final static int INTERMEC_PLESSEY = 34;
+
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Postnet barcode type.
+    */
+   public final static int INTERMEC_POSTNET = 35;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable QR Code barcode type.
+    */
+   public final static int INTERMEC_QR_CODE = 36;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Standard 2 of 5 barcode type.
+    */
+   public final static int INTERMEC_STANDARD_2_OF_5 = 37;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Sweden Post barcode type.
+    */
+   public final static int INTERMEC_SWEDEN_POST = 38;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable Telepen barcode type.
+    */
+   public final static int INTERMEC_TELEPEN = 39;
+   
+   /**
+    * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method, to enable or disable TLC 39 barcode type.
+    */
+   public final static int INTERMEC_TLC_39 = 40;
+
    public static boolean isActive; // guich@200b4: avoid activate the scanner again
 
    private static boolean driverLoaded;
@@ -886,6 +1086,7 @@ public class Scanner
      *    #define SCAN_ANGLE_WIDE                             0xB6
      *    #define SCAN_ANGLE_NARROW                           0xB5
      * </pre>
+     * <p> This method is ignored for Intermec scanners.
      */
    public static boolean setParam(int type, int barcodeType, int value) // guich@330_43
    {
@@ -896,7 +1097,7 @@ public class Scanner
    /**
    * Commit the barcode parameters to the scanner. Returns true if the
    * operation is successful and false, otherwise.
-   * Not used on the Windows CE platform.
+   * <p> Not used on the Windows CE and Android platforms.
    *
    */
    public static boolean commitBarcodeParams()
@@ -905,7 +1106,12 @@ public class Scanner
    }
    native public static boolean commitBarcodeParams4D();
 
-   /**  Set the length of a barcode. The lengthType must be one of the following values:
+   /**  
+    * Set the length of a barcode. 
+    * 
+    * <p> This method is ignored for Intermec scanners.
+    * 
+    * The lengthType must be one of the following values:
     * @param barcodeType One of the BARxxxx constants
     * @param lengthType 0 (variables length, min, and max are ignored), 1 (length = min), 2 (length = min || length = max), 3 (min <= length <= max). Careful: in Motorola Scanners, min and max must be used in inverted order due to a bug in the MOTOROLA API.
     * @param min The minimum value

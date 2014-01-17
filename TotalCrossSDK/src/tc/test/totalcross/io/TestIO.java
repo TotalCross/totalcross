@@ -19,6 +19,8 @@ public class TestIO extends TestSuite
    {
       super("Test IO");
       addTestCase(TestBufferedStream.class);
+      addTestCase(TestByteArrayStream.class);
+      addTestCase(TestCompressedByteArrayStream.class);
    }
    
 }

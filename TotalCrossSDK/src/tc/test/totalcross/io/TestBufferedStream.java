@@ -1,3 +1,14 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit - Litebase                               *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
 package tc.test.totalcross.io;
 
 import totalcross.io.*;
@@ -73,6 +84,7 @@ public class TestBufferedStream extends TestCase
          catch (IllegalArgumentIOException exception) {}
          
          // Finally writes the bytes and closes the <code>BufferedStream</close>.
+         assertEquals(0, bufStr.writeBytes(bytes, 0, 0));
          assertEquals(length, bufStr.writeBytes(bytes, 0, length));
          bufStr.close();
          
@@ -114,7 +126,17 @@ public class TestBufferedStream extends TestCase
          
          // Reads a line.
          stream.setPos(0);
+         assertEquals(0, bufStr.readBytes(bytesAux, 0, 0));
          assertEquals(string, bufStr.readLine());
+         
+         // Tests the changing of the underlining stream.
+         try
+         {
+            bufStr.setStream(null);
+            fail("13");
+         }
+         catch (NullPointerException exception) {}         
+         bufStr.setStream(stream);
          
          // Closes everything.
          stream.close();
@@ -122,7 +144,8 @@ public class TestBufferedStream extends TestCase
       }
       catch (IOException exception)
       {
-         fail("13");
+         exception.printStackTrace();
+         fail("14");
       }
    }
    
