@@ -16,6 +16,7 @@ public class TestByteArrayStream extends TestCase
 	}
 
 	private void testConstruct_i() {
+		ByteArrayStream bas;
 		int nTests = 3;
 		int values[] = new int[nTests];
 		int i = 0;
@@ -25,7 +26,9 @@ public class TestByteArrayStream extends TestCase
 		values[2] = 0;
 
 		try {
-			new ByteArrayStream(values[i]);
+			bas = new ByteArrayStream(values[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(values[i], bas.available());
 			fail("Constructor (" + values[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {
 
@@ -33,14 +36,18 @@ public class TestByteArrayStream extends TestCase
 		i++;
 
 		try {
-			new ByteArrayStream(values[i]);
+			bas = new ByteArrayStream(values[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(values[i], bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (" + values[i] + "), test " + (i + 1));
 		}
 		i++;
 
 		try {
-			new ByteArrayStream(values[i]);
+			bas = new ByteArrayStream(values[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(values[i], bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (" + values[i] + "), test " + (i + 1));
 		}
@@ -48,6 +55,7 @@ public class TestByteArrayStream extends TestCase
 	}
 
 	private void testConstruct_Bi() {
+		ByteArrayStream bas;
 		int nTests = 10;
 		int sizeBuff = 10;
 		byte[] buff = new byte[sizeBuff];
@@ -75,64 +83,84 @@ public class TestByteArrayStream extends TestCase
 		i = 0;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		}
 		i++;
 
 		try {
-			new ByteArrayStream(testBuff[i], sizes[i]);
+			bas = new ByteArrayStream(testBuff[i], sizes[i]);
+			assertEquals(0, bas.getPos());
+			assertEquals(sizes[i], bas.available());
 			fail("Constructor (" + testBuff[i] + ", " + sizes[i] + "), test " + (i + 1));
 		} catch (IllegalArgumentException ex) {}
 		i++;
@@ -144,7 +172,9 @@ public class TestByteArrayStream extends TestCase
 			fail("Constructor (null), test " + 1);
 		} catch (IllegalArgumentException ex) {}
 		try {
-			new ByteArrayStream(new byte[10]);
+			ByteArrayStream bas = new ByteArrayStream(new byte[10]);
+			assertEquals(0, bas.getPos());
+			assertEquals(10, bas.available());
 		} catch (IllegalArgumentException ex) {
 			fail("Constructor (new byte[10]), test " + 2);
 		}
