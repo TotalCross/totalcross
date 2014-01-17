@@ -279,6 +279,11 @@ public class CompressedByteArrayStream extends Stream
     */
    public int readBytes(byte buffer[], int start, int count) throws IOException
    {
+      if (start < 0)
+         throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
+      if (count < 0)
+         throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
+      
       int orig = count;
       while (true)
       {
@@ -303,11 +308,16 @@ public class CompressedByteArrayStream extends Stream
     * @param start  the start position in the byte array
     * @param count  the number of bytes to write
     * @return the number of bytes written. If an error occurred, -1 is returned and 
-    * @throws IOException 
+    * @throws IOException, IllegalArgumentException 
     * @since SuperWaba 2.0 beta 2
     */
-   public int writeBytes(byte buffer[], int start, int count) throws IOException
+   public int writeBytes(byte buffer[], int start, int count) throws IOException, IllegalArgumentException
    {
+      if (start < 0)
+         throw new IllegalArgumentException("Argument 'start' cannot be less than 0");
+      if (count < 0)
+         throw new IllegalArgumentException("Argument 'count' cannot be less than 0");
+      
       int orig = count, a;
       while (true)
       {

@@ -99,7 +99,7 @@ public class BufferedStream extends Stream
          throw new IOException("Operation can only be used in READ mode");
       if (start < 0)
          throw new IllegalArgumentIOException("start", Convert.toString(start));
-      if (count <= 0)
+      if (count < 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
       if (buf == null)
          throw new NullPointerException("Argument 'buf' cannot be null");
@@ -140,7 +140,7 @@ public class BufferedStream extends Stream
          throw new IOException("Operation can only be used in WRITE mode");
       if (start < 0)
          throw new IllegalArgumentIOException("start", Convert.toString(start));
-      if (count <= 0)
+      if (count < 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
       if (buf == null)
          throw new NullPointerException("Argument 'buf' cannot be null");
