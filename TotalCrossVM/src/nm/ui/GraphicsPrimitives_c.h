@@ -1042,9 +1042,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
-#ifdef __gl2_h_
-         //checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
-#endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
@@ -1160,12 +1157,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          {
             // draws the char, a row at a time
             if (Graphics_useOpenGL(g) && uf->ubase != null)
-            {
-               PixelConv pc;
-               pc.pixel = fc.pixel;
-               pc.a = 1;
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y,width,height, &pc);
-            }
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1,height, x0, y,width+1,height, &fc);
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {

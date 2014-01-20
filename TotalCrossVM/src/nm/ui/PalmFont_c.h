@@ -177,7 +177,7 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels,*p=pixels;
       int32 offset = uf->bitIndexTable[ch],y,x,idx;
-      int32 width = uf->bitIndexTable[ch+1] - offset, height = uf->fontP.maxHeight;
+      int32 width = uf->bitIndexTable[ch+1] - offset + 1, height = uf->fontP.maxHeight;
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
@@ -318,7 +318,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
    {
       uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap) - uf->fontP.firstChar;
-      uf->charPixels = newPtrArrayOf(Int32, uf->fontP.maxWidth * uf->fontP.maxHeight, fontsHeap);
+      uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth+1) * uf->fontP.maxHeight, fontsHeap);
    }
 #endif
 
