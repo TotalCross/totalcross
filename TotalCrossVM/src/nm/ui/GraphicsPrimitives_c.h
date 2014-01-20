@@ -1160,7 +1160,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          {
             // draws the char, a row at a time
             if (Graphics_useOpenGL(g) && uf->ubase != null)
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y+glShiftY,width,height);
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y,width,height);
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {
