@@ -932,6 +932,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 #define INTERP(j,f) (j + (((f - j) * transparency) >> 4)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+int32 getCharTexture(Context currentContext, UserFont uf, JChar ch); // PalmFont_c.h
 
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {                         
@@ -1042,12 +1043,15 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
 #ifdef __gl2_h_
-         checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
+         //checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
 #endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
       width = bitIndexTable[ch+1] - offset;
+#ifdef __gl2_h_
+      width = width * height / uf->ubase->fontP.maxHeight;
+#endif
       if ((xMax = x0 + width) > Graphics_clipX2(g))
          xMax = Graphics_clipX2(g);
       y1 = y; r=0;
@@ -1154,16 +1158,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    #ifdef __gl2_h_
          case 2: // 8 bpp gl font
          {
-            int32 istart = offset/* + rowWIB * istart*/;
             // draws the char, a row at a time
-           // if (Graphics_useOpenGL(g) && uf->ubase != null)
-            {
-               int32 ww = width * height / uf->ubase->fontP.maxHeight;
-               //debug("ww: %d, hh: %d",ww,height);
-               //glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
-               glDrawTexture(uf->ubase->textureId, 0,0, screen.screenW-10, uf->ubase->fontP.maxHeight, 0,300, rowWIB, uf->ubase->fontP.maxHeight);
-//               glDrawTexture(uf->ubase->textureId, offset, 0, ww, height, x0, y+glShiftY, rowWIB, uf->ubase->fontP.maxHeight);
-            }
+            if (Graphics_useOpenGL(g) && uf->ubase != null)
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y+glShiftY,width,height);
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {

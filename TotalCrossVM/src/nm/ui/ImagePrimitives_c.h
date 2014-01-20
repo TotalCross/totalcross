@@ -687,7 +687,7 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList, false);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList);
    }
    Image_changed(obj) = false;
 }
@@ -698,7 +698,7 @@ void freeTexture(Object img, bool updateList)
 }
 
 extern VoidPs* imgTextures;
-void recreateFontTexture(Context currentContext); // PalmFont_c.h
+void resetFontTexture(); // PalmFont_c.h
 void recreateTextures() // called by opengl when the application changes the opengl surface
 {
    VoidPs* current = imgTextures;
@@ -711,7 +711,7 @@ void recreateTextures() // called by opengl when the application changes the ope
          Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
          current = current->next;
       } while (imgTextures != current);
-   recreateFontTexture(lifeContext);
+   resetFontTexture();
 }
 #endif
 

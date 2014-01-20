@@ -15,10 +15,6 @@
 
 static char defaultFontName[16];
 
-#define AA_NO 0
-#define AA_4BPP 1
-#define AA_8BPP 2
-
 UserFont baseFontN, baseFontB;
 bool useRealFont;
 
@@ -59,15 +55,15 @@ bool fontInit(Context currentContext)
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
    }
-//#ifdef __gl2_h_
+#ifdef __gl2_h_
    else
    {
       useRealFont = true;
-      baseFontN = loadUserFont(currentContext, defaultFont, true, 80, ' ');
-      baseFontB = loadUserFont(currentContext, defaultFont, false, 80, ' ');
+      baseFontN = loadUserFont(currentContext, defaultFont, false, 80, ' ');
+      baseFontB = loadUserFont(currentContext, defaultFont, true , 80, ' ');
       useRealFont = false;
    }
-//#endif
+#endif
    return defaultFont != null;
 }
 
@@ -173,26 +169,34 @@ FontFile loadFontFile(char *fontName)
    return ff;
 }
 
-static void createFontTexture(Context currentContext, UserFont uf)
+int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 {
 #ifdef __gl2_h_
-   int32 w = uf->rowWidthInBytes, h = uf->fontP.maxHeight,i;
-   PixelConv *pixels = (PixelConv*)xmalloc(w*h*4), *p = pixels;
-   uint8 *alpha = uf->bitmapTable;
-   for (i = w*h; --i >= 0; p++,alpha++)
+   int32 *id = &uf->textureIds[ch];
+   if (*id == 0)
    {
-      p->a = 0xFF;
-      p->r = p->g = p->b = *alpha;
+      PixelConv* pixels = (PixelConv*)uf->charPixels,*p=pixels;
+      int32 offset = uf->bitIndexTable[ch],y,x,idx;
+      int32 width = uf->bitIndexTable[ch+1] - offset, height = uf->fontP.maxHeight;
+      for (y = 0; y < height; y++)
+      {
+         uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
+         for (x = 0; x < width; x++,p++,alpha++)
+         {
+            p->a = *alpha;// p->r = p->g = p->b = 0;  
+         }                           
+      }
+      glLoadTexture(currentContext, null, id, pixels, width, height, false);
    }
-   glLoadTexture(currentContext, null, &uf->textureId, uf->bitmapTable, w,h, false, false);
-   xfree(pixels);
+   return *id;
 #endif
 }
 
-void recreateFontTexture(Context currentContext, UserFont uf)
-{
-   createFontTexture(currentContext, baseFontN);
-   createFontTexture(currentContext, baseFontB);
+void resetFontTexture(Context currentContext, UserFont uf)
+{       
+   int32 i;
+   for (i = baseFontN->fontP.lastChar - baseFontN->fontP.firstChar + 1; --i >= 0;) baseFontN->textureIds[i] = 0;
+   for (i = baseFontB->fontP.lastChar - baseFontB->fontP.firstChar + 1; --i >= 0;) baseFontB->textureIds[i] = 0;
 }
 
 UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
@@ -301,7 +305,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    uftcz->tempHeap = fontsHeap; // guich@tc114_63: use the fontsHeap
    tczRead(uftcz, &uf->fontP, 2*10);
 
-   uf->rowWidthInBytes = 2 * (uint32)uf->fontP.rowWords * (uf->fontP.antialiased == 0 ? 1 : uf->fontP.antialiased == 1 ? 4 : 8);
+   uf->rowWidthInBytes = 2 * (uint32)uf->fontP.rowWords * (uf->fontP.antialiased == AA_NO ? 1 : uf->fontP.antialiased == AA_4BPP ? 4 : 8);
    numberOfChars = uf->fontP.lastChar - uf->fontP.firstChar + 1;
    bitmapTableSize = ((uint32)uf->rowWidthInBytes) * uf->fontP.maxHeight;
    bitIndexTableSize = (numberOfChars+1) * 2;
@@ -311,8 +315,11 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    tczRead(uftcz, uf->bitIndexTable, bitIndexTableSize);
    uf->bitIndexTable -= uf->fontP.firstChar; // instead of doing "bitIndexTable[ch-firstChar]", this trick will allow use "bitIndexTable[ch]
 #ifdef __gl2_h_
-   if (uf->fontP.antialiased == 2) // 8bpp glfont - create the texture
-      createFontTexture(currentContext, uf);
+   if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
+   {
+      uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap) - uf->fontP.firstChar;
+      uf->charPixels = newPtrArrayOf(Int32, uf->fontP.maxWidth * uf->fontP.maxHeight, fontsHeap);
+   }
 #endif
 
    tczClose(uftcz);

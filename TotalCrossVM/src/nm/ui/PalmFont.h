@@ -14,6 +14,10 @@
 #ifndef PALMFONT_H
 #define PALMFONT_H
 
+#define AA_NO 0
+#define AA_4BPP 1
+#define AA_8BPP 2
+
 #pragma pack(2)
 typedef struct
 {
@@ -46,7 +50,8 @@ struct TUserFont
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
    // gl fonts: used by the base font
-   int32 textureId; // the Image for all characters.
+   int32 *textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
+   int32 *charPixels; // for one char
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
    struct TUserFont* ubase;
 };
