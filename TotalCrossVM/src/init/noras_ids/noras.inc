@@ -1,11 +1,9 @@
-#if NORASID == 20
-   #include "../init/noras_ids/noras_20.inc"
-#elif NORASID == 274
+#if NORASID == 274
    #include "../init/noras_ids/noras_274.inc"
-#elif NORASID == 338
-   #include "../init/noras_ids/noras_338.inc"
-#elif NORASID == 577
-   #include "../init/noras_ids/noras_577.inc"
-#elif !defined _DEBUG
-   #error "Must define a valid NORASID for DISABLE_RAS"
+#else
+   #define ENABLE_NORAS \
+"4D54434F4B779232C5CB1E2B" /*  20 GREG    */ \
+"4D544C4223A9256F3C8F92A8" /* 338 PK      */ \
+"54434C42070417BF103F8C89" /* 577         */ \
+"54434C423B6869C50039C06F" /* 790 HH Soft */
 #endif
