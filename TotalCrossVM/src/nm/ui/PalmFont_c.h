@@ -176,12 +176,15 @@ FontFile loadFontFile(char *fontName)
 static void createFontTexture(Context currentContext, UserFont uf)
 {
 #ifdef __gl2_h_
-   int32 w = uf->rowWidthInBytes/4, h = uf->fontP.maxHeight,i;
-   int32 *pixels = (int32*)xmalloc(w*h*4), *p = pixels;
-   uint8* alpha = uf->bitmapTable;
+   int32 w = uf->rowWidthInBytes, h = uf->fontP.maxHeight,i;
+   PixelConv *pixels = (PixelConv*)xmalloc(w*h*4), *p = pixels;
+   uint8 *alpha = uf->bitmapTable;
    for (i = w*h; --i >= 0; p++,alpha++)
-      *p = ((int32)*alpha) << 24;
-   glLoadTexture(currentContext, null, &uf->textureId, pixels, w,h, false, false);
+   {
+      p->a = 0xFF;
+      p->r = p->g = p->b = *alpha;
+   }
+   glLoadTexture(currentContext, null, &uf->textureId, uf->bitmapTable, w,h, false, false);
    xfree(pixels);
 #endif
 }
@@ -298,7 +301,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    uftcz->tempHeap = fontsHeap; // guich@tc114_63: use the fontsHeap
    tczRead(uftcz, &uf->fontP, 2*10);
 
-   uf->rowWidthInBytes = ((uint32)uf->fontP.rowWords) << (uf->fontP.antialiased ? 3 : 1);
+   uf->rowWidthInBytes = 2 * (uint32)uf->fontP.rowWords * (uf->fontP.antialiased == 0 ? 1 : uf->fontP.antialiased == 1 ? 4 : 8);
    numberOfChars = uf->fontP.lastChar - uf->fontP.firstChar + 1;
    bitmapTableSize = ((uint32)uf->rowWidthInBytes) * uf->fontP.maxHeight;
    bitIndexTableSize = (numberOfChars+1) * 2;

@@ -367,6 +367,7 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
       }
    }
+
    if (!onlyAlpha)
       xfree(pt0);
 }

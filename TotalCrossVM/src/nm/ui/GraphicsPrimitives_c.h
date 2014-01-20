@@ -1156,11 +1156,13 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          {
             int32 istart = offset/* + rowWIB * istart*/;
             // draws the char, a row at a time
-            if (Graphics_useOpenGL(g) && uf->ubase != null)
+           // if (Graphics_useOpenGL(g) && uf->ubase != null)
             {
                int32 ww = width * height / uf->ubase->fontP.maxHeight;
+               //debug("ww: %d, hh: %d",ww,height);
                //glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
-               glDrawTexture(uf->ubase->textureId, offset, 0, ww, height, x0, y+glShiftY, rowWIB/4, uf->ubase->fontP.maxHeight);
+               glDrawTexture(uf->ubase->textureId, 0,0, screen.screenW-10, uf->ubase->fontP.maxHeight, 0,300, rowWIB, uf->ubase->fontP.maxHeight);
+//               glDrawTexture(uf->ubase->textureId, offset, 0, ww, height, x0, y+glShiftY, rowWIB, uf->ubase->fontP.maxHeight);
             }
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
