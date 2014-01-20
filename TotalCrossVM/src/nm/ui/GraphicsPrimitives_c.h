@@ -282,7 +282,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
          applyChanges(currentContext, srcSurf,true);
       int32 fc = Image_frameCount(srcSurf);
       int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight,null);
    }
    else
 #endif
@@ -1160,7 +1160,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          {
             // draws the char, a row at a time
             if (Graphics_useOpenGL(g) && uf->ubase != null)
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y,width,height);
+            {
+               PixelConv pc;
+               pc.pixel = fc.pixel;
+               pc.a = 1;
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width,height, x0, y,width,height, &pc);
+            }
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {
