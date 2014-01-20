@@ -139,6 +139,8 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 
 	CoreApplication::Resuming +=
 		ref new EventHandler<Platform::Object^>(this, &MainView::OnResuming);
+
+   m_renderer = ref new CubeRenderer();
 }
 
 void MainView::SetWindow(CoreWindow^ window)
@@ -192,6 +194,8 @@ void MainView::SetWindow(CoreWindow^ window)
 		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnHidingSIP);
 	inputPane->Showing +=
 		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnShowingSIP);
+
+   m_renderer->Initialize(CoreWindow::GetForCurrentThread());
 }
 
 void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^args)
@@ -247,6 +251,7 @@ void MainView::Load(Platform::String^ entryPoint)
 
 void MainView::Run()
 {
+#if 1
 	BasicTimer^ timer = ref new BasicTimer();
 	int32 vm_err_code = startVM(cmdLine, &local_context);
 	if (vm_err_code != 0)
@@ -258,6 +263,53 @@ void MainView::Run()
 
    if (!m_windowClosed)
       startProgram(local_context);
+#else
+   BasicTimer^ timer = ref new BasicTimer();
+   m_renderer->setup();
+
+   while (!m_windowClosed)
+   {
+      if (m_windowVisible)
+      {
+         timer->Update();
+         CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+         m_renderer->Render();
+         m_renderer->Present(); // This call is synchronized to the display frame rate.
+      }
+      else
+      {
+         CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
+      }
+   }
+#endif
+}
+
+bool MainView::dxSetup()
+{
+   m_renderer->setup();
+   return true;
+}
+
+void MainView::dxUpdateScreen()
+{
+   CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+   m_renderer->Render();
+   m_renderer->Present(); // This call is synchronized to the display frame rate.
+}
+
+void MainView::dxDrawLine(int x1, int y1, int x2, int y2, int color)
+{
+   m_renderer->drawLine(x1, y1, x2, y2, color);
+}
+
+void MainView::dxFillRect(int x1, int y1, int x2, int y2, int color)
+{
+   m_renderer->fillRect(x1, y1, x2, y2, color);
+}
+
+void MainView::dxDrawPixels(int *x, int *y, int count, int color)
+{
+   m_renderer->drawPixels(x, y, count, color);
 }
 
 void MainView::Uninitialize()
@@ -377,6 +429,8 @@ void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 	// Restore any data or state that was unloaded on suspend. By default, data
 	// and state are persisted when resuming from suspend. Note that this event
 	// does not occur if the app was previously terminated.
+   
+   m_renderer->CreateWindowSizeDependentResources();
 }
 
 MainView ^MainView::GetLastInstance()

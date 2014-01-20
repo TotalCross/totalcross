@@ -138,3 +138,28 @@ DWORD32 getFreeMemoryWP8()
 {
    return (DWORD32)MemoryManager::ProcessCommittedLimit;
 }
+
+bool dxSetup()
+{
+   return MainView::GetLastInstance()->dxSetup();
+}
+
+void dxUpdateScreen()
+{
+   MainView::GetLastInstance()->dxUpdateScreen();
+}
+
+void dxDrawLine(int x1, int y1, int x2, int y2, int color)
+{
+   MainView::GetLastInstance()->dxDrawLine(x1, y1, x2, y2, color);
+}
+
+void dxFillRect(int x1, int y1, int x2, int y2, int color)
+{
+   MainView::GetLastInstance()->dxFillRect(x1, y1, x2, y2, color);
+}
+
+void dxDrawPixels(int *x, int *y, int count, int color)
+{
+   MainView::GetLastInstance()->dxDrawPixels(x, y, count, color);
+}

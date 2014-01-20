@@ -42,6 +42,12 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers);
 struct eventQueueMember eventQueuePop(void);
 int eventQueueEmpty(void);
 
+bool dxSetup();
+void dxUpdateScreen();
+void dxDrawLine(int x1, int y1, int x2, int y2, int color);
+void dxFillRect(int x1, int y1, int x2, int y2, int color);
+void dxDrawPixels(int *x, int *y, int count, int color);
+
 #ifdef __cplusplus
 }
 #endif
