@@ -20,6 +20,18 @@
 #include "precompiled_points.h"
 #include "precompiled_shade.h"
 
+#define USE_DX
+#define TOGGLE_BUFFER
+
+#define MAKE_RGBA(rgb, a) MAKE_RGBA_123_321( (rgb), (a & 0xFF))
+//                                   1st byte               2nd byte                      3rd byte
+#define MAKE_RGBA_123_123(bgr, a) (((bgr & 0xFF) <<  0) | ((bgr & 0xFF00) >> 8) <<  8 | ((bgr & 0xFF0000) >> 16) << 16 | (a) << 24)
+#define MAKE_RGBA_123_132(bgr, a) (((bgr & 0xFF) <<  0) | ((bgr & 0xFF00) >> 8) << 16 | ((bgr & 0xFF0000) >> 16) <<  8 | (a) << 24)
+#define MAKE_RGBA_123_213(bgr, a) (((bgr & 0xFF) <<  8) | ((bgr & 0xFF00) >> 8) <<  0 | ((bgr & 0xFF0000) >> 16) << 16 | (a) << 24)
+#define MAKE_RGBA_123_231(bgr, a) (((bgr & 0xFF) << 16) | ((bgr & 0xFF00) >> 8) <<  0 | ((bgr & 0xFF0000) >> 16) <<  8 | (a) << 24)
+#define MAKE_RGBA_123_312(bgr, a) (((bgr & 0xFF) <<  8) | ((bgr & 0xFF00) >> 8) << 16 | ((bgr & 0xFF0000) >> 16) <<  0 | (a) << 24)
+#define MAKE_RGBA_123_321(bgr, a) (((bgr & 0xFF) << 16) | ((bgr & 0xFF00) >> 8) <<  8 | ((bgr & 0xFF0000) >> 16) <<  0 | (a) << 24)
+
 using namespace Windows::UI::Core;
 using namespace TotalCross;
 
@@ -172,6 +184,7 @@ int32 abs32(int32 a)
 
 static bool checkGlError(const char* op, int line)
 {
+#ifndef USE_DX
 	GLint error;
 
 	//debug("%s (%d)",op,line);
@@ -192,11 +205,13 @@ static bool checkGlError(const char* op, int line)
 		debug("glError %s at %s (%d)\n", msg, op, line);
 		return true;
 	}
+#endif
 	return false;
 }
 
 static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precompiledCodeSize)
 {
+#ifndef USE_DX
 	GLint ret = GL_TRUE;
 	GLuint vshader, fshader;
 	GLuint p = glCreateProgram();
@@ -231,18 +246,23 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
 	}
 
 	return p;
+#endif
+   return 0;
 }
 
 static void setCurrentProgram(GLint prog)
 {
+#ifndef USE_DX
 	if (prog != lastProg)
 	{
 		glUseProgram(lastProg = prog); GL_CHECK_ERROR
 	}
+#endif
 }
 
 static void initPoints()
 {
+#ifndef USE_DX
 	pointsProgram = createProgram_angle(precompiled_points, sizeof(precompiled_points));
 	setCurrentProgram(lrpProgram);
 	pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
@@ -250,17 +270,21 @@ static void initPoints()
 		pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
 		glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
 		glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+#endif
 }
 
 static void clearPixels()
 {
+#ifndef USE_DX
 	pixcoords = (int32*)glcoords;
 	pixcolors = (int32*)glcolors;
+#endif
 }
 
 
 static void destroyEGL()
 {
+#ifndef USE_DX
 	eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	eglDestroyContext(_display, _context);
 	eglDestroySurface(_display, _surface);
@@ -269,10 +293,12 @@ static void destroyEGL()
 	_display = EGL_NO_DISPLAY;
 	_surface = EGL_NO_SURFACE;
 	_context = EGL_NO_CONTEXT;
+#endif
 }
 
 static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
+#ifndef USE_DX
 	bool isPixel = (x & IS_PIXEL) != 0;
 	if ((pixcoords + (isPixel ? 2 : 4)) > pixEnd)
 		flushPixels(7);
@@ -287,10 +313,12 @@ static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 	pc.pixel = rgb;
 	pc.a = a;
 	*pixcolors++ = pc.pixel;
+#endif
 }
 
 static void initShade()
 {
+#ifndef USE_DX
 	shadeProgram = createProgram_angle(precompiled_shade, sizeof(precompiled_shade));
 	setCurrentProgram(shadeProgram);
 	shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
@@ -298,10 +326,12 @@ static void initShade()
 		glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
 		glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 		shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
+#endif
 }
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
 {
+#ifndef USE_DX
 	mat4 mat =
 	{
 		2.0 / w, 0.0, 0.0, -1.0,
@@ -321,10 +351,12 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
 #else
 		glViewport(0, 0, w, h); GL_CHECK_ERROR
 #endif
+#endif
 }
 
 static void initTexture()
 {
+#ifndef USE_DX
 	//textureProgram = esLoadProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
 	//textureProgram = createProgram_angle(gProgram, sizeof(gProgram));
 	textureProgram = createProgram_angle(precompiled_texture, sizeof(precompiled_texture));
@@ -335,15 +367,18 @@ static void initTexture()
 
 		glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
 		glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
+#endif
 }
 
 static void initLineRectPoint()
 {
+#ifndef USE_DX
 	lrpProgram = createProgram_angle(precompiled_lrp, sizeof(precompiled_lrp));
 	setCurrentProgram(lrpProgram);
 	lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
 		lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
 		glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+#endif
 }
 
 
@@ -361,6 +396,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 void flushPixels(int q)
 {
+#ifndef USE_DX
 	if (pixcolors != (int32*)glcolors)
 	{
 		int32 n = pixcolors - (int32*)glcolors, i;
@@ -417,6 +453,7 @@ void flushPixels(int q)
 		}
 		clearPixels();
 	}
+#endif
 }
 
 
@@ -469,24 +506,105 @@ bool checkGLfloatBuffer(Context c, int32 n)
 	return true;
 }
 
+#ifdef USE_DX
+
+#define SIZE_BUFFER (INT16_MAX)
+#define MAX_SHOULD_BUFF_LINE 100
+typedef struct _dxDrawCache
+{
+   Pixel lastARGB;
+   int32 coords_x[SIZE_BUFFER];
+   int32 coords_y[SIZE_BUFFER];
+   int32 size;
+   int32 time;
+} dxDrawCache;
+
+dxDrawCache dxDrawPixelCache = { 0 };
+dxDrawCache dxDrawPixelsCache = { 0 };
+dxDrawCache dxDrawLineCache = { 0 };
+
+#endif
+
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
-	if (surfaceWillChange) { clearPixels(); return; }
-	if (pixcolors != (int32*)glcolors) flushPixels(11);
+#ifndef USE_DX
+   if (surfaceWillChange) { clearPixels(); return; }
+   if (pixcolors != (int32*)glcolors) flushPixels(11);
 #if defined ANDROID || defined WP8
-	eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
+   eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
 #else
-	graphicsUpdateScreenIOS();
+   graphicsUpdateScreenIOS();
 #endif
 #if !defined(WP8)
-	// erase buffer with keyboard's background color
-	PixelConv gray;
-	gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
-	glClearColor(f255[gray.r], f255[gray.g], f255[gray.b], 1); GL_CHECK_ERROR
-	glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+   // erase buffer with keyboard's background color
+   PixelConv gray;
+   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
+   glClearColor(f255[gray.r], f255[gray.g], f255[gray.b], 1); GL_CHECK_ERROR
+      glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+#endif
+#else
+#ifdef TOGGLE_BUFFER
+   bool must_do_3 = false;
+   if (dxDrawPixelCache.size > 0)
+   {
+      int ini = getTimeStamp();
+      dxDrawPixels(dxDrawPixelCache.coords_x, dxDrawPixelCache.coords_y, dxDrawPixelCache.size, dxDrawPixelCache.lastARGB);
+      dxDrawPixelCache.size = 0;
+      dxDrawPixelCache.time += getTimeStamp() - ini;
+      debug("drawPixel: %d", dxDrawPixelCache.time);
+
+      if (dxDrawPixelCache.lastARGB == dxDrawLineCache.lastARGB)
+         must_do_3 = true;
+      dxDrawPixelCache.time = 0;
+   }
+   if (must_do_3)
+   {
+      if (dxDrawLineCache.size > 0)
+      {
+         int ini = getTimeStamp();
+         dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
+         dxDrawLineCache.size = 0;
+         dxDrawLineCache.time += getTimeStamp() - ini;
+         debug("drawLine: %d", dxDrawLineCache.time);
+         dxDrawLineCache.time = 0;
+      }
+   }
+   if (dxDrawPixelsCache.size > 0)
+   {
+      int ini = getTimeStamp();
+      if (dxDrawPixelsCache.size > 33000)
+         ini = ini;
+      dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
+      dxDrawPixelsCache.size = 0;
+      dxDrawPixelsCache.time += getTimeStamp() - ini;
+      debug("drawPixels: %d", dxDrawPixelsCache.time);
+      dxDrawPixelsCache.time = 0;
+   }
+   if (!must_do_3)
+   {
+      if (dxDrawLineCache.size > 0)
+      {
+         int ini = getTimeStamp();
+         dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
+         dxDrawLineCache.size = 0;
+         dxDrawLineCache.time += getTimeStamp() - ini;
+         debug("drawLine: %d", dxDrawLineCache.time);
+         dxDrawLineCache.time = 0;
+      }
+   }
+#endif
+   debug("drawPixel: %d", dxDrawPixelCache.time);
+   dxDrawPixelCache.time = 0;
+   debug("drawPixels: %d", dxDrawPixelsCache.time);
+   dxDrawPixelsCache.time = 0;
+   debug("drawLine: %d", dxDrawLineCache.time);
+   dxDrawLineCache.time = 0;
+
+   dxUpdateScreen();
 #endif
 }
 
+#ifndef USE_DX
 bool setupGL(int width, int height)
 {
 	int i;
@@ -516,6 +634,7 @@ bool setupGL(int width, int height)
 	clearPixels();
 	return checkGLfloatBuffer(mainContext, 10000);
 }
+#endif
 
 //void applyChanges(Context currentContext, Object obj, bool updateList)
 //{
@@ -533,14 +652,17 @@ bool setupGL(int width, int height)
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)
 {
+#ifndef USE_DX
 	glDeleteTextures(1, (GLuint*)textureId); GL_CHECK_ERROR
 		*textureId = 0;
 	if (updateList)
 		imgTextures = VoidPsRemove(imgTextures, img, null);
+#endif
 }
 
 void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
+#ifndef USE_DX
 	int32 i;
 	PixelConv* pf = (PixelConv*)pixels;
 	PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
@@ -590,23 +712,31 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
 		}
 	}
 	xfree(pt0);
+#endif
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
+#ifndef USE_DX
 	add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
+#endif
 }
 
 int32 glGetPixel(int32 x, int32 y)
 {
+#ifndef USE_DX
 	glpixel gp;
 	if (pixcolors != (int32*)glcolors) flushPixels(8);
 	glReadPixels(x, appH - y - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
 		return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
+#else
+   return 0;
+#endif
 }
 
 void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+#ifndef USE_DX
 #define GL_BGRA 0x80E1 // BGRA is 20x faster than RGBA on devices that supports it
 	PixelConv* p;
 	glpixel gp;
@@ -643,12 +773,15 @@ void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 he
 			p->b = gp.b;
 		}
 	}
+#endif
 }
 
 void flushAll()
 {
+#ifndef USE_DX
 	flushPixels(10);
 	glFlush(); GL_CHECK_ERROR
+#endif
 }
 
 
@@ -660,8 +793,11 @@ void privateScreenChange(int32 w, int32 h)
 	appW = w;
 	appH = h;
 #endif
+
+#ifndef USE_DX
 	clearPixels();
 	setProjectionMatrix(w, h);
+#endif
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
@@ -688,6 +824,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 #endif
 }
 
+#ifndef USE_DX
 bool initGLES(ScreenSurface screen)
 {
 	int32 i;
@@ -753,6 +890,7 @@ bool initGLES(ScreenSurface screen)
 	_context = context;
 	return setupGL(screen->screenW, screen->screenH);
 }
+#endif
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
@@ -763,42 +901,186 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 	screen->screenH = bounds.Height;
 	screen->hRes = ascrHRes;
 	screen->vRes = ascrVRes;
-	return initGLES(screen);
+   
+#ifndef USE_DX
+   return initGLES(screen);
+#else
+   dxSetup();
+   return checkGLfloatBuffer(mainContext, 10000);
+#endif
 }
 
 void glDrawPixels(int32 n, int32 rgb)
 {
-	setCurrentProgram(pointsProgram);
-	if (pixLastRGB != rgb)
-	{
-		PixelConv pc;
-		pc.pixel = pixLastRGB = rgb;
-		glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
-	}
-	glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
-		glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
-		glDrawArrays(GL_POINTS, 0, n); GL_CHECK_ERROR
+#ifndef USE_DX
+   setCurrentProgram(pointsProgram);
+   if (pixLastRGB != rgb)
+   {
+      PixelConv pc;
+      pc.pixel = pixLastRGB = rgb;
+      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
+   }
+   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
+      glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+      glDrawArrays(GL_POINTS, 0, n); GL_CHECK_ERROR
+#else
+   Pixel colour = MAKE_RGBA(rgb, 0xFF);
+   int ini = getTimeStamp();
+
+#ifdef TOGGLE_BUFFER
+   if (colour != dxDrawPixelsCache.lastARGB)
+   {
+      if (dxDrawPixelsCache.size > 0) {
+         dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
+         dxDrawPixelsCache.size = 0;
+      }
+      dxDrawPixelsCache.lastARGB = colour;
+   }
+
+   if ((dxDrawPixelsCache.size + n) >= SIZE_BUFFER)
+   {
+      dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
+      dxDrawPixelsCache.size = 0;
+   }
+   
+   for (int i = 0; i < n; i++)
+   {
+      dxDrawPixelsCache.coords_x[dxDrawPixelsCache.size] = glcoords[pointsPosition + (i * 2)];
+      dxDrawPixelsCache.coords_y[dxDrawPixelsCache.size] = glcoords[pointsPosition + (i * 2 + 1)];
+      dxDrawPixelsCache.size++;
+   }
+#else
+   int* x;
+   int* y;
+
+   x = (int*) xmalloc(n * sizeof(int));
+   y = (int*) xmalloc(n * sizeof(int));
+
+   if (x != null && y != null)
+   {
+      for (int i = 0; i < n; i++)
+      {
+         x[i] = glcoords[pointsPosition + (i * 2)];
+         y[i] = glcoords[pointsPosition + (i * 2 + 1)];
+      }
+
+      dxDrawPixels(x, y, n, colour);
+      xfree(x);
+      xfree(y);
+   }
+#endif
+
+   int end = getTimeStamp();
+   dxDrawPixelsCache.time += end - ini;
+#endif
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
-	add2pipe(x | IS_PIXEL, y, 1, 1, rgb, a);
+#ifndef USE_DX
+   add2pipe(x | IS_PIXEL, y, 1, 1, rgb, a);
+#else
+   int ini = getTimeStamp();
+   Pixel colour = MAKE_RGBA(rgb, a);
+
+#ifdef TOGGLE_BUFFER
+   if (colour != dxDrawPixelCache.lastARGB)
+   {
+      if (dxDrawPixelCache.size > 0) {
+         dxDrawPixels(dxDrawPixelCache.coords_x, dxDrawPixelCache.coords_y, dxDrawPixelCache.size, dxDrawPixelCache.lastARGB);
+         dxDrawPixelCache.size = 0;
+      }
+      dxDrawPixelCache.lastARGB = colour;
+   }
+   dxDrawPixelCache.coords_x[dxDrawPixelCache.size] = x;
+   dxDrawPixelCache.coords_y[dxDrawPixelCache.size] = y;
+   dxDrawPixelCache.size++;
+
+   if (dxDrawPixelCache.size >= SIZE_BUFFER)
+   {
+      dxDrawPixels(dxDrawPixelCache.coords_x, dxDrawPixelCache.coords_y, dxDrawPixelCache.size, dxDrawPixelCache.lastARGB);
+      dxDrawPixelCache.size = 0;
+   }
+#else
+   dxDrawPixels(&x, &y, 1, colour);
+#endif
+   int end = getTimeStamp();
+   dxDrawPixelCache.time += end - ini;
+#endif
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-	// The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
-	if (x1 == x2)
-		add2pipe(min32(x1, x2), min32(y1, y2), 1, abs32(y2 - y1), rgb, a);
-	else
-	if (y1 == y2)
-		add2pipe(min32(x1, x2), min32(y1, y2), abs32(x2 - x1), 1, rgb, a);
-	else
-		add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
+#ifndef USE_DX
+   // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
+   if (x1 == x2)
+      add2pipe(min32(x1, x2), min32(y1, y2), 1, abs32(y2 - y1), rgb, a);
+   else
+   if (y1 == y2)
+      add2pipe(min32(x1, x2), min32(y1, y2), abs32(x2 - x1), 1, rgb, a);
+   else
+      add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
+#else
+   int ini = getTimeStamp();
+   Pixel colour = MAKE_RGBA(rgb, a);
+
+#ifdef TOGGLE_BUFFER
+   if ((x1 == x2 && abs32(y2 - y1) < MAX_SHOULD_BUFF_LINE) || (y1 == y2 && abs32(x2 - x1) < MAX_SHOULD_BUFF_LINE))
+   {
+      if (colour != dxDrawLineCache.lastARGB)
+      {
+         if (dxDrawLineCache.size > 0) {
+            dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
+            dxDrawLineCache.size = 0;
+         }
+         dxDrawLineCache.lastARGB = colour;
+      }
+
+      if (x1 == x2)
+      {
+         if ((dxDrawLineCache.size + (y2 - y1)) >= SIZE_BUFFER)
+         {
+            dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
+            dxDrawLineCache.size = 0;
+         }
+
+         for (int i = y1; i <= y2; i++)
+         {
+            dxDrawLineCache.coords_x[dxDrawLineCache.size] = x1;
+            dxDrawLineCache.coords_y[dxDrawLineCache.size] = i;
+            dxDrawLineCache.size++;
+         }
+      }
+      else
+      {
+         if ((dxDrawLineCache.size + (x2 - x1)) >= SIZE_BUFFER)
+         {
+            dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
+            dxDrawLineCache.size = 0;
+         }
+
+         for (int i = x1; i <= x2; i++)
+         {
+            dxDrawLineCache.coords_x[dxDrawLineCache.size] = i;
+            dxDrawLineCache.coords_y[dxDrawLineCache.size] = y1;
+            dxDrawLineCache.size++;
+         }
+      }
+   }
+   else
+#endif
+   {
+      dxDrawLine(x1, y1, x2, y2, colour);
+   }
+
+   int end = getTimeStamp();
+   dxDrawLineCache.size += end - ini;
+#endif
 }
 
 void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+#ifndef USE_DX
 	if (pixcolors != (int32*)glcolors) flushPixels(4);
 	setCurrentProgram(shadeProgram);
 	glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
@@ -833,6 +1115,7 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 	}
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+#endif
 }
 
 void setTimerInterval(int32 t);
@@ -863,24 +1146,36 @@ void setShiftYgl()
 	}
 #else
 	glShiftY = -desiredScreenShiftY;
-#endif    
-
+#endif
 }
 
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-	add2pipe(x, y, w, h, rgb, a);
+#ifndef USE_DX
+   add2pipe(x, y, w, h, rgb, a);
+#else
+   Pixel colour = MAKE_RGBA(rgb, a);
+   int ini = getTimeStamp();
+   dxFillRect(x, y, x + w, y + h, colour);
+   int end = getTimeStamp();
+
+   //if (end - ini > 10)
+   //debug(">>> glFillRect %d;     %03d,%03d    %03d,%03d #%08X", end - ini, x, y, x + w, y + h, colour);
+#endif
 }
 
 void glSetLineWidth(int32 w)
 {
+#ifndef USE_DX
 	setCurrentProgram(lrpProgram);
 	glLineWidth(w); GL_CHECK_ERROR
+#endif
 }
 
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
+#ifndef USE_DX
 	GLfloat* coords = texcoords;
 	/*   GLfloat degrees = 45;
 	GLfloat radians = degreesToRadians(degrees);
@@ -920,6 +1215,7 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
 		glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+#endif
 }
 
 /*void updateScreenANGLE()

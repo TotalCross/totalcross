@@ -9,6 +9,7 @@
 #include "esUtil.h"
 #include "winrtangle.h"
 #include "openglWrapper.h"
+#include "CubeRenderer.h"
 
 namespace TotalCross
 {
@@ -31,6 +32,11 @@ namespace TotalCross
       Platform::String ^getAppPath(void);
 	  Platform::String ^getVmPath(void);
       Windows::UI::Core::CoreWindow^ GetWindow(void);
+      bool MainView::dxSetup(void);
+      void MainView::dxUpdateScreen(void);
+      void MainView::dxDrawLine(int x1, int y1, int x2, int y2, int color);
+      void MainView::dxFillRect(int x1, int y1, int x2, int y2, int color);
+      void MainView::dxDrawPixels(int *x, int *y, int count, int color);
 
 	  int GetSIPHeight(void);
 
@@ -57,6 +63,7 @@ namespace TotalCross
 	  void OnSizeChanged(Windows::UI::Core::CoreWindow ^sender, Windows::UI::Core::WindowSizeChangedEventArgs ^args);
 
 	private:
+      CubeRenderer^ m_renderer;
       ESContext m_esContext;
       //Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
 	  Windows::Phone::UI::Core::KeyboardInputBuffer^ m_inputBuffer;
