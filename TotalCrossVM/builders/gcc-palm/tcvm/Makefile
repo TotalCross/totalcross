@@ -7,11 +7,7 @@ include ../common.mk
 TYPE ?= release
 
 ifeq ($(TYPE), noras)
-	ifeq ($(origin NORASID), undefined)
-		abort "Must provide a NORASID for noras build"
-	endif
 	include options_noras.mk
-	EXTRA_DEFINES += -DNORASID=$(NORASID)
 endif
 ifeq ($(TYPE), release)
 	include options_nodemo.mk
