@@ -13,9 +13,11 @@
 
 #include "tcvm.h"
 
+#ifdef WINCE
 static void throwDialException(CharP msg, uint32 param);
 static Context currentContext;
 static void statusChange(CharP msg);
+#endif
 
 #if defined WP8
 
@@ -30,6 +32,7 @@ static void statusChange(CharP msg);
  #include "posix/Dial_c.h"
 #endif
 
+#ifdef WINCE
 static void throwDialException(CharP msg, uint32 param)
 {
    throwException(currentContext, IOException, msg, param);
@@ -68,24 +71,30 @@ static void statusChange(CharP msg)
       setObjectLock(msgObj, UNLOCKED);
    }
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public static void number(String number);
 {
-#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Object numberObj = p->obj[0];
-   currentContext = p->currentContext;
+   
    if (numberObj == null)
       throwNullArgumentException(p->currentContext, "number");
 #if defined (WINCE)
+   currentContext = p->currentContext;
    else if (RdGetState(PHONE) == RADIO_STATE_DISABLED)
-      throwException(p->currentContext, IOException, "Phone is disabled");
+      throwException(currentContext, IOException, "Phone is disabled");
 #endif
+#if defined(WINCE) || defined(ANDROID) || defined(darwin) || defined(WP8)
    else
    {
       char number[100];
       JCharP2CharPBuf(String_charsStart(numberObj), min32(String_charsLen(numberObj),sizeof(number)-1),number);
+#if !defined WP8
       dialNumber(number);
+#else
+      //XXX wraper C# - DialNumberCS()
+#endif
    }
 #else
    UNUSED(p);

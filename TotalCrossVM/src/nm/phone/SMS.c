@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public static void send(String destination, String message) throws totalcross.io.IOException;
 {
-#if defined (WINCE)
+#if defined (WINCE) || defined (WP8)
    Object destination = p->obj[0];
    Object message = p->obj[1];
    if (destination == null)
@@ -32,6 +32,7 @@ TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public stat
       throwNullArgumentException(p->currentContext, "message");
    else
    {
+#ifdef WINCE
       TCHARP szMessage, szDestination;
 
       szMessage = String2TCHARP(message);
@@ -40,6 +41,19 @@ TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public stat
          throwException(p->currentContext, OutOfMemoryError, !szMessage?"When allocating 'message'":"'When allocating 'destination'");
       else
          SmsSend(p->currentContext, szMessage, szDestination);
+#elif defined (WP8)
+      CharP szMessage = JCharP2CharP(String_charsStart(message), String_charsLen(message));
+      CharP szDestination = JCharP2CharP(String_charsStart(destination), String_charsLen(destination));
+
+      if (!szMessage || !szDestination)
+         throwException(p->currentContext, OutOfMemoryError, !szMessage ? "When allocating 'message'" : "'When allocating 'destination'");
+      else
+      {
+         //XXX wraper C# - SendMessageCS()
+      }
+
+         
+#endif
       xfree(szMessage);
       xfree(szDestination);
    }
@@ -53,7 +67,7 @@ TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public stat
 #if defined (WINCE)
    SmsReceive(p->currentContext, &p->retO);
 #else
-   p = 0;
+   p->retO = NULL;
 #endif
 }
 
