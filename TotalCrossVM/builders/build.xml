@@ -893,7 +893,7 @@ target: IPhone builds
 <target name="copyIPhoneTCVM_vms_noras" >
    <echo message="retrieve remote NORAS release builds" />
    <antcall target="copyIPhoneTCVM">
-       <param name="type" value="noras_20" />
+       <param name="type" value="noras_${norasid}" />
        <param name="target.path" value="${target.noras.path}" />
    </antcall>
 </target>   
