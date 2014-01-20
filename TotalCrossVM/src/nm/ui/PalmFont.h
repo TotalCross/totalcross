@@ -17,7 +17,7 @@
 #pragma pack(2)
 typedef struct
 {
-   uint16 antialiased;      // true if the font is antialiased
+   uint16 antialiased;      // 0 - aa_no, 1: aa_4bpp, 2: aa_8bpp
    uint16 firstChar;        // ASCII code of first character
    uint16 lastChar;         // ASCII code of last character
    uint16 spaceWidth;       // width of the space character
@@ -36,19 +36,26 @@ typedef struct
    char name[32];
 } *FontFile, TFontFile;
 
-typedef struct
+typedef struct TUserFont TUserFont;
+typedef TUserFont* UserFont;
+
+struct TUserFont
 {
    uint8 *bitmapTable;
    TPalmFont fontP;
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
-} *UserFont, TUserFont;
+   // gl fonts: used by the base font
+   int32 textureId; // the Image for all characters.
+   // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
+   struct TUserFont* ubase;
+};
 
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch);
 int32 getJCharPWidth(Context currentContext, Object fontObj, JCharP s, int32 len); // len is NOT optional, it must be given
 UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar ch);
 FontFile loadFontFile(char *fontName);
-UserFont loadUserFont(FontFile ff, bool plain, int32 size, JChar c);  // use size=-1 to load the normal size
+UserFont loadUserFont(Context currentContext, FontFile ff, bool plain, int32 size, JChar c);  // use size=-1 to load the normal size
 bool fontInit();
 void fontDestroy();
 

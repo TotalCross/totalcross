@@ -316,14 +316,14 @@ void initTexture()
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   PixelConv* pt = onlyAlpha ? null : (PixelConv*)xmalloc(width*height*4), *pt0 = onlyAlpha ? pf : pt;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
-   if (!pt)
+   if (!onlyAlpha && !pt)
    {
       throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
       return;
@@ -348,15 +348,16 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
    }
    // must invert the pixels from ARGB to RGBA
-   for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+   if (!onlyAlpha)
+      for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
    if (textureAlreadyCreated)
    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
@@ -366,7 +367,8 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
       }
    }
-   xfree(pt0);
+   if (!onlyAlpha)
+      xfree(pt0);
 }
 
 void glDeleteTexture(Object img, int32* textureId, bool updateList)

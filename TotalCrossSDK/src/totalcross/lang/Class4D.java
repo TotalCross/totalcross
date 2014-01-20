@@ -48,7 +48,7 @@ public final class Class4D
     */
    native public static Class forName(String className) throws java.lang.ClassNotFoundException;
 
-   /** Creates a new instance of this class.
+   /** Creates a new instance of this class. The class must have a default and public constructor (E.G.: <code>public MyClass()</code>)
     * @throws InstantiationException If you try to instantiate an interface, abstract class or array
     * @throws IllegalAccessException If you try to instantiate a private class
     */

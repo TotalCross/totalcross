@@ -33,7 +33,8 @@ public class FontTest extends MainWindow
    public FontTest()
    {
       super("Font test",TAB_ONLY_BORDER);
-      setUIStyle(Settings.platform.equals(Settings.ANDROID) ? Settings.Android : Settings.Vista);
+      setUIStyle(Settings.Android);
+      //setFont(totalcross.ui.font.Font.getFont("Arial",false,Font.NORMAL_SIZE));
    }
 
    public void initUI()
@@ -56,7 +57,7 @@ public class FontTest extends MainWindow
         String fontname=(String)Selector.cbNames.getSelectedItem();
         totalcross.ui.font.Font f = selector.getSelectedFont();
         if(!f.name.equalsIgnoreCase(fontname))
-           new MessageBox("TotalCross","Font not found. Please install \nthe file "+fontname+".pdb/.tcz").popupNonBlocking();
+           new MessageBox("TotalCross","Font not found. Please install \nthe file "+fontname+".tcz").popupNonBlocking();
         else
            samples.setFonts(f);
       }

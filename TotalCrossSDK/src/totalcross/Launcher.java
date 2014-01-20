@@ -175,6 +175,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
                runtimeInstructions();
+            loadBaseFonts();
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
@@ -1664,11 +1665,30 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    }
 
    ////  font and font metrics //////////////////////////////////////////////////////
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
+   totalcross.ui.font.Font baseFontN,baseFontB;
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
+   private boolean useRealFont;
+   private void loadBaseFonts()
+   {
+      useRealFont = true;
+      baseFontN = totalcross.ui.font.Font.getFont(false,80); baseFontN.removeFromCache();
+      baseFontB = totalcross.ui.font.Font.getFont(true,80);  baseFontB.removeFromCache();
+      useRealFont = false;
+   }
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
+         if (!useRealFont && fontName.equals(totalcross.ui.font.Font.DEFAULT) && suffix.endsWith("u0"))
+         {
+            boolean bold = suffix.charAt(1) == 'b';
+            int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
+            totalcross.ui.font.Font base = bold ? baseFontB : baseFontN; 
+            return new UserFont(fontName, suffix, size, base);
+         }
          return new UserFont(fontName, suffix);
       }
       catch (Exception e) 
@@ -1730,7 +1750,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          
          if (uf != null)
          {
-            htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
+            if (!useRealFont)
+               htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
             f.name = uf.fontName; // update the name, the font may have been replaced.
          }
          else
@@ -1754,30 +1775,52 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       public byte[] charBitmapTable;
       public int offset;          // offset relative to the bitmap table
       public int width;
+      public int index;
+      public totalcross.ui.image.Image img;
    }
 
    private static Hashtable loadedTCZs = new Hashtable(31);
    public class UserFont
    {
-      public Object nativeFont;    // stores the system font in some platforms
-      public boolean antialiased;  // true if its antialiased
+      // 25/120 14/70 4/25 2/15
+      public UserFont ubase;
+      public totalcross.ui.image.Image[] nativeFonts;     // stores the system font in some platforms
+      public int antialiased;      // AA_ flags
       public int firstChar;        // ASCII code of first character
       public int lastChar;         // ASCII code of last character
       public int spaceWidth;       // width of the space char
-      public int maxWidth;         // width of font rectangle
+      public int maxWidth;         // width of font rectangle - unused
       public int maxHeight;        // height of font rectangle
-      public int owTLoc;           // offset to offset/width table
+      public int owTLoc;           // offset to offset/width table - unused
       public int ascent;           // ascent
       public int descent;          // descent
-      public int rowWords;         // row width of bit image / 2
+      public int rowWords;         // row width of bit image / 2 - used only to compute rowWidthInBytes
 
-      public int   rowWidthInBytes;
-      public int   bitmapTableSize;
-      public byte  []bitmapTable;
-      public int []bitIndexTable;
-      public String fontName;
-      public int numberWidth;
+      private int rowWidthInBytes;
+      private byte []bitmapTable;
+      private int []bitIndexTable;
+      private String fontName;
+      private int numberWidth;
 
+      private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
+      {
+         UserFont ubase = (UserFont)base.hv_UserFont;
+         this.ubase = ubase;
+         this.maxHeight = size;
+         this.rowWidthInBytes = ubase.rowWidthInBytes * maxHeight / ubase.maxHeight;
+         this.bitIndexTable = new int[ubase.bitIndexTable.length];
+         for (int i = 0; i < bitIndexTable.length; i++) // compute the target size using the rule of three
+            this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
+         this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
+         this.fontName = fontName;
+         this.firstChar = ubase.firstChar;
+         this.lastChar = ubase.lastChar;
+         this.antialiased = ubase.antialiased;
+         this.descent = ubase.descent * maxHeight / ubase.maxHeight;
+         this.ascent = size - this.descent;
+         this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
+      }
+      
       private UserFont(String fontName, String sufix) throws Exception
       {
          this.fontName = fontName;
@@ -1812,7 +1855,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          totalcross.io.ByteArrayStream bas = ((totalcross.io.ByteArrayStream[])z.bag)[index];
          bas.reset();
          totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
-         antialiased = ds.readUnsignedShort()==1;
+         antialiased = ds.readUnsignedShort();
          firstChar   = ds.readUnsignedShort();
          lastChar    = ds.readUnsignedShort();
          spaceWidth  = ds.readUnsignedShort();
@@ -1823,8 +1866,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          descent     = ds.readUnsignedShort();
          rowWords    = ds.readUnsignedShort();
 
-         rowWidthInBytes = rowWords << (antialiased ? 3 : 1);
-         bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
+         rowWidthInBytes = 2 * rowWords * (antialiased == AA_NO ? 1 : antialiased == AA_4BPP ? 4 : 8);
+         int bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
 
          bitmapTable     = new byte[bitmapTableSize];
          ds.readBytes(bitmapTable);
@@ -1837,18 +1880,44 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             index = (int)'0' - (int)firstChar;
             numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
          }
+         if (antialiased == AA_8BPP)
+            nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
       }
-
+      
+      private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
+      {
+         int offset = bitIndexTable[index];
+         int width = bitIndexTable[index+1] - offset;
+         totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);
+         int[] pixels = img.getPixels();
+         for (int y = 0,idx=0; y < maxHeight; y++)
+            for (int x = 0; x < width; x++,idx++)
+               pixels[idx] = bitmapTable[y * rowWidthInBytes + x + offset] << 24;
+         return img;
+      }
+      
       // Get the source x coordinate and width of the character
       public void setCharBits(char ch, CharBits bits)
       {
          if (firstChar <= ch && ch <= lastChar)
          {
             int index = (int)ch - (int)firstChar;
+            bits.index = index;
             bits.rowWIB = rowWidthInBytes;
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
             bits.width = bitIndexTable[index+1] - bits.offset;
+            if (ubase != null)
+               try
+               {
+                  if (ubase.nativeFonts[index] == null) // character at original size
+                     ubase.nativeFonts[index] = ubase.getBaseCharImage(index);
+                  if (nativeFonts[index] == null) // character at the target size
+                     nativeFonts[index] = ubase.nativeFonts[index].getHwScaledInstance(bits.width,maxHeight);
+                  bits.img = nativeFonts[index];
+                  bits.rowWIB = bits.width;
+               }
+               catch (Exception e) {e.printStackTrace();}
          }
          else
          {

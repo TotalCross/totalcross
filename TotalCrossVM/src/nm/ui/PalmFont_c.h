@@ -15,6 +15,13 @@
 
 static char defaultFontName[16];
 
+#define AA_NO 0
+#define AA_4BPP 1
+#define AA_8BPP 2
+
+UserFont baseFontN, baseFontB;
+bool useRealFont;
+
 bool fontInit(Context currentContext)
 {
    int32 *maxfs=null, *minfs=null, *normal = null;
@@ -52,6 +59,15 @@ bool fontInit(Context currentContext)
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
    }
+//#ifdef __gl2_h_
+   else
+   {
+      useRealFont = true;
+      baseFontN = loadUserFont(currentContext, defaultFont, true, 80, ' ');
+      baseFontB = loadUserFont(currentContext, defaultFont, false, 80, ' ');
+      useRealFont = false;
+   }
+//#endif
    return defaultFont != null;
 }
 
@@ -157,7 +173,26 @@ FontFile loadFontFile(char *fontName)
    return ff;
 }
 
-UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
+static void createFontTexture(Context currentContext, UserFont uf)
+{
+#ifdef __gl2_h_
+   int32 w = uf->rowWidthInBytes/4, h = uf->fontP.maxHeight,i;
+   int32 *pixels = (int32*)xmalloc(w*h*4), *p = pixels;
+   uint8* alpha = uf->bitmapTable;
+   for (i = w*h; --i >= 0; p++,alpha++)
+      *p = ((int32)*alpha) << 24;
+   glLoadTexture(currentContext, null, &uf->textureId, pixels, w,h, false, false);
+   xfree(pixels);
+#endif
+}
+
+void recreateFontTexture(Context currentContext, UserFont uf)
+{
+   createFontTexture(currentContext, baseFontN);
+   createFontTexture(currentContext, baseFontB);
+}
+
+UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
 {
    char fullname[100];
    UserFont uf;
@@ -171,6 +206,7 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
       //heapDestroy(fontsHeap); - guich@tc114_63 - not a good idea; just return null
       return null;
    }
+
    nlen=0;
    vsize = (size == -1) ? normalFontSize : max32(size,minFontSize); // guich@tc122_15: don't check for the maximum font size here
 
@@ -183,6 +219,26 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
    uf = htGetPtr(&htUF, hash);
    if (uf != null)
       return uf;
+
+   // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
+   if (!useRealFont && baseFontN != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name,defaultFontName,xstrlen(defaultFontName)) == 0)
+   {
+      UserFont ubase = bold ? baseFontB : baseFontN; 
+      int32 ubaseH = ubase->fontP.maxHeight;
+      uf = newXH(UserFont, fontsHeap);
+      // take a copy of the font file
+      xmemmove(uf, ubase, sizeof(TUserFont));
+      // change some fields to match the target size
+      uf->ubase = ubase;
+      uf->fontP.maxHeight = size;
+      uf->fontP.ascent     = ubase->fontP.ascent     * size / ubaseH;
+      uf->fontP.descent    = size - uf->fontP.ascent;
+      uf->fontP.maxWidth   = ubase->fontP.maxWidth   * size / ubaseH;
+      uf->fontP.spaceWidth = ubase->fontP.spaceWidth * size / ubaseH;
+      // uf->rowWidthInBytes  = 0; - dont change this field since it will use the base texture
+      htPutPtr(&htUF, hash, uf);
+      return uf;
+   }
 
    // first, try to load it
    uftcz = tczFindName(ff->tcz, fullname);
@@ -236,7 +292,7 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
       }
    
    if (uftcz == null) // probably the index was outside the available ranges at this font
-      return c == ' ' ? null : loadUserFont(ff, bold, size, ' '); // guich@tc110_28: if space, just return null
+      return c == ' ' ? null : loadUserFont(currentContext, ff, bold, size, ' '); // guich@tc110_28: if space, just return null
 
    uf = newXH(UserFont, fontsHeap);
    uftcz->tempHeap = fontsHeap; // guich@tc114_63: use the fontsHeap
@@ -251,9 +307,14 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
    tczRead(uftcz, uf->bitmapTable, bitmapTableSize);
    tczRead(uftcz, uf->bitIndexTable, bitIndexTableSize);
    uf->bitIndexTable -= uf->fontP.firstChar; // instead of doing "bitIndexTable[ch-firstChar]", this trick will allow use "bitIndexTable[ch]
+#ifdef __gl2_h_
+   if (uf->fontP.antialiased == 2) // 8bpp glfont - create the texture
+      createFontTexture(currentContext, uf);
+#endif
 
    tczClose(uftcz);
-   htPutPtr(&htUF, hash, uf);
+   if (!useRealFont)
+      htPutPtr(&htUF, hash, uf);
    return uf;
 }
 
@@ -268,7 +329,7 @@ UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar c
       int32 size  = Font_size(fontObj);
       UserFont uf;
       xmoveptr(&ff, ARRAYOBJ_START(Font_hvUserFont(fontObj)));
-      uf = loadUserFont(ff, (style & 1) == 1, size, ch);
+      uf = loadUserFont(currentContext, ff, (style & 1) == 1, size, ch);
       if (uf == null) // guich@tc123_11: use the last available font
          uf = currentContext->lastUF;
       if (uf != null && ch == ' ') // only cache ' ', usually used to get a pointer to the user font
@@ -289,7 +350,15 @@ int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch)
       return (ch == '\t') ? uf->fontP.spaceWidth * *tabSizeField : 0; // guich@tc100: handle tabs
    if (uf == null || ch < uf->fontP.firstChar || ch > uf->fontP.lastChar) // invalid char - guich@tc122_23: must also check the font's range
       return ch == ' ' ? 0 : getJCharWidth(currentContext, fontObj, ' ');
-   return (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar) ? uf->bitIndexTable[ch+1] - uf->bitIndexTable[ch] : uf->fontP.spaceWidth;
+   if (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar) 
+   {
+      int32 r = uf->bitIndexTable[ch+1] - uf->bitIndexTable[ch];
+      if (uf->ubase != null) // an inherited font?
+         r = r * uf->fontP.maxHeight / uf->ubase->fontP.maxHeight;
+      return r;
+   }
+   else
+      return uf->fontP.spaceWidth;
 }
 
 int32 getJCharPWidth(Context currentContext, Object fontObj, JCharP s, int32 len)

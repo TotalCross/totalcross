@@ -934,7 +934,7 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
-{
+{                         
    Object fontObj = Graphics_font(g);
    int32 startBit,currentBit,incY,y1,r,rmax,istart;
    uint8 *bitmapTable, *ands, *current, *start;
@@ -942,9 +942,11 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    int32 rowWIB,offset,xMin,xMax,yMin,yMax,x,y,yDif,width,height,spaceW=0,k,clipX2,pitch;
    Pixel transparency,*row0, *row;
    PixelConv *i;
-   bool isNibbleStartingLow,isLowNibble,isAA;
+   bool isNibbleStartingLow,isLowNibble;
+   int aaType;
    JChar ch,first,last;
    UserFont uf=null;
+   bool isGlFont;
    PixelConv fc;
    int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
    uint8 *ands8 = _ands8;
@@ -972,8 +974,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    bitmapTable = uf->bitmapTable;
    first = uf->fontP.firstChar;
    last = uf->fontP.lastChar;
+   isGlFont = uf->ubase != null;
 
-   isAA = uf->fontP.antialiased;
+   aaType = uf->fontP.antialiased;
    height = uf->fontP.maxHeight;
    incY = height + justifyWidth;
 
@@ -1065,84 +1068,124 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
       rmax = (y+height > yMax) ? yMax - y : height;
 
-      if (!isAA) // antialiased?
+      switch (aaType)
       {
-         start     = bitmapTable + (offset >> 3) + rowWIB * istart;
-         startBit  = offset & 7;
-
-         // draws the char, a row at a time
-         for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+         case 0:
          {
-            current = start;
-            ands = ands8 + (currentBit = startBit);
-            for (x=x0; x < xMax; x++)
-            {
-               if ((*current & *ands++) != 0 && x >= xMin)
-                  row[x] = foreColor;
-               if (++currentBit == 8)   // finished this uint8?
-               {
-                  currentBit = 0;       // reset counter
-                  ands = ands8;         // reset test bit pointer
-                  ++current;            // inc current uint8
-               }
-            }
-         }
-      }
-      else
-      {
-         start = bitmapTable + (offset >> 1) + rowWIB * istart;
-         isNibbleStartingLow = (offset & 1) == 1;
-#ifdef __gl2_h_
-         // draws the char, a row at a time
-         if (Graphics_useOpenGL(g))
-         {
-            int ty = glShiftY;
-            glC = glcolors;
-            glV = glcoords;
-            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
-            {
-               current = start;
-               isLowNibble = isNibbleStartingLow;
-               for (x=x0; x < xMax; x++)
-               {
-                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-                  isLowNibble = !isLowNibble;
-                  if (transparency == 0 || x < xMin)
-                     continue;
+            start     = bitmapTable + (offset >> 3) + rowWIB * istart;
+            startBit  = offset & 7;
 
-                  // alpha
-                  *glC++ = ftransp[transparency];
-                  // vertices
-                  *glV++ = x;
-                  *glV++ = y + ty;
-               }
-            }
-            if (glC != glcolors) // flush vertices buffer
-               glDrawPixels(((int32)(glC-glcolors)),foreColor);
-         }
-         else
-#endif
+            // draws the char, a row at a time
             for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
             {
                current = start;
-               isLowNibble = isNibbleStartingLow;
-               i = (PixelConv*)&row[x0];
-               for (x=x0; x < xMax; x++,i++)
+               ands = ands8 + (currentBit = startBit);
+               for (x=x0; x < xMax; x++)
                {
-                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-                  isLowNibble = !isLowNibble;
-                  if (transparency == 0 || x < xMin)
-                     continue;
-                  if (transparency == 0xF)
-                     i->pixel = foreColor;
-                  else
+                  if ((*current & *ands++) != 0 && x >= xMin)
+                     row[x] = foreColor;
+                  if (++currentBit == 8)   // finished this uint8?
                   {
-                     i->r = INTERP(i->r, fcR);
-                     i->g = INTERP(i->g, fcG);
-                     i->b = INTERP(i->b, fcB);
+                     currentBit = 0;       // reset counter
+                     ands = ands8;         // reset test bit pointer
+                     ++current;            // inc current uint8
                   }
                }
             }
+            break;
+         }
+         case 1: // 4 bpp
+         {
+            start = bitmapTable + (offset >> 1) + rowWIB * istart;
+            isNibbleStartingLow = (offset & 1) == 1;
+   #ifdef __gl2_h_
+            // draws the char, a row at a time
+            if (Graphics_useOpenGL(g))
+            {
+               int ty = glShiftY;
+               glC = glcolors;
+               glV = glcoords;
+               for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+               {
+                  current = start;
+                  isLowNibble = isNibbleStartingLow;
+                  for (x=x0; x < xMax; x++)
+                  {
+                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+
+                     // alpha
+                     *glC++ = ftransp[transparency];
+                     // vertices
+                     *glV++ = x;
+                     *glV++ = y + ty;
+                  }
+               }
+               if (glC != glcolors) // flush vertices buffer
+                  glDrawPixels(((int32)(glC-glcolors)),foreColor);
+            }
+            else
+   #endif
+               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+               {
+                  current = start;
+                  isLowNibble = isNibbleStartingLow;
+                  i = (PixelConv*)&row[x0];
+                  for (x=x0; x < xMax; x++,i++)
+                  {
+                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+                     if (transparency == 0xF)
+                        i->pixel = foreColor;
+                     else
+                     {
+                        i->r = INTERP(i->r, fcR);
+                        i->g = INTERP(i->g, fcG);
+                        i->b = INTERP(i->b, fcB);
+                     }
+                  }
+               }
+         }
+         break;
+   #ifdef __gl2_h_
+         case 2: // 8 bpp gl font
+         {
+            int32 istart = offset/* + rowWIB * istart*/;
+            // draws the char, a row at a time
+            if (Graphics_useOpenGL(g) && uf->ubase != null)
+            {
+               int32 ww = width * height / uf->ubase->fontP.maxHeight;
+               //glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+               glDrawTexture(uf->ubase->textureId, offset, 0, ww, height, x0, y+glShiftY, rowWIB/4, uf->ubase->fontP.maxHeight);
+            }
+/*            else
+               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+               {
+                  current = start;
+                  isLowNibble = isNibbleStartingLow;
+                  i = (PixelConv*)&row[x0];
+                  for (x=x0; x < xMax; x++,i++)
+                  {
+                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+                     if (transparency == 0xF)
+                        i->pixel = foreColor;
+                     else
+                     {
+                        i->r = INTERP(i->r, fcR);
+                        i->g = INTERP(i->g, fcG);
+                        i->b = INTERP(i->b, fcB);
+                     }
+                  }
+               }*/
+         }
+   #endif // case 2
       }
       if (isVert)
       {
