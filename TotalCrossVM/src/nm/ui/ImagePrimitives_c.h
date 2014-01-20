@@ -697,8 +697,8 @@ void applyChanges(Context currentContext, Object obj, bool updateList)
 }
 
 void freeTexture(Object img, bool updateList)
-{                                      
-   glDeleteTexture(img,Image_textureId(img), updateList);
+{            
+   glDeleteTexture(img,Image_instanceCount(img) <= 0 ? Image_textureId(img) : null, updateList);
 }
 
 extern VoidPs* imgTextures;
@@ -711,7 +711,7 @@ void recreateTextures() // called by opengl when the application changes the ope
          Object img = (Object)current->value;
          //glDeleteTexture(img,&(Image_textureId(img)),false); - cannot delete the textures! they were already deleted when the window was disposed
          *Image_textureId(img) = 0;
-         applyChanges(lifeContext, img,false);
+         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
          current = current->next;
       } while (imgTextures != current);
 }

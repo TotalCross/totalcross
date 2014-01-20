@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-package tc.samples.util;
+package tc.test.totalcross.util;
 
 import totalcross.sys.*;
 import totalcross.unit.TestCase;
