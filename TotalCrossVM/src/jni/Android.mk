@@ -5,11 +5,7 @@ include $(CLEAR_VARS)
 TYPE ?= release
 
 ifeq ($(TYPE), noras)
-	ifeq ($(origin NORASID), undefined)
-		abort "Must provide a NORASID for noras build"
-	endif
 	include $(LOCAL_PATH)/options_noras.mk
-	EXTRA_DEFINES += -DNORASID=$(NORASID)
 endif
 ifeq ($(TYPE), release)
 	include $(LOCAL_PATH)/options_nodemo.mk

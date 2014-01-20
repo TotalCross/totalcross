@@ -560,7 +560,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 <target name="buildInstalls" >
 
-  <property name="target.file"  value="${target.path}/../TotalCross${type}${file_suffix}"/>
+  <property name="target.file"  value="${target.path}/../TotalCross${type}"/>
 
   <!-- delete old files -->
   <delete file="${target.file}.exe" />
@@ -585,7 +585,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   <antcall target="buildInstalls">
       <param name="type" value="SDK" />
-      <param name="file_suffix" value="" />
       <param name="target.path" value="${target.sdk.path}" />
   </antcall>
 </target>
@@ -593,7 +592,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <target name="buildInstalls_vms" >
   <antcall target="buildInstalls">
       <param name="type" value="VMS" />
-      <param name="file_suffix" value="" />
       <param name="target.path" value="${target.vms.path}" />
   </antcall>
 </target>
@@ -603,7 +601,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
       <param name="type" value="VMS_NORAS" />
       <param name="target.path" value="${target.noras.path}" />
   </antcall>
-   <copy file="${noras_dir}/noras_none.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
