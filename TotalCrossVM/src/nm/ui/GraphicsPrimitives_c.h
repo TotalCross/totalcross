@@ -1071,7 +1071,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 
       switch (aaType)
       {
-         case 0:
+         case AA_NO:
          {
             start     = bitmapTable + (offset >> 3) + rowWIB * istart;
             startBit  = offset & 7;
@@ -1095,7 +1095,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
             }
             break;
          }
-         case 1: // 4 bpp
+         case AA_4BPP:
          {
             start = bitmapTable + (offset >> 1) + rowWIB * istart;
             isNibbleStartingLow = (offset & 1) == 1;
@@ -1153,11 +1153,11 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          }
          break;
    #ifdef __gl2_h_
-         case 2: // 8 bpp gl font
+         case AA_8BPP:
          {
             // draws the char, a row at a time
-            if (Graphics_useOpenGL(g) && uf->ubase != null)
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1,height, x0, y,width+1,height, &fc);
+            if (Graphics_useOpenGL(g))
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height, x0, y, width+1, height, &fc);
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {
