@@ -53,7 +53,8 @@ export REPONAME="TotalCross"
 # copy the noras key that will be included
 if [ $noras ];
 then
-   cp $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_$norasid.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
+	mv $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_old.inc
+    mv $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_$norasid.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
 fi
 
 # generate configure if required
@@ -73,5 +74,6 @@ cp -L .libs/libtcvm.so .
 # copy back the default noras.inc
 if [ $noras ];
 then
-   cp $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_none.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
+	mv $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_$norasid.inc
+    mv $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_old.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
 fi
