@@ -19,7 +19,7 @@
  #include "posix/ServerSocket_c.h"
 #endif
 
-static void invalidate(Object obj)
+static void invalidate(TCObject obj)
 {
    if (ServerSocket_serverRef(obj) != null)
    {
@@ -29,7 +29,7 @@ static void invalidate(Object obj)
    ServerSocket_dontFinalize(obj) = true;
 }
 
-static void invalidateSocket(Object* obj)
+static void invalidateSocket(TCObject* obj)
 {
    if (Socket_socketRef(*obj) != null)
    {
@@ -43,10 +43,10 @@ static void invalidateSocket(Object* obj)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnSS_serversocketCreate_iiis(NMParams p) // totalcross/net/ServerSocket native void serversocketCreate(int port, int backlog, String host) throws totalcross.io.IOException;
 {
-   Object serverSocket = p->obj[0];
-   Object serverSocketRef;
+   TCObject serverSocket = p->obj[0];
+   TCObject serverSocketRef;
    SERVER_SOCKET* serverSocketHandle;
-   Object address = p->obj[1];
+   TCObject address = p->obj[1];
    int32 port = p->i32[0];
    int32 backlog = p->i32[1];
    CharP szAddress = null;
@@ -70,12 +70,12 @@ TC_API void tnSS_serversocketCreate_iiis(NMParams p) // totalcross/net/ServerSoc
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnSS_nativeAccept(NMParams p) // totalcross/net/ServerSocket native public void nativeAccept() throws totalcross.io.IOException;
 {
-   Object serverSocket = p->obj[0];
-   Object serverSocketRef = ServerSocket_serverRef(serverSocket);
+   TCObject serverSocket = p->obj[0];
+   TCObject serverSocketRef = ServerSocket_serverRef(serverSocket);
    SERVER_SOCKET* serverSocketHandle;
-   Object socketRef;
+   TCObject socketRef;
    SOCKET* socketHandle;
-   Object newSocket = null;
+   TCObject newSocket = null;
    int32 timeout = ServerSocket_timeout(serverSocket);
    Err err;
 
@@ -105,8 +105,8 @@ TC_API void tnSS_nativeAccept(NMParams p) // totalcross/net/ServerSocket native 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnSS_nativeClose(NMParams p) // totalcross/net/ServerSocket native private void nativeClose() throws totalcross.io.IOException;
 {
-   Object serverSocket = p->obj[0];
-   Object serverSocketRef = ServerSocket_serverRef(serverSocket);
+   TCObject serverSocket = p->obj[0];
+   TCObject serverSocketRef = ServerSocket_serverRef(serverSocket);
    SERVER_SOCKET* serverSocketHandle;
    Err err;
 

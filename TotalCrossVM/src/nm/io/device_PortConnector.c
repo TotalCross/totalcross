@@ -25,7 +25,7 @@
  #include "linux/device_PortConnector_c.h"
 #endif
 
-static void invalidate(Object obj)
+static void invalidate(TCObject obj)
 {
    if (PortConnector_portConnector(obj) != null)
    {
@@ -44,16 +44,16 @@ static void invalidate(Object obj)
 TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector native void create(int number, int baudRate, int bits, int parity, int stopBits);
 {
 #if !defined WP8
-   Object portConnector = p->obj[0];
+   TCObject portConnector = p->obj[0];
    int32 number = p->i32[0];
    int32 baudRate = p->i32[1];
    int32 bits = p->i32[2];
    int32 parity = p->i32[3];
    int32 stopBits = p->i32[4];
 
-   Object portConnectorRef;
+   TCObject portConnectorRef;
    PortHandle* portConnectorHandle;
-   Object receiveBufferObj;
+   TCObject receiveBufferObj;
    VoidP* receiveBuffer;
    Err err;
 
@@ -80,12 +80,12 @@ TC_API void tidPC_create_iiiii(NMParams p) // totalcross/io/device/PortConnector
 TC_API void tidPC_nativeClose(NMParams p) // totalcross/io/device/PortConnector native private void nativeClose();
 {
 #if !defined WP8
-   Object portConnector = p->obj[0];
+   TCObject portConnector = p->obj[0];
 
-   Object portConnectorRef = PortConnector_portConnector(portConnector);
+   TCObject portConnectorRef = PortConnector_portConnector(portConnector);
    PortHandle* portConnectorHandle = (PortHandle*) ARRAYOBJ_START(portConnectorRef);
 
-   Object receiveBufferObj = PortConnector_receiveBuffer(portConnector);
+   TCObject receiveBufferObj = PortConnector_receiveBuffer(portConnector);
    VoidP* receiveBuffer = (VoidP*) ARRAYOBJ_START(receiveBufferObj);
    int32 portNumber = PortConnector_portNumber(portConnector);
    Err err;
@@ -99,10 +99,10 @@ TC_API void tidPC_nativeClose(NMParams p) // totalcross/io/device/PortConnector 
 TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConnector native public void setFlowControl(boolean on);
 {
 #if !defined WP8
-   Object portConnector = p->obj[0];
+   TCObject portConnector = p->obj[0];
    bool flowOn = p->i32[0]; // note: this is also used in Palm OS!
 
-   Object portConnectorRef = PortConnector_portConnector(portConnector);
+   TCObject portConnectorRef = PortConnector_portConnector(portConnector);
    PortHandle* portConnectorHandle;
 
    Err err;
@@ -121,13 +121,13 @@ TC_API void tidPC_setFlowControl_b(NMParams p) // totalcross/io/device/PortConne
 TC_API void tidPC_readWriteBytes_Biib(NMParams p)
 {
 #if !defined WP8
-   Object portConnector = p->obj[0];
-   Object byteArray = p->obj[1];
+   TCObject portConnector = p->obj[0];
+   TCObject byteArray = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    bool isRead = p->i32[2];
 
-   Object portConnectorRef = PortConnector_portConnector(portConnector);
+   TCObject portConnectorRef = PortConnector_portConnector(portConnector);
    PortHandle* portConnectorHandle = (PortHandle*) ARRAYOBJ_START(portConnectorRef);
 
    int32 portNumber = PortConnector_portNumber(portConnector);
@@ -152,9 +152,9 @@ TC_API void tidPC_readWriteBytes_Biib(NMParams p)
 TC_API void tidPC_readCheck(NMParams p) // totalcross/io/device/PortConnector native public int readCheck();
 {
 #if !defined WP8
-   Object portConnector = p->obj[0];
+   TCObject portConnector = p->obj[0];
 
-   Object portConnectorRef = PortConnector_portConnector(portConnector);
+   TCObject portConnectorRef = PortConnector_portConnector(portConnector);
    PortHandle* portConnectorHandle;
 
    int32 inQueue;

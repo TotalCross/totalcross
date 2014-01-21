@@ -531,7 +531,7 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
  *
  ************************************/
 
-static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object time)
+static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, TCObject time)
 {
    FILETIME systemFileTime, localFileTime;
    FILETIME *creationTime, *lastAccessTime, *lastWriteTime;
@@ -604,7 +604,7 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
  *
  *************************************/
 
-static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, char whichTime, Object* time)
+static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, char whichTime, TCObject* time)
 {
    FILETIME systemFileTime, localFileTime;
    SYSTEMTIME fileTime;

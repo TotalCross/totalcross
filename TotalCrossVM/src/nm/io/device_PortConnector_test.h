@@ -21,8 +21,8 @@ TESTCASE(tidPC_create_iiiii) // totalcross/io/device/PortConnector native void c
 //#ifdef WIN32
    TNMParams p, pTime;
    int32 i32buf[5];
-   Object objBuf[2];
-   Object pTimeObj[1];
+   TCObject objBuf[2];
+   TCObject pTimeObj[1];
    CharP buf;
    CharP buf2;
    int32 len;

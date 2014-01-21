@@ -219,7 +219,7 @@ void showTestResults(int *testResults);
           do                                                                        \
           {                                                                         \
              int32 xtonull;                                                         \
-             Object lastException = null;                                           \
+             TCObject lastException = null;                                         \
              for (xtonull = 1; TCAPI_FUNC(getCountToReturnNull)() == 0; xtonull++)  \
              {                                                                      \
                 TCAPI_FUNC(setCountToReturnNull)(xtonull);
@@ -268,7 +268,7 @@ DECLARE_ASSERT_FUNC2(EqualsU16     , uint16  , uint16)
 DECLARE_ASSERT_FUNC2(EqualsU32     , uint32  , uint32)
 DECLARE_ASSERT_FUNC2(EqualsDbl     , double  , double)
 DECLARE_ASSERT_FUNC2(EqualsSz      , CharP   , CharP )
-DECLARE_ASSERT_FUNC2(EqualsObj     , Object  , Object)
+DECLARE_ASSERT_FUNC2(EqualsObj     , TCObject, TCObject)
 DECLARE_ASSERT_FUNC2(EqualsPtr     , VoidP   , VoidP )
 DECLARE_ASSERT_FUNC3(EqualsBlock   , VoidP   , VoidP  , int32 )
 DECLARE_ASSERT_FUNC3(EqualsFilled  , VoidP   , uint32 , uint8 )

@@ -16,8 +16,8 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tucL_create(NMParams p) // totalcross/util/concurrent/Lock native void create();
 {
-   Object obj = p->obj[0];
-   Object mutexObj;
+   TCObject obj = p->obj[0];
+   TCObject mutexObj;
    mutexObj = Lock_mutex(obj) = createByteArray(p->currentContext, sizeof(MUTEX_TYPE));
    if (mutexObj != null)
    {
@@ -29,8 +29,8 @@ TC_API void tucL_create(NMParams p) // totalcross/util/concurrent/Lock native vo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tucL_destroy(NMParams p) // totalcross/util/concurrent/Lock native void destroy();
 {
-   Object obj = p->obj[0];
-   Object mutexObj = Lock_mutex(obj);
+   TCObject obj = p->obj[0];
+   TCObject mutexObj = Lock_mutex(obj);
    if (mutexObj != null)
    {
       MUTEX_TYPE *mo = (MUTEX_TYPE *)ARRAYOBJ_START(mutexObj);

@@ -123,7 +123,7 @@ extern DECLARE_MUTEX(createdHeaps);
  typedef struct
  {
     Context context;
-    Object threadObject;
+    TCObject threadObject;
     ThreadHandle h;
  } *ThreadArgs, TThreadArgs;
 
@@ -134,7 +134,7 @@ extern DECLARE_MUTEX(createdHeaps);
  typedef pthread_t ThreadHandle;
  typedef struct
  {
-    Object threadObject;
+    TCObject threadObject;
     Context context;
     pthread_cond_t state_cv;
     pthread_mutex_t state_mutex;
@@ -146,7 +146,7 @@ extern DECLARE_MUTEX(createdHeaps);
 
 ThreadHandle threadCreateNative(Context context, ThreadFunc t, VoidP args);
 ThreadHandle threadGetCurrent();
-void threadCreateJava(Context currentContext, Object this_);
+void threadCreateJava(Context currentContext, TCObject this_);
 void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
 

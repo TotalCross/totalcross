@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
 {
-   Object classNameObj,ptrObj=null;
+   TCObject classNameObj,ptrObj=null;
    classNameObj = p->obj[0];
    if (classNameObj == NULL)
       throwException(p->currentContext, NullPointerException,null);
@@ -48,7 +48,7 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
 {
-   Object me;
+   TCObject me;
    TCClass target;
 
    me = p->obj[0];
@@ -71,7 +71,7 @@ TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
 {
-   Object me, other;
+   TCObject me, other;
 
    me = p->obj[0];
    other = p->obj[1];

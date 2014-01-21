@@ -44,9 +44,9 @@ typedef struct
    uint16 *bitIndexTable;
 } *UserFont, TUserFont;
 
-int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch);
-int32 getJCharPWidth(Context currentContext, Object fontObj, JCharP s, int32 len); // len is NOT optional, it must be given
-UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar ch);
+int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch);
+int32 getJCharPWidth(Context currentContext, TCObject fontObj, JCharP s, int32 len); // len is NOT optional, it must be given
+UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar ch);
 FontFile loadFontFile(char *fontName);
 UserFont loadUserFont(FontFile ff, bool plain, int32 size, JChar c);  // use size=-1 to load the normal size
 bool fontInit(Context currentContext);

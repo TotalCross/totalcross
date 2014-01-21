@@ -14,7 +14,7 @@
 TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    CharP res8=null;
 
    tzero(p);
@@ -34,7 +34,7 @@ TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase()
 TESTCASE(jlS_toLowerCase) // java/lang/String native public String toLowerCase();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    CharP res8=null;
 
    tzero(p);
@@ -161,7 +161,7 @@ TESTCASE(jlS_valueOf_i) // java/lang/String native public static String valueOf(
 TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 i;
    JCharP j;
 
@@ -207,7 +207,7 @@ TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
 TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, int startIndex);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 is[2];
    JCharP j;
 
@@ -245,7 +245,7 @@ TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, in
 TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object obj);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -277,7 +277,7 @@ TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object o
 TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String s);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -304,7 +304,7 @@ TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String
 TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChars(char []srcArray, int srcStart, char []dstArray, int dstStart, int length);
 {
    TNMParams p;
-   Object objs[2],res;
+   TCObject objs[2],res;
    int32 i[3];
 
    tzero(p);
@@ -341,7 +341,7 @@ TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChar
 TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c, int startIndex);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    int32 s;
 
    tzero(p);
@@ -389,7 +389,7 @@ TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c,
 TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -445,7 +445,7 @@ TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
 TESTCASE(jlS_startsWith_si) // java/lang/String native public boolean startsWith(String prefix, int from);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    int32 from;
 
    tzero(p);
@@ -484,7 +484,7 @@ TESTCASE(jlS_startsWith_si) // java/lang/String native public boolean startsWith
 TESTCASE(jlS_endsWith_s) // java/lang/String native public boolean endsWith(String suffix);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -517,7 +517,7 @@ TESTCASE(jlS_endsWith_s) // java/lang/String native public boolean endsWith(Stri
 TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equalsIgnoreCase(String s);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -543,7 +543,7 @@ TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equal
 TESTCASE(jlS_replace_cc) // java/lang/String native public String replace(char oldChar, char newChar);
 {
    TNMParams p;
-   Object obj,obj2;
+   TCObject obj,obj2;
    int32 is[2];
 
    tzero(p);
@@ -579,7 +579,7 @@ TESTCASE(jlS_replace_cc) // java/lang/String native public String replace(char o
 TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(int c, int startIndex);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 is[2];
    JCharP j;
 
@@ -617,7 +617,7 @@ TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(i
 TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(int c);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 i;
    JCharP j;
 
@@ -663,7 +663,7 @@ TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(in
 TESTCASE(jlS_trim) // java/lang/String native public String trim();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;

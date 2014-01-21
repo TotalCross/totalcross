@@ -71,7 +71,7 @@ TC_API bool TCHARP2GUID(TCHARP szGuid, GUID* guid)
    return true;
 }
 
-TC_API bool String2GUID(Object string, GUID* guid)
+TC_API bool String2GUID(TCObject string, GUID* guid)
 {
    int32 stringLen = String_charsLen(string);
    TCHAR szGuid[MAX_GUID_STRING_LEN] = GuidZero;

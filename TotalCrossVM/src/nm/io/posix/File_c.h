@@ -514,7 +514,7 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
  *
  ************************************/
 
-static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
+static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, TCObject time)
 {
    struct tm tm;
    struct utimbuf timbuf;
@@ -559,7 +559,7 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
  *
  *************************************/
 
-static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 whichTime, Object* time)
+static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 whichTime, TCObject* time)
 {
    struct stat statData;
 

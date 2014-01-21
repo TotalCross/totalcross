@@ -19,7 +19,7 @@ TESTCASE(tumMC_play_b) // totalcross/ui/media/MediaClip native public boolean pl
 #if defined (WIN32)
 #if 1
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    p.currentContext = currentContext;
    p.obj = &obj;

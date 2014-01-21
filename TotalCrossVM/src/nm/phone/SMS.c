@@ -23,8 +23,8 @@
 TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public static void send(String destination, String message) throws totalcross.io.IOException;
 {
 #if defined (WINCE)
-   Object destination = p->obj[0];
-   Object message = p->obj[1];
+   TCObject destination = p->obj[0];
+   TCObject message = p->obj[1];
    if (destination == null)
       throwNullArgumentException(p->currentContext, "destination");
    else

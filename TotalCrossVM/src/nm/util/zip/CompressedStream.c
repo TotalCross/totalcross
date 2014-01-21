@@ -36,7 +36,7 @@ static void zfree(voidpf opaque, voidpf address)
 
 typedef struct
 {
-   Object stream;
+   TCObject stream;
    Method rwMethod;
    z_stream c_stream; // compression stream
 } TZLibStreamRef, *ZLibStreamRef;
@@ -44,8 +44,8 @@ typedef struct
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedStream native protected Object createInflate(totalcross.io.Stream stream) throws IOException;
 {
-   Object stream = p->obj[1];
-   Object zstreamRefObj;
+   TCObject stream = p->obj[1];
+   TCObject zstreamRefObj;
    ZLibStreamRef zstreamRef;
    Err err = Z_OK;
 
@@ -71,9 +71,9 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/CompressedStream native protected Object createDeflate(totalcross.io.Stream stream, int compressionType) throws IOException;
 {
-   Object stream = p->obj[1];
+   TCObject stream = p->obj[1];
    int32 compressionType = p->i32[0];
-   Object zstreamRefObj;
+   TCObject zstreamRefObj;
    ZLibStreamRef zstreamRef;
    Err err = Z_OK;
 
@@ -97,12 +97,12 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzCS_readBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStream native public int readBytes(byte []buf, int start, int count) throws IOException;
 {
-   Object zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
-   Object streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
+   TCObject zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
+   TCObject streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
    int32 mode = CompressedStream_mode(p->obj[0]);
    ZLibStreamRef zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
-   Object stream = zstreamRef->stream;
-   Object buf = p->obj[1];
+   TCObject stream = zstreamRef->stream;
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    int32 end = start + count;
@@ -136,12 +136,12 @@ TC_API void tuzCS_readBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStr
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzCS_writeBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
 {
-   Object zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
-   Object streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
+   TCObject zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
+   TCObject streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
    int32 mode = CompressedStream_mode(p->obj[0]);
    ZLibStreamRef zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
-   Object stream = zstreamRef->stream;
-   Object buf = p->obj[1];
+   TCObject stream = zstreamRef->stream;
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    int32 streamBufferLen = ARRAYOBJ_LEN(streamBuffer);
@@ -171,10 +171,10 @@ TC_API void tuzCS_writeBytes_Bii(NMParams p) // totalcross/util/zip/CompressedSt
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzCS_close(NMParams p) // totalcross/util/zip/CompressedStream native public void close() throws IOException;
 {
-   Object zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
-   Object streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
+   TCObject zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
+   TCObject streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
    ZLibStreamRef zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
-   Object stream = zstreamRef->stream;
+   TCObject stream = zstreamRef->stream;
    int32 mode = CompressedStream_mode(p->obj[0]);
    int32 streamBufferLen = ARRAYOBJ_LEN(streamBuffer);
    Err err;

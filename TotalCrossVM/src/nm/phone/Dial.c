@@ -35,13 +35,13 @@ static void throwDialException(CharP msg, uint32 param)
    throwException(currentContext, IOException, msg, param);
 }
 
-Object* listener;
+TCObject* listener;
 Method dialStatusChange;
-Object lastListener;
+TCObject lastListener;
 
 static void statusChange(CharP msg)
 {
-   Object msgObj;
+   TCObject msgObj;
    if (listener == null || *listener != lastListener)
    {
       TCClass dial = loadClass(currentContext, "totalcross.phone.Dial", true); //flsobral@tc114_75: fixed Dial's full qualified name.
@@ -73,7 +73,7 @@ static void statusChange(CharP msg)
 TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public static void number(String number);
 {
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
-   Object numberObj = p->obj[0];
+   TCObject numberObj = p->obj[0];
    currentContext = p->currentContext;
    if (numberObj == null)
       throwNullArgumentException(p->currentContext, "number");

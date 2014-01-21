@@ -190,7 +190,7 @@ static void deleteAppPreferences(AppHive h)
    unlink(path);
 }
 
-static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
    AppHive hive;
    uint8* data;
@@ -203,16 +203,16 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
    writeAppPreferences(k, data, bin ? len : len*2);
 }
 
-static Object getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
    AppHive hive;
-   Object target = null;
+   TCObject target = null;
    TCHAR *k = isHKLM ? getAppSecretHive(hive, applicationId) : getAppHive(hive, applicationId, bin);
    UInt16 len;
    CharP buf = readAppPreferences(k, bin, &len);
    if (buf && len > 0)
    {
-      Object temp = null;
+      TCObject temp = null;
       target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2);
       if (temp)
          memcpy(ARRAYOBJ_START(temp), buf, len);

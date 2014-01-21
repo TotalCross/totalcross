@@ -16,10 +16,10 @@ TC_API void tsT_update(NMParams p);
 TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
 {
    TNMParams p;
-   Object objArray[2];
+   TCObject objArray[2];
    int32 i32[3];
    int8 *pBytes, *pBytes2;
-   Object *pStrings, *pStrings2;
+   TCObject *pStrings, *pStrings2;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -138,7 +138,7 @@ TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean 
    objArray[0] = createStringArray(currentContext, 15);
    setObjectLock(objArray[0], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objArray[0]);
-   pStrings = (ObjectArray)ARRAYOBJ_START(objArray[0]);
+   pStrings = (TCObjectArray)ARRAYOBJ_START(objArray[0]);
    pStrings[0] = createStringObjectFromCharP(currentContext, "1", -1);
    setObjectLock(pStrings[0], UNLOCKED);
    pStrings[1] = createStringObjectFromCharP(currentContext, "2", -1);
@@ -152,7 +152,7 @@ TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean 
    objArray[1] = createStringArray(currentContext, 5);
    setObjectLock(objArray[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objArray[1]);
-   pStrings2 = (ObjectArray)ARRAYOBJ_START(objArray[1]);
+   pStrings2 = (TCObjectArray)ARRAYOBJ_START(objArray[1]);
    pStrings2[0] = createStringObjectFromCharP(currentContext, "a", -1);
    setObjectLock(pStrings2[0], UNLOCKED);
    pStrings2[1] = createStringObjectFromCharP(currentContext, "b", -1);
@@ -197,9 +197,9 @@ TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(t
 {
 #if defined (WIN32) && !defined (WP8)
    TNMParams p;
-   Object currentTime;
-   Object testTime;
-   Object checkTime;
+   TCObject currentTime;
+   TCObject testTime;
+   TCObject checkTime;
 
    currentTime = createObject(currentContext, "totalcross.sys.Time");
    setObjectLock(currentTime, UNLOCKED);
@@ -262,7 +262,7 @@ TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(Strin
 
 #elif defined(WIN32)
    TNMParams p;
-   Object obj[2];
+   TCObject obj[2];
    int32 i32buf[2];
 
    p.currentContext = currentContext;
@@ -387,7 +387,7 @@ TESTCASE(tsV_interceptSpecialKeys_I) // totalcross/sys/Vm native public static v
 TESTCASE(tsV_debug_s) // totalcross/sys/Vm native public static void debug(String s);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -402,7 +402,7 @@ TESTCASE(tsV_debug_s) // totalcross/sys/Vm native public static void debug(Strin
 TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String clipboardPaste();
 {
    TNMParams p1, p2;
-   Object copied, pasted;
+   TCObject copied, pasted;
 
    tzero(p1);
    tzero(p2);
@@ -452,7 +452,7 @@ TESTCASE(tsV_isKeyDown_i) // totalcross/sys/Vm native public static boolean isKe
 TESTCASE(tsV_getFile_s) // totalcross/sys/Vm native public static byte[] getFile(String name);
 {
    TNMParams p;
-   Object obj[3];
+   TCObject obj[3];
    int32 i32buf[3];
    int32 ret;
    CharP pRet;

@@ -163,7 +163,7 @@
 TC_API TValue executeMethod(Context currentContext, Method method, ...);
 typedef TValue (*executeMethodFunc)(Context currentContext, Method method, ...);
 /// check if the given range is inside the bounds of the array (start < x <= end)
-TC_API bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 count);
-typedef bool (*checkArrayRangeFunc)(Context currentContext, Object obj, int32 start, int32 count);
+TC_API bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 count);
+typedef bool (*checkArrayRangeFunc)(Context currentContext, TCObject obj, int32 start, int32 count);
 
 #endif

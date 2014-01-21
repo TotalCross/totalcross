@@ -128,7 +128,7 @@ bool assertEqualsSz(struct TestSuite *tc, char* v1, char* v2, const char *file, 
       return fail(tc, "%s (%d): assertEqualsSz(%s == %s) failed because the strings have different lengths!\n",file,line,v1,v2);
    return true;
 }
-bool assertEqualsObj(struct TestSuite *tc, Object v1, Object v2, const char *file, int line)
+bool assertEqualsObj(struct TestSuite *tc, TCObject v1, TCObject v2, const char *file, int line)
 {
    return (v1 == v2) ? true : fail(tc, "%s (%d): assertEqualsObj(%lu == %lu) failed!\n",file,line,(long)v1,(long)v2);
 }

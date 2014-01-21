@@ -126,7 +126,7 @@ void methodHashCode(CharP name, uint16* cpParams, int32 n, ConstantPool cp, int3
 void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap heap)
 {
    int32 len,i,partSize;
-   CharPArray sa; ObjectArray oa;
+   CharPArray sa; TCObjectArray oa;
    int16* u;
    char chars[256];
    uint8 mark;
@@ -225,7 +225,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
 #ifdef DEBUG_OMM_LIST
       debug("Start of constant pool strings");
 #endif
-      oa = t->str = newPtrArrayOf(Object, t->strCount, heap);
+      oa = t->str = newPtrArrayOf(TCObject, t->strCount, heap);
       for (oa++, i = t->strCount; --i > 0; oa++)
       {
          tczRead(tcz, &mark, 1); // read the mark
@@ -575,7 +575,7 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
       if (ci.objStaticFieldsCount > 0)
       {
          c->objStaticFields   = readFields(cp, ci.objStaticFieldsCount, tcz, null, c->name);
-         c->objStaticValues = newPtrArrayOf(Object, ci.objStaticFieldsCount, heap);
+         c->objStaticValues = newPtrArrayOf(TCObject, ci.objStaticFieldsCount, heap);
       }
       if (ci.v64StaticFieldsCount > 0)
       {

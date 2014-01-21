@@ -189,7 +189,7 @@ static void windowSetSIP(int32 sipOption)
 #endif
 }
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    TCHAR buf[30];
    JCharP2TCHARPBuf(String_charsStart(titleObj), min32(String_charsLen(titleObj),29), buf); // guich@tc113_32: limit to buf's size (and reduced to 30 chars)

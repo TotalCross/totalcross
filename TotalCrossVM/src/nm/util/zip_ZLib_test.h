@@ -21,9 +21,9 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
 #if TEST_ZLIB
    TNMParams tmnpZlib, tmnpFileIn, tmnpFileOut;
    int32 i32Zlib[3], i32FileIn[2], i32FileOut[2];
-   Object objZlib[2];
-   Object objFileIn[2];
-   Object objFileOut[2];
+   TCObject objZlib[2];
+   TCObject objFileIn[2];
+   TCObject objFileOut[2];
    char srcFileName[MAX_PATHNAME];
    char zipFileName[MAX_PATHNAME];
    char dstFileName[MAX_PATHNAME];

@@ -52,7 +52,7 @@ extern char commandLine[256];
 extern int32 exitCode;
 extern bool rebootOnExit;
 extern bool destroyingApplication;
-extern Object mainClass;  // the instance being executed
+extern TCObject mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
@@ -110,9 +110,9 @@ extern jmethodID jsetElapsed;
 
 // objectmemorymanager.c
 extern bool runningGC,runningFinalizer;
-extern ObjectArray freeList; // the array with lists of free objects
-extern ObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
-extern ObjectArray lockList; // locked objects list
+extern TCObjectArray freeList; // the array with lists of free objects
+extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
+extern TCObjectArray lockList; // locked objects list
 extern uint32 markedAsUsed; // starts as 1
 extern uint32 objCreated,skippedGC,objLocked; // a few counters
 extern int32 lastGC;
@@ -122,9 +122,9 @@ extern Stack objStack;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 extern bool canTraverse;
-extern ObjectArray freeList2; // the array with lists of free objects
-extern ObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
-extern ObjectArray lockList2; // locked objects list
+extern TCObjectArray freeList2; // the array with lists of free objects
+extern TCObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
+extern TCObjectArray lockList2; // locked objects list
 extern uint32 markedAsUsed2; // starts as 1
 extern uint32 gcCount2,objCreated2,skippedGC2,objLocked2; // the current gc count
 extern Heap ommHeap2,chunksHeap2;
@@ -257,8 +257,8 @@ TC_API UInt32 getApplicationId();
 typedef UInt32 (*getApplicationIdFunc)();
 TC_API CharP getApplicationIdStr();
 typedef CharP (*getApplicationIdStrFunc)();
-TC_API Object getMainClass();
-typedef Object (*getMainClassFunc)();
+TC_API TCObject getMainClass();
+typedef TCObject (*getMainClassFunc)();
 TC_API CharP getVMPath();
 typedef CharP (*getVMPathFunc)();
 TC_API CharP getAppPath();

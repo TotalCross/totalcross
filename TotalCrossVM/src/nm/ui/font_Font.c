@@ -20,7 +20,7 @@
 TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void fontCreate();
 {
    char name[50];
-   Object obj, fontName;
+   TCObject obj, fontName;
    FontFile ff;
 
    obj = p->obj[0];

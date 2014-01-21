@@ -17,7 +17,7 @@
 TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private String toStringNative();
 {
    TCClass c;
-   Object obj;
+   TCObject obj;
    int32 len;
 
    obj = p->obj[0]; // class object
@@ -39,7 +39,7 @@ TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private St
 TC_API void jlO_getClass(NMParams p) // java/lang/Object native public final Class getClass();
 {
    TCClass c;
-   Object thisObj, classObj, ptrObj;
+   TCObject thisObj, classObj, ptrObj;
 
    p->retO = classObj = createObject(p->currentContext, "java.lang.Class");
    if (classObj != null && (Class_targetClass(classObj) = ptrObj = createByteArray(p->currentContext, PTRSIZE)) != null)

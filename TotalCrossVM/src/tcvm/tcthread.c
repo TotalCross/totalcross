@@ -13,7 +13,7 @@
 
 #include "tcvm.h"
 
-void executeThreadRun(Context context, Object thread);
+void executeThreadRun(Context context, TCObject thread);
 
 #if defined WINCE || defined WIN32
  #include "win/tcthread_c.h"
@@ -21,7 +21,7 @@ void executeThreadRun(Context context, Object thread);
  #include "posix/tcthread_c.h"
 #endif
 
-void executeThreadRun(Context context, Object thread)
+void executeThreadRun(Context context, TCObject thread)
 {
    TCClass c = OBJ_CLASS(thread);
    Method run = getMethod(c, true, "run", 0);
@@ -56,9 +56,9 @@ ThreadHandle threadGetCurrent()
    return privateThreadGetCurrent();
 }
 
-void threadCreateJava(Context currentContext, Object this_)
+void threadCreateJava(Context currentContext, TCObject this_)
 {
-   Object a;
+   TCObject a;
    setObjectLock(this_,LOCKED); // prevent the java.lang.Thread object from being collected, because another thread may collect it before the thread is started
    a = Thread_taskID(this_) = createByteArray(currentContext, sizeof(TThreadArgs));
    if (a != null)

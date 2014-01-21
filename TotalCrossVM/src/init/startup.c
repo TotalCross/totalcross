@@ -213,7 +213,7 @@ TC_API int32 startProgram(Context currentContext)
    TCClass c;
    bool mustActivate = false;
 #if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
-   Object rasClientInstance;
+   TCObject rasClientInstance;
    Method m;
 
    // 2. Check activation
@@ -244,7 +244,7 @@ TC_API int32 startProgram(Context currentContext)
    {
       char buf[4];
       uint8 *allowedKey = ENABLE_NORAS, *signedKey;
-      Object ret = executeMethod(currentContext, m, rasClientInstance).asObj;
+      TCObject ret = executeMethod(currentContext, m, rasClientInstance).asObj;
       if (currentContext->thrownException || ret == null)
       {
          alert("Invalid key (1).");
@@ -357,7 +357,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
    CharP c;
    Context currentContext;
-   Object name;
+   TCObject name;
 
 #if defined(WINCE)
  #if _WIN32_WCE >= 300 // splitted because HPC211 must be just ignored.

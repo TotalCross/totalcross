@@ -72,7 +72,7 @@ voidpf ZCALLBACK fopen_file_func (opaque, filename, mode)
    const char* filename;
    int mode;
 {
-   Object fileObj = (Object) filename;
+   TCObject fileObj = (TCObject) filename;
    return fileObj; //file;
 }
 
@@ -84,7 +84,7 @@ uLong ZCALLBACK fread_file_func (opaque, stream, buf, size)
 {
    long ret;
    uLong bufSize = 0;
-   Object streamObj = (Object) stream;
+   TCObject streamObj = (TCObject) stream;
    ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    if (zipNativeP->readBuf != null)
@@ -110,7 +110,7 @@ uLong ZCALLBACK fwrite_file_func (opaque, stream, buf, size)
 {
    long ret;
    uLong bufSize = 0;
-   Object streamObj = (Object) stream;
+   TCObject streamObj = (TCObject) stream;
    ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    if (zipNativeP->writeBuf != null)
@@ -133,7 +133,7 @@ long ZCALLBACK ftell_file_func (opaque, stream)
    voidpf stream;
 {
    long ret;
-   Object streamObj = (Object) stream;
+   TCObject streamObj = (TCObject) stream;
    ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    ret = executeMethod(zipNativeP->context, zipNativeP->streamTell, streamObj).asInt32;
@@ -147,7 +147,7 @@ long ZCALLBACK fseek_file_func (opaque, stream, offset, origin)
    uLong offset;
    int origin;
 {
-   Object streamObj = (Object) stream;
+   TCObject streamObj = (TCObject) stream;
    ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    int fseek_origin=0;
@@ -176,7 +176,7 @@ int ZCALLBACK fclose_file_func (opaque, stream)
    voidpf opaque;
    voidpf stream;
 {
-   Object streamObj = (Object) stream;
+   TCObject streamObj = (TCObject) stream;
    ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    //executeMethod(zipNativeP->context, zipNativeP->streamClose, streamObj);

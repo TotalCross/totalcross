@@ -31,7 +31,7 @@ void dispatcher_dispath();
 void windowSetSIP(enum TCSIP kb);
 
 // Dummy functions?
-void windowSetDeviceTitle(Object titleObj);
+void windowSetDeviceTitle(TCObject titleObj);
 
 // Threads functions
 void* cppthread_create(void *args);

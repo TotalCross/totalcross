@@ -15,7 +15,7 @@ TESTCASE(tiPDBF_create_sssi) // totalcross/io/PDBFile native private void create
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -172,7 +172,7 @@ TESTCASE(tiPDBF_rename_s) // totalcross/io/PDBFile native public void rename(Str
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -246,7 +246,7 @@ TESTCASE(tiPDBF_addRecord_i) // totalcross/io/PDBFile native public int addRecor
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -290,7 +290,7 @@ TESTCASE(tiPDBF_addRecord_ii) // totalcross/io/PDBFile native public int addReco
 {
    int32 i32Array[2];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -336,7 +336,7 @@ TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resi
    int32 i32Array[1];
    int32 hvRecordLength;
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -387,7 +387,7 @@ TESTCASE(tiPDBF_nativeClose) // totalcross/io/PDBFile native private void native
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
@@ -441,7 +441,7 @@ TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() 
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -481,13 +481,13 @@ TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() 
 TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static String []listPDBs(int creatorId, int type);
 {
    int32 i, count;
-   Object listObj;
-   Object* list;
+   TCObject listObj;
+   TCObject* list;
    CharP s;
    bool found = false;
    int32 i32Array[2];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -521,7 +521,7 @@ TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static Strin
    count = ARRAYOBJ_LEN(listObj);
    ASSERT1_EQUALS(True, count > 0);
 
-   list = (Object*) ARRAYOBJ_START(listObj);
+   list = (TCObject*) ARRAYOBJ_START(listObj);
    for (i = 0; i < count && !found; i ++) // search for tiPDBF_ListPDBFiles_ii
    {
       s = String2CharP(list[i]);
@@ -553,7 +553,7 @@ TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void delete
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -622,7 +622,7 @@ TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRe
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -682,7 +682,7 @@ TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean s
 {
    int32 i32Array[1];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -740,7 +740,7 @@ TESTCASE(tiPDBF_readBytes_Bii) // totalcross/io/PDBFile native int readWriteByte
    int32 i, recSize = 128;
    int32 i32Array[3];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -832,7 +832,7 @@ TESTCASE(tiPDBF_writeBytes_Bii) // totalcross/io/PDBFile native int readWriteByt
    int32 i, recSize = 128;
    int32 i32Array[3];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -926,8 +926,8 @@ TESTCASE(tiPDBF_inspectRecord_Bii) // totalcross/io/PDBFile native public int in
    int32 i, recSize = 128;
    int32 i32Array[3];
    TNMParams p;
-   Object objs[4];
-   Object byteArray;
+   TCObject objs[4];
+   TCObject byteArray;
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -1012,7 +1012,7 @@ TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public v
 {
    int32 i32Array[2];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
@@ -1070,7 +1070,7 @@ TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void set
 {
    int32 i32Array[3];
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
@@ -1109,7 +1109,7 @@ TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void set
 TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec) throws totalcross.io.IOException;
 {
    TNMParams p;
-   Object objs[4];
+   TCObject objs[4];
    int32 i32Array[3];
    CharP buf = null;
    int32 i;

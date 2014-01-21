@@ -24,7 +24,7 @@
 static bool getKeyValue(NMParams p, TCHARP* key, TCHARP* value) // key and value are always in the same position
 {
    bool ret = false;
-   Object keyObj, valueObj;
+   TCObject keyObj, valueObj;
    keyObj = p->obj[0];
    valueObj = p->obj[1];
 
@@ -97,7 +97,7 @@ TC_API void tsR_set_isss(NMParams p) // totalcross/sys/Registry native public st
    CharP data=null;
    if (getKeyValue(p, &key, &value))
    {
-      Object dataObj = p->obj[2];
+      TCObject dataObj = p->obj[2];
       if (dataObj == null)
          throwNullArgumentException(p->currentContext, "data");
       else
@@ -121,7 +121,7 @@ TC_API void tsR_set_issB(NMParams p) // totalcross/sys/Registry native public st
    TCHARP key=null, value=null;
    if (getKeyValue(p, &key, &value))
    {
-      Object dataObj = p->obj[2];
+      TCObject dataObj = p->obj[2];
       if (dataObj == null)
          throwNullArgumentException(p->currentContext, "data");
       else
@@ -137,7 +137,7 @@ TC_API void tsR_delete_iss(NMParams p) // totalcross/sys/Registry native public 
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
    // value can be null
    TCHARP key=null, value=null;
-   Object keyObj, valueObj;
+   TCObject keyObj, valueObj;
    keyObj = p->obj[0];
    valueObj = p->obj[1];
 
@@ -172,7 +172,7 @@ TC_API void tsR_list_is(NMParams p) // totalcross/sys/Registry native public sta
 {
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
    TCHARP key=null;
-   Object keyObj;
+   TCObject keyObj;
    keyObj = p->obj[0];
 
    key = String2TCHARP(keyObj);

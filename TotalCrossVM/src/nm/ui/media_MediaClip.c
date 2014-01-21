@@ -28,9 +28,9 @@ TC_API void tumMC_create(NMParams p) // totalcross/ui/media/MediaClip native pri
 {
 	//XXX don't know what to do with this function for WP8 yet...
 #if !defined WP8
-   Object mediaClip = p->obj[0];
-   Object mediaClipRef;
-   Object mediaStream = MediaClip_mediaClipStream(mediaClip);
+   TCObject mediaClip = p->obj[0];
+   TCObject mediaClipRef;
+   TCObject mediaStream = MediaClip_mediaClipStream(mediaClip);
    MediaData media;
 
    if ((mediaClipRef = createByteArray(p->currentContext, sizeof(TMediaData))) != null)
@@ -52,11 +52,11 @@ TC_API void tumMC_nativeStart(NMParams p) // totalcross/ui/media/MediaClip nativ
 {
 	// XXX
 #if !defined WP8
-   Object mediaClip = p->obj[0];
-   Object mediaClipData = MediaClip_mediaClipRef(mediaClip);
+   TCObject mediaClip = p->obj[0];
+   TCObject mediaClipData = MediaClip_mediaClipRef(mediaClip);
    MediaData media = (MediaData) ARRAYOBJ_START(mediaClipData);
    int32 currentState = MediaClip_state(mediaClip);
-   Object mediaStream = MediaClip_mediaClipStream(mediaClip);
+   TCObject mediaStream = MediaClip_mediaClipStream(mediaClip);
    Context currentContext = p->currentContext;
 
    if (currentState == PREFETCHED || currentState == UNREALIZED)
@@ -85,8 +85,8 @@ TC_API void tumMC_stop(NMParams p) // totalcross/ui/media/MediaClip native publi
 {
 	// XXX
 #if !defined WP8
-   Object mediaClip = p->obj[0];
-   Object mediaClipData = MediaClip_mediaClipRef(mediaClip);
+   TCObject mediaClip = p->obj[0];
+   TCObject mediaClipData = MediaClip_mediaClipRef(mediaClip);
    MediaData media = (MediaData) ARRAYOBJ_START(mediaClipData);
    Err err;
 
@@ -113,8 +113,8 @@ TC_API void tumMC_reset(NMParams p) // totalcross/ui/media/MediaClip native publ
 {
 	// XXX
 #if !defined WP8
-   Object mediaClip = p->obj[0];
-   Object mediaClipRef = MediaClip_mediaClipRef(mediaClip);
+   TCObject mediaClip = p->obj[0];
+   TCObject mediaClipRef = MediaClip_mediaClipRef(mediaClip);
    MediaData media = (MediaData) ARRAYOBJ_START(mediaClipRef);
 
    if (MediaClip_state(mediaClip) != UNREALIZED)
@@ -129,8 +129,8 @@ TC_API void tumMC_nativeClose(NMParams p) // totalcross/ui/media/MediaClip nativ
 {
 	// XXX
 #if !defined WP8
-   Object mediaClip = p->obj[0];
-   Object mediaClipRef = MediaClip_mediaClipRef(mediaClip);
+   TCObject mediaClip = p->obj[0];
+   TCObject mediaClipRef = MediaClip_mediaClipRef(mediaClip);
    MediaData media = (MediaData) ARRAYOBJ_START(mediaClipRef);
 
    mediaClipClose(mediaClip, media);
@@ -147,11 +147,11 @@ TC_API void tumMC_record_iib(NMParams p) // totalcross/ui/media/MediaClip native
 {
 	// XXX
 #if !defined WP8
-   Object mediaClip = p->obj[0];
+   TCObject mediaClip = p->obj[0];
    int32 samplesPerSecond = p->i32[0];
    int32 bitsPerSample = p->i32[1];
    bool stereo = p->i32[2];
-   Object mediaClipData = MediaClip_mediaClipRef(mediaClip);
+   TCObject mediaClipData = MediaClip_mediaClipRef(mediaClip);
    MediaData media = (MediaData) ARRAYOBJ_START(mediaClipData);
 
    if (samplesPerSecond != 8000 && samplesPerSecond != 11025 && samplesPerSecond != 22050 && samplesPerSecond != 44100)

@@ -26,7 +26,7 @@
 #define TURN_SCREEN_ON        6
 #define VIBRATE               12
 
-static void vmSetTime(Object time)   // NOT IMPLEMENTED!
+static void vmSetTime(TCObject time)   // NOT IMPLEMENTED!
 {
 /*   tm.tm_year     = Time_year(time);
    tm.tm_mon      = Time_month(time);
@@ -42,7 +42,7 @@ void rebootDevice()
    (*env)->CallStaticIntMethod(env, applicationClass, jvmFuncI, REBOOT_DEVICE, 0);
 }
 
-static int32 vmExec(Object command, Object args, int32 launchCode, bool wait)
+static int32 vmExec(TCObject command, TCObject args, int32 launchCode, bool wait)
 {                                                                                
    JNIEnv *env = getJNIEnv();                                      
    jstring jcommand = (*env)->NewString(env, (jchar*) String_charsStart(command), String_charsLen(command));
@@ -95,11 +95,11 @@ static void vmClipboardCopy(JCharP string, int32 sLen)
    (*env)->DeleteLocalRef(env, jstr);
 }
 
-static Object vmClipboardPaste(Context currentContext)   // NOT IMPLEMENTED!
+static TCObject vmClipboardPaste(Context currentContext)   // NOT IMPLEMENTED!
 {
    JNIEnv* env = getJNIEnv();
    jstring src = (jstring) (*env)->CallStaticObjectMethod(env, applicationClass, jclipboard, 0);
-   Object o = null;
+   TCObject o = null;
    if (src != null)
    {
       const jchar *str = (*env)->GetStringChars(env, src, 0);

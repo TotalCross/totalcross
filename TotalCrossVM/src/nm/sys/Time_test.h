@@ -16,7 +16,7 @@ const int32 MAX_DAYS[13] = {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 TESTCASE(tsT_update) // totalcross/sys/Time native void update();
 {
    TNMParams p;
-   Object time;
+   TCObject time;
 
    time = createObject(currentContext, "totalcross.sys.Time");
    setObjectLock(time, UNLOCKED);

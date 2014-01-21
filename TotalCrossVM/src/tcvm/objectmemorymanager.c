@@ -40,7 +40,7 @@ lists: free objects and used objects.
    Memory allocation
    ~~~~~~~~~~~~~~~~~
 
-When an Object is allocated, it is removed from the free list and put in the used list
+When an TCObject is allocated, it is removed from the free list and put in the used list
 at the given array index (based on object's size).
 
 * Initial state:
@@ -169,13 +169,13 @@ inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProp
 
 typedef struct
 {
-   ObjectArray start;
+   TCObjectArray start;
    int32 n;
 } *ObjectsToVisit, TObjectsToVisit;
 
 #define OBJ_SIZE(o) OBJ_PROPERTIES(o)->size
 
-#define CHUNK2OBJECT(c) (Object)(((uint8*)c)+sizeof(TObjectProperties))
+#define CHUNK2OBJECT(c) (TCObject)(((uint8*)c)+sizeof(TObjectProperties))
 #define OBJECT2CHUNK(o) (Chunk)(((uint8*)o)-sizeof(TObjectProperties))
 
 #define OBJ_MARK(o)         OBJ_PROPERTIES(o)->mark
@@ -184,7 +184,7 @@ typedef struct
 #define OBJ_SETUNLOCKED(o)  OBJ_PROPERTIES(o)->lock = 0
 
 #ifdef DEBUG_OMM_LIST
-static int32 countObjectsInList(Object o, bool dump, int32 mark, int32 *size);
+static int32 countObjectsInList(TCObject o, bool dump, int32 mark, int32 *size);
 #endif
 
 #if defined(ENABLE_TEST_SUITE)
@@ -194,9 +194,9 @@ static int32 countObjectsInList(Object o, bool dump, int32 mark, int32 *size);
 #endif
 
 #ifdef DEBUG_OMM_LIST
-static void dumpList(Object o, bool showSize)
+static void dumpList(TCObject o, bool showSize)
 {
-   Object o0 = o;
+   TCObject o0 = o;
    o = OBJ_PROPERTIES(o)->next;
    debug("G %X<-*%X->%X",OBJ_PROPERTIES(o0)->prev,o0,o);
    if (o)
@@ -209,7 +209,7 @@ static void dumpList(Object o, bool showSize)
 }
 #endif
 
-inline static void removeNodeFromDblList(Object headObj, Object nodeObj)
+inline static void removeNodeFromDblList(TCObject headObj, TCObject nodeObj)
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -235,7 +235,7 @@ inline static void removeNodeFromDblList(Object headObj, Object nodeObj)
 #endif
 }
 
-inline static void insertNodeInDblList(Object headObj, Object nodeObj) // insert at the head
+inline static void insertNodeInDblList(TCObject headObj, TCObject nodeObj) // insert at the head
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -263,13 +263,13 @@ inline static void insertNodeInDblList(Object headObj, Object nodeObj) // insert
 #endif
 }
 
-static void moveDblList(Object srcList, Object dstList) // append the src list to the dst list
+static void moveDblList(TCObject srcList, TCObject dstList) // append the src list to the dst list
 {
    ObjectProperties src = OBJ_PROPERTIES(srcList);
    ObjectProperties dst = OBJ_PROPERTIES(dstList);
-   Object frstSrcObj = src->next;                       // first object of src list
-   Object lastSrcObj = src->prev;                       // last object of src list
-   Object lastDstObj = dst->prev ? dst->prev : dstList;  // last object of dst list
+   TCObject frstSrcObj = src->next;                       // first object of src list
+   TCObject lastSrcObj = src->prev;                       // last object of src list
+   TCObject lastDstObj = dst->prev ? dst->prev : dstList;  // last object of dst list
    ObjectProperties frstSrc = OBJ_PROPERTIES(frstSrcObj);
    ObjectProperties lastDst = OBJ_PROPERTIES(lastDstObj);
 
@@ -298,7 +298,7 @@ static void moveDblList(Object srcList, Object dstList) // append the src list t
 static bool createChunk(uint32 size)
 {
    Chunk chunk;
-   Object o;
+   TCObject o;
    IF_HEAP_ERROR(chunksHeap)
       return false;
 
@@ -335,14 +335,14 @@ bool initObjectMemoryManager()
    f += skip;
    u += skip;
    l += skip;
-   freeList = newPtrArrayOf(Object,n,ommHeap);
-   usedList = newPtrArrayOf(Object,n,ommHeap);
-   lockList = newPtrArrayOf(Object,1,ommHeap);
-   lockList[0] = (Object)l;
+   freeList = newPtrArrayOf(TCObject, n, ommHeap);
+   usedList = newPtrArrayOf(TCObject, n, ommHeap);
+   lockList = newPtrArrayOf(TCObject, 1, ommHeap);
+   lockList[0] = (TCObject)l;
    for (i =0; i < n; i++) // and now we just assign the starting pointer of each block
    {
-      freeList[i] = (Object)f; f += size;
-      usedList[i] = (Object)u; u += size;
+      freeList[i] = (TCObject)f; f += size;
+      usedList[i] = (TCObject)u; u += size;
    }
    markedAsUsed = 1;
    objStack = newStack(2048, sizeof(TObjectsToVisit), null); // must be > 1k!
@@ -358,9 +358,9 @@ void destroyObjectMemoryManager()
    heapDestroy(ommHeap);
 }
 
-static Object allocObjWith(uint32 size)
+static TCObject allocObjWith(uint32 size)
 {
-   Object o=null;
+   TCObject o=null;
    uint32 idx = size2idx(size);
    if (idx == OBJARRAY_MAX_INDEX || (o=OBJ_PROPERTIES(freeList[idx])->next) == null) // if this is the max index, or there's no free objects in the current index, try on the highest index
    {
@@ -376,9 +376,9 @@ static Object allocObjWith(uint32 size)
    return o;
 }
 
-Object allocObject(Context currentContext, uint32 size)
+TCObject allocObject(Context currentContext, uint32 size)
 {
-   Object o = null;
+   TCObject o = null;
    bool firstPass = true;
    ObjectProperties op;
 
@@ -447,7 +447,7 @@ tryAgain:
          {
             // make the rest of this object a free object
             Chunk startOfNextChunk = ((uint8*)o) + size;
-            Object oremain = CHUNK2OBJECT(startOfNextChunk);
+            TCObject oremain = CHUNK2OBJECT(startOfNextChunk);
             uint32 ridx = size2idx(objectBytesRemaining);
             xmemzero(OBJ_PROPERTIES(oremain),sizeof(TObjectProperties));
             OBJ_SIZE(oremain) = objectBytesRemaining;
@@ -470,11 +470,11 @@ end:
    return o;
 }
 
-static Object privateCreateObject(Context currentContext, CharP className, bool callDefaultConstructor)
+static TCObject privateCreateObject(Context currentContext, CharP className, bool callDefaultConstructor)
 {
    TCClass c;
    uint32 objectSize;
-   Object o=null;
+   TCObject o = null;
 
    LOCKVAR(omm);
    c = loadClass(currentContext, className, true);
@@ -502,21 +502,21 @@ end:
    return o;
 }
 
-TC_API Object createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className)
+TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, false);
 }
 
-TC_API Object createObject(Context currentContext, CharP className)
+TC_API TCObject createObject(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, true);
 }
 
-Object createArrayObject(Context currentContext, CharP type, int32 len)
+TCObject createArrayObject(Context currentContext, CharP type, int32 len)
 {
    TCClass c;
    uint32 arraySize, objectSize;
-   Object o=null;
+   TCObject o = null;
 
    if (len < 0)
       return null;
@@ -541,18 +541,18 @@ end:
    return o;
 }
 
-Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI)
+TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI)
 {
    uint32 len;
-   Object o;
-   Object *oa;
+   TCObject o;
+   TCObject *oa;
 
    // note that all dimensions are type java.lang.Array, except the last one.
    len = *dims < 65 ? regI[*dims] : (*dims-65);
    o = createArrayObject(currentContext, type, len);
    if (o != null && count > 1)
    {
-      for (oa = (Object*)ARRAYOBJ_START(o); len-- > 0; oa++)
+      for (oa = (TCObject*)ARRAYOBJ_START(o); len-- > 0; oa++)
          if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims+1, regI)) == null)
             return null;
          else
@@ -561,9 +561,9 @@ Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, u
    return o;
 }
 
-Object createStringObjectWithLen(Context currentContext, int32 len)
+TCObject createStringObjectWithLen(Context currentContext, int32 len)
 {
-   Object str;
+   TCObject str;
    str = createObjectWithoutCallingDefaultConstructor(currentContext, "java.lang.String"); // do not call default constructor, we'll set our own char array (2 lines below)
    if (str)
    {
@@ -574,9 +574,9 @@ Object createStringObjectWithLen(Context currentContext, int32 len)
    return (str && String_chars(str)) ? str : null;
 }
 
-Object createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len)
+TCObject createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len)
 {
-   Object str;
+   TCObject str;
    if (len < 0) len = JCharPLen(srcChars);
    str = createStringObjectWithLen(currentContext, len);
    if (str)
@@ -584,12 +584,12 @@ Object createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int
    return str;
 }
 
-Object createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len)
+TCObject createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len)
 {
 #if !defined (WINCE)
    JCharP dst;
 #endif
-   Object str;
+   TCObject str;
    if (len < 0) len = tcslen(srcChars);
    if ((str = createStringObjectWithLen(currentContext, len)) != null)
    {
@@ -604,10 +604,10 @@ Object createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int
    return str;
 }
 
-Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len)
+TCObject createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len)
 {
    JCharP dst;
-   Object str;
+   TCObject str;
    if (len < 0) len = xstrlen(srcChars);
    str = createStringObjectWithLen(currentContext, len);
    if (str == null)
@@ -618,7 +618,7 @@ Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32
    return str;
 }
 
-TC_API void setObjectLock(Object o, LockState lock)
+TC_API void setObjectLock(TCObject o, LockState lock)
 {
    int32 size,idx;
    if (o == null) return;
@@ -650,7 +650,7 @@ TC_API void setObjectLock(Object o, LockState lock)
    UNLOCKVAR(omm);
 }
 
-static void markSingleObject(Object o)
+static void markSingleObject(TCObject o)
 {
    TCClass c;
    TObjectsToVisit objs;
@@ -676,20 +676,20 @@ static void markSingleObject(Object o)
    // if this object is an array, and the elements are objects (or arrays), then push them to be marked later
    if (c->flags.isObjectArray) // array of objects or array of arrays?
    {
-      objs.start = (ObjectArray)ARRAYOBJ_START(o);
+      objs.start = (TCObjectArray)ARRAYOBJ_START(o);
       if (objs.start != null && (objs.n = ARRAYOBJ_LEN(o)) > 0)
          stackPush(objStack, &objs);
    }
    else // else, mark the instance fields of this object (note that arrays have no object instance fields)
    if (c->objInstanceFields != null)
    {
-      objs.start = (ObjectArray)FIELD_OBJ_OFFSET(o,c);
-      objs.n = (int32)((ObjectArray)FIELD_V64_OFFSET(o,c) - objs.start); // the object fields ends where the 64-bit ones start.
+      objs.start = (TCObjectArray)FIELD_OBJ_OFFSET(o,c);
+      objs.n = (int32)((TCObjectArray)FIELD_V64_OFFSET(o, c) - objs.start); // the object fields ends where the 64-bit ones start.
       stackPush(objStack, &objs);
    }
 }
 
-static void markObjects(Object o)
+static void markObjects(TCObject o)
 {
    TObjectsToVisit objs;
 
@@ -716,7 +716,7 @@ static void markClass(int32 i32, VoidP ptr)
 {
    TCClass c = (TCClass)ptr;
    int32 i;
-   Object* f = c->objStaticValues;
+   TCObject* f = c->objStaticValues;
    UNUSED(i32)
 
    // mark all static fields
@@ -725,7 +725,7 @@ static void markClass(int32 i32, VoidP ptr)
          markObjects(*f);
 }
 
-static int32 countObjectsInList(Object o, bool dump, int32 mark, int32* size)
+static int32 countObjectsInList(TCObject o, bool dump, int32 mark, int32* size)
 {
    int32 n = 0;
    if (size) *size = 0;
@@ -749,7 +749,7 @@ static int32 countObjectsInList(Object o, bool dump, int32 mark, int32* size)
    }
    return n;
 }
-static int32 countObjectsIn(ObjectArray oa, bool dumpCount, bool dumpObj, int32 mark)
+static int32 countObjectsIn(TCObjectArray oa, bool dumpCount, bool dumpObj, int32 mark)
 {
    int32 n = 0,i,j;
    int32 partial=0,total=0;
@@ -811,7 +811,7 @@ bool joinAdjacentObjects(uint8* block, uint32 size)
          {
             int32 oldIdx = size2idx(op0->size);
             int32 newIdx = size2idx(newSize);
-            Object o = CHUNK2OBJECT(block0);
+            TCObject o = CHUNK2OBJECT(block0);
             if (_DEBUG_OMM_LIST) debug("G %X merged: %4d -> %4d (%3d->%3d)", o, op0->size, newSize,oldIdx,newIdx);
             op0->size = newSize;
             if (oldIdx != newIdx)
@@ -845,7 +845,7 @@ static void markContexts()
    for (i = 0; i < MAX_CONTEXTS; i++)
       if ((c=copy[i]) != null)
       {
-         ObjectArray oa = c->regOStart;
+         TCObjectArray oa = c->regOStart;
          if (c->threadObj)
             markObjects(c->threadObj);
          if (c->nmp.retO)
@@ -858,7 +858,7 @@ static void markContexts()
       }
 }
 
-inline_ void finalizeObject(Object o, TCClass c)
+inline_ void finalizeObject(TCObject o, TCClass c)
 {
    while (c != null) 
    {
@@ -879,8 +879,8 @@ inline_ void finalizeObject(Object o, TCClass c)
 
 void runFinalizers() // calls finalize of all objects in use
 {
-   ObjectArray usedL;
-   Object o;
+   TCObjectArray usedL;
+   TCObject o;
    int32 i;
    TCClass c;
    gcContext->litebasePtr = mainContext->litebasePtr;  // let litebase destroy the ptr if he wants so
@@ -905,7 +905,7 @@ void runFinalizers() // calls finalize of all objects in use
  #endif
 #endif
 
-void preallocateArray(Context currentContext, Object sample, int32 length)
+void preallocateArray(Context currentContext, TCObject sample, int32 length)
 {
    int32 size = OBJ_SIZE(sample);
    int32 totSize = size * length;
@@ -919,8 +919,8 @@ void gc(Context currentContext)
 {
    int32 i;
    TCClass c;
-   ObjectArray freeL, usedL;
-   Object o;
+   TCObjectArray freeL, usedL;
+   TCObject o;
    int32 iniT,endT, elapsed;
    int32 nfree,nused,compIni;
 

@@ -52,7 +52,7 @@ int64* getStaticFieldLong(TCClass c, CharP fieldName)
    return idx >= 0 ? (int64*)&c->v64StaticValues[idx] : null;
 }
 
-Object* getStaticFieldObject(TCClass c, CharP fieldName)
+TCObject* getStaticFieldObject(TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->objStaticFields);
    return idx >= 0 ? &c->objStaticValues[idx] : null;
@@ -105,7 +105,7 @@ void getSField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 
 // used by both
 
-inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, Object o, RegType t)
+inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t)
 {
    bool found=false;
    FieldArray fields, f;
@@ -121,25 +121,25 @@ inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, Objec
 
 // used by external libraries, NOT by the vm
 
-int32* getInstanceFieldInt(Object instance, CharP fieldName, CharP className)
+int32* getInstanceFieldInt(TCObject instance, CharP fieldName, CharP className)
 {
    uint16 idx = getInstanceFieldIndex(fieldName, className, instance, RegI);
    return idx < UNBOUND_ERROR ? &FIELD_I32(instance, idx) : null;
 }
 
-double* getInstanceFieldDouble(Object instance, CharP fieldName, CharP className) // class name is the class where the field is declared, or null if from current class
+double* getInstanceFieldDouble(TCObject instance, CharP fieldName, CharP className) // class name is the class where the field is declared, or null if from current class
 {
    uint16 idx = getInstanceFieldIndex(fieldName, className, instance, RegD);
    return idx < UNBOUND_ERROR ? &FIELD_DBL(instance, OBJ_CLASS(instance), idx) : null;
 }
 
-int64* getInstanceFieldLong(Object instance, CharP fieldName, CharP className)
+int64* getInstanceFieldLong(TCObject instance, CharP fieldName, CharP className)
 {
    uint16 idx = getInstanceFieldIndex(fieldName, className, instance, RegL);
    return idx < UNBOUND_ERROR ? &FIELD_I64(instance, OBJ_CLASS(instance), idx) : null;
 }
 
-Object* getInstanceFieldObject(Object instance, CharP fieldName, CharP className)
+TCObject* getInstanceFieldObject(TCObject instance, CharP fieldName, CharP className)
 {
    uint16 idx = getInstanceFieldIndex(fieldName, className, instance, RegO);
    return idx < UNBOUND_ERROR ? &FIELD_OBJ(instance, OBJ_CLASS(instance), idx) : null;
@@ -157,7 +157,7 @@ void getIField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
    *fieldName = cp->mtdfld[fieldIndex];
 }
 
-inline uint16 getIField_Index(ConstantPool cp, Object o, int32 sym, RegType t)
+inline uint16 getIField_Index(ConstantPool cp, TCObject o, int32 sym, RegType t)
 {
    uint32 fieldIndex = cp->ifieldField[sym];
    uint32 classIndex = cp->ifieldClass[sym];

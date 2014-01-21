@@ -11,18 +11,18 @@
 
 
 
-extern Object testfont;
-extern Object pngImage, jpegImage;
+extern TCObject testfont;
+extern TCObject pngImage, jpegImage;
 
 #define TEST_SLEEP 200
-void blank(Context currentContext, Object g)
+void blank(Context currentContext, TCObject g)
 {
    Sleep(TEST_SLEEP);
    fillRect(currentContext, g, 0, 0, screen.screenW, screen.screenH, makePixel(255, 255, 255));
    updateScreen(mainContext);
 }
 
-static void testDrawHline(Context currentContext, Object g)
+static void testDrawHline(Context currentContext, TCObject g)
 {
    int32 y;
    for (y = 0; y < screen.screenH; y++)
@@ -33,7 +33,7 @@ static void testDrawHline(Context currentContext, Object g)
    }
 }
 
-static void testDrawVline(Context currentContext, Object g)
+static void testDrawVline(Context currentContext, TCObject g)
 {
    int32 x;
    for (x = 0; x < screen.screenW; x++)
@@ -44,7 +44,7 @@ static void testDrawVline(Context currentContext, Object g)
    }
 }
 
-static void testFillRect(Context currentContext, Object g)
+static void testFillRect(Context currentContext, TCObject g)
 {
    int32 x,k;
    PixelConv rr,gg,bb;
@@ -61,7 +61,7 @@ static void testFillRect(Context currentContext, Object g)
    }
 }
 
-static void testFillCircle(Context currentContext, Object g)
+static void testFillCircle(Context currentContext, TCObject g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -76,7 +76,7 @@ static void testFillCircle(Context currentContext, Object g)
    }
 }
 
-static void testDrawCircle(Context currentContext, Object g)
+static void testDrawCircle(Context currentContext, TCObject g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -91,7 +91,7 @@ static void testDrawCircle(Context currentContext, Object g)
    }
 }
 
-static void testDrawEllipse(Context currentContext, Object g)
+static void testDrawEllipse(Context currentContext, TCObject g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -106,7 +106,7 @@ static void testDrawEllipse(Context currentContext, Object g)
    }
 }
 
-static void testFillEllipse(Context currentContext, Object g)
+static void testFillEllipse(Context currentContext, TCObject g)
 {
    Pixel color;
    int32 r,mx,my;
@@ -121,7 +121,7 @@ static void testFillEllipse(Context currentContext, Object g)
    }
 }
 
-static void testPie(Context currentContext, Object g)
+static void testPie(Context currentContext, TCObject g)
 {
    Pixel color,white,black;
    int32 r=40,d,mx,my;
@@ -139,9 +139,9 @@ static void testPie(Context currentContext, Object g)
    }
 }
 
-static void drawImage(Context currentContext, Object g, Object img)
+static void drawImage(Context currentContext, TCObject g, TCObject img)
 {
-   Object gimg;
+   TCObject gimg;
    int32 w = Image_width(img);
    int32 h = Image_height(img);
    Pixel fore,back;
@@ -155,17 +155,17 @@ static void drawImage(Context currentContext, Object g, Object img)
    updateScreen(mainContext);
 }
 
-static void testJpegImage(Context currentContext, Object g)
+static void testJpegImage(Context currentContext, TCObject g)
 {
    drawImage(currentContext, g, jpegImage);
 }
 
-static void testPngImage(Context currentContext, Object g)
+static void testPngImage(Context currentContext, TCObject g)
 {
    drawImage(currentContext, g, pngImage);
 }
 
-static void testPalette(Context currentContext, Object g)
+static void testPalette(Context currentContext, TCObject g)
 {
    int32 x=0,y=0,i,wh;
    uint32 c;
@@ -185,7 +185,7 @@ static void testPalette(Context currentContext, Object g)
    updateScreen(mainContext);
 }
 
-static void testText(Context currentContext, Object g)
+static void testText(Context currentContext, TCObject g)
 {
    JChar text[50];
    int32 x,x1,y1,x2,y2,y,dy,i;
@@ -220,10 +220,10 @@ static void debugTime(int32 n, int32 ini)
 
 TESTCASE(Graphics) // #DEPENDS(tuiI_imageLoad_s)
 {
-   Object g;
+   TCObject g;
    int32 s;
    TNMParams p;
-   Object obj[2];
+   TCObject obj[2];
 
    ASSERT1_EQUALS(NotNull, screen.pixels);
    // create a graphics object and call its native constructor

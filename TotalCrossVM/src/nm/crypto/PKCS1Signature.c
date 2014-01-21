@@ -77,9 +77,9 @@ static uint8 SHA256_HASH_INFO[] = { 0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x
 static int32 SHA256_HASH_INFO_LENGTH = 19;
 
 // This method computes the message digest using the digest algorithm given.
-static Object getMessageDigest(Context currentContext, Object digest, Object data)
+static TCObject getMessageDigest(Context currentContext, TCObject digest, TCObject data)
 {
-   Object res;
+   TCObject res;
 
    executeMethod(currentContext, getMethod(OBJ_CLASS(digest), true, "reset", 0), digest); // reset digest
    if (currentContext->thrownException != null)
@@ -96,9 +96,9 @@ static Object getMessageDigest(Context currentContext, Object digest, Object dat
 
 // This method creates the signature packet from the message digest. Basically, PKCS #1 v1.5
 // packets are formed by the message digest prepended with the digest algorithm information.
-static int32 createInfo(Context currentContext, Object digest, uint8 *data, int32 dataLen, uint8 **buf)
+static int32 createInfo(Context currentContext, TCObject digest, uint8 *data, int32 dataLen, uint8 **buf)
 {
-   Object digestName;
+   TCObject digestName;
    char name[64];
    uint8 *hashInfo;
    int32 hashInfoLen, len;
@@ -145,9 +145,9 @@ static int32 createInfo(Context currentContext, Object digest, uint8 *data, int3
 
 // This method retrieves the message digest from the signature packet. Basically, PKCS #1 v1.5
 // packets are formed by the message digest prepended with the digest algorithm information.
-static int32 retrieveInfo(Context currentContext, Object digest, uint8 *data, int32 dataLen, uint8 **buf)
+static int32 retrieveInfo(Context currentContext, TCObject digest, uint8 *data, int32 dataLen, uint8 **buf)
 {
-   Object digestName;
+   TCObject digestName;
    int32 digestLen;
    char name[64];
    uint8 *expectedHashInfo;
@@ -194,8 +194,8 @@ static int32 retrieveInfo(Context currentContext, Object digest, uint8 *data, in
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcsPKCS1S_nativeCreate(NMParams p) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
 {
-   Object pkcs1Obj = p->obj[0];
-   Object signatureObj;
+   TCObject pkcs1Obj = p->obj[0];
+   TCObject signatureObj;
 
    if ((signatureObj = createByteArray(p->currentContext, sizeof(RSA_CTX))) == null)
       goto cleanup;
@@ -208,8 +208,8 @@ cleanup:
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcsPKCS1S_finalize(NMParams p) // totalcross/crypto/signature/PKCS1Signature native protected final void finalize();
 {
-   Object pkcs1Obj = p->obj[0];
-   Object signatureObj = *Signature_signatureRef(pkcs1Obj);
+   TCObject pkcs1Obj = p->obj[0];
+   TCObject signatureObj = *Signature_signatureRef(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
 
    if (ctx->m) // initialized?
@@ -218,12 +218,12 @@ TC_API void tcsPKCS1S_finalize(NMParams p) // totalcross/crypto/signature/PKCS1S
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcsPKCS1S_doReset(NMParams p) // totalcross/crypto/signature/PKCS1Signature native protected final void doReset() throws totalcross.crypto.CryptoException;
 {
-   Object pkcs1Obj = p->obj[0];
+   TCObject pkcs1Obj = p->obj[0];
    int32 operation = *Signature_operation(pkcs1Obj);
-   Object key = *Signature_key(pkcs1Obj);
-   Object signatureObj = *Signature_signatureRef(pkcs1Obj);
+   TCObject key = *Signature_key(pkcs1Obj);
+   TCObject signatureObj = *Signature_signatureRef(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
-   Object e, d, n;
+   TCObject e, d, n;
    
    if (ctx->m) // already initialized?
    {
@@ -250,17 +250,17 @@ TC_API void tcsPKCS1S_doReset(NMParams p) // totalcross/crypto/signature/PKCS1Si
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcsPKCS1S_doSign_B(NMParams p) // totalcross/crypto/signature/PKCS1Signature native protected final byte[] doSign(byte []data) throws totalcross.crypto.CryptoException;
 {
-   Object pkcs1Obj = p->obj[0];
-   Object dataObj = p->obj[1];
-   Object key = *Signature_key(pkcs1Obj);
-   Object signatureObj = *Signature_signatureRef(pkcs1Obj);
-   Object digest = *PKCS1Signature_digest(pkcs1Obj);
+   TCObject pkcs1Obj = p->obj[0];
+   TCObject dataObj = p->obj[1];
+   TCObject key = *Signature_key(pkcs1Obj);
+   TCObject signatureObj = *Signature_signatureRef(pkcs1Obj);
+   TCObject digest = *PKCS1Signature_digest(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
 
    uint8_t *hashedBuf, *encBuf;
-   Object byteArrayResult;
+   TCObject byteArrayResult;
    int32 count;
-   Object msgDigest;
+   TCObject msgDigest;
 
    msgDigest = getMessageDigest(p->currentContext, digest, dataObj); // compute the message digest
    if (p->currentContext->thrownException != null)
@@ -295,18 +295,18 @@ cleanup:
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcsPKCS1S_doVerify_BB(NMParams p) // totalcross/crypto/signature/PKCS1Signature native protected final boolean doVerify(byte []data, byte []signature) throws totalcross.crypto.CryptoException;
 {
-   Object pkcs1Obj = p->obj[0];
-   Object dataObj = p->obj[1];
-   Object signature = p->obj[2];
-   Object key = *Signature_key(pkcs1Obj);
-   Object signatureObj = *Signature_signatureRef(pkcs1Obj);
-   Object digest = *PKCS1Signature_digest(pkcs1Obj);
+   TCObject pkcs1Obj = p->obj[0];
+   TCObject dataObj = p->obj[1];
+   TCObject signature = p->obj[2];
+   TCObject key = *Signature_key(pkcs1Obj);
+   TCObject signatureObj = *Signature_signatureRef(pkcs1Obj);
+   TCObject digest = *PKCS1Signature_digest(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
 
    uint8 *sigDigestBuf, *decBuf;
    int32 digestLen, sigDigestLen;
 
-   Object msgDigest;
+   TCObject msgDigest;
 
    // 1. Get the original message digest from signature
    if ((decBuf = xmalloc(ARRAYOBJ_LEN(RSAPublicKey_n(key)))) == null)

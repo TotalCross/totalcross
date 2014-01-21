@@ -43,7 +43,7 @@ TC_API void GUID2TCHARP(GUID guid, TCHARP szGuid);
 typedef void (*GUID2TCHARPFunc)(GUID guid, TCHARP szGuid);
 TC_API bool TCHARP2GUID(TCHARP szGuid, GUID* guid);
 typedef bool (*TCHARP2GUIDFunc)(TCHARP szGuid, GUID* guid);
-TC_API bool String2GUID(Object string, GUID* guid);
-typedef bool (*String2GUIDFunc)(Object string, GUID* guid);
+TC_API bool String2GUID(TCObject string, GUID* guid);
+typedef bool (*String2GUIDFunc)(TCObject string, GUID* guid);
 
 #endif

@@ -61,25 +61,25 @@ typedef struct
    int32* isFullScreenPtr;               // boolean
    int32* uiStylePtr;                    // byte
    int32* dontCloseApplicationPtr;       // boolean
-   Object* appSettingsPtr;               // java.lang.String
+   TCObject* appSettingsPtr;             // java.lang.String
    int32* multipleInstances;             // boolean
    int32* gcCount;                       // int
    int32* gcTime;                        // int
    int32* chunksCreated;                 // int
-   Object* appSecretKeyPtr;              // java.lang.String
-   Object* appSettingsBinPtr;            // byte[]
+   TCObject* appSecretKeyPtr;            // java.lang.String
+   TCObject* appSettingsBinPtr;          // byte[]
    int32* showMemoryMessagesAtExit;      // boolean
-   Object* timeZoneStrPtr;               // java.lang.String
+   TCObject* timeZoneStrPtr;             // java.lang.String
    int32* fingerTouchPtr;                // boolean
    int32* disableDebug;                  // boolean (totalcross.sys.Vm)
-   Object* fullScreenPlatformsPtr;       // java.lang.String
+   TCObject* fullScreenPlatformsPtr;     // java.lang.String
    int32* disableScreenRotation;         // boolean
    int32* deviceFontHeightPtr;           // int
-   Object* iccidPtr;                     // java.lang.String
+   TCObject* iccidPtr;                   // java.lang.String
    int32* resizableWindow;               // boolean
    int32* windowFont;                    // int 
    int32* isOpenGL;                      // boolean
-   Object* lineNumber;                   // java.lang.String
+   TCObject* lineNumber;                 // java.lang.String
    int32 *unmovableSIP;                  // boolean
 } TTCSettings, *TCSettings;
 

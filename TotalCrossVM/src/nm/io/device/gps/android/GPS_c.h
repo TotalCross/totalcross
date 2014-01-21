@@ -49,9 +49,9 @@ static void splitStr(char* what, char sep, char** into)
       }
 }
 
-static Err nativeUpdateLocation(Context currentContext, Object gpsObject, int32* flags)
+static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int32* flags)
 {
-   Object lastFix = GPS_lastFix(gpsObject);
+   TCObject lastFix = GPS_lastFix(gpsObject);
    JNIEnv *env = getJNIEnv();
    jstring jgpsData;         
    char gpsData[100];

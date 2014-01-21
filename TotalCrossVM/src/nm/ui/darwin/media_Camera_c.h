@@ -27,8 +27,8 @@ extern "C" {
 static void cameraClick(NMParams p)
 {
 #ifdef darwin    
-    Object cameraObj = p->obj[0];
-    Object defaultFileName = Camera_defaultFileName(cameraObj);
+    TCObject cameraObj = p->obj[0];
+    TCObject defaultFileName = Camera_defaultFileName(cameraObj);
     char tempPictureName[MAX_PATHNAME];
     char fileName[MAX_PATHNAME];
     IntBuf intBuf;

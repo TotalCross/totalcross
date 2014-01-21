@@ -17,7 +17,7 @@
 
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...) // throw an exception based on the Throwable enumeration
 {
-   Object exception;
+   TCObject exception;
    // note: code is duplicated here because the ... cannot be passed along different routines
    CharP exceptionClassName = throwableAsCharP[(int32)t];
 
@@ -54,9 +54,9 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
    fillStackTrace(currentContext, exception, -1, currentContext->callStack);
 }
 
-TC_API Object createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...)
+TC_API TCObject createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...)
 {
-   Object exception;
+   TCObject exception;
 
    if (currentContext->thrownException != null)
       return currentContext->thrownException;
@@ -97,7 +97,7 @@ TC_API Object createException(Context currentContext, Throwable t, bool fillStac
 
 TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName, CharP message, ...) // throw an exception
 {
-   Object exception;
+   TCObject exception;
 
    if (currentContext->thrownException != null) // do not overwrite a first exception, maybe the second one is caused by the first.
       return;
@@ -223,7 +223,7 @@ int32 locateLine(Method m, int32 pc)
    }
    return -1;
 }
-void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPArray callStack)
+void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidPArray callStack)
 {
    Method m=null;
    int32 line;                  
@@ -269,8 +269,8 @@ void printStackTrace(Context currentContext)
 }
 void showUnhandledException(Context context, bool useAlert)
 {
-   Object o;
-   Object thrownException = context->thrownException;
+   TCObject o;
+   TCObject thrownException = context->thrownException;
    CharP msg=null, throwableTrace=null;              
    
    context->thrownException = null; // guich@tc130: null it out before the alert

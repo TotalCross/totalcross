@@ -36,7 +36,7 @@ void destroyContexts()
 }
 
 
-Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
+Context newContext(ThreadHandle thread, TCObject threadObj, bool bigContextSizes)
 {
    volatile Heap heap;
    Context c;
@@ -80,7 +80,7 @@ Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
    c->threadObj = threadObj;
    c->regI         = c->regIStart      = newPtrArrayOf(Int32, regIsize, c->heap);
    c->regIEnd      = c->regIStart      + regIsize;
-   c->regO         = c->regOStart      = newPtrArrayOf(Object, regOsize, c->heap);
+   c->regO         = c->regOStart      = newPtrArrayOf(TCObject, regOsize, c->heap);
    c->regOEnd      = c->regOStart      + regOsize;
    c->reg64        = c->reg64Start     = newArrayOf(Value64, reg64size, c->heap);
    c->reg64End     = c->reg64Start     + reg64size;
@@ -138,7 +138,7 @@ bool contextIncreaseRegI(Context c, int32** r)
 {
    return contextIncrease(c->heap, (uint8**)&c->regIStart, (uint8**)&c->regIEnd, (uint8**)&c->regI, (uint8**)r, sizeof(*c->regI), STARTING_REGI_SIZE / 4);
 }
-bool contextIncreaseRegO(Context c, Object** r)
+bool contextIncreaseRegO(Context c, TCObject** r)
 {
    return contextIncrease(c->heap, (uint8**)&c->regOStart, (uint8**)&c->regOEnd, (uint8**)&c->regO, (uint8**)r, sizeof(*c->regO), STARTING_REGO_SIZE / 4);
 }

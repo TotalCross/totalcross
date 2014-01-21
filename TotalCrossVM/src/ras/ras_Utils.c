@@ -19,17 +19,17 @@
  #include "../nm/io/device/win/RadioDevice_c.h"
 #endif
 
-static Object createInfo(Context currentContext)
+static TCObject createInfo(Context currentContext)
 {
-   Object info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
+   TCObject info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
    executeMethod(currentContext, getMethod(OBJ_CLASS(info), true, CONSTRUCTOR_NAME, 1, J_INT), info, 10);
    return info;
 }
 
-static bool putInfo(Context currentContext, Object info, CharP key, CharP val)
+static bool putInfo(Context currentContext, TCObject info, CharP key, CharP val)
 {
-   Object infoKey;
-   Object infoVal;
+   TCObject infoKey;
+   TCObject infoVal;
 
    if (info == null || key == null || val == null)
       throwException(currentContext, NullPointerException, "putInfo received a null pointer!");
@@ -49,9 +49,9 @@ static bool putInfo(Context currentContext, Object info, CharP key, CharP val)
    return currentContext->thrownException == null;
 }
 
-static bool putInfoObj(Context currentContext, Object info, CharP key, Object infoVal)
+static bool putInfoObj(Context currentContext, TCObject info, CharP key, TCObject infoVal)
 {
-   Object infoKey;
+   TCObject infoKey;
    
    if (info == null || key == null || infoVal == null)
       throwException(currentContext, NullPointerException, "putInfoObj received a null pointer!");
@@ -105,7 +105,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    MD5_CTX ctx;
    char serial[128],imei[32],deviceId[64];
    int32 notFound = 0;
-   Object res, out;
+   TCObject res, out;
    getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
    
    MD5Init(&ctx);
@@ -179,8 +179,8 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getConfigInfo();
 {
-//   Object obj = p->obj[0];
-   Object info = createInfo(p->currentContext);
+//   TCObject obj = p->obj[0];
+   TCObject info = createInfo(p->currentContext);
 
    putInfo(p->currentContext, info, "SERVER_HOST", "www.superwaba.net");
    putInfo(p->currentContext, info, "SERVER_PORT", "6666");
@@ -192,11 +192,11 @@ TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static total
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getProductInfo();
 {
-//   Object obj = p->obj[0];
-   Object info = createInfo(p->currentContext);
+//   TCObject obj = p->obj[0];
+   TCObject info = createInfo(p->currentContext);
    IntBuf buf;
    char buffer[64];
-   Object strObj;
+   TCObject strObj;
 
    putInfo(p->currentContext, info, "COMPILATION_DATE", int2str(getCompilationDate() ^ COMPILATION_MASK, buf));
 
@@ -210,14 +210,14 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo() throws ActivationException;
 {
-//   Object obj = p->obj[0];
-   Object info;
+//   TCObject obj = p->obj[0];
+   TCObject info;
    char serial[128];
    char imei[32];
    char deviceId[128];
    CharP deviceHash;
    IntBuf buf;
-   Object strObj;
+   TCObject strObj;
    TCSettings settings = getSettingsPtr();
 
    getDeviceId(deviceId);

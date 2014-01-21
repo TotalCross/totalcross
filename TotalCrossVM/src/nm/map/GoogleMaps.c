@@ -27,13 +27,13 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
 {
 #ifdef ANDROID
    JNIEnv* env = getJNIEnv();         
-   Object addr = p->obj[0];
+   TCObject addr = p->obj[0];
    jstring jaddr = (*env)->NewString(env, (jchar*) String_charsStart(addr), String_charsLen(addr));
    jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowGoogleMaps, jaddr, (jboolean) p->i32[0]);
    (*env)->DeleteLocalRef(env, jaddr);
    p->retI = result != 0;
 #elif defined darwin
-   Object addr = p->obj[0];
+   TCObject addr = p->obj[0];
    CharP addrp = JCharP2CharP(String_charsStart(addr), String_charsLen(addr));
    bool sat = p->i32[0];
    p->retI = addrp ? iphone_mapsShowAddress(addrp,sat) : 0;
@@ -47,9 +47,9 @@ TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native 
 {
 #ifdef ANDROID
    JNIEnv* env = getJNIEnv();         
-   Object addrI = p->obj[0];
-   Object addrF = p->obj[1];
-   Object coord = p->obj[2];
+   TCObject addrI = p->obj[0];
+   TCObject addrF = p->obj[1];
+   TCObject coord = p->obj[2];
    jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));
    jstring jaddrF = (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF));
    jstring jcoord = !coord ? null : (*env)->NewString(env, (jchar*) String_charsStart(coord), String_charsLen(coord));

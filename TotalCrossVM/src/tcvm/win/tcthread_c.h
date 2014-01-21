@@ -17,9 +17,11 @@ DWORD WINAPI privateThreadFunc(VoidP argP);
 
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
-   int32 id;
    ThreadHandle h = null;
    ThreadArgs targs = ThreadArgsFromObject(this_);
+#if !defined WP8
+   int32 id;
+#endif
 
    targs->context = context;
    targs->threadObject = this_;

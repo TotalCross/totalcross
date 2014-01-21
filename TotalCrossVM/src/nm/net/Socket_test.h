@@ -13,11 +13,11 @@ TESTCASE(Socket)
 {
 #if defined (WIN32) || defined(ANDROID)
    TNMParams p;
-   Object objArray[2];
+   TCObject objArray[2];
    int32 i32Array[3];
    CharP buf;
    CharP msg;
-   Object* jmsg;
+   TCObject* jmsg;
    p.obj = objArray;
    p.i32 = i32Array;
    p.currentContext = currentContext;

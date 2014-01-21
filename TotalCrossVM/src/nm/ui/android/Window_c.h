@@ -18,7 +18,7 @@ static void windowSetSIP(int32 sipOption)
    (*env)->CallStaticVoidMethod(env, applicationClass, m, (jint) sipOption);
 }
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    JNIEnv* env = getJNIEnv();
    jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setDeviceTitle", "(Ljava/lang/String;)V");

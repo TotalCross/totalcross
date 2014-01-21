@@ -56,7 +56,7 @@ typedef enum
 typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
 {
    uint8* pixels; // pixels in native format
-   __unsafe_unretained Object mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
+   __unsafe_unretained TCObject mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
    int32 pitch; // screen memory pitch size in bytes
    uint32 bpp;
    int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;

@@ -11,11 +11,11 @@
 
 
 
-static Object jlC_JavaLangClassOfJavaLangString;
+static TCObject jlC_JavaLangClassOfJavaLangString;
 TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
 {
    TNMParams p;
-   Object obj,jls;
+   TCObject obj,jls;
    TCClass c1,c2,c3;
 
    // Test if the Class of "java.lang.String" is the class of the created instance
@@ -39,7 +39,7 @@ TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(St
 TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException; #DEPENDS(jlC_forName_s)
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    TCClass c;
 
    // create an instance of the String class using the default constructor {"chars = new char[0]"}
@@ -58,7 +58,7 @@ TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() 
 }
 TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj); #DEPENDS(jlC_newInstance)
 {
-   Object obj[2];
+   TCObject obj[2];
    TNMParams p;
 
    tzero(p);

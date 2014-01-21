@@ -11,7 +11,7 @@
 
 
 
-static void vmSetTime(Object time)
+static void vmSetTime(TCObject time)
 {
    SYSTEMTIME newTime;
 
@@ -359,13 +359,13 @@ static void vmClipboardCopy(CharP string, int32 stringLen)
 #endif
 }
 
-static Object vmClipboardPaste(Context currentContext)
+static TCObject vmClipboardPaste(Context currentContext)
 {
 	//XXX
 #if !defined WP8
    HANDLE hClipData;
    TCHARP lpClipData;
-   Object o;
+   TCObject o;
 
    if (!OpenClipboard(mainHWnd))
       o = createStringObjectFromCharP(currentContext, "", 0);

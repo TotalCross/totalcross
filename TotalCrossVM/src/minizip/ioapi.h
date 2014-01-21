@@ -85,8 +85,8 @@ void fill_fopen_filefunc OF((zlib_filefunc_def* pzlib_filefunc_def));
       Method streamSeek;
       Method streamClose;
 
-      Object readBuf;
-      Object writeBuf;
+      TCObject readBuf;
+      TCObject writeBuf;
 
       Context context;
    } ZipNative, *ZipNativeP;

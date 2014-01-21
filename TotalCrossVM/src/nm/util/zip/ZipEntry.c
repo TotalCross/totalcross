@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZE_setTime_l(NMParams p) // totalcross/util/zip/ZipEntry native public void setTime(long time);
 {
-   Object zipEntryObj = p->obj[0];
+   TCObject zipEntryObj = p->obj[0];
    int64 time = p->i64[0];
    
 #if defined (WIN32) || defined (WINCE)   
@@ -65,7 +65,7 @@ TC_API void tuzZE_setTime_l(NMParams p) // totalcross/util/zip/ZipEntry native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZE_getTime(NMParams p) // totalcross/util/zip/ZipEntry native public long getTime();
 {
-   Object zipEntryObj = p->obj[0];
+   TCObject zipEntryObj = p->obj[0];
    int32 dostime = ZipEntry_time(zipEntryObj);
 
    if (dostime == -1)

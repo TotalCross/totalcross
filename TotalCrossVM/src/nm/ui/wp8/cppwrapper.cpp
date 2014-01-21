@@ -146,7 +146,7 @@ void dispatcher_dispath()
 		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 }
 
-void windowSetDeviceTitle(Object titleObj)
+void windowSetDeviceTitle(TCObject titleObj)
 {
 
 }

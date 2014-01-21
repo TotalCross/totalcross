@@ -775,7 +775,7 @@ __declspec(dllexport) long GetConduitInfo(ConduitInfoEnum infoType, void *pInArg
 //////////////////////////////////////////////////////////////////////////
 extern "C"
 {
-static void invalidateRemotePDBFile(Context currentContext, Object obj)
+static void invalidateRemotePDBFile(Context currentContext, TCObject obj)
 {
    TRACE("invalidateRemotePDBFile");
    RemotePDBFile_open(obj) = false;
@@ -790,13 +790,13 @@ static void invalidateRemotePDBFile(Context currentContext, Object obj)
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisC_finishSync(NMParams p) // totalcross/io/sync/Conduit native boolean finishSync();
 {
-   Object conduit = p->obj[0];
+   TCObject conduit = p->obj[0];
    int32 syncTarget = *Conduit_syncTarget(conduit);
    TRACE("tisC_finishSync");
 
    if (syncTarget == TARGETING_PALMDESKTOP)
    {
-      Object* conduitHandleObject = Conduit_conduitHandle(conduit);
+      TCObject* conduitHandleObject = Conduit_conduitHandle(conduit);
       CONDHANDLE* conduitHandle = (CONDHANDLE*) ARRAYOBJ_START(*conduitHandleObject);
       procSyncUnRegisterConduit(*conduitHandle);
       FreeLibrary(hsLog20Module);
@@ -811,7 +811,7 @@ SYNC_API void tisC_finishSync(NMParams p) // totalcross/io/sync/Conduit native b
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisC_log_s(NMParams p) // totalcross/io/sync/Conduit native static public void log(String text);
 {
-   Object text = p->obj[0];
+   TCObject text = p->obj[0];
    int32 syncTarget = *Conduit_syncTarget(getMainClass());
    TRACE("tisC_log_s");
 
@@ -845,13 +845,13 @@ SYNC_API void tisC_yield(NMParams p) // totalcross/io/sync/Conduit native static
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisC_register_i(NMParams p) // totalcross/io/sync/Conduit native boolean register(int priority);
 {
-   Object conduit = p->obj[0];
+   TCObject conduit = p->obj[0];
    int32 priority = p->i32[0];
    int32 syncTarget = *Conduit_syncTarget(conduit);
    bool ok = false;
 
-   Object targetApplicationId = Conduit_targetApplicationId(conduit);
-   Object conduitName = Conduit_conduitName(conduit);
+   TCObject targetApplicationId = Conduit_targetApplicationId(conduit);
+   TCObject conduitName = Conduit_conduitName(conduit);
 
    CharP appPathP = getAppPath();
    TRACE("tisC_register_i");
@@ -911,12 +911,12 @@ SYNC_API void tisC_register_i(NMParams p) // totalcross/io/sync/Conduit native b
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisC_unregister(NMParams p) // totalcross/io/sync/Conduit native boolean unregister();
 {
-   Object conduit = p->obj[0];
+   TCObject conduit = p->obj[0];
    int32 syncTarget = *Conduit_syncTarget(conduit);
    int32 ret = 1;
 
-   Object targetApplicationId = Conduit_targetApplicationId(conduit);
-   Object conduitName = Conduit_conduitName(conduit);
+   TCObject targetApplicationId = Conduit_targetApplicationId(conduit);
+   TCObject conduitName = Conduit_conduitName(conduit);
    TRACE("tisC_unregister");
 
    if (syncTarget & TARGETING_PALMDESKTOP)
@@ -943,10 +943,10 @@ SYNC_API void tisC_unregister(NMParams p) // totalcross/io/sync/Conduit native b
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisC_initSync(NMParams p) // totalcross/io/sync/Conduit native private boolean initSync();
 {
-   Object conduit = p->obj[0];
+   TCObject conduit = p->obj[0];
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object conduitHandleObject = null;
-   Object targetAppPath = *Conduit_targetAppPath(conduit);
+   TCObject conduitHandleObject = null;
+   TCObject targetAppPath = *Conduit_targetAppPath(conduit);
 
    int32 r = 0;
    int32 ret = 0;
@@ -1019,17 +1019,17 @@ SYNC_API void tisC_initSync(NMParams p) // totalcross/io/sync/Conduit native pri
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_create(NMParams p) // totalcross/io/sync/RemotePDBFile native void create() throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException;
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object targetAppPath = *Conduit_targetAppPath(conduit);
+   TCObject targetAppPath = *Conduit_targetAppPath(conduit);
    WCHAR remoteAppPath[MAX_PATH];
    int32 targetAppPathLen = String_charsLen(targetAppPath);
    TRACE("tisRPDBF_create");
    xmemmove(remoteAppPath, String_charsStart(targetAppPath), targetAppPathLen*sizeof(WCHAR));
    *(remoteAppPath + targetAppPathLen) = 0;
 
-   Object pdbFile = p->obj[0];
-   Object pdbName = RemotePDBFile_name(pdbFile);
+   TCObject pdbFile = p->obj[0];
+   TCObject pdbName = RemotePDBFile_name(pdbFile);
    int32 mode = RemotePDBFile_mode(pdbFile) & 7;
    int32 flags = mode & ~7;
    int32 pdbNameLen = String_charsLen(pdbName);
@@ -1044,7 +1044,7 @@ SYNC_API void tisRPDBF_create(NMParams p) // totalcross/io/sync/RemotePDBFile na
 
    szPdbNameA[pdbNameLen - 10] = 0;
 
-   Object pdbHandleObject = createByteArray(p->currentContext, sizeofPDBHandle(syncTarget));
+   TCObject pdbHandleObject = createByteArray(p->currentContext, sizeofPDBHandle(syncTarget));
    if (!pdbHandleObject)
       return;
    RemotePDBFile_pdbHandle(pdbFile) = pdbHandleObject;
@@ -1149,13 +1149,13 @@ SYNC_API void tisRPDBF_create(NMParams p) // totalcross/io/sync/RemotePDBFile na
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_close(NMParams p) // totalcross/io/sync/RemotePDBFile native public void close() throws totalcross.io.IOException;
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
 
-   Object pdbHandleObject;
+   TCObject pdbHandleObject;
    uint8* pdbHandle;
    Err err = NO_ERROR;
-   Object pdbFile = p->obj[0];
+   TCObject pdbFile = p->obj[0];
    TRACE("tisRPDBF_close");
 
    pdbHandleObject = RemotePDBFile_pdbHandle(pdbFile);
@@ -1186,14 +1186,14 @@ error:
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_delete(NMParams p) // totalcross/io/sync/RemotePDBFile native public void delete() throws totalcross.io.IOException;
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
 
-   Object pdbFile = p->obj[0];
+   TCObject pdbFile = p->obj[0];
    Err err;
-   Object pdbHandleObject=null;
+   TCObject pdbHandleObject=null;
    uint8* pdbHandle=null;
-   Object remotePDB;
+   TCObject remotePDB;
    TRACE("tisRPDBF_delete");
    pdbHandleObject = RemotePDBFile_pdbHandle(pdbFile);
    if (!RemotePDBFile_open(pdbFile) || pdbHandleObject == null)
@@ -1213,7 +1213,7 @@ SYNC_API void tisRPDBF_delete(NMParams p) // totalcross/io/sync/RemotePDBFile na
          {
             if ((err = procSyncCloseDB(pdbHandle4HotSync(pdbHandle))) == NO_ERROR)
             {
-               Object pdbName = RemotePDBFile_name(remotePDB);
+               TCObject pdbName = RemotePDBFile_name(remotePDB);
                char szPdbName[42];
                char* dot;
                JCharP2CharPBuf(String_charsStart(pdbName), String_charsLen(pdbName), szPdbName);
@@ -1239,12 +1239,12 @@ error:
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_getRecordCount(NMParams p) // totalcross/io/sync/RemotePDBFile native public int getRecordCount() throws totalcross.io.IOException;
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
    Err err = NO_ERROR;
-   Object pdbFile = p->obj[0];
+   TCObject pdbFile = p->obj[0];
    UInt16 recordCount;
-   Object pdbHandleObject;
+   TCObject pdbHandleObject;
    uint8* pdbHandle;
    TRACE("tisRPDBF_getRecordCount");
 
@@ -1275,12 +1275,12 @@ error:
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_getNextModifiedRecordIn(NMParams p) // totalcross/io/sync/RemotePDBFile native public int getNextModifiedRecordIndex();
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
 
-   Object pdbFile = p->obj[0];
+   TCObject pdbFile = p->obj[0];
    int32 lastSearchedRec;
-   Object pdbHandleObject;
+   TCObject pdbHandleObject;
    uint8* pdbHandle;
    int32 ret = -1;
    TRACE("tisRPDBF_getNextModifiedRecordIn");
@@ -1330,10 +1330,10 @@ SYNC_API void tisRPDBF_getNextModifiedRecordIn(NMParams p) // totalcross/io/sync
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_rwRecord_ibb(NMParams p) // totalcross/io/sync/RemotePDBFile native int rwRecord(int idx, totalcross.io.ByteArrayStream bas, boolean read);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object pdbFile = p->obj[0];
-   Object pdbHandleObject = RemotePDBFile_pdbHandle(pdbFile);
+   TCObject pdbFile = p->obj[0];
+   TCObject pdbHandleObject = RemotePDBFile_pdbHandle(pdbFile);
    TRACE("tisRPDBF_rwRecord_ibb");
 
    if (!RemotePDBFile_open(pdbFile) || pdbHandleObject == null)
@@ -1344,9 +1344,9 @@ SYNC_API void tisRPDBF_rwRecord_ibb(NMParams p) // totalcross/io/sync/RemotePDBF
    uint8* pdbHandle = ARRAYOBJ_START(pdbHandleObject);
 
    int32 idx = p->i32[0];
-   Object bas = p->obj[1];
+   TCObject bas = p->obj[1];
    int32 isRead = p->i32[1];
-   Object basBuf;
+   TCObject basBuf;
    uint8* buf;
    int32 pos;
 
@@ -1430,13 +1430,13 @@ SYNC_API void tisRPDBF_rwRecord_ibb(NMParams p) // totalcross/io/sync/RemotePDBF
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_deleteRecord_i(NMParams p) // totalcross/io/sync/RemotePDBFile native public void deleteRecord(int index) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
 
-   Object pdbFile = p->obj[0];
+   TCObject pdbFile = p->obj[0];
    Err err = NO_ERROR;
    int32 index = p->i32[0];
-   Object pdbHandleObject;
+   TCObject pdbHandleObject;
    uint8* pdbHandle;
    TRACE("tisRPDBF_deleteRecord_i");
    pdbHandleObject = RemotePDBFile_pdbHandle(pdbFile);
@@ -1466,9 +1466,9 @@ error:
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRPDBF_listPDBs_ii(NMParams p) // totalcross/io/sync/RemotePDBFile native public static String[] listPDBs(int crtr, int type);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object targetAppPath = *Conduit_targetAppPath(conduit);
+   TCObject targetAppPath = *Conduit_targetAppPath(conduit);
    WCHAR remoteAppPath[MAX_PATH];
    int32 targetAppPathLen = String_charsLen(targetAppPath);
    TRACE("tisRPDBF_listPDBs_ii");
@@ -1477,7 +1477,7 @@ SYNC_API void tisRPDBF_listPDBs_ii(NMParams p) // totalcross/io/sync/RemotePDBFi
 
    int32 crtr = p->i32[0];
    int32 type = p->i32[1];
-   Object stringArray = null;
+   TCObject stringArray = null;
 
    char stringsBuf[RECEIVE_BUFSIZE];
    char* stringsP = stringsBuf;
@@ -1540,7 +1540,7 @@ SYNC_API void tisRPDBF_listPDBs_ii(NMParams p) // totalcross/io/sync/RemotePDBFi
          // we will hold the found objects in the native stack to avoid them being collected
          if (stringArray != NULL)
          {
-            Object *strings = (Object*) ARRAYOBJ_START(stringArray);
+            TCObject *strings = (TCObject*) ARRAYOBJ_START(stringArray);
             stringsP = stringsBuf;
             while (stringsCount-- > 0)
             {
@@ -1557,12 +1557,12 @@ SYNC_API void tisRPDBF_listPDBs_ii(NMParams p) // totalcross/io/sync/RemotePDBFi
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRF_listFiles_s(NMParams p) // totalcross/io/sync/RemoteFile native public static String[] listFiles(String dir);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object dir = p->obj[0];
+   TCObject dir = p->obj[0];
    int32 dirLen;
    Err err = NO_ERROR;
-   Object stringArray = null;
+   TCObject stringArray = null;
    TRACE("tisRF_listFiles_s");
 
    if (dir == null)
@@ -1586,7 +1586,7 @@ SYNC_API void tisRF_listFiles_s(NMParams p) // totalcross/io/sync/RemoteFile nat
             (p->retO = stringArray = createStringArray(p->currentContext, stringsCount)) != null)
          {
             // fill the string array
-            Object* strings = (Object*) ARRAYOBJ_START(stringArray);
+            TCObject* strings = (TCObject*) ARRAYOBJ_START(stringArray);
             char* string = (char*) params->m_pResultBuf; //bufP;
             while (stringsCount-- > 0)
             {
@@ -1616,7 +1616,7 @@ SYNC_API void tisRF_listFiles_s(NMParams p) // totalcross/io/sync/RemoteFile nat
             p->retO = stringArray = createStringArray(p->currentContext, stringsCount);
             if (stringArray != null)
             {
-               Object* strings = (Object*) ARRAYOBJ_START(stringArray);
+               TCObject* strings = (TCObject*) ARRAYOBJ_START(stringArray);
                for (i = 0 ; i < (int32) stringsCount ; i++)
                {
                   TCHAR fileName[MAX_PATH];
@@ -1636,10 +1636,10 @@ SYNC_API void tisRF_listFiles_s(NMParams p) // totalcross/io/sync/RemoteFile nat
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRF_copyToRemote_ss(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean copyToRemote(String srcFile, String dstFile);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object srcFile = p->obj[0];
-   Object dstFile = p->obj[1];
+   TCObject srcFile = p->obj[0];
+   TCObject dstFile = p->obj[1];
    char szSrcFile[MAX_PATH];
    char szDstFile[MAX_PATH];
    int32 srcFileLen;
@@ -1773,10 +1773,10 @@ SYNC_API void tisRF_copyToRemote_ss(NMParams p) // totalcross/io/sync/RemoteFile
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRF_copyFromRemote_ss(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean copyFromRemote(String srcFile, String dstFile);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object srcFile = p->obj[0];
-   Object dstFile = p->obj[1];
+   TCObject srcFile = p->obj[0];
+   TCObject dstFile = p->obj[1];
    char szSrcFile[MAX_PATH];
    char szDstFile[MAX_PATH];
    int32 srcFileLen;
@@ -1901,9 +1901,9 @@ SYNC_API void tisRF_copyFromRemote_ss(NMParams p) // totalcross/io/sync/RemoteFi
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRF_delete_s(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean delete(String fileOrFolder);
 {
-   Object conduit = getMainClass();
+   TCObject conduit = getMainClass();
    int32 syncTarget = *Conduit_syncTarget(conduit);
-   Object fileOrFolder = p->obj[0];
+   TCObject fileOrFolder = p->obj[0];
    int32 fileOrFolderLen;
    char szFileOrFolderA[MAX_PATH];
    Err err = NO_ERROR;
@@ -1954,8 +1954,8 @@ SYNC_API void tisRF_delete_s(NMParams p) // totalcross/io/sync/RemoteFile native
 //////////////////////////////////////////////////////////////////////////
 SYNC_API void tisRF_exec_ssib(NMParams p) // totalcross/io/sync/RemoteFile native public static int exec(String command, String args, int launchCode, boolean wait);
 {
-   Object command = p->obj[0];
-   Object args = p->obj[1];
+   TCObject command = p->obj[0];
+   TCObject args = p->obj[1];
 
    WCHAR applicationName[MAX_PATHNAME];
    WCHAR commandLine[MAX_PATHNAME];

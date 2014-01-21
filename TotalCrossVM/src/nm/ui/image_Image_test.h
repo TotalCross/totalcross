@@ -11,12 +11,12 @@
 
 
 
-Object pngImage,jpegImage;
+TCObject pngImage,jpegImage;
 
 TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imageLoad(String path);
 {
    TNMParams p;
-   Object imgObj, pathObj, obj[2], intArray;
+   TCObject imgObj, pathObj, obj[2], intArray;
 
    // load a jpg
    imgObj = createObject(currentContext, "totalcross.ui.image.Image");   

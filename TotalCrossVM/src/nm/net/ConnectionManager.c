@@ -37,7 +37,7 @@ TC_API void tnCM_loadResources(NMParams p) // totalcross/net/ConnectionManager n
 TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/ConnectionManager native public static void setDefaultConfiguration(int type, String cfg) throws totalcross.io.IOException;
 {
    int32 type = p->i32[0];
-   Object connCfg = p->obj[0];
+   TCObject connCfg = p->obj[0];
 #if defined (WINCE)
    TCHARP szConnCfg = null;
    Err err;
@@ -71,7 +71,7 @@ TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/Connec
 TC_API void tnCM_open(NMParams p) // totalcross/net/ConnectionManager native public static void open() throws totalcross.io.IOException;
 {
 #if 0 //defined (WINCE) - disabled for this release
-   Object* connRef;
+   TCObject* connRef;
    NATIVE_CONNECTION* connHandle;
    bool wasSuccessful = false;
    Err err;
@@ -95,7 +95,7 @@ TC_API void tnCM_open_i(NMParams p) // totalcross/net/ConnectionManager native p
 {
 #if defined (WINCE)
    int type = p->i32[0];
-   Object* connRef;
+   TCObject* connRef;
    NATIVE_CONNECTION* connHandle;
    bool wasSuccessful = false;
    Err err;
@@ -134,7 +134,7 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
 {
 #if defined (WINCE)
    Err err;
-   Object* connRef = ConnectionManager_connRef(connMgrClass);
+   TCObject* connRef = ConnectionManager_connRef(connMgrClass);
    NATIVE_CONNECTION* connHandle;
 
    if (*connRef != null)
@@ -151,7 +151,7 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
 TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
 {
 #if !defined WP8 && (defined (WIN32) || defined (ANDROID))
-   Object hostName = p->obj[0];
+   TCObject hostName = p->obj[0];
    CharP szHostName = null;
    char szHostAddress[40];
    Err err;
@@ -178,7 +178,7 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
 TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
 {
 #if !defined WP8 && (defined (WIN32) || defined (ANDROID))
-   Object hostAddress = p->obj[0];
+   TCObject hostAddress = p->obj[0];
    CharP szHostAddress = null;
    char szHostName[128];
    Err err;

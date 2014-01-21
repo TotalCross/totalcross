@@ -56,8 +56,8 @@ TESTCASE(StringObject) // #DEPENDS(DblList)
 {
    JChar buf[9];
    JCharP s = CharP2JCharPBuf("Michelle",8, buf, true);
-   Object o = createStringObjectFromJCharP(currentContext, s,-1);
-   Object charArray = o[0].asObj;
+   TCObject o = createStringObjectFromJCharP(currentContext, s,-1);
+   TCObject charArray = o[0].asObj;
 
    setObjectLock(o, UNLOCKED);
 
@@ -72,10 +72,10 @@ TESTCASE(StringObject) // #DEPENDS(DblList)
    finish: ;
 }
 
-static Object _newObj()
+static TCObject _newObj()
 {
    Chunk c = xmalloc(4+sizeof(TObjectProperties));
-   return (Object)(c+sizeof(TObjectProperties));
+   return (TCObject)(c+sizeof(TObjectProperties));
 }
 
 TESTCASE(Stack) // #3
@@ -170,7 +170,7 @@ finish:
 
 TESTCASE(DblList) // #4
 {
-   Object o1,o2,o3,o4,o5,head;
+   TCObject o1,o2,o3,o4,o5,head;
    ObjectProperties p1,p2,p3,p4,p5,ph;
    o1 = _newObj();
    o2 = _newObj();
@@ -239,9 +239,9 @@ finish:
    xfree(ph);
 }
 
-static Object allocAndFillObj(Context currentContext, uint32 size, uint8 fillWith)
+static TCObject allocAndFillObj(Context currentContext, uint32 size, uint8 fillWith)
 {
-   Object o = createByteArray(currentContext, size);
+   TCObject o = createByteArray(currentContext, size);
    setObjectLock(o, UNLOCKED);
    if (o)
       xmemset(ARRAYOBJ_START(o), fillWith, size);
@@ -252,11 +252,11 @@ static Object allocAndFillObj(Context currentContext, uint32 size, uint8 fillWit
 TESTCASE(GarbageCollector) // #5
 {
    int32 nfree,nused;
-   ObjectArray held = currentContext->regOStart; // objects that will be held (in use) after the GC
-   ObjectArray held0 = held;
-   Object rel1,rel2,rel3,rel4,rel5,rel13,rel14;         // objects that will be released (ready to be reused later)
-   Object rel6,rel7,rel8,rel9,rel10,rel11,rel12;        // objects that will be released (ready to be reused later)
-   Object free1,free2;                                  // objects that will be freed (returned to the system)
+   TCObjectArray held = currentContext->regOStart; // objects that will be held (in use) after the GC
+   TCObjectArray held0 = held;
+   TCObject rel1,rel2,rel3,rel4,rel5,rel13,rel14;         // objects that will be released (ready to be reused later)
+   TCObject rel6,rel7,rel8,rel9,rel10,rel11,rel12;        // objects that will be released (ready to be reused later)
+   TCObject free1,free2;                                  // objects that will be freed (returned to the system)
 
    if (!saveRestoreOMM(true))
    {

@@ -18,7 +18,7 @@ static char defaultFontName[16];
 bool fontInit(Context currentContext)
 {
    int32 *maxfs=null, *minfs=null, *normal = null;
-   Object *defaultFontNameObj;
+   TCObject *defaultFontNameObj;
    TCClass c;
    c = loadClass(currentContext, "totalcross.ui.font.Font",false);
    if (c)
@@ -257,7 +257,7 @@ UserFont loadUserFont(FontFile ff, bool bold, int32 size, JChar c)
    return uf;
 }
 
-UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar ch)
+UserFont loadUserFontFromFontObj(Context currentContext, TCObject fontObj, JChar ch)
 {
    if (fontObj == currentContext->lastFontObj && ch == ' ')
       return currentContext->lastUF;
@@ -280,7 +280,7 @@ UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar c
    }
 }
 
-int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch)
+int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch)
 {
    UserFont uf = loadUserFontFromFontObj(currentContext, fontObj, ch);
    if (ch == 160) // guich@tc153: now the char 160 have the same width of a number
@@ -292,7 +292,7 @@ int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch)
    return (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar) ? uf->bitIndexTable[ch+1] - uf->bitIndexTable[ch] : uf->fontP.spaceWidth;
 }
 
-int32 getJCharPWidth(Context currentContext, Object fontObj, JCharP s, int32 len)
+int32 getJCharPWidth(Context currentContext, TCObject fontObj, JCharP s, int32 len)
 {
    int sum = 0;
    while (len-- > 0)

@@ -37,7 +37,7 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
    else
    {
       uint8* start = (uint8*)buff;
-      Object bufObj = in->params[1].asObj;
+      TCObject bufObj = in->params[1].asObj;
       int tempBufSize = ARRAYOBJ_LEN(bufObj);
       uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
@@ -59,7 +59,7 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
 // Write the JPEG Output file.
 int jpegWrite(void *buff, int count, JPEGFILE *in)
 {
-   Object bufObj = in->params[1].asObj;
+   TCObject bufObj = in->params[1].asObj;
    int32 bufObjSize = ARRAYOBJ_LEN(in->bufObj);
    int32 remaining;
    int32 current = 0;
@@ -77,7 +77,7 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
 }
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4)
+void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -87,7 +87,7 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
    uint8* buffer;
    int32 x,width,height;
    struct jpeg_decompress_struct cinfo;
-   Object pixelsObj;
+   TCObject pixelsObj;
 
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
@@ -183,13 +183,13 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
    heapDestroy(heap);
 }
 
-bool rgb565_2jpeg(Context currentContext, Object srcStreamObj, Object dstStreamObj, int32 width, int32 height)
+bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStreamObj, int32 width, int32 height)
 {
    JPEGFILE srcFile, dstFile;
    struct jpeg_error_mgr errbase;
    struct jpeg_compress_struct cinfo;
    volatile Heap heap;
-   Object bufObj;
+   TCObject bufObj;
    uint8* bufP;
    uint8* bufAux;
    int32 i, p;
@@ -301,19 +301,19 @@ finish:
    return ret;
 }
 
-bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj, int32 quality)
+bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality)
 {
    JPEGFILE dstFile;
    struct jpeg_error_mgr errbase;
    struct jpeg_compress_struct cinfo;
    volatile Heap heap;
-   Object bufObj;
+   TCObject bufObj;
    uint8* bufP;
    uint8* bufAux;
    int32 i, p,scanLineOut;
    volatile bool ret = false;                  
    
-   Object pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
+   TCObject pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int32 width = (Image_frameCount(srcImageObj) > 1) ? Image_widthOfAllFrames(srcImageObj) : Image_width(srcImageObj);
    int32 height = Image_height(srcImageObj), n;

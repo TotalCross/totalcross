@@ -36,8 +36,8 @@ typedef struct
    Method setPosMethod;
 
    WaveHeader waveHeader;
-   Object mediaStream;
-   Object byteBuffer;
+   TCObject mediaStream;
+   TCObject byteBuffer;
 
    Context currentContext;
    int32 dataPos;
@@ -51,7 +51,7 @@ typedef struct
 DWORD WINAPI ThreadProc(LPVOID lpParameter);
 DWORD WINAPI ThreadInProc(LPVOID lpParameter);
 
-static bool mediaClipPlay(Context currentContext, Object mediaClip, MediaData media)
+static bool mediaClipPlay(Context currentContext, TCObject mediaClip, MediaData media)
 {
    WAVEFORMATEX waveFormat;
    bool ret = false;
@@ -121,7 +121,7 @@ static Err mediaClipStop(MediaData media, bool pause)
    return err;
 }
 
-static Err mediaClipReset(Object mediaClip, MediaData media)
+static Err mediaClipReset(TCObject mediaClip, MediaData media)
 {
    waveOutReset(media->waveOUT);
    executeMethod(media->currentContext, media->setPosMethod, MediaClip_mediaClipStream(mediaClip), media->dataPos);
@@ -129,7 +129,7 @@ static Err mediaClipReset(Object mediaClip, MediaData media)
    return NO_ERROR;
 }
 
-static bool mediaClipClose(Object mediaClip, MediaData media)
+static bool mediaClipClose(TCObject mediaClip, MediaData media)
 {
    int32 dataSize;
    Err err;
@@ -191,7 +191,7 @@ static void throwMMException(Context currentContext, uint32 res)
       throwException(currentContext, IOException, msg);
 }
 
-static void mediaClipRecord(Context currentContext, Object mediaClip, MediaData media, int32 samplesPerSecond, int32 bitsPerSample, bool stereo)
+static void mediaClipRecord(Context currentContext, TCObject mediaClip, MediaData media, int32 samplesPerSecond, int32 bitsPerSample, bool stereo)
 {
    WAVEFORMATEX waveFormat;
    uint16 nChannels = stereo ? 2 : 1;

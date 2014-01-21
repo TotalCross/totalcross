@@ -14,7 +14,7 @@
 TESTCASE(jlO_toStringNative) // java/lang/Object native private String toStringNative();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    CharP buf=null;
 
    // test "new Object().toString()"
@@ -38,7 +38,7 @@ TESTCASE(jlO_toStringNative) // java/lang/Object native private String toStringN
 TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
 {
    TNMParams p;
-   Object obj,nameStr;
+   TCObject obj,nameStr;
    CharP buf=null;
    TCClass c;
 

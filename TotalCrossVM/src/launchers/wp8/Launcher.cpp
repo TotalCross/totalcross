@@ -21,6 +21,9 @@ int main(Platform::Array<Platform::String^>^ argsArray)
 	//CoreApplication::Run(ref new MainViewFactory(argsArray[0]));
 
    //CoInitializeEx(NULL, COINIT_MULTITHREADED);
-   WindowsPhoneRuntimeComponent1::WindowsPhoneRuntimeComponent::executeProgramWrapper(argsArray[0]);
+
+	auto x = LoadPackagedLibrary(TEXT("PhoneClassLibrary1.dll"), 0);
+
+	PhoneXamlDirect3DApp1Comp::WindowsPhoneRuntimeComponent::executeProgramWrapper(argsArray[0]);
    return 0;
 }

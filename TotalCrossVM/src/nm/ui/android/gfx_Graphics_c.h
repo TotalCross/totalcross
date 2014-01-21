@@ -266,7 +266,7 @@ static void initShade()
    shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
 }
 
-void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    if (pixcolors != (int32*)glcolors) flushPixels(4);
    setCurrentProgram(shadeProgram);
@@ -316,7 +316,7 @@ void initTexture()
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
@@ -369,7 +369,7 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
    xfree(pt0);
 }
 
-void glDeleteTexture(Object img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {         
    glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
    *textureId = 0;                               

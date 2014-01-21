@@ -27,7 +27,7 @@ extern int32 appW,appH,glShiftY,desiredglShiftY;
 extern GLfloat ftransp[16], f255[256];
 extern GLfloat *glcoords, *glcolors;
 
-static void glDrawPixelG(Object g, int32 xx, int32 yy, int32 color, int32 alpha)
+static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
    xx += Graphics_transX(g);
    yy += Graphics_transY(g);
@@ -55,9 +55,9 @@ void markWholeScreenDirty(Context currentContext);
 
 // >>>>>>>>>
 // DO NOT LOCK THE SCREEN ON THESE METHODS. THE CALLER MUST DO THAT.
-static inline Pixel* getSurfacePixels(Object surf)
+static inline Pixel* getSurfacePixels(TCObject surf)
 {
-   Object pix;
+   TCObject pix;
    bool isImage=false;
    if (surf != null)
    {
@@ -70,9 +70,9 @@ static inline Pixel* getSurfacePixels(Object surf)
    return (Pixel*)ARRAYOBJ_START(pix);
 }
 
-static inline Pixel* getGraphicsPixels(Object g)
+static inline Pixel* getGraphicsPixels(TCObject g)
 {
-   Object surf = Graphics_surface(g);
+   TCObject surf = Graphics_surface(g);
    return getSurfacePixels(surf);
 }
 // <<<<<<<<<
@@ -108,7 +108,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
 }
 
 ////////////////////////////////////////////////////////////////////////////
-static bool translateAndClip(Object g, int32 *x, int32 *y, int32 *width, int32 *height);
+static bool translateAndClip(TCObject g, int32 *x, int32 *y, int32 *width, int32 *height);
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
 {
@@ -119,6 +119,7 @@ Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
    p.b = (uint8)(b & 0xFF);
    return p.pixel;
 }
+
 Pixel makePixel(int32 r, int32 g, int32 b)
 {
    PixelConv p;
@@ -128,6 +129,7 @@ Pixel makePixel(int32 r, int32 g, int32 b)
    p.b = (uint8)(b & 0xFF);
    return p.pixel;
 }
+
 Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
@@ -137,6 +139,7 @@ Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
    p.b = (uint8)( rgb        & 0xFF);
    return p.pixel;
 }
+
 Pixel makePixelARGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
@@ -193,7 +196,7 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
 
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
 // Destination is always a Graphics object.
-static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
+static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
                        int32 dstX, int32 dstY, int32 doClip)
 {
    uint32 i;
@@ -345,7 +348,7 @@ end:
 //   Device specific routine.
 //   Gets the color value of the pixel, using the current translation
 //   Returns -1 if error (out of clip bounds)
-static int32 getPixel(Object g, int32 x, int32 y)
+static int32 getPixel(TCObject g, int32 x, int32 y)
 {
    int32 ret = -1;
    x += Graphics_transX(g);
@@ -364,7 +367,7 @@ static int32 getPixel(Object g, int32 x, int32 y)
    return ret;
 }
 
-static PixelConv getPixelConv(Object g, int32 x, int32 y)
+static PixelConv getPixelConv(TCObject g, int32 x, int32 y)
 {
    PixelConv p;
    p.pixel = -1;
@@ -384,7 +387,7 @@ static PixelConv getPixelConv(Object g, int32 x, int32 y)
 
 // Device specific routine.
 // Sets the pixel to the given color, translating and clipping
-static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, Pixel pixel)
+static inline void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel pixel)
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
@@ -417,7 +420,7 @@ static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
    return c.pixel;
 }
 
-static inline bool surelyOutsideClip(Object g, int32 x1, int32 y1, int32 x2, int32 y2)
+static inline bool surelyOutsideClip(TCObject g, int32 x1, int32 y1, int32 x2, int32 y2)
 {
    int cx1 = Graphics_clipX1(g);
    int cx2 = Graphics_clipX2(g);
@@ -432,7 +435,7 @@ static inline bool surelyOutsideClip(Object g, int32 x1, int32 y1, int32 x2, int
 
 //   Device specific routine.
 //   Draws a horizontal line from x to x+w-1, translating and clipping
-static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 width, Pixel pixel1, Pixel pixel2)
+static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int32 width, Pixel pixel1, Pixel pixel2)
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
@@ -487,7 +490,7 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
 //   Device specific routine.
 //   Draws a vertical line from y to y+h-1 using the given color
-static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 height, Pixel pixel1, Pixel pixel2)
+static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int32 height, Pixel pixel1, Pixel pixel2)
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
@@ -543,7 +546,7 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
    }
 }
 
-static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2)
+static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel1, Pixel pixel2)
 {
     // guich@501_10: added pyInc and clipping support for this routine.
     // store the change in X and Y of the line endpoints
@@ -734,7 +737,7 @@ static int32 abs32(int32 a)
 #endif
 
 /* Code taken from http://www.codeproject.com/gdi/antialias.asp */
-static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel color_)
+static void drawLineAA(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel color_)
 {
   // Calculate line params
   int32 dx = (x2 - x1);
@@ -859,7 +862,7 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   setPixel(currentContext, g, x2, y2, color_);
 }
 
-inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+inline static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
 #ifndef __gl2_h_
    if (Graphics_useAA(g))
@@ -870,7 +873,7 @@ inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1
 }
 
 //   Draws a rectangle with the given color
-static void drawRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
+static void drawRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
 {
    drawHLine(currentContext, g, x, y, width, pixel, pixel);
    drawHLine(currentContext, g, x, y+height-1, width, pixel, pixel);
@@ -881,7 +884,7 @@ static void drawRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 // Description:
 //   Device specific routine.
 //   Fills a rectangle with the given color
-static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
+static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
 {
    int32 clipX1 = Graphics_clipX1(g);
    int32 clipX2 = Graphics_clipX2(g);
@@ -949,7 +952,7 @@ static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 
 
 static Context lastContext;
-static Object lastObject;
+static TCObject lastObject;
 static JCharP lastText;
 static Pixel lastForeColor;
 static int lx0;
@@ -957,9 +960,9 @@ static int ly0;
 static int lastJustify;
 static int lastCharCount;
 
-static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
+static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
-   Object fontObj = Graphics_font(g);
+   TCObject fontObj = Graphics_font(g);
    int32 startBit,currentBit,incY,y1,r,rmax,istart;
    uint8 *bitmapTable, *ands, *current, *start;
    uint16* bitIndexTable;
@@ -1215,14 +1218,14 @@ void callLastDrawText()
 	drawText(lastContext, lastObject, lastText, lastCharCount, lx0, ly0, lastForeColor, lastJustify);
 }
 
-static SurfaceType getSurfaceType(Context currentContext, Object surface)
+static SurfaceType getSurfaceType(Context currentContext, TCObject surface)
 {
    // cache class pointers for performance
    return (surface != NULL && areClassesCompatible(currentContext, OBJ_CLASS(surface), "totalcross.ui.image.Image") == 1) == COMPATIBLE ? SURF_IMAGE : SURF_CONTROL;
 }
 
 ////////////////////////////////////////////////////////////////////////////
-inline static void quadPixel(Context currentContext, Object g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+inline static void quadPixel(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
 {
    // draw 4 points using symetry
    setPixel(currentContext, g,xc + x, yc + y, c);
@@ -1231,7 +1234,7 @@ inline static void quadPixel(Context currentContext, Object g, int32 xc, int32 y
    setPixel(currentContext, g,xc - x, yc - y, c);
 }
 
-inline static void quadLine(Context currentContext, Object g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+inline static void quadLine(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
 {
    int32 w = x+x+1; // plus 1 for the drawHLine (draws to width-1)
    // draw 2 lines using symetry
@@ -1240,7 +1243,7 @@ inline static void quadLine(Context currentContext, Object g, int32 xc, int32 yc
 }
 
 // draws an ellipse incrementally
-static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel c1, Pixel c2, bool fill, bool gradient)
+static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel c1, Pixel c2, bool fill, bool gradient)
 {
    int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
    PixelConv c;
@@ -1333,7 +1336,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
 }
 
 ////////////////////////////////////////////////////////////////////////////
-static void drawDottedRect(Context currentContext, Object g, int32 x, int32 y, int32 w, int32 h, Pixel c1, Pixel c2)
+static void drawDottedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, Pixel c1, Pixel c2)
 {
    if (w > 0 && h > 0)
    {
@@ -1374,9 +1377,9 @@ static void qsortInts(int32 *items, int32 first, int32 last)
       qsortInts(items, low,last);
 }
 
-static Object growIntArray(Context currentContext, Object oldArrayObj, int32 newLen) // must unlock the returned obj
+static TCObject growIntArray(Context currentContext, TCObject oldArrayObj, int32 newLen) // must unlock the returned obj
 {
-   Object newArrayObj = createArrayObject(currentContext, INT_ARRAY, newLen);
+   TCObject newArrayObj = createArrayObject(currentContext, INT_ARRAY, newLen);
    int32 *newArray,*oldArray, oldLen;
    if (newArrayObj != null)
    {
@@ -1388,12 +1391,12 @@ static Object growIntArray(Context currentContext, Object oldArrayObj, int32 new
    return newArrayObj;
 }
 
-static void fillPolygon(Context currentContext, Object g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel c1, Pixel c2, bool gradient)
+static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel c1, Pixel c2, bool gradient)
 {
    int32 x1, y1, x2, y2,y,n=0,temp, i,j, miny, maxy, a, numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
    int32 *yp;
    int32 *axPoints[2], *ayPoints[2], anPoints[2];
-   Object *intsObj = &Graphics_ints(g);
+   TCObject *intsObj = &Graphics_ints(g);
    int32 *ints = *intsObj ? (int32*)ARRAYOBJ_START(*intsObj) : null;
    PixelConv c;
 
@@ -1471,7 +1474,7 @@ static void fillPolygon(Context currentContext, Object g, int32 *xPoints1, int32
             {
                if (n == (int32)ARRAYOBJ_LEN(*intsObj)) // have to grow the ints array?
                {
-                  Object newIntsObj = growIntArray(currentContext, *intsObj, n * 2);
+                  TCObject newIntsObj = growIntArray(currentContext, *intsObj, n * 2);
                   if (newIntsObj == null)
                      return;
                   *intsObj = newIntsObj;
@@ -1523,7 +1526,7 @@ static void fillPolygon(Context currentContext, Object g, int32 *xPoints1, int32
 ////////////////////////////////////////////////////////////////////////////
 // draws a polygon. if the polygon is not closed, close it
 
-static void drawPolygon(Context currentContext, Object g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel pixel)
+static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel pixel)
 {
    int32 i;
    if (!xPoints1 || !yPoints1 || nPoints1 < 2)
@@ -1537,7 +1540,7 @@ static void drawPolygon(Context currentContext, Object g, int32 *xPoints1, int32
 // draw an elliptical arc from startAngle to endAngle.
 // c is the fill color and c2 is the outline color
 // (if in fill mode - otherwise, c = outline color)
-static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
+static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
 {
    int32 limitx1 = Graphics_clipX1(g) - Graphics_transX(g); // guich@501_13: store these for faster computation
    int32 limitx2 = Graphics_clipX2(g) - Graphics_transX(g);
@@ -1549,8 +1552,8 @@ static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, i
    bool sameR, sameC;
    bool checkClipX = (bool)((xc+rx) > limitx2 || (xc-rx) < limitx1); // guich@340_3 - guich@401_2: added transX/Y
    bool checkClipY = (bool)((yc+ry) > limity2 || (yc-ry) < limity1);
-   Object *xPointsObj = &Graphics_xPoints(g);
-   Object *yPointsObj = &Graphics_yPoints(g);
+   TCObject *xPointsObj = &Graphics_xPoints(g);
+   TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
 
@@ -1798,7 +1801,7 @@ static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, i
    }
 }
 ////////////////////////////////////////////////////////////////////////////
-static void drawRoundRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
+static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
 {
    int32 x1, y1, x2, y2, dec, xx, yy;
    int32 w, h;
@@ -1834,7 +1837,7 @@ static void drawRoundRect(Context currentContext, Object g, int32 x, int32 y, in
    }
 }
 ////////////////////////////////////////////////////////////////////////////
-static void fillRoundRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
+static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
 {
    int32 x1, y1, x2, y2, xx, yy, dec;
    if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
@@ -1866,7 +1869,7 @@ static void fillRoundRect(Context currentContext, Object g, int32 x, int32 y, in
 
 ////////////////////////////////////////////////////////////////////////////
 // sets the clip rect to (x,y,x+w-1,y+h-1), translated to the current translated origin
-static void setClip(Object g, int32 x, int32 y, int32 w, int32 h)
+static void setClip(TCObject g, int32 x, int32 y, int32 w, int32 h)
 {
    int32 clipX1 = x+Graphics_transX(g);
    int32 clipY1 = y+Graphics_transY(g);
@@ -1895,7 +1898,7 @@ static void setClip(Object g, int32 x, int32 y, int32 w, int32 h)
 // Translates the given coords and returns the intersection between
 // the clip rect and the coords passed.
 // Returns: 1 if OK, 0 if the coords are outside the clip rect
-static bool translateAndClip(Object g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight)
+static bool translateAndClip(TCObject g, int32 *pX, int32 *pY, int32 *pWidth, int32 *pHeight)
 {
    int32 x = *pX;
    int32 y = *pY;
@@ -1935,7 +1938,7 @@ static bool translateAndClip(Object g, int32 *pX, int32 *pY, int32 *pWidth, int3
    return true;
 }
 
-static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
+static void createGfxSurface(int32 w, int32 h, TCObject g, SurfaceType stype)
 {
    Graphics_clipX2(g) = Graphics_width (g) = w;
    Graphics_clipY2(g) = Graphics_height(g) = h;
@@ -2341,7 +2344,7 @@ static void fillWith8bppPalette(uint32* ptr)
    }
 }
 
-static void fillHatchedRect(Context currentContext, Object g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
+static void fillHatchedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
 {
    int32 x2 = x+w-1;
    int32 y2 = y+h-1;
@@ -2369,7 +2372,7 @@ static void fillHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
    }
 }
 
-static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
+static void drawHatchedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
 {
    int32 x2 = x+w-1;
    int32 y2 = y+h-1;
@@ -2406,7 +2409,7 @@ static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
    }
 }
 
-static void drawVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel topColor, Pixel rightColor, Pixel bottomColor, Pixel leftColor)
+static void drawVistaRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel topColor, Pixel rightColor, Pixel bottomColor, Pixel leftColor)
 {
    int32 x1 = x+1;
    int32 y1 = y+1;
@@ -2428,8 +2431,8 @@ static Pixel darkerColor(Pixel rgb, int32 step)
    return pc.pixel;
 }
 
-void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor);
-static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel back, bool invert, bool rotate)
+void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor);
+static void fillVistaRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel back, bool invert, bool rotate)
 {
    int32 step = *vistaFadeStepP;
    int32 s = rotate ? width : height;
@@ -2461,7 +2464,7 @@ inline static int getOffset(int radius, int y)
    return radius - (int32)sqrt((double)radius * radius - y * y);
 }
 
-static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4
+static void drawFadedPixel(Context currentContext, TCObject g, int32 xx, int32 yy, int32 c) // guich@tc124_4
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
@@ -2476,7 +2479,7 @@ static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy,
    }
 }
 
-static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
+static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
 {
    int32 numSteps = max32(1, vertical ? abs32(endY - startY) : abs32(endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
    int32 startRed = (startColor >> 16) & 0xFF;
@@ -2549,7 +2552,7 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
    }
 }
 
-static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
+static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
 {
    if (dataObj == null)
       throwException(currentContext, NullPointerException, "Argument 'data' can't be null");
@@ -2620,7 +2623,7 @@ static int32 windowBorderAlpha[3][7][7] =
    }
 };
 
-static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
+static void setPixelA(Context currentContext, TCObject g, int32 x, int32 y, PixelConv color, int32 alpha)
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
@@ -2636,7 +2639,7 @@ static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelC
 }
 
 // only supports horizontal and vertical lines
-static void drawHLineA(Context currentContext, Object g, int32 x, int32 y, int32 width, PixelConv color, int32 alpha)
+static void drawHLineA(Context currentContext, TCObject g, int32 x, int32 y, int32 width, PixelConv color, int32 alpha)
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
@@ -2670,7 +2673,7 @@ static void drawHLineA(Context currentContext, Object g, int32 x, int32 y, int32
    }
 }
 
-static void drawVLineA(Context currentContext, Object g, int32 x, int32 y, int32 height, PixelConv color, int32 alpha)
+static void drawVLineA(Context currentContext, TCObject g, int32 x, int32 y, int32 height, PixelConv color, int32 alpha)
 {
 #ifdef __gl2_h_
    if (Graphics_useOpenGL(g))
@@ -2706,7 +2709,7 @@ static void drawVLineA(Context currentContext, Object g, int32 x, int32 y, int32
    }
 }
 
-static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
+static void drawWindowBorder(Context currentContext, TCObject g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
    int32 a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
    int32 y2 = yy+hh-1;
@@ -2827,7 +2830,7 @@ static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h
    pixel->b = b;
 }
 
-static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w, int32 h)
+static void dither(Context currentContext, TCObject g, int32 x0, int32 y0, int32 w, int32 h)
 {
    if (translateAndClip(g, &x0, &y0, &w, &h))
    {
@@ -2876,7 +2879,7 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
-static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
+static void drawThickRect(TCObject g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
 {                    
    if (translateAndClip(g, &x,&y,&width,&height))
    {             
@@ -2887,7 +2890,7 @@ static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height,
    }
 }
 
-static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+static void drawCylindricShade(Context currentContext, TCObject g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
    int32 startRed = (startColor >> 16) & 0xFF;
@@ -2950,7 +2953,7 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
 #endif
 }
 
-void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
+void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
 {
    PixelConv pc1,pc2;
 #ifdef __gl2_h_
@@ -3008,7 +3011,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
 
    if (graphicsCreateScreenSurface(&screen))
    {
-      Object *screenObj;
+      TCObject *screenObj;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
       if (controlEnableUpdateScreenPtr == null)

@@ -19,7 +19,7 @@
  #include "posix/Socket_c.h"
 #endif
 
-static void invalidate(Object obj)
+static void invalidate(TCObject obj)
 {
    if (Socket_socketRef(obj) != null)
    {
@@ -32,10 +32,10 @@ static void invalidate(Object obj)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native void socketCreate(final String host, final int port, final int timeout, final boolean noLinger);
 {
-   Object socket = p->obj[0];
-   Object socketRef;
+   TCObject socket = p->obj[0];
+   TCObject socketRef;
    SOCKET* socketHandle;
-   Object host = p->obj[1];
+   TCObject host = p->obj[1];
    int32 port = p->i32[0];
    int32 timeout = p->i32[1];
    bool noLinger = p->i32[2];
@@ -77,8 +77,8 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_nativeClose(NMParams p) // totalcross/net/Socket native private void nativeClose() throws totalcross.io.IOException;
 {
-   Object socket = p->obj[0];
-   Object socketRef = Socket_socketRef(socket);
+   TCObject socket = p->obj[0];
+   TCObject socketRef = Socket_socketRef(socket);
    SOCKET* socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
    Err err;
 
@@ -89,10 +89,10 @@ TC_API void tnS_nativeClose(NMParams p) // totalcross/net/Socket native private 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
-   Object socket = p->obj[0];
-   Object socketRef = Socket_socketRef(socket);
+   TCObject socket = p->obj[0];
+   TCObject socketRef = Socket_socketRef(socket);
    SOCKET* socketHandle;
-   Object buf = p->obj[1];
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    bool isRead = p->i32[2];
@@ -119,12 +119,12 @@ int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
 {
    int32 written = 0;
    int32 retCount;
-   Object socket;
+   TCObject socket;
    int32 timeout;
    Err err;
 
    LOCKVAR(htSSL);
-   socket = (Object) htGetPtr(&htSSLSocket, fd);
+   socket = (TCObject)htGetPtr(&htSSLSocket, fd);
    UNLOCKVAR(htSSL);
 
    if (!socket) // guich@tc113_14

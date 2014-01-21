@@ -20,15 +20,15 @@ typedef struct
    Method setPosMethod;
 
    WaveHeader waveHeader;
-   Object mediaStream;
-   Object byteBuffer;
+   TCObject mediaStream;
+   TCObject byteBuffer;
    int32 dataPos;
 
    Heap h;
 
 } TMediaData, *MediaData;
 
-static bool mediaClipPlay(Context currentContext, Object mediaClip, MediaData media)
+static bool mediaClipPlay(Context currentContext, TCObject mediaClip, MediaData media)
 {
    return false;
 }
@@ -48,16 +48,16 @@ static Err mediaClipStop(MediaData media, bool pause)
    return NO_ERROR;
 }
 
-static Err mediaClipReset(Object mediaClip, MediaData media)
+static Err mediaClipReset(TCObject mediaClip, MediaData media)
 {
    return NO_ERROR;
 }
 
-static bool mediaClipClose(Object mediaClip, MediaData media)
+static bool mediaClipClose(TCObject mediaClip, MediaData media)
 {
    return NO_ERROR;
 }
 
-static void mediaClipRecord(Context currentContext, Object mediaClip, MediaData media, int32 samplesPerSecond, int32 bitsPerSample, bool stereo)
+static void mediaClipRecord(Context currentContext, TCObject mediaClip, MediaData media, int32 samplesPerSecond, int32 bitsPerSample, bool stereo)
 {
 }

@@ -44,7 +44,7 @@ typedef struct
 
 	int32 accessCode;
 
-   Object listener;
+   TCObject listener;
 	Method deviceDiscovered;
 	Method inquiryCompleted;
 
@@ -53,7 +53,7 @@ typedef struct
    Method serviceSearchCompleted;
 
    int32 inquiryStatus;
-   Object nativeFieldsObj;
+   TCObject nativeFieldsObj;
    VoidP nativeFields;
 } TDeviceSearch, *DeviceSearch;
 
@@ -64,8 +64,8 @@ typedef struct
 
    int32 channel;
 
-   Object attrSet;
-   Object listener;
+   TCObject attrSet;
+   TCObject listener;
 	Method servicesDiscovered;
 	Method serviceSearchCompleted;
 
@@ -75,7 +75,7 @@ typedef struct
    int32 addressLen;
 
    int32 searchStatus;
-   Object nativeFieldsObj;
+   TCObject nativeFieldsObj;
    VoidP nativeFields;
 } TServiceSearch, *ServiceSearch;
 
@@ -91,9 +91,9 @@ typedef struct
 TC_API void tidbDA_nativeDiscoveryAgent(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native private void nativeDiscoveryAgent();
 {
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
-   Object discoveryAgent = p->obj[0];
-   Object inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
-   Object nativeFieldsObj;
+   TCObject discoveryAgent = p->obj[0];
+   TCObject inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
+   TCObject nativeFieldsObj;
    DeviceSearch deviceSearchP;
 
    if ((inquiryNativeFields = createByteArray(p->currentContext, sizeof(TDeviceSearch))) == null)
@@ -121,10 +121,10 @@ TC_API void tidbDA_nativeDiscoveryAgent(NMParams p) // totalcross/io/device/blue
 TC_API void tidbDA_cancelInquiry_d(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean cancelInquiry(totalcross.io.device.bluetooth.DiscoveryListener listener);
 {
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
-   Object listener = p->obj[1];
+   TCObject listener = p->obj[1];
 
-   Object discoveryAgent = p->obj[0];
-   Object inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
+   TCObject discoveryAgent = p->obj[0];
+   TCObject inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
    DeviceSearch deviceSearchP = (DeviceSearch) ARRAYOBJ_START(inquiryNativeFields);
 
    if (listener == null)
@@ -164,18 +164,18 @@ TC_API void tidbDA_retrieveDevices_i(NMParams p) // totalcross/io/device/bluetoo
 TC_API void tidbDA_nativeSearchServices_IUrd(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public int nativeSearchServices(int []attrSet, totalcross.io.device.bluetooth.UUID []uuidSet, totalcross.io.device.bluetooth.RemoteDevice btDev, totalcross.io.device.bluetooth.DiscoveryListener discListener) throws IOException;
 {
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
-   Object attrSet = p->obj[1];
-   Object uuidSet = p->obj[2];
-   Object remoteDevice = p->obj[3];
-   Object discListener = p->obj[4];
+   TCObject attrSet = p->obj[1];
+   TCObject uuidSet = p->obj[2];
+   TCObject remoteDevice = p->obj[3];
+   TCObject discListener = p->obj[4];
    int32* attrSetP = (int32*) ARRAYOBJ_START(attrSet);
    int32 attrSetLen = ARRAYOBJ_LEN(attrSet);
    
-   Object addressObj = RemoteDevice_address(remoteDevice);
+   TCObject addressObj = RemoteDevice_address(remoteDevice);
 
    // arguments were already checked on java, in DiscoveryAgent4D
-   Object discoveryAgent = p->obj[0];
-   Object inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
+   TCObject discoveryAgent = p->obj[0];
+   TCObject inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
    ServiceSearch serviceSearchP = (ServiceSearch) ARRAYOBJ_START(inquiryNativeFields);
 
    boolean searchStarted = false;
@@ -226,10 +226,10 @@ TC_API void tidbDA_startInquiry_id(NMParams p) // totalcross/io/device/bluetooth
 {
 #if !defined WP8 && (defined (WIN32) || defined (WINCE))
    int32 accessCode = p->i32[0];
-   Object listener = p->obj[1];
+   TCObject listener = p->obj[1];
 
-   Object discoveryAgent = p->obj[0];
-   Object inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
+   TCObject discoveryAgent = p->obj[0];
+   TCObject inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
    DeviceSearch deviceSearchP = (DeviceSearch) ARRAYOBJ_START(inquiryNativeFields);
 
    boolean inquiryStarted = false;

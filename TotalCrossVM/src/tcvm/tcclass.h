@@ -116,8 +116,8 @@ typedef TValue* ValueArray;
 typedef struct TObjectProperties TObjectProperties; // An object is prefixed with its properties
 typedef TObjectProperties* ObjectProperties;
 
-typedef ValueArray Object; // an Object is an array of TValues
-typedef Object* ObjectArray; // different from the other arrays! this one is a pointer array
+typedef ValueArray TCObject; // an TCObject is an array of TValues
+typedef TCObject* TCObjectArray; // different from the other arrays! this one is a pointer array
 
 typedef struct TField TField;
 typedef TField* Field;
@@ -336,7 +336,7 @@ union TCode
 };
 
 
-/** A value held by an Object. The object contains an array of Values.
+/** A value held by an TCObject. The object contains an array of Values.
  * The type is known by the program and does not need to be stored here.
  */
 union TValue
@@ -345,7 +345,7 @@ union TValue
    double asDouble;
    int64 asInt64;
    uint32 asUInt32;
-   Object asObj;
+   TCObject asObj;
    VoidP asVoidP;
    uint32 arrayLen;
 };
@@ -355,7 +355,7 @@ typedef struct
 {
    // input values to the native method
    int32 *i32;
-   Object *obj;
+   TCObject *obj;
    union // old v64
    {
       double *dbl;
@@ -368,7 +368,7 @@ typedef struct
       double retD;
       int64 retL;
    };
-   Object retO; // retO is outside the union
+   TCObject retO; // retO is outside the union
    // the context for the current thread
    Context currentContext;
 } *NMParams, TNMParams;
@@ -420,7 +420,7 @@ struct TConstantPool
    uint16 strCount;
 
    Int32Array    i32;
-   ObjectArray   str;
+   TCObjectArray str;
    DoubleArray   dbl;
    Int64Array    i64;
    CharPArray    cls; // primitive types and class names (full package name)
@@ -456,14 +456,14 @@ struct TException
 #define FIELD_V64_OFFSET(o,c) (((uint8*)(o))+c->v64Ofs)
 
 #define FIELD_I32(o,idx) (((int32*)(FIELD_I32_OFFSET(o)))[idx])
-#define FIELD_OBJ(o,c,idx) (((Object*)(FIELD_OBJ_OFFSET(o,c)))[idx])
+#define FIELD_OBJ(o,c,idx) (((TCObject*)(FIELD_OBJ_OFFSET(o,c)))[idx])
 #define FIELD_I64(o,c,idx) (((int64*)(FIELD_V64_OFFSET(o,c)))[idx])  // i64 and dbl point to the same structure
 #define FIELD_DBL(o,c,idx) (((double*)(FIELD_V64_OFFSET(o,c)))[idx])
 
 /** This structure represents a Java class. */
 struct TTCClass
 {
-   // The offsets to the object where each instance field type starts in an Object
+   // The offsets to the object where each instance field type starts in an TCObject
    uint16 objOfs, v64Ofs; // there's no i32Ofs because int32's offset is always 0
    // The constant pool assigned to this class.
    ConstantPool cp;
@@ -473,7 +473,7 @@ struct TTCClass
    CharP name;
    // The access flags of this class (e.g.: if this class is public, static, etc)
    ClassFlags flags;
-   // The fields that will be copied into each instance (an Object) of this class.
+   // The fields that will be copied into each instance (an TCObject) of this class.
    FieldArray i32InstanceFields;
    FieldArray v64InstanceFields;
    FieldArray objInstanceFields;
@@ -486,7 +486,7 @@ struct TTCClass
    // The current values for static fields
    Int32Array  i32StaticValues;
    DoubleArray v64StaticValues;
-   ObjectArray objStaticValues;
+   TCObjectArray objStaticValues;
    // The methods declared in this class
    MethodArray methods;
    // The interfaces that this class implements
@@ -537,7 +537,7 @@ struct TMethod
    uint32 ref; // library reference
 };
 
-/** This structure represents a Java int, double, long and Object class field. */
+/** This structure represents a Java int, double, long and TCObject class field. */
 struct TField
 {
    // The field's name

@@ -2,7 +2,7 @@
 
 #include <wrl/client.h>
 
-#include "esUtil.h"
+//#include "esUtil.h"
 
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
@@ -13,7 +13,7 @@
 #include "openglWrapper.h"
 #include "datastructures.h"
 #include "tcvm.h"
-#include "winrtangle.h"
+//#include "winrtangle.h"
 #include "MainView.h"
 #include "precompiled_texture.h"
 #include "precompiled_lrp.h"
@@ -172,6 +172,7 @@ int32 abs32(int32 a)
 
 static bool checkGlError(const char* op, int line)
 {
+#if 0
 	GLint error;
 
 	//debug("%s (%d)",op,line);
@@ -192,11 +193,13 @@ static bool checkGlError(const char* op, int line)
 		debug("glError %s at %s (%d)\n", msg, op, line);
 		return true;
 	}
+#endif
 	return false;
 }
 
 static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precompiledCodeSize)
 {
+#if 0
 	GLint ret = GL_TRUE;
 	GLuint vshader, fshader;
 	GLuint p = glCreateProgram();
@@ -231,18 +234,24 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
 	}
 
 	return p;
+#else
+	return 0;
+#endif
 }
 
 static void setCurrentProgram(GLint prog)
 {
+#if 0
 	if (prog != lastProg)
 	{
 		glUseProgram(lastProg = prog); GL_CHECK_ERROR
 	}
+#endif
 }
 
 static void initPoints()
 {
+#if 0
 	pointsProgram = createProgram_angle(precompiled_points, sizeof(precompiled_points));
 	setCurrentProgram(lrpProgram);
 	pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
@@ -250,17 +259,21 @@ static void initPoints()
 		pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
 		glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
 		glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+#endif
 }
 
 static void clearPixels()
 {
+#if 0
 	pixcoords = (int32*)glcoords;
 	pixcolors = (int32*)glcolors;
+#endif
 }
 
 
 static void destroyEGL()
 {
+#if 0
 	eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 	eglDestroyContext(_display, _context);
 	eglDestroySurface(_display, _surface);
@@ -269,10 +282,12 @@ static void destroyEGL()
 	_display = EGL_NO_DISPLAY;
 	_surface = EGL_NO_SURFACE;
 	_context = EGL_NO_CONTEXT;
+#endif
 }
 
 static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
+#if 0
 	bool isPixel = (x & IS_PIXEL) != 0;
 	if ((pixcoords + (isPixel ? 2 : 4)) > pixEnd)
 		flushPixels(7);
@@ -287,10 +302,12 @@ static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 	pc.pixel = rgb;
 	pc.a = a;
 	*pixcolors++ = pc.pixel;
+#endif
 }
 
 static void initShade()
 {
+#if 0
 	shadeProgram = createProgram_angle(precompiled_shade, sizeof(precompiled_shade));
 	setCurrentProgram(shadeProgram);
 	shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
@@ -298,10 +315,12 @@ static void initShade()
 		glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
 		glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
 		shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
+#endif
 }
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
 {
+#if 0
 	mat4 mat =
 	{
 		2.0 / w, 0.0, 0.0, -1.0,
@@ -321,10 +340,12 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
 #else
 		glViewport(0, 0, w, h); GL_CHECK_ERROR
 #endif
+#endif
 }
 
 static void initTexture()
 {
+#if 0
 	//textureProgram = esLoadProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
 	//textureProgram = createProgram_angle(gProgram, sizeof(gProgram));
 	textureProgram = createProgram_angle(precompiled_texture, sizeof(precompiled_texture));
@@ -335,15 +356,18 @@ static void initTexture()
 
 		glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
 		glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
+#endif
 }
 
 static void initLineRectPoint()
 {
+#if 0
 	lrpProgram = createProgram_angle(precompiled_lrp, sizeof(precompiled_lrp));
 	setCurrentProgram(lrpProgram);
 	lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
 		lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
 		glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+#endif
 }
 
 
@@ -351,16 +375,21 @@ static void initLineRectPoint()
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
+#if 0
 #ifndef ANDROID
 	screen->extension = deviceCtx;
 #endif
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
 	return screen->pixels != null;
+#else
+	return 0;
+#endif
 }
 
 void flushPixels(int q)
 {
+#if 0
 	if (pixcolors != (int32*)glcolors)
 	{
 		int32 n = pixcolors - (int32*)glcolors, i;
@@ -417,6 +446,7 @@ void flushPixels(int q)
 		}
 		clearPixels();
 	}
+#endif
 }
 
 
@@ -448,6 +478,7 @@ void flushPixels(int q)
 
 bool checkGLfloatBuffer(Context c, int32 n)
 {
+#if 0
 	if (n > flen)
 	{
 		xfree(glcoords);
@@ -466,11 +497,13 @@ bool checkGLfloatBuffer(Context c, int32 n)
 			return false;
 		}
 	}
+#endif
 	return true;
 }
 
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {
+#if 0
 	if (surfaceWillChange) { clearPixels(); return; }
 	if (pixcolors != (int32*)glcolors) flushPixels(11);
 #if defined ANDROID || defined WP8
@@ -485,10 +518,12 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 	glClearColor(f255[gray.r], f255[gray.g], f255[gray.b], 1); GL_CHECK_ERROR
 	glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
 #endif
+#endif
 }
 
 bool setupGL(int width, int height)
 {
+#if 0
 	int i;
 	pixLastRGB = -1;
 	appW = width;
@@ -515,12 +550,15 @@ bool setupGL(int width, int height)
 		f255[i] = (GLfloat)i / (GLfloat)255;
 	clearPixels();
 	return checkGLfloatBuffer(mainContext, 10000);
+#else
+	return 0;
+#endif
 }
 
-//void applyChanges(Context currentContext, Object obj, bool updateList)
+//void applyChanges(Context currentContext, TCObject obj, bool updateList)
 //{
 //	int32 frameCount = Image_frameCount(obj);
-//	Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+//	TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
 //	if (pixelsObj)
 //	{
 //		Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
@@ -531,16 +569,19 @@ bool setupGL(int width, int height)
 //	Image_changed(obj) = false;
 //}
 
-void glDeleteTexture(Object img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
+#if 0
 	glDeleteTextures(1, (GLuint*)textureId); GL_CHECK_ERROR
 		*textureId = 0;
 	if (updateList)
 		imgTextures = VoidPsRemove(imgTextures, img, null);
+#endif
 }
 
-void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
+#if 0
 	int32 i;
 	PixelConv* pf = (PixelConv*)pixels;
 	PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
@@ -590,23 +631,31 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
 		}
 	}
 	xfree(pt0);
+#endif
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
+#if 0
 	add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
+#endif
 }
 
 int32 glGetPixel(int32 x, int32 y)
 {
+#if 0
 	glpixel gp;
 	if (pixcolors != (int32*)glcolors) flushPixels(8);
 	glReadPixels(x, appH - y - 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
 		return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
+#else
+	return 0;
+#endif
 }
 
 void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+#if 0
 #define GL_BGRA 0x80E1 // BGRA is 20x faster than RGBA on devices that supports it
 	PixelConv* p;
 	glpixel gp;
@@ -643,17 +692,21 @@ void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 he
 			p->b = gp.b;
 		}
 	}
+#endif
 }
 
 void flushAll()
 {
+#if 0
 	flushPixels(10);
 	glFlush(); GL_CHECK_ERROR
+#endif
 }
 
 
 void privateScreenChange(int32 w, int32 h)
 {
+#if 0
 #ifdef darwin
 	graphicsIOSdoRotate();
 #else
@@ -662,10 +715,12 @@ void privateScreenChange(int32 w, int32 h)
 #endif
 	clearPixels();
 	setProjectionMatrix(w, h);
+#endif
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
+#if 0
 #if defined ANDROID || defined WP8
 	if (!isScreenChange)
 	{
@@ -686,10 +741,12 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 		xfree(glcolors);
 	}
 #endif
+#endif
 }
 
 bool initGLES(ScreenSurface screen)
 {
+#if 0
 	int32 i;
 	const EGLint attribs[] =
 	{
@@ -752,10 +809,14 @@ bool initGLES(ScreenSurface screen)
 	_surface = surface;
 	_context = context;
 	return setupGL(screen->screenW, screen->screenH);
+#else
+	return false;
+#endif
 }
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
+#if 0
 	auto bounds = CoreWindow::GetForCurrentThread()->Bounds;
 	screen->bpp = 32;
 	screen->screenX = screen->screenY = 0;
@@ -764,10 +825,14 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 	screen->hRes = ascrHRes;
 	screen->vRes = ascrVRes;
 	return initGLES(screen);
+#else
+	return 0;
+#endif
 }
 
 void glDrawPixels(int32 n, int32 rgb)
 {
+#if 0
 	setCurrentProgram(pointsProgram);
 	if (pixLastRGB != rgb)
 	{
@@ -778,15 +843,19 @@ void glDrawPixels(int32 n, int32 rgb)
 	glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
 		glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
 		glDrawArrays(GL_POINTS, 0, n); GL_CHECK_ERROR
+#endif
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
+#if 0
 	add2pipe(x | IS_PIXEL, y, 1, 1, rgb, a);
+#endif
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
+#if 0
 	// The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
 	if (x1 == x2)
 		add2pipe(min32(x1, x2), min32(y1, y2), 1, abs32(y2 - y1), rgb, a);
@@ -795,10 +864,12 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 		add2pipe(min32(x1, x2), min32(y1, y2), abs32(x2 - x1), 1, rgb, a);
 	else
 		add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
+#endif
 }
 
-void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+#if 0
 	if (pixcolors != (int32*)glcolors) flushPixels(4);
 	setCurrentProgram(shadeProgram);
 	glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
@@ -833,11 +904,13 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 	}
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+#endif
 }
 
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
+#if 0
 #if defined ANDROID
 	if (setShiftYonNextUpdateScreen && needsPaint != null)
 	{
@@ -864,23 +937,28 @@ void setShiftYgl()
 #else
 	glShiftY = -desiredScreenShiftY;
 #endif    
-
+#endif
 }
 
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
+#if 0
 	add2pipe(x, y, w, h, rgb, a);
+#endif
 }
 
 void glSetLineWidth(int32 w)
 {
+#if 0
 	setCurrentProgram(lrpProgram);
 	glLineWidth(w); GL_CHECK_ERROR
+#endif
 }
 
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
+#if 0
 	GLfloat* coords = texcoords;
 	/*   GLfloat degrees = 45;
 	GLfloat radians = degreesToRadians(degrees);
@@ -920,6 +998,7 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
 
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
 		glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+#endif
 }
 
 /*void updateScreenANGLE()

@@ -49,8 +49,8 @@ struct TJPEGFILE
 
    union
    {
-      Object inputStreamObj;
-      Object outputStreamObj;
+      TCObject inputStreamObj;
+      TCObject outputStreamObj;
    };
    union
    {
@@ -58,7 +58,7 @@ struct TJPEGFILE
       Method writeBytesMethod;
    };
 
-   Object bufObj;
+   TCObject bufObj;
    TValue params[4];
    // the first 4 bytes
    char *first4;

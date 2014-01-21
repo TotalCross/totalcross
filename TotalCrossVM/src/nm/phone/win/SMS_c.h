@@ -216,7 +216,7 @@ static void SmsSend(Context currentContext, TCHARP szMessage, TCHARP szDestinati
    }
 }
 
-static void SmsReceive(Context currentContext, Object* out)
+static void SmsReceive(Context currentContext, TCObject* out)
 {
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300 && initSMS(currentContext,SMS_MODE_RECEIVE))
    {
@@ -236,7 +236,7 @@ static void SmsReceive(Context currentContext, Object* out)
             throwExceptionWithCode(currentContext, IOException, err);
          else
          {
-            Object msg = createStringObjectWithLen(currentContext, dwSize+1);
+            TCObject msg = createStringObjectWithLen(currentContext, dwSize+1);
             if (msg != null)
             {
                char* pMessage = xmalloc(dwSize+1);
@@ -253,7 +253,7 @@ static void SmsReceive(Context currentContext, Object* out)
                      *out = createArrayObject(currentContext, "[java.lang.String", 2);
                      if (*out != null)
                      {
-                        Object* nm = (Object*)ARRAYOBJ_START(*out);
+                        TCObject* nm = (TCObject*)ARRAYOBJ_START(*out);
                         nm[0] = createStringObjectFromTCHARP(currentContext, smsaDestination.ptsAddress, -1);
                         nm[1] = createStringObjectFromCharP(currentContext, pMessage, dwSize);
                         setObjectLock(nm[0], UNLOCKED);

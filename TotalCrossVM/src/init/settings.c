@@ -188,7 +188,7 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
 
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 {
-   Object appId = *getStaticFieldObject(settingsClass, "applicationId");
+   TCObject appId = *getStaticFieldObject(settingsClass, "applicationId");
    JCharP c = String_charsStart(appId);
 
    applicationIdStr[0] = (char)c[0];
@@ -207,7 +207,7 @@ void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 
 static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)
 {
-   Object obj = *getStaticFieldObject(settingsClass, name);
+   TCObject obj = *getStaticFieldObject(settingsClass, name);
    if (obj == NULL || ARRAYOBJ_LEN(obj) == 0) // if string null, delete it - guich@240_3: first condition added.
       deleteAppSettings(crtr,bin,isHKLM);      
    else                                      
@@ -245,7 +245,7 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
 
 TC_API bool getDataPath(CharP storeInto)
 {
-   Object dataPathObj = *getStaticFieldObject(settingsClass, "dataPath");
+   TCObject dataPathObj = *getStaticFieldObject(settingsClass, "dataPath");
    if (dataPathObj == null)
       return false;
    String2CharPBuf(dataPathObj, storeInto);

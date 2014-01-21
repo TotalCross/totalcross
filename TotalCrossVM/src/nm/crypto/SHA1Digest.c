@@ -17,8 +17,8 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdSHA1D_nativeCreate(NMParams p) // totalcross/crypto/digest/SHA1Digest native void nativeCreate();
 {
-   Object sha1dObj = p->obj[0];
-   Object digestObj;
+   TCObject sha1dObj = p->obj[0];
+   TCObject digestObj;
 
    if ((digestObj = createByteArray(p->currentContext, sizeof(SHA1_CTX))) != null)
    {
@@ -29,12 +29,12 @@ TC_API void tcdSHA1D_nativeCreate(NMParams p) // totalcross/crypto/digest/SHA1Di
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdSHA1D_process_B(NMParams p) // totalcross/crypto/digest/SHA1Digest native protected final byte[] process(byte []data);
 {
-   Object sha1dObj = p->obj[0];
-   Object dataObj = p->obj[1];
-   Object digestObj = *Digest_digestRef(sha1dObj);
+   TCObject sha1dObj = p->obj[0];
+   TCObject dataObj = p->obj[1];
+   TCObject digestObj = *Digest_digestRef(sha1dObj);
    SHA1_CTX *ctx = (SHA1_CTX*) ARRAYOBJ_START(digestObj);
 
-   Object byteArrayResult;
+   TCObject byteArrayResult;
 
    if (!dataObj)
    {

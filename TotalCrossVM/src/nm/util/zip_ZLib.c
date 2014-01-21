@@ -39,10 +39,10 @@ static void zfree(voidpf opaque, voidpf address)
 	xfree(address);
 }
 
-static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 buffersize, int32 levelOrSizeIn, int32 strategy, bool noWrap, Object in, Object out)
+static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 buffersize, int32 levelOrSizeIn, int32 strategy, bool noWrap, TCObject in, TCObject out)
 {
-   Object inByteArray = null;
-   Object outByteArray = null;
+   TCObject inByteArray = null;
+   TCObject outByteArray = null;
 	CharP inArray, outArray;
 	Method readMethod, writeMethod;
 	int32 err = Z_OK;
@@ -179,8 +179,8 @@ error:
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZL_deflate_ssiib(NMParams p) // totalcross/util/zip/ZLib native public static int deflate(totalcross.io.Stream in, totalcross.io.Stream out, int compressionLevel, int strategy, boolean noWrap) throws IOException;
 {
-   Object streamIn = p->obj[0];
-   Object streamOut = p->obj[1];
+   TCObject streamIn = p->obj[0];
+   TCObject streamOut = p->obj[1];
    int32 level = p->i32[0];
    int32 strategy = p->i32[1];
    bool noWrap = p->i32[2];
@@ -208,8 +208,8 @@ TC_API void tuzZL_deflate_ssiib(NMParams p) // totalcross/util/zip/ZLib native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZL_inflate_ssib(NMParams p) // totalcross/util/zip/ZLib native public static int inflate(totalcross.io.Stream in, totalcross.io.Stream out, int sizeIn, boolean noWrap) throws IOException, ZipException;
 {
-   Object streamIn = p->obj[0];
-   Object streamOut = p->obj[1];
+   TCObject streamIn = p->obj[0];
+   TCObject streamOut = p->obj[1];
    int32 sizeIn = p->i32[0];
    bool noWrap = p->i32[1];
 

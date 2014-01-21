@@ -11,14 +11,14 @@
 
 
 
-extern Object testfont;
-Object testfm;
+extern TCObject testfont;
+TCObject testfm;
 
 TESTCASE(tufFM_fontMetricsCreate) // totalcross/ui/font/FontMetrics native void fontMetricsCreate(); #DEPENDS(tufF_fontCreate_f)
 {
    TNMParams p;
    int32 *ascent,*descent;
-   Object fm = createObject(currentContext, "totalcross.ui.font.FontMetrics");
+   TCObject fm = createObject(currentContext, "totalcross.ui.font.FontMetrics");
    setObjectLock(fm, UNLOCKED);
    tzero(p);
    p.currentContext = currentContext;
@@ -68,8 +68,8 @@ TESTCASE(tufFM_stringWidth_Cii) // totalcross/ui/font/FontMetrics native public 
 {
    TNMParams p;
    int32 sc[2];
-   Object obj[2];
-   Object s;
+   TCObject obj[2];
+   TCObject s;
    ASSERT1_EQUALS(NotNull, testfm); // make sure fontMetricsCreate didn't failed
    s = createStringObjectFromCharP(currentContext, "123Barbara",-1);
    setObjectLock(s, UNLOCKED);

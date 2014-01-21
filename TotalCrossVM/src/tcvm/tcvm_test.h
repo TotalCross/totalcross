@@ -244,12 +244,12 @@ TESTCASE(VM_CodeUnion)
 }
 
 //////////////////////////// AUXILIARY FUNCTIONS ////////////////////////////////
-static Object objTestValue;
-static Object newTestTypesInstance(Context currentContext)
+static TCObject objTestValue;
+static TCObject newTestTypesInstance(Context currentContext)
 {
    CharP tt = "TestTypes"; // for class definitions, see classinfo.test, function createTestTypesClass
    TCClass c;
-   Object o;
+   TCObject o;
 
    o = createObjectWithoutCallingDefaultConstructor(currentContext, tt); // do NOT call the default constructor, it is buggy
    setObjectLock(o, UNLOCKED);
@@ -289,13 +289,13 @@ static Object newTestTypesInstance(Context currentContext)
    c->v64StaticFields = c->v64InstanceFields;
    c->objStaticFields = c->objInstanceFields;
    c->i32StaticValues = newPtrArrayOf(Int32, ARRAYLENV(c->i32StaticFields), null);
-   c->objStaticValues = newPtrArrayOf(Object, ARRAYLENV(c->objStaticFields), null);
+   c->objStaticValues = newPtrArrayOf(TCObject, ARRAYLENV(c->objStaticFields), null);
    c->v64StaticValues = newPtrArrayOf(Double, ARRAYLENV(c->v64StaticFields), null);
    return o;
 }
 
-static Object testString;
-static Object testTypesInstance;
+static TCObject testString;
+static TCObject testTypesInstance;
 static TMethod testMethod;
 
 static Method initMethod(Context currentContext, int op)
@@ -324,7 +324,7 @@ static Method initMethod(Context currentContext, int op)
 
 static void* newArrayTest(Context currentContext, Type t) // returns the start of the array
 {
-   Object array = null;
+   TCObject array = null;
    switch (t)
    {
       case Type_Byte  : array = FIELD_OBJ(testTypesInstance, testTypesClass, 1); break;
@@ -367,9 +367,9 @@ finish:
    return false;
 }
 
-static Object initExtTest(Context currentContext, struct TestSuite *tc, Method m, RegType t, bool isStatic)
+static TCObject initExtTest(Context currentContext, struct TestSuite *tc, Method m, RegType t, bool isStatic)
 {
-   static Object ext;
+   static TCObject ext;
    static uint16 instanceField[4]  = {1,2,3,4};  // positions for cp.identExt
    static uint16 staticField[4] = {1,2,3,4};
 
@@ -520,7 +520,7 @@ finish: ;
 TESTCASE(VM_MOV_regO_sym)
 {
    Method m = initMethod(currentContext,MOV_regO_sym);
-   Object orig = m->class_->cp->str[1];
+   TCObject orig = m->class_->cp->str[1];
    m->code[0].reg_sym.reg = 1; // dst
    m->code[0].reg_sym.sym = 1; // src
    executeMethod(currentContext, m);
@@ -553,7 +553,7 @@ finish: ;
 TESTCASE(VM_MOV_regI_arlen)
 {
    Method m = initMethod(currentContext,MOV_regI_arlen);
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 7);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 7);
    currentContext->regO[1/*sym*/] = array;
    m->code[0].reg_ar.reg = 2; // dst
    m->code[0].reg_ar.base = 1;
@@ -580,7 +580,7 @@ TESTCASE(VM_MOV_regI_arc) // #DEPENDS(VM_MOV_regI_aru)
 TESTCASE(VM_MOV_regO_aru)
 {
    Method m = initMethod(currentContext,MOV_regO_aru);
-   Object* v = (Object*)newArrayTest(currentContext, Type_Object);
+   TCObject* v = (TCObject*)newArrayTest(currentContext, Type_Object);
    v[1] = OBJECT_TEST_VALUE;
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -638,7 +638,7 @@ TESTCASE(VM_MOV_arc_regI) // #DEPENDS(VM_MOV_aru_regI)
 TESTCASE(VM_MOV_aru_regO)
 {
    Method m = initMethod(currentContext,MOV_aru_regO);
-   Object* v = (Object*)newArrayTest(currentContext, Type_Object);
+   TCObject* v = (TCObject*)newArrayTest(currentContext, Type_Object);
    currentContext->regO[2] = OBJECT_TEST_VALUE;
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -759,7 +759,7 @@ finish: ;
 TESTCASE(VM_MOV_regI_field) // #DEPENDS(VM_MOV_field_regI)
 {
    Method m = initMethod(currentContext,MOV_regI_field);
-   Object ext = initExtTest(currentContext, tc,m,RegI,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegI,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -769,7 +769,7 @@ finish: ;
 TESTCASE(VM_MOV_regO_field) // #DEPENDS(VM_MOV_field_regO)
 {
    Method m = initMethod(currentContext,MOV_regO_field);
-   Object ext = initExtTest(currentContext, tc,m,RegO,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegO,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -781,7 +781,7 @@ TESTCASE(VM_MOV_reg64_field) // #DEPENDS(VM_MOV_field_reg64)
    Method m = initMethod(currentContext,MOV_reg64_field);
 
    // double
-   Object ext = initExtTest(currentContext, tc,m,RegD,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegD,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -798,7 +798,7 @@ finish: ;
 TESTCASE(VM_MOV_field_regI)
 {
    Method m = initMethod(currentContext,MOV_field_regI);
-   Object ext = initExtTest(currentContext, tc,m,RegI,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegI,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    currentContext->regI[0] = INT32_TEST_VALUE;
    executeMethod(currentContext, m);
@@ -809,7 +809,7 @@ finish: ;
 TESTCASE(VM_MOV_field_regO)
 {
    Method m = initMethod(currentContext,MOV_field_regO);
-   Object ext = initExtTest(currentContext, tc,m,RegO,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegO,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    currentContext->regO[m->code->field_reg.reg] = OBJECT_TEST_VALUE;
    executeMethod(currentContext, m);
@@ -822,7 +822,7 @@ TESTCASE(VM_MOV_field_reg64)
    Method m = initMethod(currentContext,MOV_field_reg64);
 
    // double
-   Object ext = initExtTest(currentContext, tc,m,RegD,false);
+   TCObject ext = initExtTest(currentContext, tc,m,RegD,false);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    REGD(currentContext->reg64)[m->code->field_reg.reg] = DOUBLE_TEST_VALUE;
    executeMethod(currentContext, m);
@@ -843,7 +843,7 @@ finish: ;
 TESTCASE(VM_MOV_regI_static)
 {
    Method m = initMethod(currentContext,MOV_regI_static);
-   Object ext = initExtTest(currentContext, tc,m,RegI,true);
+   TCObject ext = initExtTest(currentContext, tc,m,RegI,true);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -853,7 +853,7 @@ finish: ;
 TESTCASE(VM_MOV_regO_static) // #DEPENDS(VM_MOV_static_regO)
 {
    Method m = initMethod(currentContext,MOV_regO_static);
-   Object ext = initExtTest(currentContext, tc,m,RegO,true);
+   TCObject ext = initExtTest(currentContext, tc,m,RegO,true);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -865,7 +865,7 @@ TESTCASE(VM_MOV_reg64_static)
    Method m = initMethod(currentContext,MOV_reg64_static);
 
    // double
-   Object ext = initExtTest(currentContext, tc,m,RegD,true);
+   TCObject ext = initExtTest(currentContext, tc,m,RegD,true);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -882,7 +882,7 @@ finish: ;
 TESTCASE(VM_MOV_static_regI)
 {
    Method m = initMethod(currentContext,MOV_static_regI);
-   Object ext = initExtTest(currentContext, tc,m,RegI,true);
+   TCObject ext = initExtTest(currentContext, tc,m,RegI,true);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    currentContext->regI[m->code->static_reg.reg] = INT32_TEST_VALUE;
    executeMethod(currentContext, m);
@@ -893,7 +893,7 @@ finish: ;
 TESTCASE(VM_MOV_static_regO)
 {
    Method m = initMethod(currentContext,MOV_static_regO);
-   Object ext = initExtTest(currentContext, tc,m,RegO,true);
+   TCObject ext = initExtTest(currentContext, tc,m,RegO,true);
    if (!ext) {TEST_OUTPUT_SOURCELINE; goto finish;}
    currentContext->regO[m->code->static_reg.reg] = OBJECT_TEST_VALUE;
    executeMethod(currentContext, m);
@@ -904,7 +904,7 @@ finish: ;
 TESTCASE(VM_MOV_static_reg64)
 {
    Method m;
-   Object ext;
+   TCObject ext;
    TCClass c;
    Int64Array i64;
 
@@ -964,7 +964,7 @@ TESTCASE(VM_ADD_regI_aru_s6)
 {
    Method m = initMethod(currentContext,ADD_regI_aru_s6);
    int32 res;
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
    int32* v = (int32*)ARRAYOBJ_START(array);
    v[1] = INT32_TEST_VALUE;
    m->code[0].reg_s6_ar.reg = 2;
@@ -979,7 +979,7 @@ finish: ;
 }
 TESTCASE(VM_ADD_regI_arc_s6) // #DEPENDS(VM_ADD_regI_aru_s6)
 {
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
    testMethod.code[0].reg_s6_ar.reg = 2;
    currentContext->regI[testMethod.code[0].reg_s6_ar.idx  = 0] = 1;
    currentContext->regO[testMethod.code[0].reg_s6_ar.base = 1] = array;
@@ -1019,7 +1019,7 @@ TESTCASE(VM_ADD_aru_regI_s6) // this is the first lexicographically ordered test
 {
    Method m = initMethod(currentContext,ADD_aru_regI_s6);
    int32 res;
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
    int32* v = (int32*)ARRAYOBJ_START(array);
    m->code[0].reg_s6_ar.reg = 2;
    m->code[0].reg_s6_ar.s6 = S6_TEST_VALUE;
@@ -1464,7 +1464,7 @@ finish: ;
 TESTCASE(VM_AND_regI_aru_s6)
 {
    Method m = initMethod(currentContext,AND_regI_aru_s6);
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 3);
    int32* v = (int32*)ARRAYOBJ_START(array);
    int32 res;
    m->code[0].reg_s6_ar.reg = 2;
@@ -1737,7 +1737,7 @@ TESTCASE(VM_JNE_regO_null)
    m->code[0].reg_reg_s12.reg0 = 1;
    m->code[0].reg_reg_s12.s12  = 9;
    // jump
-   currentContext->regO[1] = (Object)1;
+   currentContext->regO[1] = (TCObject)1;
    executeMethod(currentContext, m);
    ASSERT2_EQUALS(Ptr, m->code+9, currentContext->code);
    // don't jump
@@ -2155,7 +2155,7 @@ finish: ;
 TESTCASE(VM_JGE_regI_arlen)
 {
    Method m = initMethod(currentContext,JGE_regI_arlen);
-   Object array = FIELD_OBJ(testTypesInstance, testTypesClass, 7);
+   TCObject array = FIELD_OBJ(testTypesInstance, testTypesClass, 7);
    currentContext->regO[1/*sym*/] = array;
    m->code[0].reg_arl_s12.regI = 2;
    m->code[0].reg_arl_s12.base = 1;
@@ -2514,7 +2514,7 @@ TESTCASE(VM_z5_RETURN_symO)
 {
    Method m = initContext(currentContext, RETURN_symO,1);
    Context c = currentContext;
-   Object old;
+   TCObject old;
    // object
    m->code[0].sym.sym = 0;
    old = m->class_->cp->str[0];
@@ -2602,7 +2602,7 @@ static int32 getMethodIndex(TCClass c, uint16 idx)
 static CharP ttprintRes;
 TC_API void TT_print_s(NMParams p)
 {
-   Object str = p->obj[0];
+   TCObject str = p->obj[0];
    p->retI = false;
    if (str && String_charsLen(str) == 7) // Barbara
    {
@@ -2618,7 +2618,7 @@ TESTCASE(VM_z6_CALL_normal)
 #if 0
    double d;
    int32 i;
-   Object barbara;
+   TCObject barbara;
    Method m = initMethod(currentContext,CALL_normal);
    // method call using call
    m->code[0].mtd.this = 0;
@@ -2700,7 +2700,7 @@ finish: ;
 }
 TESTCASE(VM_NEWARRAY_multi)
 {
-   Object a,*oa;
+   TCObject a,*oa;
    // int[][][][][] v = new int[2][3][200][1][4];
    Method m = initMethod(currentContext,NEWARRAY_multi);
    currentContext->regI[8] = 200;  // MOV_regI_s18 8,200
@@ -2719,28 +2719,28 @@ TESTCASE(VM_NEWARRAY_multi)
    ASSERT2_EQUALS(I32, ARRAYOBJ_LEN(a), 2);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(a)->name, "[[[[[&I");
 
-   oa = (Object*)ARRAYOBJ_START(a);
+   oa = (TCObject*)ARRAYOBJ_START(a);
    ASSERT1_EQUALS(NotNull, oa);
    a = oa[0];
    ASSERT1_EQUALS(NotNull, a);
    ASSERT2_EQUALS(I32, ARRAYOBJ_LEN(a), 3);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(a)->name, "[[[[&I");
 
-   oa = (Object*)ARRAYOBJ_START(a);
+   oa = (TCObject*)ARRAYOBJ_START(a);
    ASSERT1_EQUALS(NotNull, oa);
    a = oa[0];
    ASSERT1_EQUALS(NotNull, a);
    ASSERT2_EQUALS(I32, ARRAYOBJ_LEN(a), 200);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(a)->name, "[[[&I");
 
-   oa = (Object*)ARRAYOBJ_START(a);
+   oa = (TCObject*)ARRAYOBJ_START(a);
    ASSERT1_EQUALS(NotNull, oa);
    a = oa[0];
    ASSERT1_EQUALS(NotNull, a);
    ASSERT2_EQUALS(I32, ARRAYOBJ_LEN(a), 1);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(a)->name, "[[&I");
 
-   oa = (Object*)ARRAYOBJ_START(a);
+   oa = (TCObject*)ARRAYOBJ_START(a);
    ASSERT1_EQUALS(NotNull, oa);
    a = oa[0];
    ASSERT1_EQUALS(NotNull, a);
@@ -2771,7 +2771,7 @@ TC_API void TT_printException_s(NMParams p)
 TESTCASE(VM_THROW) // throw new Exception() -> newObj regO, java.lang.Exception; throw regO;
 {
    Method testException;
-   Object aioobe;
+   TCObject aioobe;
 
    // NOTE: THESE TESTS WILL GENERATE A "Warning! NullPointerException" in the output, due to the call of printStackTrace in Java's code
 
@@ -3027,7 +3027,7 @@ TESTCASE(VM_TEST_regO)
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[NullPointerException]);
    currentContext->thrownException = null;
 
-   currentContext->regO[m->code[0].reg.reg = 1] = (Object)1;
+   currentContext->regO[m->code[0].reg.reg = 1] = (TCObject)1;
    executeMethod(currentContext, m);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 finish: ;

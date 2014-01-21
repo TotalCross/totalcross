@@ -20,7 +20,7 @@ CharP throwableTrace;
 
 TC_API void jlT_printStackTraceNative(NMParams p) // java/lang/Throwable native private void printStackTraceNative();
 {
-   Object ex,traceObj;
+   TCObject ex,traceObj;
 #ifndef ENABLE_TEST_SUITE
    CharP throwableTrace;
 #endif

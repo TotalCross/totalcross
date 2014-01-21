@@ -54,7 +54,7 @@ char commandLine[256] = { 0 };
 int32 exitCode = 0;
 bool rebootOnExit = false;
 bool destroyingApplication = false;
-Object mainClass = { 0 };  // the instance being executed
+TCObject mainClass = { 0 };  // the instance being executed
 bool isMainWindow = false;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
@@ -126,9 +126,9 @@ jmethodID jsetElapsed;
 // objectmemorymanager.c
 bool runningGC = 0;
 bool runningFinalizer = 0;
-ObjectArray freeList = { 0 }; // the array with lists of free objects
-ObjectArray usedList = { 0 }; // the array with lists of used objects (allocated after the last GC)
-ObjectArray lockList = { 0 }; // locked objects list
+TCObjectArray freeList = { 0 }; // the array with lists of free objects
+TCObjectArray usedList = { 0 }; // the array with lists of used objects (allocated after the last GC)
+TCObjectArray lockList = { 0 }; // locked objects list
 uint32 markedAsUsed = 1; // starts as 1
 uint32 objCreated = 0;
 uint32 skippedGC = 0;
@@ -140,9 +140,9 @@ Stack objStack = NULL;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 bool canTraverse=true;
-ObjectArray freeList2 = { 0 }; // the array with lists of free objects
-ObjectArray usedList2 = { 0 }; // the array with lists of used objects (allocated after the last GC)
-ObjectArray lockList2 = { 0 }; // locked objects list
+TCObjectArray freeList2 = { 0 }; // the array with lists of free objects
+TCObjectArray usedList2 = { 0 }; // the array with lists of used objects (allocated after the last GC)
+TCObjectArray lockList2 = { 0 }; // locked objects list
 uint32 markedAsUsed2 = 1; // starts as 1
 // the current gc count
 uint32 gcCount2 = 0;
@@ -338,7 +338,7 @@ TC_API CharP  getApplicationIdStr()  {return applicationIdStr; }
 TC_API CharP  getVMPath()            {return vmPath;           }
 TC_API CharP  getAppPath()           {return appPath;          }
 TC_API CharP  getUserName()          {return userName;         }
-TC_API Object getMainClass()         {return mainClass;        }
+TC_API TCObject getMainClass()       {return mainClass;        }
 
 #if defined (WIN32)
 TC_API HWND getMainWindowHandle()    {return mainHWnd;         }

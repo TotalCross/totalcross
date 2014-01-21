@@ -100,7 +100,7 @@ static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_1
    deleteAppSettingsTry(crid, bin, isHKLM, false);
 }
 
-static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
 	//WP8 app should not use registry
 #if !defined WP8
@@ -120,7 +120,7 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
    {
       uint8* data;
       uint32 len;
-      Object obj = (Object)ptr;
+      TCObject obj = (TCObject)ptr;
       if (!bin)
          obj = String_chars(obj);
       len = ARRAYOBJ_LEN(obj);
@@ -145,7 +145,7 @@ static void char8tochar16(CharP value, int32 i)
 }
 
 // don't forget to free the allocated buffer
-static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM, bool testSW) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM, bool testSW) // guich@580_21: use hklm if for secret key
 {
 	// WP8 app should not use registry
 #if !defined WP8
@@ -153,7 +153,7 @@ static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, b
    long ret;
    DWORD len,type;
    TCHAR buf[40];
-   Object temp = null, target = null;
+   TCObject temp = null, target = null;
 
    tcscpy(buf, bin ? (testSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (testSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
 
@@ -187,9 +187,9 @@ static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, b
    return 0;
 }
 
-static Object getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
-   Object o = getAppSettingsTry(currentContext, crid, bin, isHKLM, false); // first test at TC
+   TCObject o = getAppSettingsTry(currentContext, crid, bin, isHKLM, false); // first test at TC
    if (o == null)
    {
       o = getAppSettingsTry(currentContext, crid, bin, isHKLM, true); // guich@tc111_14: now test at SW

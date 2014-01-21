@@ -20,8 +20,8 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccAESC_nativeCreate(NMParams p) // totalcross/crypto/digest/AESCipher native void nativeCreate();
 {
-   Object aesObj = p->obj[0];
-   Object cipherObj;
+   TCObject aesObj = p->obj[0];
+   TCObject cipherObj;
 
    if ((cipherObj = createByteArray(p->currentContext, sizeof(AES_CTX))) != null)
    {
@@ -32,14 +32,14 @@ TC_API void tccAESC_nativeCreate(NMParams p) // totalcross/crypto/digest/AESCiph
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccAESC_doReset(NMParams p) // totalcross/crypto/cipher/AESCipher native protected final void doReset() throws totalcross.crypto.CryptoException;
 {
-   Object aesObj = p->obj[0];
-   Object cipherObj = *Cipher_cipherRef(aesObj);
+   TCObject aesObj = p->obj[0];
+   TCObject cipherObj = *Cipher_cipherRef(aesObj);
    int32 operation = *Cipher_operation(aesObj);
-   Object key = *Cipher_key(aesObj);
-   Object iv = *Cipher_iv(aesObj);
+   TCObject key = *Cipher_key(aesObj);
+   TCObject iv = *Cipher_iv(aesObj);
    AES_CTX *ctx = (AES_CTX*) ARRAYOBJ_START(cipherObj);
    int32 keyLen;
-   Object dataObj;
+   TCObject dataObj;
 
    if (iv == NULL)
    {
@@ -64,13 +64,13 @@ TC_API void tccAESC_doReset(NMParams p) // totalcross/crypto/cipher/AESCipher na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccAESC_process_B(NMParams p) // totalcross/crypto/cipher/AESCipher native protected byte[] process(byte []data) throws totalcross.crypto.CryptoException;
 {
-   Object aesObj = p->obj[0];
-   Object dataObj = p->obj[1];
+   TCObject aesObj = p->obj[0];
+   TCObject dataObj = p->obj[1];
    int32 operation = *Cipher_operation(aesObj);
-   Object cipherObj = *Cipher_cipherRef(aesObj);
+   TCObject cipherObj = *Cipher_cipherRef(aesObj);
    AES_CTX *ctx = (AES_CTX*) ARRAYOBJ_START(cipherObj);
 
-   Object byteArrayResult;
+   TCObject byteArrayResult;
 
    uint8* data = ARRAYOBJ_START(dataObj);
    int32 n = ARRAYOBJ_LEN(dataObj);

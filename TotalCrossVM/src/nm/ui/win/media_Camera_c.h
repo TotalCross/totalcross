@@ -109,7 +109,7 @@ HRESULT SHCameraCapture(PSHCAMERACAPTURE pshcc, bool useThread)
    }
 }
 
-static TCHAR* getString(TCHAR* buf, Object str)
+static TCHAR* getString(TCHAR* buf, TCObject str)
 {
    return str ? JCharP2TCHARPBuf(String_charsStart(str), String_charsLen(str), buf) : null;
 }
@@ -265,7 +265,7 @@ static void cameraClick(NMParams p)
 {
     HRESULT hResult;
     SHCAMERACAPTURE shcc;
-    Object obj = p->obj[0];
+    TCObject obj = p->obj[0];
     TCHAR initialDir[255];
     TCHAR defFN[255];
     TCHAR title[255];

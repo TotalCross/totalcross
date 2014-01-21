@@ -79,96 +79,96 @@ typedef struct
 //                 Java methods that will be called                     //
 //////////////////////////////////////////////////////////////////////////
 
-inline static BoundMethods getBoundMethods(Object xml)
+inline static BoundMethods getBoundMethods(TCObject xml)
 {
    return (BoundMethods)ARRAYOBJ_START(XmlTokenizer_bag(xml));
 }
 
-inline static void foundStartTagName(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundStartTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundStartTagName != null)
       executeMethod(currentContext, b->foundStartTagName, xml, input, offset, count);
 }
 
-inline static void foundEndTagName(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundEndTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndTagName != null)
       executeMethod(currentContext, b->foundEndTagName, xml, input, offset, count);
 }
 
-inline static void foundEndEmptyTag(Context currentContext, Object xml)
+inline static void foundEndEmptyTag(Context currentContext, TCObject xml)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndEmptyTag != null)
       executeMethod(currentContext, b->foundEndEmptyTag, xml);
 }
 
-inline static void foundCharacterData(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundCharacterData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundCharacterData != null)
       executeMethod(currentContext, b->foundCharacterData, xml, input, offset, count);
 }
 
-inline static void foundCharacter(Context currentContext, Object xml, JChar charFound)
+inline static void foundCharacter(Context currentContext, TCObject xml, JChar charFound)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundCharacter != null)
       executeMethod(currentContext, b->foundCharacter, xml, charFound);
 }
 
-inline static void foundAttributeName(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundAttributeName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundAttributeName != null)
       executeMethod(currentContext, b->foundAttributeName, xml, input, offset, count);
 }
 
-inline static void foundAttributeValue(Context currentContext, Object xml, Object input, int32 offset, int32 count, uint8 dlm)
+inline static void foundAttributeValue(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count, uint8 dlm)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundAttributeValue != null)
       executeMethod(currentContext, b->foundAttributeValue, xml, input, offset, count, dlm);
 }
 
-inline static void foundComment(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundComment(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundComment != null)
       executeMethod(currentContext, b->foundComment, xml, input, offset, count);
 }
 
-inline static void foundProcessingInstruction(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundProcessingInstruction(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundProcessingInstruction != null)
       executeMethod(currentContext, b->foundProcessingInstruction, xml, input, offset, count);
 }
 
-inline static void foundDeclaration(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundDeclaration(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundDeclaration != null)
       executeMethod(currentContext, b->foundDeclaration, xml, input, offset, count);
 }
 
-inline static void foundReference(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundReference(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundReference != null)
       executeMethod(currentContext, b->foundReference, xml, input, offset, count);
 }
 
-inline static void foundInvalidData(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+inline static void foundInvalidData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundInvalidData != null)
       executeMethod(currentContext, b->foundInvalidData, xml, input, offset, count);
 }
 
-inline static void foundEndOfInput(Context currentContext, Object xml, int32 count)
+inline static void foundEndOfInput(Context currentContext, TCObject xml, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndOfInput != null)
@@ -234,7 +234,7 @@ static JChar ref2char(uint8* input, int32 count)
    return 0xFFFF;
 }
 
-static JChar resolveCharacterReference(Context currentContext, Object inputObj, int32 offset, int32 count)
+static JChar resolveCharacterReference(Context currentContext, TCObject inputObj, int32 offset, int32 count)
 {
    if (checkArrayRange(currentContext, inputObj, offset, count))
    {
@@ -255,7 +255,7 @@ static JChar resolveCharacterReference(Context currentContext, Object inputObj, 
 
 static void throwSyntaxException(Context currentContext, int32 code, int32 offset)
 {
-   Object exception = currentContext->thrownException = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.xml.SyntaxException");
+   TCObject exception = currentContext->thrownException = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.xml.SyntaxException");
    if (exception)
    {
       Method m = getMethod(OBJ_CLASS(exception), false, CONSTRUCTOR_NAME, 2, J_INT, J_INT);
@@ -268,7 +268,7 @@ static void throwSyntaxException(Context currentContext, int32 code, int32 offse
    }
 }
 
-static void tellReference(Context currentContext, Object xml, Object input, int32 offset, int32 count)
+static void tellReference(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    if (XmlTokenizer_resolveCharRef(xml))
    {
@@ -284,7 +284,7 @@ static void tellReference(Context currentContext, Object xml, Object input, int3
       foundReference(currentContext, xml, input, offset, count);
 }
 
-static bool endTokenize(Context currentContext, Object xml, Object input)
+static bool endTokenize(Context currentContext, TCObject xml, TCObject input)
 {
    int32 dif = XmlTokenizer_ofsCur(xml) - XmlTokenizer_ofsStart(xml);
    switch (XmlTokenizer_state(xml))
@@ -314,7 +314,7 @@ static bool endTokenize(Context currentContext, Object xml, Object input)
 #define REMOVE_IF_ONLY_RETURNS_VOID(m)  if (m->code[0].op.op == RETURN_void) m = null;
 TC_API void txXT_nativeCreate(NMParams p) // totalcross/xml/XmlTokenizer native private void nativeCreate();
 {
-   Object xml = p->obj[0];
+   TCObject xml = p->obj[0];
    if (!xmlInitialized)
       initialize();
    if ((XmlTokenizer_bag(xml) = createByteArray(p->currentContext, sizeof(TBoundMethods))) != null)
@@ -359,8 +359,8 @@ TC_API void txXT_resolveCharacterReference_B(NMParams p) // totalcross/xml/XmlTo
 //////////////////////////////////////////////////////////////////////////
 TC_API void txXT_setCdataContents_Bii(NMParams p) // totalcross/xml/XmlTokenizer native protected void setCdataContents(uint8 []input, int32 offset, int32 count);
 {
-   Object xml = p->obj[0];
-   Object inputObj = p->obj[1];
+   TCObject xml = p->obj[0];
+   TCObject inputObj = p->obj[1];
    int32 offset = p->i32[0];
    int32 count = p->i32[1];
    uint8 *input, *endTagToSkip;
@@ -382,8 +382,8 @@ TC_API void txXT_endTokenize_B(NMParams p) // totalcross/xml/XmlTokenizer native
 //////////////////////////////////////////////////////////////////////////
 TC_API void txXT_tokenizeBytes_B(NMParams p) // totalcross/xml/XmlTokenizer native private void tokenizeBytes(uint8 []input) throws SyntaxException;
 {
-   Object xml      = p->obj[0];
-   Object inputObj = p->obj[1];
+   TCObject xml      = p->obj[0];
+   TCObject inputObj = p->obj[1];
    int32 ofsStart         = XmlTokenizer_ofsStart(xml);
    int32 state            = XmlTokenizer_state(xml);
    int32 substate         = XmlTokenizer_substate(xml);

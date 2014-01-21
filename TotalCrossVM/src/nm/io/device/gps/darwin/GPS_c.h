@@ -23,11 +23,11 @@ static void nativeStopGPS()
    iphone_gpsStop();
 }
 
-static Err nativeUpdateLocation(Context currentContext, Object gpsObject, int32* flags)
+static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int32* flags)
 {
    int date=0, time=0, sat=0;
    double veloc=0, pdop=0, dir=0, lat=0, lon=0;
-   Object lastFix = GPS_lastFix(gpsObject);
+   TCObject lastFix = GPS_lastFix(gpsObject);
    int ret = iphone_gpsUpdateLocation(flags, &date, &time, &sat, &veloc, &pdop, &dir, &lat, &lon);
 
    if (ret == 0 && *flags != 0)

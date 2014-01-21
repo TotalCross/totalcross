@@ -232,7 +232,7 @@ void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, in
 #define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-4; heapFree(heap, b); p = null;}} while (0)
 
 #define newArrayOf(type, len, heap) (type)newArray(sizeof(T##type), len, heap)
-#define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, Object and (J)CharP arrays
+#define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, TCObject and (J)CharP arrays
 
 #define ARRAYLEN(x) (((uint32*)x)[-1])
 #define ARRAYLENV(x) ((x)?ARRAYLEN(x):0) // checks if x is null, returning 0 if yes

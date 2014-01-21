@@ -20,11 +20,11 @@ static void error_callback(png_structp, png_const_charp);
 typedef struct
 {
    Heap heap;
-   Object imageObj;
+   TCObject imageObj;
    Pixel* pixels;
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
-   Object inputStreamObj,bufObj,pixelsObj;
+   TCObject inputStreamObj, bufObj, pixelsObj;
    Method readBytesMethod;
    TValue params[4];
    // the first 4 bytes
@@ -55,7 +55,7 @@ int pngRead(void *buff, int count, UserData *in)
    else
    {
       uint8* start = (uint8*)buff;
-      Object bufObj = in->params[1].asObj;
+      TCObject bufObj = in->params[1].asObj;
       int tempBufSize = ARRAYOBJ_LEN(bufObj);
       uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
@@ -88,9 +88,9 @@ void userfree(png_structp png_ptr, png_voidp ptr)
    //heapFree(userData->heap, ptr);
 }
 
-void setTransparentColor(Object obj, Pixel color);
+void setTransparentColor(TCObject obj, Pixel color);
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4)
+void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
 {
    Heap heap;
    int32 count;

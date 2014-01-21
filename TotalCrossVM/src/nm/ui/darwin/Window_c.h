@@ -15,9 +15,9 @@
 extern "C" {
 #endif
 
-void windowSetSIP(Context currentContext, int32 sipOption, Object control, bool secret);
+void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    UNUSED(titleObj)
 }

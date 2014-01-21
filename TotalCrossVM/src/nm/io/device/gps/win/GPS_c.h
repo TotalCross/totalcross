@@ -206,9 +206,9 @@ static void nativeStopGPS()
    }
 }
 
-static Err nativeUpdateLocation(Context currentContext, Object gpsObject, int32* flags)
+static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int32* flags)
 {
-   Object lastFix = GPS_lastFix(gpsObject);
+   TCObject lastFix = GPS_lastFix(gpsObject);
    GPS_POSITION position;
    Err err;
 
