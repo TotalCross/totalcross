@@ -282,7 +282,7 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
          applyChanges(currentContext, srcSurf,true);
       int32 fc = Image_frameCount(srcSurf);
       int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight,null);
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight,null,null);
    }
    else
 #endif
@@ -947,12 +947,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    int aaType;
    JChar ch,first,last;
    UserFont uf=null;
-   bool isGlFont;
    PixelConv fc;
    int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
+   int32 clip[4];
    GLfloat *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
@@ -975,7 +975,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    bitmapTable = uf->bitmapTable;
    first = uf->fontP.firstChar;
    last = uf->fontP.lastChar;
-   isGlFont = uf->ubase != null;
 
    aaType = uf->fontP.antialiased;
    height = uf->fontP.maxHeight;
@@ -1153,11 +1152,17 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          }
          break;
    #ifdef __gl2_h_
-         case AA_8BPP:
+         case AA_8BPP: // textured font files
          {
             // draws the char, a row at a time
             if (Graphics_useOpenGL(g))
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height, x0, y, width+1, height, &fc);
+            {                                    
+               clip[0] = xMin;
+               clip[1] = yMin;
+               clip[2] = xMax;
+               clip[3] = yMax;
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height, x0, y-istart, width+1, height, &fc, clip);
+            }
 /*            else
                for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                {

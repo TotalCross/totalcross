@@ -390,7 +390,33 @@ void glDeleteTexture(Object img, int32* textureId, bool updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 static int32 lastTexColor;
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color)
+void glClearClip()
+{            
+   glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
+}   
+// note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
+// note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
+{  
+   if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
+      {glClearClip(); GL_CHECK_ERROR}
+   else
+   {
+      y1 += glShiftY;
+      y2 += glShiftY;
+      glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
+      if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
+      if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
+      if (y1 < 0) y1 = 0; else if (y1 > appH) y1 = appH;
+      if (y2 < 0) y2 = 0; else if (y2 > appH) y2 = appH;
+      int32 h = y2-y1, w = x2-x1;
+      if (h < 0) h = 0;
+      if (w < 0) w = 0;
+      glScissor(x1,appH-y2,w,h); GL_CHECK_ERROR
+   }
+}
+
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {         
    GLfloat* coords = texcoords;
    PixelConv pcolor;
@@ -408,7 +434,7 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
 
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
-   // source coordinates
+   // source coordinates                  
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
    coords[ 8] = coords[14] = left;
    coords[ 9] = coords[11] = bottom;
@@ -430,8 +456,10 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
       glUniform4f(textureColor, f255[pcolor.r], f255[pcolor.g], f255[pcolor.b],f255[pcolor.a]); GL_CHECK_ERROR
    }                               
 
+   if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+   if (clip != null) glClearClip();
 }
 
 void initLineRectPoint()
