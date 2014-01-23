@@ -77,7 +77,7 @@ public class GPS
    * On low signal, it contains the value <CODE>INVALID</code>. */
    public double velocity = INVALID;
    /**
-    * Number of satellites in view.
+    * Number of satellites in view. Not supported on WP8.
     * 
     * @since TotalCross 1.20
     */

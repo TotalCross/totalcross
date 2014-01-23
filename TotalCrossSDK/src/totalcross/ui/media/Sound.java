@@ -52,11 +52,12 @@ public final class Sound
 
    /**
    * Plays a tone of the specified frequency for the specified
-   * duration. Tones will only play under Win32 and PalmOS, they won't
+   * duration. Tones will only play under Win32, they won't
    * play under Java due to underlying platform limitations
    * (in these cases, use totalcross.ui.media.MediaClip).
    * @param freq frequency in hertz from 32 to 32767
    * @param duration duration in milliseconds
+   * @deprecated Since it only works on Windows 32.
    */
    public static void tone(int freq, int duration)
    {
@@ -69,12 +70,12 @@ public final class Sound
    }
 
    /**
-   * Sets the sound of the device on/off. Note that in PalmOS this turns off
-   * the system sound only and, in this case, the Sound.beep goes off but the
-   * Sound.tone will still work. The original volume is restored at the vm exit.
+   * Sets the sound of the device on/off. 
+   * The original volume is restored at the vm exit.
    * <p>Important: If the user had set its device sound to off, this method will
    * not turn it on, ie, it will keep the device in silence. Otherwise, it will
    * set the volume to its original configuration.
+   * <p> It is not supported on WP8.
    * @param on if true enables the sound, if false disable it.
    */
    public static void setEnabled(boolean on)
@@ -84,7 +85,7 @@ public final class Sound
 
    /**
    * Plays a tone of the specified Midi Note Number for the specified
-   * duration. Tones will only play under Win32 and PalmOS, they won't
+   * duration. Tones will only play under Win32, they won't
    * play under Java due to underlying platform limitations
    * (in these cases, use totalcross.ui.media.MediaClip).
    * <p>Note: The smaller the midi number, the greater the error in the frequency,
@@ -92,6 +93,7 @@ public final class Sound
    * @param midiNoteNumber number of the note according to MIDI standard
    * (eg. A (440hz) = 69), from 24 to 143
    * @param duration duration in milliseconds
+   * @deprecated Since it only works on Windows 32.
    */
    public static void midiTone(int midiNoteNumber, int duration) // guich@300_33
    {
