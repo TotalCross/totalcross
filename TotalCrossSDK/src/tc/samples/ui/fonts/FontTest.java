@@ -40,7 +40,7 @@ public class FontTest extends MainWindow
    public void initUI()
    {
       add(selector = new Selector(), LEFT,TOP+2,FILL,PREFERRED);
-      add(samples = new Samples(), LEFT,AFTER,FILL,FILL);
+      add(samples = new Samples(), LEFT,AFTER,PARENTSIZE+100,FILL);
       samples.setBackColor(Color.darker(getBackColor(),10)); // darker background
       btnExit = new Button("  X  ");
       btnExit.setBorder(Button.BORDER_NONE);

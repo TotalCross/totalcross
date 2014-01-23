@@ -22,7 +22,7 @@ import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
-public class Samples extends Container
+public class Samples extends ScrollContainer
 {
    private Control []controls;
 
@@ -45,6 +45,11 @@ public class Samples extends Container
       }
    }
 
+   public Samples()
+   {
+      super(true,true);
+   }
+   
    public void initUI()
    {
       setBackColor(Color.darker(getBackColor(),10)); // darker background
@@ -72,15 +77,15 @@ public class Samples extends Container
 
       
 
-      controls = getChildren();
+      controls = getBagChildren();
       repositionAllowed = false; // only reposition the controls
    }
 
    public void setFonts(Font f)
    {
+      setFont(f);
       for (int i = controls.length; --i >= 0;)
          controls[i].setFont(f);
       reposition();
    }
-
  }
