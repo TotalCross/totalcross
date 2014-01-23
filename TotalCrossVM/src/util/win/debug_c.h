@@ -132,5 +132,7 @@ static void privateAlert(CharP str)
    SetActiveWindow(mainHWnd);
 #elif !defined(WP8) 
    MessageBox(mainHWnd,str,TEXT("ALERT"),MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
+#else
+   //XXX wraper C# - privateAlertCS()
 #endif
 }

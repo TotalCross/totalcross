@@ -403,3 +403,18 @@ TC_API int32 JCharPLastIndexOfJChar(JCharP me, int32 meLen, JChar c, int32 start
             return startIndex;
    return -1;
 }
+
+TC_API void JCharPDupBuf(JCharP original, int32 length, JCharP buffer)
+{
+   xmemmove(buffer, original, length << 1);
+   buffer[length] = 0;
+}
+
+TC_API JCharP JCharPDup(JCharP original, int32 length)
+{
+   JCharP buffer = (JCharP)xmalloc((length + 1) << 1);
+   
+   if (buffer)
+      xmemmove(buffer, original, length << 1);
+   return buffer;
+}

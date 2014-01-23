@@ -88,11 +88,13 @@ TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public stat
 #if defined(WINCE) || defined(ANDROID) || defined(darwin) || defined(WP8)
    else
    {
+      
+#if !defined WP8
       char number[100];
       JCharP2CharPBuf(String_charsStart(numberObj), min32(String_charsLen(numberObj),sizeof(number)-1),number);
-#if !defined WP8
-      dialNumber(number);
 #else
+      JChar number[100];
+      JCharPDupBuf(String_charsStart(numberObj), min32(String_charsLen(numberObj), sizeof(number) - 1), number);
       //XXX wraper C# - DialNumberCS()
 #endif
    }

@@ -42,8 +42,8 @@ TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public stat
       else
          SmsSend(p->currentContext, szMessage, szDestination);
 #elif defined (WP8)
-      CharP szMessage = JCharP2CharP(String_charsStart(message), String_charsLen(message));
-      CharP szDestination = JCharP2CharP(String_charsStart(destination), String_charsLen(destination));
+      JCharP szMessage = JCharPDup(String_charsStart(message), String_charsLen(message));
+      JCharP szDestination = JCharPDup(String_charsStart(destination), String_charsLen(destination));
 
       if (!szMessage || !szDestination)
          throwException(p->currentContext, OutOfMemoryError, !szMessage ? "When allocating 'message'" : "'When allocating 'destination'");

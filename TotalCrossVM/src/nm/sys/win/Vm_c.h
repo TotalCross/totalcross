@@ -221,6 +221,8 @@ void vmSetAutoOff(bool enable)
          SystemParametersInfo(SPI_SETBATTERYIDLETIMEOUT, oldAutoOffValue, null, 0);
       oldAutoOffValue = 0;
    }
+#elif defined WP8
+   //XXX: C# - CSWrapper.VmSetAutoOffCS()
 #endif
 }
 
