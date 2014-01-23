@@ -64,6 +64,8 @@ struct TUserFont
    struct TUserFont* ubase;
    // used only when drawing on images
    /*CharSizeCache*/VoidPs* charSizeCache; 
+   int32 tempbufssize;
+   uint8* tempbufs;
 #endif   
 };
 

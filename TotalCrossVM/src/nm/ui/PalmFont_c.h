@@ -183,6 +183,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    int32 width = uf->bitIndexTable[ch+1] - offset;
    int32 height = uf->fontP.maxHeight;
    alpha_t *ob, *ib, *ob0, pval;
+   uint8* tempbuf;
    int32 i, j, n, s, iweight,a;
    double xScale, yScale;
 
@@ -251,13 +252,22 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
 
    /* Pre-allocating all of the needed memory */
    s = max32(newWidth,newHeight);
-   tb  = (alpha_t * ) xmalloc (newWidth * height );
-   v_weight = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* weights */
-   v_pixel  = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* the contributing pixels */
-   v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
-   v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
-
-   if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
+   i = (uf->fontP.maxWidth * newHeight / uf->fontP.maxHeight + 1) * height + 2 * s * maxContribsXY * sizeof(int32) + 2 * s * sizeof(int32);
+   if (uf->tempbufssize >= i)
+      xmemzero(uf->tempbufs, uf->tempbufssize);
+   else
+   {
+      xfree(uf->tempbufs); uf->tempbufssize = 0;
+      uf->tempbufs = xmalloc(i);
+      if (!uf->tempbufs) goto Cleanup;
+      uf->tempbufssize = i;
+   }
+   tempbuf = uf->tempbufs;
+   tb  = (alpha_t * ) tempbuf; tempbuf += newWidth * height;
+   v_weight = (int32 *) tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* weights */
+   v_pixel  = (int32 *) tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* the contributing pixels */
+   v_count  = (int32 *) tempbuf; tempbuf += s * sizeof(int32); /* how many contributions for the target pixel */
+   v_wsum   = (int32 *) tempbuf; tempbuf += s * sizeof(int32); /* sum of the weights for the target pixel */
 
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
@@ -400,11 +410,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    fSuccess = true;
 
 Cleanup: /* CLEANUP */
-   if (tb) xfree(tb);
-   if (v_weight) xfree(v_weight);
-   if (v_pixel) xfree(v_pixel);
-   if (v_count) xfree(v_count);
-   if (v_wsum) xfree(v_wsum);
+   if (!fSuccess) throwException(currentContext, OutOfMemoryError, "Cannot create font buffers");
    return fSuccess ? ob0 : null;
 }
 
