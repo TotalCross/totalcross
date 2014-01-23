@@ -16,7 +16,7 @@ TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(St
 {
    TNMParams p;
    Object obj,jls;
-   Class c1,c2,c3;
+   TCClass c1,c2,c3;
 
    // Test if the Class of "java.lang.String" is the class of the created instance
    tzero(p);
@@ -31,7 +31,7 @@ TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(St
    ASSERT1_EQUALS(NotNull, obj);
    c2 = OBJ_CLASS(obj);
    ASSERT2_EQUALS(Sz, c2->name, "java.lang.Class");
-   c3 = *((Class*)ARRAYOBJ_START(Class_targetClass(obj)));
+   c3 = *((TCClass*)ARRAYOBJ_START(Class_targetClass(obj)));
    ASSERT3_EQUALS(Block, c1, c3, PTRSIZE);
    jlC_JavaLangClassOfJavaLangString = obj;
    finish: ;
@@ -40,7 +40,7 @@ TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() 
 {
    TNMParams p;
    Object obj;
-   Class c;
+   TCClass c;
 
    // create an instance of the String class using the default constructor {"chars = new char[0]"}
    tzero(p);

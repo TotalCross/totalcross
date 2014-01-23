@@ -33,7 +33,7 @@ public final class Settings
    public static int version = 200;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "2.0rc4";
+   public static String versionStr = "2.0rc5";
     
    /** Current build number.
     * @since TotalCross 1.53 

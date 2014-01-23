@@ -90,7 +90,6 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
       {
          if ((count = RSA_encrypt(ctx, ARRAYOBJ_START(dataObj), (uint16) ARRAYOBJ_LEN(dataObj), out, false)) == -1)
             throwException(p->currentContext, CryptoException, "Encryption error");
-         xfree(out);
       }
    }
    else
@@ -101,14 +100,14 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
       {
          if ((count = RSA_decrypt(ctx, ARRAYOBJ_START(dataObj), out, true)) == -1)
             throwException(p->currentContext, CryptoException, "Decryption error");
-         xfree(out);
       }
    }
       
-   if (p->currentContext->thrownException != null && (byteArrayResult = createByteArray(p->currentContext, count)) != null)
+   if (p->currentContext->thrownException == null && (byteArrayResult = createByteArray(p->currentContext, count)) != null)
    {
       xmemmove(ARRAYOBJ_START(byteArrayResult), out, count);
       p->retO = byteArrayResult;
       setObjectLock(byteArrayResult, UNLOCKED);
    }
+   xfree(out);
 }

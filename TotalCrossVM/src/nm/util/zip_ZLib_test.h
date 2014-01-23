@@ -14,7 +14,7 @@
 TC_API void tiF_create_sii(NMParams p);
 TC_API void tiF_nativeClose(NMParams p);
 
-#define TEST_ZLIB true
+#define TEST_ZLIB false
 
 TESTCASE(ZLib) // totalcross/util/zip/ZLib
 {
