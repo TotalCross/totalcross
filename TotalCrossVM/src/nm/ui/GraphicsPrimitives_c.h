@@ -1190,7 +1190,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                         }
                      }
                   }
-                  xfree(alpha);
                }
             }
          }

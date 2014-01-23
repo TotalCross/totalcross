@@ -182,10 +182,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    int32 offset = uf->bitIndexTable[ch];
    int32 width = uf->bitIndexTable[ch+1] - offset;
    int32 height = uf->fontP.maxHeight;
-   alpha_t *ob = (alpha_t*)xmalloc(newWidth * newHeight),*ob0=ob;
-   alpha_t *ib = (alpha_t*)&uf->bitmapTable[offset];
-   alpha_t pval;
-
+   alpha_t *ob, *ib, *ob0, pval;
    int32 i, j, n, s, iweight,a;
    double xScale, yScale;
 
@@ -208,9 +205,30 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    int32 maxContribs,maxContribsXY;   // Almost-const: max number of contribution for current sampling
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
+   CharSizeCache csc;
+   VoidPs *csclist;
+
+   IF_HEAP_ERROR(fontsHeap)
+   {
+      goto Cleanup;
+   }
+
+   // check if its in the cache
+   csclist = uf->charSizeCache;
+   if (uf->charSizeCache != null)
+      do
+      {
+         CharSizeCache csc = (CharSizeCache)csclist->value;
+         if (csc->ch == ch && csc->size == newHeight)
+            return csc->alpha; 
+         csclist = csclist->next;
+      } while (csclist != uf->charSizeCache);
 
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
+
+   ob0 = ob = (alpha_t*)heapAlloc(fontsHeap, newWidth * newHeight);
+   ib = (alpha_t*)&uf->bitmapTable[offset];
 
    if (newWidth > width)
    {
@@ -372,7 +390,13 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
          *ob++ = a;
       }
    }
-
+   
+   // add to the cache
+   csc = newXH(CharSizeCache, fontsHeap);
+   csc->ch = ch;
+   csc->size = newHeight;
+   csc->alpha = ob0;
+   uf->charSizeCache = VoidPsAdd(uf->charSizeCache, csc, fontsHeap);
    fSuccess = true;
 
 Cleanup: /* CLEANUP */

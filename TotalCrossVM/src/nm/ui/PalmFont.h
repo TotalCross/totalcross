@@ -43,17 +43,28 @@ typedef struct
 typedef struct TUserFont TUserFont;
 typedef TUserFont* UserFont;
 
+typedef struct
+{
+   uint8* alpha;
+   uint16 size;
+   JChar ch;
+} *CharSizeCache, TCharSizeCache;    
+
 struct TUserFont
 {
    uint8 *bitmapTable;
    TPalmFont fontP;
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
+#ifdef __gl2_h_   
    // gl fonts: used by the base font
    int32 *textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
    int32 *charPixels; // for one char
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
    struct TUserFont* ubase;
+   // used only when drawing on images
+   /*CharSizeCache*/VoidPs* charSizeCache; 
+#endif   
 };
 
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch);
