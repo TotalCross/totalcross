@@ -169,9 +169,223 @@ FontFile loadFontFile(char *fontName)
    return ff;
 }
 
+#ifdef __gl2_h_
+
+#define BIAS_BITS 16
+#define BIAS (1<<BIAS_BITS)
+
+typedef uint8 alpha_t;
+uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 newWidth, int32 newHeight) // access directly the font bits and return an array of alpha only
+{
+   bool fSuccess = false;
+   // font bits
+   int32 offset = uf->bitIndexTable[ch];
+   int32 width = uf->bitIndexTable[ch+1] - offset;
+   int32 height = uf->fontP.maxHeight;
+   alpha_t *ob = (alpha_t*)xmalloc(newWidth * newHeight),*ob0=ob;
+   alpha_t *ib = (alpha_t*)&uf->bitmapTable[offset];
+   alpha_t pval;
+
+   int32 i, j, n, s, iweight,a;
+   double xScale, yScale;
+
+   // Temporary values
+   int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
+   int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
+   int32 * v_count = null;  // How many contribution for the pixel [newHeight]
+   int32 * v_wsum = null;   // Sum of weights [newHeight]
+
+   uint8 * tb;        // Temporary (intermediate buffer)
+
+   double center;         // Center of current sampling
+   double weight;         // Current wight
+   int32 left;           // Left of current sampling
+   int32 right;          // Right of current sampling
+
+   int32 * p_weight;     // Temporary pointer
+   int32 * p_pixel;      // Temporary pointer
+
+   int32 maxContribs,maxContribsXY;   // Almost-const: max number of contribution for current sampling
+   double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
+   double filterFactor;   // Almost-const: filter factor for downsampling operations
+
+   xScale = ((double)newWidth / width);
+   yScale = ((double)newHeight / height);
+
+   if (newWidth > width)
+   {
+      /* Horizontal upsampling */
+      filterFactor = 1.0;
+      scaledRadius = 2;
+   }
+   else
+   { 
+      /* Horizontal downsampling */
+      filterFactor = xScale;
+      scaledRadius = 2 / xScale;
+   }                                                             
+   
+   /* The maximum number of contributions for a target pixel */
+   maxContribs  = (int32) (2 * scaledRadius  + 1);
+
+   scaledRadiusY = yScale > 1.0 ? 2 : 2 / yScale;
+   maxContribsXY = (int32) (2 * (scaledRadiusY > scaledRadius ? scaledRadiusY : scaledRadius) + 1);
+
+   /* Pre-allocating all of the needed memory */
+   s = max32(newWidth,newHeight);
+   tb  = (alpha_t * ) xmalloc (newWidth * height );
+   v_weight = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* weights */
+   v_pixel  = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* the contributing pixels */
+   v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
+   v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
+
+   if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
+
+   /* Pre-calculate weights contribution for a row */
+   for (i = 0; i < newWidth; i++)
+   {
+      p_weight = v_weight + i * maxContribs;
+      p_pixel  = v_pixel  + i * maxContribs;
+
+      center = ((double)i)/xScale;
+      left = (int32)((center + .5) - scaledRadius);
+      right = (int32)(left + 2 * scaledRadius);
+
+      for (j = left; j <= right; j++)
+      {
+         double cc;
+         if (j < 0 || j >= width)
+            continue;
+         // Catmull-rom resampling
+         cc = (center-j) * filterFactor;
+         if (cc < 0.0) cc = -cc;
+         if (cc <= 1.0) weight =  1.5 * cc * cc * cc - 2.5 * cc * cc + 1; else
+         if (cc <= 2.0) weight = -0.5 * cc * cc * cc + 2.5 * cc * cc - 4 * cc + 2;
+         else continue;
+         if (weight == 0)
+            continue;
+         iweight = (int32)(weight * BIAS);
+
+         n = v_count[i]; // Since v_count[i] is our current index
+         p_pixel[n] = j;
+         p_weight[n] = iweight;
+         v_wsum[i] += iweight;
+         v_count[i]++; // Increment contribution count
+      }
+   }
+
+   /* Filter horizontally from input to temporary buffer */
+   for ( i = 0; i < newWidth; i++)
+   {
+      int32 wsum = v_wsum[i];
+      int32 count = v_count[i];
+      for (n = 0; n < height; n++)
+      {
+         p_weight = v_weight + i * maxContribs;
+         p_pixel  = v_pixel  + i * maxContribs;
+
+         a = 0;
+         for (j=0; j < count; j++)
+         {
+            int32 iweight = *p_weight++;
+            pval = ib[*p_pixel++ + n * uf->rowWidthInBytes];
+            // Acting on color components
+            a += (int32)pval * iweight;
+         }
+         a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+         tb[i+n*newWidth] = (alpha_t)a;
+      }
+   }
+
+   /* Going to vertical stuff */
+   if (newHeight > height)
+   {
+      filterFactor = 1.0;
+      scaledRadius = 2;
+   }
+   else
+   {
+      filterFactor = yScale;
+      scaledRadius = 2 / yScale;
+   }
+   maxContribs  = (int32) (2 * scaledRadius  + 1);
+
+   p_weight = v_weight;
+   p_pixel  = v_pixel;
+   for (i = s*maxContribs; --i >= 0;)
+      *p_weight++ = *p_pixel++ = 0;
+
+   /* Pre-calculate filter contributions for a column */
+   for (i = 0; i < newHeight; i++)
+   {
+      p_weight = v_weight + i * maxContribs;
+      p_pixel  = v_pixel  + i * maxContribs;
+
+      v_count[i] = 0;
+      v_wsum[i] = 0;
+
+      center = ((double) i) / yScale;
+      left = (int32) (center+.5 - scaledRadius);
+      right = (int32) (left + 2 * scaledRadius);
+
+      for (j = left; j <= right; j++)
+      {
+         double cc;
+         if (j < 0 || j >= height) continue;
+         // Catmull-rom resampling
+         cc = (center-j) * filterFactor;
+         if (cc < 0.0) cc = -cc;
+         if (cc <= 1.0) weight =  1.5 * cc * cc * cc - 2.5 * cc * cc + 1; else
+         if (cc <= 2.0) weight = -0.5 * cc * cc * cc + 2.5 * cc * cc - 4 * cc + 2;
+         else continue;
+         if (weight == 0)
+            continue;
+         iweight = (int32)(weight * BIAS);
+
+         n = v_count[i]; /* Our current index */
+         p_pixel[n] = j;
+         p_weight[n] = iweight;
+         v_wsum[i] += iweight;
+         v_count[i]++; /* Increment the contribution count */
+      }
+   }
+
+   /* Filter vertically from work to output */
+   for (i = 0; i < newHeight; i++)
+   {
+      int32 wsum = v_wsum[i];
+      int32 count = v_count[i];
+      for (n = 0; n < newWidth; n++)
+      {
+         p_weight = v_weight + i * maxContribs;
+         p_pixel  = v_pixel  + i * maxContribs;
+
+         a = 0;
+         for (j = 0; j < count; j++)
+         {
+            int iweight = *p_weight++;
+            pval = tb[ n + newWidth * *p_pixel++]; // Using val as temporary storage 
+            // Acting on color components 
+            a += (int32)pval * iweight;
+         }
+         a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+         *ob++ = a;
+      }
+   }
+
+   fSuccess = true;
+
+Cleanup: /* CLEANUP */
+   if (tb) xfree(tb);
+   if (v_weight) xfree(v_weight);
+   if (v_pixel) xfree(v_pixel);
+   if (v_count) xfree(v_count);
+   if (v_wsum) xfree(v_wsum);
+   return fSuccess ? ob0 : null;
+}
+
 int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 {
-#ifdef __gl2_h_
    int32 *id = &uf->textureIds[ch];
    if (*id == 0)
    {
@@ -189,8 +403,8 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
       glLoadTexture(currentContext, null, id, pixels, width, height, false);
    }
    return *id;
-#endif
 }
+#endif
 
 void resetFontTexture(Context currentContext, UserFont uf)
 {       

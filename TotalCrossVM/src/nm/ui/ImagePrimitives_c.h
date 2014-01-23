@@ -86,8 +86,6 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj) // guich@tc13
    double xScale, yScale;
 
    // Temporary values
-   int32 val;
-
    int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
    int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
    int32 * v_count = null;  // How many contribution for the pixel [newHeight]
@@ -182,7 +180,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj) // guich@tc13
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j=0; j < count; j++)
          {
             int32 iweight = *p_weight++;
@@ -268,7 +266,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj) // guich@tc13
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;

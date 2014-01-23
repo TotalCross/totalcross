@@ -929,10 +929,11 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    }
 }
 
-#define INTERP(j,f) (j + (((f - j) * transparency) >> 4)) & 0xFF
+#define INTERP(j,f,shift) (j + (((f - j) * transparency) >> shift)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 int32 getCharTexture(Context currentContext, UserFont uf, JChar ch); // PalmFont_c.h
+uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {                         
@@ -1143,9 +1144,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                         i->pixel = foreColor;
                      else
                      {
-                        i->r = INTERP(i->r, fcR);
-                        i->g = INTERP(i->g, fcG);
-                        i->b = INTERP(i->b, fcB);
+                        i->r = INTERP(i->r, fcR, 4);
+                        i->g = INTERP(i->g, fcG, 4);
+                        i->b = INTERP(i->b, fcB, 4);
                      }
                   }
                }
@@ -1163,28 +1164,35 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                clip[3] = yMax;
                glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height, x0, y-istart, width+1, height, &fc, clip);
             }
-/*            else
-               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
-               {
-                  current = start;
-                  isLowNibble = isNibbleStartingLow;
-                  i = (PixelConv*)&row[x0];
-                  for (x=x0; x < xMax; x++,i++)
+            else
+            {
+               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+               if (alpha)
+               {                             
+                  rowWIB = width;
+                  start = alpha + istart * rowWIB;
+                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                   {
-                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-                     isLowNibble = !isLowNibble;
-                     if (transparency == 0 || x < xMin)
-                        continue;
-                     if (transparency == 0xF)
-                        i->pixel = foreColor;
-                     else
+                     current = start;
+                     i = (PixelConv*)&row[x0];
+                     for (x=x0; x < xMax; x++,i++)
                      {
-                        i->r = INTERP(i->r, fcR);
-                        i->g = INTERP(i->g, fcG);
-                        i->b = INTERP(i->b, fcB);
+                        transparency = *current++;
+                        if (transparency == 0 || x < xMin)
+                           continue;
+                        if (transparency == 0xFF)
+                           i->pixel = foreColor;
+                        else
+                        {
+                           i->r = INTERP(i->r, fcR, 8);
+                           i->g = INTERP(i->g, fcG, 8);
+                           i->b = INTERP(i->b, fcB, 8);
+                        }
                      }
                   }
-               }*/
+                  xfree(alpha);
+               }
+            }
          }
    #endif // case 2
       }
