@@ -29,6 +29,7 @@ import java.util.*;
 
 import totalcross.*;
 import totalcross.android.compat.*;
+
 import com.intermec.aidc.*; 
 
 public class Loader extends Activity implements BarcodeReadListener
@@ -51,6 +52,11 @@ public class Loader extends Activity implements BarcodeReadListener
       try
       {
          AndroidUtils.initialize(this);
+         if (isSingleApk() && savedInstanceState != null) // bypass bug that will cause a new instance each time the app is minimized and called again
+         {
+            System.exit(2);
+            return;
+         }
          AndroidUtils.checkInstall();
          checkLitebase(); // calls runVM() on close
       }
@@ -78,8 +84,8 @@ public class Loader extends Activity implements BarcodeReadListener
       }
       catch (Throwable t)
       {
-         AndroidUtils.debug("Exception ignored:");
-         AndroidUtils.handleException(t,false);
+         //AndroidUtils.debug("Exception ignored:");
+         //AndroidUtils.handleException(t,false);
          AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
@@ -180,6 +186,11 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
+   
+   public boolean isSingleApk()
+   {
+      return !AndroidUtils.pinfo.sharedUserId.equals("totalcross.app.sharedid");
+   }
    
    private void runVM()
    {
