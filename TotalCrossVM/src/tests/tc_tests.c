@@ -356,12 +356,12 @@ void test_VM_Cleanup(struct TestSuite *tc, Context currentContext);// tcvm/tcvm_
 void fillTestCaseArray(testFunc *tests)
 {
    tests[0] = test_VM_PrimitiveTypeSizes;
-/*   tests[1] = test_VM_TestSetJmp;
+   tests[1] = test_VM_TestSetJmp;
    tests[2] = test_Stack;
    tests[3] = test_DblList;
-   tests[4] = test_GarbageCollector;*/
+   tests[4] = test_GarbageCollector;
    tests[5] = test_VM_LoadTestTCZ;
-/*   tests[6] = test_VM_BREAK;
+   tests[6] = test_VM_BREAK;
    tests[7] = test_tiF_isCardInserted_i;
    tests[8] = test_tiF_create_sii;
    tests[9] = test_tiF_createDir;
@@ -479,10 +479,10 @@ void fillTestCaseArray(testFunc *tests)
    tests[121] = test_tpcbIPOIC_removeIContact_s;
    tests[122] = test_tpcbIPOIC_removeITask_s;
    tests[123] = test_tsC_doubleToIntBits_d;
-   tests[124] = test_tsC_doubleToLongBits_d;*/
+   tests[124] = test_tsC_doubleToLongBits_d;
    tests[125] = test_tufF_fontCreate_f;
    tests[126] = test_tufFM_fontMetricsCreate;
-/*   tests[127] = test_tsC_getBreakPos_fsiib;
+   tests[127] = test_tsC_getBreakPos_fsiib;
    tests[128] = test_tsC_hashCode_s;
    tests[129] = test_tsC_insertAt_sic;
    tests[130] = test_tsC_intBitsToDouble_i;
@@ -525,11 +525,11 @@ void fillTestCaseArray(testFunc *tests)
    tests[167] = test_tuW_setSIP_icb;
    tests[168] = test_tueE_isAvailable;
    tests[169] = test_tufFM_charWidth_c;
-   tests[170] = test_tufFM_stringWidth_Cii;*/
+   tests[170] = test_tufFM_stringWidth_Cii;
    tests[171] = test_tuiI_imageLoad_s;
    tests[172] = test_Graphics;
    tests[173] = test_tufF_FontTestCleanup_f;
-/*   tests[174] = test_tuiI_imageParse_sB;
+   tests[174] = test_tuiI_imageParse_sB;
    tests[175] = test_tuiI_changeColors_ii;
    tests[176] = test_tuiI_getModifiedInstance_iiiiiii;
    tests[177] = test_tuiI_getPixelRow_Bi;
@@ -539,7 +539,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[181] = test_tumS_beep;
    tests[182] = test_tumS_setEnabled_b;
    tests[183] = test_tumS_tone_ii;
-   tests[184] = test_ZLib;
+   //tests[184] = test_ZLib;
    tests[185] = test_XmlTokenizer;
    tests[186] = test_StringObject;
    tests[187] = test_VM_CodeUnion;
@@ -700,7 +700,7 @@ void fillTestCaseArray(testFunc *tests)
    tests[342] = test_VM_z7_CALL_virtual;
    tests[343] = test__doubleToStr;
    tests[344] = test__str2double;
-   tests[345] = test__str2int64;*/
+   tests[345] = test__str2int64;
    tests[346] = test_VM_Cleanup;
 }
 

@@ -228,6 +228,40 @@ public final class Convert
       }
    }
 
+   /**
+    * Converts the given String to an int. The number may be prefixed with 0's.
+    * If the string is not a valid number, returns defaultValue.
+    * @since TotalCross 2.0
+    */
+   public static int toInt(String s, int defaultValue) 
+   {
+      try 
+      {
+         return toInt(s);
+      }
+      catch (InvalidNumberException ine)
+      {
+         return defaultValue;
+      }
+   }
+
+   /**
+    * Converts the given String to a double. 
+    * If the string is not a valid number, returns defaultValue.
+    * @since TotalCross 2.0
+    */
+   public static double toDouble(String s, double defaultValue) 
+   {
+      try 
+      {
+         return toDouble(s);
+      }
+      catch (InvalidNumberException ine)
+      {
+         return defaultValue;
+      }
+   }
+
    /** Converts the given boolean to a String. */
    public static String toString(boolean b)
    {
@@ -1227,21 +1261,21 @@ public final class Convert
       int low = first;
       int high = last;
 
-      int mid = toInt((String)items[(first+last) >> 1]);
+      int mid = toInt((String)items[(first+last) >> 1], Convert.MAX_INT_VALUE);
       while (true)
       {
          if (ascending)
          {
-            while (high >= low && mid > toInt((String)items[low]))
+            while (high >= low && mid > toInt((String)items[low], Convert.MAX_INT_VALUE))
                low++;
-            while (high >= low && mid < toInt((String)items[high]))
+            while (high >= low && mid < toInt((String)items[high], Convert.MAX_INT_VALUE))
                high--;
          }
          else
          {
-            while (high >= low && mid < toInt((String)items[low]))
+            while (high >= low && mid < toInt((String)items[low], Convert.MAX_INT_VALUE))
                low++;
-            while (high >= low && mid > toInt((String)items[high]))
+            while (high >= low && mid > toInt((String)items[high], Convert.MAX_INT_VALUE))
                high--;
          }
          if (low <= high)
@@ -1266,21 +1300,21 @@ public final class Convert
       int low = first;
       int high = last;
 
-      double mid = toDouble((String)items[(first+last) >> 1]);
+      double mid = toDouble((String)items[(first+last) >> 1], Convert.MAX_DOUBLE_VALUE);
       while (true)
       {
          if (ascending)
          {
-            while (high >= low && mid > toDouble((String)items[low]))
+            while (high >= low && mid > toDouble((String)items[low], Convert.MAX_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid < toDouble((String)items[high]))
+            while (high >= low && mid < toDouble((String)items[high], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          else
          {
-            while (high >= low && mid < toDouble((String)items[low]))
+            while (high >= low && mid < toDouble((String)items[low], Convert.MAX_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid > toDouble((String)items[high]))
+            while (high >= low && mid > toDouble((String)items[high], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          if (low <= high)
