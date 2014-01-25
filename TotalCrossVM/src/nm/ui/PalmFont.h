@@ -56,9 +56,10 @@ struct TUserFont
    TPalmFont fontP;
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
-#ifdef __gl2_h_   
    // gl fonts: used by the base font
+#ifdef __gl2_h_   
    int32 *textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
+#endif   
    int32 *charPixels; // for one char
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
    struct TUserFont* ubase;
@@ -66,7 +67,6 @@ struct TUserFont
    /*CharSizeCache*/VoidPs* charSizeCache; 
    int32 tempbufssize;
    uint8* tempbufs;
-#endif   
 };
 
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch);
