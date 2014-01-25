@@ -55,7 +55,6 @@ bool fontInit(Context currentContext)
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
    }
-#ifdef __gl2_h_
    else
    {
       useRealFont = true;
@@ -63,7 +62,6 @@ bool fontInit(Context currentContext)
       baseFontB = loadUserFont(currentContext, defaultFont, true , 80, ' ');
       useRealFont = false;
    }
-#endif
    return defaultFont != null;
 }
 
@@ -168,8 +166,6 @@ FontFile loadFontFile(char *fontName)
    }
    return ff;
 }
-
-#ifdef __gl2_h_
 
 #define BIAS_BITS 16
 #define BIAS (1<<BIAS_BITS)
@@ -414,6 +410,7 @@ Cleanup: /* CLEANUP */
    return fSuccess ? ob0 : null;
 }
 
+#ifdef __gl2_h_
 int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 {
    int32 *id = &uf->textureIds[ch];
@@ -437,9 +434,11 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 
 void resetFontTexture(Context currentContext, UserFont uf)
 {       
+   #ifdef __gl2_h_
    int32 i;
    for (i = baseFontN->fontP.lastChar - baseFontN->fontP.firstChar + 1; --i >= 0;) baseFontN->textureIds[i] = 0;
    for (i = baseFontB->fontP.lastChar - baseFontB->fontP.firstChar + 1; --i >= 0;) baseFontB->textureIds[i] = 0;
+   #endif
 }
 
 UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
@@ -557,13 +556,13 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    tczRead(uftcz, uf->bitmapTable, bitmapTableSize);
    tczRead(uftcz, uf->bitIndexTable, bitIndexTableSize);
    uf->bitIndexTable -= uf->fontP.firstChar; // instead of doing "bitIndexTable[ch-firstChar]", this trick will allow use "bitIndexTable[ch]
-#ifdef __gl2_h_
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
    {
+#ifdef __gl2_h_
       uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap) - uf->fontP.firstChar;
+#endif
       uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth+1) * (uf->fontP.maxHeight+1), fontsHeap);
    }
-#endif
 
    tczClose(uftcz);
    if (!useRealFont)

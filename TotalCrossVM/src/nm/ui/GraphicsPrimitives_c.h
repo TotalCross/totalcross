@@ -1046,9 +1046,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       // valid char, get its start
       offset = bitIndexTable[ch];
       width = bitIndexTable[ch+1] - offset;
-#ifdef __gl2_h_
+
       width = width * height / uf->ubase->fontP.maxHeight;
-#endif
+      
       if ((xMax = x0 + width) > Graphics_clipX2(g))
          xMax = Graphics_clipX2(g);
       y1 = y; r=0;
@@ -1152,10 +1152,10 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                }
          }
          break;
-   #ifdef __gl2_h_
          case AA_8BPP: // textured font files
          {
             // draws the char, a row at a time
+   #ifdef __gl2_h_
             if (Graphics_useOpenGL(g))
             {                                    
                clip[0] = xMin;
@@ -1165,6 +1165,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, &fc, clip);
             }
             else
+   #endif // case 2
             {
                uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
                if (alpha)
@@ -1193,7 +1194,6 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
                }
             }
          }
-   #endif // case 2
       }
       if (isVert)
       {
