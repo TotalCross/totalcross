@@ -392,7 +392,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
             // Acting on color components 
             a += (int32)pval * iweight;
          }
-         a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+         a /= wsum; if (a > 160) a = 255; else if (a < 0) a = 0; // changed 255 to 160 to make the font darker
          *ob++ = a;
       }
    }
