@@ -18,7 +18,7 @@
 
 package tc.samples.ui.fonts;
 
-import totalcross.sys.Settings;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;

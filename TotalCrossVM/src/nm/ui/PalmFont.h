@@ -1,13 +1,13 @@
 /*********************************************************************************
- *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
- *  All Rights Reserved                                                          *
- *                                                                               *
- *  This library and virtual machine is distributed in the hope that it will     *
- *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
- *                                                                               *
- *********************************************************************************/
+*  TotalCross Software Development Kit                                          *
+*  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+*  All Rights Reserved                                                          *
+*                                                                               *
+*  This library and virtual machine is distributed in the hope that it will     *
+*  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+*                                                                               *
+*********************************************************************************/
 
 
 
@@ -48,7 +48,7 @@ typedef struct
    uint8* alpha;
    uint16 size;
    JChar ch;
-} *CharSizeCache, TCharSizeCache;    
+} *CharSizeCache, TCharSizeCache;
 
 struct TUserFont
 {
@@ -64,7 +64,7 @@ struct TUserFont
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
    struct TUserFont* ubase;
    // used only when drawing on images
-   /*CharSizeCache*/VoidPs* charSizeCache; 
+   /*CharSizeCache*/VoidPs* charSizeCache;
    int32 tempbufssize;
    uint8* tempbufs;
 };
