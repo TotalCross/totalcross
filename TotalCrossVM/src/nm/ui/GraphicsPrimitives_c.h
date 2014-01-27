@@ -1231,7 +1231,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
       green = startGreen << 16;
       blue = startBlue << 16;
    }
-   else c.pixel = c1;
+   else c.pixel = c1.pixel;
 
    while (d2 < 0)          // til slope = -1
    {
