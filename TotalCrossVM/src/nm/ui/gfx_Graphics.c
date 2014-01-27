@@ -487,7 +487,9 @@ TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics nati
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor);
 {
    Object g = p->obj[0];
-   drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],p->i32[8],p->i32[9], p->i32[10]);
+   c1.pixel = p->i32[9];
+   c2.pixel = p->i32[10];
+   drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],p->i32[8],c1, c2);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
@@ -757,7 +759,10 @@ TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 {
    Object g = p->obj[0];
-   drawCylindricShade(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
+   PixelConv c1,c2;
+   c1.pixel = p->i32[0];
+   c2.pixel = p->i32[1];
+   drawCylindricShade(p->currentContext, g, c1,c2, p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
