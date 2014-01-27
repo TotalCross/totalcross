@@ -43,7 +43,7 @@ typedef void (*tiPDBF_listPDBs_iiFunc)(NMParams p);
 /**
  * A list of objects used to hold prepared statements that uses a specific table.
  */
-TC_DeclareList(Object); 
+TC_DeclareList(TCObject); 
 
 // Typedefs for using Litebase file.
 typedef struct XFile XFile;
@@ -1435,7 +1435,7 @@ struct Table
    /**
     * A linked list of prepared statements that use this table.
     */
-   Objects* preparedStmts;
+   TCObjects* preparedStmts;
 
    /**
     * A heap to allocate the table structure.
@@ -1554,7 +1554,7 @@ struct ResultSet
    /**
     * The connection with Litebase.
     */
-   Object driver;
+   TCObject driver;
 };
 
 /**

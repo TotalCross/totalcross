@@ -1609,7 +1609,7 @@ error:
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, TCObject driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
        SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
 {
 	TRACE("driverCreateTable")
@@ -1693,7 +1693,7 @@ error:
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws OutOfMemoryError If a memory allocation fails. 
  */
-bool renameTable(Context context, Object driver, Table* table, CharP newTableName) // rnovais@566_10
+bool renameTable(Context context, TCObject driver, Table* table, CharP newTableName) // rnovais@566_10
 {
    TRACE("renameTable")
 	char result[DBNAME_SIZE];
@@ -2894,9 +2894,9 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       Index** columnIndexes = table->columnIndexes;
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* idx;
-      Object obj;
-      Objects* list = table->preparedStmts;
-      Objects* preparedStmts = table->preparedStmts;
+      TCObject obj;
+      TCObjects* list = table->preparedStmts;
+      TCObjects* preparedStmts = table->preparedStmts;
       TCHARP sourcePath = table->sourcePath;
 
       TC_htFree(&table->htName2index, null); // Frees the column names hash table.
@@ -2936,7 +2936,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
 		if (preparedStmts)
       {
          Hashtable* htPS;
-         Object sqlObj;
+         TCObject sqlObj;
          do
 		   {
             // juliana@226_16: prepared statement is now a singleton.
@@ -2947,7 +2947,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
                TC_htRemove(htPS, TC_JCharPHashCode(String_charsStart(sqlObj), String_charsLen(sqlObj)));
                freePreparedStatement(obj);
             }
-			   list = TC_ObjectsRemove(list, obj);
+			   list = TC_TCObjectsRemove(list, obj);
 			   list = list->next;
 		   } while (preparedStmts != list);
       }
@@ -2985,7 +2985,7 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @throws AlreadyCreatedException If the table is already created.
  * @throws DriverException If the path is too long.
  */
-bool tableExistsByName(Context context, Object driver, CharP name)
+bool tableExistsByName(Context context, TCObject driver, CharP name)
 {
    TRACE("tableExistsByName")
    TCHAR fullName[MAX_PATHNAME];
@@ -3054,7 +3054,7 @@ bool getDiskTableName(Context context, int32 crid, CharP name, CharP buffer)
  * @return <code>null<code> if an error occurs; a table handle, otherwise.
  * @throws DriverException If the table name is too big.
  */
-Table* getTableFromName(Context context, Object driver, Object name)
+Table* getTableFromName(Context context, TCObject driver, TCObject name)
 {
 	TRACE("getTableFromName")
    char tableName[DBNAME_SIZE];
@@ -3081,7 +3081,7 @@ Table* getTableFromName(Context context, Object driver, Object name)
  * @throws DriverException If the table name is too big.
  * @throws OutOfMemoryError If there is not enougth memory to be allocated.
  */
-Table* getTable(Context context, Object driver, CharP tableName)
+Table* getTable(Context context, TCObject driver, CharP tableName)
 {
 	TRACE("getTable")
    char name[DBNAME_SIZE];

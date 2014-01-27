@@ -26,7 +26,7 @@
  * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
-SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parser, bool isPrepared)
+SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, LitebaseParser* parser, bool isPrepared)
 {
 	TRACE("sqlUpdateStatement")
    Heap heap = parser->heap;

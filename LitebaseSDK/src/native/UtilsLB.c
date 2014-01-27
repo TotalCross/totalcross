@@ -826,7 +826,7 @@ float str2float(CharP chars, bool* error)
  */
 bool setDateObject(NMParams params, int32 date)
 {
-   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
+   TCObject object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
       
    if (object)
    {
@@ -852,7 +852,7 @@ bool setDateObject(NMParams params, int32 date)
  */
 bool setTimeObject(NMParams params, int32 date, int32 time)
 {
-   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
+   TCObject object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
    
    if (object)
    {

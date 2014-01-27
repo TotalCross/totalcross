@@ -88,7 +88,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt);
  * @param deleteStmt A SQL delete statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
  */
-bool litebaseBindDeleteStatement(Context context, Object driver, SQLDeleteStatement* deleteStmt);
+bool litebaseBindDeleteStatement(Context context, TCObject driver, SQLDeleteStatement* deleteStmt);
 
 #endif
 

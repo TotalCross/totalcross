@@ -21,7 +21,7 @@
  *
  * @param statement The prepared statement to be freed.
  */
-void freePreparedStatement(Object statement);
+void freePreparedStatement(TCObject statement);
 
 /**
  * Sets numeric parameters in a prepared statement.
@@ -46,7 +46,7 @@ bool psSetNumericParamValue(NMParams p, int32 type);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index, int32 stringLength);
+bool psSetStringParamValue(Context context, TCObject stmt, TCObject string, int32 index, int32 stringLength);
 
 /**
  * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
@@ -56,7 +56,7 @@ bool psSetStringParamValue(Context context, Object stmt, Object string, int32 in
  * @param statement The prepared statement.
  * @return the sql used in this statement as a <code>StringBuffer</code> object.
  */
-Object toStringBuffer(Context context, Object statement);
+TCObject toStringBuffer(Context context, TCObject statement);
 
 /**
  * Resets a where clause because the <code>expression</code> may change between runs of a prepared statement with a where clause.

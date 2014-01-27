@@ -79,7 +79,7 @@ bool allParamValuesDefinedSel(SQLSelectStatement* selectStmt);
  * @throws DriverException If the record can't be removed from the indices.
  * @throws OutOfMemoryError If a heap memory allocation fails.
  */
-Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* selectStmt);
+TCObject litebaseDoSelect(Context context, TCObject driver, SQLSelectStatement* selectStmt);
 
 /**
  * Binds a select statement.
@@ -89,7 +89,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
  * @param selectStmt A SQL select statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
  */
-bool litebaseBindSelectStatement(Context context, Object driver, SQLSelectStatement* selectStmt);
+bool litebaseBindSelectStatement(Context context, TCObject driver, SQLSelectStatement* selectStmt);
 
 /**
  * Tries to put as inner table a table that has an index used more often in the where clause, when the where clause has a comparison between 
@@ -131,7 +131,7 @@ bool validateSelectStatement(Context context, SQLSelectStatement* selectStmt);
  * @return The temporary result set table or null if an error occurs.
  * @throws OutOfMemoryError If there is not enougth memory alloc memory. 
  */
-Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement* selectStmt);
+Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStatement* selectStmt);
 
 /**
  * Generates a table to store the result set.
@@ -209,7 +209,7 @@ void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunct
  * @return The table if the method executes correctlty; <code>null</code>, otherwise.
  * @throws OutOfMemoryError If there is not enougth memory alloc memory. 
  */
-Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP colName);
+Table* createIntValueTable(Context context, TCObject driver, int32 intValue, CharP colName);
 
 /** 
  * Binds the column information of the underlying tables to the select clause. 

@@ -27,7 +27,7 @@
  * @return A pointer to a <code>SQLInsertStatement</code> structure. 
  * @throws SQLParseException If there is a field named "rowid". 
  */
-SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, LitebaseParser* parser);
+SQLInsertStatement* initSQLInsertStatement(Context context, TCObject driver, LitebaseParser* parser);
 
 /* 
  * Sets the value of a numeric parameter at the given index.

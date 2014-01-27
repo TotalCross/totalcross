@@ -22,7 +22,7 @@ bool ranTests;
 /**
  * A list of objects used to hold prepared statements that uses a specific table.
  */
-TC_ImplementList(Object);
+TC_ImplementList(TCObject);
 
 /**
  * Loads the necessary data when using Litebase for the first time.
@@ -195,10 +195,10 @@ bool initVars(OpenParams params)
  * @return A Litebase instance.
  * @throws OutOfMemoryError If memory allocation fails.
  */
-Object create(Context context, int32 crid, Object objParams) 
+TCObject create(Context context, int32 crid, TCObject objParams) 
 {
 	TRACE("create")
-	Object driver,
+	TCObject driver,
           logger = litebaseConnectionClass->objStaticValues[1];
    int32 hash,
          slot;
@@ -210,7 +210,7 @@ Object create(Context context, int32 crid, Object objParams)
 
    if (logger) // juliana@230_30: reduced log files size.
    {
-		Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       char cridBuffer[5];
       
       LOCKVAR(log);
@@ -378,8 +378,8 @@ void freeLitebase(Context context, int32 driver)
 
    xfree(sourcePath); // Frees the source path.
    xfree(nodes); // juliana@253_6: the maximum number of keys of a index was duplicated.
-	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.
-	OBJ_LitebaseDontFinalize((Object)driver) = true; // This object shouldn't be finalized again.
+	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((TCObject)driver)); // fdie@555_2: removes this instance from the drivers hash table.
+	OBJ_LitebaseDontFinalize((TCObject)driver) = true; // This object shouldn't be finalized again.
 }
 
 /**
@@ -402,7 +402,7 @@ void freeLitebase(Context context, int32 driver)
  * @throws AlreadyCreatedException If the table or index is already created.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLen)
+void litebaseExecute(Context context, TCObject driver, JCharP sqlStr, uint32 sqlLen)
 {
 	TRACE("litebaseExecute")
    char tableName[DBNAME_SIZE];
@@ -665,7 +665,7 @@ error:
  * @return The number of rows affected or <code>0</code> if a drop or alter operation was successful.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32 sqlLen)
+int32 litebaseExecuteUpdate(Context context, TCObject driver, JCharP sqlStr, int32 sqlLen)
 {
    TRACE("litebaseExecuteUpdate")
    LitebaseParser* parser;
@@ -751,14 +751,14 @@ finish:
  * @return A result set with the values returned from the query or <code>null</code> if an error occurs.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32 length)
+TCObject litebaseExecuteQuery(Context context, TCObject driver, JCharP strSql, int32 length)
 {
    TRACE("litebaseExecuteQuery")
 	Heap heapParser = heapCreate();
    LitebaseParser* parser;
 	SQLSelectStatement* selectStmt;
    ResultSet* resultSetBag;
-	Object resultSet;
+	TCObject resultSet;
    PlainDB* plainDB;
    bool locked = false;
 
@@ -811,7 +811,7 @@ error:
  * @param parser The parser.
  * @throws DriverException If the table does not exist, if its name is greater than the maximum possible or it is not possible to remove it.
  */
-void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* parser)
+void litebaseExecuteDropTable(Context context, TCObject driver, LitebaseParser* parser)
 {
 	TRACE("litebaseExecuteDropTable")
    Table* table;
@@ -920,7 +920,7 @@ finish:
  * @return <code>-1</code> if an error occured; the number of indices removed, otherwise.
  * @throws DriverException If a column does not have an index, is invalid, or if the columns to have the index dropped are from a primary key.
  */
-int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* parser)
+int32 litebaseExecuteDropIndex(Context context, TCObject driver, LitebaseParser* parser)
 {
    TRACE("litebaseExecuteDropIndex")
 	int32 count = -1, 
@@ -1008,7 +1008,7 @@ finish:
  * @throws SQLParseException If there is a blob in a primary key definition or there is a duplicated column name in the primary key definition.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser)
+void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* parser)
 {
 	TRACE("litebaseExecuteAlter")
    Table* table = getTable(context, driver, parser->tableList[0]->tableName);
@@ -1443,7 +1443,7 @@ void getByIndex(NMParams p, int32 type)
 	
    if (testRIClosed(p)) // The row iterator and its driver can't be closed.
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Context context = p->currentContext;
       Table* table = getRowIteratorTable(rowIterator);   
       uint8* data = (uint8*)ARRAYOBJ_START(OBJ_RowIteratorData(rowIterator));
@@ -1562,7 +1562,7 @@ void getByIndex(NMParams p, int32 type)
 bool testRIClosed(NMParams params)
 {
    TRACE("testRIClosed")
-   Object rowIterator = params->obj[0];
+   TCObject rowIterator = params->obj[0];
 
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The connection with Litebase can't be closed.
    {
@@ -1727,7 +1727,7 @@ bool checkParamAndDriver(NMParams params, CharP parameter)
 void encDecTables(NMParams params, bool toEncrypt)
 {
    TRACE("encDecTables")
-   Object cridObj = params->obj[0],
+   TCObject cridObj = params->obj[0],
           pathObj = params->obj[1];
           
    if (cridObj) 

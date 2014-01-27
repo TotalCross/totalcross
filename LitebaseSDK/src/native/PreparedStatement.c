@@ -20,7 +20,7 @@
  *
  * @param statement The prepared statement to be freed.
  */
-void freePreparedStatement(Object statement)
+void freePreparedStatement(TCObject statement)
 {
 	TRACE("freePreparedStatement")
 
@@ -29,7 +29,7 @@ void freePreparedStatement(Object statement)
    {
       JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
       int32 numParams = OBJ_PreparedStatementStoredParams(statement);
-		Objects* psList;
+		TCObjects* psList;
       Table* table;
       Heap heap = null;
 
@@ -41,7 +41,7 @@ void freePreparedStatement(Object statement)
 				
             // Removes the prepared statement from table list.
             psList = (table = deleteStmt->rsTable->table)->preparedStmts;
-				psList = TC_ObjectsRemove(psList, statement);
+				psList = TC_TCObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
             heap = deleteStmt->heap;
@@ -53,7 +53,7 @@ void freePreparedStatement(Object statement)
 				
             // Removes the prepared statement from table list.
             psList = insertStmt->table->preparedStmts;
-				psList = TC_ObjectsRemove(psList, statement);
+				psList = TC_TCObjectsRemove(psList, statement);
 				insertStmt->table->preparedStmts = psList;
 
             heap = insertStmt->heap;
@@ -69,7 +69,7 @@ void freePreparedStatement(Object statement)
             while (--i >= 0) // Removes the prepared statement from table list.
 				{
 					psList = (table = tableList[i]->table)->preparedStmts;
-               psList = TC_ObjectsRemove(psList, statement);
+               psList = TC_TCObjectsRemove(psList, statement);
 					table->preparedStmts = psList;
 				}
 
@@ -82,7 +82,7 @@ void freePreparedStatement(Object statement)
 				
             // Removes the prepared statement from table list.
             psList = (table = updateStmt->rsTable->table)->preparedStmts;
-				psList = TC_ObjectsRemove(psList, statement);
+				psList = TC_TCObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
             heap = updateStmt->heap;
@@ -117,7 +117,7 @@ bool psSetNumericParamValue(NMParams p, int32 type)
    
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       Context context = p->currentContext;
       SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
 
@@ -223,7 +223,7 @@ bool psSetNumericParamValue(NMParams p, int32 type)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index, int32 stringLength)
+bool psSetStringParamValue(Context context, TCObject stmt, TCObject string, int32 index, int32 stringLength)
 {   
    SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
    JCharP stringChars = null;
@@ -288,10 +288,10 @@ bool psSetStringParamValue(Context context, Object stmt, Object string, int32 in
  * @param statement The prepared statement.
  * @return the sql used in this statement as a <code>StringBuffer</code> object.
  */
-Object toStringBuffer(Context context, Object statement)
+TCObject toStringBuffer(Context context, TCObject statement)
 {
    TRACE("toStringBuffer")
-   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+   TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
    
    StringBuffer_count(logSBuffer) = 0;
    if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters.
@@ -315,7 +315,7 @@ Object toStringBuffer(Context context, Object statement)
    }
    else
    {
-      Object sql = OBJ_PreparedStatementSqlExpression(statement);
+      TCObject sql = OBJ_PreparedStatementSqlExpression(statement);
       if (!TC_appendJCharP(context, logSBuffer, String_charsStart(sql), String_charsLen(sql)))
          return null;
    }
@@ -401,7 +401,7 @@ void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, u
 bool testPSClosed(NMParams params)
 {
    TRACE("testPSClosed")
-   Object statement = params->obj[0];
+   TCObject statement = params->obj[0];
 
    if (OBJ_PreparedStatementDontFinalize(statement)) // Tests if the prepared statement is closed.
    {
