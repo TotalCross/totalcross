@@ -76,15 +76,16 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;$(PlatformTarget);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
       <PreprocessToFile>false</PreprocessToFile>
+      <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,7 +103,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -120,7 +121,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
@@ -143,7 +144,7 @@
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -276,6 +277,9 @@
     <ClInclude Include="..\..\..\src\nm\ui\win\media_Sound_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\win\Window_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\cppwrapper.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h" />
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\gfx_Graphics_c.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\MainView.h" />
     <ClInclude Include="..\..\..\src\nm\ui\wp8\openglWrapper.h" />
@@ -1022,6 +1026,18 @@
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\nm\ui\wp8\MainView.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
@@ -1042,6 +1058,7 @@
       <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">GL_GLEXT_PROTOTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GL_GLEXT_PROTOTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
     </ClCompile>
     <ClCompile Include="..\..\..\src\nm\util\BigInteger.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
@@ -1216,6 +1233,12 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</StructMemberAlignment>
+      <StructMemberAlignment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Default</StructMemberAlignment>
     </ClCompile>
     <ClCompile Include="..\..\..\src\tests\tc_tests.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
@@ -1409,6 +1432,20 @@
     <ProjectReference Include="..\..\..\..\..\angleproject\src\libGLESv2\libGLESv2_phone.vcxproj">
       <Project>{0592f9c3-d727-4d41-bc9e-e43b269ad877}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\PixelShaderGlobalColor.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\VertexShaderGlobalColor.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v$(TargetPlatformVersion)\Microsoft.Cpp.WindowsPhone.$(TargetPlatformVersion).targets" />

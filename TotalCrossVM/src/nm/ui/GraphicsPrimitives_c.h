@@ -208,12 +208,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    srcPixels = getSurfacePixels(srcSurf);
    if (Surface_isImage(srcSurf))
    {
-      srcPitch = srcWidth = Image_width(srcSurf);
-      srcHeight = Image_height(srcSurf);
-#ifdef __gl2_h_
-      srcWidth  *= Image_hwScaleW(srcSurf);
-      srcHeight *= Image_hwScaleH(srcSurf);
-#endif      
+      srcPitch = srcWidth = Image_width(srcSurf) * Image_hwScaleW(srcSurf);
+      srcHeight = Image_height(srcSurf) * Image_hwScaleH(srcSurf);
    }
    else
    {
@@ -648,6 +644,51 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                    p += dPr;                             // increment decision (for right)
              }
           else
+          {
+#ifdef WP8 // improve DX performance by splitting the loop into two to group the drawPixel operations by color.
+             int init2 = dX - 1;
+             for (; dX >= 0; dX-=2)                       // process each point in the line one at a time (just use dX)
+             {
+                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                if (Graphics_useOpenGL(g))
+                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
+                else
+#endif
+                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
+                row += xInc;                             // increment independent variable
+                currentX += xInc;
+                if (p > 0)                               // is the pixel going right AND up?
+                {
+                   currentY += pyInc;
+                   p += dPru;                            // increment decision (for up)
+                   row += yInc;                          // increment dependent variable
+                }
+                else                                     // is the pixel just going right?
+                   p += dPr;                             // increment decision (for right)
+             }
+             on ^= 1;
+             for (dX = init2; dX >= 0; dX-=2)                       // process each point in the line one at a time (just use dX)
+             {
+                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                if (Graphics_useOpenGL(g))
+                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
+                else
+#endif
+                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
+                row += xInc;                             // increment independent variable
+                currentX += xInc;
+                if (p > 0)                               // is the pixel going right AND up?
+                {
+                   currentY += pyInc;
+                   p += dPru;                            // increment decision (for up)
+                   row += yInc;                          // increment dependent variable
+                }
+                else                                     // is the pixel just going right?
+                   p += dPr;                             // increment decision (for right)
+             }
+#else
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
@@ -668,6 +709,9 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                 else                                     // is the pixel just going right?
                    p += dPr;                             // increment decision (for right)
              }
+#endif
+          }
+
        }
        else            // if Y is the independent variable
        {
@@ -697,6 +741,51 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                    p += dPr;                             // increment decision (for right)
              }
           else
+          {
+#ifdef WP8 // improve DX performance by splitting the loop into two to group the drawPixel operations by color.
+             int init2 = dY - 1;
+             for (; dY >= 0; dY -= 2)                       // process each point in the line one at a time (just use dY)
+             {
+                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                if (Graphics_useOpenGL(g))
+                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
+                else
+#endif
+                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
+                row += yInc;                             // increment independent variable
+                currentY += pyInc;
+                if (p > 0)                               // is the pixel going up AND right?
+                {
+                   row += xInc;                          // increment dependent variable
+                   currentX += xInc;
+                   p += dPru;                            // increment decision (for up)
+                }
+                else                                     // is the pixel just going up?
+                   p += dPr;                             // increment decision (for right)
+             }
+             on ^= 1;
+             for (dY = init2; dY >= 0; dY -= 2)                       // process each point in the line one at a time (just use dX)
+             {
+                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                if (Graphics_useOpenGL(g))
+                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
+                else
+#endif
+                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
+                row += yInc;                             // increment independent variable
+                currentY += pyInc;
+                if (p > 0)                               // is the pixel going up AND right?
+                {
+                   row += xInc;                          // increment dependent variable
+                   currentX += xInc;
+                   p += dPru;                            // increment decision (for up)
+                }
+                else                                     // is the pixel just going up?
+                   p += dPr;                             // increment decision (for right)
+             }
+#else
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
@@ -717,6 +806,8 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                 else                                     // is the pixel just going up?
                    p += dPr;                             // increment decision (for right)
              }
+#endif
+          }
        }
 #ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);

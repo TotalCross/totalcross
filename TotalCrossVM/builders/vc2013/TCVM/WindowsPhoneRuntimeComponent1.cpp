@@ -8,7 +8,7 @@
 
 #include "MainViewFactory.h"
 
-using namespace WindowsPhoneRuntimeComponent1;
+using namespace PhoneXamlDirect3DApp1Comp;
 using namespace Platform;
 using namespace TotalCross;
 

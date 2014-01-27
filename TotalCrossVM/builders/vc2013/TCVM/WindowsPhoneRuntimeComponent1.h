@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace WindowsPhoneRuntimeComponent1
+namespace PhoneXamlDirect3DApp1Comp
 {
 	public ref class WindowsPhoneRuntimeComponent sealed
 	{

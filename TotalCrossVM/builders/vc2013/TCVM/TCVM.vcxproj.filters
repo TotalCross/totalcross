@@ -170,6 +170,9 @@
     <Filter Include="Event\wp8">
       <UniqueIdentifier>{587e68ae-02d1-40b5-aaba-94873d331120}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VM Files\wp8">
+      <UniqueIdentifier>{bda423bb-c037-408f-9cda-442681f07a7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsPhoneRuntimeComponent1.cpp" />
@@ -687,6 +690,15 @@
     <ClCompile Include="..\..\..\src\nm\ui\wp8\openglWrapper.cpp">
       <Filter>Native methods\ui\wp8</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
+      <Filter>VM Files\wp8</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowsPhoneRuntimeComponent1.h" />
@@ -1168,6 +1180,15 @@
     <ClInclude Include="..\..\..\src\event\wp8\specialkeys_c.h">
       <Filter>Event\wp8</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h">
+      <Filter>Native methods\ui\wp8</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\nm\NativeMethods.txt">
@@ -1193,5 +1214,13 @@
     <None Include="..\..\..\src\nm\ui\darwin\Window_c.m">
       <Filter>Native methods\ui\darwin</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\PixelShaderGlobalColor.hlsl">
+      <Filter>Native methods\ui\wp8</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\..\src\nm\ui\wp8\VertexShaderGlobalColor.hlsl">
+      <Filter>Native methods\ui\wp8</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

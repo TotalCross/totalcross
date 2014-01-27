@@ -9,19 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-package tc.samples.util;
+package tc.test.totalcross.io;
 
 import totalcross.unit.TestSuite;
 
-public class TestBigDecimalInteger extends TestSuite
+public class TestIO extends TestSuite
 {
-
-   public TestBigDecimalInteger()
+   public TestIO()
    {
-      super("BigInteger and BigDecimal Test Suite");
-      addTestCase(TestBigInteger.class); // juliana@210_2: now Litebase supports tables with ascii strings.
-      addTestCase(TestBigDecimal.class);
+      super("Test IO");
+      addTestCase(TestBufferedStream.class);
+      addTestCase(TestByteArrayStream.class);
+      addTestCase(TestCompressedByteArrayStream.class);
    }
    
 }
