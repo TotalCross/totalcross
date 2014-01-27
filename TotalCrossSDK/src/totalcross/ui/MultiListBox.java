@@ -185,6 +185,14 @@ public class MultiListBox extends ListBox
          super.drawSelectedItem(g, from, to);
    }
 
+   protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
+   {
+      for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
+         if (!selectedIndexes.exists(i))
+            drawItem(g,i,dx,dy); // guich@200b4: let the user extend ListBox and draw the items himself
+      drawSelectedItem(g, offset, greatestVisibleItemIndex);
+   }
+
    protected int getCursorColor(int index)
    {
       boolean exists = selectedIndexes.exists(index);

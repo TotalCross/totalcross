@@ -931,7 +931,6 @@ public class ListBox extends Container implements Scrollable
 
    public void onPaint(Graphics g)
    {
-      int i;
       // Draw background and borders
       g.backColor = uiAndroid ? parent.backColor : back0;
       if (!transparentBackground) // guich@tc115_18
@@ -960,11 +959,16 @@ public class ListBox extends Container implements Scrollable
       dx += xOffset;
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems+offset); // code corrected by Bjoem Knafla
       dx++;
-      for (i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
+      drawItems(g, dx, dy, greatestVisibleItemIndex); 
+   }
+   
+   protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
+   {
+      for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
          drawItem(g,i,dx,dy); // guich@200b4: let the user extend ListBox and draw the items himself
       drawSelectedItem(g, offset, greatestVisibleItemIndex);
    }
-   
+
    protected int getItemHeight(int i)
    {
       return Settings.fingerTouch ? (int)(fmH*ihFactor) : fmH;
