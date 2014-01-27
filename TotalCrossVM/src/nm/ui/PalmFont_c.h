@@ -418,7 +418,7 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
       int32 offset = uf->bitIndexTable[ch], y, x, idx;
-      int32 width = uf->bitIndexTable[ch + 1] - offset + 1, height = uf->fontP.maxHeight + 1;
+      int32 width = uf->bitIndexTable[ch + 1] - offset + 1, height = uf->fontP.maxHeight;
       p += width;
       for (y = 0; y < height; y++)
       {
@@ -426,7 +426,7 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
          for (x = 0; x < width; x++, p++, alpha++)
             p->a = *alpha;
       }
-      glLoadTexture(currentContext, null, id, pixels, width, height, false);
+      glLoadTexture(currentContext, null, id, pixels, width, height+1, false);
    }
    return *id;
 }
