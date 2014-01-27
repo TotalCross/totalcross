@@ -2420,15 +2420,15 @@ static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy,
    setPixel(currentContext, g, xx, yy, interpolate(c1, c2, 20*255/100));
 }           
 
-static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
+static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, PixelConv startColor, PixelConv endColor, bool vertical)
 {
    int32 numSteps = max32(1, vertical ? abs32(endY - startY) : abs32(endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = (startColor >> 16) & 0xFF;
-   int32 startGreen = (startColor >> 8) & 0xFF;
-   int32 startBlue = startColor & 0xFF;
-   int32 endRed = (endColor >> 16) & 0xFF;
-   int32 endGreen = (endColor >> 8) & 0xFF;
-   int32 endBlue = endColor & 0xFF;
+   int32 startRed = startColor.r;
+   int32 startGreen = startColor.g;
+   int32 startBlue = startColor.b;
+   int32 endRed = endColor.r;
+   int32 endGreen = endColor.g;
+   int32 endBlue = endColor.b;
    int32 redInc = ((endRed - startRed) << 16) / numSteps;
    int32 greenInc = ((endGreen - startGreen) << 16) / numSteps;
    int32 blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -2800,15 +2800,15 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
    }
 }
 
-static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+static void drawCylindricShade(Context currentContext, Object g, PixelConv startColor, PixelConv endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = (startColor >> 16) & 0xFF;
-   int32 startGreen = (startColor >> 8) & 0xFF;
-   int32 startBlue = startColor & 0xFF;
-   int32 endRed = (endColor >> 16) & 0xFF;
-   int32 endGreen = (endColor >> 8) & 0xFF;
-   int32 endBlue = endColor & 0xFF;
+   int32 startRed = startColor.r;
+   int32 startGreen = startColor.g;
+   int32 startBlue = startColor.b;
+   int32 endRed = endColor.r;
+   int32 endGreen = endColor.g;
+   int32 endBlue = endColor.b;
    int32 redInc = (((endRed - startRed)*2) << 16) / numSteps;
    int32 greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
    int32 blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
