@@ -418,15 +418,16 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
       int32 offset = uf->bitIndexTable[ch], y, x, idx;
-      int32 width = uf->bitIndexTable[ch + 1] - offset + 1, height = uf->fontP.maxHeight;
-      p += width;
+      int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
+      p += width; // skip a line at top
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
          for (x = 0; x < width; x++, p++, alpha++)
             p->a = *alpha;
+         p->a = 0; p++; // skip a row at right
       }
-      glLoadTexture(currentContext, null, id, pixels, width, height+1, false);
+      glLoadTexture(currentContext, null, id, pixels, width+1, height+1, false);
    }
    return *id;
 }
