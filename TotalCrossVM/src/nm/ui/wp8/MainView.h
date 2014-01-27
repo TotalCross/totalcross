@@ -7,7 +7,7 @@
 #include <agile.h>
 #include "tcvm.h"
 #include "openglWrapper.h"
-#include "CubeRenderer.h"
+#include "Direct3DBase.h"
 
 namespace TotalCross
 {
@@ -61,7 +61,7 @@ namespace TotalCross
 	  void OnSizeChanged(Windows::UI::Core::CoreWindow ^sender, Windows::UI::Core::WindowSizeChangedEventArgs ^args);
 
 	private:
-      CubeRenderer^ m_renderer;
+      Direct3DBase^ m_renderer;
       //ESContext m_esContext;
       //Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
 	  Windows::Phone::UI::Core::KeyboardInputBuffer^ m_inputBuffer;

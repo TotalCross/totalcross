@@ -15,6 +15,8 @@
 #define DATASTRUCTURES_H
 
 #include "tcclass.h"
+#include "tcapi.h"
+#include "xtypes.h"
 
 // Here we concentrate all data structures used, like hashtable, array, list, etc.
 // Must turn on "32bit ints" for the target platform

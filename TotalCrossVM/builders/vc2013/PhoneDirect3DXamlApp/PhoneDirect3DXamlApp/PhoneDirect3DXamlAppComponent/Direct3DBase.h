@@ -36,6 +36,7 @@ internal:
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	bool Render();
+	void Present(); //XXX must implement this method with setjmp and longjmp!!
 
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);

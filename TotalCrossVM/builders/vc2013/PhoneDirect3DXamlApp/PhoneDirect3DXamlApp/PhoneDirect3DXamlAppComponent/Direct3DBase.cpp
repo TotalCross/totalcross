@@ -399,6 +399,11 @@ bool Direct3DBase::isLoadCompleted() {
 	return true;
 }
 
+void Direct3DBase::Present()
+{
+	//XXX must implement this method with setjmp and longjmp!!
+}
+
 bool Direct3DBase::Render()
 {
    if (!isLoadCompleted()) return false;
