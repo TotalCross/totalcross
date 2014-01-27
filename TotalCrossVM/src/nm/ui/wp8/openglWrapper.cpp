@@ -2,8 +2,6 @@
 
 #include <wrl/client.h>
 
-#include "esUtil.h"
-
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
 #else
@@ -13,14 +11,12 @@
 #include "openglWrapper.h"
 #include "datastructures.h"
 #include "tcvm.h"
-#include "winrtangle.h"
 #include "MainView.h"
 #include "precompiled_texture.h"
 #include "precompiled_lrp.h"
 #include "precompiled_points.h"
 #include "precompiled_shade.h"
 
-#define USE_DX
 #define TOGGLE_BUFFER
 
 #define MAKE_RGBA(rgb, a) MAKE_RGBA_123_321( (rgb), (a & 0xFF))
@@ -42,11 +38,11 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
 
 #pragma region StaticVariables
 
-static EGLNativeWindowType *window, *lastWindow;
-
-static ESContext m_esContext;
-static Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
-static GLint lastProg = -1;
+//static EGLNativeWindowType *window, *lastWindow;
+//
+//static ESContext m_esContext;
+//static Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
+static TCGint lastProg = -1;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -71,9 +67,9 @@ void main()
 	gl_FragColor = texture2D(sTexture, vTextureCoord);
 });
 
-static GLuint textureProgram;
-static GLuint texturePoint;
-static GLuint textureCoord, textureS;
+static TCGuint textureProgram;
+static TCGuint texturePoint;
+static TCGuint textureCoord, textureS;
 
 //////////// points (text)
 
@@ -93,10 +89,10 @@ void main()
 	gl_FragColor = v_Color;
 });
 
-static GLuint pointsProgram;
-static GLuint pointsPosition;
-static GLuint pointsColor;
-static GLuint pointsAlpha;
+static TCGuint pointsProgram;
+static TCGuint pointsPosition;
+static TCGuint pointsColor;
+static TCGuint pointsAlpha;
 
 ///////////// line, rect, point
 
@@ -116,10 +112,10 @@ void main()
 	gl_FragColor = a_Color;
 });
 
-static GLuint lrpProgram;
-static GLuint lrpPosition;
-static GLuint lrpColor;
-static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+static TCGuint lrpProgram;
+static TCGuint lrpPosition;
+static TCGuint lrpColor;
+static TCGubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 ///////////// shaded rect
 
@@ -139,9 +135,9 @@ void main()
 	gl_FragColor = v_Color;
 });
 
-static GLuint shadeProgram;
-static GLuint shadePosition;
-static GLuint shadeColor;
+static TCGuint shadeProgram;
+static TCGuint shadePosition;
+static TCGuint shadeColor;
 
 static EGLDisplay _display;
 static EGLSurface _surface;
@@ -166,10 +162,10 @@ bool setShiftYonNextUpdateScreen;
 
 VoidPs* imgTextures;
 int32 realAppH, appW, appH, glShiftY;
-GLfloat ftransp[16], f255[256];
+TCGfloat ftransp[16], f255[256];
 int32 flen;
-GLfloat* glcoords;//[flen*2]; x,y
-GLfloat* glcolors;//[flen];   alpha
+TCGfloat* glcoords;//[flen*2]; x,y
+TCGfloat* glcolors;//[flen];   alpha
 
 #pragma endregion
 
@@ -250,7 +246,7 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
    return 0;
 }
 
-static void setCurrentProgram(GLint prog)
+static void setCurrentProgram(TCGint prog)
 {
 #ifndef USE_DX
 	if (prog != lastProg)
@@ -329,7 +325,7 @@ static void initShade()
 #endif
 }
 
-static void setProjectionMatrix(GLfloat w, GLfloat h)
+static void setProjectionMatrix(TCGfloat w, TCGfloat h)
 {
 #ifndef USE_DX
 	mat4 mat =
@@ -491,8 +487,8 @@ bool checkGLfloatBuffer(Context c, int32 n)
 		xfree(glcolors);
 		flen = n * 3 / 2;
 		int len = flen * 2;
-		glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); pixcoords = (int32*)glcoords;
-		glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); pixcolors = (int32*)glcolors;
+		glcoords = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glcoords;
+		glcolors = (TCGfloat*)xmalloc(sizeof(TCGfloat)*flen); pixcolors = (int32*)glcolors;
 		pixEnd = pixcoords + len;
 		if (!glcoords || !glcolors)
 		{

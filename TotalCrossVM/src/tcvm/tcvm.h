@@ -76,7 +76,6 @@
 
 #include "cppwrapper.h"
 #include "ThreadEmulation.h"
-#include "GLES2/gl2.h"
 #include <winsock2.h>
 
 #define GetSystemInfo(a) GetNativeSystemInfo(a)
