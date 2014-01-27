@@ -58,11 +58,11 @@ public class Samples extends ScrollContainer
       RadioGroupController rgSexo = new RadioGroupController();
 
       add(new Label("Name: "), LEFT,TOP+5);
-      add(edname = new Edit(""),AFTER,SAME);
+      add(edname = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Adress: "), LEFT,AFTER+5);
-      add(edadress = new Edit(""),AFTER,SAME);
+      add(edadress = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Quarter: "), LEFT,AFTER+5);
-      add(edquarter = new Edit(""),AFTER,SAME);
+      add(edquarter = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Gender: "),LEFT,AFTER+5);
       add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
       add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
