@@ -173,6 +173,9 @@
     <Filter Include="VM Files\wp8">
       <UniqueIdentifier>{bda423bb-c037-408f-9cda-442681f07a7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Native methods\ui\wp8\old-stuff">
+      <UniqueIdentifier>{ed622c2a-8ada-4856-b39c-b83575b3e027}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsPhoneRuntimeComponent1.cpp" />
@@ -694,10 +697,10 @@
       <Filter>VM Files\wp8</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
-      <Filter>Native methods\ui\wp8</Filter>
+      <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
-      <Filter>Native methods\ui\wp8</Filter>
+      <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1181,13 +1184,13 @@
       <Filter>Event\wp8</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h">
-      <Filter>Native methods\ui\wp8</Filter>
+      <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h">
-      <Filter>Native methods\ui\wp8</Filter>
+      <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h">
-      <Filter>Native methods\ui\wp8</Filter>
+      <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
