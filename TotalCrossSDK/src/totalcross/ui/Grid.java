@@ -432,6 +432,7 @@ public class Grid extends Container implements Scrollable
 
          protected boolean willOpenKeyboard()
          {
+            if (lastPE == null) return false;
             int px = lastPE.x;
             int py = lastPE.y;
             int line = py / lineH - 1;
