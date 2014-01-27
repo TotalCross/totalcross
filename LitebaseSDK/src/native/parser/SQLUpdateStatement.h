@@ -29,7 +29,7 @@
  * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
-SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parse, bool isPrepared);
+SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, LitebaseParser* parse, bool isPrepared);
 
 /* 
  * Sets the value of a numeric parameter at the given index.
