@@ -6,8 +6,6 @@
 
 #include <agile.h>
 #include "tcvm.h"
-#include "esUtil.h"
-#include "winrtangle.h"
 #include "openglWrapper.h"
 #include "CubeRenderer.h"
 
@@ -64,7 +62,7 @@ namespace TotalCross
 
 	private:
       CubeRenderer^ m_renderer;
-      ESContext m_esContext;
+      //ESContext m_esContext;
       //Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
 	  Windows::Phone::UI::Core::KeyboardInputBuffer^ m_inputBuffer;
 

@@ -2,8 +2,6 @@
 
 #include <wrl/client.h>
 
-#include "esUtil.h"
-
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
 #else
@@ -13,14 +11,12 @@
 #include "openglWrapper.h"
 #include "datastructures.h"
 #include "tcvm.h"
-#include "winrtangle.h"
 #include "MainView.h"
 #include "precompiled_texture.h"
 #include "precompiled_lrp.h"
 #include "precompiled_points.h"
 #include "precompiled_shade.h"
 
-#define USE_DX
 #define TOGGLE_BUFFER
 
 #define MAKE_RGBA(rgb, a) MAKE_RGBA_123_321( (rgb), (a & 0xFF))
@@ -42,11 +38,11 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
 
 #pragma region StaticVariables
 
-static EGLNativeWindowType *window, *lastWindow;
-
-static ESContext m_esContext;
-static Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
-static GLint lastProg = -1;
+//static EGLNativeWindowType *window, *lastWindow;
+//
+//static ESContext m_esContext;
+//static Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
+static TCGint lastProg = -1;
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -71,9 +67,9 @@ void main()
 	gl_FragColor = texture2D(sTexture, vTextureCoord);
 });
 
-static GLuint textureProgram;
-static GLuint texturePoint;
-static GLuint textureCoord, textureS;
+static TCGuint textureProgram;
+static TCGuint texturePoint;
+static TCGuint textureCoord, textureS;
 
 //////////// points (text)
 
@@ -93,10 +89,10 @@ void main()
 	gl_FragColor = v_Color;
 });
 
-static GLuint pointsProgram;
-static GLuint pointsPosition;
-static GLuint pointsColor;
-static GLuint pointsAlpha;
+static TCGuint pointsProgram;
+static TCGuint pointsPosition;
+static TCGuint pointsColor;
+static TCGuint pointsAlpha;
 
 ///////////// line, rect, point
 
@@ -116,10 +112,10 @@ void main()
 	gl_FragColor = a_Color;
 });
 
-static GLuint lrpProgram;
-static GLuint lrpPosition;
-static GLuint lrpColor;
-static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+static TCGuint lrpProgram;
+static TCGuint lrpPosition;
+static TCGuint lrpColor;
+static TCGubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 ///////////// shaded rect
 
@@ -139,15 +135,15 @@ void main()
 	gl_FragColor = v_Color;
 });
 
-static GLuint shadeProgram;
-static GLuint shadePosition;
-static GLuint shadeColor;
+static TCGuint shadeProgram;
+static TCGuint shadePosition;
+static TCGuint shadeColor;
 
-static EGLDisplay _display;
-static EGLSurface _surface;
-static EGLContext _context;
+//static EGLDisplay _display;
+//static EGLSurface _surface;
+//static EGLContext _context;
 
-static GLfloat texcoords[16], lrcoords[8], shcolors[24], shcoords[8];
+static TCGfloat texcoords[16], lrcoords[8], shcolors[24], shcoords[8];
 static int32 *pixcoords, *pixcolors, *pixEnd;
 
 static int pixLastRGB = -1;
@@ -166,10 +162,10 @@ bool setShiftYonNextUpdateScreen;
 
 VoidPs* imgTextures;
 int32 realAppH, appW, appH, glShiftY;
-GLfloat ftransp[16], f255[256];
+TCGfloat ftransp[16], f255[256];
 int32 flen;
-GLfloat* glcoords;//[flen*2]; x,y
-GLfloat* glcolors;//[flen];   alpha
+TCGfloat* glcoords;//[flen*2]; x,y
+TCGfloat* glcolors;//[flen];   alpha
 
 #pragma endregion
 
@@ -185,7 +181,7 @@ int32 abs32(int32 a)
 static bool checkGlError(const char* op, int line)
 {
 #ifndef USE_DX
-	GLint error;
+	TCGint error;
 
 	//debug("%s (%d)",op,line);
 
@@ -209,12 +205,12 @@ static bool checkGlError(const char* op, int line)
 	return false;
 }
 
-static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precompiledCodeSize)
+static TCGuint createProgram_angle(unsigned char* precompiledCode, size_t precompiledCodeSize)
 {
 #ifndef USE_DX
-	GLint ret = GL_TRUE;
-	GLuint vshader, fshader;
-	GLuint p = glCreateProgram();
+	TCGint ret = GL_TRUE;
+	TCGuint vshader, fshader;
+	TCGuint p = glCreateProgram();
 
 	//vshader = loadShader(GL_VERTEX_SHADER, vertexCode);
 	//fshader = loadShader(GL_FRAGMENT_SHADER, fragmentCode);
@@ -225,9 +221,9 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
 	//glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
 	//if (ret == GL_FALSE)
 	//{
-	//	GLchar *buffer;
+	//	TCGchar *buffer;
 	//	glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
-	//	buffer = (GLchar*)xmalloc(sizeof(GLchar)* ret);
+	//	buffer = (TCGchar*)xmalloc(sizeof(TCGchar)* ret);
 	//	glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
 	//		debug("Link error: %s", buffer);
 	//	xfree(buffer);
@@ -237,9 +233,9 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
 	glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
 	if (ret == GL_FALSE)
 	{
-		GLchar *buffer;
+		TCGchar *buffer;
 		glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
-			buffer = (GLchar*)xmalloc(sizeof(GLchar)* ret);
+			buffer = (TCGchar*)xmalloc(sizeof(TCGchar)* ret);
 		glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
 			debug("Link error: %s", buffer);
 		xfree(buffer);
@@ -250,7 +246,7 @@ static GLuint createProgram_angle(unsigned char* precompiledCode, size_t precomp
    return 0;
 }
 
-static void setCurrentProgram(GLint prog)
+static void setCurrentProgram(TCGint prog)
 {
 #ifndef USE_DX
 	if (prog != lastProg)
@@ -329,7 +325,7 @@ static void initShade()
 #endif
 }
 
-static void setProjectionMatrix(GLfloat w, GLfloat h)
+static void setProjectionMatrix(TCGfloat w, TCGfloat h)
 {
 #ifndef USE_DX
 	mat4 mat =
@@ -401,7 +397,7 @@ void flushPixels(int q)
 	{
 		int32 n = pixcolors - (int32*)glcolors, i;
 		PixelConv pc;
-		GLfloat* coords = lrcoords;
+		TCGfloat* coords = lrcoords;
 		setCurrentProgram(lrpProgram);
 		pixcoords = (int32*)glcoords;
 		pixcolors = (int32*)glcolors;
@@ -457,11 +453,11 @@ void flushPixels(int q)
 }
 
 
-/*static GLuint createProgram(char* vertexCode, char* fragmentCode)
+/*static TCGuint createProgram(char* vertexCode, char* fragmentCode)
 {
-	GLint ret = GL_TRUE;
-	GLuint vshader, fshader;
-	GLuint p = glCreateProgram();
+	TCGint ret = GL_TRUE;
+	TCGuint vshader, fshader;
+	TCGuint p = glCreateProgram();
 
 	vshader = loadShader(GL_VERTEX_SHADER, vertexCode);
 	fshader = loadShader(GL_FRAGMENT_SHADER, fragmentCode);
@@ -472,9 +468,9 @@ void flushPixels(int q)
 	glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
 	if (ret == GL_FALSE)
 	{
-		GLchar *buffer;
+		TCGchar *buffer;
 		glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
-		buffer = (GLchar*)xmalloc(sizeof(GLchar)* ret);
+		buffer = (TCGchar*)xmalloc(sizeof(TCGchar)* ret);
 		glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
 			debug("Link error: %s", buffer);
 		xfree(buffer);
@@ -491,8 +487,8 @@ bool checkGLfloatBuffer(Context c, int32 n)
 		xfree(glcolors);
 		flen = n * 3 / 2;
 		int len = flen * 2;
-		glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); pixcoords = (int32*)glcoords;
-		glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); pixcolors = (int32*)glcolors;
+		glcoords = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glcoords;
+		glcolors = (TCGfloat*)xmalloc(sizeof(TCGfloat)*flen); pixcolors = (int32*)glcolors;
 		pixEnd = pixcoords + len;
 		if (!glcoords || !glcolors)
 		{
@@ -627,12 +623,12 @@ bool setupGL(int width, int height)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
 	for (i = 0; i < 14; i++)
-		ftransp[i + 1] = (GLfloat)(i << 4) / (GLfloat)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
+		ftransp[i + 1] = (TCGfloat)(i << 4) / (TCGfloat)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
 	ftransp[15] = 1;
 	for (i = 0; i <= 255; i++)
-		f255[i] = (GLfloat)i / (GLfloat)255;
+		f255[i] = (TCGfloat)i / (TCGfloat)255;
 	clearPixels();
-	return checkGLfloatBuffer(mainContext, 10000);
+	return checkTCGfloatBuffer(mainContext, 10000);
 }
 #endif
 
@@ -653,7 +649,7 @@ bool setupGL(int width, int height)
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 #ifndef USE_DX
-	glDeleteTextures(1, (GLuint*)textureId); GL_CHECK_ERROR
+	glDeleteTextures(1, (TCGuint*)textureId); GL_CHECK_ERROR
 		*textureId = 0;
 	if (updateList)
 		imgTextures = VoidPsRemove(imgTextures, img, null);
@@ -676,7 +672,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 
 	if (!textureAlreadyCreated)
 	{
-		glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+		glGenTextures(1, (TCGuint*)textureId); err = GL_CHECK_ERROR
 		if (err)
 		{
 			throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d", width, height);
@@ -741,7 +737,7 @@ void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 he
 	PixelConv* p;
 	glpixel gp;
 	int32 i;
-	GLint ext_format, ext_type;
+	TCGint ext_format, ext_type;
 	if (pixcolors != (int32*)glcolors) flushPixels(9);
 	glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
 	glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
@@ -1176,10 +1172,10 @@ void glSetLineWidth(int32 w)
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
 #ifndef USE_DX
-	GLfloat* coords = texcoords;
-	/*   GLfloat degrees = 45;
-	GLfloat radians = degreesToRadians(degrees);
-	GLfloat co = cosf(radians), si = sinf(radians);*/
+	TCGfloat* coords = texcoords;
+	/*   TCGfloat degrees = 45;
+	TCGfloat radians = degreesToRadians(degrees);
+	TCGfloat co = cosf(radians), si = sinf(radians);*/
 	if (pixcolors != (int32*)glcolors) flushPixels(6);
 	setCurrentProgram(textureProgram);
 	glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
@@ -1206,7 +1202,7 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
 	glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
 		// source coordinates
-		GLfloat left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
+		TCGfloat left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
 	coords[8] = coords[14] = left;
 	coords[9] = coords[11] = bottom;
 	coords[10] = coords[12] = right;

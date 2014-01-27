@@ -11,8 +11,6 @@
 
 #include <wrl/client.h>
 
-#include "esUtil.h"
-
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
 #else
