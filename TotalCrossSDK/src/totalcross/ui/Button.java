@@ -198,6 +198,19 @@ public class Button extends Control
     * @since TotalCross 1.27
     */
    public String relativeToText; // guich@tc126_28
+   
+   /** Set to true to put a line under the text. Here's an example:
+    * <pre>
+      Button btLink;
+      btLink = new Button("(Guide 124...)");
+      btLink.underlinedText = true;
+      btLink.setBorder(BORDER_NONE);
+      btLink.setForeColor(Color.BLUE);
+      add(btLink,LEFT,TOP,FILL, PREFERRED);
+    * </pre>
+    * @since TotalCross 2.0
+    */
+   public boolean underlinedText;
 
    /** Creates a button that shows the given text and image.
     * @param text The text to be displayed
@@ -680,8 +693,14 @@ public class Button extends Control
    protected void paintText(Graphics g, int tx, int ty)
    {
       int shade = !enabled ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
+      if (underlinedText) g.backColor = foreColor;
       for (int i = 0; i < lines.length; i++, ty += fmH)
-         g.drawText(lines[i], tx + ((maxTW - linesW[i]) >> 1), ty, shade != -1, shade);
+      {
+         int txx = tx + ((maxTW - linesW[i]) >> 1);
+         g.drawText(lines[i], txx, ty, shade != -1, shade);
+         if (underlinedText)
+            g.fillRect(txx,ty+fm.ascent+1, linesW[i], (fmH-1)>>3); 
+      }
    }
 
    protected void paintImage(Graphics g, boolean bkg, int ix, int iy)

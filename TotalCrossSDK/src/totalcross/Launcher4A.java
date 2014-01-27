@@ -1115,7 +1115,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
-      AndroidUtils.debug("**** AT APP PAUSED: "+appPaused);
       appPaused = true;
       if (eventThread != null)
       {
@@ -1126,7 +1125,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
-      AndroidUtils.debug("**** AT APP RESUMED: "+appPaused);
       appPaused = false;
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
