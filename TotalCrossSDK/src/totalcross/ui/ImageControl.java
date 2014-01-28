@@ -125,16 +125,11 @@ public class ImageControl extends Control
                double newScale = tempHwScale * step;
                if (newScale > 0)
                {
-                  // -p + s/2
-                  int cx = img.getWidth();
-                  int cy = img.getHeight();
-                  
-                  int mx = (int)(cx * tempHwScale);
-                  int my = (int)(cy * tempHwScale);
                   tempHwScale = newScale;
-                  int mx2 = (int)(cx * tempHwScale);
-                  int my2 = (int)(cy * tempHwScale);
-                  moveTo(lastX+(mx-mx2)/2,lastY+(my-my2)/2);
+                  // always centers on screen
+                  lastX = (width-getImageWidth())/2;
+                  lastY = (height-getImageHeight())/2;
+                  repaintNow();
                }
             }
             break;
