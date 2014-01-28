@@ -15,7 +15,7 @@
 
 static char defaultFontName[16];
 
-UserFont baseFontN, baseFontB;
+UserFont baseFontNl,baseFontNh, baseFontBl, baseFontBh;
 bool useRealFont;
 
 bool fontInit(Context currentContext)
@@ -58,8 +58,10 @@ bool fontInit(Context currentContext)
    else
    {
       useRealFont = true;
-      baseFontN = loadUserFont(currentContext, defaultFont, false, 80, ' ');
-      baseFontB = loadUserFont(currentContext, defaultFont, true, 80, ' ');
+      baseFontNl = loadUserFont(currentContext, defaultFont, false, 20, ' ');
+      baseFontBl = loadUserFont(currentContext, defaultFont, true,  20, ' ');
+      baseFontNh = loadUserFont(currentContext, defaultFont, false, 80, ' ');
+      baseFontBh = loadUserFont(currentContext, defaultFont, true,  80, ' ');
       useRealFont = false;
    }
    return defaultFont != null;
@@ -420,11 +422,16 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
       int32 offset = uf->bitIndexTable[ch], y, x, idx;
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
       p += width; // skip a line at top
+      bool isLow = uf->fontP.maxHeight < 18;
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
-         for (x = 0; x < width; x++, p++, alpha++)
-            p->a = *alpha;
+         if (isLow) // for low res fonts, make it darker
+            for (x = 0; x < width; x++, p++, alpha++)
+               p->a = *alpha < 160 ? *alpha : 255;
+         else
+            for (x = 0; x < width; x++, p++, alpha++)
+               p->a = *alpha;
          p->a = 0; p++; // skip a row at right
       }
       glLoadTexture(currentContext, null, id, pixels, width+1, height+1, false);
@@ -437,8 +444,10 @@ void resetFontTexture(Context currentContext, UserFont uf)
 {       
    #ifdef __gl2_h_
    int32 i;
-   for (i = baseFontN->fontP.lastChar - baseFontN->fontP.firstChar + 1; --i >= 0;) baseFontN->textureIds[i] = 0;
-   for (i = baseFontB->fontP.lastChar - baseFontB->fontP.firstChar + 1; --i >= 0;) baseFontB->textureIds[i] = 0;
+   for (i = baseFontNl->fontP.lastChar - baseFontNl->fontP.firstChar + 1; --i >= 0;) baseFontNl->textureIds[i] = 0;
+   for (i = baseFontBl->fontP.lastChar - baseFontBl->fontP.firstChar + 1; --i >= 0;) baseFontBl->textureIds[i] = 0;
+   for (i = baseFontNh->fontP.lastChar - baseFontNh->fontP.firstChar + 1; --i >= 0;) baseFontNh->textureIds[i] = 0;
+   for (i = baseFontBh->fontP.lastChar - baseFontBh->fontP.firstChar + 1; --i >= 0;) baseFontBh->textureIds[i] = 0;
    #endif
 }
 
@@ -471,9 +480,9 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
       return uf;
 
    // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
-   if (!useRealFont && baseFontN != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name, defaultFontName, xstrlen(defaultFontName)) == 0)
+   if (!useRealFont && baseFontNl != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name, defaultFontName, xstrlen(defaultFontName)) == 0)
    {
-      UserFont ubase = bold ? baseFontB : baseFontN;
+      UserFont ubase = size <= 20 ? (bold ? baseFontBl : baseFontNl) : (bold ? baseFontBh : baseFontNh);
       int32 ubaseH = ubase->fontP.maxHeight;
       uf = newXH(UserFont, fontsHeap);
       // take a copy of the font file
