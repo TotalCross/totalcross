@@ -67,7 +67,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>USE_DX;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_DX;__gl2_h_;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
