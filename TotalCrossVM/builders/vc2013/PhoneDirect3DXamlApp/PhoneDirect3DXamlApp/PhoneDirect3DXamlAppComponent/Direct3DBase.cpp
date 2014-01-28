@@ -9,15 +9,24 @@ using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
+static Direct3DBase ^lastInstance = nullptr;
+
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
 {
    VMStarted = false;
    odummy = _odummy;
 
+   lastInstance = this;
+
    for (int i = 0; i < N_LOAD_TASKS; i++) {
       loadCompleted[i] = false;
    }
+}
+
+Direct3DBase ^Direct3DBase::GetLastInstance()
+{
+	return lastInstance;
 }
 
 // Initialize the Direct3D resources required to run.

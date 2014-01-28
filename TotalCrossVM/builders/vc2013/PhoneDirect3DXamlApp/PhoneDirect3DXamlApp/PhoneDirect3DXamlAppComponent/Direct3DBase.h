@@ -53,6 +53,8 @@ internal:
 
    bool isLoadCompleted();
 
+   static Direct3DBase ^GetLastInstance();
+
 private:
    int loadCompleted[N_LOAD_TASKS];
    int lastRGB;
