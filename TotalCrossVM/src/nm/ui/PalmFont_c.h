@@ -444,14 +444,23 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 }
 #endif
 
-void resetFontTexture(Context currentContext, UserFont uf)
+#ifdef __gl2_h_
+static void reset1Font(UserFont uf)
+{
+   int32 i;
+   for (i = uf->fontP.lastChar - uf->fontP.firstChar + 1; --i >= 0;) 
+      uf->textureIds[i] = 0;
+}
+#endif
+
+void resetFontTexture()
 {       
    #ifdef __gl2_h_
-   int32 i,j;
+   int32 j;
    for (j = 0; j < SIZE_LEN; j++)
-   {
-      for (i = baseFontN[j]->fontP.lastChar - baseFontN[j]->fontP.firstChar + 1; --i >= 0;) baseFontN[j]->textureIds[i] = 0;
-      for (i = baseFontB[j]->fontP.lastChar - baseFontB[j]->fontP.firstChar + 1; --i >= 0;) baseFontB[j]->textureIds[i] = 0;
+   {  
+      reset1Font(baseFontN[j]);
+      reset1Font(baseFontB[j]);
    }
    #endif
 }
