@@ -592,7 +592,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
    {
 #ifdef __gl2_h_
-      uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap) - uf->fontP.firstChar;
+      uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap);
 #endif
       uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth + 1) * (uf->fontP.maxHeight + 1), fontsHeap);
    }
