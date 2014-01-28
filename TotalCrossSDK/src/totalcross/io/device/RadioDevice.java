@@ -49,8 +49,8 @@ final public class RadioDevice
    /**
     * Determines if the provided radio type is supported by the device.<br>
     * <br>
-    * Fully functional on WinCE and Android devices.<br>
-    * BlackBerry supports only WIFI, always returning false for other types.<br>
+    * Fully functional on Android devices.<br>
+    * Always returns <code>true</code> on WP8. <br>
     * Always return false on other platforms.
     * 
     * @param type
@@ -77,8 +77,7 @@ final public class RadioDevice
    /**
     * Retrieves the current state of the provided radio.<br>
     * <br>
-    * Currently works only on WinCE, Android devices and BlackBerry. However, it will always return RADIO_STATE_DISABLED
-    * for BLUETOOTH on BlackBerry.<br>
+    * Currently works only on Android and WP8.<br>
     * Always return RADIO_STATE_DISABLED on other platforms.
     * 
     * @param type
@@ -105,8 +104,7 @@ final public class RadioDevice
    /**
     * Change the state of the provided radio.<br>
     * <br>
-    * Fully functional on WinCE and Android devices.<br>
-    * BlackBerry supports only WIFI.<br>
+    * Fully functional only on Android devices.<br>
     * Does nothing on other platforms.
     * 
     * @param type
