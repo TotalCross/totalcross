@@ -696,10 +696,10 @@
     <ClCompile Include="..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
       <Filter>VM Files\wp8</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\CubeRenderer.cpp">
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\old-stuff\CubeRenderer.cpp">
       <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\nm\ui\wp8\Direct3DBase.cpp">
+    <ClCompile Include="..\..\..\src\nm\ui\wp8\old-stuff\Direct3DBase.cpp">
       <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1183,13 +1183,13 @@
     <ClInclude Include="..\..\..\src\event\wp8\specialkeys_c.h">
       <Filter>Event\wp8</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\CubeRenderer.h">
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\old-stuff\CubeRenderer.h">
       <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\Direct3DBase.h">
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\old-stuff\Direct3DBase.h">
       <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\nm\ui\wp8\DirectXHelper.h">
+    <ClInclude Include="..\..\..\src\nm\ui\wp8\old-stuff\DirectXHelper.h">
       <Filter>Native methods\ui\wp8\old-stuff</Filter>
     </ClInclude>
   </ItemGroup>

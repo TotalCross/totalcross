@@ -9,30 +9,37 @@ using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
+static Direct3DBase ^lastInstance = nullptr;
+
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
 {
    VMStarted = false;
    odummy = _odummy;
 
+   lastInstance = this;
+
    for (int i = 0; i < N_LOAD_TASKS; i++) {
       loadCompleted[i] = false;
    }
 }
 
+Direct3DBase ^Direct3DBase::GetLastInstance()
+{
+	return lastInstance;
+}
+
 // Initialize the Direct3D resources required to run.
 void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 {
-	char mensagem[1024];
-	char16 mensagem_fim[2048];
+	wchar_t mensagem_fim[2048];
 	int saida;
 
 	m_d3dDevice = device;
 	saida = startVM("AllTests", &local_context);
 
 	if (saida != 0) {
-		sprintf_s(mensagem, "Error in starting VM %d: ", saida);
-		MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, mensagem, -1, mensagem_fim, 10000);
+		swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
 		odummy->alert(ref new Platform::String(mensagem_fim));
 	}
 	CreateDeviceResources();
@@ -447,6 +454,7 @@ bool Direct3DBase::Render()
 
    if (!VMStarted) {
 	   //startVM("AllTests", &local_context);
+	   startProgram(local_context);
 	   VMStarted = true;
    }
 

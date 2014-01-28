@@ -24,8 +24,8 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH,glShiftY,desiredglShiftY;
-extern GLfloat ftransp[16], f255[256];
-extern GLfloat *glcoords, *glcolors;
+extern TCGfloat ftransp[16], f255[256];
+extern TCGfloat *glcoords, *glcolors;
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -1068,7 +1068,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
-   GLfloat *glC, *glV;
+   TCGfloat *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
 
