@@ -221,6 +221,7 @@ public class PieChart extends Chart
                   else
                      degree += 180;
                   // find the slice that contains this angle
+                  if (sum == 0) break;
                   int sCount = series.size(),i;
                   double last=0,current;
                   for (i = 0; i < sCount; i++) // for each series
