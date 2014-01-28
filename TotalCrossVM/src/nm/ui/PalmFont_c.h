@@ -448,13 +448,13 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 static void reset1Font(UserFont uf)
 {
    int32 i;
-   for (i = uf->fontP.lastChar - uf->fontP.firstChar + 1; --i >= 0;) 
+   for (i = 256; --i >= 0;) 
       uf->textureIds[i] = 0;
 }
 #endif
 
 void resetFontTexture()
-{       
+{                          
    #ifdef __gl2_h_
    int32 j;
    for (j = 0; j < SIZE_LEN; j++)
@@ -592,7 +592,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
    {
 #ifdef __gl2_h_
-      uf->textureIds = newPtrArrayOf(Int32, numberOfChars, fontsHeap);
+      uf->textureIds = newPtrArrayOf(Int32, 256, fontsHeap);
 #endif
       uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth + 1) * (uf->fontP.maxHeight + 1), fontsHeap);
    }
