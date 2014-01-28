@@ -7,7 +7,11 @@
 #include <agile.h>
 #include "tcvm.h"
 #include "openglWrapper.h"
+#ifdef OLD_TCVM
+#include "old-stuff/Direct3DBase.h"
+#else
 #include "Direct3DBase.h"
+#endif
 
 namespace TotalCross
 {
