@@ -313,10 +313,10 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;$(SolutionDir)/../../src/tcvm/wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>$(IntDir)litebase.pch</PrecompiledHeaderOutputFile>
@@ -371,7 +371,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>$(IntDir)litebase.pch</PrecompiledHeaderOutputFile>
@@ -428,7 +428,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -490,7 +490,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -551,7 +551,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -671,7 +671,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -784,7 +784,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -906,7 +906,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -1019,7 +1019,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
