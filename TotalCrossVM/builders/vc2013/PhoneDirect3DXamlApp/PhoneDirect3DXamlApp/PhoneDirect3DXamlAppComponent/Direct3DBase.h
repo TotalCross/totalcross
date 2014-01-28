@@ -1,6 +1,10 @@
 ﻿#pragma once
 
 #include "DirectXHelper.h"
+#include "Idummy.h"
+
+#define HAS_TCHAR
+#include "tcvm.h"
 #define N_LOAD_TASKS 4
 
 struct ProjectionConstantBuffer
@@ -28,13 +32,15 @@ struct TextureVertex
 ref class Direct3DBase 
 {
 internal:
-	Direct3DBase();
+	Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy);
 
 	void Initialize(_In_ ID3D11Device1* device);
 	void CreateDeviceResources();
 	void UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView);
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
+	void PreRender(); // resets the screen and set it ready to render
+	bool RenderTest(); // the screen tester; multiple lines, pixels, a rectangle and a texture
 	bool Render();
 	void Present(); //XXX must implement this method with setjmp and longjmp!!
 
@@ -85,4 +91,11 @@ protected private:
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
 	Windows::Foundation::Rect m_windowBounds;
+
+	// C# wrapper object
+	PhoneDirect3DXamlAppComponent::Idummy ^odummy;
+
+	// TotalCross objects
+	Context local_context;
+	bool VMStarted;
 };

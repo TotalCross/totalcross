@@ -24,8 +24,8 @@ using namespace Windows::Phone::Devices::Notification;
 
 #pragma region varDeclaration
 
-static char appPathWP8[1024];
-static char vmPathWP8[1024];
+static char appPathWP8[1024] = "";
+static char vmPathWP8[1024] = "";
 static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
@@ -73,26 +73,30 @@ int eventQueueEmpty(void)
 
 char *GetAppPathWP8()
 {
-	MainView ^mv = MainView::GetLastInstance();
-	Platform::String ^_appPath = mv->getAppPath();
+	if (appPathWP8[0] == '\0') {
+		Platform::String ^_appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
 
-	WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPathWP8, 1024, NULL, NULL);
+		WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPathWP8, 1024, NULL, NULL);
+	}
 	return appPathWP8;
 }
 
 char *GetVmPathWP8()
 {
-	MainView ^mv = MainView::GetLastInstance();
-	Platform::String ^_vmPath = mv->getVmPath();
+	if (vmPathWP8[0] == '\0') {
+		Platform::String ^_vmPath = Windows::ApplicationModel::Package::Current->InstalledLocation->Path;
 
-	WideCharToMultiByte(CP_ACP, 0, _vmPath->Data(), _vmPath->Length(), vmPathWP8, 1024, NULL, NULL);
+		WideCharToMultiByte(CP_ACP, 0, _vmPath->Data(), _vmPath->Length(), vmPathWP8, 1024, NULL, NULL);
+	}
 	return vmPathWP8;
 }
 
 char *GetDisplayNameWP8()
 {
-   Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
-   WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
+	if (devId[0] == '\0') {
+	   Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
+	   WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
+	}
    return devId;
 }
 

@@ -1,14 +1,20 @@
 ﻿#include "pch.h"
 #include "Direct3DBase.h"
 
+#define HAS_TCHAR
+#include "tcvm.h"
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
 // Constructor.
-Direct3DBase::Direct3DBase()
+Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
 {
+   VMStarted = false;
+   odummy = _odummy;
+
    for (int i = 0; i < N_LOAD_TASKS; i++) {
       loadCompleted[i] = false;
    }
@@ -17,7 +23,18 @@ Direct3DBase::Direct3DBase()
 // Initialize the Direct3D resources required to run.
 void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 {
+	char mensagem[1024];
+	char16 mensagem_fim[2048];
+	int saida;
+
 	m_d3dDevice = device;
+	saida = startVM("AllTests", &local_context);
+
+	if (saida != 0) {
+		sprintf_s(mensagem, "Error in starting VM %d: ", saida);
+		MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, mensagem, -1, mensagem_fim, 10000);
+		odummy->alert(ref new Platform::String(mensagem_fim));
+	}
 	CreateDeviceResources();
 }
 
@@ -404,72 +421,96 @@ void Direct3DBase::Present()
 	//XXX must implement this method with setjmp and longjmp!!
 }
 
+void Direct3DBase::PreRender()
+{
+	const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+	m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+	m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+	m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+
+	m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+	m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
+	m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+	m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+	m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+}
+
 bool Direct3DBase::Render()
 {
    if (!isLoadCompleted()) return false;
    int ini = GetTickCount64() & 0x3FFFFFFF;
 
-   const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
-   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+   PreRender();
 
-   m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
-
-   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
-   m_d3dContext->IASetInputLayout(m_inputLayout.Get());
-   m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-   m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-
-   int w = (int)m_windowBounds.Width, h = (int)m_windowBounds.Height;
-   for (int i = 0; i < h / 2; i++)
-      drawLine(0, i, w, i, 0xFF00FF00);
-   int *xx = new int[w], *yy = new int[w];
-
-   static int madness = 0;
-   for (int i = h / 2; i <= h; i++)
-   {
-      for (int j = 0; j <= w; j++)
-      {
-         xx[j] = j;
-         yy[j] = i;
-      }
-	  madness++;
-      drawPixels(xx, yy, w, ((i * 255 / h) << 24) | 0xFF0000 + madness);
+   if (!VMStarted) {
+	   //startVM("AllTests", &local_context);
+	   VMStarted = true;
    }
-
-   fillRect(w / 2 - w / 8, h / 2 - h / 8, w / 2 + w / 8, h / 2 + h / 8, 0xFF0000FF);
-
-   ////////////// TEXTURA
-
-   //m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   //m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
-
-   m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
-   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
-   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
-
-   // Set the vertex and index buffers, and specify the way they define geometry.
-   UINT stride = sizeof(TextureVertex);
-   UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-   m_d3dContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-   // Set the vertex and pixel shader stage state.
-   m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
-   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-   m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
-   m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
-   // Draw the cube.
-   m_d3dContext->DrawIndexed(6, 0, 0);
 
    int fim = GetTickCount64() & 0x3FFFFFFF;
    char buf[50];
    sprintf_s(buf, "elapsed: %d ms\n", fim - ini);
    OutputDebugStringA(buf);
    return true;
+}
+
+bool Direct3DBase::RenderTest()
+{
+	if (!isLoadCompleted()) return false;
+	int ini = GetTickCount64() & 0x3FFFFFFF;
+
+	PreRender();
+
+	int w = (int)m_windowBounds.Width, h = (int)m_windowBounds.Height;
+	for (int i = 0; i < h / 2; i++)
+		drawLine(0, i, w, i, 0xFF00FF00);
+	int *xx = new int[w], *yy = new int[w];
+
+	static int madness = 0;
+	for (int i = h / 2; i <= h; i++)
+	{
+		for (int j = 0; j <= w; j++)
+		{
+			xx[j] = j;
+			yy[j] = i;
+		}
+		madness++;
+		drawPixels(xx, yy, w, ((i * 255 / h) << 24) | 0xFF0000 + madness);
+	}
+
+	fillRect(w / 2 - w / 8, h / 2 - h / 8, w / 2 + w / 8, h / 2 + h / 8, 0xFF0000FF);
+
+	////////////// TEXTURA
+
+	//m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+	//m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+
+	m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
+	m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
+	m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+	m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
+
+	// Set the vertex and index buffers, and specify the way they define geometry.
+	UINT stride = sizeof(TextureVertex);
+	UINT offset = 0;
+	m_d3dContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+	m_d3dContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Set the vertex and pixel shader stage state.
+	m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
+	m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+	m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
+	m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
+	// Draw the cube.
+	m_d3dContext->DrawIndexed(6, 0, 0);
+
+	int fim = GetTickCount64() & 0x3FFFFFFF;
+	char buf[50];
+	sprintf_s(buf, "elapsed: %d ms\n", fim - ini);
+	OutputDebugStringA(buf);
+	return true;
 }

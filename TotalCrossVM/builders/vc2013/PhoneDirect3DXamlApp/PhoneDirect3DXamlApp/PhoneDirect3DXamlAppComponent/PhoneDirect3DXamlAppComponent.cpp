@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "PhoneDirect3DXamlAppComponent.h"
 #include "Direct3DContentProvider.h"
 
 using namespace Windows::Foundation;
@@ -53,7 +52,7 @@ void Direct3DBackground::OnPointerReleased(DrawingSurfaceManipulationHost^ sende
 // Interface With Direct3DContentProvider
 HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
-   m_renderer = ref new Direct3DBase();
+   m_renderer = ref new Direct3DBase(odummy);
 	m_renderer->Initialize(device);
 	m_renderer->UpdateForWindowSizeChange(WindowBounds.Width, WindowBounds.Height);
 	return S_OK;

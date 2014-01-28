@@ -3,15 +3,10 @@
 #include "pch.h"
 #include "Direct3DBase.h"
 #include <DrawingSurfaceNative.h>
+#include "Idummy.h"
 
 namespace PhoneDirect3DXamlAppComponent
 {
-
-	public interface class Idummy {
-	public:
-		void callDraw();
-	};
-
 public delegate void RequestAdditionalFrameHandler();
 
 [Windows::Foundation::Metadata::WebHostHidden]

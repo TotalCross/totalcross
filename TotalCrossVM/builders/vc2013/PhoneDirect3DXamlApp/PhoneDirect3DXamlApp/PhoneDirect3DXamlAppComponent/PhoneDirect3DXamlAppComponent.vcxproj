@@ -261,6 +261,7 @@
     <ClInclude Include="..\..\..\..\..\src\zlib\zconf.in.h" />
     <ClInclude Include="..\..\..\..\..\src\zlib\zlib.h" />
     <ClInclude Include="..\..\..\..\..\src\zlib\zutil.h" />
+    <ClInclude Include="Idummy.h" />
     <ClInclude Include="PhoneDirect3DXamlAppComponent.h" />
     <ClInclude Include="DirectXHelper.h" />
     <ClInclude Include="Direct3DBase.h" />

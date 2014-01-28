@@ -137,7 +137,7 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 	CoreApplication::Resuming +=
 		ref new EventHandler<Platform::Object^>(this, &MainView::OnResuming);
 
-   m_renderer = ref new Direct3DBase();
+   //m_renderer = ref new Direct3DBase();
 }
 
 void MainView::SetWindow(CoreWindow^ window)
