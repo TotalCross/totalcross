@@ -15,7 +15,9 @@
 
 static char defaultFontName[16];
 
-UserFont baseFontNl,baseFontNh, baseFontBl, baseFontBh;
+#define SIZE_LEN 4
+UserFont baseFontN[SIZE_LEN],baseFontB[SIZE_LEN];
+static int32 realSizes[] = {20,40,60,80};
 bool useRealFont;
 
 bool fontInit(Context currentContext)
@@ -56,12 +58,14 @@ bool fontInit(Context currentContext)
       htFree(&htUF, null);
    }
    else
-   {
+   {        
+      int32 i;
       useRealFont = true;
-      baseFontNl = loadUserFont(currentContext, defaultFont, false, 20, ' ');
-      baseFontBl = loadUserFont(currentContext, defaultFont, true,  20, ' ');
-      baseFontNh = loadUserFont(currentContext, defaultFont, false, 80, ' ');
-      baseFontBh = loadUserFont(currentContext, defaultFont, true,  80, ' ');
+      for (i = 0; i < SIZE_LEN; i++)
+      {
+         baseFontN[i] = loadUserFont(currentContext, defaultFont, false, realSizes[i], ' ');
+         baseFontB[i] = loadUserFont(currentContext, defaultFont, true,  realSizes[i], ' ');
+      }
       useRealFont = false;
    }
    return defaultFont != null;
@@ -443,12 +447,22 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 void resetFontTexture(Context currentContext, UserFont uf)
 {       
    #ifdef __gl2_h_
-   int32 i;
-   for (i = baseFontNl->fontP.lastChar - baseFontNl->fontP.firstChar + 1; --i >= 0;) baseFontNl->textureIds[i] = 0;
-   for (i = baseFontBl->fontP.lastChar - baseFontBl->fontP.firstChar + 1; --i >= 0;) baseFontBl->textureIds[i] = 0;
-   for (i = baseFontNh->fontP.lastChar - baseFontNh->fontP.firstChar + 1; --i >= 0;) baseFontNh->textureIds[i] = 0;
-   for (i = baseFontBh->fontP.lastChar - baseFontBh->fontP.firstChar + 1; --i >= 0;) baseFontBh->textureIds[i] = 0;
+   int32 i,j;
+   for (j = 0; j < SIZE_LEN; j++)
+   {
+      for (i = baseFontN[j]->fontP.lastChar - baseFontN[j]->fontP.firstChar + 1; --i >= 0;) baseFontN[j]->textureIds[i] = 0;
+      for (i = baseFontB[j]->fontP.lastChar - baseFontB[j]->fontP.firstChar + 1; --i >= 0;) baseFontB[j]->textureIds[i] = 0;
+   }
    #endif
+}
+
+static UserFont getBaseFont(bool bold, int32 size)
+{
+   int32 i;
+   for (i = 0; i < SIZE_LEN-1; i++)
+      if (size <= realSizes[i])
+         break;
+   return bold ? baseFontB[i] : baseFontN[i];
 }
 
 UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
@@ -480,9 +494,9 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
       return uf;
 
    // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
-   if (!useRealFont && baseFontNl != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name, defaultFontName, xstrlen(defaultFontName)) == 0)
+   if (!useRealFont && baseFontN[0] != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name, defaultFontName, xstrlen(defaultFontName)) == 0)
    {
-      UserFont ubase = size <= 20 ? (bold ? baseFontBl : baseFontNl) : (bold ? baseFontBh : baseFontNh);
+      UserFont ubase = getBaseFont(bold, size);
       int32 ubaseH = ubase->fontP.maxHeight;
       uf = newXH(UserFont, fontsHeap);
       // take a copy of the font file
