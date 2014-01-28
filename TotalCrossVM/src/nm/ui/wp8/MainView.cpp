@@ -1,7 +1,5 @@
 #include <wrl/client.h>
 
-#include "esUtil.h"
-
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
 #else
@@ -11,7 +9,6 @@
 #include "MainView.h"
 
 #include <thread>
-#include "winrtangle.h"
 #include "../Window.h"
 
 using namespace TotalCross;
@@ -140,7 +137,7 @@ void MainView::Initialize(CoreApplicationView^ applicationView)
 	CoreApplication::Resuming +=
 		ref new EventHandler<Platform::Object^>(this, &MainView::OnResuming);
 
-   m_renderer = ref new CubeRenderer();
+   //m_renderer = ref new Direct3DBase();
 }
 
 void MainView::SetWindow(CoreWindow^ window)
@@ -194,8 +191,6 @@ void MainView::SetWindow(CoreWindow^ window)
 		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnHidingSIP);
 	inputPane->Showing +=
 		ref new TypedEventHandler <InputPane ^, InputPaneVisibilityEventArgs^>(this, &MainView::OnShowingSIP);
-
-   m_renderer->Initialize(CoreWindow::GetForCurrentThread());
 }
 
 void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^args)

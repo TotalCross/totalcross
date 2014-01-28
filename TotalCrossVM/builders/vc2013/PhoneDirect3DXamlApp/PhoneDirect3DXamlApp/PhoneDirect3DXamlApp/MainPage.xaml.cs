@@ -27,6 +27,11 @@ namespace PhoneDirect3DXamlAppInterop
             //mp.UpdateLayout();
         }
 
+        public void alert(String s)
+        {
+            MessageBox.Show(s);
+        }
+
     }
     public partial class MainPage : PhoneApplicationPage
     {

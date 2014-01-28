@@ -8,11 +8,8 @@
 
 #ifdef __cplusplus
 #include <agile.h>
-#include "winrtangle.h"
-
 #include <wrl/client.h>
 
-#include "esUtil.h"
 
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
@@ -30,19 +27,33 @@ extern "C" {
 #define IS_PIXEL (1<<28)
 #define IS_DIAGONAL  (1<<27)
 
-typedef GLfloat mat4[16];
+#ifdef USE_DX
+typedef float TCGfloat;
+typedef unsigned char TCGubyte;
+typedef unsigned int TCGuint;
+typedef int TCGint;
+typedef char TCGchar;
+#else
+typedef GLfloat TCGfloat;
+typedef GLubyte TCGubyte;
+typedef GLuint TCGuint;
+typedef GLint TCGint;
+typedef GLchar TCGchar;
+#endif
+
+typedef TCGfloat mat4[16];
 typedef union
 {
-	struct{ GLubyte r, g, b, a; };
+	struct{ TCGubyte r, g, b, a; };
 	Pixel pixel;
 } glpixel;
 
 extern int32 /*realAppH,*/ appW, appH, glShiftY;
 extern int32 *needsPaint;
 
-extern GLfloat ftransp[16];
-extern GLfloat* glcoords;//[flen*2]; x,y
-extern GLfloat* glcolors;//[flen];   alpha
+extern TCGfloat ftransp[16];
+extern TCGfloat* glcoords;//[flen*2]; x,y
+extern TCGfloat* glcolors;//[flen];   alpha
 extern int32 desiredScreenShiftY;
 extern bool setShiftYonNextUpdateScreen;
 
