@@ -1135,14 +1135,14 @@ void setShiftYgl()
 #elif defined (WP8)
 	if (setShiftYonNextUpdateScreen) {
 		int32 componentPos;
-		int siph = MainView::GetLastInstance()->GetSIPHeight();
+		int siph = 100;//XXX MainView::GetLastInstance()->GetSIPHeight();
 		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
 		setShiftYonNextUpdateScreen = false;
 
-		if (componentPos <= MainView::GetLastInstance()->GetSIPHeight())
-			glShiftY = 0;
+		if (componentPos <= 100)//XXX MainView::GetLastInstance()->GetSIPHeight())
+		glShiftY = 0;
 		else
-			glShiftY = -(componentPos - MainView::GetLastInstance()->GetSIPHeight());
+			glShiftY = -(componentPos - 100);//XXX MainView::GetLastInstance()->GetSIPHeight());
 	}
 #else
 	glShiftY = -desiredScreenShiftY;

@@ -14,6 +14,7 @@
 #include "tcvm.h"
 #include <wrl/client.h>
 #include "tcclass.h"
+#include "Direct3DBase.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
@@ -119,7 +120,7 @@ void windowSetDeviceTitle(TCObject titleObj)
 
 void windowSetSIP(enum TCSIP kb)
 {
-	MainView::GetLastInstance()->setKeyboard(kb);
+	MainView::GetLastInstance()->setKeyboard(kb); //XXX
 }
 
 DWORD32 getRemainingBatery()
@@ -151,20 +152,21 @@ bool dxSetup()
 
 void dxUpdateScreen()
 {
-   MainView::GetLastInstance()->dxUpdateScreen();
+   //MainView::GetLastInstance()->dxUpdateScreen();
+   Direct3DBase::GetLastInstance()->Present();
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
-   MainView::GetLastInstance()->dxDrawLine(x1, y1, x2, y2, color);
+	Direct3DBase::GetLastInstance()->drawLine(x1, y1, x2, y2, color);
 }
 
 void dxFillRect(int x1, int y1, int x2, int y2, int color)
 {
-   MainView::GetLastInstance()->dxFillRect(x1, y1, x2, y2, color);
+   Direct3DBase::GetLastInstance()->fillRect(x1, y1, x2, y2, color);
 }
 
 void dxDrawPixels(int *x, int *y, int count, int color)
 {
-   MainView::GetLastInstance()->dxDrawPixels(x, y, count, color);
+	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
 }
