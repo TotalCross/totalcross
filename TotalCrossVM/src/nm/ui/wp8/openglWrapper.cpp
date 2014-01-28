@@ -890,20 +890,24 @@ bool initGLES(ScreenSurface screen)
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
-	auto bounds = CoreWindow::GetForCurrentThread()->Bounds;
 	screen->bpp = 32;
 	screen->screenX = screen->screenY = 0;
-	screen->screenW = bounds.Width; //XXX lastW must be initialized with the screen bounds
-	screen->screenH = bounds.Height;
 	screen->hRes = ascrHRes;
 	screen->vRes = ascrVRes;
-   
 #ifndef USE_DX
+	auto bounds = CoreWindow::GetForCurrentThread()->Bounds;
+	screen->screenW = bounds.Width; //XXX lastW must be initialized with the screen bounds
+	screen->screenH = bounds.Height;
+   
+
    return initGLES(screen);
-#else
+#endif
+
+   screen->screenW = 480; //XXX lastW must be initialized with the screen bounds
+   screen->screenH = 800;
+
    dxSetup();
    return checkGLfloatBuffer(mainContext, 10000);
-#endif
 }
 
 void glDrawPixels(int32 n, int32 rgb)

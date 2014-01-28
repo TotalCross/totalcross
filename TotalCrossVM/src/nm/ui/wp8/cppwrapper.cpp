@@ -145,7 +145,8 @@ DWORD32 getFreeMemoryWP8()
 
 bool dxSetup()
 {
-   return MainView::GetLastInstance()->dxSetup();
+	return true;//XXX
+//   return MainView::GetLastInstance()->dxSetup();
 }
 
 void dxUpdateScreen()
