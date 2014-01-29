@@ -268,14 +268,15 @@ TC_API int32 startProgram(Context currentContext)
       }
       // check the key
       for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) {
-         for (signedKey = (uint8*)ARRAYOBJ_START(ret); *signedKey; allowedKey += 2, signedKey++)
+	     uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
+         for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
          {
             int2hex(*signedKey, 2, buf);
             if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
             {
                break;
             }
-            if (allowedKey == allowedKeysBase + 24)
+            if (allowedKey == allowedKeysBase + 22)
             {
                goto jumpArgument;
             }
