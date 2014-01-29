@@ -32,10 +32,18 @@ void windowSetSIP(enum TCSIP kb);
 // Dummy functions?
 void windowSetDeviceTitle(TCObject titleObj);
 
-// VM
+// Vm
 DWORD32 getRemainingBatery();
 void vibrate(DWORD32 milliseconds);
 DWORD32 getFreeMemoryWP8();
+void alertCPP(JCharP jCharStr);
+void vmSetAutoOffCPP(bool enable);
+
+// Dial
+void dialNumberCPP(JCharP number);
+
+// SMS
+void smsSendCPP(JCharP szMessage, JCharP szDestination);
 
 //Event Queue functions
 void eventQueuePush(int type, int key, int x, int y, int modifiers);

@@ -222,7 +222,7 @@ void vmSetAutoOff(bool enable)
       oldAutoOffValue = 0;
    }
 #elif defined WP8
-   //XXX: C# - CSWrapper.VmSetAutoOffCS()
+   vmSetAutoOffCPP(enable);
 #endif
 }
 

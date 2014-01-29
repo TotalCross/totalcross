@@ -133,6 +133,8 @@ static void privateAlert(CharP str)
 #elif !defined(WP8) 
    MessageBox(mainHWnd,str,TEXT("ALERT"),MB_OK|MB_TOPMOST|MB_SETFOREGROUND);
 #else
-   //XXX wraper C# - privateAlertCS()
+   JChar buf[2048]; // JCharP = TCHARP
+   CharP2JCharPBuf(str, min32(xstrlen(str), sizeof(buf)-1), buf, true);
+   alertCPP(buf);
 #endif
 }

@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Microsoft.Phone.Shell;
+using Microsoft.Phone.Tasks;
 using Microsoft.Phone.Controls;
 using PhoneDirect3DXamlAppComponent;
 
@@ -27,9 +29,36 @@ namespace PhoneDirect3DXamlAppInterop
             //mp.UpdateLayout();
         }
 
-        public void alert(String s)
+        public void privateAlertCS(String str) // debug_c.h
         {
-            MessageBox.Show(s);
+           MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+        }
+
+        public void vmSetAutoOffCS(bool enable) // VM_c.h
+        {
+           if (enable)
+              PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
+                                                                            = IdleDetectionMode.Enabled;
+           else
+              PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
+                                                                            = IdleDetectionMode.Disabled;
+        }
+
+        public void dialNumberCS(String number) // Dial.c
+        {
+           PhoneCallTask phoneCallTask = new PhoneCallTask();
+
+           phoneCallTask.PhoneNumber = number;
+           phoneCallTask.Show();
+        }
+
+        public void smsSendCS(String message, String destination)
+        {
+           SmsComposeTask smsComposeTask = new SmsComposeTask();
+
+           smsComposeTask.To = destination;
+           smsComposeTask.Body = message;
+           smsComposeTask.Show();
         }
 
     }
