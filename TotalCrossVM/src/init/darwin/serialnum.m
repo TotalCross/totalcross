@@ -14,7 +14,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIDevice.h>
 #import "UIDevice+IdentifierAddition.h"
-#import <AdSupport/ASIdentifierManager.h> // TODO: add the framework
+#import <AdSupport/ASIdentifierManager.h>
 
 void getSerialNum(char *id, int maxlen)
 {
