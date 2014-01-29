@@ -14,10 +14,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIDevice.h>
 #import "UIDevice+IdentifierAddition.h"
+#import <AdSupport/ASIdentifierManager.h> // TODO: add the framework
 
 void getSerialNum(char *id, int maxlen)
 {
-    NSString* nsserial = [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier];
+    float ver = [[[UIDevice currentDevice] systemVersion] floatValue];
+    NSString* nsserial = ver >= 6 ? [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString] : // new for iOS 6 or above
+                                    [[UIDevice currentDevice] uniqueGlobalDeviceIdentifier];
     if (nsserial != nil)
     {
        const char* serial = [nsserial cStringUsingEncoding:NSASCIIStringEncoding];
