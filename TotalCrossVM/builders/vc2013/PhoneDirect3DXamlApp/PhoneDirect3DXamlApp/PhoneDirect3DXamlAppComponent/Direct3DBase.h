@@ -28,6 +28,34 @@ struct TextureVertex
    DirectX::XMFLOAT2 tex;  // texture coordinate
 };
 
+enum drawCommand {
+	DRAW_COMMAND_INVALID = -1,
+	DRAW_COMMAND_PRESENT = 0,
+	DRAW_COMMAND_PIXELS = 1,
+	DRAW_COMMAND_LINE = 2,
+	DRAW_COMMAND_RECT = 3,
+	DRAW_COMMAND_SETCOLOR = 10
+};
+
+#include "tcthread.h"
+
+struct TCMutex {
+	DECLARE_MUTEX(test);
+	TCMutex() {
+		INIT_MUTEX(test);
+	}
+	void lock() {
+		LOCKVAR(test);
+	}
+	void unlock() {
+		UNLOCKVAR(test);
+	}
+
+	~TCMutex() {
+		DESTROY_MUTEX(test);
+	}
+};
+
 // Helper class that initializes DirectX APIs for 3D rendering.
 ref class Direct3DBase 
 {
@@ -42,7 +70,8 @@ internal:
 	void PreRender(); // resets the screen and set it ready to render
 	bool RenderTest(); // the screen tester; multiple lines, pixels, a rectangle and a texture
 	bool Render();
-	void Present(); //XXX must implement this method with setjmp and longjmp!!
+	int WaitDrawCommand(); // wait until another thread calls some draw command
+	void Present();
 
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);
@@ -50,6 +79,13 @@ internal:
    void setColor(int color);
    void createTexture();
    void setup();
+
+   void DoDrawCommand();
+   // stupid wrapper
+   void drawCommand_drawLine(int x1, int y1, int x2, int y2, int color);
+   void drawCommand_drawPixels(int *x, int *y, int count, int color);
+   void drawCommand_fillRect(int x1, int y1, int x2, int y2, int color);
+   void drawCommand_setColor(int color);
 
    bool isLoadCompleted();
 
@@ -101,4 +137,21 @@ protected private:
 	// TotalCross objects
 	Context local_context;
 	bool VMStarted;
+
+	// DrawCommand internal variables
+	TCMutex DrawCommandLock;
+	TCMutex DrawCommandFinishLock;
+	enum drawCommand TheDrawCommand;
+
+	int DrawCommand_x1;
+	int DrawCommand_x2;
+	int DrawCommand_y1;
+	int DrawCommand_y2;
+	int DrawCommand_color;
+	int DrawCommand_count;
+	int *DrawCommand_x_array;
+	int *DrawCommand_y_array;
+	/*
+	int *x, int *y
+	*/
 };

@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "Direct3DContentProvider.h"
 
+#include "cppwrapper.h"
+
+static float lastX, lastY;
+static float glShiftY = 0.0f;
+
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 using namespace Microsoft::WRL;
@@ -36,17 +41,28 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 // Event Handlers
 void Direct3DBackground::OnPointerPressed(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
-	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 }
 
 void Direct3DBackground::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
 	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	if (lastX != pos.X || lastY != pos.Y) {
+		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+		eventQueuePush(PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
+		isDragging = true;
+	}
 }
 
 void Direct3DBackground::OnPointerReleased(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
 	// Insert your code here.
+	auto pos = args->CurrentPoint->Position;
+	eventQueuePush(PENEVENT_PEN_UP, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
+	isDragging = false;
 }
 
 // Interface With Direct3DContentProvider
@@ -73,20 +89,19 @@ HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTa
 
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-	static int x = 0;
+	int dc;
 	m_renderer->UpdateDevice(device, context, renderTargetView);
 	if (!m_renderer->Render()) {
 	   RequestAdditionalFrame();
-	} else {
-	   RequestAdditionalFrame();
-	   x++;
 	}
-
-	/*while (x > 10) {
-		m_renderer->Render();
+	else {
+		while ((dc = m_renderer->WaitDrawCommand()) != DRAW_COMMAND_PRESENT) {
+			if (dc != DRAW_COMMAND_INVALID)
+				m_renderer->DoDrawCommand();
+		}
+		m_renderer->DoDrawCommand();
 		RequestAdditionalFrame();
-		odummy->callDraw();
-	}*/
+	}
 
 	return S_OK;
 }

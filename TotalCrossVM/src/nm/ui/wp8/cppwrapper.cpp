@@ -14,6 +14,7 @@
 #include "tcvm.h"
 #include <wrl/client.h>
 #include "tcclass.h"
+#include "Direct3DBase.h"
 
 using namespace TotalCross;
 using namespace Windows::Foundation;
@@ -35,6 +36,10 @@ static std::queue<eventQueueMember> eventQueue;
 
 #pragma endregion
 
+#include <mutex>
+
+static std::mutex eventQueueMutex;
+
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
@@ -51,15 +56,19 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
 
+	eventQueueMutex.lock();
 	eventQueue.push(newEvent);
+	eventQueueMutex.unlock();
 }
 
 struct eventQueueMember eventQueuePop(void)
 {
 	struct eventQueueMember top;
 
+	eventQueueMutex.lock();
 	top = eventQueue.front();
 	eventQueue.pop();
+	eventQueueMutex.unlock();
 
 	debug("popping event from queue; queue size %d", eventQueue.size());
 
@@ -68,7 +77,10 @@ struct eventQueueMember eventQueuePop(void)
 
 int eventQueueEmpty(void)
 {
-	return (int)eventQueue.empty();
+	eventQueueMutex.lock();
+	int ret = (int)eventQueue.empty();
+	eventQueueMutex.unlock();
+	return ret;
 }
 
 char *GetAppPathWP8()
@@ -119,7 +131,7 @@ void windowSetDeviceTitle(TCObject titleObj)
 
 void windowSetSIP(enum TCSIP kb)
 {
-	MainView::GetLastInstance()->setKeyboard(kb);
+	MainView::GetLastInstance()->setKeyboard(kb); //XXX
 }
 
 DWORD32 getRemainingBatery()
@@ -150,7 +162,7 @@ void alertCPP(JCharP jCharStr)
 
 void vmSetAutoOffCPP(bool enable)
 {
-   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
+//XXX   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
@@ -228,20 +240,21 @@ bool dxSetup()
 
 void dxUpdateScreen()
 {
-   MainView::GetLastInstance()->dxUpdateScreen();
+   //MainView::GetLastInstance()->dxUpdateScreen();
+   Direct3DBase::GetLastInstance()->Present();
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
-   MainView::GetLastInstance()->dxDrawLine(x1, y1, x2, y2, color);
+	Direct3DBase::GetLastInstance()->drawCommand_drawLine(x1, y1, x2, y2, color);
 }
 
 void dxFillRect(int x1, int y1, int x2, int y2, int color)
 {
-   MainView::GetLastInstance()->dxFillRect(x1, y1, x2, y2, color);
+	Direct3DBase::GetLastInstance()->drawCommand_fillRect(x1, y1, x2, y2, color);
 }
 
 void dxDrawPixels(int *x, int *y, int count, int color)
 {
-   MainView::GetLastInstance()->dxDrawPixels(x, y, count, color);
+	Direct3DBase::GetLastInstance()->drawCommand_drawPixels(x, y, count, color);
 }
