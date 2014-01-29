@@ -36,6 +36,10 @@ static std::queue<eventQueueMember> eventQueue;
 
 #pragma endregion
 
+#include <mutex>
+
+static std::mutex eventQueueMutex;
+
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
@@ -52,15 +56,19 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
 
+	eventQueueMutex.lock();
 	eventQueue.push(newEvent);
+	eventQueueMutex.unlock();
 }
 
 struct eventQueueMember eventQueuePop(void)
 {
 	struct eventQueueMember top;
 
+	eventQueueMutex.lock();
 	top = eventQueue.front();
 	eventQueue.pop();
+	eventQueueMutex.unlock();
 
 	debug("popping event from queue; queue size %d", eventQueue.size());
 
@@ -69,7 +77,10 @@ struct eventQueueMember eventQueuePop(void)
 
 int eventQueueEmpty(void)
 {
-	return (int)eventQueue.empty();
+	eventQueueMutex.lock();
+	int ret = (int)eventQueue.empty();
+	eventQueueMutex.unlock();
+	return ret;
 }
 
 char *GetAppPathWP8()
@@ -151,7 +162,7 @@ void alertCPP(JCharP jCharStr)
 
 void vmSetAutoOffCPP(bool enable)
 {
-   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
+//XXX   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
