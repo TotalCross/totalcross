@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "Direct3DBase.h"
 
+#include <thread>
+
 #define HAS_TCHAR
 #include "tcvm.h"
 
@@ -18,6 +20,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
    odummy = _odummy;
 
    lastInstance = this;
+   TheDrawCommand = DRAW_COMMAND_INVALID;
 
    for (int i = 0; i < N_LOAD_TASKS; i++) {
       loadCompleted[i] = false;
@@ -423,16 +426,27 @@ bool Direct3DBase::isLoadCompleted() {
 	return true;
 }
 
+ID3D11CommandList *cl = nullptr;
+
 void Direct3DBase::Present()
 {
-	//XXX must implement this method with setjmp and longjmp!!
+	while (TheDrawCommand != DRAW_COMMAND_INVALID)
+		Sleep(10);
+	DrawCommandLock.lock();
+	TheDrawCommand = DRAW_COMMAND_PRESENT;
+	//DrawCommandFinishLock.lock();
 }
 
 void Direct3DBase::PreRender()
 {
-	const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
-	m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-	m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	static int mustClear = true;
+
+	if (mustClear) {
+		const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+		m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+		m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+		mustClear = false;
+	}
 
 	m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
 	m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
@@ -453,9 +467,13 @@ bool Direct3DBase::Render()
    PreRender();
 
    if (!VMStarted) {
-	   //startVM("AllTests", &local_context);
-	   startProgram(local_context);
+	   auto lambda = [this]() {
+		   //DrawCommandFinishLock.lock();
+		   startProgram(local_context);
+	   };
+	   std::thread(lambda).detach();
 	   VMStarted = true;
+	   Sleep(10);
    }
 
    int fim = GetTickCount64() & 0x3FFFFFFF;
@@ -521,4 +539,71 @@ bool Direct3DBase::RenderTest()
 	sprintf_s(buf, "elapsed: %d ms\n", fim - ini);
 	OutputDebugStringA(buf);
 	return true;
+}
+
+// DrawCommand methods
+int Direct3DBase::WaitDrawCommand() {
+	return (int)TheDrawCommand;
+}
+
+void Direct3DBase::DoDrawCommand() {
+	switch (TheDrawCommand) {
+	case DRAW_COMMAND_LINE:
+		drawLine(DrawCommand_x1, DrawCommand_y1, DrawCommand_x2, DrawCommand_y2, DrawCommand_color);
+		break;
+	case DRAW_COMMAND_RECT:
+		fillRect(DrawCommand_x1, DrawCommand_y1, DrawCommand_x2, DrawCommand_y2, DrawCommand_color);
+		break;
+	case DRAW_COMMAND_PIXELS:
+		drawPixels(DrawCommand_x_array, DrawCommand_y_array, DrawCommand_count, DrawCommand_color);
+		break;
+	case DRAW_COMMAND_PRESENT:
+	default:
+		int i = 0;
+	}
+	TheDrawCommand = DRAW_COMMAND_INVALID;
+	DrawCommandLock.unlock();
+}
+
+void Direct3DBase::drawCommand_drawLine(int x1, int y1, int x2, int y2, int color) {
+	while (TheDrawCommand != DRAW_COMMAND_INVALID)
+		Sleep(10);
+	DrawCommandLock.lock();
+	DrawCommand_x1 = x1;
+	DrawCommand_y1 = y1;
+	DrawCommand_x2 = x2;
+	DrawCommand_y2 = y2;
+	DrawCommand_color = color;
+	TheDrawCommand = DRAW_COMMAND_LINE;
+}
+
+void Direct3DBase::drawCommand_drawPixels(int *x, int *y, int count, int color) {
+	while (TheDrawCommand != DRAW_COMMAND_INVALID)
+		Sleep(10);
+	DrawCommandLock.lock();
+	DrawCommand_x_array = x;
+	DrawCommand_y_array = y;
+	DrawCommand_count = count;
+	DrawCommand_color = color;
+	TheDrawCommand = DRAW_COMMAND_PIXELS;
+}
+
+void Direct3DBase::drawCommand_fillRect(int x1, int y1, int x2, int y2, int color) {
+	while (TheDrawCommand != DRAW_COMMAND_INVALID)
+		Sleep(10);
+	DrawCommandLock.lock();
+	DrawCommand_x1 = x1;
+	DrawCommand_y1 = y1;
+	DrawCommand_x2 = x2;
+	DrawCommand_y2 = y2;
+	DrawCommand_color = color;
+	TheDrawCommand = DRAW_COMMAND_RECT;
+}
+
+void Direct3DBase::drawCommand_setColor(int color) {
+	while (TheDrawCommand != DRAW_COMMAND_INVALID)
+		Sleep(10);
+	DrawCommandLock.lock();
+	DrawCommand_color = color;
+	TheDrawCommand = DRAW_COMMAND_SETCOLOR;
 }

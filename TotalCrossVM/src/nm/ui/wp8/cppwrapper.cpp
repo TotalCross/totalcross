@@ -158,15 +158,15 @@ void dxUpdateScreen()
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
-	Direct3DBase::GetLastInstance()->drawLine(x1, y1, x2, y2, color);
+	Direct3DBase::GetLastInstance()->drawCommand_drawLine(x1, y1, x2, y2, color);
 }
 
 void dxFillRect(int x1, int y1, int x2, int y2, int color)
 {
-   Direct3DBase::GetLastInstance()->fillRect(x1, y1, x2, y2, color);
+	Direct3DBase::GetLastInstance()->drawCommand_fillRect(x1, y1, x2, y2, color);
 }
 
 void dxDrawPixels(int *x, int *y, int count, int color)
 {
-	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
+	Direct3DBase::GetLastInstance()->drawCommand_drawPixels(x, y, count, color);
 }
