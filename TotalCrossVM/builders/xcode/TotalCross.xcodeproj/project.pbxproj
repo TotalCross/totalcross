@@ -18,6 +18,7 @@
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
 		3A0CE75615A493CC00E24110 /* NSString+MD5Addition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */; };
 		3A0CE75715A493CC00E24110 /* UIDevice+IdentifierAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */; };
+		3A387B1318999E6C00D3DDAB /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A387B1218999E6C00D3DDAB /* AdSupport.framework */; };
 		3A52AAD2162739C000DCEE4A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A52AAD1162739C000DCEE4A /* OpenGLES.framework */; };
 		3A52AAD4162739D900DCEE4A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A52AAD3162739D900DCEE4A /* QuartzCore.framework */; };
 		3AE3BF861627649C00BDDBF8 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE3BF851627649C00BDDBF8 /* libtcvm.a */; };
@@ -45,6 +46,7 @@
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
 		3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+MD5Addition.m"; path = "../../../src/init/darwin/NSString+MD5Addition.m"; sourceTree = "<group>"; };
 		3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+IdentifierAddition.m"; path = "../../../src/init/darwin/UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
+		3A387B1218999E6C00D3DDAB /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		3A52AAD1162739C000DCEE4A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		3A52AAD3162739D900DCEE4A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3AE3BF851627649C00BDDBF8 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 			files = (
 				3AE3BF88162764B900BDDBF8 /* libLitebase.a in Frameworks */,
 				3AE3BF861627649C00BDDBF8 /* libtcvm.a in Frameworks */,
+				3A387B1318999E6C00D3DDAB /* AdSupport.framework in Frameworks */,
 				3A52AAD4162739D900DCEE4A /* QuartzCore.framework in Frameworks */,
 				3A52AAD2162739C000DCEE4A /* OpenGLES.framework in Frameworks */,
 				3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */,
@@ -98,6 +101,7 @@
 		0F5AF5061507FA3600D6142B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3A387B1218999E6C00D3DDAB /* AdSupport.framework */,
 				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
 				0F7CBA4415545CE000E9BD43 /* liblitebase.h */,
 				0F7318C21513DE2F001EE647 /* CFNetwork.framework */,

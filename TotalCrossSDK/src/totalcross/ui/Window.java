@@ -1019,8 +1019,8 @@ public class Window extends Container
       int m = borderGaps[borderStyle];
       boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
       r.x = m;
-      int th = this == MainWindow.mainWindowInstance ? MainWindow.taskbarHeight : 0;            
-      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1) + th;
+      int tbh = this == MainWindow.mainWindowInstance ? taskbarHeight : 0;
+      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1) + tbh;
       switch (borderStyle)
       {
          case TAB_ONLY_BORDER: r.y++; break;
@@ -1046,6 +1046,9 @@ public class Window extends Container
    {
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
+         int tbh = this == MainWindow.mainWindowInstance ? taskbarHeight : 0;
+         gg.translate(0,tbh);
+         
          if (title == null) title = uiAndroid ? "" : " ";
          String tit = title;
          int ww = titleFont.fm.stringWidth(tit);
@@ -1117,8 +1120,9 @@ public class Window extends Container
          gg.setFont(titleFont);
          gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
          gg.setFont(font);
+         gg.translate(0,-tbh);
          if (rTitle == null)
-            rTitle = new Rect(xx-2,0,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
+            rTitle = new Rect(xx-2,tbh,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1128,15 +1132,16 @@ public class Window extends Container
    public void _doPaint()
    {
       Graphics gg = getGraphics();
-      if (taskbarHeight > 0)
+      int tbh = this == MainWindow.mainWindowInstance ? taskbarHeight : 0;
+      if (tbh > 0)
       {
          gg.backColor = taskbarColor;
-         gg.fillRect(0,0,width,taskbarHeight);
+         gg.fillRect(0,0,width,tbh);
       }
       // clear background
       gg.backColor = backColor; // disabled here?
       if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
-         gg.fillRect(0, taskbarHeight, width, height); // guich@110
+         gg.fillRect(0, tbh, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
       onPaint(gg);
