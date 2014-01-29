@@ -13,6 +13,7 @@ using namespace Windows::UI::Core;
 
 static Direct3DBase ^lastInstance = nullptr;
 
+
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
 {
@@ -32,6 +33,11 @@ Direct3DBase ^Direct3DBase::GetLastInstance()
 	return lastInstance;
 }
 
+PhoneDirect3DXamlAppComponent::Idummy^ Direct3DBase::getDummy()
+{
+   return odummy;
+}
+
 // Initialize the Direct3D resources required to run.
 void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 {
@@ -43,7 +49,7 @@ void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 
 	if (saida != 0) {
 		swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
-		odummy->alert(ref new Platform::String(mensagem_fim));
+		odummy->privateAlertCS(ref new Platform::String(mensagem_fim));
 	}
 	CreateDeviceResources();
 }

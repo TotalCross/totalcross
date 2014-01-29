@@ -144,6 +144,26 @@ DWORD32 getFreeMemoryWP8()
    return (DWORD32)MemoryManager::ProcessCommittedLimit;
 }
 
+void alertCPP(JCharP jCharStr)
+{
+   Direct3DBase::GetLastInstance()->getDummy()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+}
+
+void vmSetAutoOffCPP(bool enable)
+{
+   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
+}
+
+void dialNumberCPP(JCharP number)
+{
+   Direct3DBase::GetLastInstance()->getDummy()->dialNumberCS(ref new Platform::String((wchar_t*)number));
+}
+
+void smsSendCPP(JCharP szMessage, JCharP szDestination)
+{
+   Direct3DBase::GetLastInstance()->getDummy()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
+}
+
 bool dxSetup()
 {
 	return true;//XXX

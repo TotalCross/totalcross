@@ -28,7 +28,7 @@ import totalcross.io.IllegalArgumentIOException;
  * Although its behavior may differ from one platform to another, the objective is to provide a unified process to
  * handle connections across all supported platforms.<br>
  * 
- * Currently, this class supports only GPRS connections running on Windows Mobile and BlackBerry.<br>
+ * Currently, this class supports only GPRS connections running on WP8.<br>
  * 
  * The configuration string received by setDefaultConfiguration is a list of parameters in the format "parameter=value"
  * separated by a semi-colon ";" (spaces are not allowed).<br>
@@ -69,14 +69,9 @@ import totalcross.io.IllegalArgumentIOException;
  * 
  * <br>
  * 
- * On BlackBerry, you may instead configure any connection type supported by the device, by passing the parameters
- * defined on the BlackBerry API. (the type of connection to be passed must be CELLULAR).<br>
  * The parameters configured here are automatically used by Socket if the argument params passed to the Socket
  * constructor is null. Otherwise it will ignore the default configuration and attempt to connect using the parameters
  * defined by Socket.<br>
- * <b>Please notice:</b> We cannot guarantee the support of this feature, as their definition, usage and support are
- * defined by RIM. Refer to the BlackBerry documentation or contact RIM for any device specific issue.
- * 
  */
 
 public class ConnectionManager
@@ -85,6 +80,7 @@ public class ConnectionManager
 
    /**
     * This flag indicates a cradle (USB to PC) connection.
+    * @deprecated Not supported on the newer devices.
     */
    public static final int CRADLE = 1;
    
@@ -109,7 +105,6 @@ public class ConnectionManager
    
    /**
     * Used to configure the connection to be used by the application.
-    * <i>Note: PalmOS does not support this operation for {@link #CELLULAR} connections.</i>
     * 
     * @param type one of the connection type constants defined by the ConnectionManager.
     * @param configuration list of parameters in the format "parameter=value" separated by a semi-colon ";".
@@ -120,6 +115,7 @@ public class ConnectionManager
     * @see #CRADLE
     * @see #WIFI
     * @see #CELLULAR
+    * @deprecated Not used on the newer devices.
     */
    public static void setDefaultConfiguration(int type, String configuration) throws IOException
    {
@@ -165,6 +161,7 @@ public class ConnectionManager
     * the following priority list: {@link #CRADLE}, {@link #WIFI} and {@link #CELLULAR}.
     * 
     * @throws IOException if an I/O error occurs while opening the connection.
+    * @deprecated Not necessary anymore.
     */
    public static void open() throws IOException
    {
@@ -202,6 +199,7 @@ public class ConnectionManager
     * @see #CRADLE
     * @see #WIFI
     * @see #CELLULAR
+    * @deprecated Not necessary anymore.
     */
    public static void open(int type) throws IOException
    {
@@ -220,6 +218,7 @@ public class ConnectionManager
     * Attempts to close all open remote connections.
     * 
     * @throws IOException if an I/O error occurs while closing a connection.
+    * @deprecated Not necessary anymore.
     */
    public static void close() throws IOException
    {

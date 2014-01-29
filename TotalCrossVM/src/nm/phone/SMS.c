@@ -48,10 +48,7 @@ TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public stat
       if (!szMessage || !szDestination)
          throwException(p->currentContext, OutOfMemoryError, !szMessage ? "When allocating 'message'" : "'When allocating 'destination'");
       else
-      {
-         //XXX wraper C# - SendMessageCS()
-      }
-
+         smsSendCPP(szMessage, szDestination);
          
 #endif
       xfree(szMessage);

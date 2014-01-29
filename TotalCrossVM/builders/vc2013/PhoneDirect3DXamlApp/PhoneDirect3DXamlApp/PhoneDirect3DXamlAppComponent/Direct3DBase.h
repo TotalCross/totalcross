@@ -90,6 +90,7 @@ internal:
    bool isLoadCompleted();
 
    static Direct3DBase ^GetLastInstance();
+   PhoneDirect3DXamlAppComponent::Idummy^ getDummy();
 
 private:
    int loadCompleted[N_LOAD_TASKS];

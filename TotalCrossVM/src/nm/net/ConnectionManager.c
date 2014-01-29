@@ -13,9 +13,7 @@
 
 #include "Net.h"
 
-#if defined (WP8)
-
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/ConnectionManager_c.h"
 #elif defined (ANDROID)
  #include "android/ConnectionManager_c.h"
@@ -87,7 +85,7 @@ TC_API void tnCM_open(NMParams p) // totalcross/net/ConnectionManager native pub
       setObjectLock(*connRef, UNLOCKED);
    }
 #else
-   //UNUSED(p)
+   UNUSED(p)
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
@@ -150,7 +148,7 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (ANDROID))
+#if defined (WIN32) || defined (ANDROID)
    TCObject hostName = p->obj[0];
    CharP szHostName = null;
    char szHostAddress[40];
@@ -162,8 +160,9 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
       throwNullArgumentException(p->currentContext, "host");
    else
    {
-      szHostName = String2CharP(hostName);
-      if ((err = CmGetHostAddress(szHostName, szHostAddress)) != NO_ERROR)
+      if (!(szHostName = String2CharP(hostName)))
+         throwException(p->currentContext, OutOfMemoryError, null);
+      else if ((err = CmGetHostAddress(szHostName, szHostAddress)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, UnknownHostException, err); // flsobral@tc120: now we throw an exception
       else if (xstrlen(szHostAddress) > 0) //flsobral@tc115_43: must return null if the host address is not found.
       {
@@ -177,7 +176,7 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (ANDROID))
+#if defined (WIN32) || defined (ANDROID)
    TCObject hostAddress = p->obj[0];
    CharP szHostAddress = null;
    char szHostName[128];
@@ -189,8 +188,9 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
       throwNullArgumentException(p->currentContext, "hostAddress");
    else
    {
-      szHostAddress = String2CharP(hostAddress);
-      if ((err = CmGetHostName(szHostAddress, szHostName)) != NO_ERROR)
+      if (!(szHostAddress = String2CharP(hostAddress)))
+         throwException(p->currentContext, OutOfMemoryError, null);
+      else if ((err = CmGetHostName(szHostAddress, szHostName)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, UnknownHostException, err); // flsobral@tc120_XX: now we throw an exception
       else
       {
@@ -204,7 +204,7 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHost() throws totalcross.net.UnknownHostException;
 {
-#if !defined WP8 && (defined (WIN32) || defined (ANDROID))
+#if defined (WIN32) || defined (ANDROID)
    char szHostAddress[16];
 
    if (CmGetLocalHost(szHostAddress) != NO_ERROR)
@@ -234,8 +234,21 @@ TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager n
    }
    else
       p->retI = CmIsAvailable(type);
+#elif defined WP8
+   switch (type)
+   {
+      case CM_CRADLE:
+         p->retI = false;
+         break;
+      case CM_WIFI:
+      case CM_CELLULAR:
+         // p->retI = IsAvailableCS(type);
+         break;
+      default:
+         throwIllegalArgumentExceptionI(p->currentContext, "type", type);
+   }
 #else
-   p->retI = true;
+   p->retI = false;
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
