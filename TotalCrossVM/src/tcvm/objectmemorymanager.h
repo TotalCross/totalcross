@@ -14,6 +14,10 @@
 #ifndef OBJECTMEMORYMANAGER_H
 #define OBJECTMEMORYMANAGER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
    UNLOCKED,
@@ -111,4 +115,7 @@ typedef uint8* Chunk;
 /// Gets the start of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
 #define ARRAYOBJ_START(o) (((uint8*)(o))+4)
 
+#ifdef __cplusplus
+}
+#endif
 #endif

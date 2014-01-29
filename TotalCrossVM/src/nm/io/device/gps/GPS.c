@@ -35,7 +35,7 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
 #endif      
    p->retI = (err == NO_ERROR);
 #elif defined (WP8)
-   //XXX wraper C# - nativeStartGPSCS()
+   p->retI = nativeStartGPSCPP();
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
@@ -47,11 +47,10 @@ TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS n
 
    if ((err = nativeUpdateLocation(p->currentContext, p->obj[0], &flags)) > 0)
       throwExceptionWithCode(p->currentContext, IOException, err);
-   
-#elif defined (WP8)
-   //XXX wraper C# - flags = nativeUpdateLocationCS()
-#endif
    p->retI = flags;
+#elif defined (WP8)
+   p->retI = nativeUpdateLocationCPP(p->currentContext, p->obj[0]);
+#endif 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native private void stopGPS();
@@ -59,7 +58,7 @@ TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native p
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
    nativeStopGPS();
 #elif defined (WP8)
-   //XXX wraper C# - nativeStopGPSCS()
+   nativeStopGPSCPP();
 #endif
 }
 

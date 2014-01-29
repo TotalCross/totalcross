@@ -45,6 +45,17 @@ void dialNumberCPP(JCharP number);
 // SMS
 void smsSendCPP(JCharP szMessage, JCharP szDestination);
 
+// RadioDevice
+int rdGetStateCPP(int type);
+
+// ConnectionManager
+bool isAvailableCPP(int type);
+
+// GPS
+bool nativeStartGPSCPP();
+int nativeUpdateLocationCPP(Context context, TCObject gpsObject);
+void nativeStopGPSCPP();
+
 //Event Queue functions
 void eventQueuePush(int type, int key, int x, int y, int modifiers);
 struct eventQueueMember eventQueuePop(void);

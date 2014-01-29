@@ -53,7 +53,7 @@ TC_API void tidRD_getState_i(NMParams p) // totalcross/io/device/RadioDevice nat
 #elif defined (ANDROID)
       p->retI = RdGetState(p->currentContext, type);
 #elif defined (WP8)
-      //XXX wraper C# p->retI = RdGetStateCS(type);
+      p->retI = rdGetStateCPP(type);
 #else
       p->retI = RADIO_STATE_DISABLED;
 #endif      
