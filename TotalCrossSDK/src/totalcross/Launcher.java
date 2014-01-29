@@ -1668,16 +1668,29 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_NO = 0;
    static final int AA_4BPP = 1;
    static final int AA_8BPP = 2;
-   totalcross.ui.font.Font baseFontN,baseFontB;
+   static int []realSizes = {20,40,60,80};
+   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[4], baseFontB = new totalcross.ui.font.Font[4];
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
    private boolean useRealFont;
    private void loadBaseFonts()
    {
       useRealFont = true;
-      baseFontN = totalcross.ui.font.Font.getFont(false,80); baseFontN.removeFromCache();
-      baseFontB = totalcross.ui.font.Font.getFont(true,80);  baseFontB.removeFromCache();
+      for (int i = 0; i < realSizes.length; i++)
+      {
+         baseFontN[i] = totalcross.ui.font.Font.getFont(false,realSizes[i]); baseFontN[i].removeFromCache();
+         baseFontB[i] = totalcross.ui.font.Font.getFont(true, realSizes[i]); baseFontB[i].removeFromCache();
+      }
       useRealFont = false;
    }
+   static totalcross.ui.font.Font getBaseFont(boolean bold, int size)
+   {
+      int i;
+      for (i = 0; i < realSizes.length-1; i++)
+         if (size <= realSizes[i])
+            break;
+      return bold ? baseFontB[i] : baseFontN[i];
+   }
+
    private UserFont loadUF(String fontName, String suffix)
    {
       try
@@ -1686,7 +1699,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          {
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
-            totalcross.ui.font.Font base = bold ? baseFontB : baseFontN; 
+            totalcross.ui.font.Font base = getBaseFont(bold, size); 
             return new UserFont(fontName, suffix, size, base);
          }
          return new UserFont(fontName, suffix);
