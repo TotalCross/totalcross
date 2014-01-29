@@ -217,10 +217,10 @@ int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
    Time_millis(lastFix) = odummy->getMilliSecond();
 
    messageReceived = odummy->getMessageReceived();
-   GPS_messageReceived(gpsObject) = createStringObjectFromJCharP(context, (JCharP)messageReceived->Data(), messageReceived->Length());
+   setObjectLock(GPS_messageReceived(gpsObject) = createStringObjectFromJCharP(context, (JCharP)messageReceived->Data(), messageReceived->Length()), UNLOCKED);
 
    lowSignalReason = odummy->getLowSignalReason();
-   GPS_lowSignalReason(gpsObject) = createStringObjectFromJCharP(context, (JCharP)lowSignalReason->Data(), lowSignalReason->Length());
+   setObjectLock(GPS_lowSignalReason(gpsObject) = createStringObjectFromJCharP(context, (JCharP)lowSignalReason->Data(), lowSignalReason->Length()), UNLOCKED);
 
    GPS_pdop(gpsObject) = odummy->getPdop();
 

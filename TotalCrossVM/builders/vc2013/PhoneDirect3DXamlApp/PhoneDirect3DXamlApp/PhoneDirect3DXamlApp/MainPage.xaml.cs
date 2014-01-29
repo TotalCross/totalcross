@@ -40,9 +40,9 @@ namespace PhoneDirect3DXamlAppInterop
       int minute;
       int second;
       int milliSecond;
-      private String messageReceived; // GPS_messageReceived()          
+      private String messageReceived = ""; // GPS_messageReceived()          
       private double? pdop; // GPS_pdop() 
-      private String lowSignalReason; // GPS_lowSignalReason()
+      private String lowSignalReason = ""; // GPS_lowSignalReason()
 
       public dummy()
       {
@@ -108,7 +108,7 @@ namespace PhoneDirect3DXamlAppInterop
                   try
                   {
                      turnedState = 1;
-                     var peers = await PeerFinder.FindAllPeersAsync();                    
+                     await PeerFinder.FindAllPeersAsync();                    
                   }
                   catch (Exception)
                   {
