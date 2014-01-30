@@ -5205,6 +5205,7 @@ e.plist">Application Name>>></a>
 
 \end_inset
 
+
 \end_layout
 
 \begin_layout Standard
@@ -5854,6 +5855,161 @@ adb bugreport >bug.txt
 
 \begin_layout Standard
 Then zip this 1MB file and send to us.
+\end_layout
+
+\begin_layout Subsection
+More on ADB
+\end_layout
+
+\begin_layout Standard
+On some devices it is not easy to access the debugging or using other commands
+ using ADB.
+ Moreover, since an Android device can be built from different enterprises,
+ their settings and configuration menu will look differently from each other.
+ 
+\end_layout
+
+\begin_layout Standard
+For instance, the following steps leads you to get USB debugging turned
+ on the Galaxy S4, OS 4.3.
+ On other Androids, it may be different.
+\end_layout
+
+\begin_layout Standard
+From within the GS4 you have to enable the "unknown sources" option for
+ the installation of applications, though the "allow debug" checkbox doesn't
+ seem to be included anymore.
+ It should be in Developer Options.
+ If your device is running Android 4.2, 
+\begin_inset Quotes eld
+\end_inset
+
+Developer Options
+\begin_inset Quotes erd
+\end_inset
+
+ is hidden by default.
+ To enable it: 
+\end_layout
+
+\begin_layout Enumerate
+Go into Settings > About Device 
+\end_layout
+
+\begin_layout Enumerate
+Tap on the Build Number entry seven times (a status pop up will appear to
+ help you keep count) 
+\end_layout
+
+\begin_layout Enumerate
+Press BACK, and 
+\begin_inset Quotes eld
+\end_inset
+
+Developer Options
+\begin_inset Quotes erd
+\end_inset
+
+ should be in the 
+\begin_inset Quotes eld
+\end_inset
+
+Settings
+\begin_inset Quotes erd
+\end_inset
+
+ list
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+
+\series bold
+Note
+\series default
+: When you connect a device running Android 4.2.2 or higher to your computer,
+ the system shows a dialog asking whether to accept an RSA key that allows
+ debugging through this computer.
+ This security mechanism protects user devices because it ensures that USB
+ debugging and other adb commands cannot be executed unless you're able
+ to unlock the device and acknowledge the dialog.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After that, when issuing the following ADB command, you will get as result:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+C:
+\backslash
+Users
+\backslash
+User
+\backslash
+Documents
+\backslash
+workspace42>adb devices 
+\end_layout
+
+\begin_layout Plain Layout
+
+* daemon not running.
+ starting it now on port 5037 * 
+\end_layout
+
+\begin_layout Plain Layout
+
+* daemon started successfully *
+\end_layout
+
+\begin_layout Plain Layout
+
+List of devices attached 
+\end_layout
+
+\begin_layout Plain Layout
+
+0e9def03 offline
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note above that the device status is still listed as "offline".
+ Give your device a minute or so and it will pop up a dialog asking to accept
+ an RSA key.
+ Confirm that this is OK.
+ Now, when you reissue the adb devices command, you should see your device
+ in the list, and its no longer offline, so you can now use adb as expected.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -14718,7 +14874,6 @@ absoluteY The absolute location of the event.
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 modifiers The state of the modifier keys when the event occured.
  This is an 
 \family typewriter
@@ -59809,7 +59964,6 @@ Note
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 keyboardFocusTraversable Defines if the arrow keys will be used to change
  the focus using the keyboard.
  Note that some controls will behave differently.
@@ -60021,7 +60175,6 @@ false
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 imei Field that represents the smartphone IMEI (if this device is a GSM,
  UMTS or IDEN smartphone), or 
 \family typewriter
@@ -67116,7 +67269,6 @@ true
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 getCardVolume() Returns the volume file for the Windows CE and Pocket PC
  devices.
  On these devices, the volume has a special folder name, but since there's
@@ -67139,7 +67291,6 @@ d/", "/CF Card/"}
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 listRoots() Lists the root drives.
  If there are no roots, returns 
 \family typewriter
@@ -72108,7 +72259,6 @@ This class has the following constants, public attributes, constructors,
 \end_layout
 
 \begin_layout FieldList
-\labelwidthstring 0
 TARGETING_WINCE,TARGETING_ALL Used internally to indicate that the target
  platform for synchronization is Windows CE.
 \end_layout
