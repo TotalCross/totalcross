@@ -153,6 +153,7 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
     Object file = p->obj[1];
     sqlite3 *db = gethandle(p->currentContext, this_);
     MUTEX_TYPE mutex;
+    SETUP_MUTEX;
     CharP str;
 
     if (db)
