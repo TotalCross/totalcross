@@ -447,9 +447,10 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 #ifdef __gl2_h_
 static void reset1Font(UserFont uf)
 {
-   int32 i;
-   for (i = 256; --i >= 0;) 
-      uf->textureIds[i] = 0;
+   int32 i;       
+   if (uf)
+      for (i = 256; --i >= 0;) 
+         uf->textureIds[i] = 0;
 }
 #endif
 
