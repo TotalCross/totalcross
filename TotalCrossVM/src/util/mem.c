@@ -41,7 +41,8 @@ TC_API int32 getCountToReturnNull()
 }
 
 //// Primitive allocation ////
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
+#if defined HAS_MSPACE_1_AND_2
+//XXX couldn't find anything about WP8 and mspace type
 mspace mspace1,mspace2;
 static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the leaks hashtable, otherwise memory will blow up too quickly.
 {
@@ -128,7 +129,7 @@ bool initMem()
    #if (defined(WIN32) && !defined(WINCE)) || defined(POSIX)
    leakCheckingEnabled = true;
    #endif
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
+#if defined HAS_MSPACE_1_AND_2
    mspace1 = create_mspace(0,0);
    mspace2 = create_mspace(0,0);
    return mspace1 != null && mspace2 != null;
@@ -162,7 +163,7 @@ void destroyMem()
    if (showMemoryMessagesAtExit && (b1 || b2 || warnOnExit)) // guich@tc114_44
       alert("Memory %s found. Check the\ndebug console for more information.", warnOnExit ? "problems" : "leaks");
 #endif        
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
+#if defined HAS_MSPACE_1_AND_2 && (!defined(ENABLE_WIN32_POINTER_VERIFICATION) && defined(WIN32))
    if (mspace1)
       destroy_mspace(mspace1);
    if (mspace2)

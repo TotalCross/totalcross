@@ -346,7 +346,7 @@ TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String
       if (!replacePath(p,szPath,true))
          return;
 #if defined(WIN32) && !defined(WINCE)
-      if (strstr(szPath,"System Volume Information")) // guich@tc110_24
+      if (tcsstr(szPath,TEXT("System Volume Information"))) // guich@tc110_24
          return;
 #endif
       h = heapCreate();
@@ -393,7 +393,7 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
    Object fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
-   int32 bytesRead;
+   int32 bytesRead = 0;
    Err err;
 
    if (mode == INVALID)

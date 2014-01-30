@@ -19,6 +19,8 @@ TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
 
 unsigned long __cdecl StartVMFromService(void* nnn) 
 {
+	// WP8 app should not use the registry
+#if !defined WP8
    // get the tcz name from the registry
    HKEY handle=(HKEY)0;
    DWORD err,size;
@@ -39,6 +41,7 @@ unsigned long __cdecl StartVMFromService(void* nnn)
       wsprintf(buf,TEXT("%d"),ret);
       MessageBox(0,buf,TEXT("Service Exit Code"),MB_OK);
    }
+#endif
    return 0;
 }
 
@@ -53,32 +56,48 @@ TC_API DWORD TSV_Init(DWORD dwData)
 
 static void getWorkingDir()
 {
-   TCHAR d[MAX_PATH];
-   char* sl;
+	char* sl;
 
+#ifndef WP8
+   TCHAR d1[MAX_PATH], d2[MAX_PATH];
    // get the path to the vm
-   GetModuleFileName(GetModuleHandle(TEXT("TCVM.DLL")), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
-   TCHARP2CharPBuf(d, vmPath);
+   GetModuleFileName(hModuleTCVM, d1, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
+   TCHARP2CharPBuf(d1, vmPath);
+   // get the path to the exe
+   GetModuleFileName(GetModuleHandle(null), d2, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
+   TCHARP2CharPBuf(d2, appPath);
+
+
    sl = xstrrchr(vmPath, '\\'); // strip the file name from the path
    if (!sl) sl = vmPath;
    *sl = 0;
-   for (sl = vmPath ; *sl != 0 ; sl++) // replace backslashes for slashes
+   for (sl = vmPath; *sl != 0; sl++) // replace backslashes for slashes
       if (*sl == '\\') *sl = '/';
 
-   // get the path to the exe
-   GetModuleFileName(GetModuleHandle(null), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
-   TCHARP2CharPBuf(d, appPath);
    sl = xstrrchr(appPath, '\\'); // strip the file name from the path
    if (!sl) sl = appPath;
    *sl = 0;
-   for (sl = appPath ; *sl != 0 ; sl++) // replace backslashes by slashes
+   for (sl = appPath; *sl != 0; sl++) // replace backslashes by slashes
       if (*sl == '\\') *sl = '/';
 
    // store the exe name
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
+#else
+   char *_path;
+   _path = GetVmPathWP8();
+   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
+      if (*sl == '\\') *sl = '/';
+   xstrcpy(vmPath, _path);
+
+   _path = GetAppPathWP8();
+   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
+	   if (*sl == '\\') *sl = '/';
+   xstrcpy(appPath, _path);
+#endif
 }
 
 //#if defined(ENABLE_TEST_SUITE) && defined(WINCE)
+#ifndef WP8
 static void waitUntilStarted() // waits until the window is shown in windows ce so that the graphics test can run correctly
 {
    MSG msg;
@@ -99,9 +118,9 @@ static void waitUntilStarted() // waits until the window is shown in windows ce 
       }
    }
 }
-/*#else
+#else
 #define waitUntilStarted()
-#endif*/
+#endif
 
 typedef struct
 {

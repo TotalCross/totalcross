@@ -17,7 +17,9 @@ static void throwDialException(CharP msg, uint32 param);
 static Context currentContext;
 static void statusChange(CharP msg);
 
-#if defined WINCE || defined WIN32
+#if defined WP8
+
+#elif defined WINCE || defined WIN32
  #include "win/Dial_c.h"
 #if defined WINCE
  #include "../io/device/win/RadioDevice_c.h"

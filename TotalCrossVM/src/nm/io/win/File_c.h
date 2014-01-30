@@ -16,10 +16,20 @@
  #include <Projects.h>
 #endif
 
-#ifdef WINCE
+#ifdef UNICODE
    #define IS_DEBUG_CONSOLE(path) (JCharPIndexOfJCharP(path,TEXT("DebugConsole"),0,-1,12) >= 0)
 #else
    #define IS_DEBUG_CONSOLE(path) (strstr(path,"DebugConsole") != null)
+#endif
+
+// Must use SetFilePointer is not defined on the ARM headers
+#if defined WP8 && defined ARM
+DWORD WINAPI SetFilePointer(
+      HANDLE hFile,
+      LONG lDistanceToMove,
+      PLONG lpDistanceToMoveHigh,
+      DWORD dwMoveMethod
+   );
 #endif
 
 /*
@@ -118,8 +128,18 @@ static inline Err fileCreateDir(TCHARP path, int32 slot)
       {
          if (*c == '/')
          {
+#ifdef WP8
+            WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+            int res = 0;
+            f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+            *c = 0;
+            res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+            if ((res == 0) || (f_attr_ex.dwFileAttributes == INVALID_ATTR_VALUE))
+#else
             *c = 0;
             if (GetFileAttributes(path) == INVALID_ATTR_VALUE)
+#endif
             {
                if (!CreateDirectory(path, null))
                   goto error;
@@ -157,7 +177,17 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    if (path[len-1] == '/') // remove leading slash
       path[len-1] = 0;
 
+#ifdef WP8
+   {
+	   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+	   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+	   GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+	   fileAttributes = f_attr_ex.dwFileAttributes;
+   }
+#else
    fileAttributes = GetFileAttributes(path);
+#endif
+
    if (fileAttributes == INVALID_ATTR_VALUE) //Checks if file exists.
       return ERROR_FILE_NOT_FOUND;
    if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) //It's a directory.
@@ -180,15 +210,24 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
  *************************************/
 
 static inline bool fileExists(TCHARP path, int32 slot)
+#if defined WINCE
 {
-#if !defined (WINCE)
-   bool result;
-   SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
-   result = (GetFileAttributes(path) != INVALID_ATTR_VALUE);
-   SetErrorMode(0);
-   return result;
+	return (GetFileAttributes(path) != INVALID_ATTR_VALUE);
+#elif defined WP8
+{
+	bool result;
+	WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+	f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+	GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+	result = (f_attr_ex.dwFileAttributes != INVALID_ATTR_VALUE);
+	return result;
 #else
-   return (GetFileAttributes(path) != INVALID_ATTR_VALUE);
+{
+	bool result;
+	SetErrorMode(SEM_FAILCRITICALERRORS); // flsobral@tc115_25: no longer displays error message to user when the removable disk is not available.
+	result = (GetFileAttributes(path) != INVALID_ATTR_VALUE);
+	SetErrorMode(0);
+	return result;
 #endif
 }
 
@@ -206,7 +245,7 @@ static inline bool fileExists(TCHARP path, int32 slot)
 
 static Err fileGetFreeSpace(TCHAR* path, int32* freeSpace, int32 slot)
 {
-   ULARGE_INTEGER freeSize;
+   ULARGE_INTEGER freeSize = { 0 };
 
    if (GetDiskFreeSpaceEx(path, null, null, &freeSize))
    {
@@ -231,7 +270,20 @@ static Err fileGetFreeSpace(TCHAR* path, int32* freeSpace, int32 slot)
 
 static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
+#ifndef WP8
    return (((*size = GetFileSize(fref.handle, null)) != 0xFFFFFFFF) ? NO_ERROR : GetLastError());
+#else
+   FILE_STANDARD_INFO finfo = { 0 };
+   *size = 0xFFFFFFFF;
+   if (GetFileInformationByHandleEx(fref.handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return GetLastError();
+   }
+
+   // Size cannot exceed 32 bits
+   *size = (int32) finfo.EndOfFile.LowPart;
+   return NO_ERROR;
+#endif
 }
 
 /*
@@ -246,16 +298,35 @@ static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 
 static bool fileIsDir(TCHARP path, int32 slot)
 {
+#ifndef WP8
    DWORD fileAttributes;
    fileAttributes = GetFileAttributes(path);
+#else
+   DWORD fileAttributes;
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+#endif
 
    return ((fileAttributes != INVALID_ATTR_VALUE)&&(fileAttributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpty)
 {
-   DWORD fileAttributes = GetFileAttributes(path);
    Err err = NO_ERROR;
+#ifndef WP8
+   DWORD fileAttributes = GetFileAttributes(path);
+#else
+   DWORD fileAttributes;
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+#endif
 
    if (fref != INVALID_HANDLE_VALUE)
       return fileGetSize(*fref, path, isEmpty);
@@ -278,7 +349,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
          do
          {
             #if defined (WIN32) && !defined (WINCE)
-            if (findData.cFileName[0] != '.' || (!strEq(findData.cFileName, ".") && !strEq(findData.cFileName, ".."))) // first check is just for speedup
+            if (findData.cFileName[0] != '.' || (tcscmp(findData.cFileName, TEXT(".")) && tcscmp(findData.cFileName, TEXT("..")))) // first check is just for speedup
             #endif
             {     
                *isEmpty = false;
@@ -327,7 +398,11 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 {
    if (isOpen)
       CloseHandle(fref.handle);
+#if defined (WP8)
+   return (MoveFileEx(currPath, newPath, 0) ? NO_ERROR : GetLastError());
+#else
    return (MoveFile(currPath, newPath) ? NO_ERROR : GetLastError());
+#endif
 }
 
 /*
@@ -343,9 +418,16 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
-
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = position;
+   return ((SetFilePointerEx(fref.handle, off, null, FILE_BEGIN) != 0) ?
+               NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
+#else
    return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
+#endif
 }
 
 /*
@@ -407,10 +489,20 @@ static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttributes)
 static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 {
    DWORD fileAttributes = 0;
-   *attributes = 0;
-
+#ifndef WP8
    if ((fileAttributes = GetFileAttributes(path)) == INVALID_ATTR_VALUE)
       return GetLastError();
+#else
+   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
+   int res = 0;
+   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
+
+   res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
+   fileAttributes = f_attr_ex.dwFileAttributes;
+   if ((res == 0) || (fileAttributes == INVALID_ATTR_VALUE))
+      return GetLastError();
+#endif
+   *attributes = 0;
 
    if (fileAttributes & FILE_ATTRIBUTE_ARCHIVE)
       *attributes = *attributes | ATTR_ARCHIVE;
@@ -454,7 +546,11 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
    fileTime.wMilliseconds  = Time_millis(time);
 
    SystemTimeToFileTime(&fileTime, &localFileTime);
+#ifdef WP8
+   systemFileTime = localFileTime; 
+#else
    LocalFileTimeToFileTime(&localFileTime, &systemFileTime);
+#endif
 
    creationTime = lastAccessTime = lastWriteTime = null;
 
@@ -471,7 +567,26 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
     * three parameters. In general, obj system drivers will vary how they
     * support this function.
     */
+#ifndef WP8
    return (SetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime) ? NO_ERROR : GetLastError());
+#else
+   {
+      char buff[40];
+      FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO*) buff;
+
+      if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
+         return GetLastError();
+
+      if (creationTime != NULL)
+         finfo->CreationTime = *(LARGE_INTEGER*)creationTime;
+      if (lastAccessTime != NULL)
+         finfo->LastAccessTime = *(LARGE_INTEGER*)lastAccessTime;
+      if (lastWriteTime != NULL)
+         finfo->LastWriteTime = *(LARGE_INTEGER*)lastWriteTime;
+
+      return SetFileInformationByHandle(fref.handle, FileBasicInfo, finfo, sizeof(buff)) ? NO_ERROR : GetLastError();
+   }
+#endif
 }
 
 /*
@@ -492,11 +607,25 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
 static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, char whichTime, Object* time)
 {
    FILETIME systemFileTime, localFileTime;
-   FILETIME *creationTime, *lastAccessTime, *lastWriteTime;
    SYSTEMTIME fileTime;
 
-   creationTime = lastAccessTime = lastWriteTime = null;
+#ifdef WP8
+   char buff[40];
+   FILE_BASIC_INFO *finfo = (FILE_BASIC_INFO *)buff;
 
+   if (!GetFileInformationByHandleEx(fref.handle, FileBasicInfo, finfo, sizeof(buff)))
+      return GetLastError();
+
+   if (whichTime & TIME_CREATED)
+      systemFileTime = *(FILETIME*)&finfo->CreationTime;
+   else if (whichTime & TIME_MODIFIED)
+      systemFileTime = *(FILETIME*)&finfo->LastAccessTime;
+   else if (whichTime & TIME_ACCESSED)
+      systemFileTime = *(FILETIME*)&finfo->LastWriteTime;
+   
+   localFileTime = systemFileTime;
+#else
+   FILETIME *creationTime = null, *lastAccessTime = null, *lastWriteTime = null;
    if (whichTime & TIME_CREATED)
       creationTime = &systemFileTime;
    else
@@ -515,11 +644,13 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, ch
    if (!GetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime))
       return GetLastError();
 
+   FileTimeToLocalFileTime(&systemFileTime, &localFileTime);
+#endif
+
    *time = createObject(currentContext, "totalcross.sys.Time");
    if (*time == null)
       return NO_ERROR; // OOME was already threw
 
-   FileTimeToLocalFileTime(&systemFileTime, &localFileTime);
    FileTimeToSystemTime(&localFileTime, &fileTime);
 
    Time_year(*time)   = fileTime.wYear;
@@ -549,13 +680,37 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 	DWORD posHigh = 0;
 	DWORD fileSize;
 
+#ifndef WP8
    if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
-		return GetLastError();
+	   return GetLastError();
+#else
+   FILE_STANDARD_INFO finfo = { 0 };
+   fileSize = 0xFFFFFFFF;
+   
+   if (GetFileInformationByHandleEx(fref->handle, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return GetLastError();
+   }
+
+   // Size cannot exceed 32 bits
+   fileSize = finfo.EndOfFile.LowPart;
+#endif
 	if (fileSize == newSize)
 		return NO_ERROR;
 
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   {
+      LARGE_INTEGER off = { 0 };
+      off.LowPart = newSize;
+
+      if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
+         return GetLastError();
+   }
+#else
    if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
 		return GetLastError();
+#endif
    if (SetEndOfFile(fref->handle) == 0)
    {
       Err error = GetLastError();
@@ -570,7 +725,7 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
       return error;
    }
 
-	return NO_ERROR;
+   return NO_ERROR;
 }
 
 /*

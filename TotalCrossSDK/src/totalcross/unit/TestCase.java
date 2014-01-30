@@ -71,6 +71,11 @@ public abstract class TestCase
       TestSuite.updateMem();
    }
 
+   protected static void fail(Throwable e)
+   {
+      fail("\nOriginal exception: "+e.getClass().getName()+" - "+e.getMessage()+"\nOriginal stackTrace:\n"+Vm.getStackTrace(e));
+   }
+      
    protected static void fail(String msg)
    {
       if (learning)
@@ -175,6 +180,17 @@ public abstract class TestCase
    }
 
    protected static void assertEquals(byte[] b1, byte[] b2)
+   {
+      assertNotNull(b1);
+      assertNotNull(b2);
+      if (b1.length != b2.length)
+         assertFailed("Array length mismatch: "+b1.length+" != "+b2.length);
+      for (int i =0; i < b1.length; i++)
+         if (b1[i] != b2[i])
+            assertFailed("Mismatch at "+i+": "+Convert.unsigned2hex(b1[i],2)+" != "+Convert.unsigned2hex(b2[i],2));
+   }
+
+   protected static void assertEquals(int[] b1, int[] b2)
    {
       assertNotNull(b1);
       assertNotNull(b2);

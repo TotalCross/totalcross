@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="etc/tools/ipa/dd-plist.jar"/>
 	<classpathentry kind="lib" path="etc/tools/ipa/commons-io-2.2.jar"/>
 	<classpathentry kind="lib" path="etc/tools/ipa/commons-compress-1.4.jar"/>
+	<classpathentry kind="lib" path="etc/tools/sqlite/sqlite-jdbc-3.7.15-M1.jar" sourcepath="etc/tools/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

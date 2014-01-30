@@ -12,6 +12,7 @@
 
 
 #include "tcvm.h"
+#include "NativeMethods.h"
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_valueOf_d(NMParams p) // java/lang/String native public static String valueOf(double d);
@@ -24,6 +25,10 @@ TC_API void jlS_valueOf_d(NMParams p) // java/lang/String native public static S
       setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
+void tsC_toString_c(NMParams p);
+void tsC_toString_i(NMParams p);
+void tsC_toString_l(NMParams p);
+
 TC_API void jlS_valueOf_c(NMParams p) // java/lang/String native public static String valueOf(char c);
 {
    tsC_toString_c(p);

@@ -7,6 +7,7 @@ libtoolize --force --automake
 rm -f config.cache
 rm -f config.log
 
-autoheader
+aclocal
 autoconf
-automake -a
+autoheader
+automake --add-missing

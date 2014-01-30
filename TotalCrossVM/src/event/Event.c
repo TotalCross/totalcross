@@ -126,6 +126,8 @@ void mainEventLoop(Context currentContext)
 
 #ifdef darwin
     graphicsSetupIOS(); // start the opengl context in the same thread of the events
+#elif defined WP8
+
 #endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");

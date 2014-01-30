@@ -42,7 +42,7 @@ TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
    CharP buf=null;
    TCClass c;
 
-   // test "Class c = new Object().getClass()"
+   // test "TCClass c = new Object().getClass()"
    tzero(p);
    p.currentContext = currentContext;
    obj = createObject(currentContext, "java.lang.Object");
@@ -53,8 +53,8 @@ TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
    ASSERT1_EQUALS(NotNull, p.retO);
    c = OBJ_CLASS(p.retO);
    ASSERT2_EQUALS(Sz, c->name, "java.lang.Class");
-   ASSERT1_EQUALS(NotNull, Class_targetClass(p.retO));
-   ASSERT3_EQUALS(Block, *((TCClass*)ARRAYOBJ_START(Class_targetClass(p.retO))), OBJ_CLASS(obj), PTRSIZE);
+   ASSERT1_EQUALS(NotNull, Class_nativeStruct(p.retO));
+   ASSERT3_EQUALS(Block, *((TCClass*)ARRAYOBJ_START(Class_nativeStruct(p.retO))), OBJ_CLASS(obj), PTRSIZE);
    nameStr = Class_targetName(p.retO);
    ASSERT1_EQUALS(NotNull, nameStr);
    buf = String2CharP(nameStr);

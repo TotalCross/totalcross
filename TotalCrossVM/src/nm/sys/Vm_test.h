@@ -195,7 +195,7 @@ TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTime
 }
 TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-#if defined (WIN32)
+#if defined (WIN32) && !defined (WP8)
    TNMParams p;
    Object currentTime;
    Object testTime;
@@ -238,8 +238,8 @@ TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(t
    finish:
       p.obj = &currentTime;
       tsV_setTime_t(&p);
+
 #else
-   TEST_SKIP;
    finish: ;
 #endif
 }
@@ -415,13 +415,17 @@ TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String cl
    ASSERT1_EQUALS(NotNull, copied);
    // copy
    tsV_clipboardCopy_s(&p1);
+   
+#ifndef WP8   //XXX ver se dá para fazer isso de outro modo
    // paste
    tsV_clipboardPaste(&p2);
    ASSERT1_EQUALS(NotNull, p2.retO);
    pasted = p2.retO;
    ASSERT2_EQUALS(I32, String_charsLen(pasted), String_charsLen(copied));
    ASSERT3_EQUALS(Block, String_charsStart(pasted), String_charsStart(copied), String_charsLen(pasted));
-
+#else
+   TEST_CANNOT_RUN;
+#endif
    finish: ;
 }
 TESTCASE(tsV_attachLibrary_s) // totalcross/sys/Vm native public static boolean attachLibrary(String name);
@@ -491,8 +495,8 @@ TESTCASE(tsV_getRemainingBattery) // totalcross/sys/Vm native public static int 
    tzero(p);
    p.currentContext = currentContext;
 
-   tsV_getRemainingBattery(&p);
-#if defined WIN32 && !defined WINCE
+   tsV_getRemainingBattery(&p);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+#if defined WIN32 && !defined WINCE && !defined WP8
    ASSERT2_EQUALS(I32, p.retI, 100);
 #else
    ASSERT_BETWEEN(I32, 0, p.retI,100);

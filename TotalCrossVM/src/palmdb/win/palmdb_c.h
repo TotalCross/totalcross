@@ -15,6 +15,16 @@
  #include <stddef.h>
 #endif
 
+// Must use SetFilePointer is not defined on the ARM headers
+#if defined WP8 && defined ARM
+DWORD WINAPI SetFilePointer(
+   HANDLE hFile,
+   LONG lDistanceToMove,
+   PLONG lpDistanceToMoveHigh,
+   DWORD dwMoveMethod
+   );
+#endif
+
 // wince is 4.5x faster when using the system io, due to the FILE_FLAG_RANDOM_ACCESS flag
 // this is why we have a special version not using POSIX
 
@@ -43,7 +53,11 @@ bool inline PDBCloseFile(PDBFileRef fileRef)
 
 bool inline PDBRename(TCHARP oldName, TCHARP newName)
 {
-   return MoveFile(oldName, newName);
+#if defined (WP8)
+   return MoveFileEx(oldName, newName, 0);
+#else
+	return MoveFile(oldName, newName);
+#endif
 }
 
 bool inline PDBRemove(TCHARP fileName)
@@ -58,7 +72,14 @@ bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 
 bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = offset;
+   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN) != 0) ? PDBRead(fileRef, buf, size, read) : false;
+#else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
+#endif
 }
 
 bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
@@ -68,17 +89,44 @@ bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 
 bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = offset;
+   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN) != 0) ? PDBWrite(fileRef, buf, size, written) : false;
+#else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
+#endif
 }
 
 bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
+#ifndef WP8
    return (*size = GetFileSize(fileRef, null)) != 0xFFFFFFFFL;
+#else
+   FILE_STANDARD_INFO finfo = { 0 };
+   *size = 0xFFFFFFFF;
+   if (GetFileInformationByHandleEx(fileRef, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return false;
+   }
+
+   // Size cannot exceed 32 bits
+   *size = finfo.EndOfFile.LowPart;
+   return true;
+#endif
 }
 
 bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8 && !defined ARM
+   LARGE_INTEGER off = { 0 };
+   off.LowPart = oldSize + growSize;
+   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN)) ? SetEndOfFile(fileRef) : false;
+#else
    return (SetFilePointer(fileRef, oldSize + growSize, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
+#endif
 }
 
 bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType proc, VoidP userVars)
@@ -106,7 +154,7 @@ bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType pro
       if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && recursive)
       {
 #if defined (WIN32) && !defined (WINCE)
-         if (xstrcmp(findFileData.cFileName, ".") && xstrcmp(findFileData.cFileName, ".."))
+         if (tcscmp(findFileData.cFileName, TEXT(".")) && tcscmp(findFileData.cFileName, TEXT("..")))
          {
 #endif
             tcscpy(searchPath+pathLen+1, findFileData.cFileName);

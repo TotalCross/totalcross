@@ -49,6 +49,35 @@ import totalcross.util.Hashtable;
 
 public class HttpStream extends Stream
 {
+   /** Can be overloaded by classes to late-init the data. */
+   protected HttpStream()
+   {
+   }
+   
+   /**
+    * Constructor for a HttpStream with the default options.
+    *
+    * @param uri to connect to
+    * @see Options
+    */
+   public HttpStream(URI uri) throws totalcross.net.UnknownHostException, totalcross.io.IOException
+   {
+      init(uri, new Options());
+   }
+
+   /**
+   * Constructor for a HttpStream with specific variant options.
+   * Options must have been filled before called this constructor.
+   *
+   * @param uri to connect to
+   * @param options the specific options for this HttpStream
+   * @see Options
+   */
+   public HttpStream(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
+   {
+      init(uri, options);
+   }
+
    /** Set to true to print the header to the debug console. */
    public static boolean debugHeader;
    /** READ-ONLY should be one of the 20x. Used in the response. */
@@ -392,35 +421,6 @@ public class HttpStream extends Stream
    private int writeBytesSize;
 
    private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
-
-   /** Can be overloaded by classes to late-init the data. */
-   protected HttpStream()
-   {
-   }
-   
-   /**
-    * Constructor for a HttpStream with the default options.
-    *
-    * @param uri to connect to
-    * @see Options
-    */
-   public HttpStream(URI uri) throws totalcross.net.UnknownHostException, totalcross.io.IOException
-   {
-      init(uri, new Options());
-   }
-
-   /**
-   * Constructor for a HttpStream with specific variant options.
-   * Options must have been filled before called this constructor.
-   *
-   * @param uri to connect to
-   * @param options the specific options for this HttpStream
-   * @see Options
-   */
-   public HttpStream(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
-   {
-      init(uri, options);
-   }
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {

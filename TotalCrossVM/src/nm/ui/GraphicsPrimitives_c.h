@@ -14,6 +14,10 @@
 #include "GraphicsPrimitives.h"
 #include "math.h"
 
+#if defined (WP8)
+#include "openglWrapper.h"
+#endif
+
 #define TRANSITION_NONE  0
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
@@ -99,7 +103,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    }
    // post the event to the vm
    if (mainClass != null)
-      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
+      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1); //XXX
    repaintActiveWindows(mainContext);
 }
 
@@ -278,11 +282,15 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
    else
    if (Graphics_useOpenGL(dstSurf))
    {
+      int32 fc;
+      int frame;
+
       if (Image_changed(srcSurf))
-         applyChanges(currentContext, srcSurf,true);
-      int32 fc = Image_frameCount(srcSurf);
-      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight,null,null);
+         applyChanges(currentContext, srcSurf, true);
+      fc = Image_frameCount(srcSurf);
+      frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
+
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null, null);
    }
    else
 #endif
@@ -714,10 +722,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     }
 }
 
+#if !defined(WP8)
 static int32 abs32(int32 a)
 {
    return a < 0 ? -a : a;
 }
+#endif
 
 /* Code taken from http://www.codeproject.com/gdi/antialias.asp */
 static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel color_)
@@ -935,6 +945,16 @@ static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 int32 getCharTexture(Context currentContext, UserFont uf, JChar ch); // PalmFont_c.h
 uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
+
+static Context lastContext;
+static Object lastObject;
+static JCharP lastText;
+static Pixel lastForeColor;
+static int lx0;
+static int ly0;
+static int lastJustify;
+static int lastCharCount;
+
 static void drawText(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {                         
    Object fontObj = Graphics_font(g);
@@ -957,6 +977,18 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    GLfloat *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
+
+   {
+	   lastContext = currentContext;
+	   lastObject = g;
+	   lastText = text;
+	   lastForeColor = foreColor;
+
+	   lx0 = x0;
+	   ly0 = y0;
+	   lastJustify = justifyWidth;
+	   lastCharCount = chrCount;
+   }
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
@@ -1222,6 +1254,12 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    else
       currentContext->fullDirty = true;
 #endif
+}
+
+void callLastDrawText()
+{
+	if( lastText != null)
+	drawText(lastContext, lastObject, lastText, lastCharCount, lx0, ly0, lastForeColor, lastJustify);
 }
 
 static SurfaceType getSurfaceType(Context currentContext, Object surface)
@@ -2125,7 +2163,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++,count--)
-               #if defined(WIN32)
+               #if defined(WIN32) && !defined(WP8)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2133,7 +2171,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               #if defined(WIN32)
+               #if defined(WIN32) && !defined(WP8)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2157,7 +2195,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = currentContext->dirtyX2 - currentContext->dirtyX1; count != 0; pf++, count--)
-                  #if defined(WIN32)
+                  #if defined(WIN32) && !defined(WP8)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
@@ -2469,7 +2507,7 @@ static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, in
 
 inline static int getOffset(int radius, int y)
 {
-   return radius - (int32)sqrt(radius * radius - y * y);
+   return radius - (int32)sqrt((double)radius * radius - y * y);
 }
 
 static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4

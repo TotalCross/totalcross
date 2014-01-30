@@ -74,7 +74,7 @@ int32 getJCharPWidth(Context currentContext, Object fontObj, JCharP s, int32 len
 UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar ch);
 FontFile loadFontFile(char *fontName);
 UserFont loadUserFont(Context currentContext, FontFile ff, bool plain, int32 size, JChar c);  // use size=-1 to load the normal size
-bool fontInit();
+bool fontInit(Context currentContext);
 void fontDestroy();
 
 #endif

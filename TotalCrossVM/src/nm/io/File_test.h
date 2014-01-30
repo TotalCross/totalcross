@@ -154,6 +154,8 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiF_exists(&p);
+
+   // If p.retI is true, then the test has failed, besaucse "create" should not return true
    if (p.retI)
    {
       tiF_delete(&p);
@@ -584,8 +586,9 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    currentContext->thrownException = null;
 
    // ----- ROOT -----
-
+#ifndef WP8
    p.obj[0] = createFile(currentContext, TEXT("/"), null, &path);
+
    ASSERT1_EQUALS(NotNull, p.obj[0]);
    p.obj[1] = path;
    p.i32[0] = DONT_OPEN;
@@ -596,7 +599,7 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    tiF_getSize(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(True, p.retI >= 0); // assert volume size is greater than zero
-
+#endif
    finish:
       ;
 }
@@ -1065,9 +1068,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.obj[0] = rbP.obj[0];
    rbP.i32[0] = 12;
    tiF_setPos_i(&rbP);
+   
+#ifndef WP8
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
    currentContext->thrownException = null;
+#endif
 
    // #32 Moving the file pointer back to the beggining of the file
    rbP.obj[0] = rbP.obj[0];
@@ -1083,8 +1089,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.i32[1] = ARRAYOBJ_LEN(rbP.obj[1]);
    tiF_readBytes_Bii(&rbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 11, rbP.retI);
-   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11));
+
+#ifndef WP8
+   ASSERT2_EQUALS(I32, 11, rbP.retI); 
+#endif
+
+   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); 
 
    // #34 Close the file.
    tiF_nativeClose(&rbP);
@@ -1197,9 +1207,12 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
    ASSERT2_EQUALS(I32, Time_year(time), Time_year(t3));
    ASSERT2_EQUALS(I32, Time_month(time), Time_month(t3));
    ASSERT2_EQUALS(I32, Time_day(time), Time_day(t3));
-   //ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
-   //ASSERT2_EQUALS(I32, jtime->minute(time), Time_minute(t3));
-   //ASSERT2_EQUALS(I32, jtime->second, Time_second(t3));
+   
+#ifdef WP8   
+   ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
+   ASSERT2_EQUALS(I32, Time_minute(time), Time_minute(t3));
+   ASSERT2_EQUALS(I32, Time_second(time), Time_second(t3));
+#endif
 
    finish:
       ;

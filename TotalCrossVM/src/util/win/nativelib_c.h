@@ -37,7 +37,7 @@ VoidP privateLoadLibrary(CharP libName)
       library = tryAt("../","",libName,".dll");
    if (library == null)
       library = tryAt(vmPath,"/",libName,".dll");
-#if defined(WIN32) && !defined(WINCE)
+#if defined(WIN32) && !(defined(WINCE) || defined(WP8))
    if (library == null && strEq(libName,"litebase"))
    {
       TCHAR litebasePath[MAX_PATHNAME];
@@ -57,7 +57,7 @@ VoidP privateLoadLibrary(CharP libName)
 
 void privateUnloadLibrary(VoidP libPtr)
 {
-#if !defined (WINCE)
+#if !defined (WINCE) && !defined (WP8) //XXX
    // do not free the synchronization dll please
    TCHAR libPath[MAX_PATH];
    char libName[MAX_PATH];
@@ -74,9 +74,8 @@ void privateUnloadLibrary(VoidP libPtr)
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
    TCHAR szFuncName[128];
-   FARPROC procAddress;
+   VoidP procAddress;
 
-   CharP2TCHARPBuf(funcName, szFuncName);
-   procAddress = GetProcAddress(!module ? GetModuleHandle(TEXT("tcvm.dll")) : module, szFuncName);
+   procAddress = GetProcAddress(!module ? hModuleTCVM : module, funcName);
    return procAddress;
 }

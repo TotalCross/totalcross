@@ -31,6 +31,7 @@ public class File4D extends RandomAccessStream
 
    static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
    static final boolean isIOS = Settings.isIOS();
+   static final boolean isWP8 = Settings.platform.equals("WP8");
    static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;
@@ -74,7 +75,7 @@ public class File4D extends RandomAccessStream
          //flsobral@tc129.2: path for both iphone and ipad.
          if (Settings.isIOS()) // guich@tc115_14: as per greg's suggestion
             path = Convert.appendPath(deviceAlias, path);
-         else if (isAndroid)
+         else if (isAndroid || isWP8)
             path = Settings.appPath + "/" + path;
          slot = 1;
       }

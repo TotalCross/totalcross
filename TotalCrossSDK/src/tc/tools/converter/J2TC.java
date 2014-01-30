@@ -55,7 +55,6 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegIStatic = 0;
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
-   private static boolean privateStaticFieldRemoved;
    private static boolean syncWarned;
 
    public J2TC(JavaClass jc) throws IOException,Exception
@@ -557,7 +556,7 @@ public final class J2TC implements JConstants, TCConstants
       // jm.isStrict - not used
       if (jm.isSynchronized && !syncWarned)
       {
-         System.out.println("Synchronized is not supported for methods nor classes, only for instance objects.");
+         System.out.println("Synchronized is not supported for methods nor classes, only for totalcross.util.concurrent.Lock objects.");
          syncWarned = true;
       }
       return f;
@@ -590,17 +589,6 @@ public final class J2TC implements JConstants, TCConstants
             case CHAR:
             case SHORT:
             {
-               if (flags.isFinal && flags.isPrivate) // ignore static final fields: they are always inlined in the code
-               {
-                  if (flags.isStatic)
-                  {
-                     privateStaticFieldRemoved = true;
-                     Utils.println("The private static final "+jc.className+"."+f.name+" field was removed");
-                     continue;
-                  }
-                  else
-                     System.out.println("Warning: change "+jc.className+"."+f.name+" to static so it can be removed.");
-               }
                TCInt32Field t = new TCInt32Field();
                t.flags = flags;
                t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
@@ -630,17 +618,6 @@ public final class J2TC implements JConstants, TCConstants
             case FLOAT:
             case DOUBLE:
             {
-               if (flags.isFinal && flags.isPrivate) // ignore static final fields: they are always inlined in the code
-               {
-                  if (flags.isStatic)
-                  {
-                     privateStaticFieldRemoved = true;
-                     Utils.println("The private static final "+jc.className+"."+f.name+" field was removed");
-                     continue;
-                  }
-                  else
-                     System.out.println("Warning: change "+jc.className+"."+f.name+" to static so it can be removed.");
-               }
                TCValue64Field t = new TCValue64Field();
                t.flags = flags;
                t.cpName = GlobalConstantPool.putMethodOrFieldName(f.name);
@@ -967,7 +944,8 @@ public final class J2TC implements JConstants, TCConstants
             {
                String name = (String)classes[i];
                name = name.replace('.','/')+".class";
-               addAndExpand(temp, name);
+               if (!inExclusionList(name))
+                  addAndExpand(temp, name, false);
             }
             if (temp.size() > 0)
             {
@@ -983,18 +961,21 @@ public final class J2TC implements JConstants, TCConstants
 
    private static Hashtable htVisited = new Hashtable(1000);
 
-   private static void addAndExpand(Vector vin, String name) throws Exception
+   private static void addAndExpand(Vector vin, String name, boolean throwErrorIfInexistant) throws Exception
    {
       JavaClass jc;
       if (htVisited.exists(name) || name.startsWith("tc/tools") || name.startsWith("tc/Deploy") || name.startsWith("net/rim")) // never deploy our tools
          return;
       htVisited.put(name,name);
       byte[] bytes = Utils.findAndLoadFile(name,false);
-      boolean isClass = name.toLowerCase().endsWith(".class");
+      boolean isClass = name.toLowerCase().endsWith(".class") && !isPrimitiveClass(name);
       if (bytes == null)
       {
          if (isClass) // do not throw exceptions in non-class files
-            throw new IllegalArgumentException("File not found: "+name);
+            if (throwErrorIfInexistant)
+               throw new IllegalArgumentException("File not found: "+name);
+            else
+               System.out.println("Class.forName not found: "+name);
          return;
       }
       if (isClass)
@@ -1029,6 +1010,11 @@ public final class J2TC implements JConstants, TCConstants
       }
    }
 
+   private static boolean isPrimitiveClass(String name)
+   {
+      return name.equals("byte.class") || name.equals("short.class") || name.equals("int.class") || name.equals("boolean.class") || name.equals("char.class") || name.equals("long.class") || name.equals("float.class") || name.equals("double.class") || name.equals("void.class");
+   }
+
    private static void expandClass(Vector vin, JavaClass jc) throws Exception
    {
       JavaConstantPool jcp = jc.cp;
@@ -1043,7 +1029,7 @@ public final class J2TC implements JConstants, TCConstants
                   c += ".class";
                case 8: // string
                   if (!inProhibitedList(c,false) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
-                     addAndExpand(vin, c);
+                     addAndExpand(vin, c, true);
                   break;
             }
          }
@@ -1181,7 +1167,7 @@ public final class J2TC implements JConstants, TCConstants
                }
                byte[] bytes = Utils.loadFile(fName, true);
                JavaClass jc = new JavaClass(bytes, false);
-               if (jc.className.indexOf("totalcross/") >= 0)
+               if (jc.className.indexOf("totalcross/") >= 0 && jc.className.indexOf("test/") == -1)
                   throw new IllegalArgumentException("You can't deploy totalcross packages using a single .class. Add it to a "+jc.className.substring(jc.className.lastIndexOf('/')+1)+".jar file and deploy that jar file.");
                setApplicationProperties(jc);
                // if (jc.className.indexOf('/') > 0) // does it have a package? - guich@tc114_84: support class without package
@@ -1194,7 +1180,7 @@ public final class J2TC implements JConstants, TCConstants
                      DeploySettings.mainClassDir += DeploySettings.SLASH;
                }
                DeploySettings.mainPackage = jc.className;
-               addAndExpand(vin, jc.className+".class");
+               addAndExpand(vin, jc.className+".class", true);
             }
             else
                throw new IllegalArgumentException("Invalid input: only .class/.zip/.jar/.tcz or a folder is supported. Make sure that the file is the FIRST parameter passed to tc.Deploy!");
@@ -1327,14 +1313,6 @@ public final class J2TC implements JConstants, TCConstants
             System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
             if (DeploySettings.fullScreenPlatforms == null || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0)
                Utils.println("Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
-         }
-
-         if (privateStaticFieldRemoved)
-         {
-            if (DeploySettings.quiet)
-               System.out.println("Some unused fields were removed. If you get a NoSuchFieldError, run tc.Deploy again with /v");
-            else
-               System.out.println("One or more private static final fields were removed. This was made because such fields are never referenced by NAME anywhere else in the program, and thus can be removed. HOWEVER, there's a situation where this may lead to problems: if the field was initialized via a METHOD CALL, then it will break at the static initializer, at runtime. A sample is \"private static final int FIELD_COLOR = Color.getRGB(255,0,100);\". To fix this, either change the field to package access (remove the private keyword) or, in this specific case, put the method's result in the code (E.G.: \"private static final int FIELD_COLOR = 0xFF0064;\").");
          }
       }
    }

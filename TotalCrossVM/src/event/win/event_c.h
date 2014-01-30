@@ -25,6 +25,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
    switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
+			hModuleTCVM = hModule;
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:
 		case DLL_PROCESS_DETACH:
@@ -114,6 +115,12 @@ static bool minimized;
 void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
 void applyPalette();
 
+#if defined (WP8)
+static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
+{
+	return 0L;
+}
+#else
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -134,7 +141,8 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
-#ifndef WINCE
+//XXX
+#if !defined WINCE && !defined WP8
       case WM_GETMINMAXINFO:
          if (screen.pixels && *tcSettings.resizableWindow)
          {
@@ -233,6 +241,8 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
 #endif
       case WM_PAINT:
       {
+		  // XXX how to do this in WP8?
+#if !defined WP8
          PAINTSTRUCT ps;
          HDC hDC;
          int32 w,h;
@@ -254,6 +264,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          markWholeScreenDirty(mainContext);
          updateScreen(mainContext);
          EndPaint(hWnd, &ps);
+#endif
          break;
       }
 #if defined (WINCE)
@@ -421,9 +432,12 @@ def:
    }
    return 0L;
 }
-
+#endif
 bool privateInitEvent()
 {
+	//XXX
+#if !defined WP8
+
    WNDCLASS wc;
    xmemzero(&wc, sizeof(wc));
    wc.hInstance = GetModuleHandle(0);
@@ -434,16 +448,31 @@ bool privateInitEvent()
    if (!RegisterClass(&wc) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
       return false;
    return true;
+#else
+	return true;
+#endif
 }
 
 bool privateIsEventAvailable()
 {
-   MSG msg;
-   return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#if defined WP8
+   bool ret;
+   dispatcher_dispath();
+   ret = !eventQueueEmpty();
+   return ret;
+#else
+	MSG msg;
+	return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#endif
 }
 
 void privatePumpEvent(Context currentContext)
 {
+#if defined(WP8)
+	struct eventQueueMember q_member = eventQueuePop();
+
+	postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
+#else
    MSG msg;
 #ifdef WINCE
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
@@ -457,6 +486,7 @@ void privatePumpEvent(Context currentContext)
    else
    if (msg.message == WM_QUIT)
       keepRunning = false;
+#endif
 }
 
 void privateDestroyEvent()

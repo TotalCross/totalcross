@@ -14,6 +14,10 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// Exception enumeration that can be used in some throwException functions.
 typedef enum
 {
@@ -45,6 +49,12 @@ typedef enum
    InvalidNumberException,
    ElementNotFoundException,
    CryptoException,
+   SQLException,
+   SQLWarning,
+   NegativeArraySizeException,
+   InvocationTargetException,
+   NoSuchMethodException,
+   NoSuchFieldException,
    ThrowableCount,
 } Throwable;
 
@@ -89,4 +99,9 @@ CharP errorMessage(int32 code);
 
 /// Shows the exception in context->thrownException in an alert
 void showUnhandledException(Context context, bool useAlert);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

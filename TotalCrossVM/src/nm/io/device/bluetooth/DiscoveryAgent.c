@@ -79,7 +79,9 @@ typedef struct
    VoidP nativeFields;
 } TServiceSearch, *ServiceSearch;
 
-#if defined (WIN32) || defined (WINCE)
+#if defined (WP8)
+ 
+#elif defined (WIN32) || defined (WINCE)
  #include "win/DiscoveryAgent_c.h"
 #elif defined ANDROID
  #include "android/DiscoveryAgent_c.h"
@@ -88,7 +90,7 @@ typedef struct
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbDA_nativeDiscoveryAgent(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native private void nativeDiscoveryAgent();
 {
-#if defined (WIN32) || defined (WINCE)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE))
    Object discoveryAgent = p->obj[0];
    Object inquiryNativeFields = DiscoveryAgent_inquiryNativeFields(discoveryAgent);
    Object nativeFieldsObj;
@@ -118,7 +120,7 @@ TC_API void tidbDA_nativeDiscoveryAgent(NMParams p) // totalcross/io/device/blue
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbDA_cancelInquiry_d(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean cancelInquiry(totalcross.io.device.bluetooth.DiscoveryListener listener);
 {
-#if defined (WIN32) || defined (WINCE)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE))
    Object listener = p->obj[1];
 
    Object discoveryAgent = p->obj[0];
@@ -161,7 +163,7 @@ TC_API void tidbDA_retrieveDevices_i(NMParams p) // totalcross/io/device/bluetoo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbDA_nativeSearchServices_IUrd(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public int nativeSearchServices(int []attrSet, totalcross.io.device.bluetooth.UUID []uuidSet, totalcross.io.device.bluetooth.RemoteDevice btDev, totalcross.io.device.bluetooth.DiscoveryListener discListener) throws IOException;
 {
-#if defined (WIN32) || defined (WINCE)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE))
    Object attrSet = p->obj[1];
    Object uuidSet = p->obj[2];
    Object remoteDevice = p->obj[3];
@@ -222,7 +224,7 @@ TC_API void tidbDA_selectService_uib(NMParams p) // totalcross/io/device/bluetoo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbDA_startInquiry_id(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean startInquiry(int accessCode, totalcross.io.device.bluetooth.DiscoveryListener listener) throws IOException;
 {
-#if defined (WIN32) || defined (WINCE)
+#if !defined WP8 && (defined (WIN32) || defined (WINCE))
    int32 accessCode = p->i32[0];
    Object listener = p->obj[1];
 
