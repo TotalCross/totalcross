@@ -5,13 +5,12 @@ function display_help
   echo "`basename $0` arguments:"
   echo "  -demo              build a demo version"
   echo "  -help              this help message"
-  echo "  -noras id          build a noras version"
+  echo "  -noras             build a noras version"
   exit
 }
 
 type="release"
 noras=""
-norasid=""
 out_folder="ras"
 
 while [ $1 ];
@@ -23,11 +22,9 @@ do
       shift
       ;;
     -n|-noras)
-      shift
-      norasid="$1"
       noras="--enable-release "
       type="noras"
-      out_folder="noras_$norasid"
+      out_folder="noras"
       shift
       ;;
     -h|-help)
@@ -50,12 +47,6 @@ export SDK=$WORKSPACE/TotalCross/TotalCrossSDK
 export SPEC_OPTS="--enable-$type $noras"
 export REPONAME="TotalCross"
 
-# copy the noras key that will be included
-if [ $noras ];
-then
-   cp $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_$norasid.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
-fi
-
 # generate configure if required
 if [ ! -f $BASEDIR/configure ];
 then
@@ -69,9 +60,3 @@ cd $BASEDIR/linux/$type
 make clean
 make -s -j $NUMBER_OF_PROCESSORS
 cp -L .libs/libtcvm.so .
-
-# copy back the default noras.inc
-if [ $noras ];
-then
-   cp $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras_none.inc $WORKSPACE/$REPONAME/TotalCrossVM/src/init/noras_ids/noras.inc
-fi

@@ -243,7 +243,7 @@ TC_API int32 startProgram(Context currentContext)
    else
    {
       char buf[4];
-      uint8 *allowedKey = ENABLE_NORAS, *signedKey;
+      uint8 *allowedKey, *allowedKeysBase = ENABLE_NORAS, *signedKey;
       Object ret = executeMethod(currentContext, m, rasClientInstance).asObj;
       if (currentContext->thrownException || ret == null)
       {
@@ -251,16 +251,27 @@ TC_API int32 startProgram(Context currentContext)
          return exitProgram(1141);
       }
       // check the key
-      signedKey = (uint8*)ARRAYOBJ_START(ret);
-      for (; *signedKey; allowedKey += 2, signedKey++)
-      {
-         int2hex(*signedKey, 2, buf);
-         if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
+      for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) {
+	     uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
+         for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
          {
-            alert("Invalid key (2).");
-            return exitProgram(1442);
+            int2hex(*signedKey, 2, buf);
+            if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
+            {
+               break;
+            }
+            if (allowedKey == allowedKeysBase + 22)
+            {
+               goto jumpArgument;
+            }
          }
       }
+      alert("Invalid key (2).");
+      return exitProgram(1442);
+
+// activation ok, the name is misleading on purpose
+jumpArgument:
+
  #endif
 #endif
       // load libraries
