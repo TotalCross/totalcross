@@ -278,9 +278,9 @@ target: desktop
 
   <echo message="create the desktop jar file" />
   <mkdir dir="${dist}" />
-  <delete file="${dist}/tc.jar"/>
-  <delete file="${dist}/tc_.jar"/>
-  <jar destfile="${dist}/tc_.jar" compress="no" update="no">
+  <delete file="${dist}/tc_desktop.jar"/>
+  <delete file="${dist}/tc_deploy.jar"/>
+  <jar destfile="${dist}/tc_desktop.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
     excludes="totalcross/**,tc/samples/**,*.tcz"
     />
@@ -309,14 +309,14 @@ target: desktop
          <method name="finalize" />
        </keepclassmembernames>
 
-       <injar path="${dist}/tc_.jar" />
-       <outjar path="${dist}/tc.jar" />
+       <injar path="${dist}/tc_desktop.jar" />
+       <outjar path="${dist}/tc_deploy.jar" />
    </proguard>
 
-  <delete file="${dist}/tc_.jar"/>
+  <delete file="${dist}/tc_desktop.jar"/>
 
   <!-- we have to jar the totalcross api separately because proguard changes the method's access and breaks Litebase generation. -->
-  <jar destfile="${dist}/tc_t.jar" compress="yes" update="yes" includes="totalcross/**">
+  <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**">
     <fileset dir="${output}/classes_desktop"
     excludes="tc/**,*.tcz"
     />
@@ -332,10 +332,12 @@ target: desktop
  
   <!-- join tc_t.jar and sqlite.jar into tc.jar -->
    <zip destfile="${dist}/tc.jar">
-       <zipgroupfileset file="${dist}/tc_t.jar"/>
+       <zipgroupfileset file="${dist}/tc_desktop.jar"/>
+       <zipgroupfileset file="${dist}/tc_deploy.jar"/>
        <zipgroupfileset file="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
    </zip>
-   <delete file="${dist}/tc_t.jar" />
+   <delete file="${dist}/tc_desktop.jar" />
+   <delete file="${dist}/tc_deploy.jar" />
 
   <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
 
