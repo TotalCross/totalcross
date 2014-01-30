@@ -89,20 +89,47 @@ HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTa
 
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
+	static int x = 0;
+	static int ini, rodou = false;
+
+	if (rodou) {
+		int fim = GetTickCount64() & 0x3FFFFFFF;
+		char buf[50];
+		sprintf_s(buf, "C# elapsed: %d ms\n", fim - ini);
+		OutputDebugStringA(buf);
+	}
 	int dc;
-	m_renderer->UpdateDevice(device, context, renderTargetView);
+	if (!rodou) {
+		m_renderer->UpdateDevice(device, context, renderTargetView);
+	}
 	if (!m_renderer->Render()) {
 	   RequestAdditionalFrame();
 	}
 	else {
-		while ((dc = m_renderer->WaitDrawCommand()) != DRAW_COMMAND_PRESENT) {
-			if (dc != DRAW_COMMAND_INVALID)
-				m_renderer->DoDrawCommand();
+		x++;
+		/*if (x % 10 != 2) {
+			RequestAdditionalFrame();
+			return S_OK;
+		}*/
+		while (m_renderer->WaitDrawCommand() != DRAW_COMMAND_PRESENT) {
+			//m_renderer->DoDrawCommand(false);
+			Sleep(OCCUPIED_WAIT_TIME);
 		}
-		m_renderer->DoDrawCommand();
+		if (m_renderer->WaitDrawCommand() == DRAW_COMMAND_PRESENT) {
+			//while ((dc = m_renderer->WaitDrawCommand()) != DRAW_COMMAND_PRESENT) {
+			//	//if (dc != DRAW_COMMAND_INVALID)
+			//	//	m_renderer->DoDrawCommand();
+			//	Sleep(OCCUPIED_WAIT_TIME);
+			//}
+			m_renderer->DoDrawCommand(true);
+			m_renderer->UpdateDevice(device, context, renderTargetView);
+			m_renderer->PreRender();
+		}
 		RequestAdditionalFrame();
+		rodou = true;
 	}
 
+	ini = GetTickCount64() & 0x3FFFFFFF;
 	return S_OK;
 }
 

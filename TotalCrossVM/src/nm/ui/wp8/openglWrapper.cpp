@@ -17,7 +17,7 @@
 #include "precompiled_points.h"
 #include "precompiled_shade.h"
 
-#define TOGGLE_BUFFER
+//#define TOGGLE_BUFFER
 
 #define MAKE_RGBA(rgb, a) MAKE_RGBA_123_321( (rgb), (a & 0xFF))
 //                                   1st byte               2nd byte                      3rd byte
