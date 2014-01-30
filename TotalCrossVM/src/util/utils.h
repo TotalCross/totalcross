@@ -99,7 +99,17 @@ void replaceChar(CharP s, char from, char to);
 typedef char IntBuf[12];
 TC_API CharP int2str(int32 i, IntBuf buf);
 typedef CharP (*int2strFunc)(int32 i, IntBuf buf);
-typedef char DoubleBuf[40];
+/**
+ * Length of the longest printable double:
+ * int max_digits = 3 + DBL_MANT_DIG - DBL_MIN_EXP
+ * For a 64-bit IEEE double, we have
+ * DBL_MANT_DIG = 53
+ * DBL_MIN_EXP = -1023
+ * max_digits = 3 + 53 - (-1023) = 1079
+ * 
+ * We should set DoubleBuf to 1079 to support ANY double value.
+ */
+typedef char DoubleBuf[1080];
 TC_API CharP double2str(double val, int32 places, DoubleBuf buf);
 typedef CharP (*double2strFunc)(double val, int32 places, DoubleBuf buf);
 typedef char LongBuf[24];
