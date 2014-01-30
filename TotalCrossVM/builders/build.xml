@@ -156,10 +156,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 
 <target name="buildWin32_vms_noras" >
    <echo message="GENERATING WIN32 FILES - VMS"/>
-   <fail unless="norasid" />
 
    <exec executable="${msvc.path}" failonerror="yes">
-      <env key="CL" value="/DNORASID=${norasid}" />
       <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "NO RAS Release|Win32"'/>
       <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "NO RAS Release|Win32"'/>
    </exec>
@@ -206,31 +204,25 @@ target: buildWinCE
 <target name="buildWinCE_vms_noras" >
 
   <echo message="GENERATING WINCE FILES - VMS"/>
-	<fail unless="norasid" />
 
   <echo message="=> 1 of 5"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC2000"      /CEConfig="HPC 2000" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 2 of 5"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 3 of 5"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 4 of 5"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"    /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
   <echo message="=> 5 of 5"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>
 
@@ -245,14 +237,12 @@ target: buildWinCE
 <target name="buildWinCE_vms_noras_PocketPC_ARM" >
 
   <echo message="GENERATING WINCE ARM FILES - SDK"/>
-	<fail unless="norasid" />
 
   <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. 
      CHANGING THIS DON'T FORGET TO UPDATE THE TARGET buildWinCE_sdk !
   -->
   <echo message="=> 1 of 6"/>
 	<exec executable="${evc.path}" failonerror="yes">
-		<env key="CL" value="/DNORASID=${norasid}" />
 		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
 	</exec> <sleep seconds="2"/>	
 
@@ -467,7 +457,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 <target name="buildInstalls" >
 
-  <property name="target.file"  value="${target.path}/../TotalCross${type}${file_suffix}"/>
+  <property name="target.file"  value="${target.path}/../TotalCross${type}"/>
 
   <!-- delete old files -->
   <delete file="${target.file}.exe" />
@@ -492,7 +482,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   <antcall target="buildInstalls">
       <param name="type" value="SDK" />
-      <param name="file_suffix" value="" />
       <param name="target.path" value="${target.sdk.path}" />
   </antcall>
 </target>
@@ -500,7 +489,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <target name="buildInstalls_vms" >
   <antcall target="buildInstalls">
       <param name="type" value="VMS" />
-      <param name="file_suffix" value="" />
       <param name="target.path" value="${target.vms.path}" />
   </antcall>
 </target>
@@ -508,10 +496,8 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <target name="buildInstalls_vms_noras" >
   <antcall target="buildInstalls">
       <param name="type" value="VMS_NORAS" />
-      <param name="file_suffix" value="${norasid}" />
       <param name="target.path" value="${target.noras.path}" />
   </antcall>
-   <copy file="${noras_dir}/noras_none.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -561,17 +547,11 @@ target: IPhone builds
   </else>
   </if>
   
-  <if><equals arg1="${type}" arg2="noras" /><then>
-    <fail unless="norasid" />
-  </then>
-  </if>
-  
     <if><equals arg1="${type}" arg2="demo" /><then>
       <property name="extra_args" value="-demo" />
     </then>
     <elseif><equals arg1="${type}" arg2="noras" /><then>
-      <fail unless="norasid"/>
-      <property name="extra_args" value="-noras ${norasid}" />
+      <property name="extra_args" value="-noras" />
     </then></elseif>
    <elseif><equals arg1="${type}" arg2="release" /><then>
      <property name="extra_args" value="" />
@@ -699,19 +679,6 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyIPhoneTestToDevice" >
-
-  <!-- iphone 2 -->
-  <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
-    <fileset dir="${target.path}/dist/vm/ios">
-      <include name="**/*.deb"/>
-    </fileset>
-  </scp>
-  <sshexec command="dpkg -i /var/mobile/TotalCross.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="killall SpringBoard" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-
-</target>
-	
 <target name="copyIPhoneLauncher_sdk" >
    <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
       <scp file="${buildserver.tc.iphone2.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/iphone2" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -722,20 +689,6 @@ target: IPhone builds
 
   <!-- iphone 2 -->
 
-</target>
-
-<target name="copyIPhoneTestToDevice_sdk" >
-   <antcall target="copyIPhoneTestToDevice">
-      <param name="type" value="demo" />
-      <param name="target.path" value="${target.sdk.path}" />
-   </antcall>
-</target>
-
-<target name="copyIPhoneTestToDevice_vms" >
-   <antcall target="copyIPhoneTestToDevice">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.vms.path}" />
-   </antcall>
 </target>
 
 <target name="copyIPhoneTCVM_sdk" >
@@ -756,7 +709,7 @@ target: IPhone builds
 <target name="copyIPhoneTCVM_vms_noras" >
    <echo message="retrieve remote NORAS release builds" />
    <antcall target="copyIPhoneTCVM">
-       <param name="type" value="noras_20" />
+       <param name="type" value="noras" />
        <param name="target.path" value="${target.noras.path}" />
    </antcall>
 </target>   
@@ -775,7 +728,7 @@ target: IPhone builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   
    <antcall target="copyIPhoneTCVM_vms_noras" />
 
@@ -859,7 +812,7 @@ target: Linux builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
    
    <antcall target="packageLinux_vms_noras" />
    
@@ -878,7 +831,6 @@ target: Android builds
    <exec dir="${source.vms.path}/src" executable="cmd.exe" failonerror="true">
       <env key="TYPE" value="${type}" />
       <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
-      <env key="NORASID" value="${norasid}" />
       <arg line="/c ${android.ndk.path}/ndk-build"/>
    </exec>
   <sleep seconds="3"/>
@@ -949,68 +901,11 @@ target: Android builds
 
 <target name="buildAndroid_vms_noras" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
-  <property name="norasid" value=""/>
   <antcall target="build_android" >
 	<param name="type" value="noras" />
 	</antcall>
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: companion
-
--description:
-        Converts the TotalCross companion file
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="companion" description="Generates the PDF for TotalCross Companion">
-   <ant antfile="build.xml" dir="${source.sdk.path}/.." target="jodconverter" inheritAll="false">
-      <property name="from" value="${source.sdk.path}/docs/TotalCross Companion.odt" />
-      <property name="to" value="${target.sdk.path}/docs/TotalCross Companion.pdf" />
-   </ant>
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: ftp things to the site
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="ftp_demo_vms" >
-
-  <property file="${rootpath}/swcombr.properties"/>
-  <property name="temp" value="${source.sdk.path}/output/tempftp"/>
-  <property name="vm.dir" value="${target.sdk.path}/dist/vm"/>
-  <mkdir dir="${temp}" />
-
-  <zip destfile="${temp}/tc_win32.zip" compress="true" >
-    <zipfileset dir="${vm.dir}/win32" includes="TCSync.dll,TCSyncLib.tcz,TCVM.dll" />
-    <zipfileset dir="${vm.dir}" includes="TCBase.tcz,TCFont.tcz" />
-  </zip>
-  <zip destfile="${temp}/tc_android.zip" compress="true" filesonly="true" basedir="${vm.dir}/android" />
-  <copy todir="${temp}"><fileset dir="${vm.dir}/ios" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
-  <copy todir="${temp}"><fileset dir="${vm.dir}/linux"    includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
-  
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="superwaba.com.br/vms" verbose="yes">
-     <fileset dir="${vm.dir}/wince" includes="*.CAB" />
-     <fileset dir="${temp}" />
-  </ftp>
-
-  <delete dir="${temp}" />
-
-</target>
-
-<target name="ftp_javadoc" >
-
-  <property file="${rootpath}/swcombr.properties"/>
-
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" action="del" >
-   <fileset includes="totalcross.com/doc/**" />
-  </ftp>
-
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/doc" verbose="yes">
-     <fileset dir="${target.sdk.path}/docs/html" />
-  </ftp>
-
-</target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: checks if we must update the versions of the files prior to a build.
@@ -1050,37 +945,15 @@ target: builds NORAS sdks for all companys.
 
 </target>
 
-<target name="ftp_sdk">
-  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="files" verbose="yes" retriesAllowed="3">
-     <fileset dir="${rootpath}/releases" includes="*.exe" />
-  </ftp>
-</target>
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="iphone2_test" description="Update the SDK device, builds and upload iPhone 2 to the device">
-   <property name="type" value="demo" />
-   <property name="target.path" value="${target.sdk.path}" />
-   <antcall target="build_iphone" />
-   <antcall target="copyIPhoneTCVM" />
-   <antcall target="copyIPhoneTestToDevice" />
-</target>
-  
+ 
 <target name="build_iphone" >
   <fail unless="type" />
   <antcall target="buildIPhone_sdk_base" />
   <antcall target="copyIPhoneLauncher_sdk" />
 </target>
- 
-<target name="iphone_test" depends="buildIPhone_sdk,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the device" />
-<target name="ftp" depends="ftp_demo_vms,ftp_sdk,ftp_javadoc" description="FTP the iphone sdk and javadoc" />
-
-<target name="buildBB_sdk" />
-<target name="buildBB_vms" />
-<target name="buildBB_vms_noras" />
-<target name="buildPalmOS5_sdk" />
-<target name="buildPalmOS5_vms" />
-<target name="buildPalmOS5_vms_noras" />
 
 </project>
