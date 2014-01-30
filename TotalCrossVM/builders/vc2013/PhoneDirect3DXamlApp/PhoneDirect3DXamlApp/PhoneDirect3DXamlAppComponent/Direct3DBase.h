@@ -5,7 +5,11 @@
 
 #define HAS_TCHAR
 #include "tcvm.h"
+
 #define N_LOAD_TASKS 4
+#define OCCUPIED_WAIT_TIME 1
+#define USE_DEFERRED_CONTEXT
+
 
 struct ProjectionConstantBuffer
 {
@@ -80,12 +84,15 @@ internal:
    void createTexture();
    void setup();
 
-   void DoDrawCommand();
+   void DoDrawCommand(bool should_redo);
    // stupid wrapper
    void drawCommand_drawLine(int x1, int y1, int x2, int y2, int color);
    void drawCommand_drawPixels(int *x, int *y, int count, int color);
    void drawCommand_fillRect(int x1, int y1, int x2, int y2, int color);
    void drawCommand_setColor(int color);
+
+   void drawCommandLock();
+   void drawCommandUnlock();
 
    bool isLoadCompleted();
 
@@ -124,8 +131,13 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
+#ifdef USE_DEFERRED_CONTEXT
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
+#endif
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+
+	int def_status;
 
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
@@ -148,6 +160,7 @@ protected private:
 	int DrawCommand_y1;
 	int DrawCommand_y2;
 	int DrawCommand_color;
+
 	int DrawCommand_count;
 	int *DrawCommand_x_array;
 	int *DrawCommand_y_array;

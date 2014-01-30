@@ -36,13 +36,19 @@ static std::queue<eventQueueMember> eventQueue;
 
 #pragma endregion
 
-#include <mutex>
+enum qStEn {
+	QUEUE_PUSH,
+	QUEUE_POP,
+	QUEUE_IDLE
+};
 
-static std::mutex eventQueueMutex;
+static enum qStEn queue_state = QUEUE_IDLE;
 
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
+	int ini, fim;
+
 	static int32 *ignoreEventOfType = null;
 	struct eventQueueMember newEvent;
 	if (ignoreEventOfType == null)
@@ -50,36 +56,60 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	if (type == *ignoreEventOfType) {
 		return;
 	}
+	ini = GetTickCount64() & 0x3FFFFFFF;
+
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
 
-	eventQueueMutex.lock();
-	eventQueue.push(newEvent);
-	eventQueueMutex.unlock();
+	/*if (eventQueue.size() < 3) {
+		while (queue_state == QUEUE_POP) {
+			Sleep(1);
+		}
+		queue_state = QUEUE_PUSH;
+		eventQueue.push(newEvent);
+		queue_state = QUEUE_IDLE;
+	}
+	else {*/
+		eventQueue.push(newEvent);
+	//}
+
+	fim = GetTickCount64() & 0x3FFFFFFF;
+	debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
 }
 
 struct eventQueueMember eventQueuePop(void)
 {
+	int ini, fim;
 	struct eventQueueMember top;
 
-	eventQueueMutex.lock();
-	top = eventQueue.front();
-	eventQueue.pop();
-	eventQueueMutex.unlock();
+	ini = GetTickCount64() & 0x3FFFFFFF;
 
-	debug("popping event from queue; queue size %d", eventQueue.size());
+	/*if (eventQueue.size() < 3) {
+		while (queue_state == QUEUE_PUSH) {
+			Sleep(1);
+		}
+		queue_state = QUEUE_POP;
+		top = eventQueue.front();
+		eventQueue.pop();
+		queue_state = QUEUE_IDLE;
+	}
+	else {*/
+		top = eventQueue.front();
+		eventQueue.pop();
+	//}
+
+	fim = GetTickCount64() & 0x3FFFFFFF;
+	debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());
 
 	return top;
 }
 
 int eventQueueEmpty(void)
 {
-	eventQueueMutex.lock();
 	int ret = (int)eventQueue.empty();
-	eventQueueMutex.unlock();
 	return ret;
 }
 
