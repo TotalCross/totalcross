@@ -150,7 +150,7 @@ public class FileChooserBox extends Window
       this.ff = ff;
       this.buttonCaptions = buttonCaptions;
       tmodel = new TreeModel();
-      if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
+      if (Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
          cbRoot = new ComboBox(File.listRoots());
    }
 

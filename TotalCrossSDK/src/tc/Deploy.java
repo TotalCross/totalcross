@@ -85,9 +85,6 @@ public class Deploy
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
-            if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
-            else
-            if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
@@ -325,9 +322,6 @@ public class Deploy
                          for (int j =0; j < exc.length; j++)
                             DeploySettings.exclusionList.addElement(exc[j].replace('.','/'));
                          break;
-               case 'k': Deployer4WinCE.keepExe = true;
-                         Deployer4WinCE.keepExeAndDontCreateCabFiles = op.equals("/kn");
-                         break;
                case 'o': DeploySettings.targetDir = args[++i];
                          break;
                case 'v': DeploySettings.quiet = false;
@@ -425,7 +419,6 @@ public class Deploy
       //$END:REMOVE-ON-SDK-GENERATION$
       System.out.println(
             "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Currently supports only \"/inst android\".\n" +
-            "   /k      : Keep the exe and other temporary files during wince generation\n"+
             "   /kn     : As /k, but does not create the cab files for wince\n"+
             "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +

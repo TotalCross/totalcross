@@ -18,19 +18,16 @@
 
 package tc.samples.io.device.gpstest;
 
-import totalcross.io.device.*;
 import totalcross.io.device.gps.*;
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
 public class GpsTest extends MainWindow
 {
-   ComboBox cbCom,cbBaud;
    Container gpsCont;
    GPSView gps;
-   Button btn;
+   Button btnExit,btnGo;
    
    public GpsTest()
    {
@@ -39,36 +36,18 @@ public class GpsTest extends MainWindow
 
    public void initUI()
    {
-      add(btn = new Button("  Exit  "),RIGHT,TOP);
-      if (Settings.platform.equals(Settings.ANDROID) || Settings.isWindowsDevice())
-         add(new Label("In "+Settings.platform+" platform\nyou should select AUTODETECT\nas COM port"),CENTER,AFTER);
-      add(new Label("1. Select baudRate: "),LEFT,AFTER);
-      add(cbBaud = new ComboBox(),AFTER,SAME,FILL,PREFERRED);
-      cbBaud.add("1200");
-      cbBaud.add("2400");
-      cbBaud.add("4800");
-      cbBaud.add("9600");
-      cbBaud.add("14400");
-      cbBaud.add("19200");
-      cbBaud.add("38400");
-      cbBaud.add("57600");
-      cbBaud.add("115200");
-      cbBaud.setSelectedItem("9600");
-      add(new Label("2. Select COM port: "),LEFT,AFTER);
-      add(cbCom = new ComboBox(),AFTER,SAME,FILL,PREFERRED);
-      cbCom.add("Autodetect");
-      for (int i =0; i <= 10; i++)
-         cbCom.add("COM"+i);
+      add(btnExit = new Button("  Exit  "),RIGHT,TOP,PARENTSIZE+10,PREFERRED);
+      add(btnGo = new Button("Connect"),LEFT,TOP,PARENTSIZE+80,PREFERRED);
       add(gpsCont = new Container(),LEFT,AFTER,FILL,FILL);
    }
    
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
-         if (e.target == btn)
+         if (e.target == btnExit)
             exit(0);
          else
-         if ((e.target == cbCom || e.target == cbBaud) && cbCom.getSelectedIndex() != -1)
+         if (e.target == btnGo)
          try
          {
             if (gps != null)
@@ -77,17 +56,7 @@ public class GpsTest extends MainWindow
                gpsCont.remove(gps);
                gps = null;
             }
-            if (cbCom.getSelectedIndex() == 0)
-               gps = new GPSView(500);
-            else
-            {
-               int port = Convert.chars2int((String)cbCom.getSelectedItem());
-               int baud = Convert.toInt((String)cbBaud.getSelectedItem());
-               PortConnector pc = new PortConnector(port, baud);
-               pc.setFlowControl(false);
-               pc.readTimeout = 1000;
-               gps = new GPSView(pc, 500);
-            }
+            gps = new GPSView(500);
             gpsCont.add(gps, LEFT+2,TOP+2,FILL-2,FILL-2);
          }
          catch (Exception ee)

@@ -108,14 +108,6 @@ public class MainWindow extends Window implements totalcross.MainClass
 
       canDrag = false; // we can't drag the mainwindow.
       
-      if (Settings.isWindowsDevice() && Settings.romVersion >= 500) // guich@tc115_90
-         try
-         {
-            Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\System\\ErrorReporting\\DumpSettings", "DumpEnabled", 1);
-            Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\System\\ErrorReporting\\DumpSettings", "UploadClient", "\\Windows\\Dw.exe1");
-            restoreRegistry = true;
-         }
-         catch (Exception e) {e.printStackTrace();}
       if (Settings.isIOS() && Settings.romVersion >= 700)
       {
          taskbarHeight = fmH;

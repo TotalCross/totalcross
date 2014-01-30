@@ -85,42 +85,7 @@ public class RASConnectionSOAP extends RASConnection
             soap.setParam((String[]) userDefinedParams.getValues().toObjectArray(), "values");
          }
          
-         try
-         {
-            soap.execute();
-         }
-         catch (SOAPException firstException) // on wince, if the first execute fails, check for proxy configuration and try again.
-         {
-            if (Settings.isWindowsDevice()) //flsobral@tc126: check for proxy availability
-            {
-               try
-               {
-                  String workNetworkKey = "Comm\\ConnMgr\\Providers\\{EF097F4C-DC4B-4c98-8FF6-AEF805DC0E8E}\\HTTP-{18AD9FBD-F716-ACB6-FD8A-1965DB95B814}";
-                  int enabled = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Enable");
-                  String destination = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "DestId");
-                  String username = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Username");
-                  String proxy = Registry.getString(Registry.HKEY_LOCAL_MACHINE, workNetworkKey, "Proxy");
-                  if (enabled == 1 && destination.equals("{436EF144-B4FB-4863-A041-8F905A62C572}"))
-                  {
-                     int portIdx = proxy.indexOf(':');
-                     int port = portIdx == -1 ? 80 : Convert.toInt(proxy.substring(portIdx + 1));
-                     InputBox input = new InputBox("Proxy", "Proxy password for "+username, null);
-                     input.getEdit().setMode(totalcross.ui.Edit.PASSWORD);
-                     input.popup();
-                     String password = input.getValue();
-                     if (password != null)
-                        soap.useProxy(proxy.substring(0, portIdx), port, username, password);
-                  }
-                  soap.execute();
-               }
-               catch (Exception e2)
-               {
-                  throw firstException;
-               }
-            }
-            else
-               throw firstException;
-         }         
+         soap.execute();
       }
       catch (Exception ex)
       {

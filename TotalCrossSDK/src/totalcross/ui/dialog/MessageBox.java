@@ -152,8 +152,6 @@ public class MessageBox extends Window
       if (text == null)
          text = "";
       this.originalText = text; // guich@tc100: now we use \n instead of |
-      if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsDevice()) // guich@tc110_53
-         setFont(font.asBold());
    }
 
    /** This method can be used to set the text AFTER the dialog was shown. However, the dialog will not be resized.

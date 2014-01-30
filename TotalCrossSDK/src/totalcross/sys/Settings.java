@@ -110,7 +110,6 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
-    * @see #isWindowsDevice()
     * @see #isIOS()
     */
    public static String platform;
@@ -607,7 +606,9 @@ public final class Settings
    public static String activationId = "NOT AVAILABLE";
    
    /** Returns true if the current platform is Windows Mobile or Pocket PC. Note that Windows Desktop (aka WIN32)
-    * returns false. */
+    * returns false.
+    * @deprecated TotalCross 2.1 and over don't support Windows CE devices anymore.
+    */
    public static boolean isWindowsDevice()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
