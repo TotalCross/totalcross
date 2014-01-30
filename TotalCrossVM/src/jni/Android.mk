@@ -5,11 +5,7 @@ include $(CLEAR_VARS)
 TYPE ?= release
 
 ifeq ($(TYPE), noras)
-	ifeq ($(origin NORASID), undefined)
-		abort "Must provide a NORASID for noras build"
-	endif
 	include $(LOCAL_PATH)/options_noras.mk
-	EXTRA_DEFINES += -DNORASID=$(NORASID)
 endif
 ifeq ($(TYPE), release)
 	include $(LOCAL_PATH)/options_nodemo.mk
@@ -244,6 +240,9 @@ SQLITE_FILES =                               \
 	$(TC_SRCDIR)/sqlite/sqlite3.c             \
 	$(TC_SRCDIR)/nm/db/NativeDB.c               
 
+SCANNER_FILES =                                \
+	$(TC_SRCDIR)/scanner/intermec/Intermec_barcode.c
+
 SOURCE_FILES =                                \
 	$(SQLITE_FILES)                            \
 	$(NM_UI_FILES)                             \
@@ -270,13 +269,14 @@ SOURCE_FILES =                                \
 	$(MAP_FILES)                               \
 	$(AXTLS_FILES)                             \
 	$(PALMDB_FILES)                            \
+	$(SCANNER_FILES)                            \
 	$(TEST_SUITE_FILES)
 
 
 LOCAL_ARM_MODE   := arm
 LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
-LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm
+LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm
 LOCAL_LDLIBS     := -llog -ldl -lGLESv2 -lEGL -landroid
 LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map

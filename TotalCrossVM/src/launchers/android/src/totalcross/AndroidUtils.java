@@ -148,7 +148,7 @@ public class AndroidUtils
    {
       try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
       {
-         String sharedId = AndroidUtils.pinfo.sharedUserId;
+         String sharedId = pinfo.sharedUserId;
          String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
          System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
       }

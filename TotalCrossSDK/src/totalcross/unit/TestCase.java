@@ -514,6 +514,28 @@ public abstract class TestCase
          assertFailed(expected+" != "+actual);
    }
 
+   //jeffque@tc200: byte array not equals comparison
+   protected static void assertNotEquals(byte[] b1, byte[] b2)
+   {
+      assertionCounter++;
+      if (b1 == null) {
+         if (b2 == null) {
+	         assertFailed("");
+         } else {
+            return;
+         }
+      } else if (b2 == null) {
+         return;
+      }
+
+      if (b1.length == b2.length) {
+         for (int i =0; i < b1.length; i++)
+            if (b1[i] != b2[i])
+               return;
+         assertFailed("Arrays are equal");
+      }
+   }
+
    protected static void assertNotEquals(char expected, char actual)
    {
       assertionCounter++;
@@ -528,7 +550,7 @@ public abstract class TestCase
       double diff = Math.abs(expected-actual); // guich@552_33
       boolean ok = diff > delta;
       if (!ok)
-         fail("asser("+expected+" != "+actual);
+         assertFailed(expected+" != "+actual);
    }
 
    protected static void assertNotEquals(long expected, long actual)

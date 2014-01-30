@@ -61,6 +61,7 @@ public class WorldWatch extends MainWindow
             MainWindow.exit(0);
          }
       });
+     
 
       addWatch(LEFT, TOP, 49);
       addWatch(RIGHT, TOP, 45);

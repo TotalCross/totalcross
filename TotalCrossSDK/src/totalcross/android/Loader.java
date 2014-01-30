@@ -30,7 +30,9 @@ import java.util.*;
 import totalcross.*;
 import totalcross.android.compat.*;
 
-public class Loader extends Activity 
+import com.intermec.aidc.*; 
+
+public class Loader extends Activity implements BarcodeReadListener
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
@@ -50,6 +52,11 @@ public class Loader extends Activity
       try
       {
          AndroidUtils.initialize(this);
+         if (isSingleApk() && savedInstanceState != null) // bypass bug that will cause a new instance each time the app is minimized and called again
+         {
+            System.exit(2);
+            return;
+         }
          AndroidUtils.checkInstall();
          checkLitebase(); // calls runVM() on close
       }
@@ -77,8 +84,8 @@ public class Loader extends Activity
       }
       catch (Throwable t)
       {
-         AndroidUtils.debug("Exception ignored:");
-         AndroidUtils.handleException(t,false);
+         //AndroidUtils.debug("Exception ignored:");
+         //AndroidUtils.handleException(t,false);
          AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
@@ -179,6 +186,11 @@ public class Loader extends Activity
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
+   
+   public boolean isSingleApk()
+   {
+      return !AndroidUtils.pinfo.sharedUserId.equals("totalcross.app.sharedid");
+   }
    
    private void runVM()
    {
@@ -455,7 +467,7 @@ public class Loader extends Activity
    {
       if (runningVM) // guich@tc126_60: call app 1, home, call app 2: onDestroy is called
          quitVM();
-      super.onDestroy();
+      super.onDestroy(); 
    }
    
    protected void onPause()
@@ -490,5 +502,13 @@ public class Loader extends Activity
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
+   }
+
+   String strBarcodeData;    
+
+   public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
+   {
+      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }
