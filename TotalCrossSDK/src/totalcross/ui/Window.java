@@ -122,6 +122,17 @@ public class Window extends Container
    /** If true (default), the user can drag this window around */
    protected boolean canDrag = true;
 
+   /** Color used to paint the iOS 7 or greater floating task bar.
+    * Defaults to the application's background color.
+    * @since TotalCross 2.1
+    */
+   public static int taskbarColor;
+   
+   /** The iOS taskbar' height. Defaults to the height of the normal font.
+    * @since TotalCross 2.1
+    */
+   public static int taskbarHeight;
+   
    /** Must set to true if your Window is prepared for 320x320 resolutions.
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
@@ -1008,7 +1019,8 @@ public class Window extends Container
       int m = borderGaps[borderStyle];
       boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
       r.x = m;
-      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
+      int th = this == MainWindow.mainWindowInstance ? MainWindow.taskbarHeight : 0;            
+      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1) + th;
       switch (borderStyle)
       {
          case TAB_ONLY_BORDER: r.y++; break;
@@ -1116,10 +1128,15 @@ public class Window extends Container
    public void _doPaint()
    {
       Graphics gg = getGraphics();
+      if (taskbarHeight > 0)
+      {
+         gg.backColor = taskbarColor;
+         gg.fillRect(0,0,width,taskbarHeight);
+      }
       // clear background
       gg.backColor = backColor; // disabled here?
       if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
-         gg.fillRect(0, 0, width, height); // guich@110
+         gg.fillRect(0, taskbarHeight, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
       onPaint(gg);

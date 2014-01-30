@@ -116,6 +116,11 @@ public class MainWindow extends Window implements totalcross.MainClass
             restoreRegistry = true;
          }
          catch (Exception e) {e.printStackTrace();}
+      if (Settings.isIOS() && Settings.romVersion >= 700 && !Settings.isFullScreen)
+      {
+         taskbarHeight = fmH;
+         taskbarColor = backColor;
+      }
    }
    
    /** Returns true if this is the main thread.

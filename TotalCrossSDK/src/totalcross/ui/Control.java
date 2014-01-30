@@ -523,11 +523,6 @@ public class Control extends GfxSurface
      * @see #SCREENSIZEMIN
      * @see #SCREENSIZEMAX
      * @see #PARENTSIZE
-<<<<<<< HEAD
-=======
-     * @see #SCREENSIZEMIN
-     * @see #SCREENSIZEMAX
->>>>>>> refs/remotes/origin/develop
      * @see #PARENTSIZEMIN
      * @see #PARENTSIZEMAX
      * @see Container#add(Control, int, int)

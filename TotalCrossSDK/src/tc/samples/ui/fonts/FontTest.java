@@ -32,7 +32,7 @@ public class FontTest extends MainWindow
 
    public FontTest()
    {
-      super("Font test",TAB_ONLY_BORDER);
+      super("Font test",HORIZONTAL_GRADIENT);
       setUIStyle(Settings.Android);
       //setFont(totalcross.ui.font.Font.getFont("Arial",false,Font.NORMAL_SIZE));
    }
@@ -42,7 +42,8 @@ public class FontTest extends MainWindow
       add(selector = new Selector(), LEFT,TOP+2,FILL,PREFERRED);
       add(samples = new Samples(), LEFT,AFTER,PARENTSIZE+100,FILL);
       samples.setBackColor(Color.darker(getBackColor(),10)); // darker background
-      btnExit = new Button("  X  ");
+      btnExit = new Button("  x  ");
+      btnExit.transparentBackground = true;
       btnExit.setBorder(Button.BORDER_NONE);
       add(btnExit,RIGHT,0);
    }
