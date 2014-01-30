@@ -747,4 +747,11 @@ target: build targets
   <antcall target="copyIPhoneLauncher_sdk" />
 </target>
 
+<target name="buildBB_sdk" />
+<target name="buildBB_vms" />
+<target name="buildBB_vms_noras" />
+<target name="buildPalmOS5_sdk" />
+<target name="buildPalmOS5_vms" />
+<target name="buildPalmOS5_vms_noras" />
+
 </project>
