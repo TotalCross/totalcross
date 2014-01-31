@@ -18,7 +18,6 @@
 
 
 #ifdef darwin
-#error
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
 #define __gl2_h_
