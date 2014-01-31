@@ -53,10 +53,7 @@
 		0F8C8C8D1549CFC700E0967F /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A391549CFC700E0967F /* globals.c */; };
 		0F8C8C8E1549CFC700E0967F /* globals.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A3A1549CFC700E0967F /* globals.h */; };
 		0F8C8C911549CFC700E0967F /* noras.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3E1549CFC700E0967F /* noras.inc */; };
-		0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3F1549CFC700E0967F /* noras_20.inc */; };
 		0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A401549CFC700E0967F /* noras_274.inc */; };
-		0F8C8C941549CFC700E0967F /* noras_338.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A411549CFC700E0967F /* noras_338.inc */; };
-		0F8C8C951549CFC700E0967F /* noras_none.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A421549CFC700E0967F /* noras_none.inc */; };
 		0F8C8C981549CFC700E0967F /* settings_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A471549CFC700E0967F /* settings_c.h */; };
 		0F8C8C991549CFC700E0967F /* startup_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A481549CFC700E0967F /* startup_c.h */; };
 		0F8C8C9A1549CFC700E0967F /* settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A491549CFC700E0967F /* settings.c */; };
@@ -2197,10 +2194,7 @@
 				0F8C8C8B1549CFC700E0967F /* demo.c in Sources */,
 				0F8C8C8D1549CFC700E0967F /* globals.c in Sources */,
 				0F8C8C911549CFC700E0967F /* noras.inc in Sources */,
-				0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */,
 				0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */,
-				0F8C8C941549CFC700E0967F /* noras_338.inc in Sources */,
-				0F8C8C951549CFC700E0967F /* noras_none.inc in Sources */,
 				0F8C8C9A1549CFC700E0967F /* settings.c in Sources */,
 				0F8C8C9C1549CFC700E0967F /* startup.c in Sources */,
 				0F8C8CA21549CFC700E0967F /* jcapimin.c in Sources */,
