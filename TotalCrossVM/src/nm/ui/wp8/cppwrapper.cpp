@@ -278,7 +278,7 @@ void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 }
 void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
-   Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
+//   Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
 }
 void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {

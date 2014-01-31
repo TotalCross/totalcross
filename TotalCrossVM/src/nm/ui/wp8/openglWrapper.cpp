@@ -540,7 +540,8 @@ void glDrawPixels(int32 n, int32 rgb)
 #ifdef TOGGLE_BUFFER
    if (colour != dxDrawPixelsCache.lastARGB)
    {
-      if (dxDrawPixelsCache.size > 0) {
+      if (dxDrawPixelsCache.size > 0) 
+      {
          dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
          dxDrawPixelsCache.size = 0;
       }

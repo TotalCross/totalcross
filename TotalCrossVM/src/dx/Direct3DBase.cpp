@@ -1,5 +1,4 @@
-﻿#include "pch.h"
-#include "Direct3DBase.h"
+﻿#include "Direct3DBase.h"
 
 #include <thread>
 
@@ -39,7 +38,7 @@ void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 	int saida;
 
 	m_d3dDevice = device;
-	saida = startVM("AllTests", &local_context);
+	saida = startVM("UIControls", &local_context);
 
 	if (saida != 0) 
    {

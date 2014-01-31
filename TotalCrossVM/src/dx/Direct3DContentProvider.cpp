@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Direct3DContentProvider.h"
 
 using namespace PhoneDirect3DXamlAppComponent;

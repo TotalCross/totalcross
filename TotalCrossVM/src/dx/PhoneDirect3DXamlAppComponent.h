@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pch.h"
 #include "Direct3DBase.h"
 #include <DrawingSurfaceNative.h>
 #include "Idummy.h"
