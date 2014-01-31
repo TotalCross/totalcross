@@ -265,12 +265,10 @@ void nativeStopGPSCPP()
 bool dxSetup()
 {
 	return true;//XXX
-//   return MainView::GetLastInstance()->dxSetup();
 }
 
 void dxUpdateScreen()
 {
-   //MainView::GetLastInstance()->dxUpdateScreen();
    Direct3DBase::GetLastInstance()->Present();
 }
 

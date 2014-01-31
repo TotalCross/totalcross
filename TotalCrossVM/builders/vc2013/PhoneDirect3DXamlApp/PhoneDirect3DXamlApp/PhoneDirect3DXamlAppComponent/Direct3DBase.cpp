@@ -542,7 +542,7 @@ void Direct3DBase::PreRender()
 	static int mustClear = true;
 
 	if (mustClear) {
-		const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+		const float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 #ifdef USE_DEFERRED_CONTEXT
 		m_d3dContextDEF->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
 		m_d3dContextDEF->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -689,20 +689,6 @@ int Direct3DBase::WaitDrawCommand() {
 void Direct3DBase::DoDrawCommand(bool should_redo) {
 	static ID3D11CommandList *cl;
 	ID3D11DeviceContext1 *ic;
-	/*switch (TheDrawCommand) {
-	case DRAW_COMMAND_LINE:
-		drawLine(DrawCommand_x1, DrawCommand_y1, DrawCommand_x2, DrawCommand_y2, DrawCommand_color);
-		break;
-	case DRAW_COMMAND_RECT:
-		fillRect(DrawCommand_x1, DrawCommand_y1, DrawCommand_x2, DrawCommand_y2, DrawCommand_color);
-		break;
-	case DRAW_COMMAND_PIXELS:
-		drawPixels(DrawCommand_x_array, DrawCommand_y_array, DrawCommand_count, DrawCommand_color);
-		break;
-	case DRAW_COMMAND_PRESENT:
-	default:
-		int i = 0;
-	}*/
 
 #ifdef USE_DEFERRED_CONTEXT
 	if (should_redo) {//|| TheDrawCommand == DRAW_COMMAND_PRESENT) {
@@ -722,60 +708,15 @@ void Direct3DBase::DoDrawCommand(bool should_redo) {
 }
 
 void Direct3DBase::drawCommand_drawLine(int x1, int y1, int x2, int y2, int color) {
-	//drawCommandLock();
-	/*int ini, fim;
-	ini = GetTickCount64() & 0x3FFFFFFF;
-	while (TheDrawCommand != DRAW_COMMAND_INVALID)
-		Sleep(OCCUPIED_WAIT_TIME);
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	debug("occupied wait LINE elapsed %d", fim - ini);
-
-	DrawCommandLock.lock();
-	DrawCommand_x1 = x1;
-	DrawCommand_y1 = y1;
-	DrawCommand_x2 = x2;
-	DrawCommand_y2 = y2;
-	DrawCommand_color = color;
-	TheDrawCommand = DRAW_COMMAND_LINE;*/
 	drawLine(x1, y1, x2, y2, color);
-	//drawCommandUnlock();
 }
 
 void Direct3DBase::drawCommand_drawPixels(int *x, int *y, int count, int color) {
-	//drawCommandLock();
-	/*int ini, fim;
-	ini = GetTickCount64() & 0x3FFFFFFF;
-	while (TheDrawCommand != DRAW_COMMAND_INVALID)
-		Sleep(OCCUPIED_WAIT_TIME);
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	debug("occupied wait PIXELS elapsed %d", fim - ini);
-	DrawCommandLock.lock();
-	DrawCommand_x_array = x;
-	DrawCommand_y_array = y;
-	DrawCommand_count = count;
-	DrawCommand_color = color;
-	TheDrawCommand = DRAW_COMMAND_PIXELS;*/
 	drawPixels(x, y, count, color);
-	//drawCommandUnlock();
 }
 
 void Direct3DBase::drawCommand_fillRect(int x1, int y1, int x2, int y2, int color) {
-	//drawCommandLock();
-	/*int ini, fim;
-	ini = GetTickCount64() & 0x3FFFFFFF;
-	while (TheDrawCommand != DRAW_COMMAND_INVALID)
-		Sleep(OCCUPIED_WAIT_TIME);
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	debug("occupied wait RECT elapsed %d", fim - ini);
-	DrawCommandLock.lock();
-	DrawCommand_x1 = x1;
-	DrawCommand_y1 = y1;
-	DrawCommand_x2 = x2;
-	DrawCommand_y2 = y2;
-	DrawCommand_color = color;
-	TheDrawCommand = DRAW_COMMAND_RECT;*/
 	fillRect(x1, y1, x2, y2, color);
-	//drawCommandUnlock();
 }
 
 void Direct3DBase::drawCommand_setColor(int color) {
