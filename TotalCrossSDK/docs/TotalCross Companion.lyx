@@ -137,7 +137,7 @@ End
 
 \graphics default
 \default_output_format default
-\output_sync 0
+\output_sync 1
 \bibtex_command default
 \index_command default
 \paperfontsize 11
@@ -455,17 +455,6 @@ This tutorial follows the Object Oriented naming convention: a class containing
 \begin_layout Standard
 
 \series bold
-WINDOWS CE
-\series default
- refers to all the possible names deriving from that platform: Windows CE
- (up to 2.x), Pocket PC (Windows CE 3.x), .NET (Windows CE 4.x), Windows Mobile
- (5.x and 6.x).
- 
-\end_layout
-
-\begin_layout Standard
-
-\series bold
 TC
 \series default
  refers to TotalCross.
@@ -541,7 +530,7 @@ Supported Platforms
 \end_layout
 
 \begin_layout Itemize
-Android 2.3 and above.
+Android 2.3.3 and above (API level 10).
 \end_layout
 
 \begin_layout Itemize
@@ -549,23 +538,26 @@ iOS 5.0 and above.
 \end_layout
 
 \begin_layout Itemize
-Windows CE: Pocket PC ARM/SH3/MIPS (3.0, .NET, Windows Mobile 5 and 6), PPC
- 2.11 ARM, HPC2000 ARM.
- 
+Windows XP and above.
 \end_layout
 
 \begin_layout Itemize
-Windows 2000 and above
-\end_layout
-
-\begin_layout Itemize
-Linux.
+Linux 32 bits (we only assure that it works on Debian distribution).
  
 \end_layout
 
 \begin_layout Itemize
 Browser as Java applet (JDK 1.1 and above).
- 
+ Note that in this case you must enable some permission so that you can
+ use files and, consequently, Litebase.
+\end_layout
+
+\begin_layout Itemize
+Java SE.
+\end_layout
+
+\begin_layout Itemize
+Windows Phone 8.
 \end_layout
 
 \begin_layout Section
@@ -1285,7 +1277,7 @@ dist
 samples
 \family default
 : Installation files for all samples.
- Lets take the UIGadgets sample, located at 
+ Lets take the UIControls sample, located at 
 \family typewriter
 TotalCrossSDK
 \backslash
@@ -1293,7 +1285,7 @@ dist
 \backslash
 samples
 \backslash
-UIGadgets
+UIControls
 \family default
 .
  Inside there's an install folder, and below the following folders:
@@ -1318,19 +1310,6 @@ applet
 , otherwise errors may occur.
  You should also give special permission for file usage so that it is possible
  to manipulate files and Litebase.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-iOS
-\family default
-: for newer versions of iOS (iPhone, iPad, and iPod), contains an 
-\family typewriter
-.ipa
-\family default
- file.
- 
 \end_layout
 
 \begin_layout Itemize
@@ -1379,27 +1358,15 @@ If your desktop has the SDK installed, you may run the application from
 \begin_layout Itemize
 
 \family typewriter
-wince
+wp8
 \family default
-: there are 6 
+: a 
 \family typewriter
-.cab
+.xap
 \family default
- files.
- Just run the 
-\family typewriter
-.bat
-\family default
- file inside that folder and the correct 
-\family typewriter
-.cab
-\family default
- file for the currently connected Windows CE device will be chosen.
- If it doesn't work, you may copy the 
-\family typewriter
-.cab
-\family default
- file to your device and open it using the device's file explorer.
+ file which includes the sample, TotalCross, and Litebase.
+ Note that to install the sample you must enable your phone to allow development
+ mode.
 \end_layout
 
 \begin_layout Itemize
@@ -1431,6 +1398,38 @@ android
  files.
 \end_layout
 
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+
+\series bold
+Note
+\series default
+: There is no 
+\family typewriter
+iOS
+\family default
+ folder since to install an application on iOS you MUST have an Apple key.
+ It will be explained later on this manual.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
 
@@ -1452,15 +1451,15 @@ vm
 \family typewriter
 iOS
 \family default
-: copy the 
+: contains an 
 \family typewriter
-.deb
+.ipa
 \family default
- file into the device and execute a 
+ file which must be used to generate the 
 \family typewriter
-dpkg -i <deb file>
+.ipa
 \family default
-.
+ file for your application and the samples if you have an Apple key.
 \end_layout
 
 \begin_layout Itemize
@@ -1519,43 +1518,18 @@ If your desktop has the SDK installed, this is not required, as long as
 \begin_layout Itemize
 
 \family typewriter
-wince
+wp8
 \family default
-: just run the 
+: a 
 \family typewriter
-_CEInstall-RunMe.bat
+TotalCross.xap
 \family default
- file and the correct 
+ that must be used to generate the 
 \family typewriter
-.cab
+.xap
 \family default
- file will be installed on the device (if the installation fails, there's
- also a 
-\family typewriter
-.bat
-\family default
- file that can be used on Windows Mobile).
- Optionally, you can grab the 
-\family typewriter
-TCVM.dll
-\family default
- file inside the target plaform's folder and copy it to the device (preferrably,
- to 
-\family typewriter
-
-\backslash
-TotalCross
-\family default
-).
- In this case, you must also copy the files 
-\family typewriter
-TCBase.tcz
-\family default
- and 
-\family typewriter
-TCFont.tcz
-\family default
- to the same folder.
+ of your application.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -3188,40 +3162,19 @@ App.zip
 \begin_layout Itemize
 
 \family typewriter
-ce
-\begin_inset space ~
-\end_inset
-
-or
-\begin_inset space ~
-\end_inset
-
--wince
+-wp8
 \family default
- Creates the 
+ Creates 
 \family typewriter
-.cab
+.xap
 \family default
- files for WinCE, and a batch installer which invokes your synchronization
- software (ActiveSync or Windows Mobile Device Center).
+ file.
 \end_layout
 
 \begin_layout Itemize
 
 \family typewriter
-winmo
-\family default
- Creates a 
-\family typewriter
-.cab
-\family default
- file for Windows Mobile only.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-win32
+-win32
 \family default
  Creates an executable file to run the application in Win32.
 \end_layout
@@ -3229,7 +3182,7 @@ win32
 \begin_layout Itemize
 
 \family typewriter
-applet
+-applet
 \begin_inset space ~
 \end_inset
 
@@ -3249,7 +3202,7 @@ or
 \begin_layout Itemize
 
 \family typewriter
-android
+-android
 \family default
  Creates the 
 \family typewriter
@@ -3261,7 +3214,7 @@ android
 \begin_layout Itemize
 
 \family typewriter
-linux
+-linux
 \family default
  Creates the binary and the 
 \family typewriter
@@ -3273,11 +3226,11 @@ linux
 \begin_layout Itemize
 
 \family typewriter
-iOS
+-iOS
 \family default
  or 
 \family typewriter
-iPhone
+-iPhone
 \family default
  Creates an 
 \family typewriter
@@ -3289,7 +3242,7 @@ iPhone
 \begin_layout Itemize
 
 \family typewriter
-all
+-all
 \family default
  Single command to create all of the above.
 \end_layout
@@ -3364,35 +3317,6 @@ platforms
 /i android
 \family default
 .
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/k
-\family default
- : Keeps the .
-\family typewriter
-exe
-\family default
- and other temporary files during WinCE generation (the files needed for
- manual installation).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/kn
-\family default
- : As 
-\family typewriter
-/k
-\family default
-, but does not create the 
-\family typewriter
-.cab
-\family default
- files for wince.
 \end_layout
 
 \begin_layout Itemize
@@ -4105,26 +4029,6 @@ If you specify these outside the static initializer, like in the constructor,
 \begin_layout Standard
 There are other options that are set by the programmer in the static initializer
 : 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-Settings.closeButtonType
-\family default
-: for WinCE only, can assume three options: 
-\family typewriter
-NO_BUTTON
-\family default
-, which shows no button in the task bar; 
-\family typewriter
-CLOSE_BUTTON
-\family default
-, which shows the default OK button that closes the application, or 
-\family typewriter
-MINIMIZE_BUTTON
-\family default
-, which uses a X button to minimize the application.
 \end_layout
 
 \begin_layout Itemize
@@ -5288,39 +5192,7 @@ Documents
 \end_layout
 
 \begin_layout Section
-Windows CE
-\end_layout
-
-\begin_layout Subsection
-Using the installer
-\end_layout
-
-\begin_layout Standard
-Just execute the batch file created by the deployer under the wince directory.
- There are two 
-\family typewriter
-.bat
-\family default
- files: one for windows mobile (suffix 
-\family typewriter
-WMOBILE
-\family default
-), and one for all others.
- We recommend that you first try the generic one, and only if the installation
- fails, try the 
-\family typewriter
-WMOBILE
-\family default
- version.
- Note that if you created the cab file using 
-\family typewriter
-tc.Deploy -winmo
-\family default
-, only the 
-\family typewriter
-WMOBILE
-\family default
- bat file will be installed.
+Windows Phone 8
 \end_layout
 
 \begin_layout Subsection
@@ -5328,157 +5200,31 @@ Manual installation
 \end_layout
 
 \begin_layout Standard
-Copy the right 
+When you generate a 
 \family typewriter
-.cab
+.xap
 \family default
- file to your device and run it from the device's file explorer.
- If it doesn't succeed, copy the following files to 
-\family typewriter
+ of your application, which includes TotalCross and Litebase, you can install
+ it yourself if you enable development mode on your device.
+ To do this, firstly you MUST have a computer running a Windows 8.
+ Then, you need to download and install Windows Phone SDK 8.0, which can
+ be downloaded from 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.microsoft.com/en-us/download/details.aspx?id=35471"
+target "http://www.microsoft.com/en-us/download/details.aspx?id=35471"
 
-\backslash
-TotalCross
-\family default
- (or any other folder):
-\end_layout
+\end_inset
 
-\begin_layout Standard
 
-\family typewriter
-TotalCrossSDK
-\backslash
-dist
-\backslash
-vm
-\backslash
-wince
-\backslash
-POCKETPC
-\backslash
-ARM
-\backslash
-tcvm.dll
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-TotalCrossSDK
-\backslash
-dist
-\backslash
-vm
-\backslash
-TCBase.tcz
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-TotalCrossSDK
-\backslash
-dist
-\backslash
-vm
-\backslash
-TCFont.tcz
-\end_layout
-
-\begin_layout Standard
-If you're using Litebase, you must also copy 
-\family typewriter
-Litebase.dll
-\family default
- and 
-\family typewriter
-Litebase.tcz
-\family default
-.
 \end_layout
 
 \begin_layout Subsection
-Identifying the right installation for your device
-\end_layout
-
-\begin_layout Standard
-Each 
-\family typewriter
-.cab
-\family default
- file targets a different platform:
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring POCKETPC0
-HPC211 Handheld PC with Windows CE 2.11.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring POCKETPC0
-HPC2000 Handheld PC 2000.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring POCKETPC0
-POCKETPC PocketPC with Windows CE 3.0+.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring POCKETPC0
-WMOBILE Windows Mobile.
-\end_layout
-
-\begin_layout Standard
-The Pocket PC also supports the given processors: ARM, MIPS, and SH3.
+Windows Store
 \end_layout
 
 \begin_layout Subsection
 Debugging
-\end_layout
-
-\begin_layout Standard
-Starting in version 1.15, on Windows Mobile, it is possible to find exactly
- where an error, that results in a critical stop, occured.
- This can help a lot to fix problems in the virtual machine.
-\end_layout
-
-\begin_layout Standard
-When the program starts, the virtual machine makes two logs in the Windows
- Mobile registry, enabling the error reporting, but disabling the dialog
- that appears when such error occurs.
- This way, the crash dumps are kept in place, allowing us to recover it.
- It's throught this crash dump that we can now find the exact point where
- the error occured (in both TotalCross and Litebase VMs).
-\end_layout
-
-\begin_layout Standard
-See what you have to do when a critical error happens:
-\end_layout
-
-\begin_layout Enumerate
-Go to the folder 
-\family typewriter
-
-\backslash
-Windows
-\backslash
-System
-\backslash
-DumpFiles
-\family default
- and zip all files that you find.
- If you can't do that, the most important files are the ones that has the
- 
-\family typewriter
-.kdmp
-\family default
- extension.
-\end_layout
-
-\begin_layout Enumerate
-Send this file to us, specifying which virtual machine version you're using
- and if its a demo or one that requires activation.
- 
 \end_layout
 
 \begin_layout Section
@@ -6695,12 +6441,17 @@ TotalCross2/dist/tc.jar
 \end_layout
 
 \begin_layout Enumerate
-Deploying for Android, iOS, Windows 32, Windows CE, Linux, and browser:
- use 
+Deploying for Android, iOS, Windows 32, Linux, and browser: use 
 \family typewriter
-TotalCross2 /dist/tc.jar
+TotalCross2.1 /dist/tc.jar
 \family default
  
+\end_layout
+
+\begin_layout Enumerate
+Deploying for Windows CE: use 
+\family typewriter
+TotalCross2/dist/tc.jar
 \end_layout
 
 \begin_layout Enumerate
@@ -6743,7 +6494,7 @@ In TotalCross 2, we use Open GL, where everything is rendered by the hardware
 
 \begin_layout Standard
 Open GL is used on Android and iOS.
- For Java SE, Windows 32, and Windows CE, it uses the old scheme of bitmaps.
+ For Java SE and Windows 32, it uses the old scheme of bitmaps.
 \end_layout
 
 \begin_layout Standard
@@ -6931,6 +6682,787 @@ Please notice that all indices files must be erased in order to use Litebase
  tables created with version 2.67 with Litebase 2.7 and vice-versa.
  Moreover, tables using cryptography created in version 2.7 can't be used
  with version 2.67.
+\end_layout
+
+\begin_layout Chapter
+TotalCross 2.1 Differences
+\end_layout
+
+\begin_layout Section
+Platforms
+\end_layout
+
+\begin_layout Standard
+In TotalCross 2.1 we dropped support for Windows CE and Windows Mobile platforms,
+ since these platforms are discontinued and replaced by Windows Phones.
+\end_layout
+
+\begin_layout Standard
+If you want to support these platforms, you must download TotalCross 2.0,
+ which still supports these platforms.
+ Note that Litebase 2.7 works for both TotalCross 1.7 (and up), TotalCross
+ 2.0 (and up), and TotalCross 2.1 (and up)
+\end_layout
+
+\begin_layout Standard
+What we recommend is that you use TotalCross 2.0 only for those two platforms,
+ and use TotalCross 2.1 for all other platforms.
+ Many SDKs can coexist in the same machine, just rename them.
+\end_layout
+
+\begin_layout Standard
+The great main improvement in TotalCross 2.1 is the support of the new and
+ rapidly growing Windows Phone 8.
+ We opt to not give support to Windows Phone 7 since its market share is
+ small and Microsoft decided to develop WP8 just some time later.
+\end_layout
+
+\begin_layout Section
+Graphics
+\end_layout
+
+\begin_layout Standard
+For Windows Phone 8, DirectX is used instead of the old scheme of bitmaps.
+ In the furure releases, DirectX will also be used for Windows 32 in order
+ to improve graphics performance.
+ However, older Windows 32 releases won't be supported anymore.
+\end_layout
+
+\begin_layout Section
+Reflection
+\end_layout
+
+\begin_layout Standard
+Now the reflection API of Java 1.1 is full implemented.
+ To know more about it, please check JavaDoc or take a look at this link
+ explaining it:
+\begin_inset Newline newline
+\end_inset
+
+ 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.tns.lcs.mit.edu/manuals/java-1.1.1/guide/reflection/index.html"
+target "http://www.tns.lcs.mit.edu/manuals/java-1.1.1/guide/reflection/index.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+SQLite and TDBC
+\end_layout
+
+\begin_layout Standard
+Now there is another database option in TotalCross.
+ SQLite was included in the platorm, so that TotalCross will use the same
+ SQLite version for all supported platforms.
+ If it used the one available on the device when it has one, there could
+ be differences in the API or table format.
+ But remember that Litebase eases the task of synchronizing the device tables
+ with tables on server databases such as SQLServer or Oracle by using the
+ class 
+\family typewriter
+RowIterator
+\family default
+.
+ If you want to do something similar using SQLite, you will have to do it
+ from scratch.
+\end_layout
+
+\begin_layout Standard
+The currently SQLite version used is 3.8.
+ If you intend to use it, please take a look at its documentation at 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.sqlite.org/"
+target "http://www.sqlite.org/"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The access to SQLite is through TDBC, a JDBC driver for TotalCross.
+ The TDBC implementation was based on JDBC 2.1.
+ We did not implement everything.
+ Below is a list of JDBC classes and interfaces that were and were not implement
+ed:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="23" columns="2">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="left" valignment="top" width="0">
+<column alignment="center" valignment="top" width="40page%">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Feature
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Was it implemented?
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Array
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+CallableStatement
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+DatabaseMetaData
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Ref
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SQLData 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SQLInput 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SQLOutput 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Struct 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Blob
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Connection 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+All the methods except for 
+\family typewriter
+getMetaData()
+\family default
+, 
+\family typewriter
+getTypeMap()
+\family default
+, 
+\family typewriter
+prepareCall()
+\family default
+, and 
+\family typewriter
+setTypeMap()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Driver
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+PreparedStatement
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+All the methods except for 
+\family typewriter
+setArray()
+\family default
+,
+\family typewriter
+ setAsciiStream()
+\family default
+,
+\family typewriter
+ setBinaryStream()
+\family default
+,
+\family typewriter
+ setCharacterStream()
+\family default
+,
+\family typewriter
+ setClob()
+\family default
+,
+\family typewriter
+ setFloat()
+\family default
+,
+\family typewriter
+ setObject()
+\family default
+,
+\family typewriter
+ setRef()
+\family default
+, and
+\family typewriter
+ setUnicodeStream()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ResultSet
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+All the methods except for 
+\family typewriter
+deleteRow()
+\family default
+, 
+\family typewriter
+getArray()
+\family default
+, 
+\family typewriter
+getAsciiStream()
+\family default
+, 
+\family typewriter
+getBinaryStream()
+\family default
+, 
+\family typewriter
+getCaracterStream()
+\family default
+, 
+\family typewriter
+getClob()
+\family default
+, 
+\family typewriter
+getObject()
+\family default
+, 
+\family typewriter
+getRef()
+\family default
+, 
+\family typewriter
+getUnicodeStream()
+\family default
+, 
+\family typewriter
+insertRow()
+\family default
+, 
+\family typewriter
+moveToInsertRow()
+\family default
+, and 
+\family typewriter
+update()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ResultSetMetaData
+\family default
+ interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Statement 
+\family default
+interface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+All the methods except for 
+\family typewriter
+setEscapeProcessing()
+\family default
+ and 
+\family typewriter
+setMaxFieldSize()
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+DriverPropertyInfo 
+\family default
+class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+SQLPermission
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Date
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+DriverManager
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Time
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Timestamp
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Types
+\family default
+ class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+yes
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Take a look at JDBC specification 2.1 at .
+ You can check TDBC JavaDoc in the package 
+\family typewriter
+totalcross.db.sqlite
+\family default
+.
+ In the future, other databases might be added to TotalCross using JDBC
+ specification.
+ It is also intended to provide Litebase access using the JDBC API.
 \end_layout
 
 \begin_layout Chapter
@@ -8313,8 +8845,8 @@ Exit Codes
 \begin_layout Standard
 When the VM exits, it returns an exit code.
  Obviously, this chapter only concerns TotalCross applications running on
- Windows 32, Windows CE/Mobile, iOS, and Android since on Java SE the TotalCross
- VM is not used.
+ Windows 32, iOS, and Android since on Java SE the TotalCross VM is not
+ used.
  
 \end_layout
 
@@ -8363,7 +8895,7 @@ Settings
 \begin_layout FieldList
 106 If it is not possible to run multiple instances of the application and
  the application is already running.
- This only happens on Windows 32 and Windows CE.
+ This only happens on Windows 32.
  One of the most common errors.
 \end_layout
 
@@ -8490,7 +9022,7 @@ Flat
 \family default
  – Defines a FLAT user interface style that looks like the Pocket PC look-and-fe
 el.
- It's basically the 
+ It's basically the old 
 \family typewriter
 WinCE
 \family default
@@ -8579,7 +9111,7 @@ public class Foo extends MainWindow
 \begin_layout Standard
 The decision of which user interface to use must be made in the main window's
  constructor.
- If nothing is changed, Windows CE with a blue background is used.
+ If nothing is changed, Vista with a blue background is used.
  Changing the user interface outside the main window's constructor can crash
  your application.
  If you try to change it more than once, a 
@@ -10244,8 +10776,12 @@ setDefaultFont(Font.getFont(false,20))
 \end_layout
 
 \begin_layout FieldList
-minimize() Notifies the application that it should be minimized, that is,
- transfered to the background.
+
+\family typewriter
+minimize()
+\family default
+ Notifies the application that it should be minimized, that is, transfered
+ to the background.
  Whenever the application is minimized, the following call back function
  will be called: 
 \family typewriter
@@ -10261,8 +10797,12 @@ minimize()
 \end_layout
 
 \begin_layout FieldList
-restore() Notifies the application that it should be restored, that is,
- transfered to the foreground.
+
+\family typewriter
+restore()
+\family default
+ Notifies the application that it should be restored, that is, transfered
+ to the foreground.
  Whenever the application is restored, the following call back function
  will be called: 
 \family typewriter
@@ -10275,9 +10815,12 @@ onRestore()
 \end_layout
 
 \begin_layout FieldList
-onMinimize() Called just after the application is minimized.
- Currently, this is only supported on Java, Windows CE, Windows 32, and
- Android.
+
+\family typewriter
+onMinimize()
+\family default
+ Called just after the application is minimized.
+ Currently, this is only supported on Java, Windows 32, and Android.
  When the 
 \family typewriter
 onMinimize()
@@ -10300,9 +10843,12 @@ onMinimize()
 \end_layout
 
 \begin_layout FieldList
-onRestore() Called just after the application is restored.
- Currently, this is only supported on Java, Windows CE, Windows 32, and
- Android.
+
+\family typewriter
+onRestore()
+\family default
+ Called just after the application is restored.
+ Currently, this is only supported on Java, Windows 32, and Android.
 \end_layout
 
 \begin_layout Section
@@ -16008,9 +16554,9 @@ disabled) set.
 \family typewriter
 MainWindow
 \family default
- constructor (
+ constructor 
 \family typewriter
-WinCE
+Vista
 \family default
  is the default).
 \end_layout
@@ -41172,31 +41718,6 @@ totalcross.ui.Control
 \end_layout
 
 \begin_layout Itemize
-The method 
-\family typewriter
-setStatePosition()
-\family default
- is used on Windows CE and Pocket PC to show/hide the virtual keyboard (when
- applicable).
- Just use as parameter 
-\family typewriter
-VK_HIDE
-\family default
-, 
-\family typewriter
-VK_TOP
-\family default
-, and 
-\family typewriter
-VK_BOTTOM
-\family default
- to hide, display the virtual keyboard at the top of the screen or at the
- bottom of the screen, respectively.
- Note that this will have no effect in devices that don't have a virtual
- keyboard.
-\end_layout
-
-\begin_layout Itemize
 Each window can have a menu attached by using the method 
 \family typewriter
 setMenuBar()
@@ -41637,7 +42158,7 @@ boolean
 \end_inset
 
 secret) Used to set the position of the Soft Input Panel on devices that
- support it, like Windows CE, where 
+ support it,  where 
 \family typewriter
 sipOption
 \family default
@@ -59616,19 +60137,7 @@ platform Field that returns the current platform name.
 \family typewriter
 JAVA
 \family default
-, 
-\family typewriter
-WINDOWSCE
-\family default
-, 
-\family typewriter
-POCKETPC
-\family default
-, 
-\family typewriter
-WINDOWSMOBILE
-\family default
-, 
+,  
 \family typewriter
 WIN32
 \family default
@@ -59659,11 +60168,6 @@ userName Field that returns the username of the user running the Virtual
 null
 \family default
  when checked in a Java applet.
- This field is also 
-\family typewriter
-null
-\family default
- under most Windows CE devices.
  On Windows 32, this has the currently logged in user.
  On Android and iOS it is also 
 \family typewriter
@@ -59689,7 +60193,7 @@ settings4<application id>.pdb
 appSettingsBin
 \family default
  for the current running TotalCross program.
- On Windows 32 and Windows CE, this data is saved in the registry.
+ On Windows 32, this data is saved in the registry.
  Use this to save small amount of data, up to 2 or 4 kb maximum.
  This property is saved only at the application's exit; you can force an
  update by calling 
@@ -59870,8 +60374,7 @@ virtualKeyboard
 \family typewriter
 true
 \family default
- if this handheld has a virtual keyboard, i.
- e., like the soft input panel in windows CE devices.
+ if this handheld has a virtual keyboard.
 \end_layout
 
 \begin_layout FieldList
@@ -59979,7 +60482,6 @@ true
 \begin_layout FieldList
 deviceId Field that represents a device id that can be used to identify
  the device's name.
- For Windows CE devices, it will have the device's name.
  For Windows 32 VM, it will have the computer name.
  On iOS devices it will have the model identifier.
  If the device can't be identified, it will contain 
@@ -60013,9 +60515,9 @@ closeButtonType Set it at the application's static initializer.
 \family typewriter
 MINIMIZE_BUTTON
 \family default
-, replaces the ok button on Windows CE devices, which closes the application,
- by the x one, which just minimizes the application.
- The ok closes the application, and the x minimizes it.
+, replaces the x button on Windows 32 devices, which closes the application,
+ by the - one, which just minimizes the application.
+ The x closes the application, and the - minimizes it.
  By default, it is 
 \family typewriter
 CLOSE_BUTTON
@@ -60023,22 +60525,22 @@ CLOSE_BUTTON
 , which closes the application.
  The default behavior is sending the application to background (set to 
 \family typewriter
-MINIMIZE_BUTTON
+CLOSE_BUTTON
 \family default
 ).
  It cans also be 
 \family typewriter
 NO_BUTTON
 \family default
-, which will remove the x/ok button from screen on Windows CE devices.
- On Windows 32, the x button will still be visible, but clicking on it will
+.
+ On Windows 32, the - button will still be visible, but clicking on it will
  not close the application.
  If the device does not support removing the button, it will change to a
  
 \family typewriter
 MINIMIZE_BUTTON
 \family default
-, which is the default on CE devices.
+.
 \end_layout
 
 \begin_layout FieldList
@@ -60077,8 +60579,7 @@ isFullScreen
 StringBuffer
 \family default
  or anything else may result in incorrect results.
- Here's a sample, to use full screen on Windows devices (but not Windows
- desktop): 
+ Here's a sample, to use full screen: 
 \end_layout
 
 \begin_layout Standard
@@ -60103,7 +60604,7 @@ static
 
 \begin_layout Plain Layout
 
-	Settings.fullScreenPlatforms = Settings.WINDOWSCE + "," + Settings.WINDOWSMOBILE;
+	Settings.fullScreenPlatforms = Settings.ANDROID + "," + Settings.IPHONE;
 \end_layout
 
 \begin_layout Plain Layout
@@ -60244,7 +60745,7 @@ true
  instance of the same application.
  If so, the running instance is moved to the foreground and the starting
  application exits.
- It only works on Java, Windows 32, and Windows CE.
+ It only works on Java and Windows 32.
 \end_layout
 
 \begin_layout FieldList
@@ -60699,23 +61200,6 @@ Edit
 MultiEdit
 \family default
  when focus was set to the control (default is at the start).
-\end_layout
-
-\begin_layout FieldList
-SIPBottomLimit The limit that will make the Soft Input Panel be placed at
- bottom.
- If the control's absolute rect is < this value, the SIP will stay at the
- bottom of the screen (otherwise, it will be moved to the top).
- Before TotalCross 1.3, this value used to be the half of the screen, but
- since in some new Windows Mobile the SIP is very tall (specially in landscape
- mode), we added this field so you can change it if desired.
- For example, to set to 5 times the font's height, do: 
-\family typewriter
-Settings.SIPBottomLimit = 5 * fmH;
-\family default
- Setting it to -1 (default value) will use half the current screen height.
- This field is used in Windows CE devices only.
- 
 \end_layout
 
 \begin_layout FieldList
@@ -61186,7 +61670,7 @@ As an example, the following call could be used to run the command
 \family typewriter
 scandir /p mydir
 \family default
- on Java, Windows 32, or Windows CE: 
+ on Java or Windows 32: 
 \family typewriter
 
 \begin_inset Newline newline
@@ -61257,48 +61741,8 @@ false
 \family default
 .
  
-\begin_inset Newline newline
-\end_inset
-
-To run another TotalCross program on Windows CE devices, use: 
-\begin_inset Newline newline
-\end_inset
-
-
 \family typewriter
-Vm.exec("
-\backslash
 
-\backslash
-TotalCross
-\backslash
-
-\backslash
-Path
-\backslash
-
-\backslash
-Program.exe", null, 0, false);
-\family default
- 
-\begin_inset Newline newline
-\end_inset
-
-Here's a sample of how to run the Internet Explorer on Windows CE:
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-Vm.exec("
-\backslash
-
-\backslash
-windows
-\backslash
-
-\backslash
-iexplore.exe","about:blank",0,false);
 \begin_inset Newline newline
 \end_inset
 
@@ -61788,7 +62232,7 @@ s) Sends a text, followed by a line feed, to:
 \begin_inset Newline newline
 \end_inset
 
-• Windows CE / 32: the 
+• Windows 32: the 
 \family typewriter
 DebugConsole.txt
 \family default
@@ -62260,12 +62704,6 @@ Vm.interceptSpecialKeys()
  Note that this will probably block the application and you will have to
  provide a button to exit from it or just reset the device.
  
-\begin_inset Newline newline
-\end_inset
-
-On Windows CE, the key 91 is always displayed when a hotkey is pressed,
- so the VM will silently ignore it.
- 
 \end_layout
 
 \begin_layout FieldList
@@ -62275,6 +62713,7 @@ turnScreenOn(boolean
 
 on) Turns the screen on or off, but keeps the device running.
  This greatly improves battery performance.
+ It does not work on WP8.
 \end_layout
 
 \begin_layout FieldList
@@ -66117,385 +66556,6 @@ close() Closes this I/O connection, releasing any associated resources.
 \end_layout
 
 \begin_layout Chapter
-PortConnector
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-PortConnector
-\family default
- accesses the device ports.
- 
-\end_layout
-
-\begin_layout Standard
-This works on the devices and on JDK (in this case, it uses 
-\family typewriter
-javax.comm
-\family default
-, which must be installed separately).
- 
-\end_layout
-
-\begin_layout Standard
-When a serial port is created, an attempt is made to open the port.
- If the open attempt is successful, the port will remain open until 
-\family typewriter
-close()
-\family default
- is called.
- If 
-\family typewriter
-close()
-\family default
- is never called, the port will be closed when the object is garbage collected.
- 
-\end_layout
-
-\begin_layout Standard
-Here is an example showing data being written and read from a serial port:
- 
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-PortConnector port = new PortConnector(0, 9600); 
-\end_layout
-
-\begin_layout Plain Layout
-
-DataStream ds = new DataStream(port); 
-\end_layout
-
-\begin_layout Plain Layout
-
-ds.writeCString("Hello...
-\backslash
-r
-\backslash
-n"); 
-\end_layout
-
-\begin_layout Plain Layout
-
-port.close();
-\end_layout
-
-\end_inset
-
-On JDK, you can define a file called 
-\family typewriter
-serial.properties
-\family default
- with the number and ports to be used: 
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-DEFAULT=a 
-\end_layout
-
-\begin_layout Plain Layout
-
-IRCOMM=b 
-\end_layout
-
-\begin_layout Plain Layout
-
-SIR=c 
-\end_layout
-
-\begin_layout Plain Layout
-
-USB=d
-\end_layout
-
-\end_inset
-
- If the file is not found, it will use 
-\family typewriter
-COM1
-\family default
-, 
-\family typewriter
-COM2
-\family default
-, 
-\family typewriter
-COM3
-\family default
-, and 
-\family typewriter
-COM4
-\family default
-, respectively.
- 
-\end_layout
-
-\begin_layout Standard
-This class has the following constants, public attributes, constructors,
- and methods (excluding some fields from its superclasses):
-\end_layout
-
-\begin_layout FieldList
-DEFAULT Default Port (cradle).
-\end_layout
-
-\begin_layout FieldList
-IRCOMMIrCOMM Port (Serial Connection on top of IrDA Stack).
-\end_layout
-
-\begin_layout FieldList
-SIR SIR Port (Physical Layer of IrDA Stack).
- Important! In order to access the SIR port on the Pocket PCs the following
- has to be UNCHECKED: Settings/Connections/Beam/Receive all incoming beams
- and select discoverable mode.
- Note that there's no handshaking support on SIR, and that not all devices
- work with it.
- Use IRCOMM instead when possible.
-\end_layout
-
-\begin_layout FieldList
-USB USB Endpoint 2 Port.
-\end_layout
-
-\begin_layout FieldList
-BLUETOOTH Bluetooth: opens the built-in Bluetooth discovery dialog, then
- establishes a Serial Port Profile (just serial emulation across Bluetooth,
- using the RFComm BT layer) virtual serial port connection.
- Note: on Windows CE, this maps to the Serial (port 0).
- You must explicitly map your BlueTooth outside the program.
-\end_layout
-
-\begin_layout FieldList
-PARITY_NONE,
-\begin_inset space ~
-\end_inset
-
-PARITY_EVEN,
-\begin_inset space ~
-\end_inset
-
-PARITY_ODD Used in the constructors to define the parity.
- 
-\end_layout
-
-\begin_layout FieldList
-writeTimeout Defines the write timeout, in milliseconds.
- The default is 6 seconds.
- 
-\end_layout
-
-\begin_layout FieldList
-readTimeout Defines the read timeout, in milliseconds.
- The default is 6 seconds.
-\end_layout
-
-\begin_layout FieldList
-readTries Set this to a value that will be used to keep trying to read further
- while something is available.
- If a series of bytes is returned in very few steps, this will make the
- read stop after 
-\family typewriter
-readTries
-\family default
- has reached zero.
-\end_layout
-
-\begin_layout FieldList
-PortConnector(int
-\begin_inset space ~
-\end_inset
-
-number,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-baudRate) Opens a port with settings of 8 bits, no parity and 1 stop bit.
- These are the most commonly used port settings.
- The 
-\family typewriter
-number
-\family default
- parameter passed is the number of the port for devices with multiple ports.
- Port number 0 defines the "default port" of a given type.
- For Windows CE devices, you should pass 0 as the port number to access
- the device's single serial or usb port.
- On Windows 32 and Windows CE the port number is the number of the COM port.
- For example, serial port 2 maps to "COM2:".
- 
-\end_layout
-
-\begin_layout FieldList
-PortConnector(int
-\begin_inset space ~
-\end_inset
-
-number,int
-\begin_inset space ~
-\end_inset
-
-baudRate,int
-\begin_inset space ~
-\end_inset
-
-bits,boolean
-\begin_inset space ~
-\end_inset
-
-parity,int
-\begin_inset space ~
-\end_inset
-
-stopBits) Similar to the above constructor, where 
-\family typewriter
-bits
-\family default
- is the bits per char [5 to 8], 
-\family typewriter
-parity
-\family default
- is 
-\family typewriter
-true
-\family default
- for even parity or 
-\family typewriter
-false
-\family default
- for no parity, and 
-\family typewriter
-stopBits
-\family default
- is the number of stop bits.
- 
-\begin_inset Newline newline
-\end_inset
-
-Here is an example of opening serial port COM2: on a Window 32 or Windows
- CE device: 
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-PortConnector port = new PortConnector(2, 57600, 8, false, 1); 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout FieldList
-PortConnector(int
-\begin_inset space ~
-\end_inset
-
-number,int
-\begin_inset space ~
-\end_inset
-
-baudRate,int
-\begin_inset space ~
-\end_inset
-
-bits,int
-\begin_inset space ~
-\end_inset
-
-parity,int
-\begin_inset space ~
-\end_inset
-
-stopBits) Same as above but in this constructor the parity type can be specified.
- The value of the parameter can be 
-\family typewriter
-PARITY_NONE
-\family default
-, 
-\family typewriter
-PARITY_EVEN
-\family default
-, or 
-\family typewriter
-PARITY_ODD
-\family default
-.
-\begin_inset Newline newline
-\end_inset
-
-No serial XON/XOFF flow control (commonly called software flow control)
- is used and RTS/CTS flow control (commonly called hardware flow control)
- is turn on by default on all platforms but Windows CE.
- 
-\end_layout
-
-\begin_layout FieldList
-close() Closes the port.
- 
-\end_layout
-
-\begin_layout FieldList
-setFlowControl(boolean
-\begin_inset space ~
-\end_inset
-
-on) Turns RTS/CTS flow control (hardware flow control) on or off.
- 
-\end_layout
-
-\begin_layout FieldList
-readCheck() Returns the number of bytes currently available to be read from
- the port's queue.
-\end_layout
-
-\begin_layout FieldList
-writeBytes(byte[]
-\begin_inset space ~
-\end_inset
-
-buf,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-start,
-\begin_inset space ~
-\end_inset
-
-int
-\begin_inset space ~
-\end_inset
-
-count) Writes to the port.
- Returns the number of bytes written or throws an 
-\family typewriter
-IOException
-\family default
- if an error prevented the write operation from occurring.
- If data can't be written to the port and flow control is on, the write
- operation will time out and fail after approximately 2 seconds.
- 
-\end_layout
-
-\begin_layout Chapter
 File
 \end_layout
 
@@ -67066,11 +67126,6 @@ File
  object, so you should not perform any operations after a rename.
  You must give the full directory specification for the file to keep compatibili
 ty between all platforms.
- Windows CE platform lets you move a file using 
-\family typewriter
-rename()
-\family default
-.
  The file is automatically closed prior to renaming.
  After this operation, the 
 \family typewriter
@@ -67263,28 +67318,6 @@ recursive
  is 
 \family typewriter
 true
-\family default
-.
- 
-\end_layout
-
-\begin_layout FieldList
-getCardVolume() Returns the volume file for the Windows CE and Pocket PC
- devices.
- On these devices, the volume has a special folder name, but since there's
- no system call that informs this, we first try to find a registry variable
- containing it.
- If this variable is not found we must just test the existence of each folder,
- returning the first one that exists.
- You can set the 
-\family typewriter
-winceVols
-\family default
- string array to the ones you want to be searched.
- Its default value is 
-\family typewriter
-{"/Storage Card2/", "/Storage Card1/", "/SD Card/", "/Storage Card/", "/SD-MMCar
-d/", "/CF Card/"}
 \family default
 .
  
@@ -67605,7 +67638,7 @@ else
 \backslash
 
 \backslash
-").getSize(); // WinCE and Posix 
+").getSize(); // Posix 
 \end_layout
 
 \end_inset
@@ -68718,7 +68751,7 @@ Win32 Full support.
 
 \begin_layout Labeling
 \labelwidthstring BlackBerry0
-WinCE Full support.
+WP8 Full support.
 \end_layout
 
 \begin_layout Labeling
@@ -68852,20 +68885,6 @@ getTime()
 \begin_layout Labeling
 \labelwidthstring BlackBerry0
 Win32 Full support.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring BlackBerry0
-WinCE Supports only 
-\family typewriter
-TIME_MODIFIED
-\family default
- if the file is stored on the device's non-volatile memory.
- If the file is stored in an external FAT storage, it also supports 
-\family typewriter
-TIME_CREATED
-\family default
-.
 \end_layout
 
 \begin_layout Labeling
@@ -69987,9 +70006,7 @@ GPS
 \begin_layout FieldList
 GPS() Constructs a GPS control, opening a default port using 9600 bps.
  Already prepared for PIDION scanners.
- It automatically scans the Windows CE registry searching for the correct
- GPS COM port.
- Under Windows Mobile and Android, uses the internal GPS api.
+ On Android, it uses the internal GPS api.
  
 \end_layout
 
