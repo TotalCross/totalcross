@@ -237,6 +237,7 @@ TC_API int32 startProgram(Context currentContext)
       // get the product id to see if litebase is allowed
       litebaseAllowedPtr = getStaticFieldInt(c, "litebaseAllowed");
  #else // when NORAS is enabled, we must check if this specialized vm can run with the current key
+ #ifndef DEBUG // only validate the NORAS key on release
    m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
    if (!m)
       return exitProgram(114);
@@ -271,7 +272,7 @@ TC_API int32 startProgram(Context currentContext)
 
 // activation ok, the name is misleading on purpose
 jumpArgument:
-
+ #endif //#ifndef DEBUG
  #endif
 #endif
       // load libraries
