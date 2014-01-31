@@ -205,6 +205,63 @@ void smsSendCPP(JCharP szMessage, JCharP szDestination)
    Direct3DBase::GetLastInstance()->getDummy()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
 }
 
+int rdGetStateCPP(int type)
+{
+   PhoneDirect3DXamlAppComponent::Idummy^ odummy = Direct3DBase::GetLastInstance()->getDummy();
+   odummy->rdGetStateCS(type);
+   return odummy->getTurnedState();
+}
+
+bool isAvailableCPP(int type)
+{
+   return rdGetStateCPP(type - 2);
+}
+
+bool nativeStartGPSCPP()
+{
+   return Direct3DBase::GetLastInstance()->getDummy()->nativeStartGPSCS();
+}
+
+int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
+{
+   PhoneDirect3DXamlAppComponent::Idummy^ odummy = Direct3DBase::GetLastInstance()->getDummy();
+   int ret = odummy->nativeUpdateLocationCS();
+   TCObject lastFix = GPS_lastFix(gpsObject);
+   Platform::String^ messageReceived;
+   Platform::String^ lowSignalReason;
+
+   GPS_latitude(gpsObject) = odummy->getLatitude();
+   
+   GPS_longitude(gpsObject) = odummy->getLongitude();
+   
+   GPS_direction(gpsObject) = odummy->getDirection();
+   
+   GPS_velocity(gpsObject) = odummy->getVelocity();
+   
+   Time_year(lastFix) = odummy->getYear();
+   Time_month(lastFix) = odummy->getMonth();
+   Time_day(lastFix) = odummy->getDay();
+   Time_hour(lastFix) = odummy->getHour();
+   Time_minute(lastFix) = odummy->getMinute();
+   Time_second(lastFix) = odummy->getSecond();
+   Time_millis(lastFix) = odummy->getMilliSecond();
+
+   messageReceived = odummy->getMessageReceived();
+   setObjectLock(GPS_messageReceived(gpsObject) = createStringObjectFromJCharP(context, (JCharP)messageReceived->Data(), messageReceived->Length()), UNLOCKED);
+
+   lowSignalReason = odummy->getLowSignalReason();
+   setObjectLock(GPS_lowSignalReason(gpsObject) = createStringObjectFromJCharP(context, (JCharP)lowSignalReason->Data(), lowSignalReason->Length()), UNLOCKED);
+
+   GPS_pdop(gpsObject) = odummy->getPdop();
+
+   return ret;
+}
+
+void nativeStopGPSCPP()
+{
+   Direct3DBase::GetLastInstance()->getDummy()->nativeStopGPSCS();
+}
+
 bool dxSetup()
 {
 	return true;//XXX
