@@ -8,7 +8,7 @@ sourcedir	= ${srcdir}/../../../src
 
 AM_CFLAGS = $(CFLAGS) -DTHEOS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
 if LINUX
-AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm
 endif
 
 if LINUX
@@ -32,7 +32,7 @@ if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
-SQLITE_CFLAGS_EXTRA = -I$(sourcedir)/sqlite
+SQLITE_CFLAGS_EXTRA = -I$(sourcedir)/sqlite -D_GNU_SOURCE
 
 AM_CFLAGS += $(SQLITE_CFLAGS_EXTRA)
 
@@ -153,7 +153,8 @@ NM_LANG_FILES =                               \
 	$(sourcedir)/nm/lang/String.c              \
 	$(sourcedir)/nm/lang/StringBuffer.c        \
 	$(sourcedir)/nm/lang/Thread.c              \
-	$(sourcedir)/nm/lang/Throwable.c
+	$(sourcedir)/nm/lang/Throwable.c           \
+	$(sourcedir)/nm/lang/Reflection.c
 
 libnmlang_la_SOURCES = ${NM_LANG_FILES}
 
@@ -335,7 +336,8 @@ EVENT_FILES =                              \
 libevent_la_SOURCES = ${EVENT_FILES}
 
 SQLITE3_FILES =    \
-        $(sourcedir)/sqlite/sqlite3.c
+    $(sourcedir)/sqlite/sqlite3.c              \
+    $(sourcedir)/nm/db/NativeDB.c
 
 libsqlite3_la_SOURCES =  \
 	$(SQLITE3_FILES)

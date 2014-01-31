@@ -1287,10 +1287,10 @@ inline static void quadLine(Context currentContext, Object g, int32 xc, int32 yc
 }
 
 // draws an ellipse incrementally
-static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
+static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel c1, Pixel c2, bool fill, bool gradient)
 {
    int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
-   PixelConv c,c1,c2;
+   PixelConv c;
    // intermediate terms to speed up loop
    int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
    int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
@@ -1301,18 +1301,16 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
    int32 y = 0;       // ellipse points
    if (rx < 0 || ry < 0) // guich@501_13
       return;
-   c1.pixel = pc1;
-   c2.pixel = pc2;
-   
+
    if (gradient)
    {
       numSteps = ry + ry; // guich@tc110_11: support horizontal gradient
-      startRed   = c1.r;
-      startGreen = c1.g;
-      startBlue = c1.b;
-      endRed = c2.r;
-      endGreen = c2.g;
-      endBlue = c2.b;
+      startRed = (c1 >> 16) & 0xFF;
+      startGreen = (c1 >> 8) & 0xFF;
+      startBlue = c1 & 0xFF;
+      endRed = (c2 >> 16) & 0xFF;
+      endGreen = (c2 >> 8) & 0xFF;
+      endBlue = c2 & 0xFF;
       redInc = ((endRed - startRed) << 16) / numSteps;
       greenInc = ((endGreen - startGreen) << 16) / numSteps;
       blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -1320,7 +1318,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
       green = startGreen << 16;
       blue = startBlue << 16;
    }
-   else c.pixel = c1.pixel;
+   else c.pixel = c1;
 
    while (d2 < 0)          // til slope = -1
    {
@@ -2525,15 +2523,15 @@ static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy,
    }
 }
 
-static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, PixelConv startColor, PixelConv endColor, bool vertical)
+static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
 {
    int32 numSteps = max32(1, vertical ? abs32(endY - startY) : abs32(endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = startColor.r;
-   int32 startGreen = startColor.g;
-   int32 startBlue = startColor.b;
-   int32 endRed = endColor.r;
-   int32 endGreen = endColor.g;
-   int32 endBlue = endColor.b;
+   int32 startRed = (startColor >> 16) & 0xFF;
+   int32 startGreen = (startColor >> 8) & 0xFF;
+   int32 startBlue = startColor & 0xFF;
+   int32 endRed = (endColor >> 16) & 0xFF;
+   int32 endGreen = (endColor >> 8) & 0xFF;
+   int32 endBlue = endColor & 0xFF;
    int32 redInc = ((endRed - startRed) << 16) / numSteps;
    int32 greenInc = ((endGreen - startGreen) << 16) / numSteps;
    int32 blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -2936,15 +2934,15 @@ static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height,
    }
 }
 
-static void drawCylindricShade(Context currentContext, Object g, PixelConv startColor, PixelConv endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = startColor.r;
-   int32 startGreen = startColor.g;
-   int32 startBlue = startColor.b;
-   int32 endRed = endColor.r;
-   int32 endGreen = endColor.g;
-   int32 endBlue = endColor.b;
+   int32 startRed = (startColor >> 16) & 0xFF;
+   int32 startGreen = (startColor >> 8) & 0xFF;
+   int32 startBlue = startColor & 0xFF;
+   int32 endRed = (endColor >> 16) & 0xFF;
+   int32 endGreen = (endColor >> 8) & 0xFF;
+   int32 endBlue = endColor & 0xFF;
    int32 redInc = (((endRed - startRed)*2) << 16) / numSteps;
    int32 greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
    int32 blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;

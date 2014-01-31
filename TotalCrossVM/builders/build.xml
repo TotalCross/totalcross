@@ -753,5 +753,12 @@ target: build targets
 <target name="buildPalmOS5_sdk" />
 <target name="buildPalmOS5_vms" />
 <target name="buildPalmOS5_vms_noras" />
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_vms_noras" />
+<target name="buildWinCE_vms_noras_PocketPC_ARM" />
+<target name="buildWinCE_sdk" />
+<target name="buildWinCE_sdk_ARM" />
+<target name="buildWinCECabsSingle" />
+<target name="buildWinCECabsSingle_PocketPC_ARM" />
 
 </project>
