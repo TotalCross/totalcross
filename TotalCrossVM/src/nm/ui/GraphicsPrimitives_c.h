@@ -3050,7 +3050,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, PixelConv sta
 void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
 {
    PixelConv pc1,pc2;
-#ifdef __gl2_h_
+#if defined(__gl2_h_) && !defined(WP8)
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
