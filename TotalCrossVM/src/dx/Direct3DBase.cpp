@@ -241,6 +241,7 @@ void Direct3DBase::setup()
 
 void Direct3DBase::setColor(int color)
 {
+   //if (color == lastRGB) return;
    lastRGB = color;
    aa = ((color >> 24) & 0xFF) / 255.0f;
    rr = ((color >> 16) & 0xFF) / 255.0f;
@@ -267,11 +268,11 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
       { XMFLOAT2((float)x2, (float)y2) },
    };
 
+   setProgram(PROGRAM_LRP);
    D3D11_MAPPED_SUBRESOURCE ms;
    m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
    m_d3dContext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
-
 
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
@@ -279,7 +280,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   if (color != lastRGB) setColor(color);
+   setColor(color);
    m_d3dContext->DrawIndexed(2, 0, 0);
 }
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
@@ -292,6 +293,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
       { XMFLOAT2((float)x1, (float)y2) },
    };
 
+   setProgram(PROGRAM_LRP);
    D3D11_MAPPED_SUBRESOURCE ms;
    m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -302,7 +304,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
    m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   if (color != lastRGB) setColor(color);
+   setColor(color);
    m_d3dContext->DrawIndexed(6, 0, 0);
 }
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
@@ -319,6 +321,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       i++;
       x++; y++;
    }
+   setProgram(PROGRAM_LRP);
 
    if (n > lastPixelsCount)
    {
@@ -354,7 +357,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
    m_d3dContext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
    m_d3dContext->IASetIndexBuffer(pixelsIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-   if (color != lastRGB) setColor(color);
+   setColor(color);
    m_d3dContext->DrawIndexed(n, 0, 0);
 
    delete cubeVertices;
@@ -363,8 +366,8 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 bool Direct3DBase::isLoadCompleted() 
 {
 	for (int i = 0; i < N_LOAD_TASKS; i++)
-	if (!loadCompleted[i])
-		return false;
+   	if (!loadCompleted[i])
+	   	return false;
 	return true;
 }
 
@@ -377,9 +380,29 @@ void Direct3DBase::Present()
 		Sleep(OCCUPIED_WAIT_TIME);
 }
 
+void Direct3DBase::setProgram(whichProgram p)
+{
+   //if (p == curProgram) return;
+   lastRGB = -1;
+   curProgram = p;
+   switch (p)
+   {
+      case PROGRAM_LRP:
+         m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+         m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+         break;
+      case PROGRAM_TEX:
+         m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
+         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+         m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
+         break;
+   }
+}
+
 void Direct3DBase::PreRender()
 {
-   const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+   const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
    m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
    m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -389,9 +412,7 @@ void Direct3DBase::PreRender()
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
    m_d3dContext->IASetInputLayout(m_inputLayout.Get());
-   m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-   m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+   setProgram(PROGRAM_LRP);
 }
 
 bool Direct3DBase::Render()
@@ -424,13 +445,51 @@ bool Direct3DBase::Render()
 
 void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
+   int32 i;
+   PixelConv* pf = (PixelConv*)pixels;
+   PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
+   ID3D11Texture2D *texture;
+   D3D11_TEXTURE2D_DESC textureDesc = { 0 };
+   textureDesc.Width = width;
+   textureDesc.Height = height;
+   textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+   textureDesc.MipLevels = textureDesc.ArraySize = textureDesc.SampleDesc.Count = 1;
+   textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+   for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
+   D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
+   textureSubresourceData.pSysMem = pt0;
+   textureSubresourceData.SysMemPitch = textureDesc.Width * 4; // Specify the size of a row in bytes
+   if (FAILED(m_d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
+      throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
+   else
+      xmemmove(textureId, &texture, sizeof(void*));
+   xfree(pt0);
+}
+void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
+{
+}
+void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+{
+   ID3D11Texture2D *texture;
+   xmemmove(&texture, &textureId, sizeof(void*));
+   //m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+   //m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+   setProgram(PROGRAM_TEX);
+
+   //dstY += glShiftY;
+   int32 dstY2 = dstY + h;
+   int32 dstX2 = dstX + w;
+
+   float left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
+
    // VERTEX BUFFER
    TextureVertex cubeVertices[] =
-   {  // coordenadas do quadrado    coordenadas do triangulo
-      { XMFLOAT2(50.0f, 50.0f), XMFLOAT2(0.0f, 0.0f) },
-      { XMFLOAT2(250.0f, 50.0f), XMFLOAT2(1.0f, 0.0f) },
-      { XMFLOAT2(250.0f, 250.0f), XMFLOAT2(1.0f, 1.0f) },
-      { XMFLOAT2(50.0f, 250.0f), XMFLOAT2(0.0f, 1.0f) },
+   {  // destination coordinates    source coordinates
+      { XMFLOAT2(dstX,  dstY),  XMFLOAT2(left,top) },
+      { XMFLOAT2(dstX2, dstY),  XMFLOAT2(right,top) },
+      { XMFLOAT2(dstX2, dstY2), XMFLOAT2(right,bottom) },
+      { XMFLOAT2(dstX,  dstY2), XMFLOAT2(left,bottom) },
    };
    D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
    vertexBufferDesc.ByteWidth = sizeof(TextureVertex)* ARRAYSIZE(cubeVertices);
@@ -439,50 +498,16 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    vertexBufferData.pSysMem = cubeVertices;
    DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer));
 
-   // INDEX BUFFER
-   unsigned short cubeIndices[] = { 0, 1, 2, 0, 2, 3 };
-   D3D11_BUFFER_DESC indexBufferDesc = { 0 };
-   indexBufferDesc.ByteWidth = sizeof(unsigned short)* ARRAYSIZE(cubeIndices);
-   indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-   D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-   indexBufferData.pSysMem = cubeIndices;
-   DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
-
-   // PROJECTION BUFFER
-   D3D11_BUFFER_DESC constantBufferDesc = { 0 };
-   constantBufferDesc.ByteWidth = sizeof(m_constantBufferData);
-   constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-   DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer));
-
-   // PIXELS BUFFER
-   D3D11_TEXTURE2D_DESC textureDesc = { 0 };
-   textureDesc.Width = 256;
-   textureDesc.Height = 256;
-   textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-   textureDesc.MipLevels = textureDesc.ArraySize = textureDesc.SampleDesc.Count = 1;
-   textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-   D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
-   textureSubresourceData.pSysMem = pixels;
-   textureSubresourceData.SysMemPitch = textureDesc.Width * 4; // Specify the size of a row in bytes
-   DX::ThrowIfFailed(m_d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture));
-
    // SHADER VIEW
    // Once the texture is created, we must create a shader resource view of it so that shaders may use it.  
    // In general, the view description will match the texture description.
+   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
    D3D11_SHADER_RESOURCE_VIEW_DESC textureViewDesc;
    ZeroMemory(&textureViewDesc, sizeof(textureViewDesc));
    textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
    textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
    textureViewDesc.Texture2D.MipLevels = 1;
-   DX::ThrowIfFailed(m_d3dDevice->CreateShaderResourceView(texture.Get(), &textureViewDesc, &textureView));
-}
-void Direct3DBase::glDeleteTexture(TCObject img, int32* textureId, bool updateList)
-{
-}
-void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
-{
-   //m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   //m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+   DX::ThrowIfFailed(m_d3dDevice->CreateShaderResourceView(texture, &textureViewDesc, &textureView));
 
    m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
@@ -493,13 +518,10 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
    m_d3dContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-   m_d3dContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    // Set the vertex and pixel shader stage state.
-   m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
-   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-   m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
    m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
