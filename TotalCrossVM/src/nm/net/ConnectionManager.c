@@ -242,7 +242,7 @@ TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager n
          break;
       case CM_WIFI:
       case CM_CELLULAR:
-         // p->retI = IsAvailableCS(type);
+          p->retI = isAvailableCPP(type);
          break;
       default:
          throwIllegalArgumentExceptionI(p->currentContext, "type", type);

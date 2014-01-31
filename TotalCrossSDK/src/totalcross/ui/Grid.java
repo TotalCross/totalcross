@@ -432,6 +432,7 @@ public class Grid extends Container implements Scrollable
 
          protected boolean willOpenKeyboard()
          {
+            if (lastPE == null) return false;
             int px = lastPE.x;
             int py = lastPE.y;
             int line = py / lineH - 1;
@@ -2305,21 +2306,21 @@ public class Grid extends Container implements Scrollable
       Object []items = vItems.items;
       int[] ints = checkEnabled ? ivChecks.items : null;
 
-      double mid = Convert.toDouble(((String[])items[(first+last) >> 1])[col]);
+      double mid = Convert.toDouble(((String[])items[(first+last) >> 1])[col], Convert.MIN_DOUBLE_VALUE);
       while (true)
       {
          if (ascending)
          {
-            while (high >= low && mid > Convert.toDouble(((String[])items[low ])[col]))
+            while (high >= low && mid > Convert.toDouble(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid < Convert.toDouble(((String[])items[high])[col]))
+            while (high >= low && mid < Convert.toDouble(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          else
          {
-            while (high >= low && mid < Convert.toDouble(((String[])items[low ])[col]))
+            while (high >= low && mid < Convert.toDouble(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid > Convert.toDouble(((String[])items[high])[col]))
+            while (high >= low && mid > Convert.toDouble(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          if (low <= high)

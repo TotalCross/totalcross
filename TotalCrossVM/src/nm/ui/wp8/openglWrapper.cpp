@@ -14,14 +14,6 @@
 
 #define TOGGLE_BUFFER
 
-#define MAKE_RGBA(rgb, a) MAKE_RGBA_123_321( (rgb), (a & 0xFF))
-//                                   1st byte               2nd byte                      3rd byte
-#define MAKE_RGBA_123_123(bgr, a) (((bgr & 0xFF) <<  0) | ((bgr & 0xFF00) >> 8) <<  8 | ((bgr & 0xFF0000) >> 16) << 16 | (a) << 24)
-#define MAKE_RGBA_123_132(bgr, a) (((bgr & 0xFF) <<  0) | ((bgr & 0xFF00) >> 8) << 16 | ((bgr & 0xFF0000) >> 16) <<  8 | (a) << 24)
-#define MAKE_RGBA_123_213(bgr, a) (((bgr & 0xFF) <<  8) | ((bgr & 0xFF00) >> 8) <<  0 | ((bgr & 0xFF0000) >> 16) << 16 | (a) << 24)
-#define MAKE_RGBA_123_231(bgr, a) (((bgr & 0xFF) << 16) | ((bgr & 0xFF00) >> 8) <<  0 | ((bgr & 0xFF0000) >> 16) <<  8 | (a) << 24)
-#define MAKE_RGBA_123_312(bgr, a) (((bgr & 0xFF) <<  8) | ((bgr & 0xFF00) >> 8) << 16 | ((bgr & 0xFF0000) >> 16) <<  0 | (a) << 24)
-#define MAKE_RGBA_123_321(bgr, a) (((bgr & 0xFF) << 16) | ((bgr & 0xFF00) >> 8) <<  8 | ((bgr & 0xFF0000) >> 16) <<  0 | (a) << 24)
 
 using namespace Windows::UI::Core;
 
@@ -585,6 +577,13 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    return checkGLfloatBuffer(mainContext, 10000);
 }
 
+DWORD32 getGlColor(int32 rgb, int32 a)
+{
+   PixelConv pc;
+   pc.pixel = rgb;
+   return (a << 24) | (pc.r << 16) | (pc.g << 8) | pc.b;// (a << 24) | rgb;// MAKE_RGBA(rgb, a);
+}
+
 void glDrawPixels(int32 n, int32 rgb)
 {
 #ifndef USE_DX
@@ -599,7 +598,7 @@ void glDrawPixels(int32 n, int32 rgb)
       glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
       glDrawArrays(GL_POINTS, 0, n); GL_CHECK_ERROR
 #else
-   Pixel colour = MAKE_RGBA(rgb, 0xFF);
+   Pixel colour = getGlColor(rgb,0xFF);
    int ini = getTimeStamp();
 
 #ifdef TOGGLE_BUFFER
@@ -656,7 +655,7 @@ void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
    add2pipe(x | IS_PIXEL, y, 1, 1, rgb, a);
 #else
    int ini = getTimeStamp();
-   Pixel colour = MAKE_RGBA(rgb, a);
+   Pixel colour = getGlColor(rgb, a);
 
 #ifdef TOGGLE_BUFFER
    if (colour != dxDrawPixelCache.lastARGB)
@@ -697,7 +696,7 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
       add2pipe(x1 | IS_DIAGONAL, y1, x2, y2, rgb, a);
 #else
    int ini = getTimeStamp();
-   Pixel colour = MAKE_RGBA(rgb, a);
+   Pixel colour = getGlColor(rgb, a);
 
 #ifdef TOGGLE_BUFFER
    if ((x1 == x2 && abs32(y2 - y1) < MAX_SHOULD_BUFF_LINE) || (y1 == y2 && abs32(x2 - x1) < MAX_SHOULD_BUFF_LINE))
@@ -830,13 +829,7 @@ void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 #ifndef USE_DX
    add2pipe(x, y, w, h, rgb, a);
 #else
-   Pixel colour = MAKE_RGBA(rgb, a);
-   int ini = getTimeStamp();
-   dxFillRect(x, y, x + w, y + h, colour);
-   int end = getTimeStamp();
-
-   //if (end - ini > 10)
-   //debug(">>> glFillRect %d;     %03d,%03d    %03d,%03d #%08X", end - ini, x, y, x + w, y + h, colour);
+   dxFillRect(x, y, x + w, y + h, getGlColor(rgb,a));
 #endif
 }
 
