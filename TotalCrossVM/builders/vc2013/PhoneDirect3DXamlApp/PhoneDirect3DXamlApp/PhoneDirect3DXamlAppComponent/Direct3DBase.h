@@ -8,8 +8,6 @@
 
 #define N_LOAD_TASKS 4
 #define OCCUPIED_WAIT_TIME 1
-#define USE_DEFERRED_CONTEXT
-
 
 struct ProjectionConstantBuffer
 {
@@ -84,7 +82,7 @@ internal:
    void createTexture();
    void setup();
 
-   void DoDrawCommand(bool should_redo);
+   void DoneDrawCommand();
    // stupid wrapper
    void drawCommand_drawLine(int x1, int y1, int x2, int y2, int color);
    void drawCommand_drawPixels(int *x, int *y, int count, int color);
@@ -131,9 +129,6 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
-#ifdef USE_DEFERRED_CONTEXT
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
-#endif
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
