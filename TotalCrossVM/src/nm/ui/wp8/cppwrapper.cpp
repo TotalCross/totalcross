@@ -272,6 +272,19 @@ void dxUpdateScreen()
    Direct3DBase::GetLastInstance()->Present();
 }
 
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+{
+   Direct3DBase::GetLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+}
+void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
+{
+   Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
+}
+void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+{
+   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
+}
+
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
 	Direct3DBase::GetLastInstance()->drawLine(x1, y1, x2, y2, color);
