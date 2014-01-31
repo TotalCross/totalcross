@@ -8,7 +8,6 @@
 
 #define N_LOAD_TASKS 4
 #define OCCUPIED_WAIT_TIME 1
-#define USE_DEFERRED_CONTEXT
 
 
 struct ProjectionConstantBuffer
@@ -32,7 +31,8 @@ struct TextureVertex
    DirectX::XMFLOAT2 tex;  // texture coordinate
 };
 
-enum drawCommand {
+enum drawCommand 
+{
 	DRAW_COMMAND_INVALID = -1,
 	DRAW_COMMAND_PRESENT = 0,
 	DRAW_COMMAND_PIXELS = 1,
@@ -42,23 +42,6 @@ enum drawCommand {
 };
 
 #include "tcthread.h"
-
-struct TCMutex {
-	DECLARE_MUTEX(test);
-	TCMutex() {
-		INIT_MUTEX(test);
-	}
-	void lock() {
-		LOCKVAR(test);
-	}
-	void unlock() {
-		UNLOCKVAR(test);
-	}
-
-	~TCMutex() {
-		DESTROY_MUTEX(test);
-	}
-};
 
 // Helper class that initializes DirectX APIs for 3D rendering.
 ref class Direct3DBase 
@@ -72,11 +55,13 @@ internal:
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	void PreRender(); // resets the screen and set it ready to render
-	bool RenderTest(); // the screen tester; multiple lines, pixels, a rectangle and a texture
 	bool Render();
 	int WaitDrawCommand(); // wait until another thread calls some draw command
 	void Present();
 
+   void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+   void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
+   void drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
@@ -85,14 +70,6 @@ internal:
    void setup();
 
    void DoDrawCommand(bool should_redo);
-   // stupid wrapper
-   void drawCommand_drawLine(int x1, int y1, int x2, int y2, int color);
-   void drawCommand_drawPixels(int *x, int *y, int count, int color);
-   void drawCommand_fillRect(int x1, int y1, int x2, int y2, int color);
-   void drawCommand_setColor(int color);
-
-   void drawCommandLock();
-   void drawCommandUnlock();
 
    bool isLoadCompleted();
 
@@ -116,7 +93,6 @@ private:
    ID3D11DepthStencilState* depthDisabledStencilState;
    ID3D11BlendState* g_pBlendState;
 
-
    Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
    Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout, m_inputLayoutT;
    Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
@@ -131,9 +107,7 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
-#ifdef USE_DEFERRED_CONTEXT
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
-#endif
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
@@ -151,8 +125,6 @@ protected private:
 	bool VMStarted;
 
 	// DrawCommand internal variables
-	TCMutex DrawCommandLock;
-	TCMutex DrawCommandFinishLock;
 	enum drawCommand TheDrawCommand;
 
 	int DrawCommand_x1;
@@ -164,7 +136,4 @@ protected private:
 	int DrawCommand_count;
 	int *DrawCommand_x_array;
 	int *DrawCommand_y_array;
-	/*
-	int *x, int *y
-	*/
 };
