@@ -107,15 +107,14 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 	}
 	else {
 		x++;
+		m_renderer->UpdateDevice(device, context, renderTargetView);
+		m_renderer->PreRender();
+		m_renderer->DoneDrawCommand();
+
 		while (m_renderer->WaitDrawCommand() != DRAW_COMMAND_PRESENT) {
-			//m_renderer->DoDrawCommand(false);
 			Sleep(OCCUPIED_WAIT_TIME);
 		}
-		if (m_renderer->WaitDrawCommand() == DRAW_COMMAND_PRESENT) {
-			m_renderer->DoDrawCommand(true);
-			m_renderer->UpdateDevice(device, context, renderTargetView);
-			m_renderer->PreRender();
-		}
+
 		RequestAdditionalFrame();
 		rodou = true;
 	}

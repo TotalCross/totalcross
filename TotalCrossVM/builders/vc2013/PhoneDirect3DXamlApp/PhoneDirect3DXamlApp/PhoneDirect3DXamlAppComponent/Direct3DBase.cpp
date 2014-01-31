@@ -109,14 +109,10 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	m_d3dContext = context;
 	m_renderTargetView = renderTargetView;
 
-	if (m_d3dContextDEF == nullptr)
-		m_d3dDevice->CreateDeferredContext1(0, &m_d3dContextDEF);
-
 	if (m_d3dDevice.Get() != device)
 	{
 		m_d3dDevice->GetDeviceRemovedReason();
 		m_d3dDevice = device;
-		m_d3dDevice->CreateDeferredContext1(0, &m_d3dContextDEF);
 		CreateDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
 		m_renderTargetSize.Width  = -1;
@@ -142,7 +138,7 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 
 	// Set the rendering viewport to target the entire window.
 	CD3D11_VIEWPORT viewport(0.0f,0.0f,m_renderTargetSize.Width,m_renderTargetSize.Height);
-	m_d3dContextDEF->RSSetViewports(1, &viewport);
+	m_d3dContext->RSSetViewports(1, &viewport);
 	def_status = 1;
 }
 
@@ -256,10 +252,12 @@ void Direct3DBase::setColor(int color)
    vcolor.color = XMFLOAT4(rr, gg, bb, aa); // last is alpha
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContextDEF->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+
+   m_d3dContext->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, &vcolor, sizeof(VertexColor));                // copy the data
-   m_d3dContextDEF->Unmap(pBufferColor, NULL);                                     // unmap the buffer
-   m_d3dContextDEF->VSSetConstantBuffers(1, 1, &pBufferColor);
+   m_d3dContext->Unmap(pBufferColor, NULL);                                     // unmap the buffer
+
+   m_d3dContext->VSSetConstantBuffers(1, 1, &pBufferColor);
 }
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
@@ -271,18 +269,19 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    };
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContextDEF->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContextDEF->Unmap(pBufferRect, NULL);                                     // unmap the buffer
+   m_d3dContext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
+
 
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContextDEF->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
-   m_d3dContextDEF->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContextDEF->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-   m_d3dContextDEF->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
+   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    if (color != lastRGB) setColor(color);
-   m_d3dContextDEF->DrawIndexed(2, 0, 0);
+   m_d3dContext->DrawIndexed(2, 0, 0);
 }
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
@@ -295,17 +294,17 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    };
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContextDEF->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContextDEF->Unmap(pBufferRect, NULL);                                     // unmap the buffer
+   m_d3dContext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
 
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContextDEF->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
-   m_d3dContextDEF->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-   m_d3dContextDEF->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
+   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    if (color != lastRGB) setColor(color);
-   m_d3dContextDEF->DrawIndexed(6, 0, 0);
+   m_d3dContext->DrawIndexed(6, 0, 0);
 }
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
@@ -348,17 +347,16 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
    }
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContextDEF->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   m_d3dContext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(VertexPosition)* n);                // copy the data
-   m_d3dContextDEF->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
-
+   m_d3dContext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContextDEF->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
-   m_d3dContextDEF->IASetIndexBuffer(pixelsIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContextDEF->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
+   m_d3dContext->IASetIndexBuffer(pixelsIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    if (color != lastRGB) setColor(color);
-   m_d3dContextDEF->DrawIndexed(n, 0, 0);
+   m_d3dContext->DrawIndexed(n, 0, 0);
 
    delete cubeVertices;
 }
@@ -382,24 +380,19 @@ void Direct3DBase::Present()
 
 void Direct3DBase::PreRender()
 {
-	static int mustClear = true;
+   const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	if (mustClear) 
-   {
-		const float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-		m_d3dContextDEF->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-		m_d3dContextDEF->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	}
+   m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+   m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
 
-	m_d3dContextDEF->OMSetDepthStencilState(depthDisabledStencilState, 1);
-	m_d3dContextDEF->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
-
-	m_d3dContextDEF->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-	m_d3dContextDEF->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
-	m_d3dContextDEF->IASetInputLayout(m_inputLayout.Get());
-	m_d3dContextDEF->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	m_d3dContextDEF->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-	m_d3dContextDEF->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
+   m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+   m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+   m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 }
 
 bool Direct3DBase::Render()
@@ -492,25 +485,25 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    //m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
    //m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
 
-   m_d3dContextDEF->PSSetSamplers(0, 1, texsampler.GetAddressOf());
-   m_d3dContextDEF->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
-   m_d3dContextDEF->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContextDEF->IASetInputLayout(m_inputLayoutT.Get());
+   m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
+   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
+   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+   m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
 
    // Set the vertex and index buffers, and specify the way they define geometry.
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
-   m_d3dContextDEF->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-   m_d3dContextDEF->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContextDEF->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   m_d3dContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+   m_d3dContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    // Set the vertex and pixel shader stage state.
-   m_d3dContextDEF->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
-   m_d3dContextDEF->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-   m_d3dContextDEF->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
-   m_d3dContextDEF->PSSetShaderResources(0, 1, textureView.GetAddressOf());
+   m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
+   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+   m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
+   m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
    // Draw the cube.
-   m_d3dContextDEF->DrawIndexed(6, 0, 0);
+   m_d3dContext->DrawIndexed(6, 0, 0);
 }
 
 
@@ -520,22 +513,6 @@ int Direct3DBase::WaitDrawCommand()
 	return (int)TheDrawCommand;
 }
 
-void Direct3DBase::DoDrawCommand(bool should_redo) 
-{
-	static ID3D11CommandList *cl;
-	ID3D11DeviceContext1 *ic;
-
-	if (should_redo) 
-   {
-		m_d3dContextDEF->FinishCommandList(true, &cl);
-		m_d3dDevice->GetImmediateContext1(&ic);
-
-		ic->ExecuteCommandList(cl, true);
-		TheDrawCommand = DRAW_COMMAND_INVALID;
-	}
-	if (!should_redo) 
-   {
-		m_d3dDevice->GetImmediateContext1(&ic);
-		ic->ExecuteCommandList(cl, true);
-	}
+void Direct3DBase::DoneDrawCommand() {
+	TheDrawCommand = DRAW_COMMAND_INVALID;
 }

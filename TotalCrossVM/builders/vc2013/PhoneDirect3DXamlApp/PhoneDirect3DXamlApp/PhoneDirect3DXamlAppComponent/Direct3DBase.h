@@ -9,7 +9,6 @@
 #define N_LOAD_TASKS 4
 #define OCCUPIED_WAIT_TIME 1
 
-
 struct ProjectionConstantBuffer
 {
    DirectX::XMFLOAT4X4 projection;
@@ -69,7 +68,7 @@ internal:
    void createTexture();
    void setup();
 
-   void DoDrawCommand(bool should_redo);
+   void DoneDrawCommand();
 
    bool isLoadCompleted();
 
@@ -107,7 +106,6 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
