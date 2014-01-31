@@ -169,82 +169,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: buildWinCE
-
-       call evc commandline compiler
-       Important: to be able to compile some of these files, you must delete wce211\bin
-       and copy the wce300\bin to wce211\bin (thus, updating all old compilers to new versions)
-       these folders are located under <program files>\Microsoft eMbedded Tools\EVC\
-
-       Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildWinCE_vms" >
-
-  <echo message="GENERATING WINCE FILES - VMS"/>
-
-  <echo message="=> 1 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-	<copy file="${basedir}/ce/litebase_vms.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle">
-   <param name="path.param" value="${target.vms.path}"/>
-  </antcall>
-
-</target>
-
-<target name="buildWinCE_sdk" >
-
-  <echo message="GENERATING WINCE FILES - SDK"/>
-
-  <echo message="=> 1 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy file="${basedir}/ce/litebase_sdk.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle">
-   <param name="path.param" value="${target.sdk.path}"/>
-  </antcall>
-
-</target>
-
-<target name="buildWinCECabsSingle">
-
-  <exec dir="${source.tc.sdk.path}/etc/tools/makecab" executable="${source.tc.sdk.path}/etc/tools/makecab/Cabwiz.exe" failonerror="no">
-  <arg line="litebase.inf /cpu HPC2000_ARM HPC211_ARM PocketPC_ARM PocketPC_MIPS PocketPC_SH3"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move todir="${path.param}/dist/lib/wince">
-    <fileset dir="${source.tc.sdk.path}/etc/tools/makecab" includes="*.cab" casesensitive="no"/>
-  </move>
-
-  <!-- copy bat and ini files -->
-  <copy todir="${path.param}/dist/lib/wince">
-    <fileset dir="ce" includes="CEinstall.ini,_CEinstall-RunMe.bat,CEinstall_WMOBILE.ini,_CEinstall-RunMe_WMOBILE.bat" casesensitive="no"/>
-  </copy>
-
-  <exec dir="${source.tc.sdk.path}/etc/tools/makecab" executable="${source.tc.sdk.path}/etc/tools/makecab/Cabwizsp.exe" failonerror="no">
-  <arg line="litebase.inf /cpu PocketPC_ARM"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move file="${source.tc.sdk.path}/etc/tools/makecab/litebase.PocketPC_ARM.CAB" tofile="${path.param}/dist/lib/wince/litebase.WMobile_ARM.CAB" />
-
-  <delete>
-    <fileset dir="${source.tc.sdk.path}/etc/tools/makecab" includes="*.dat,litebase.inf" casesensitive="no"/>
-  </delete>
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
@@ -611,5 +535,8 @@ target: build targets
 <target name="buildBB_vms" />
 <target name="buildPalmOS5_sdk" />
 <target name="buildPalmOS5_vms" />
-
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_sdk" />
+<target name="buildWinCECabsSingle" />
+    
 </project>
