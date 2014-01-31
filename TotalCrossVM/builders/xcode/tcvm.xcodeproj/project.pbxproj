@@ -400,17 +400,18 @@
 		0F8C8E371549CFC700E0967F /* zutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C591549CFC700E0967F /* zutil.h */; };
 		0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FAA49A61549D7B30039F4BF /* UIKit.framework */; };
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
+		15A29ADA189C4D3C007C420B /* NativeDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 15A29AD9189C4D3C007C420B /* NativeDB.c */; };
 		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
 		CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513F181EF13F00B1B00A /* sqlite3.c */; };
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
 		CEFA5145181EF13F00B1B00A /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5141181EF13F00B1B00A /* sqlite3ext.h */; };
 		CEFA5148181EF24700B1B00A /* mainview.m in Sources */ = {isa = PBXBuildFile; fileRef = CEFA5147181EF24700B1B00A /* mainview.m */; };
-		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -655,7 +656,6 @@
 		0F8C8B4F1549CFC700E0967F /* gfx_ex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_ex.h; sourceTree = "<group>"; };
 		0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_Graphics_c.h; sourceTree = "<group>"; };
 		0F8C8B531549CFC700E0967F /* mainview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = mainview.h; sourceTree = "<group>"; tabWidth = 3; };
-		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; tabWidth = 3; };
 		0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_MediaClip_c.h; sourceTree = "<group>"; };
 		0F8C8B561549CFC700E0967F /* media_Sound_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Sound_c.h; sourceTree = "<group>"; };
 		0F8C8B571549CFC700E0967F /* media_Sound_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = media_Sound_c.m; sourceTree = "<group>"; };
@@ -825,18 +825,19 @@
 		0F8C8C591549CFC700E0967F /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zutil.h; sourceTree = "<group>"; };
 		0FAA49A61549D7B30039F4BF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
+		15A29AD9189C4D3C007C420B /* NativeDB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NativeDB.c; path = db/NativeDB.c; sourceTree = "<group>"; };
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
+		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
 		CEFA513F181EF13F00B1B00A /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = sqlite/sqlite3.c; sourceTree = "<group>"; };
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
-		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1119,6 +1120,7 @@
 		0F8C8AB01549CFC700E0967F /* nm */ = {
 			isa = PBXGroup;
 			children = (
+				15A29AD8189C4D27007C420B /* db */,
 				0F8C8AB11549CFC700E0967F /* crypto */,
 				0F8C8AB81549CFC700E0967F /* instancefields.h */,
 				0F8C8AB91549CFC700E0967F /* io */,
@@ -1870,12 +1872,28 @@
 			path = zlib;
 			sourceTree = "<group>";
 		};
+		15A29AD8189C4D27007C420B /* db */ = {
+			isa = PBXGroup;
+			children = (
+				15A29AD9189C4D3C007C420B /* NativeDB.c */,
+			);
+			name = db;
+			sourceTree = "<group>";
+		};
 		3A8C3EC3159E4A3900D3E666 /* darwin */ = {
 			isa = PBXGroup;
 			children = (
 				3A8C3EC4159E4A3900D3E666 /* GPS_c.h */,
 			);
 			path = darwin;
+			sourceTree = "<group>";
+		};
+		3AFCD5FA174D474F008BA920 /* scanner */ = {
+			isa = PBXGroup;
+			children = (
+				3AFCD5FB174D474F008BA920 /* zxing.c */,
+			);
+			path = scanner;
 			sourceTree = "<group>";
 		};
 		CEFA5146181EF15300B1B00A /* sqlite */ = {
@@ -1887,14 +1905,6 @@
 				CEFA5141181EF13F00B1B00A /* sqlite3ext.h */,
 			);
 			name = sqlite;
-			sourceTree = "<group>";
-		};
-		3AFCD5FA174D474F008BA920 /* scanner */ = {
-			isa = PBXGroup;
-			children = (
-				3AFCD5FB174D474F008BA920 /* zxing.c */,
-			);
-			path = scanner;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2345,6 +2355,7 @@
 				0F8C8E0B1549CFC700E0967F /* nativelib.c in Sources */,
 				0F8C8E151549CFC700E0967F /* tcz.c in Sources */,
 				0F8C8E171549CFC700E0967F /* utils.c in Sources */,
+				15A29ADA189C4D3C007C420B /* NativeDB.c in Sources */,
 				0F8C8E201549CFC700E0967F /* xtypes.c in Sources */,
 				0F8C8E221549CFC700E0967F /* adler32.c in Sources */,
 				0F8C8E231549CFC700E0967F /* compress.c in Sources */,
@@ -2396,6 +2407,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../src/nm/ui/**",
 					"$(PROJECT_DIR)/../../src/nm/**",
+					"$(PROJECT_DIR)/../../src/tcvm/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
@@ -2423,6 +2435,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../src/nm/ui/**",
 					"$(PROJECT_DIR)/../../src/nm/**",
+					"$(PROJECT_DIR)/../../src/tcvm/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
