@@ -492,12 +492,10 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__open_si"), &tdsNDB__open_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__close"), &tdsNDB__close);
-   htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__exec_s"), &tdsNDB__exec_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_shared_cache_b"), &tdsNDB_shared_cache_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_enable_load_extension_b"), &tdsNDB_enable_load_extension_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_interrupt"), &tdsNDB_interrupt);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_busy_timeout_i"), &tdsNDB_busy_timeout_i);
-   htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_exec_s"), &tdsNDB_exec_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_prepare_s"), &tdsNDB_prepare_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_errmsg"), &tdsNDB_errmsg);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_libversion"), &tdsNDB_libversion);
@@ -530,7 +528,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_result_double_ld"), &tdsNDB_result_double_ld);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_result_long_ll"), &tdsNDB_result_long_ll);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_result_int_li"), &tdsNDB_result_int_li);
-   htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_result_error_ls"), &tdsNDB_result_error_ls);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_backup_ssp"), &tdsNDB_backup_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_restore_ssp"), &tdsNDB_restore_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_column_metadata_l"), &tdsNDB_column_metadata_l);
