@@ -8,7 +8,6 @@
 
 #define N_LOAD_TASKS 4
 #define OCCUPIED_WAIT_TIME 1
-#define USE_DEFERRED_CONTEXT
 
 
 struct ProjectionConstantBuffer
@@ -32,7 +31,8 @@ struct TextureVertex
    DirectX::XMFLOAT2 tex;  // texture coordinate
 };
 
-enum drawCommand {
+enum drawCommand 
+{
 	DRAW_COMMAND_INVALID = -1,
 	DRAW_COMMAND_PRESENT = 0,
 	DRAW_COMMAND_PIXELS = 1,
@@ -43,19 +43,24 @@ enum drawCommand {
 
 #include "tcthread.h"
 
-struct TCMutex {
+struct TCMutex 
+{
 	DECLARE_MUTEX(test);
-	TCMutex() {
+	TCMutex() 
+   {
 		INIT_MUTEX(test);
 	}
-	void lock() {
+	void lock() 
+   {
 		LOCKVAR(test);
 	}
-	void unlock() {
+	void unlock() 
+   {
 		UNLOCKVAR(test);
 	}
 
-	~TCMutex() {
+	~TCMutex() 
+   {
 		DESTROY_MUTEX(test);
 	}
 };
@@ -131,9 +136,7 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
-#ifdef USE_DEFERRED_CONTEXT
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
-#endif
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
@@ -164,7 +167,4 @@ protected private:
 	int DrawCommand_count;
 	int *DrawCommand_x_array;
 	int *DrawCommand_y_array;
-	/*
-	int *x, int *y
-	*/
 };
