@@ -68,12 +68,9 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setLong_ol"), &jlrF_setLong_ol);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setFloat_od"), &jlrF_setFloat_od);
    htPutPtr(&htNativeProcAddresses, hashCode("jlrF_setDouble_od"), &jlrF_setDouble_od);
-	//XXX this should be resolved later
-#ifndef WP8
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showAddress_sb"), &tmGM_showAddress_sb);
    htPutPtr(&htNativeProcAddresses, hashCode("tmGM_showRoute_sssb"), &tmGM_showRoute_sssb);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
-#endif
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_create"), &tucL_create);
    htPutPtr(&htNativeProcAddresses, hashCode("tucL_destroy"), &tucL_destroy);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZL_deflate_ssiib"), &tuzZL_deflate_ssiib);

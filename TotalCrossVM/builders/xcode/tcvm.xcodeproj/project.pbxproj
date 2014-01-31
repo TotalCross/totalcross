@@ -403,6 +403,7 @@
 		0F8C8E371549CFC700E0967F /* zutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C591549CFC700E0967F /* zutil.h */; };
 		0FAA49A71549D7B30039F4BF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FAA49A61549D7B30039F4BF /* UIKit.framework */; };
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
+		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
@@ -657,7 +658,7 @@
 		0F8C8B4F1549CFC700E0967F /* gfx_ex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_ex.h; sourceTree = "<group>"; };
 		0F8C8B501549CFC700E0967F /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gfx_Graphics_c.h; sourceTree = "<group>"; };
 		0F8C8B531549CFC700E0967F /* mainview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = mainview.h; sourceTree = "<group>"; tabWidth = 3; };
-		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; name = mainview.m; path = mainview.m; sourceTree = "<group>"; tabWidth = 3; };
+		0F8C8B541549CFC700E0967F /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; tabWidth = 3; };
 		0F8C8B551549CFC700E0967F /* media_MediaClip_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_MediaClip_c.h; sourceTree = "<group>"; };
 		0F8C8B561549CFC700E0967F /* media_Sound_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Sound_c.h; sourceTree = "<group>"; };
 		0F8C8B571549CFC700E0967F /* media_Sound_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = media_Sound_c.m; sourceTree = "<group>"; };
@@ -827,6 +828,7 @@
 		0F8C8C591549CFC700E0967F /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zutil.h; sourceTree = "<group>"; };
 		0FAA49A61549D7B30039F4BF /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
+		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
@@ -1302,6 +1304,7 @@
 		0F8C8AE91549CFC700E0967F /* lang */ = {
 			isa = PBXGroup;
 			children = (
+				15E4ED10189C35510012D8ED /* Reflection.c */,
 				0F8C8AEA1549CFC700E0967F /* Class.c */,
 				0F8C8AEB1549CFC700E0967F /* Class_test.h */,
 				0F8C8AEC1549CFC700E0967F /* Object.c */,
@@ -2340,6 +2343,7 @@
 				0F8C8DFD1549CFC700E0967F /* datastructures.c in Sources */,
 				0F8C8DFF1549CFC700E0967F /* debug.c in Sources */,
 				0F8C8E011549CFC700E0967F /* dlmalloc.c in Sources */,
+				15E4ED11189C35510012D8ED /* Reflection.c in Sources */,
 				0F8C8E031549CFC700E0967F /* errormsg.c in Sources */,
 				0F8C8E051549CFC700E0967F /* guid.c in Sources */,
 				0F8C8E071549CFC700E0967F /* jchar.c in Sources */,
