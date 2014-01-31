@@ -148,7 +148,8 @@ NM_LANG_FILES =                               \
 	$(sourcedir)/nm/lang/String.c              \
 	$(sourcedir)/nm/lang/StringBuffer.c        \
 	$(sourcedir)/nm/lang/Thread.c              \
-	$(sourcedir)/nm/lang/Throwable.c
+	$(sourcedir)/nm/lang/Throwable.c           \
+	$(sourcedir)/nm/lang/Reflecion.c
 
 libnmlang_la_SOURCES = ${NM_LANG_FILES}
 
