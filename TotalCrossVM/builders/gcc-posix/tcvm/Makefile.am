@@ -336,7 +336,8 @@ EVENT_FILES =                              \
 libevent_la_SOURCES = ${EVENT_FILES}
 
 SQLITE3_FILES =    \
-        $(sourcedir)/sqlite/sqlite3.c
+    $(sourcedir)/sqlite/sqlite3.c              \
+    $(sourcedir)/nm/db/NativeDB.c
 
 libsqlite3_la_SOURCES =  \
 	$(SQLITE3_FILES)
