@@ -1,32 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="PixelShaderGlobalColor.hlsl">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </FxCompile>
-    <FxCompile Include="PixelShaderTexture.hlsl">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShaderGlobalColor.hlsl">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShaderTexture.hlsl">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </FxCompile>
     <FxCompile Include="..\..\..\..\..\src\nm\ui\wp8\PixelShaderGlobalColor.hlsl">
       <Filter>TCVM\Native methods\ui\wp8</Filter>
     </FxCompile>
     <FxCompile Include="..\..\..\..\..\src\nm\ui\wp8\VertexShaderGlobalColor.hlsl">
       <Filter>TCVM\Native methods\ui\wp8</Filter>
     </FxCompile>
+    <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderGlobalColor.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderTexture.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\VertexShaderGlobalColor.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\VertexShaderTexture.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </ClCompile>
-    <ClCompile Include="PhoneDirect3DXamlAppComponent.cpp" />
-    <ClCompile Include="Direct3DBase.cpp" />
-    <ClCompile Include="Direct3DContentProvider.cpp" />
     <ClCompile Include="..\..\..\..\..\src\png\png.c">
       <Filter>TCVM\png</Filter>
     </ClCompile>
@@ -531,15 +517,11 @@
     <ClCompile Include="..\..\..\..\..\src\jpeg\rdbmp.c">
       <Filter>TCVM\jpeg</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\dx\Direct3DBase.cpp" />
+    <ClCompile Include="..\..\..\..\..\src\dx\Direct3DContentProvider.cpp" />
+    <ClCompile Include="..\..\..\..\..\src\dx\PhoneDirect3DXamlAppComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>PhoneDirect3DXamlAppComponent</Filter>
-    </ClInclude>
-    <ClInclude Include="PhoneDirect3DXamlAppComponent.h" />
-    <ClInclude Include="DirectXHelper.h" />
-    <ClInclude Include="Direct3DBase.h" />
-    <ClInclude Include="Direct3DContentProvider.h" />
     <ClInclude Include="..\..\..\..\..\src\zlib\crc32.h">
       <Filter>TCVM\ZLib\headers</Filter>
     </ClInclude>
@@ -903,14 +885,15 @@
     <ClInclude Include="..\..\..\..\..\src\jpeg\jversion.h">
       <Filter>TCVM\jpeg\headers</Filter>
     </ClInclude>
-    <ClInclude Include="Idummy.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\Direct3DBase.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\Direct3DContentProvider.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\DirectXHelper.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\PhoneDirect3DXamlAppComponent.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\cswrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TCVM">
       <UniqueIdentifier>{5e55f6f0-ea8f-4691-ac01-e0e16b130ba1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PhoneDirect3DXamlAppComponent">
-      <UniqueIdentifier>{e4322737-3e91-4a30-b35f-e43f374efcaa}</UniqueIdentifier>
     </Filter>
     <Filter Include="TCVM\png">
       <UniqueIdentifier>{76a01fc6-c591-42d2-bbb5-bf8a0852c6a6}</UniqueIdentifier>

@@ -19,7 +19,7 @@ using Windows.Devices.Geolocation;
 
 namespace PhoneDirect3DXamlAppInterop
 {
-   public class CSWrapper : CSwrapper
+   public class dummy : Idummy
    {
        // RadioDevice
       private int turnedState;
@@ -44,7 +44,7 @@ namespace PhoneDirect3DXamlAppInterop
       private double? pdop; // GPS_pdop() 
       private String lowSignalReason = ""; // GPS_lowSignalReason()
 
-      public CSWrapper()
+      public dummy()
       {
 
       }
@@ -311,9 +311,9 @@ namespace PhoneDirect3DXamlAppInterop
         {
             if (m_d3dBackground == null)
             {
-                CSWrapper cs = new CSWrapper();
-                cs.mp = this;
-                m_d3dBackground = new Direct3DBackground(cs);
+                dummy odummy = new dummy();
+                odummy.mp = this;
+                m_d3dBackground = new Direct3DBackground(odummy);
 
                 // Set window bounds in dips
                 m_d3dBackground.WindowBounds = new Windows.Foundation.Size(

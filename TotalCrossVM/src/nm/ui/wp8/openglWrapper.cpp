@@ -314,70 +314,6 @@ bool setupGL(int width, int height)
 //	Image_changed(obj) = false;
 //}
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
-{
-#ifndef USE_DX
-	glDeleteTextures(1, (TCGuint*)textureId); GL_CHECK_ERROR
-		*textureId = 0;
-	if (updateList)
-		imgTextures = VoidPsRemove(imgTextures, img, null);
-#endif
-}
-
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
-{
-#ifndef USE_DX
-	int32 i;
-	PixelConv* pf = (PixelConv*)pixels;
-	PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
-	bool textureAlreadyCreated = *textureId != 0;
-	bool err;
-	if (!pt)
-	{
-		throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d", width, height);
-		return;
-	}
-
-	if (!textureAlreadyCreated)
-	{
-		glGenTextures(1, (TCGuint*)textureId); err = GL_CHECK_ERROR
-		if (err)
-		{
-			throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d", width, height);
-			return;
-		}
-	}
-	// OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
-	glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
-	if (!textureAlreadyCreated)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
-	}
-	// must invert the pixels from ARGB to RGBA
-	for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
-	if (textureAlreadyCreated)
-	{
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
-			glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-	}
-	else
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
-		if (err)
-			throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
-		else
-		{
-			if (updateList)
-				imgTextures = VoidPsAdd(imgTextures, img, null);
-			glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-		}
-	}
-	xfree(pt0);
-#endif
-}
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
@@ -604,7 +540,8 @@ void glDrawPixels(int32 n, int32 rgb)
 #ifdef TOGGLE_BUFFER
    if (colour != dxDrawPixelsCache.lastARGB)
    {
-      if (dxDrawPixelsCache.size > 0) {
+      if (dxDrawPixelsCache.size > 0) 
+      {
          dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
          dxDrawPixelsCache.size = 0;
       }
@@ -823,7 +760,6 @@ void setShiftYgl()
 #endif
 }
 
-
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
 #ifndef USE_DX
@@ -841,47 +777,21 @@ void glSetLineWidth(int32 w)
 #endif
 }
 
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+void dxDeleteTexture(TCObject img, int32* textureId, bool updateList);
+void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
+
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+{
+   dxDeleteTexture(img, textureId, updateList);
+}
+
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+{
+   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+}
+
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
-#ifndef USE_DX
-	TCGfloat* coords = texcoords;
-	/*   TCGfloat degrees = 45;
-	TCGfloat radians = degreesToRadians(degrees);
-	TCGfloat co = cosf(radians), si = sinf(radians);*/
-	if (pixcolors != (int32*)glcolors) flushPixels(6);
-	setCurrentProgram(textureProgram);
-	glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
-
-		dstY += glShiftY;
-
-	// destination coordinates
-	coords[0] = coords[6] = dstX;
-	coords[1] = coords[3] = (dstY + h);
-	coords[2] = coords[4] = (dstX + w);
-	coords[5] = coords[7] = dstY;
-	/* TODO trying to do rotation too
-	http://db-in.com/blog/2011/04/cameras-on-opengl-es-2-x/
-	http://en.wikipedia.org/wiki/Transformation_matrix#Rotation_2
-	http://androidbook.com/item/4254
-
-	mat4 tempX,tempY,temp,temp2;
-	matrixRotateX(rot, tempX); matrixRotateY(rot, tempY);
-	matrixMultiply(tempX,tempY,temp);
-	matrixMultiply(coords,temp,temp2);
-	xmemmove(coords,temp2,sizeof(mat4));*/
-	//matrixRotateZ(rotY, temp); matrixMultiply(coords,temp,temp2); xmemmove(coords,temp2,sizeof(mat4));
-
-	glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
-
-		// source coordinates
-		TCGfloat left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
-	coords[8] = coords[14] = left;
-	coords[9] = coords[11] = bottom;
-	coords[10] = coords[12] = right;
-	coords[13] = coords[15] = top;
-	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-		glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-#endif
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
 }
