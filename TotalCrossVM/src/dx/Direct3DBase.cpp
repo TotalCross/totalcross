@@ -229,7 +229,7 @@ void Direct3DBase::setup()
    // setup alpha blending
    D3D11_BLEND_DESC blendStateDescription = { 0 };
    blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-   blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+   blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
    blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
    blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
    blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
@@ -241,7 +241,7 @@ void Direct3DBase::setup()
 
 void Direct3DBase::setColor(int color)
 {
-   //if (color == lastRGB) return;
+   if (color == lastRGB) return;
    lastRGB = color;
    aa = ((color >> 24) & 0xFF) / 255.0f;
    rr = ((color >> 16) & 0xFF) / 255.0f;
@@ -283,6 +283,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    setColor(color);
    m_d3dContext->DrawIndexed(2, 0, 0);
 }
+
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
    VertexPosition cubeVertices[] = // position, color
@@ -307,6 +308,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    setColor(color);
    m_d3dContext->DrawIndexed(6, 0, 0);
 }
+
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
    int i;
@@ -371,8 +373,6 @@ bool Direct3DBase::isLoadCompleted()
 	return true;
 }
 
-ID3D11CommandList *cl = nullptr;
-
 void Direct3DBase::Present()
 {
 	TheDrawCommand = DRAW_COMMAND_PRESENT;
@@ -382,8 +382,8 @@ void Direct3DBase::Present()
 
 void Direct3DBase::setProgram(whichProgram p)
 {
-   //if (p == curProgram) return;
-   lastRGB = -1;
+   if (p == curProgram) return;
+   lastRGB = 0xFAFFFFFF; // user may never use this one
    curProgram = p;
    switch (p)
    {
@@ -402,7 +402,7 @@ void Direct3DBase::setProgram(whichProgram p)
 
 void Direct3DBase::PreRender()
 {
-   const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+   const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
    m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -412,7 +412,7 @@ void Direct3DBase::PreRender()
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
    m_d3dContext->IASetInputLayout(m_inputLayout.Get());
-   setProgram(PROGRAM_LRP);
+   curProgram = PROGRAM_NONE;
 }
 
 bool Direct3DBase::Render()
@@ -473,8 +473,6 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
 {
    ID3D11Texture2D *texture;
    xmemmove(&texture, &textureId, sizeof(void*));
-   //m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   //m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
    setProgram(PROGRAM_TEX);
 
    //dstY += glShiftY;
@@ -486,10 +484,10 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    // VERTEX BUFFER
    TextureVertex cubeVertices[] =
    {  // destination coordinates    source coordinates
-      { XMFLOAT2(dstX,  dstY),  XMFLOAT2(left,top) },
-      { XMFLOAT2(dstX2, dstY),  XMFLOAT2(right,top) },
-      { XMFLOAT2(dstX2, dstY2), XMFLOAT2(right,bottom) },
-      { XMFLOAT2(dstX,  dstY2), XMFLOAT2(left,bottom) },
+      { XMFLOAT2((float)dstX,  (float)dstY),  XMFLOAT2(left, top) },
+      { XMFLOAT2((float)dstX2, (float)dstY),  XMFLOAT2(right, top) },
+      { XMFLOAT2((float)dstX2, (float)dstY2), XMFLOAT2(right, bottom) },
+      { XMFLOAT2((float)dstX,  (float)dstY2), XMFLOAT2(left, bottom) },
    };
    D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
    vertexBufferDesc.ByteWidth = sizeof(TextureVertex)* ARRAYSIZE(cubeVertices);
