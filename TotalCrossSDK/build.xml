@@ -184,6 +184,7 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
+        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -199,11 +200,6 @@ target: compile
   </javac>
 
   <delete dir="${output}/devicesrc"/>
-
-  <!-- copy some other files to the classes folder -->
-  <copy todir="${output}/classes">
-     <fileset dir="${src}" includes="**/*.dtd"/>
-  </copy>
 
 </target>
   
@@ -247,6 +243,7 @@ target: compile
   >
   	
     <classpath>
+       <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
        <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -281,9 +278,9 @@ target: desktop
 
   <echo message="create the desktop jar file" />
   <mkdir dir="${dist}" />
-  <delete file="${dist}/tc.jar"/>
-  <delete file="${dist}/tc_.jar"/>
-  <jar destfile="${dist}/tc_.jar" compress="no" update="no">
+  <delete file="${dist}/tc_desktop.jar"/>
+  <delete file="${dist}/tc_deploy.jar"/>
+  <jar destfile="${dist}/tc_desktop.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
     excludes="totalcross/**,tc/samples/**,*.tcz"
     />
@@ -312,14 +309,14 @@ target: desktop
          <method name="finalize" />
        </keepclassmembernames>
 
-       <injar path="${dist}/tc_.jar" />
-       <outjar path="${dist}/tc.jar" />
+       <injar path="${dist}/tc_desktop.jar" />
+       <outjar path="${dist}/tc_deploy.jar" />
    </proguard>
 
-  <delete file="${dist}/tc_.jar"/>
+  <delete file="${dist}/tc_desktop.jar"/>
 
   <!-- we have to jar the totalcross api separately because proguard changes the method's access and breaks Litebase generation. -->
-  <jar destfile="${dist}/tc.jar" compress="yes" update="yes" includes="totalcross/**">
+  <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**">
     <fileset dir="${output}/classes_desktop"
     excludes="tc/**,*.tcz"
     />
@@ -332,6 +329,16 @@ target: desktop
       <attribute name="Main-Class" value="tc.Deploy"/>
   	</manifest>
   </jar>
+ 
+  <!-- join tc_t.jar and sqlite.jar into tc.jar -->
+   <zip destfile="${dist}/tc.jar">
+       <zipgroupfileset file="${dist}/tc_desktop.jar"/>
+       <zipgroupfileset file="${dist}/tc_deploy.jar"/>
+       <zipgroupfileset file="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+   </zip>
+   <delete file="${dist}/tc_desktop.jar" />
+   <delete file="${dist}/tc_deploy.jar" />
+
   <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
 
 </target>
@@ -412,7 +419,7 @@ target: javadoc
   <mkdir dir="${output}/javadoc" />
   <copy todir="${output}/javadoc">
     <fileset dir="${src}"
-    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**"/>
+    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
   </copy>
 
   <echo message="Removing 4D and 4B methods" />
@@ -468,9 +475,10 @@ target: device
   <mkdir dir="${dist}" />
   <delete file="${output}/tcsdk.jar"/>
   <delete file="${output}/tcsdk_.jar"/>
+  <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
   <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="ras/**/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
+    includes="totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/util/regex/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
     excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*"
     />
     <fileset dir="${src}" includes="totalcross/res/**" />

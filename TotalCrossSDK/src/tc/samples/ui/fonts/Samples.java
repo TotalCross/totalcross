@@ -22,7 +22,7 @@ import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
-public class Samples extends Container
+public class Samples extends ScrollContainer
 {
    private Control []controls;
 
@@ -45,6 +45,11 @@ public class Samples extends Container
       }
    }
 
+   public Samples()
+   {
+      super(true,true);
+   }
+   
    public void initUI()
    {
       setBackColor(Color.darker(getBackColor(),10)); // darker background
@@ -53,11 +58,11 @@ public class Samples extends Container
       RadioGroupController rgSexo = new RadioGroupController();
 
       add(new Label("Name: "), LEFT,TOP+5);
-      add(edname = new Edit(""),AFTER,SAME);
+      add(edname = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Adress: "), LEFT,AFTER+5);
-      add(edadress = new Edit(""),AFTER,SAME);
+      add(edadress = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Quarter: "), LEFT,AFTER+5);
-      add(edquarter = new Edit(""),AFTER,SAME);
+      add(edquarter = new Edit(""),AFTER,SAME,SCREENSIZE+200,PREFERRED);
       add(new Label("Gender: "),LEFT,AFTER+5);
       add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
       add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
@@ -72,15 +77,15 @@ public class Samples extends Container
 
       
 
-      controls = getChildren();
+      controls = getBagChildren();
       repositionAllowed = false; // only reposition the controls
    }
 
    public void setFonts(Font f)
    {
+      setFont(f);
       for (int i = controls.length; --i >= 0;)
          controls[i].setFont(f);
       reposition();
    }
-
  }

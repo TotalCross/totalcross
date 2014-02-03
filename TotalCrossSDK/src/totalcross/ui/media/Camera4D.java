@@ -56,7 +56,7 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
+      if (Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
          return this.nativeClick();
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
@@ -83,27 +83,6 @@ public class Camera4D
          String s = getNativeResolutions();
          if (s != null)
             ret = Convert.tokenizeString(s,',');
-      }
-      else
-      if (Settings.isWindowsDevice())
-      {
-         Vector v = new Vector(10);
-         String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
-         String[] folders = Registry.list(Registry.HKEY_LOCAL_MACHINE,dir);
-         for (int i =0; i < folders.length; i++)
-         {
-            String f = folders[i];
-            String fullKey = dir+"\\"+f;
-            try
-            {
-               int w = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Width");
-               int h = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Height");
-               v.addElement(w+"x"+h);
-            }
-            catch (Exception e) {} // key not found
-         }
-         if (v.size() > 0)
-            ret = (String[])v.toObjectArray();
       }
       if (ret == null)
          ret = new String[]{"default resolution","320x240","640x480","1024x768","2048x1536"};

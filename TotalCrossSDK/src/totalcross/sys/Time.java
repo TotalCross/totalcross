@@ -19,6 +19,8 @@
 
 package totalcross.sys;
 
+import totalcross.util.*;
+
 /**
  * Time identifies a date and time.
  * <p>
@@ -82,6 +84,13 @@ public final class Time
 
    public native void update4D();
 
+   /** Constructs a time object from a Date, zeroing the hour/minute/second and millis
+    * @since TotalCross 2.0
+    */
+   public Time(Date d)
+   {
+      this(d.getDateInt(),0);
+   }
    /** Constructs a time object from the given value. 
     * @see #getTimeLong
     * @since SuperWaba 4.0
@@ -145,7 +154,14 @@ public final class Time
          
       try
       {
-         String[] parts = Convert.tokenizeString(time, Settings.timeSeparator);
+         StringBuffer seps = new StringBuffer(1); // guich@sqlite: accept any kind of separator
+         for (int i = 0, n = time.length(); i < n; i++)
+         {
+            char ch = time.charAt(i);
+            if (!('0' <= ch && ch <= '9'))
+               seps.append(ch);
+         }
+         String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
          int idx = 0;
          if (hasYear) year = Convert.toInt(parts[idx++]);
          if (hasMonth) month = Convert.toInt(parts[idx++]);
@@ -165,6 +181,23 @@ public final class Time
    {
       int i = hour * 10000 + minute * 100 + second;
       return year * 10000000000L + month * 100000000L + day * 1000000 + i;
+   }
+
+   /** Returns the time in the format YYYYMMDDHHmmSSmmm as a long value. It does
+    * include the millis.
+    * @since TotalCross 2.0
+    */
+  public long getSQLLong()
+  {
+     return year * 10000000000000L + month * 100000000000L + day * 1000000000L + hour * 10000000L + minute * 100000L + second * 1000L + millis;
+  }
+
+  /** Returns this date in the format <code>YYYY-MM-DD HH:mm:SS.mmm</code>
+    * @since TotalCross 2.0
+    */
+   public String getSQLString() // guich@tc115_22
+   {
+      return dump(new StringBuffer(20), "-", true).toString();
    }
 
    /** Constructs a new time with the given values. The values are not checked.
@@ -236,6 +269,7 @@ public final class Time
       sb.append(second);
       if (includeMillis)
       {
+         sb.append(".");
          if (millis < 10)
             sb.append("00");
          else

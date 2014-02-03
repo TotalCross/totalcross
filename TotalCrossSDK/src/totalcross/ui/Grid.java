@@ -1809,6 +1809,7 @@ public class Grid extends Container implements Scrollable
       else
       {
          String s = getCellText(ge.row, ge.col);
+         if (s == null || s.length() == 0) return;
          int fmw = s != null ? fm.stringWidth(s) : 0; // guich@tc100b5_43
          int x1 = Convert.sum(widths, 0, ge.col) + xOffset; // guich@tc122_2: if this is the last column and it is not completely visible, show the tooltip
          int x2 = x1 + widths[ge.col];

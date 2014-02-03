@@ -40,7 +40,7 @@ lists: free objects and used objects.
    Memory allocation
    ~~~~~~~~~~~~~~~~~
 
-When an TCObject is allocated, it is removed from the free list and put in the used list
+When an Object is allocated, it is removed from the free list and put in the used list
 at the given array index (based on object's size).
 
 * Initial state:
@@ -335,9 +335,9 @@ bool initObjectMemoryManager()
    f += skip;
    u += skip;
    l += skip;
-   freeList = newPtrArrayOf(TCObject, n, ommHeap);
-   usedList = newPtrArrayOf(TCObject, n, ommHeap);
-   lockList = newPtrArrayOf(TCObject, 1, ommHeap);
+   freeList = newPtrArrayOf(TCObject,n,ommHeap);
+   usedList = newPtrArrayOf(TCObject,n,ommHeap);
+   lockList = newPtrArrayOf(TCObject,1,ommHeap);
    lockList[0] = (TCObject)l;
    for (i =0; i < n; i++) // and now we just assign the starting pointer of each block
    {
@@ -474,7 +474,7 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
 {
    TCClass c;
    uint32 objectSize;
-   TCObject o = null;
+   TCObject o=null;
 
    LOCKVAR(omm);
    c = loadClass(currentContext, className, true);
@@ -516,7 +516,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
 {
    TCClass c;
    uint32 arraySize, objectSize;
-   TCObject o = null;
+   TCObject o=null;
 
    if (len < 0)
       return null;
@@ -548,12 +548,12 @@ TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count,
    TCObject *oa;
 
    // note that all dimensions are type java.lang.Array, except the last one.
-   len = *dims < 65 ? regI[*dims] : (*dims-65);
+   len = dims == null ? regI[0] : *dims < 65 ? regI[*dims] : (*dims-65);
    o = createArrayObject(currentContext, type, len);
    if (o != null && count > 1)
    {
       for (oa = (TCObject*)ARRAYOBJ_START(o); len-- > 0; oa++)
-         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims+1, regI)) == null)
+         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims == null ? null : dims+1, dims == null ? regI+1 : regI)) == null)
             return null;
          else
             setObjectLock(*oa, UNLOCKED);
@@ -684,7 +684,7 @@ static void markSingleObject(TCObject o)
    if (c->objInstanceFields != null)
    {
       objs.start = (TCObjectArray)FIELD_OBJ_OFFSET(o,c);
-      objs.n = (int32)((TCObjectArray)FIELD_V64_OFFSET(o, c) - objs.start); // the object fields ends where the 64-bit ones start.
+      objs.n = (int32)((TCObjectArray)FIELD_V64_OFFSET(o,c) - objs.start); // the object fields ends where the 64-bit ones start.
       stackPush(objStack, &objs);
    }
 }

@@ -24,8 +24,8 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH,glShiftY,desiredglShiftY;
-extern TCGfloat ftransp[16], f255[256];
-extern TCGfloat *glcoords, *glcolors;
+extern GLfloat ftransp[16], f255[256];
+extern GLfloat *glcoords, *glcolors;
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -119,7 +119,6 @@ Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
    p.b = (uint8)(b & 0xFF);
    return p.pixel;
 }
-
 Pixel makePixel(int32 r, int32 g, int32 b)
 {
    PixelConv p;
@@ -129,7 +128,6 @@ Pixel makePixel(int32 r, int32 g, int32 b)
    p.b = (uint8)(b & 0xFF);
    return p.pixel;
 }
-
 Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
@@ -139,7 +137,6 @@ Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
    p.b = (uint8)( rgb        & 0xFF);
    return p.pixel;
 }
-
 Pixel makePixelARGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
@@ -293,7 +290,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null, null);
    }
    else
 #endif
@@ -644,51 +641,6 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                    p += dPr;                             // increment decision (for right)
              }
           else
-          {
-#ifdef WP8 // improve DX performance by splitting the loop into two to group the drawPixel operations by color.
-             int init2 = dX - 1;
-             for (; dX >= 0; dX-=2)                       // process each point in the line one at a time (just use dX)
-             {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-#ifdef __gl2_h_
-                if (Graphics_useOpenGL(g))
-                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
-                else
-#endif
-                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
-                row += xInc;                             // increment independent variable
-                currentX += xInc;
-                if (p > 0)                               // is the pixel going right AND up?
-                {
-                   currentY += pyInc;
-                   p += dPru;                            // increment decision (for up)
-                   row += yInc;                          // increment dependent variable
-                }
-                else                                     // is the pixel just going right?
-                   p += dPr;                             // increment decision (for right)
-             }
-             on ^= 1;
-             for (dX = init2; dX >= 0; dX-=2)                       // process each point in the line one at a time (just use dX)
-             {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-#ifdef __gl2_h_
-                if (Graphics_useOpenGL(g))
-                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
-                else
-#endif
-                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
-                row += xInc;                             // increment independent variable
-                currentX += xInc;
-                if (p > 0)                               // is the pixel going right AND up?
-                {
-                   currentY += pyInc;
-                   p += dPru;                            // increment decision (for up)
-                   row += yInc;                          // increment dependent variable
-                }
-                else                                     // is the pixel just going right?
-                   p += dPr;                             // increment decision (for right)
-             }
-#else
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
@@ -709,9 +661,6 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                 else                                     // is the pixel just going right?
                    p += dPr;                             // increment decision (for right)
              }
-#endif
-          }
-
        }
        else            // if Y is the independent variable
        {
@@ -741,51 +690,6 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                    p += dPr;                             // increment decision (for right)
              }
           else
-          {
-#ifdef WP8 // improve DX performance by splitting the loop into two to group the drawPixel operations by color.
-             int init2 = dY - 1;
-             for (; dY >= 0; dY -= 2)                       // process each point in the line one at a time (just use dY)
-             {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-#ifdef __gl2_h_
-                if (Graphics_useOpenGL(g))
-                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
-                else
-#endif
-                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
-                row += yInc;                             // increment independent variable
-                currentY += pyInc;
-                if (p > 0)                               // is the pixel going up AND right?
-                {
-                   row += xInc;                          // increment dependent variable
-                   currentX += xInc;
-                   p += dPru;                            // increment decision (for up)
-                }
-                else                                     // is the pixel just going up?
-                   p += dPr;                             // increment decision (for right)
-             }
-             on ^= 1;
-             for (dY = init2; dY >= 0; dY -= 2)                       // process each point in the line one at a time (just use dX)
-             {
-                if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-#ifdef __gl2_h_
-                if (Graphics_useOpenGL(g))
-                   glDrawPixel(currentX, currentY, (on & 1) ? pixel1 : pixel2, 255);
-                else
-#endif
-                   *row = (on & 1) ? pixel1 : pixel2;  // plot the pixel
-                row += yInc;                             // increment independent variable
-                currentY += pyInc;
-                if (p > 0)                               // is the pixel going up AND right?
-                {
-                   row += xInc;                          // increment dependent variable
-                   currentX += xInc;
-                   p += dPru;                            // increment decision (for up)
-                }
-                else                                     // is the pixel just going up?
-                   p += dPr;                             // increment decision (for right)
-             }
-#else
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
@@ -806,8 +710,6 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
                 else                                     // is the pixel just going up?
                    p += dPr;                             // increment decision (for right)
              }
-#endif
-          }
        }
 #ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
@@ -1037,9 +939,11 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
    }
 }
 
-#define INTERP(j,f) (j + (((f - j) * transparency) >> 4)) & 0xFF
+#define INTERP(j,f,shift) (j + (((f - j) * transparency) >> shift)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
+int32 getCharTexture(Context currentContext, UserFont uf, JChar ch); // PalmFont_c.h
+uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
 
 static Context lastContext;
@@ -1052,7 +956,7 @@ static int lastJustify;
 static int lastCharCount;
 
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
-{
+{                         
    TCObject fontObj = Graphics_font(g);
    int32 startBit,currentBit,incY,y1,r,rmax,istart;
    uint8 *bitmapTable, *ands, *current, *start;
@@ -1060,7 +964,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    int32 rowWIB,offset,xMin,xMax,yMin,yMax,x,y,yDif,width,height,spaceW=0,k,clipX2,pitch;
    Pixel transparency,*row0, *row;
    PixelConv *i;
-   bool isNibbleStartingLow,isLowNibble,isAA;
+   bool isNibbleStartingLow,isLowNibble;
+   int aaType;
    JChar ch,first,last;
    UserFont uf=null;
    PixelConv fc;
@@ -1068,7 +973,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
-   TCGfloat *glC, *glV;
+   int32 clip[4];
+   GLfloat *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
 
@@ -1103,7 +1009,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    first = uf->fontP.firstChar;
    last = uf->fontP.lastChar;
 
-   isAA = uf->fontP.antialiased;
+   aaType = uf->fontP.antialiased;
    height = uf->fontP.maxHeight;
    incY = height + justifyWidth;
 
@@ -1168,13 +1074,13 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
-#ifdef __gl2_h_
-         checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
-#endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
       width = bitIndexTable[ch+1] - offset;
+
+      width = width * height / uf->ubase->fontP.maxHeight;
+      
       if ((xMax = x0 + width) > Graphics_clipX2(g))
          xMax = Graphics_clipX2(g);
       y1 = y; r=0;
@@ -1195,84 +1101,131 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
       rmax = (y+height > yMax) ? yMax - y : height;
 
-      if (!isAA) // antialiased?
+      switch (aaType)
       {
-         start     = bitmapTable + (offset >> 3) + rowWIB * istart;
-         startBit  = offset & 7;
-
-         // draws the char, a row at a time
-         for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+         case AA_NO:
          {
-            current = start;
-            ands = ands8 + (currentBit = startBit);
-            for (x=x0; x < xMax; x++)
-            {
-               if ((*current & *ands++) != 0 && x >= xMin)
-                  row[x] = foreColor;
-               if (++currentBit == 8)   // finished this uint8?
-               {
-                  currentBit = 0;       // reset counter
-                  ands = ands8;         // reset test bit pointer
-                  ++current;            // inc current uint8
-               }
-            }
-         }
-      }
-      else
-      {
-         start = bitmapTable + (offset >> 1) + rowWIB * istart;
-         isNibbleStartingLow = (offset & 1) == 1;
-#ifdef __gl2_h_
-         // draws the char, a row at a time
-         if (Graphics_useOpenGL(g))
-         {
-            int ty = glShiftY;
-            glC = glcolors;
-            glV = glcoords;
-            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
-            {
-               current = start;
-               isLowNibble = isNibbleStartingLow;
-               for (x=x0; x < xMax; x++)
-               {
-                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-                  isLowNibble = !isLowNibble;
-                  if (transparency == 0 || x < xMin)
-                     continue;
+            start     = bitmapTable + (offset >> 3) + rowWIB * istart;
+            startBit  = offset & 7;
 
-                  // alpha
-                  *glC++ = ftransp[transparency];
-                  // vertices
-                  *glV++ = x;
-                  *glV++ = y + ty;
-               }
-            }
-            if (glC != glcolors) // flush vertices buffer
-               glDrawPixels(((int32)(glC-glcolors)),foreColor);
-         }
-         else
-#endif
+            // draws the char, a row at a time
             for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
             {
                current = start;
-               isLowNibble = isNibbleStartingLow;
-               i = (PixelConv*)&row[x0];
-               for (x=x0; x < xMax; x++,i++)
+               ands = ands8 + (currentBit = startBit);
+               for (x=x0; x < xMax; x++)
                {
-                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-                  isLowNibble = !isLowNibble;
-                  if (transparency == 0 || x < xMin)
-                     continue;
-                  if (transparency == 0xF)
-                     i->pixel = foreColor;
-                  else
+                  if ((*current & *ands++) != 0 && x >= xMin)
+                     row[x] = foreColor;
+                  if (++currentBit == 8)   // finished this uint8?
                   {
-                     i->r = INTERP(i->r, fcR);
-                     i->g = INTERP(i->g, fcG);
-                     i->b = INTERP(i->b, fcB);
+                     currentBit = 0;       // reset counter
+                     ands = ands8;         // reset test bit pointer
+                     ++current;            // inc current uint8
                   }
                }
             }
+            break;
+         }
+         case AA_4BPP:
+         {
+            start = bitmapTable + (offset >> 1) + rowWIB * istart;
+            isNibbleStartingLow = (offset & 1) == 1;
+   #ifdef __gl2_h_
+            // draws the char, a row at a time
+            if (Graphics_useOpenGL(g))
+            {
+               int ty = glShiftY;
+               glC = glcolors;
+               glV = glcoords;
+               for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+               {
+                  current = start;
+                  isLowNibble = isNibbleStartingLow;
+                  for (x=x0; x < xMax; x++)
+                  {
+                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+
+                     // alpha
+                     *glC++ = ftransp[transparency];
+                     // vertices
+                     *glV++ = x;
+                     *glV++ = y + ty;
+                  }
+               }
+               if (glC != glcolors) // flush vertices buffer
+                  glDrawPixels(((int32)(glC-glcolors)),foreColor);
+            }
+            else
+   #endif
+               for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+               {
+                  current = start;
+                  isLowNibble = isNibbleStartingLow;
+                  i = (PixelConv*)&row[x0];
+                  for (x=x0; x < xMax; x++,i++)
+                  {
+                     transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+                     if (transparency == 0xF)
+                        i->pixel = foreColor;
+                     else
+                     {
+                        i->r = INTERP(i->r, fcR, 4);
+                        i->g = INTERP(i->g, fcG, 4);
+                        i->b = INTERP(i->b, fcB, 4);
+                     }
+                  }
+               }
+         }
+         break;
+         case AA_8BPP: // textured font files
+         {
+            // draws the char, a row at a time
+   #ifdef __gl2_h_
+            if (Graphics_useOpenGL(g))
+            {                                    
+               clip[0] = xMin;
+               clip[1] = yMin;
+               clip[2] = xMax;
+               clip[3] = yMax;
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, &fc, clip);
+            }
+            else
+   #endif // case 2
+            {
+               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+               if (alpha)
+               {                             
+                  rowWIB = width;
+                  start = alpha + istart * rowWIB;
+                  for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+                  {
+                     current = start;
+                     i = (PixelConv*)&row[x0];
+                     for (x=x0; x < xMax; x++,i++)
+                     {
+                        transparency = *current++;
+                        if (transparency == 0 || x < xMin)
+                           continue;
+                        if (transparency == 0xFF)
+                           i->pixel = foreColor;
+                        else
+                        {
+                           i->r = INTERP(i->r, fcR, 8);
+                           i->g = INTERP(i->g, fcG, 8);
+                           i->b = INTERP(i->b, fcB, 8);
+                        }
+                     }
+                  }
+               }
+            }
+         }
       }
       if (isVert)
       {
@@ -1334,10 +1287,10 @@ inline static void quadLine(Context currentContext, TCObject g, int32 xc, int32 
 }
 
 // draws an ellipse incrementally
-static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
+static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel c1, Pixel c2, bool fill, bool gradient)
 {
    int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
-   PixelConv c,c1,c2;
+   PixelConv c;
    // intermediate terms to speed up loop
    int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
    int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
@@ -1348,18 +1301,16 @@ static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int
    int32 y = 0;       // ellipse points
    if (rx < 0 || ry < 0) // guich@501_13
       return;
-   c1.pixel = pc1;
-   c2.pixel = pc2;
-   
+
    if (gradient)
    {
       numSteps = ry + ry; // guich@tc110_11: support horizontal gradient
-      startRed   = c1.r;
-      startGreen = c1.g;
-      startBlue = c1.b;
-      endRed = c2.r;
-      endGreen = c2.g;
-      endBlue = c2.b;
+      startRed = (c1 >> 16) & 0xFF;
+      startGreen = (c1 >> 8) & 0xFF;
+      startBlue = c1 & 0xFF;
+      endRed = (c2 >> 16) & 0xFF;
+      endGreen = (c2 >> 8) & 0xFF;
+      endBlue = c2 & 0xFF;
       redInc = ((endRed - startRed) << 16) / numSteps;
       greenInc = ((endGreen - startGreen) << 16) / numSteps;
       blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -1367,7 +1318,7 @@ static void ellipseDrawAndFill(Context currentContext, TCObject g, int32 xc, int
       green = startGreen << 16;
       blue = startBlue << 16;
    }
-   else c.pixel = c1.pixel;
+   else c.pixel = c1;
 
    while (d2 < 0)          // til slope = -1
    {
@@ -2572,16 +2523,15 @@ static void drawFadedPixel(Context currentContext, TCObject g, int32 xx, int32 y
    }
 }
 
-
-static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, PixelConv startColor, PixelConv endColor, bool vertical)
+static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
 {
    int32 numSteps = max32(1, vertical ? abs32(endY - startY) : abs32(endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = startColor.r;
-   int32 startGreen = startColor.g;
-   int32 startBlue = startColor.b;
-   int32 endRed = endColor.r;
-   int32 endGreen = endColor.g;
-   int32 endBlue = endColor.b;
+   int32 startRed = (startColor >> 16) & 0xFF;
+   int32 startGreen = (startColor >> 8) & 0xFF;
+   int32 startBlue = startColor & 0xFF;
+   int32 endRed = (endColor >> 16) & 0xFF;
+   int32 endGreen = (endColor >> 8) & 0xFF;
+   int32 endBlue = endColor & 0xFF;
    int32 redInc = ((endRed - startRed) << 16) / numSteps;
    int32 greenInc = ((endGreen - startGreen) << 16) / numSteps;
    int32 blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -2984,15 +2934,15 @@ static void drawThickRect(TCObject g, int32 x, int32 y, int32 width, int32 heigh
    }
 }
 
-static void drawCylindricShade(Context currentContext, TCObject g, PixelConv startColor, PixelConv endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+static void drawCylindricShade(Context currentContext, TCObject g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = startColor.r;
-   int32 startGreen = startColor.g;
-   int32 startBlue = startColor.b;
-   int32 endRed = endColor.r;
-   int32 endGreen = endColor.g;
-   int32 endBlue = endColor.b;
+   int32 startRed = (startColor >> 16) & 0xFF;
+   int32 startGreen = (startColor >> 8) & 0xFF;
+   int32 startBlue = startColor & 0xFF;
+   int32 endRed = (endColor >> 16) & 0xFF;
+   int32 endGreen = (endColor >> 8) & 0xFF;
+   int32 endBlue = endColor & 0xFF;
    int32 redInc = (((endRed - startRed)*2) << 16) / numSteps;
    int32 greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
    int32 blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
@@ -3050,7 +3000,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, PixelConv sta
 void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
 {
    PixelConv pc1,pc2;
-#if defined(__gl2_h_) && !defined(WP8)
+#ifdef __gl2_h_
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);

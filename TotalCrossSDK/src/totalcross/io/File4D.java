@@ -18,9 +18,7 @@
 
 package totalcross.io;
 
-import totalcross.sys.Convert;
-import totalcross.sys.Registry;
-import totalcross.sys.Settings;
+import totalcross.sys.*;
 import totalcross.util.*;
 
 public class File4D extends RandomAccessStream
@@ -200,38 +198,6 @@ public class File4D extends RandomAccessStream
 
    public static File getCardVolume() throws totalcross.io.IOException
    {
-      if (Settings.isWindowsDevice()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
-      {
-         String cardName = null;
-         try
-         {
-            cardName = Registry.getString(Registry.HKEY_LOCAL_MACHINE, "System\\StorageManager\\Profiles\\SDMemory", "Folder"); //flsobral@tc112_15: Attempt to retrieve the name from the registry.
-         }
-         catch (Exception e)
-         {
-            File f;
-            for (int i = winceVols.length - 1; i >= 0; i--)
-               try
-               {
-                  if ((f = new File(winceVols[i])).isDir())
-                     return f;
-               }
-               catch (FileNotFoundException fnfe)
-               {
-               }
-         }
-         if (cardName != null)
-         {
-            cardName = cardName.replace('\\', '/'); //flsobral@tc113_15: Always wrap the path with slashes.
-            if (cardName.charAt(0) != '/')
-               cardName = "/" + cardName;
-            if (!cardName.endsWith("/"))
-               cardName = cardName + "/";
-            File cardFile = new File(cardName);
-            if (cardFile.isDir())
-               return cardFile;
-         }
-      }
       return null;
    }
 

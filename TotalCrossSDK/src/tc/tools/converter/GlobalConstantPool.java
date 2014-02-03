@@ -800,6 +800,13 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       for (i = 1; i < clsCount; i++)
       {
          v = (TCValue)vCls.items[i];
+         // convert sql classes
+         if (v.asStr.equals("java.sql.SQLException"))
+            v.asStr = "totalcross.sql.SQLException";
+         else
+         if (v.asStr.equals("java.sql.SQLWarning"))
+            v.asStr = "totalcross.sql.SQLWarning";
+
          String s = v.asStr.charAt(0) == '&' ? v.asStr.substring(1) : v.asStr; // remove the & from the primitives
          partSize += 1 + s.length();
       }

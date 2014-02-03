@@ -62,7 +62,7 @@ typedef struct
 typedef struct
 {
    uint16 isArray        : 1;
-   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Oject
+   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Object
    uint16 isPublic       : 1;
    uint16 isPrivate      : 1;
    uint16 isProtected    : 1;
@@ -70,7 +70,8 @@ typedef struct
    uint16 isVolatile     : 1;
    uint16 isTransient    : 1;
    uint16 isFinal        : 1;
-   uint16 __available    : 4; // prefer to fill the gap to prevent structure size optimization
+   uint16 isInherited    : 1;
+   uint16 __available    : 3; // prefer to fill the gap to prevent structure size optimization
 } __attribute_packed__ FieldFlags;
 
 #pragma pack()  // restore structure member alignment to default
@@ -100,6 +101,7 @@ typedef enum // this order can't be changed, it impacts the compiler and the Obj
    Type_StringArray,
    Type_ObjectArray,
 } Type;
+#define TYPE_IS_PRIMITIVE(t) (Type_Boolean <= t && t <= Type_Double)
 
 typedef enum
 {
@@ -503,6 +505,8 @@ struct TTCClass
    // Index in the vLoadedClasses array
    uint32 index;
    uint32 hash;
+   // Used in reflection
+   TCObject classObj;
 };
 
 /** Structure representing a method of a class. */
@@ -545,8 +549,21 @@ struct TField
    // The access flags of this field (isPublic, isPrivate, isObject, isArray, etc) and the Type
    FieldFlags flags;
    // The fully qualified class name
-   CharP sourceClassName, targetClassName;
+   CharP sourceClassName, targetClassName; // class where the field is, class type of the field
 };
+
+// java flags (used during reflection)
+#define JFLAG_PUBLIC       1
+#define JFLAG_PRIVATE      2
+#define JFLAG_PROTECTED    4
+#define JFLAG_STATIC       8
+#define JFLAG_FINAL        16
+#define JFLAG_SYNCHRONIZED 32
+#define JFLAG_VOLATILE     64
+#define JFLAG_TRANSIENT    128
+#define JFLAG_NATIVE       256
+#define JFLAG_INTERFACE    512
+#define JFLAG_ABSTRACT     1024
 
 /// String representing a constructor
 #define CONSTRUCTOR_NAME "<C>" // name of the constructor
@@ -573,9 +590,9 @@ struct TField
 #define DOUBLE_ARRAY  "[&D"
 /// A string representing a Java boolean array
 #define BOOLEAN_ARRAY "[&b"
+#define BOOLEAN_MATRIX "[[&b"
 /// A string representing a Java float array
 #define FLOAT_ARRAY   "[&F"
-
 /// A string representing a Java int
 #define J_INT "I"
 /// A string representing a Java double
@@ -608,6 +625,8 @@ typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, 
 
 /// Checks if the methods have the same parameters
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
+
+Type type2javaType(CharP type);
 
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
 

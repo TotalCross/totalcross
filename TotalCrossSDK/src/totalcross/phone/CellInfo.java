@@ -63,7 +63,7 @@ public class CellInfo
    
    public static boolean isSupported()
    {
-      return Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
+      return Settings.platform.equals(Settings.ANDROID);
    }
    
    /** Converts the current cellId and lac into the latitude and longitude.

@@ -747,6 +747,9 @@ public final class Graphics
       isVerticalText = false;
    }
    
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
    /** Draws a text with the current font and the current foregrount color,
     * justifying it to the given width.
     * 
@@ -778,7 +781,7 @@ public final class Graphics
       // speed-up
       totalcross.Launcher.UserFont font = (totalcross.Launcher.UserFont)this.font.hv_UserFont;
       totalcross.Launcher.CharBits bits = gCharBits;
-      int height = (byte)font.maxHeight;
+      int height = font.maxHeight;
       int chrStart = 0;
       int pxRB = foreColor & 0xFF00FF;
       int pxG  = foreColor & 0x00FF00;
@@ -829,7 +832,7 @@ public final class Graphics
          }
          if (ch < font.firstChar || ch > font.lastChar) // guich@tc122_16: if the char is outside the font's range, load the new font
             this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
-         font.setCharBits(ch, bits);  // pgr@402_50
+         font.setCharBits(ch, bits);
          if (bits.offset == -1)
          {
             x0 += bits.width+extraPixelsPerChar;
@@ -859,56 +862,88 @@ public final class Graphics
          }
          int rmax = (y+height > yMax) ? yMax - y : height;
 
-         if (!font.antialiased) // antialiased?
+         switch (font.antialiased)
          {
-            start    += bits.offset >> 3;
-            startBit  = bits.offset & 7;
-
-            // draws the char
-            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+            case AA_NO:
             {
-               int yy = y * pitch;
-               current = start;
-               currentBit = startBit;
-               for (x=x0; x < xMax; x++)  // draw each column
+               start    += bits.offset >> 3;
+               startBit  = bits.offset & 7;
+   
+               // draws the char
+               for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
                {
-                  if ((bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin)
-                     pixels[yy+x] = foreColor|alpha;
-                  if (++currentBit == 8) // finished this byte?
+                  int yy = y * pitch;
+                  current = start;
+                  currentBit = startBit;
+                  for (x=x0; x < xMax; x++)  // draw each column
                   {
-                     currentBit = 0; // reset counter
-                     current++;      // inc current byte
+                     if ((bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin)
+                        pixels[yy+x] = foreColor|alpha;
+                     if (++currentBit == 8) // finished this byte?
+                     {
+                        currentBit = 0; // reset counter
+                        current++;      // inc current byte
+                     }
                   }
                }
+               break;
             }
-         }
-         else
-         {
-            start += bits.offset >> 1;
-            boolean isNibbleStartingLow = (bits.offset & 1) == 1;
-            int transparency;
-            // draw the char
-            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+            case AA_4BPP:
             {
-               int yy = y * pitch;
-               current = start;
-               boolean isLowNibble = isNibbleStartingLow;
-               for (x=x0; x < xMax; x++)  // draw each column
+               start += bits.offset >> 1;
+               boolean isNibbleStartingLow = (bits.offset & 1) == 1;
+               int transparency;
+               // draw the char
+               for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
                {
-                  transparency = isLowNibble ? (bitmapTable[current++] & 0xF) : ((bitmapTable[current] >> 4) & 0xF);
-                  isLowNibble = !isLowNibble;
-                  if (transparency == 0 || x < xMin)
-                     continue;
-                  if (transparency == 0xF)
-                     pixels[yy+x] = foreColor|alpha;
-                  else
+                  int yy = y * pitch;
+                  current = start;
+                  boolean isLowNibble = isNibbleStartingLow;
+                  for (x=x0; x < xMax; x++)  // draw each column
                   {
-                     int i = pixels[yy + x];
-                     int j = i & 0xFF00FF;
-                     i &= 0x00FF00;
-                     pixels[yy + x] = ((j + (((pxRB - j) * transparency) >> 4)) & 0xFF00FF) | ((i + (((pxG  - i) * transparency) >> 4)) & 0x00FF00) |alpha;
+                     transparency = isLowNibble ? (bitmapTable[current++] & 0xF) : ((bitmapTable[current] >> 4) & 0xF);
+                     isLowNibble = !isLowNibble;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+                     if (transparency == 0xF)
+                        pixels[yy+x] = foreColor|alpha;
+                     else
+                     {
+                        int i = pixels[yy + x];
+                        int j = i & 0xFF00FF;
+                        i &= 0x00FF00;
+                        pixels[yy + x] = ((j + (((pxRB - j) * transparency) >> 4)) & 0xFF00FF) | ((i + (((pxG  - i) * transparency) >> 4)) & 0x00FF00) | alpha;
+                     }
                   }
                }
+               break;
+            }
+            case AA_8BPP:
+            {
+               int transparency;
+               int[] imgPixels = font.nativeFonts[bits.index].getPixels();
+               // draw the char
+               for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+               {
+                  int yy = y * pitch;
+                  current = start;
+                  for (x=x0; x < xMax; x++)  // draw each column
+                  {
+                     transparency = (imgPixels[current++] >>> 24) & 0xFF;
+                     if (transparency == 0 || x < xMin)
+                        continue;
+                     if (transparency == 0xFF)
+                        pixels[yy+x] = foreColor|alpha;
+                     else
+                     {
+                        int i = pixels[yy + x];
+                        int j = i & 0xFF00FF;
+                        i &= 0x00FF00;
+                        pixels[yy + x] = ((j + (((pxRB - j) * transparency) >> 8)) & 0xFF00FF) | ((i + (((pxG  - i) * transparency) >> 8)) & 0x00FF00) | alpha;
+                     }
+                  }
+               }
+               break;
             }
          }
          if (isVert)
@@ -919,7 +954,7 @@ public final class Graphics
          }
          else
          {
-            if (xMax >= clipX2)
+            if (xMax >= clipX2) 
             {
                xMax = clipX2;
                break;

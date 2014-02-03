@@ -127,7 +127,7 @@ static bool checkMemHeapLeaks();
 bool initMem()
 {
    #if (defined(WIN32) && !defined(WINCE)) || defined(POSIX)
-//   leakCheckingEnabled = true;
+   leakCheckingEnabled = true;
    #endif
 #if defined HAS_MSPACE_1_AND_2
    mspace1 = create_mspace(0,0);
@@ -159,9 +159,11 @@ void destroyMem()
 {
    bool b1 = checkMemHeapLeaks();
    bool b2 = checkMallocLeaks();
+#if defined(DEBUG) || defined(debug)
    if (showMemoryMessagesAtExit && (b1 || b2 || warnOnExit)) // guich@tc114_44
       alert("Memory %s found. Check the\ndebug console for more information.", warnOnExit ? "problems" : "leaks");
-#if defined HAS_MSPACE_1_AND_2
+#endif        
+#if defined HAS_MSPACE_1_AND_2 && (!defined(ENABLE_WIN32_POINTER_VERIFICATION) && defined(WIN32))
    if (mspace1)
       destroy_mspace(mspace1);
    if (mspace2)

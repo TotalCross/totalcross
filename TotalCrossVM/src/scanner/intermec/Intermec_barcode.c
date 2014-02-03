@@ -275,7 +275,7 @@ TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner na
    jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
    jstring string = (*env)->CallStaticObjectMethod(env, applicationClass, 
                                                    (*env)->GetStaticMethodID(env, applicationClass, "getData", "()Ljava/lang/String;"));
-   Object ret = null;
+   TCObject ret = null;
 
    if (string)
    {

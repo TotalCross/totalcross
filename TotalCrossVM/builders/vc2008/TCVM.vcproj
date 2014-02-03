@@ -2011,6 +2011,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\nm\lang\Reflection.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\nm\lang\String.c"
 					>
 				</File>
@@ -2598,6 +2602,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\nm\crypto\SHA256Digest.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="db"
+				>
+				<File
+					RelativePath="..\..\src\nm\db\NativeDB.c"
 					>
 				</File>
 			</Filter>
@@ -3605,6 +3617,14 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="sqlite"
+			>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3.c"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

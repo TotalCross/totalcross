@@ -49,6 +49,12 @@ typedef enum
    InvalidNumberException,
    ElementNotFoundException,
    CryptoException,
+   SQLException,
+   SQLWarning,
+   NegativeArraySizeException,
+   InvocationTargetException,
+   NoSuchMethodException,
+   NoSuchFieldException,
    ThrowableCount,
 } Throwable;
 

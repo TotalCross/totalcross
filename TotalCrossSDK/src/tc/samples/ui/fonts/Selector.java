@@ -18,6 +18,7 @@
 
 package tc.samples.ui.fonts;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.font.*;
 
@@ -33,19 +34,19 @@ public class Selector extends Container
    {
       Label l1,l2;
       add(l1 = new Label("Name: "), LEFT, TOP + 3);
-      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Old"}), AFTER, SAME);
+      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Arial"}), AFTER, SAME);
       cbNames.setSelectedIndex(0);
-      add(l2 = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER + 3, l1);
-      add(l1 = new Label(""+Font.MAX_FONT_SIZE), RIGHT, SAME);
-      add(slSize = new Slider(), AFTER+2, SAME, FIT-2, SAME,l2);
+      add(l2 = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER + fmH/2, l1);
+      int max = Settings.isOpenGL || Settings.onJavaSE ? Font.MAX_FONT_SIZE*3 : Font.MAX_FONT_SIZE;
+      add(l1 = new Label(""+max), RIGHT, SAME);
+      add(slSize = new Slider(), AFTER+2, SAME, FIT-2, SAME+fmH/2,l2);
       slSize.setLiveScrolling(true);
       slSize.setMinimum(Font.MIN_FONT_SIZE);
-      slSize.setMaximum(Font.MAX_FONT_SIZE+1); // +1: visible items
-      slSize.drawFilledArea = false;
-      slSize.drawTicks = true;
+      slSize.setMaximum(max+1); // +1: visible items
+      slSize.drawFilledArea = slSize.drawTicks = false;
       slSize.setValue(Font.NORMAL_SIZE);
-      add(lSize = new Label(" 99 (h=99) "),CENTER_OF,AFTER+3);
-      add(ckBold = new Check("Bold"), LEFT, AFTER + 3, l2);
+      add(lSize = new Label(" 999 (h=999) "),CENTER_OF,AFTER+fmH/2);
+      add(ckBold = new Check("Bold"), LEFT, AFTER + fmH/2, l2);
       selFont = font;
       updateSize();
    }
@@ -65,6 +66,6 @@ public class Selector extends Container
 
    public int getPreferredHeight()
    {
-      return new Label().getPreferredHeight() * 4 + insets.top+insets.bottom;
+      return new Label().getPreferredHeight() * 5 + insets.top+insets.bottom;
    }
 }

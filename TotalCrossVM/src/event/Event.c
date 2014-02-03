@@ -142,13 +142,8 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
    {
 	   int ini, fim;
 	   int ini2;
-	   ini = GetTickCount64() & 0x3FFFFFFF;
       executeMethod(currentContext, _postEvent, mainClass, (int32)type, key, x, y, keyGetPortableModifiers(mods), getTimeStamp()); // events are always posted to the main execution line
-	  ini2 = GetTickCount64() & 0x3FFFFFFF;
       updateScreen(currentContext); // update the screen after the event was called, otherwise ListBox selection will not work
-	  fim = GetTickCount64() & 0x3FFFFFFF;
-	  debug("elapsed %d, TCpostEvent", fim - ini);
-	  debug("elapsed %d, TCpostEvent updateScreen", fim - ini2);
    }
 }
 

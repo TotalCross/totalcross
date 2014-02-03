@@ -145,6 +145,7 @@ uint32 *_addrMtdParam[4];
 uint32 *_addrMtdcParam[4];
 uint32 *_addrMtdbParam[4];
 uint32 *_addrInParam[4];
+uint32 *_addrInParamA[4];
 uint32 *_addrNMRet[4];
 #endif
 
@@ -154,7 +155,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    // cache the current context into local variables
    Int32Array   regI  = context->regI;
    Value64Array reg64 = context->reg64;
-   TCObjectArray  regO = context->regO, regO2;
+   TCObjectArray  regO  = context->regO,regO2;
    VoidPArray callStack0 = null;
    // get method's variables
    register Code code = method->code;
@@ -166,7 +167,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 i,len;
    UInt16Array sym;
    bool originalClassIsInterface,directNativeCall=false;
-   TCObject o = null;
+   TCObject o=null;
    Method newMethod=null;
    uint16 retv;
    VoidP sf;
@@ -183,6 +184,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    uint32 **addrMtdcParam;
    uint32 **addrMtdbParam;
    uint32 **addrInParam;
+   uint32 **addrInParamA;
    uint32 **addrNMRet;
    if (_address[0] == null)
    {
@@ -190,6 +192,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       _addrMtdcParam[RegI] = &&cRegI; _addrMtdcParam[RegO] = &&cRegO; _addrMtdcParam[RegD] = &&cRegD; _addrMtdcParam[RegL] = &&cRegL;
       _addrMtdbParam[RegI] = &&bRegI; _addrMtdbParam[RegO] = &&bRegO; _addrMtdbParam[RegD] = &&bRegD; _addrMtdbParam[RegL] = &&bRegL;
       _addrInParam[RegI] = &&dRegI;   _addrInParam[RegO] = &&dRegO;   _addrInParam[RegD] = &&dRegD;   _addrInParam[RegL] = &&dRegL;
+      _addrInParamA[RegI] = &&eRegI;  _addrInParamA[RegO] = &&eRegO;  _addrInParamA[RegD] = &&eRegD;  _addrInParamA[RegL] = &&eRegL;
       _addrNMRet[RegI] = &&nmRegI;    _addrNMRet[RegO] = &&nmRegO;    _addrNMRet[RegD] = &&nmRegD;    _addrNMRet[RegL] = &&nmRegL;
       OPADDR(BREAK)               OPADDR(MOV_regI_regI)       OPADDR(MOV_regI_field)      OPADDR(MOV_regI_static)     OPADDR(MOV_regI_aru)       OPADDR(MOV_regI_arc)        OPADDR(MOV_regI_sym)        OPADDR(MOV_regI_s18)        OPADDR(MOV_regI_arlen)     OPADDR(MOV_regO_regO)       OPADDR(MOV_regO_field)      OPADDR(MOV_regO_static)     OPADDR(MOV_regO_aru)       OPADDR(MOV_regO_arc)        OPADDR(MOV_regO_sym)        OPADDR(MOV_reg64_reg64)     OPADDR(MOV_reg64_field)      OPADDR(MOV_reg64_static)    OPADDR(MOV_reg64_aru)       OPADDR(MOV_reg64_arc)       OPADDR(MOV_regD_sym)       OPADDR(MOV_regL_sym)        OPADDR(MOV_regD_s18)        OPADDR(MOV_regL_s18)        OPADDR(MOV_field_regI)     OPADDR(MOV_field_regO)      OPADDR(MOV_field_reg64)     OPADDR(MOV_static_regI)     OPADDR(MOV_static_regO)    OPADDR(MOV_static_reg64)    OPADDR(MOV_arc_regI)        OPADDR(MOV_arc_regO)
       OPADDR(MOV_arc_reg64)       OPADDR(MOV_aru_regI)        OPADDR(MOV_aru_regO)        OPADDR(MOV_aru_reg64)       OPADDR(MOV_arc_regIb)      OPADDR(MOV_arc_reg16)       OPADDR(MOV_aru_regIb)       OPADDR(MOV_aru_reg16)       OPADDR(MOV_regIb_arc)      OPADDR(MOV_reg16_arc)       OPADDR(MOV_regIb_aru)       OPADDR(MOV_reg16_aru)       OPADDR(MOV_regO_null)      OPADDR(INC_regI)            OPADDR(ADD_regI_regI_regI)  OPADDR(ADD_regI_s12_regI)   OPADDR(ADD_regI_arc_s6)      OPADDR(ADD_regI_aru_s6)     OPADDR(ADD_regI_regI_sym)   OPADDR(ADD_regD_regD_regD)  OPADDR(ADD_regL_regL_regL) OPADDR(ADD_aru_regI_s6)     OPADDR(SUB_regI_s12_regI)   OPADDR(SUB_regI_regI_regI)  OPADDR(SUB_regD_regD_regD) OPADDR(SUB_regL_regL_regL)  OPADDR(MUL_regI_regI_s12)   OPADDR(MUL_regI_regI_regI)  OPADDR(MUL_regD_regD_regD) OPADDR(MUL_regL_regL_regL)  OPADDR(DIV_regI_regI_s12)   OPADDR(DIV_regI_regI_regI)
@@ -202,6 +205,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    addrMtdcParam = _addrMtdcParam;
    addrMtdbParam = _addrMtdbParam;
    addrInParam = _addrInParam;
+   addrInParamA = _addrInParamA;
    addrNMRet = _addrNMRet;
 #endif
 
@@ -278,7 +282,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       va_list vaargs;
       va_start(vaargs, method);
 
-	  if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, TCObject)) == null) // push "this", which must be the first parameter passed to executeMethod
+      if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, TCObject)) == null) // push "this", which must be the first parameter passed to executeMethod
       {
          tcvmCreateException(context, NullPointerException, -1, 0, "Instance is null when calling method %s", method->name); // cannot use "goto throwNullPointerException" here, because we can't replace "method" by newMethod
          goto handleException;
@@ -290,14 +294,32 @@ TC_API TValue executeMethod(Context context, Method method, ...)
          TValue64 *r64 = reg64;
          int32 n = method->paramCount;
          UInt8Array regTypes = method->paramRegs;
-         for (; n-- > 0; regTypes++)
+         if (context->parametersInArray)
          {
-            XSELECT(addrInParam, *regTypes)
+            TValue* aargs = va_arg(vaargs, TValue*);
+            context->parametersInArray = false;
+            for (; n-- > 0; regTypes++, aargs++)
             {
-               XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
-               XOPTION(d, RegO) : *rO++ = va_arg(vaargs, TCObject);        continue;
-               XOPTION(d,RegD):
-               XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               XSELECT(addrInParamA, *regTypes)
+               {
+                  XOPTION(e,RegI): *rI++ = aargs->asInt32;         continue;
+                  XOPTION(e,RegO): *rO++ = aargs->asObj;           continue;
+                  XOPTION(e,RegD):
+                  XOPTION(e,RegL): *REGD(r64++) = aargs->asDouble; continue;
+               }
+            }
+         }
+         else
+         {
+            for (; n-- > 0; regTypes++)
+            {
+               XSELECT(addrInParam, *regTypes)
+               {
+                  XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
+                  XOPTION(d,RegO): *rO++ = va_arg(vaargs, TCObject);        continue;
+                  XOPTION(d,RegD):
+                  XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               }
             }
          }
       }
@@ -619,7 +641,10 @@ popStackFrame:
                context->callStack -= 2;
 
                if (context->thrownException != null) // if an exception was thrown by the native method, handle it
+               {
+                  nmp->retO = null;
                   goto handleException;
+               }
 
 #ifdef ENABLE_TRACE
                context->depth--;

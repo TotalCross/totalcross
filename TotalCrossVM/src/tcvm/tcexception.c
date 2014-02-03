@@ -317,4 +317,10 @@ void initException()
    throwableAsCharP[InvalidNumberException        ] = "totalcross.sys.InvalidNumberException";
    throwableAsCharP[ElementNotFoundException      ] = "totalcross.util.ElementNotFoundException";
    throwableAsCharP[CryptoException               ] = "totalcross.crypto.CryptoException";
+   throwableAsCharP[SQLException                  ] = "totalcross.sql.SQLException";
+   throwableAsCharP[SQLWarning                    ] = "totalcross.sql.SQLWarning";
+   throwableAsCharP[NegativeArraySizeException    ] = "java.lang.NegativeArraySizeException";
+   throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
+   throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
+   throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
 }

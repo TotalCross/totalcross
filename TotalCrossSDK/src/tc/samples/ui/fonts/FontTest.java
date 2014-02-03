@@ -18,7 +18,7 @@
 
 package tc.samples.ui.fonts;
 
-import totalcross.sys.Settings;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -32,16 +32,18 @@ public class FontTest extends MainWindow
 
    public FontTest()
    {
-      super("Font test",TAB_ONLY_BORDER);
-      setUIStyle(Settings.platform.equals(Settings.ANDROID) ? Settings.Android : Settings.Vista);
+      super("Font test",HORIZONTAL_GRADIENT);
+      setUIStyle(Settings.Android);
+      //setFont(totalcross.ui.font.Font.getFont("Arial",false,Font.NORMAL_SIZE));
    }
 
    public void initUI()
    {
       add(selector = new Selector(), LEFT,TOP+2,FILL,PREFERRED);
-      add(samples = new Samples(), LEFT,AFTER,FILL,FILL);
+      add(samples = new Samples(), LEFT,AFTER,PARENTSIZE+100,FILL);
       samples.setBackColor(Color.darker(getBackColor(),10)); // darker background
-      btnExit = new Button("  X  ");
+      btnExit = new Button("  x  ");
+      btnExit.transparentBackground = true;
       btnExit.setBorder(Button.BORDER_NONE);
       add(btnExit,RIGHT,0);
    }
@@ -56,7 +58,7 @@ public class FontTest extends MainWindow
         String fontname=(String)Selector.cbNames.getSelectedItem();
         totalcross.ui.font.Font f = selector.getSelectedFont();
         if(!f.name.equalsIgnoreCase(fontname))
-           new MessageBox("TotalCross","Font not found. Please install \nthe file "+fontname+".pdb/.tcz").popupNonBlocking();
+           new MessageBox("TotalCross","Font not found. Please install \nthe file "+fontname+".tcz").popupNonBlocking();
         else
            samples.setFonts(f);
       }

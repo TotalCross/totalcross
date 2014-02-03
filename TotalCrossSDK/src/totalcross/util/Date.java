@@ -44,7 +44,6 @@ public class Date implements Comparable
    private int year;
    private static int epochYear = 1000;
    /** After constructing a date, can be used to verify if the date was valid */
-   private static int parts[] = new int[3];
    private static int[][]part2idx = {{},{1,0,2},{0,1,2},{2,1,0}}; // guich@566_29
 
    public static final int JANUARY = 1;
@@ -107,7 +106,7 @@ public class Date implements Comparable
       {
          int n = strDate.length(), 
          j = 2; 
-         int p[] = parts;
+         int p[] = new int[3];
          char c;
          int value = 0;
          int mult = 1;
@@ -599,11 +598,35 @@ public class Date implements Comparable
       return (year - d.year) * 10000 + (month - d.month) * 100 + (day - d.day);
    }
 
-   /** Returns this date in the format YYYY-MM-DD
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
     * @since TotalCross 2.0 
     */
-   public String getSQLDate()
+   public String getSQLString()
    {
-      return year+"-"+month+"-"+day;
+      return year+"-"+month+"-"+day+ " 00:00:00.000";
+   }
+
+   /** Returns this date in the Time.getTimeLong format, with hour/minute/second/millis equal to 0.
+    * @since TotalCross 2.0 
+    */
+   public long getSQLLong()
+   {
+      return year * 10000000000000L + month * 100000000000L + day * 1000000000L;
+   }
+   
+
+   private static Date EPOCH;
+   
+   static 
+   {
+      try {EPOCH = new Date(1,1,1970);} catch (Exception e) {}
+   }
+   /** Returns the number of millis since 1/1/1970.
+    * @since TotalCross 2.1
+    */
+   public long getTime()
+   {
+      long days = EPOCH.subtract(this);
+      return days*24*60*60*1000 - Settings.timeZoneMinutes*60*1000;
    }
 }

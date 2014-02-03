@@ -30,10 +30,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 200;
+   public static int version = 210;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "2.0rc5";
+   public static String versionStr = "2.1beta1";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -112,7 +112,6 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
-    * @see #isWindowsDevice()
     * @see #isIOS()
     */
    public static String platform;
@@ -609,7 +608,9 @@ public final class Settings
    public static String activationId = "NOT AVAILABLE";
    
    /** Returns true if the current platform is Windows Mobile or Pocket PC. Note that Windows Desktop (aka WIN32)
-    * returns false. */
+    * returns false.
+    * @deprecated TotalCross 2.1 and over don't support Windows CE devices anymore.
+    */
    public static boolean isWindowsDevice()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);

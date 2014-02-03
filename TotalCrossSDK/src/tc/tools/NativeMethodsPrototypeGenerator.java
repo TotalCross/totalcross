@@ -52,7 +52,8 @@ public class NativeMethodsPrototypeGenerator
             {
                String line = (String)v.elementAt(i);
                if (line.trim().length() == 0) continue;
-               if (line.indexOf("4D") >= 0)
+               int i4d = line.indexOf("4D");
+               if (i4d >= 0 && !Character.isLetter(line.charAt(i4d+2)))
                   throw new Exception("Invalid signature with 4D suffix detected: "+line);
                String[] parts = split(line, "|");
                parseNative(parts[0],parts[1]);

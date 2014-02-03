@@ -174,10 +174,13 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                      }
                   }
                }
+/* this was disabled due to two problems:
+ * 1. makes the drag of a ListBox cause a repaint even if the drag is below the height of a line
+ * 2. makes the ScrollPosition flick on screen
                else
                if (resetHandle())
                   return;
-            }
+*/            }
             if (npback == null || ((verticalBar ? npback.getHeight() : npback.getWidth()) != dragBarSize))
                try
                {

@@ -20,7 +20,6 @@
 
 package totalcross.io.device.scanner;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 
@@ -951,22 +950,6 @@ public class Scanner
    private static String scanManagerVersion;
    private static int tries;
 
-   static
-   {
-      if (Settings.isWindowsDevice())
-      {
-         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                        Vm.attachNativeLibrary("Motorola") || 
-                        Vm.attachNativeLibrary("Symbol") || 
-                        Vm.attachNativeLibrary("Dolphin") || 
-                        Vm.attachNativeLibrary("OpticonH16") || 
-                        Vm.attachNativeLibrary("OpticonH16") || 
-                        Vm.attachNativeLibrary("Intermec") || 
-                        Vm.attachNativeLibrary("Bematech");
-         if (!driverLoaded && tries++ == 0)
-            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
-      }
-   }
 
    /**
     * Flag which can be set to false so activate() only performs one scan

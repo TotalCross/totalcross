@@ -42,7 +42,6 @@ Context newContext(ThreadHandle thread, TCObject threadObj, bool bigContextSizes
    Context c;
    int32 i;
    int32 regIsize, regOsize, reg64size, stackSize;
-   VoidPs* temp;      
    
    bool freeSlot = false;
    for (i = 0; i < MAX_CONTEXTS && !freeSlot; i++)

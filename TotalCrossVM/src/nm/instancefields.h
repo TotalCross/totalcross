@@ -54,8 +54,37 @@
 #define StringBuffer_count(o)       FIELD_I32(o, 0)
 
 // java.lang.Class
-#define Class_targetClass(o)        FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Class_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Class_targetName(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
+
+// java.lang.reflect.Field
+#define Field_index(o)              FIELD_I32(o, 0)
+#define Field_mod(o)                FIELD_I32(o, 1)
+#define Field_primitiveType(o)      FIELD_I32(o, 2)
+#define Field_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Field_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Field_declaringClass(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define Field_type(o)               FIELD_OBJ(o, OBJ_CLASS(o), 3)
+
+// java.lang.reflect.Method
+#define Method_mod(o)                FIELD_I32(o, 0)
+#define Method_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Method_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Method_declaringClass(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define Method_parameterTypes(o)     FIELD_OBJ(o, OBJ_CLASS(o), 3) // array
+#define Method_exceptionTypes(o)     FIELD_OBJ(o, OBJ_CLASS(o), 4) // array
+#define Method_type(o)               FIELD_OBJ(o, OBJ_CLASS(o), 5) // not for Constructor
+#define Method_returnType(o)         FIELD_OBJ(o, OBJ_CLASS(o), 6) // not for Constructor
+
+// java.lang Wrappers
+#define Boolean_v(o)        FIELD_I32(o, 0)
+#define Byte_v(o)           FIELD_I32(o, 0)
+#define Character_v(o)      FIELD_I32(o, 0)
+#define Short_v(o)          FIELD_I32(o, 0)
+#define Integer_v(o)        FIELD_I32(o, 0)
+#define Float_v(o)          FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Double_v(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Long_v(o)           FIELD_I64(o, OBJ_CLASS(o), 0)
 
 //totalcross.sys.Time
 #define Time_year(o)                FIELD_I32(o, 0)

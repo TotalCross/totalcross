@@ -90,8 +90,6 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    double xScale, yScale;
 
    // Temporary values
-   int32 val;
-
    int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
    int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
    int32 * v_count = null;  // How many contribution for the pixel [newHeight]
@@ -186,7 +184,7 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j=0; j < count; j++)
          {
             int32 iweight = *p_weight++;
@@ -272,7 +270,7 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;
@@ -702,6 +700,7 @@ void freeTexture(TCObject img, bool updateList)
 }
 
 extern VoidPs* imgTextures;
+void resetFontTexture(); // PalmFont_c.h
 void recreateTextures() // called by opengl when the application changes the opengl surface
 {
    VoidPs* current = imgTextures;
@@ -714,6 +713,7 @@ void recreateTextures() // called by opengl when the application changes the ope
          Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
          current = current->next;
       } while (imgTextures != current);
+   resetFontTexture();
 }
 #endif
 

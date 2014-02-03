@@ -31,7 +31,7 @@ TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(St
    ASSERT1_EQUALS(NotNull, obj);
    c2 = OBJ_CLASS(obj);
    ASSERT2_EQUALS(Sz, c2->name, "java.lang.Class");
-   c3 = *((TCClass*)ARRAYOBJ_START(Class_targetClass(obj)));
+   c3 = *((TCClass*)ARRAYOBJ_START(Class_nativeStruct(obj)));
    ASSERT3_EQUALS(Block, c1, c3, PTRSIZE);
    jlC_JavaLangClassOfJavaLangString = obj;
    finish: ;

@@ -1,4 +1,68 @@
 
+TC_API void jlC_forName_s(NMParams p);
+TC_API void jlC_newInstance(NMParams p);
+TC_API void jlC_isInstance_o(NMParams p);
+TC_API void jlC_isAssignableFrom_c(NMParams p);
+TC_API void jlC_isInterface(NMParams p);
+TC_API void jlC_isArray(NMParams p);
+TC_API void jlC_isPrimitive(NMParams p);
+TC_API void jlC_getSuperclass(NMParams p);
+TC_API void jlC_getInterfaces(NMParams p);
+TC_API void jlC_getComponentType(NMParams p);
+TC_API void jlC_getModifiers(NMParams p);
+TC_API void jlC_getFields(NMParams p);
+TC_API void jlC_getMethods(NMParams p);
+TC_API void jlC_getConstructors(NMParams p);
+TC_API void jlC_getField_s(NMParams p);
+TC_API void jlC_getMethod_sC(NMParams p);
+TC_API void jlC_getConstructor_C(NMParams p);
+TC_API void jlC_getDeclaredFields(NMParams p);
+TC_API void jlC_getDeclaredMethods(NMParams p);
+TC_API void jlC_getDeclaredConstructors(NMParams p);
+TC_API void jlC_getDeclaredField_s(NMParams p);
+TC_API void jlC_getDeclaredMethod_sC(NMParams p);
+TC_API void jlC_getDeclaredConstructor_C(NMParams p);
+TC_API void jlrA_newInstance_ci(NMParams p);
+TC_API void jlrA_newInstance_cI(NMParams p);
+TC_API void jlrA_getLength_o(NMParams p);
+TC_API void jlrA_get_oi(NMParams p);
+TC_API void jlrA_getBoolean_oi(NMParams p);
+TC_API void jlrA_getByte_oi(NMParams p);
+TC_API void jlrA_getChar_oi(NMParams p);
+TC_API void jlrA_getShort_oi(NMParams p);
+TC_API void jlrA_getInt_oi(NMParams p);
+TC_API void jlrA_getLong_oi(NMParams p);
+TC_API void jlrA_getFloat_oi(NMParams p);
+TC_API void jlrA_getDouble_oi(NMParams p);
+TC_API void jlrA_set_oio(NMParams p);
+TC_API void jlrA_setBoolean_oib(NMParams p);
+TC_API void jlrA_setByte_oib(NMParams p);
+TC_API void jlrA_setChar_oic(NMParams p);
+TC_API void jlrA_setShort_ois(NMParams p);
+TC_API void jlrA_setInt_oii(NMParams p);
+TC_API void jlrA_setLong_oil(NMParams p);
+TC_API void jlrA_setFloat_oid(NMParams p);
+TC_API void jlrA_setDouble_oid(NMParams p);
+TC_API void jlrM_invoke_oO(NMParams p);
+TC_API void jlrC_newInstance_O(NMParams p);
+TC_API void jlrF_get_o(NMParams p);
+TC_API void jlrF_getBoolean_o(NMParams p);
+TC_API void jlrF_getByte_o(NMParams p);
+TC_API void jlrF_getChar_o(NMParams p);
+TC_API void jlrF_getShort_o(NMParams p);
+TC_API void jlrF_getInt_o(NMParams p);
+TC_API void jlrF_getLong_o(NMParams p);
+TC_API void jlrF_getFloat_o(NMParams p);
+TC_API void jlrF_getDouble_o(NMParams p);
+TC_API void jlrF_set_oo(NMParams p);
+TC_API void jlrF_setBoolean_ob(NMParams p);
+TC_API void jlrF_setByte_ob(NMParams p);
+TC_API void jlrF_setChar_oc(NMParams p);
+TC_API void jlrF_setShort_os(NMParams p);
+TC_API void jlrF_setInt_oi(NMParams p);
+TC_API void jlrF_setLong_ol(NMParams p);
+TC_API void jlrF_setFloat_od(NMParams p);
+TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tmGM_showRoute_sssb(NMParams p);
 TC_API void tucL_create(NMParams p);
@@ -248,9 +312,6 @@ TC_API void tpD_number_s(NMParams p);
 TC_API void tpD_hangup(NMParams p);
 TC_API void tpSMS_send_ss(NMParams p);
 TC_API void tpSMS_receive(NMParams p);
-TC_API void jlC_forName_s(NMParams p);
-TC_API void jlC_newInstance(NMParams p);
-TC_API void jlC_isInstance_o(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);
@@ -423,7 +484,308 @@ TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
 TC_API void tidsS_readBarcode_s(NMParams p);
+TC_API void tdsNDB__open_si(NMParams p);
+TC_API void tdsNDB__close(NMParams p);
+TC_API void tdsNDB__exec_s(NMParams p);
+TC_API void tdsNDB_shared_cache_b(NMParams p);
+TC_API void tdsNDB_enable_load_extension_b(NMParams p);
+TC_API void tdsNDB_interrupt(NMParams p);
+TC_API void tdsNDB_busy_timeout_i(NMParams p);
+TC_API void tdsNDB_exec_s(NMParams p);
+TC_API void tdsNDB_prepare_s(NMParams p);
+TC_API void tdsNDB_errmsg(NMParams p);
+TC_API void tdsNDB_libversion(NMParams p);
+TC_API void tdsNDB_changes(NMParams p);
+TC_API void tdsNDB_total_changes(NMParams p);
+TC_API void tdsNDB_finalize_l(NMParams p);
+TC_API void tdsNDB_step_l(NMParams p);
+TC_API void tdsNDB_reset_l(NMParams p);
+TC_API void tdsNDB_clear_bindings_l(NMParams p);
+TC_API void tdsNDB_bind_parameter_count_l(NMParams p);
+TC_API void tdsNDB_column_count_l(NMParams p);
+TC_API void tdsNDB_column_type_li(NMParams p);
+TC_API void tdsNDB_column_decltype_li(NMParams p);
+TC_API void tdsNDB_column_table_name_li(NMParams p);
+TC_API void tdsNDB_column_name_li(NMParams p);
+TC_API void tdsNDB_column_text_li(NMParams p);
+TC_API void tdsNDB_column_blob_li(NMParams p);
+TC_API void tdsNDB_column_double_li(NMParams p);
+TC_API void tdsNDB_column_long_li(NMParams p);
+TC_API void tdsNDB_column_int_li(NMParams p);
+TC_API void tdsNDB_bind_null_li(NMParams p);
+TC_API void tdsNDB_bind_int_lii(NMParams p);
+TC_API void tdsNDB_bind_long_lil(NMParams p);
+TC_API void tdsNDB_bind_double_lid(NMParams p);
+TC_API void tdsNDB_bind_text_lis(NMParams p);
+TC_API void tdsNDB_bind_blob_liB(NMParams p);
+TC_API void tdsNDB_result_null_l(NMParams p);
+TC_API void tdsNDB_result_text_ls(NMParams p);
+TC_API void tdsNDB_result_blob_lB(NMParams p);
+TC_API void tdsNDB_result_double_ld(NMParams p);
+TC_API void tdsNDB_result_long_ll(NMParams p);
+TC_API void tdsNDB_result_int_li(NMParams p);
+TC_API void tdsNDB_result_error_ls(NMParams p);
+TC_API void tdsNDB_backup_ssp(NMParams p);
+TC_API void tdsNDB_restore_ssp(NMParams p);
+TC_API void tdsNDB_column_metadata_l(NMParams p);
+TC_API void tdsNDB_load(NMParams p);
 
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isArray();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Class getComponentType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_ci(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_cI(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLength_o(NMParams p) // java/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_get_oi(NMParams p) // java/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getBoolean_oi(NMParams p) // java/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getByte_oi(NMParams p) // java/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getChar_oi(NMParams p) // java/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getShort_oi(NMParams p) // java/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getInt_oi(NMParams p) // java/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLong_oi(NMParams p) // java/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getFloat_oi(NMParams p) // java/lang/reflect/Array public static native double getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getDouble_oi(NMParams p) // java/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_set_oio(NMParams p) // java/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setBoolean_oib(NMParams p) // java/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setByte_oib(NMParams p) // java/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setChar_oic(NMParams p) // java/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setShort_ois(NMParams p) // java/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setInt_oii(NMParams p) // java/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setLong_oil(NMParams p) // java/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setFloat_oid(NMParams p) // java/lang/reflect/Array public static native void setFloat(Object array, int index, double f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setDouble_oid(NMParams p) // java/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrM_invoke_oO(NMParams p) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrC_newInstance_O(NMParams p) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_get_o(NMParams p) // java/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getBoolean_o(NMParams p) // java/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getByte_o(NMParams p) // java/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getChar_o(NMParams p) // java/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getShort_o(NMParams p) // java/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getInt_o(NMParams p) // java/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getLong_o(NMParams p) // java/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getFloat_o(NMParams p) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getDouble_o(NMParams p) // java/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_set_oo(NMParams p) // java/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setBoolean_ob(NMParams p) // java/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setByte_ob(NMParams p) // java/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setChar_oc(NMParams p) // java/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setShort_os(NMParams p) // java/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setInt_oi(NMParams p) // java/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setLong_ol(NMParams p) // java/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setFloat_od(NMParams p) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setDouble_od(NMParams p) // java/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+}
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
@@ -1421,18 +1783,6 @@ TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public stat
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private String toStringNative();
 {
 }
@@ -2120,7 +2470,507 @@ TC_API void tuBI_intLength_Ii(NMParams p) // totalcross/util/BigInteger native s
 TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
 {
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_shared_cache_b(NMParams p) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/NativeDB native int enable_load_extension(boolean enable);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native void interrupt();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_exec_s(NMParams p) // totalcross/db/sqlite/NativeDB native void exec(String sql) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native long prepare(String sql) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_errmsg(NMParams p) // totalcross/db/sqlite/NativeDB native String errmsg();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB native String libversion();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int changes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_total_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int total_changes();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_finalize_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int finalize(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_step_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int step(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_reset_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int reset(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_clear_bindings_l(NMParams p) // totalcross/db/sqlite/NativeDB native int clear_bindings(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_parameter_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_parameter_count(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int column_count(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_type_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_type(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_decltype_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_decltype(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_table_name(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_name(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_double_li(NMParams p) // totalcross/db/sqlite/NativeDB native double column_double(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_long_li(NMParams p) // totalcross/db/sqlite/NativeDB native long column_long(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_int(long stmt, int col);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_null_li(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_null(long stmt, int pos);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_int_lii(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_int(long stmt, int pos, int v);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_long_lil(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_long(long stmt, int pos, long v);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_double_lid(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_double(long stmt, int pos, double v);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_text_lis(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_text(long stmt, int pos, String v);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_blob_liB(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_blob(long stmt, int pos, byte []v);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_null_l(NMParams p) // totalcross/db/sqlite/NativeDB native void result_null(long context);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_text_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_text(long context, String val);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_blob_lB(NMParams p) // totalcross/db/sqlite/NativeDB native void result_blob(long context, byte []val);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_double_ld(NMParams p) // totalcross/db/sqlite/NativeDB native void result_double(long context, double val);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_long_ll(NMParams p) // totalcross/db/sqlite/NativeDB native void result_long(long context, long val);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native void result_int(long context, int val);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_error_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
+{
+}
 
+TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isAssignableFrom_c) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isInterface) // java/lang/Class public native boolean isInterface();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isArray) // java/lang/Class public native boolean isArray();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_isPrimitive) // java/lang/Class public native boolean isPrimitive();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getSuperclass) // java/lang/Class public native Class getSuperclass();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getInterfaces) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getComponentType) // java/lang/Class public native Class getComponentType();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getModifiers) // java/lang/Class public native int getModifiers();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getFields) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethods) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getField_s) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getMethod_sC) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredFields) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethods) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructors) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredField_s) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredMethod_sC) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlC_getDeclaredConstructor_C) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_newInstance_ci) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_newInstance_cI) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getLength_o) // java/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_get_oi) // java/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getBoolean_oi) // java/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getByte_oi) // java/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getChar_oi) // java/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getShort_oi) // java/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getInt_oi) // java/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getLong_oi) // java/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getFloat_oi) // java/lang/reflect/Array public static native double getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_getDouble_oi) // java/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_set_oio) // java/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setBoolean_oib) // java/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setByte_oib) // java/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setChar_oic) // java/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setShort_ois) // java/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setInt_oii) // java/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setLong_oil) // java/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setFloat_oid) // java/lang/reflect/Array public static native void setFloat(Object array, int index, double f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrA_setDouble_oid) // java/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrM_invoke_oO) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrC_newInstance_O) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_get_o) // java/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getBoolean_o) // java/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getByte_o) // java/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getChar_o) // java/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getShort_o) // java/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getInt_o) // java/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getLong_o) // java/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getFloat_o) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_getDouble_o) // java/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_set_oo) // java/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setBoolean_ob) // java/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setByte_ob) // java/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setChar_oc) // java/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setShort_os) // java/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setInt_oi) // java/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setLong_ol) // java/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setFloat_od) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(jlrF_setDouble_od) // java/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+   TEST_SKIP;
+   finish: ;
+}
 TESTCASE(tmGM_showAddress_sb) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
    TEST_SKIP;
@@ -3366,21 +4216,6 @@ TESTCASE(tpSMS_receive) // totalcross/phone/SMS native public static String[] re
    TEST_SKIP;
    finish: ;
 }
-TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
 TESTCASE(jlO_toStringNative) // java/lang/Object native private String toStringNative();
 {
    TEST_SKIP;
@@ -4237,6 +5072,231 @@ TESTCASE(tuBI_intLength_Ii) // totalcross/util/BigInteger native static int intL
    finish: ;
 }
 TESTCASE(tidsS_readBarcode_s) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB__open_si) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB__close) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB__exec_s) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_shared_cache_b) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_enable_load_extension_b) // totalcross/db/sqlite/NativeDB native int enable_load_extension(boolean enable);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_interrupt) // totalcross/db/sqlite/NativeDB native void interrupt();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_busy_timeout_i) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_exec_s) // totalcross/db/sqlite/NativeDB native void exec(String sql) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_prepare_s) // totalcross/db/sqlite/NativeDB protected native long prepare(String sql) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_errmsg) // totalcross/db/sqlite/NativeDB native String errmsg();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_libversion) // totalcross/db/sqlite/NativeDB native String libversion();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_changes) // totalcross/db/sqlite/NativeDB native int changes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_total_changes) // totalcross/db/sqlite/NativeDB native int total_changes();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_finalize_l) // totalcross/db/sqlite/NativeDB protected native int finalize(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_step_l) // totalcross/db/sqlite/NativeDB protected native int step(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_reset_l) // totalcross/db/sqlite/NativeDB protected native int reset(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_clear_bindings_l) // totalcross/db/sqlite/NativeDB native int clear_bindings(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_parameter_count_l) // totalcross/db/sqlite/NativeDB native int bind_parameter_count(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_count_l) // totalcross/db/sqlite/NativeDB native int column_count(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_type_li) // totalcross/db/sqlite/NativeDB native int column_type(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_decltype_li) // totalcross/db/sqlite/NativeDB native String column_decltype(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_table_name_li) // totalcross/db/sqlite/NativeDB native String column_table_name(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_name_li) // totalcross/db/sqlite/NativeDB native String column_name(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_text_li) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_blob_li) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_double_li) // totalcross/db/sqlite/NativeDB native double column_double(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_long_li) // totalcross/db/sqlite/NativeDB native long column_long(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_int_li) // totalcross/db/sqlite/NativeDB native int column_int(long stmt, int col);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_null_li) // totalcross/db/sqlite/NativeDB native int bind_null(long stmt, int pos);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_int_lii) // totalcross/db/sqlite/NativeDB native int bind_int(long stmt, int pos, int v);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_long_lil) // totalcross/db/sqlite/NativeDB native int bind_long(long stmt, int pos, long v);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_double_lid) // totalcross/db/sqlite/NativeDB native int bind_double(long stmt, int pos, double v);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_text_lis) // totalcross/db/sqlite/NativeDB native int bind_text(long stmt, int pos, String v);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_bind_blob_liB) // totalcross/db/sqlite/NativeDB native int bind_blob(long stmt, int pos, byte []v);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_null_l) // totalcross/db/sqlite/NativeDB native void result_null(long context);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_text_ls) // totalcross/db/sqlite/NativeDB native void result_text(long context, String val);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_blob_lB) // totalcross/db/sqlite/NativeDB native void result_blob(long context, byte []val);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_double_ld) // totalcross/db/sqlite/NativeDB native void result_double(long context, double val);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_long_ll) // totalcross/db/sqlite/NativeDB native void result_long(long context, long val);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_int_li) // totalcross/db/sqlite/NativeDB native void result_int(long context, int val);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_result_error_ls) // totalcross/db/sqlite/NativeDB native void result_error(long context, String err);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_backup_ssp) // totalcross/db/sqlite/NativeDB native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_restore_ssp) // totalcross/db/sqlite/NativeDB native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_column_metadata_l) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tdsNDB_load) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
    TEST_SKIP;
    finish: ;

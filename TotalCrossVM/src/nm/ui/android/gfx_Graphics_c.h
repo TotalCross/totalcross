@@ -71,21 +71,30 @@ static int32 *pixcoords, *pixcolors, *pixEnd;
       "attribute vec2 aTextureCoord;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
+      "uniform vec4 a_Color; varying vec4 v_Color;" \
       "void main()" \
       "{" \
       "    gl_Position = vertexPoint * projectionMatrix;" \
       "    vTextureCoord = aTextureCoord;" \
+      "    v_Color = a_Color;" \
       "}"
 
 #define TEXTURE_FRAGMENT_CODE \
       "precision mediump float;" \
       "varying vec2 vTextureCoord;" \
       "uniform sampler2D sTexture;" \
-      "void main() {gl_FragColor = texture2D(sTexture, vTextureCoord);}"
+      "varying vec4 v_Color;" \
+      "void main()" \
+      "{" \
+      "   vec4 texture = texture2D(sTexture, vTextureCoord);" \
+      "   if (v_Color.a == 1.0)" \
+      "      texture.rgb = v_Color.rgb;" \
+      "   gl_FragColor = texture;" \
+      "}"
 
 static GLuint textureProgram;
 static GLuint texturePoint;
-static GLuint textureCoord,textureS;
+static GLuint textureCoord,textureS,textureColor;
 
 //////////// points (text)
 
@@ -311,6 +320,7 @@ void initTexture()
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
+   textureColor = glGetUniformLocation(textureProgram, "a_Color"); GL_CHECK_ERROR
 
    glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
@@ -379,93 +389,37 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
-typedef GLfloat mat4[16];
-/*
-// Pre-calculated value of PI / 180.
-#define kPI180   0.017453
-// Pre-calculated value of 180 / PI.
-#define k180PI  57.295780
-// Converts degrees to radians.
-#define degreesToRadians(x) (x * kPI180)
-// Converts radians to degrees.
-#define radiansToDegrees(x) (x * k180PI)
-void matrixMultiply(mat4 m1, mat4 m2, mat4 result)
-{
-    // Fisrt Column
-    result[0] = m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3];
-    result[1] = m1[1]*m2[0] + m1[5]*m2[1] + m1[9]*m2[2] + m1[13]*m2[3];
-    result[2] = m1[2]*m2[0] + m1[6]*m2[1] + m1[10]*m2[2] + m1[14]*m2[3];
-    result[3] = m1[3]*m2[0] + m1[7]*m2[1] + m1[11]*m2[2] + m1[15]*m2[3];
-     
-    // Second Column
-    result[4] = m1[0]*m2[4] + m1[4]*m2[5] + m1[8]*m2[6] + m1[12]*m2[7];
-    result[5] = m1[1]*m2[4] + m1[5]*m2[5] + m1[9]*m2[6] + m1[13]*m2[7];
-    result[6] = m1[2]*m2[4] + m1[6]*m2[5] + m1[10]*m2[6] + m1[14]*m2[7];
-    result[7] = m1[3]*m2[4] + m1[7]*m2[5] + m1[11]*m2[6] + m1[15]*m2[7];
-     
-    // Third Column
-    result[8] = m1[0]*m2[8] + m1[4]*m2[9] + m1[8]*m2[10] + m1[12]*m2[11];
-    result[9] = m1[1]*m2[8] + m1[5]*m2[9] + m1[9]*m2[10] + m1[13]*m2[11];
-    result[10] = m1[2]*m2[8] + m1[6]*m2[9] + m1[10]*m2[10] + m1[14]*m2[11];
-    result[11] = m1[3]*m2[8] + m1[7]*m2[9] + m1[11]*m2[10] + m1[15]*m2[11];
-     
-    // Fourth Column
-    result[12] = m1[0]*m2[12] + m1[4]*m2[13] + m1[8]*m2[14] + m1[12]*m2[15];
-    result[13] = m1[1]*m2[12] + m1[5]*m2[13] + m1[9]*m2[14] + m1[13]*m2[15];
-    result[14] = m1[2]*m2[12] + m1[6]*m2[13] + m1[10]*m2[14] + m1[14]*m2[15];
-    result[15] = m1[3]*m2[12] + m1[7]*m2[13] + m1[11]*m2[14] + m1[15]*m2[15];
+static int32 lastTexColor;
+void glClearClip()
+{            
+   glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
+}   
+// note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
+// note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
+{  
+   if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
+      {glClearClip(); GL_CHECK_ERROR}
+   else
+   {
+      y1 += glShiftY;
+      y2 += glShiftY;
+      glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
+      if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
+      if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
+      if (y1 < 0) y1 = 0; else if (y1 > appH) y1 = appH;
+      if (y2 < 0) y2 = 0; else if (y2 > appH) y2 = appH;
+      int32 h = y2-y1, w = x2-x1;
+      if (h < 0) h = 0;
+      if (w < 0) w = 0;
+      glScissor(x1,appH-y2,w,h); GL_CHECK_ERROR
+   }
 }
-void matrixIdentity(mat4 m)
-{
-    m[0] = m[5] = m[10] = m[15] = 1.0;
-    m[1] = m[2] = m[3] = m[4] = 0.0;
-    m[6] = m[7] = m[8] = m[9] = 0.0;
-    m[11] = m[12] = m[13] = m[14] = 0.0;
-}
-void matrixRotateX(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate X formula.
-    matrix[5] = cosf(radians);
-    matrix[6] = -sinf(radians);
-    matrix[9] = -matrix[6];
-    matrix[10] = matrix[5];
-}
- 
-void matrixRotateY(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate Y formula.
-    matrix[0] = cosf(radians);
-    matrix[2] = sinf(radians);
-    matrix[8] = -matrix[2];
-    matrix[10] = matrix[0];
-}
-void matrixRotateZ(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate Z formula.
-    matrix[0] = cosf(radians);
-    matrix[1] = sinf(radians);
-    matrix[4] = -matrix[1];
-    matrix[5] = matrix[0];
-}
-*/
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {         
    GLfloat* coords = texcoords;
-/*   GLfloat degrees = 45;
-   GLfloat radians = degreesToRadians(degrees);
-   GLfloat co = cosf(radians), si = sinf(radians);*/
+   PixelConv pcolor;
    if (pixcolors != (int32*)glcolors) flushPixels(6);
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
@@ -477,21 +431,10 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    coords[1] = coords[3] = (dstY+h);
    coords[2] = coords[4] = (dstX+w);
    coords[5] = coords[7] = dstY;
-/* TODO trying to do rotation too 
-http://db-in.com/blog/2011/04/cameras-on-opengl-es-2-x/
-http://en.wikipedia.org/wiki/Transformation_matrix#Rotation_2
-http://androidbook.com/item/4254
-
-   mat4 tempX,tempY,temp,temp2; 
-   matrixRotateX(rot, tempX); matrixRotateY(rot, tempY); 
-   matrixMultiply(tempX,tempY,temp);
-   matrixMultiply(coords,temp,temp2); 
-   xmemmove(coords,temp2,sizeof(mat4));*/
-   //matrixRotateZ(rotY, temp); matrixMultiply(coords,temp,temp2); xmemmove(coords,temp2,sizeof(mat4));
 
    glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
-   // source coordinates
+   // source coordinates                  
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
    coords[ 8] = coords[14] = left;
    coords[ 9] = coords[11] = bottom;
@@ -499,8 +442,24 @@ http://androidbook.com/item/4254
    coords[13] = coords[15] = top;
    glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
 
+   if (color == null)
+      pcolor.pixel = 0; // a = 0 : disable color
+   else
+   {
+      pcolor.pixel = color->pixel; // color in r,g,b
+      pcolor.a = 255;   // a = 1 : enable color
+   }
+   
+   if (lastTexColor != pcolor.pixel)
+   {                                      
+      lastTexColor = pcolor.pixel;
+      glUniform4f(textureColor, f255[pcolor.r], f255[pcolor.g], f255[pcolor.b],f255[pcolor.a]); GL_CHECK_ERROR
+   }                               
+
+   if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+   if (clip != null) glClearClip();
 }
 
 void initLineRectPoint()
@@ -694,7 +653,7 @@ void flushAll()
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
 {                              
-   mat4 mat =
+   GLfloat mat[] =
    {
       2.0/w, 0.0, 0.0, -1.0,
       0.0, -2.0/h, 0.0, 1.0,
@@ -743,6 +702,7 @@ bool setupGL(int width, int height)
 {
     int i;
     pixLastRGB = -1;
+    lastTexColor = 0;
     appW = width;
     appH = height;
 

@@ -26,6 +26,7 @@ import totalcross.util.Hashtable;
 /**
  * Font is the character font used when drawing text on a surface.
  * Fonts can be antialiased, and usually range from size 7 to 38.
+ * In OpenGL platforms, they are 8bpp antialiased fonts ranging up indefinedly.
  * <ol>
  * <li> To see if the font you created is installed in the target device, query its name after
  * the creation. If the font is not found, its name is changed to match the default font.
@@ -57,8 +58,10 @@ public final class Font
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 44 for Palm OS, 60 for other platforms. */
-   public static int MAX_FONT_SIZE = 70;
+   /** The maximum font size: 48 for Windows32, unlimited for OpenGL platforms (the number here will be 80,
+    * since this is the size that the base font was created; you can specify something higher, but it will use
+    * upscaling, which usually results in a smooth font). */
+   public static int MAX_FONT_SIZE = Settings.platform.equals(Settings.WIN32) ? 48 : 80;
 
    /** Returns the default font size, based on the screen's size.
     */
@@ -76,9 +79,6 @@ public final class Font
       totalcross.sys.Vm.debug("FONT HEIGHT: "+Settings.deviceFontHeight);
       if (Settings.WP8.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
          fontSize = Settings.deviceFontHeight;
-      else
-      if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 12; // added this exception to get the right font when running in the WM phone in landscape mode
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
@@ -114,7 +114,7 @@ public final class Font
       if (fontSize < MIN_FONT_SIZE)
          fontSize = MIN_FONT_SIZE;
       else
-      if (fontSize > MAX_FONT_SIZE)
+      if (!Settings.isOpenGL && fontSize > MAX_FONT_SIZE)
          fontSize = MAX_FONT_SIZE;
       
       return fontSize;
@@ -219,5 +219,16 @@ public final class Font
    void fontCreate()
    {
       hv_UserFont = Launcher.instance.getFont(this, ' ');
+   }
+   
+   /** Used internally. */
+   public void removeFromCache()
+   {
+      sb.setLength(0);
+      String key = sb.append(name).append('$').append(style==1?'B':'P').append(size).toString();
+      htFonts.remove(key);
+   }
+   public void removeFromCache4D()
+   {
    }
 }
