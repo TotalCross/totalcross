@@ -212,68 +212,7 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    bool mustActivate = false;
-#if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
-   TCObject rasClientInstance;
-   Method m;
-
-   // 2. Check activation
-   c = loadClass(currentContext, "ras.ActivationClient", true);
-   if (!c || currentContext->thrownException)
-      return exitProgram(111);
-   m = getMethod(c, true, "getInstance", 0);
-   if (!m)
-      return exitProgram(112);
-   rasClientInstance = executeMethod(currentContext, m).asObj;
-   if (!rasClientInstance || currentContext->thrownException)
-      return exitProgram(113);
-
- #ifdef ENABLE_RAS // when RAS is enabled, we just call the activation process
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
-   if (!m)
-      return exitProgram(114);
-
-   mustActivate = !executeMethod(currentContext, m, rasClientInstance).asInt32;
    {
-      // get the product id to see if litebase is allowed
-      litebaseAllowedPtr = getStaticFieldInt(c, "litebaseAllowed");
- #else // when NORAS is enabled, we must check if this specialized vm can run with the current key
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   if (!m)
-      return exitProgram(114);
-   else
-   {
-      char buf[4];
-      uint8 *allowedKey, *allowedKeysBase = ENABLE_NORAS, *signedKey;
-      TCObject ret = executeMethod(currentContext, m, rasClientInstance).asObj;
-      if (currentContext->thrownException || ret == null)
-      {
-         alert("Invalid key (1).");
-         return exitProgram(1141);
-      }
-      // check the key
-      for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) {
-	     uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
-         for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
-         {
-            int2hex(*signedKey, 2, buf);
-            if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
-            {
-               break;
-            }
-            if (allowedKey == allowedKeysBase + 22)
-            {
-               goto jumpArgument;
-            }
-         }
-      }
-      alert("Invalid key (2).");
-      return exitProgram(1442);
-
-// activation ok, the name is misleading on purpose
-jumpArgument:
-
- #endif
-#endif
       // load libraries
       if (!loadLibraries(currentContext, vmPath, true))
          return exitProgram(115);

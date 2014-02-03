@@ -1,14 +1,13 @@
 ﻿#pragma once
 
 #include "DirectXHelper.h"
-#include "Idummy.h"
+#include "cswrapper.h"
 
 #define HAS_TCHAR
 #include "tcvm.h"
 
 #define N_LOAD_TASKS 4
 #define OCCUPIED_WAIT_TIME 1
-
 
 struct ProjectionConstantBuffer
 {
@@ -41,13 +40,20 @@ enum drawCommand
 	DRAW_COMMAND_SETCOLOR = 10
 };
 
+enum whichProgram
+{
+   PROGRAM_NONE,
+   PROGRAM_LRP,
+   PROGRAM_TEX,
+};
+
 #include "tcthread.h"
 
 // Helper class that initializes DirectX APIs for 3D rendering.
 ref class Direct3DBase 
 {
 internal:
-	Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy);
+   Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
 
 	void Initialize(_In_ ID3D11Device1* device);
 	void CreateDeviceResources();
@@ -59,8 +65,9 @@ internal:
 	int WaitDrawCommand(); // wait until another thread calls some draw command
 	void Present();
 
+   void setProgram(whichProgram p);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-   void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
+   void deleteTexture(TCObject img, int32* textureId, bool updateList);
    void drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);
@@ -69,15 +76,16 @@ internal:
    void createTexture();
    void setup();
 
-   void DoDrawCommand(bool should_redo);
+   void DoneDrawCommand();
 
    bool isLoadCompleted();
 
    static Direct3DBase ^GetLastInstance();
-   PhoneDirect3DXamlAppComponent::Idummy^ getDummy();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
 
 private:
    int loadCompleted[N_LOAD_TASKS];
+   whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor;
@@ -86,9 +94,6 @@ private:
 
    // texture
    Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
-   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
    Microsoft::WRL::ComPtr<ID3D11SamplerState> texsampler;
    ID3D11DepthStencilState* depthDisabledStencilState;
    ID3D11BlendState* g_pBlendState;
@@ -107,7 +112,6 @@ protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContextDEF;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
@@ -118,7 +122,7 @@ protected private:
 	Windows::Foundation::Rect m_windowBounds;
 
 	// C# wrapper object
-	PhoneDirect3DXamlAppComponent::Idummy ^odummy;
+   PhoneDirect3DXamlAppComponent::CSwrapper ^cs;
 
 	// TotalCross objects
 	Context local_context;

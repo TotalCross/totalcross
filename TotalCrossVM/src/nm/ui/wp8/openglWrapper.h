@@ -7,9 +7,6 @@
 #include "../GraphicsPrimitives.h"
 
 #ifdef __cplusplus
-#include <agile.h>
-#include <wrl/client.h>
-
 
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>

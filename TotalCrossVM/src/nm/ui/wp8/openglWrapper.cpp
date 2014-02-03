@@ -1,6 +1,6 @@
 #define HAS_TCHAR
 
-#include <wrl/client.h>
+#include <stdint.h>
 
 #if (_MSC_VER >= 1800)
 #include <d3d11_2.h>
@@ -11,17 +11,11 @@
 #include "openglWrapper.h"
 #include "datastructures.h"
 #include "tcvm.h"
-#include "MainView.h"
-#include "precompiled_texture.h"
-#include "precompiled_lrp.h"
-#include "precompiled_points.h"
-#include "precompiled_shade.h"
 
-//#define TOGGLE_BUFFER
+#define TOGGLE_BUFFER
 
 
 using namespace Windows::UI::Core;
-using namespace TotalCross;
 
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...);
 
@@ -30,120 +24,8 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
 
 #pragma region StaticVariables
 
-//static EGLNativeWindowType *window, *lastWindow;
-//
-//static ESContext m_esContext;
-//static Microsoft::WRL::ComPtr<IWinrtEglWindow> m_eglWindow;
-static TCGint lastProg = -1;
-
-// http://www.songho.ca/opengl/gl_projectionmatrix.html
-//////////// texture
-static char TEXTURE_VERTEX_CODE[] = stringfy(
-attribute vec4 vertexPoint;
-attribute vec2 aTextureCoord;
-uniform mat4 projectionMatrix;
-varying vec2 vTextureCoord;
-void main()
-{
-    gl_Position = vertexPoint * projectionMatrix;
-    vTextureCoord = aTextureCoord;
-});
-	
-
-static char TEXTURE_FRAGMENT_CODE[] = stringfy(
-precision mediump float;
-varying vec2 vTextureCoord;
-uniform sampler2D sTexture;
-void main()
-{
-	gl_FragColor = texture2D(sTexture, vTextureCoord);
-});
-
-static TCGuint textureProgram;
-static TCGuint texturePoint;
-static TCGuint textureCoord, textureS;
-
-//////////// points (text)
-
-static char POINTS_VERTEX_CODE[] = stringfy(
-attribute vec4 a_Position; uniform vec4 a_Color; varying vec4 v_Color; attribute float alpha;
-uniform mat4 projectionMatrix; 
-void main()
-{
-	gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z,alpha); gl_Position = a_Position * projectionMatrix;
-});
-
-static char POINTS_FRAGMENT_CODE[] = stringfy(
-precision mediump float;
-varying vec4 v_Color;
-void main()
-{
-	gl_FragColor = v_Color;
-});
-
-static TCGuint pointsProgram;
 static TCGuint pointsPosition;
-static TCGuint pointsColor;
-static TCGuint pointsAlpha;
-
-///////////// line, rect, point
-
-static char LRP_VERTEX_CODE[] = stringfy(
-attribute vec4 a_Position;
-uniform mat4 projectionMatrix;
-void main()
-{
-	gl_PointSize = 1.0; gl_Position = a_Position*projectionMatrix;
-});
-
-static char LRP_FRAGMENT_CODE[] = stringfy(
-precision mediump float;
-uniform vec4 a_Color;
-void main()
-{
-	gl_FragColor = a_Color;
-});
-
-static TCGuint lrpProgram;
-static TCGuint lrpPosition;
-static TCGuint lrpColor;
-static TCGubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
-
-///////////// shaded rect
-
-static char SHADE_VERTEX_CODE[] = stringfy(
-attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;
-uniform mat4 projectionMatrix;
-void main()
-{
-	gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position*projectionMatrix;
-});
-
-static char SHADE_FRAGMENT_CODE[] = stringfy(
-precision mediump float;
-varying vec4 v_Color;
-void main()
-{
-	gl_FragColor = v_Color;
-});
-
-static TCGuint shadeProgram;
-static TCGuint shadePosition;
-static TCGuint shadeColor;
-
-//static EGLDisplay _display;
-//static EGLSurface _surface;
-//static EGLContext _context;
-
-static TCGfloat texcoords[16], lrcoords[8], shcolors[24], shcoords[8];
 static int32 *pixcoords, *pixcolors, *pixEnd;
-
-static int pixLastRGB = -1;
-static bool surfaceWillChange;
-
-//extern int32 lastW, lastH, ascrHRes, ascrVRes;
-//extern int32 *shiftScreenColorP;
-
 static int32 desiredglShiftY;
 
 #pragma endregion
@@ -161,216 +43,10 @@ TCGfloat* glcolors;//[flen];   alpha
 
 #pragma endregion
 
-
-
 int32 abs32(int32 a)
 {
 	return a < 0 ? -a : a;
 }
-
-#pragma region static functions
-
-static bool checkGlError(const char* op, int line)
-{
-#ifndef USE_DX
-	TCGint error;
-
-	//debug("%s (%d)",op,line);
-
-	if (!op)
-		return glGetError() != 0;
-	else
-	for (error = glGetError(); error; error = glGetError())
-	{
-		char* msg = "???";
-		switch (error)
-		{
-		case GL_INVALID_ENUM: msg = "INVALID ENUM"; break;
-		case GL_INVALID_VALUE: msg = "INVALID VALUE"; break;
-		case GL_INVALID_OPERATION: msg = "INVALID OPERATION"; break;
-		case GL_OUT_OF_MEMORY: msg = "OUT OF MEMORY"; break;
-		}
-		debug("glError %s at %s (%d)\n", msg, op, line);
-		return true;
-	}
-#endif
-	return false;
-}
-
-static TCGuint createProgram_angle(unsigned char* precompiledCode, size_t precompiledCodeSize)
-{
-#ifndef USE_DX
-	TCGint ret = GL_TRUE;
-	TCGuint vshader, fshader;
-	TCGuint p = glCreateProgram();
-
-	//vshader = loadShader(GL_VERTEX_SHADER, vertexCode);
-	//fshader = loadShader(GL_FRAGMENT_SHADER, fragmentCode);
-	//glAttachShader(p, vshader); GL_CHECK_ERROR
-	//glAttachShader(p, fshader); GL_CHECK_ERROR
-	//glLinkProgram(p); GL_CHECK_ERROR
-	////glValidateProgram(p);
-	//glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
-	//if (ret == GL_FALSE)
-	//{
-	//	TCGchar *buffer;
-	//	glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
-	//	buffer = (TCGchar*)xmalloc(sizeof(TCGchar)* ret);
-	//	glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
-	//		debug("Link error: %s", buffer);
-	//	xfree(buffer);
-	//}
-
-	glProgramBinaryOES(p, GL_PROGRAM_BINARY_ANGLE, precompiledCode, precompiledCodeSize);
-	glGetProgramiv(p, GL_LINK_STATUS, &ret); GL_CHECK_ERROR
-	if (ret == GL_FALSE)
-	{
-		TCGchar *buffer;
-		glGetProgramiv(p, GL_INFO_LOG_LENGTH, &ret); GL_CHECK_ERROR
-			buffer = (TCGchar*)xmalloc(sizeof(TCGchar)* ret);
-		glGetProgramInfoLog(p, ret, &ret, buffer); GL_CHECK_ERROR
-			debug("Link error: %s", buffer);
-		xfree(buffer);
-	}
-
-	return p;
-#endif
-   return 0;
-}
-
-static void setCurrentProgram(TCGint prog)
-{
-#ifndef USE_DX
-	if (prog != lastProg)
-	{
-		glUseProgram(lastProg = prog); GL_CHECK_ERROR
-	}
-#endif
-}
-
-static void initPoints()
-{
-#ifndef USE_DX
-	pointsProgram = createProgram_angle(precompiled_points, sizeof(precompiled_points));
-	setCurrentProgram(lrpProgram);
-	pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
-		pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
-		pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
-		glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-		glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-#endif
-}
-
-static void clearPixels()
-{
-#ifndef USE_DX
-	pixcoords = (int32*)glcoords;
-	pixcolors = (int32*)glcolors;
-#endif
-}
-
-
-static void destroyEGL()
-{
-#ifndef USE_DX
-	eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-	eglDestroyContext(_display, _context);
-	eglDestroySurface(_display, _surface);
-	eglTerminate(_display);
-
-	_display = EGL_NO_DISPLAY;
-	_surface = EGL_NO_SURFACE;
-	_context = EGL_NO_CONTEXT;
-#endif
-}
-
-static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
-{
-#ifndef USE_DX
-	bool isPixel = (x & IS_PIXEL) != 0;
-	if ((pixcoords + (isPixel ? 2 : 4)) > pixEnd)
-		flushPixels(7);
-	*pixcoords++ = x;
-	*pixcoords++ = y;
-	if (!isPixel)
-	{
-		*pixcoords++ = w;
-		*pixcoords++ = h;
-	}
-	PixelConv pc;
-	pc.pixel = rgb;
-	pc.a = a;
-	*pixcolors++ = pc.pixel;
-#endif
-}
-
-static void initShade()
-{
-#ifndef USE_DX
-	shadeProgram = createProgram_angle(precompiled_shade, sizeof(precompiled_shade));
-	setCurrentProgram(shadeProgram);
-	shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
-		shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
-		glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-		glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-		shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
-#endif
-}
-
-static void setProjectionMatrix(TCGfloat w, TCGfloat h)
-{
-#ifndef USE_DX
-	mat4 mat =
-	{
-		2.0 / w, 0.0, 0.0, -1.0,
-		0.0, -2.0 / h, 0.0, 1.0,
-		0.0, 0.0, -1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0
-	};
-	setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-		setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-		setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-		setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-#ifdef darwin
-		int fw, fh;
-	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &fw);
-	glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &fh);
-	glViewport(0, 0, fw, fh); GL_CHECK_ERROR
-#else
-		glViewport(0, 0, w, h); GL_CHECK_ERROR
-#endif
-#endif
-}
-
-static void initTexture()
-{
-#ifndef USE_DX
-	//textureProgram = esLoadProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
-	//textureProgram = createProgram_angle(gProgram, sizeof(gProgram));
-	textureProgram = createProgram_angle(precompiled_texture, sizeof(precompiled_texture));
-	setCurrentProgram(textureProgram);
-	textureS = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
-		texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
-		textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
-
-		glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
-		glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
-#endif
-}
-
-static void initLineRectPoint()
-{
-#ifndef USE_DX
-	lrpProgram = createProgram_angle(precompiled_lrp, sizeof(precompiled_lrp));
-	setCurrentProgram(lrpProgram);
-	lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
-		lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
-		glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
-#endif
-}
-
-
-#pragma endregion
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
@@ -638,70 +314,6 @@ bool setupGL(int width, int height)
 //	Image_changed(obj) = false;
 //}
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
-{
-#ifndef USE_DX
-	glDeleteTextures(1, (TCGuint*)textureId); GL_CHECK_ERROR
-		*textureId = 0;
-	if (updateList)
-		imgTextures = VoidPsRemove(imgTextures, img, null);
-#endif
-}
-
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
-{
-#ifndef USE_DX
-	int32 i;
-	PixelConv* pf = (PixelConv*)pixels;
-	PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
-	bool textureAlreadyCreated = *textureId != 0;
-	bool err;
-	if (!pt)
-	{
-		throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d", width, height);
-		return;
-	}
-
-	if (!textureAlreadyCreated)
-	{
-		glGenTextures(1, (TCGuint*)textureId); err = GL_CHECK_ERROR
-		if (err)
-		{
-			throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d", width, height);
-			return;
-		}
-	}
-	// OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
-	glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
-	if (!textureAlreadyCreated)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
-	}
-	// must invert the pixels from ARGB to RGBA
-	for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
-	if (textureAlreadyCreated)
-	{
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
-			glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-	}
-	else
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
-		if (err)
-			throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
-		else
-		{
-			if (updateList)
-				imgTextures = VoidPsAdd(imgTextures, img, null);
-			glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-		}
-	}
-	xfree(pt0);
-#endif
-}
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
@@ -793,7 +405,6 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 #if defined ANDROID || defined WP8
 	if (!isScreenChange)
 	{
-		destroyEGL();
 		xfree(screen->extension);
 		xfree(glcoords);
 		xfree(glcolors);
@@ -929,7 +540,8 @@ void glDrawPixels(int32 n, int32 rgb)
 #ifdef TOGGLE_BUFFER
    if (colour != dxDrawPixelsCache.lastARGB)
    {
-      if (dxDrawPixelsCache.size > 0) {
+      if (dxDrawPixelsCache.size > 0) 
+      {
          dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
          dxDrawPixelsCache.size = 0;
       }
@@ -1148,7 +760,6 @@ void setShiftYgl()
 #endif
 }
 
-
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
 #ifndef USE_DX
@@ -1166,61 +777,21 @@ void glSetLineWidth(int32 w)
 #endif
 }
 
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+void dxDeleteTexture(TCObject img, int32* textureId, bool updateList);
+void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
+
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+{
+   dxDeleteTexture(img, textureId, updateList);
+}
+
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+{
+   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+}
+
 void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
-#ifndef USE_DX
-	TCGfloat* coords = texcoords;
-	/*   TCGfloat degrees = 45;
-	TCGfloat radians = degreesToRadians(degrees);
-	TCGfloat co = cosf(radians), si = sinf(radians);*/
-	if (pixcolors != (int32*)glcolors) flushPixels(6);
-	setCurrentProgram(textureProgram);
-	glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
-
-		dstY += glShiftY;
-
-	// destination coordinates
-	coords[0] = coords[6] = dstX;
-	coords[1] = coords[3] = (dstY + h);
-	coords[2] = coords[4] = (dstX + w);
-	coords[5] = coords[7] = dstY;
-	/* TODO trying to do rotation too
-	http://db-in.com/blog/2011/04/cameras-on-opengl-es-2-x/
-	http://en.wikipedia.org/wiki/Transformation_matrix#Rotation_2
-	http://androidbook.com/item/4254
-
-	mat4 tempX,tempY,temp,temp2;
-	matrixRotateX(rot, tempX); matrixRotateY(rot, tempY);
-	matrixMultiply(tempX,tempY,temp);
-	matrixMultiply(coords,temp,temp2);
-	xmemmove(coords,temp2,sizeof(mat4));*/
-	//matrixRotateZ(rotY, temp); matrixMultiply(coords,temp,temp2); xmemmove(coords,temp2,sizeof(mat4));
-
-	glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
-
-		// source coordinates
-		TCGfloat left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
-	coords[8] = coords[14] = left;
-	coords[9] = coords[11] = bottom;
-	coords[10] = coords[12] = right;
-	coords[13] = coords[15] = top;
-	glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-		glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-#endif
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
 }
-
-/*void updateScreenANGLE()
-{
-	graphicsUpdateScreen(mainContext, &screen);
-}
-
-void makeCurrentANGLE()
-{
-	if (!eglMakeCurrent(_display, _surface, _surface, _context))                 
-	{ 
-		debug("eglMakeCurrent() returned error %d", eglGetError()); 
-		destroyEGL(); 
-	}
-}*/
