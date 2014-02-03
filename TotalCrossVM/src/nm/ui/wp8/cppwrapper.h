@@ -67,6 +67,9 @@ void dxDrawLine(int x1, int y1, int x2, int y2, int color);
 void dxFillRect(int x1, int y1, int x2, int y2, int color);
 void dxDrawPixels(int *x, int *y, int count, int color);
 
+// Etc
+double getFontHeightCPP();
+
 #ifdef __cplusplus
 }
 #endif

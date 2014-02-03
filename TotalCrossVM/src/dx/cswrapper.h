@@ -41,6 +41,9 @@ namespace PhoneDirect3DXamlAppComponent
       Platform::String^ getMessageReceived();
       double getPdop();
       Platform::String^ getLowSignalReason();
+
+	  // Etc
+	  double getFontHeightCS();
 	};
 }
 

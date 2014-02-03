@@ -302,3 +302,8 @@ void dxDrawPixels(int *x, int *y, int count, int color)
 {
 	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
 }
+
+double getFontHeightCPP()
+{
+	return Direct3DBase::GetLastInstance()->getCSwrapper()->getFontHeightCS();
+}

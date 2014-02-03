@@ -21,7 +21,12 @@ namespace PhoneDirect3DXamlAppInterop
 {
    public class CSWrapper : CSwrapper
    {
-       // RadioDevice
+      // Workarround vars
+      Grid root;
+      TextBlock tx;
+      private Thickness awayMargin; // any new  programaticallycreated controller that should not be placed on screen should do "newController.margin = awayMargin;"
+
+      // RadioDevice
       private int turnedState;
 
       // GPS
@@ -44,9 +49,24 @@ namespace PhoneDirect3DXamlAppInterop
       private double? pdop; // GPS_pdop() 
       private String lowSignalReason = ""; // GPS_lowSignalReason()
 
-      public CSWrapper()
+      public double getFontHeightCS()
       {
+          if (tx == null)
+          {
+              tx = new TextBlock();
+              tx.Text = "@";
 
+              tx.Margin = awayMargin;
+              root.Children.Add(tx);
+          }
+
+          return tx.ActualHeight;
+      }
+
+      public CSWrapper(Grid g)
+      {
+          this.root = g;
+          this.awayMargin = new Thickness(500, 0, 0, 0);
       }
       public MainPage mp { set; get; }
       public void callDraw()
@@ -305,14 +325,22 @@ namespace PhoneDirect3DXamlAppInterop
         public MainPage()
         {
             InitializeComponent();
+            this.LostFocus += MainPage_LostFocus;
+        }
+
+        void MainPage_LostFocus(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("lalala");
+            //throw new NotImplementedException();
         }
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
             if (m_d3dBackground == null)
             {
-                CSWrapper cs = new CSWrapper();
+                CSWrapper cs = new CSWrapper(LayoutRoot);
                 cs.mp = this;
+                cs.getFontHeightCS();
                 m_d3dBackground = new Direct3DBackground(cs);
 
                 // Set window bounds in dips
