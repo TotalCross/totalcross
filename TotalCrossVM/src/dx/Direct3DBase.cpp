@@ -426,8 +426,6 @@ bool Direct3DBase::Render()
 	   def_status = 0;
 	   return false;
    }
-   int ini = GetTickCount64() & 0x3FFFFFFF;
-
    if (!VMStarted) 
    {
 	   auto lambda = [this]() 
@@ -439,11 +437,6 @@ bool Direct3DBase::Render()
 	   VMStarted = true;
 	   Sleep(OCCUPIED_WAIT_TIME);
    }
-
-   int fim = GetTickCount64() & 0x3FFFFFFF;
-   char buf[50];
-   sprintf_s(buf, "elapsed: %d ms\n", fim - ini);
-   OutputDebugStringA(buf);
    return true;
 }
 
