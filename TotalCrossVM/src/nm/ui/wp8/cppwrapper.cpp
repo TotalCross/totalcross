@@ -9,14 +9,12 @@
 #include <d3d11_1.h>
 #endif
 
-#include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
 #include <wrl/client.h>
 #include "tcclass.h"
 #include "Direct3DBase.h"
 
-using namespace TotalCross;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 using namespace Windows::Phone::System::Memory;
@@ -164,7 +162,7 @@ void windowSetDeviceTitle(TCObject titleObj)
 
 void windowSetSIP(enum TCSIP kb)
 {
-	MainView::GetLastInstance()->setKeyboard(kb); //XXX
+	//XXX
 }
 
 DWORD32 getRemainingBatery()
