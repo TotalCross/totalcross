@@ -211,11 +211,8 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    bool must_do_3 = false;
    if (dxDrawPixelCache.size > 0)
    {
-      int ini = getTimeStamp();
       dxDrawPixels(dxDrawPixelCache.coords_x, dxDrawPixelCache.coords_y, dxDrawPixelCache.size, dxDrawPixelCache.lastARGB);
       dxDrawPixelCache.size = 0;
-      dxDrawPixelCache.time += getTimeStamp() - ini;
-      debug("drawPixel: %d", dxDrawPixelCache.time);
 
       if (dxDrawPixelCache.lastARGB == dxDrawLineCache.lastARGB)
          must_do_3 = true;
@@ -225,45 +222,24 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    {
       if (dxDrawLineCache.size > 0)
       {
-         int ini = getTimeStamp();
          dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
          dxDrawLineCache.size = 0;
-         dxDrawLineCache.time += getTimeStamp() - ini;
-         debug("drawLine: %d", dxDrawLineCache.time);
-         dxDrawLineCache.time = 0;
       }
    }
    if (dxDrawPixelsCache.size > 0)
    {
-      int ini = getTimeStamp();
-      if (dxDrawPixelsCache.size > 33000)
-         ini = ini;
       dxDrawPixels(dxDrawPixelsCache.coords_x, dxDrawPixelsCache.coords_y, dxDrawPixelsCache.size, dxDrawPixelsCache.lastARGB);
       dxDrawPixelsCache.size = 0;
-      dxDrawPixelsCache.time += getTimeStamp() - ini;
-      debug("drawPixels: %d", dxDrawPixelsCache.time);
-      dxDrawPixelsCache.time = 0;
    }
    if (!must_do_3)
    {
       if (dxDrawLineCache.size > 0)
       {
-         int ini = getTimeStamp();
          dxDrawPixels(dxDrawLineCache.coords_x, dxDrawLineCache.coords_y, dxDrawLineCache.size, dxDrawLineCache.lastARGB);
          dxDrawLineCache.size = 0;
-         dxDrawLineCache.time += getTimeStamp() - ini;
-         debug("drawLine: %d", dxDrawLineCache.time);
-         dxDrawLineCache.time = 0;
       }
    }
 #endif
-   debug("drawPixel: %d", dxDrawPixelCache.time);
-   dxDrawPixelCache.time = 0;
-   debug("drawPixels: %d", dxDrawPixelsCache.time);
-   dxDrawPixelsCache.time = 0;
-   debug("drawLine: %d", dxDrawLineCache.time);
-   dxDrawLineCache.time = 0;
-
    dxUpdateScreen();
 #endif
 }
