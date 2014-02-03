@@ -159,7 +159,7 @@ void soundTone(int32 frequency, int32 duration);
 #endif
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
-inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
+static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
 {
    int32 index;
    size = ((size+3)>>2)<<2;
@@ -209,7 +209,7 @@ static void dumpList(TCObject o, bool showSize)
 }
 #endif
 
-inline static void removeNodeFromDblList(TCObject headObj, TCObject nodeObj)
+static void removeNodeFromDblList(TCObject headObj, TCObject nodeObj)
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -235,7 +235,7 @@ inline static void removeNodeFromDblList(TCObject headObj, TCObject nodeObj)
 #endif
 }
 
-inline static void insertNodeInDblList(TCObject headObj, TCObject nodeObj) // insert at the head
+static void insertNodeInDblList(TCObject headObj, TCObject nodeObj) // insert at the head
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -858,7 +858,7 @@ static void markContexts()
       }
 }
 
-inline_ void finalizeObject(TCObject o, TCClass c)
+void finalizeObject(TCObject o, TCClass c)
 {
    while (c != null) 
    {

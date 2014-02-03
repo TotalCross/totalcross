@@ -49,12 +49,12 @@ static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the lea
    return size <= 32 ? mspace_malloc(mspace1,size) : size <= 400 ? mspace_malloc(mspace2,size) : dlmalloc(size);
 } 
 #else
-static inline VoidP realMalloc(uint32 size)
+static VoidP realMalloc(uint32 size)
 {
    return dlmalloc(size);
 }
 #endif
-static inline void realFree(VoidP p) 
+static void realFree(VoidP p) 
 {
    dlfree(p);
 }

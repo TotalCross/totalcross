@@ -105,7 +105,7 @@ void getSField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 
 // used by both
 
-inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t)
+uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t)
 {
    bool found=false;
    FieldArray fields, f;
@@ -157,7 +157,7 @@ void getIField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
    *fieldName = cp->mtdfld[fieldIndex];
 }
 
-inline uint16 getIField_Index(ConstantPool cp, TCObject o, int32 sym, RegType t)
+uint16 getIField_Index(ConstantPool cp, TCObject o, int32 sym, RegType t)
 {
    uint32 fieldIndex = cp->ifieldField[sym];
    uint32 classIndex = cp->ifieldClass[sym];

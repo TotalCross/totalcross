@@ -445,7 +445,7 @@ static double np32[] = // guich@570_51
 {
    1.0,1e-32,1e-64,1e-96,1e-128,1e-160,1e-192,1e-224,1e-256,1e-288,1e-320,
 };
-inline static double Pow10(int32 exp) // fast pow(10,exp) - thanks to Peter M. Dickerson
+static double Pow10(int32 exp) // fast pow(10,exp) - thanks to Peter M. Dickerson
 {
    if (exp >=0)
       return p1[exp & 31]*p32[(exp>>5)];
