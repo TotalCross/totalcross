@@ -137,7 +137,7 @@ typedef TUInt8 UInt8;
 typedef TDouble Double;
 typedef TInt64 Int64;
 
-#ifndef INT32_MAX
+#if !defined(INT32_MAX) && !defined(WP8)
  #define INT32_MAX (2147483647)
 #endif
 
