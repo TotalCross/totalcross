@@ -87,6 +87,7 @@ struct eventQueueMember eventQueuePop(void)
 
 	ini = GetTickCount64() & 0x3FFFFFFF;
 
+	top.type = 0;
 	/*if (eventQueue.size() < 3) {
 		while (queue_state == QUEUE_PUSH) {
 			Sleep(1);
@@ -97,9 +98,11 @@ struct eventQueueMember eventQueuePop(void)
 		queue_state = QUEUE_IDLE;
 	}
 	else {*/
+	if (!eventQueue.empty())
+	{
 		top = eventQueue.front();
 		eventQueue.pop();
-	//}
+	}
 
 	fim = GetTickCount64() & 0x3FFFFFFF;
 	debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());

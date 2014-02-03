@@ -20,6 +20,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy)
    odummy = _odummy;
    lastInstance = this;
    TheDrawCommand = DRAW_COMMAND_INVALID;
+   manipulationComplete = false;
 }
 
 Direct3DBase ^Direct3DBase::GetLastInstance()
@@ -112,6 +113,7 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	if (m_d3dDevice.Get() != device)
 	{
 		m_d3dDevice->GetDeviceRemovedReason();
+		manipulationComplete = false;
 		m_d3dDevice = device;
 		CreateDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
@@ -366,23 +368,36 @@ bool Direct3DBase::isLoadCompleted()
 	for (int i = 0; i < N_LOAD_TASKS; i++)
 	if (!loadCompleted[i])
 		return false;
-	return true;
+	return manipulationComplete;
 }
-
-ID3D11CommandList *cl = nullptr;
 
 void Direct3DBase::Present()
 {
+	int ini, fim;
+
+	ini = GetTickCount64() & 0x3FFFFFFF;
 	TheDrawCommand = DRAW_COMMAND_PRESENT;
+
+	m_d3dContext->FinishCommandList(true, &cl);
 	while (TheDrawCommand == DRAW_COMMAND_PRESENT) 
 		Sleep(OCCUPIED_WAIT_TIME);
+	fim = GetTickCount64() & 0x3FFFFFFF;
+	char buf[50];
+	sprintf_s(buf, "vm thread occupied wait time elapsed: %d ms\n", fim - ini);
+	OutputDebugStringA(buf);
 }
 
 void Direct3DBase::PreRender()
 {
-   const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
-   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+   static bool mustClear = true;
+
+   if (mustClear)
+   {
+	   const float clearColor[4] = { 0.071f, 0.04f, 0.561f, 1.0f };
+	   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+	   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	   mustClear = false;
+   }
 
    m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
    m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
@@ -515,4 +530,9 @@ int Direct3DBase::WaitDrawCommand()
 
 void Direct3DBase::DoneDrawCommand() {
 	TheDrawCommand = DRAW_COMMAND_INVALID;
+}
+
+void Direct3DBase::setManipulationComplete()
+{
+	this->manipulationComplete = true;
 }

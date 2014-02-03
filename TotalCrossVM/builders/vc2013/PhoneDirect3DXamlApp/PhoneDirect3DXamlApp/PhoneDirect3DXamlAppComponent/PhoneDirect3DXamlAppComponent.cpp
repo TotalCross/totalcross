@@ -36,6 +36,7 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 
 	manipulationHost->PointerReleased +=
 		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
+	m_renderer->setManipulationComplete();
 }
 
 // Event Handlers
@@ -92,23 +93,23 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 	static int x = 0;
 	static int ini, rodou = false;
 
-	if (rodou) {
-		int fim = GetTickCount64() & 0x3FFFFFFF;
-		char buf[50];
-		sprintf_s(buf, "C# elapsed: %d ms\n", fim - ini);
-		OutputDebugStringA(buf);
-	}
-	int dc;
-	if (!rodou) {
-		m_renderer->UpdateDevice(device, context, renderTargetView);
-	}
-	if (!m_renderer->Render()) {
+	if (!m_renderer->isLoadCompleted()) {
+	   m_renderer->UpdateDevice(device, context, renderTargetView);
 	   RequestAdditionalFrame();
+	   
 	}
 	else {
 		x++;
 		m_renderer->UpdateDevice(device, context, renderTargetView);
 		m_renderer->PreRender();
+		m_renderer->Render();
+		
+		if (rodou) {
+			int fim = GetTickCount64() & 0x3FFFFFFF;
+			char buf[50];
+			sprintf_s(buf, "C# elapsed: %d ms\n", fim - ini);
+			OutputDebugStringA(buf);
+		}
 		m_renderer->DoneDrawCommand();
 
 		while (m_renderer->WaitDrawCommand() != DRAW_COMMAND_PRESENT) {

@@ -71,12 +71,14 @@ internal:
    void DoneDrawCommand();
 
    bool isLoadCompleted();
+   void setManipulationComplete();
 
    static Direct3DBase ^GetLastInstance();
    PhoneDirect3DXamlAppComponent::Idummy^ getDummy();
 
 private:
    int loadCompleted[N_LOAD_TASKS];
+   bool manipulationComplete;
    int lastRGB;
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor;
