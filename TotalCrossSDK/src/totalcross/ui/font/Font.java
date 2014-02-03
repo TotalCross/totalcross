@@ -73,7 +73,8 @@ public final class Font
       w = Math.min(Settings.screenWidth,Settings.screenHeight);
       h = Math.max(Settings.screenWidth,Settings.screenHeight);
 
-      if (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)
+      totalcross.sys.Vm.debug("FONT HEIGHT: "+Settings.deviceFontHeight);
+      if (Settings.WP8.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
          fontSize = Settings.deviceFontHeight;
       else
       if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.

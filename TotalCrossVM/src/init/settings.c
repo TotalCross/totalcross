@@ -237,7 +237,7 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
-#if defined(ANDROID) || defined(darwin) || defined(WP8)
+#if defined(ANDROID) || defined(darwin)
     *tcSettings.deviceFontHeightPtr = deviceFontHeight;
     *tcSettings.isOpenGL = true;
 #endif
