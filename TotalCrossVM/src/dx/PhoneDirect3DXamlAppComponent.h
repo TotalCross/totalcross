@@ -2,7 +2,7 @@
 
 #include "Direct3DBase.h"
 #include <DrawingSurfaceNative.h>
-#include "Idummy.h"
+#include "cswrapper.h"
 
 namespace PhoneDirect3DXamlAppComponent
 {
@@ -12,7 +12,7 @@ public delegate void RequestAdditionalFrameHandler();
 public ref class Direct3DBackground sealed : public Windows::Phone::Input::Interop::IDrawingSurfaceManipulationHandler
 {
 public:
-	Direct3DBackground(Idummy ^_odummy);
+   Direct3DBackground(CSwrapper ^_cs);
 
 	Windows::Phone::Graphics::Interop::IDrawingSurfaceBackgroundContentProvider^ CreateContentProvider();
 
@@ -40,7 +40,7 @@ internal:
 	HRESULT Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView);
 
 private:
-   Idummy ^odummy;
+   CSwrapper ^cs;
    Direct3DBase^ m_renderer;
 };
 

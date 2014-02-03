@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "DirectXHelper.h"
-#include "Idummy.h"
+#include "cswrapper.h"
 
 #define HAS_TCHAR
 #include "tcvm.h"
@@ -53,7 +53,7 @@ enum whichProgram
 ref class Direct3DBase 
 {
 internal:
-	Direct3DBase(PhoneDirect3DXamlAppComponent::Idummy ^_odummy);
+   Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
 
 	void Initialize(_In_ ID3D11Device1* device);
 	void CreateDeviceResources();
@@ -65,7 +65,6 @@ internal:
 	int WaitDrawCommand(); // wait until another thread calls some draw command
 	void Present();
 
-   whichProgram curProgram;
    void setProgram(whichProgram p);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
    void deleteTexture(TCObject img, int32* textureId, bool updateList);
@@ -82,10 +81,11 @@ internal:
    bool isLoadCompleted();
 
    static Direct3DBase ^GetLastInstance();
-   PhoneDirect3DXamlAppComponent::Idummy^ getDummy();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
 
 private:
    int loadCompleted[N_LOAD_TASKS];
+   whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor;
@@ -122,7 +122,7 @@ protected private:
 	Windows::Foundation::Rect m_windowBounds;
 
 	// C# wrapper object
-	PhoneDirect3DXamlAppComponent::Idummy ^odummy;
+   PhoneDirect3DXamlAppComponent::CSwrapper ^cs;
 
 	// TotalCross objects
 	Context local_context;

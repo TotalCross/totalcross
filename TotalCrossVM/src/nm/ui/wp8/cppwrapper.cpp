@@ -187,29 +187,29 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->getDummy()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
 }
 
 void vmSetAutoOffCPP(bool enable)
 {
-//XXX   Direct3DBase::GetLastInstance()->getDummy()->vmSetAutoOffCS(enable);
+//XXX   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
 {
-   Direct3DBase::GetLastInstance()->getDummy()->dialNumberCS(ref new Platform::String((wchar_t*)number));
+   Direct3DBase::GetLastInstance()->getCSwrapper()->dialNumberCS(ref new Platform::String((wchar_t*)number));
 }
 
 void smsSendCPP(JCharP szMessage, JCharP szDestination)
 {
-   Direct3DBase::GetLastInstance()->getDummy()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
+   Direct3DBase::GetLastInstance()->getCSwrapper()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
 }
 
 int rdGetStateCPP(int type)
 {
-   PhoneDirect3DXamlAppComponent::Idummy^ odummy = Direct3DBase::GetLastInstance()->getDummy();
-   odummy->rdGetStateCS(type);
-   return odummy->getTurnedState();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   cs->rdGetStateCS(type);
+   return cs->getTurnedState();
 }
 
 bool isAvailableCPP(int type)
@@ -219,47 +219,47 @@ bool isAvailableCPP(int type)
 
 bool nativeStartGPSCPP()
 {
-   return Direct3DBase::GetLastInstance()->getDummy()->nativeStartGPSCS();
+   return Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStartGPSCS();
 }
 
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 {
-   PhoneDirect3DXamlAppComponent::Idummy^ odummy = Direct3DBase::GetLastInstance()->getDummy();
-   int ret = odummy->nativeUpdateLocationCS();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   int ret = cs->nativeUpdateLocationCS();
    TCObject lastFix = GPS_lastFix(gpsObject);
    Platform::String^ messageReceived;
    Platform::String^ lowSignalReason;
 
-   GPS_latitude(gpsObject) = odummy->getLatitude();
+   GPS_latitude(gpsObject) = cs->getLatitude();
    
-   GPS_longitude(gpsObject) = odummy->getLongitude();
+   GPS_longitude(gpsObject) = cs->getLongitude();
    
-   GPS_direction(gpsObject) = odummy->getDirection();
+   GPS_direction(gpsObject) = cs->getDirection();
    
-   GPS_velocity(gpsObject) = odummy->getVelocity();
+   GPS_velocity(gpsObject) = cs->getVelocity();
    
-   Time_year(lastFix) = odummy->getYear();
-   Time_month(lastFix) = odummy->getMonth();
-   Time_day(lastFix) = odummy->getDay();
-   Time_hour(lastFix) = odummy->getHour();
-   Time_minute(lastFix) = odummy->getMinute();
-   Time_second(lastFix) = odummy->getSecond();
-   Time_millis(lastFix) = odummy->getMilliSecond();
+   Time_year(lastFix) = cs->getYear();
+   Time_month(lastFix) = cs->getMonth();
+   Time_day(lastFix) = cs->getDay();
+   Time_hour(lastFix) = cs->getHour();
+   Time_minute(lastFix) = cs->getMinute();
+   Time_second(lastFix) = cs->getSecond();
+   Time_millis(lastFix) = cs->getMilliSecond();
 
-   messageReceived = odummy->getMessageReceived();
+   messageReceived = cs->getMessageReceived();
    setObjectLock(GPS_messageReceived(gpsObject) = createStringObjectFromJCharP(context, (JCharP)messageReceived->Data(), messageReceived->Length()), UNLOCKED);
 
-   lowSignalReason = odummy->getLowSignalReason();
+   lowSignalReason = cs->getLowSignalReason();
    setObjectLock(GPS_lowSignalReason(gpsObject) = createStringObjectFromJCharP(context, (JCharP)lowSignalReason->Data(), lowSignalReason->Length()), UNLOCKED);
 
-   GPS_pdop(gpsObject) = odummy->getPdop();
+   GPS_pdop(gpsObject) = cs->getPdop();
 
    return ret;
 }
 
 void nativeStopGPSCPP()
 {
-   Direct3DBase::GetLastInstance()->getDummy()->nativeStopGPSCS();
+   Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStopGPSCS();
 }
 
 bool dxSetup()

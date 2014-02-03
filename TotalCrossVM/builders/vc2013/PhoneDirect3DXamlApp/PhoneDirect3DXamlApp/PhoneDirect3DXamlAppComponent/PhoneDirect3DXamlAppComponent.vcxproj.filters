@@ -888,8 +888,8 @@
     <ClInclude Include="..\..\..\..\..\src\dx\Direct3DBase.h" />
     <ClInclude Include="..\..\..\..\..\src\dx\Direct3DContentProvider.h" />
     <ClInclude Include="..\..\..\..\..\src\dx\DirectXHelper.h" />
-    <ClInclude Include="..\..\..\..\..\src\dx\Idummy.h" />
     <ClInclude Include="..\..\..\..\..\src\dx\PhoneDirect3DXamlAppComponent.h" />
+    <ClInclude Include="..\..\..\..\..\src\dx\cswrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TCVM">
