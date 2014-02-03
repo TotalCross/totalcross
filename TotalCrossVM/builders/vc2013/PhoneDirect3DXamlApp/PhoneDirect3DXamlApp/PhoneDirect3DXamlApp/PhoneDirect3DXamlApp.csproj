@@ -95,6 +95,7 @@
     <XapFilesInputCollection Include="P:\gitrepo\Litebase\LitebaseSDK\dist\lib\LitebaseLib.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\AllTests.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\UIControls.tcz" />
+    <XapFilesInputCollection Include="P:\tctests\TCTestWin.tcz" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs" />

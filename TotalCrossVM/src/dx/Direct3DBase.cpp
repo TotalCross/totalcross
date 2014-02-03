@@ -19,6 +19,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
    cs = _cs;
    lastInstance = this;
    TheDrawCommand = DRAW_COMMAND_INVALID;
+   manipulationComplete = false;
 }
 
 Direct3DBase ^Direct3DBase::GetLastInstance()
@@ -111,6 +112,7 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	if (m_d3dDevice.Get() != device)
 	{
 		m_d3dDevice->GetDeviceRemovedReason();
+		manipulationComplete = false;
 		m_d3dDevice = device;
 		CreateDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
@@ -370,14 +372,16 @@ bool Direct3DBase::isLoadCompleted()
 	for (int i = 0; i < N_LOAD_TASKS; i++)
    	if (!loadCompleted[i])
 	   	return false;
-	return true;
+	return manipulationComplete;
 }
 
 void Direct3DBase::Present()
 {
+   //int ini = GetTickCount64() & 0x3FFFFFFF, fim;
 	TheDrawCommand = DRAW_COMMAND_PRESENT;
 	while (TheDrawCommand == DRAW_COMMAND_PRESENT) 
 		Sleep(OCCUPIED_WAIT_TIME);
+	//fim = GetTickCount64() & 0x3FFFFFFF; debug("vm thread occupied wait time elapsed: %d ms\n", fim - ini);
 }
 
 void Direct3DBase::setProgram(whichProgram p)
@@ -534,4 +538,9 @@ int Direct3DBase::WaitDrawCommand()
 
 void Direct3DBase::DoneDrawCommand() {
 	TheDrawCommand = DRAW_COMMAND_INVALID;
+}
+
+void Direct3DBase::setManipulationComplete()
+{
+	this->manipulationComplete = true;
 }

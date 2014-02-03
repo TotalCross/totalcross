@@ -903,6 +903,8 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
       HDC hdc = GetDC(mainHWnd);
       *(tcSettings.deviceFontHeightPtr) = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
       DeleteDC(hdc);
+#else
+	  *(tcSettings.deviceFontHeightPtr) = 26;
 #endif
    }
 #if defined WP8
