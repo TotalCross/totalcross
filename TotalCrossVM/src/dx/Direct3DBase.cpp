@@ -176,24 +176,18 @@ void Direct3DBase::setup()
 
    // used in setColor for fillRect and drawLine and also textures
    {
-      VertexColor cubeColor[1];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-      vertexBufferData.pSysMem = cubeColor;
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(cubeColor);             // size is the VERTEX struct * 3
+      bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor);       // create the buffer
    }
    // used in fillRect and drawLine
    {
-      VertexPosition cubeVertices[8];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-      vertexBufferData.pSysMem = cubeVertices;
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(cubeVertices);             // size is the VERTEX
+      bd.ByteWidth = sizeof(VertexPosition) * 8;             // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect);       // create the buffer
@@ -241,27 +235,20 @@ void Direct3DBase::setup()
    m_d3dDevice->CreateBlendState(&blendStateDescription, &g_pBlendState);
 
    // setup clipping
-   D3D11_RASTERIZER_DESC1 rasterizerState;
+   D3D11_RASTERIZER_DESC1 rasterizerState = {};
    rasterizerState.FillMode = D3D11_FILL_SOLID;
-   rasterizerState.CullMode = D3D11_CULL_FRONT;
+   rasterizerState.CullMode = D3D11_CULL_NONE;
    rasterizerState.FrontCounterClockwise = true;
-   rasterizerState.DepthBias = false;
-   rasterizerState.DepthBiasClamp = 0;
-   rasterizerState.SlopeScaledDepthBias = 0;
-   rasterizerState.DepthClipEnable = true;
    rasterizerState.ScissorEnable = true;
-   rasterizerState.MultisampleEnable = false;
    rasterizerState.AntialiasedLineEnable = false;
-   rasterizerState.ForcedSampleCount = 0;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
    rasterizerState.ScissorEnable = false;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
 
-   TextureVertex v[8];
-   D3D11_SUBRESOURCE_DATA vertexBufferData = { v, 0, 0 };
+   // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-   bd.ByteWidth = sizeof(v);             // size is the VERTEX struct * 3
+   bd.ByteWidth = sizeof(TextureVertex) * 8;             // size is the VERTEX struct * 3
    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
    m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
@@ -365,15 +352,12 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
       delete cubeIndexes;
 
-      VertexPosition *cubeVertices = new VertexPosition[n];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { cubeVertices,0,0 };
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
       bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
-      delete cubeVertices;
    }
 
    D3D11_MAPPED_SUBRESOURCE ms;
