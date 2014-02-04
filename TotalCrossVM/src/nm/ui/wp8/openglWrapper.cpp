@@ -148,7 +148,6 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 
 void glDrawPixels(int32 n, int32 rgb)
 {
-#if 0 // CORRIGIR PARA LEVAR EM CONSIDERACAO O ALPHA!!!
    Pixel colour = getGlColor(rgb,0xFF);
 
    int* x;
@@ -169,7 +168,6 @@ void glDrawPixels(int32 n, int32 rgb)
       xfree(x);
       xfree(y);
    }
-#endif
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
