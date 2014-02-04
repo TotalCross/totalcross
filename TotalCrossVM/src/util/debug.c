@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
+//#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
 
 #include "tcvm.h"
 
