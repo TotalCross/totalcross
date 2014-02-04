@@ -29,8 +29,12 @@ using namespace Windows::Graphics::Display;
 
 static MainView ^lastInstance = nullptr;
 
-//#include "GLES2/gl2.h"
-//#include "GLES2/gl2ext.h"
+
+//#define TRACE debug
+#define TRACE dumb
+static void dumb(char* p, ...)
+{
+}
 
 // Helper class for basic timing.
 ref class BasicTimer sealed
@@ -195,18 +199,18 @@ void MainView::SetWindow(CoreWindow^ window)
 
 void MainView::OnSizeChanged(CoreWindow ^sender, WindowSizeChangedEventArgs ^args)
 {
-	debug("onSizeChanged");
+	TRACE("onSizeChanged");
 }
 
 void MainView::OnShowingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
 {
-	debug("onShowingSIP");
+   TRACE("onShowingSIP");
 	setShiftYonNextUpdateScreen = true;
 }
 
 void MainView::OnHidingSIP(InputPane ^sender, InputPaneVisibilityEventArgs ^args)
 {
-	debug("onHidingSIP");
+   TRACE("onHidingSIP");
 	setShiftYonNextUpdateScreen = true;
 	eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
 }
@@ -218,7 +222,7 @@ int MainView::GetSIPHeight(void)
 
 void MainView::OnInputEnabled(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::InputEnabledEventArgs^ args)
 {
-	debug("OnInputEnabled");
+   TRACE("OnInputEnabled");
 }
 
 void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
@@ -228,15 +232,15 @@ void MainView::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Window
 	// When enter is pressed, only a single character \r is sent; as TC recognizes '\n', we change its value beforehand
 	if (k == '\r')
 		k = '\n';
-	debug("caracter recebido: %c", k);
-	debug("caracter recebido: %hhd", k);
+   TRACE("caracter recebido: %c", k);
+   TRACE("caracter recebido: %hhd", k);
 
 	eventQueuePush(KEYEVENT_KEY_PRESS, k, k, 0, -1);
 }
 
 void MainView::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
-	debug("NÃO APENAS pointer wheel, serah que era isso?");
+   TRACE("NÃO APENAS pointer wheel, serah que era isso?");
 }
 
 void MainView::Load(Platform::String^ entryPoint)
@@ -320,14 +324,14 @@ void MainView::OnKeyUp(CoreWindow ^sender, KeyEventArgs ^args)
 {
 	auto k = args->VirtualKey;
 
-	debug("keyup");
+   TRACE("keyup");
 	if (k == Windows::System::VirtualKey::Back)
 		eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, SK_BACKSPACE, 0, -1);
 }
 
 void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArgs ^args)
 {
-	debug("text change");
+   TRACE("text change");
 
 	auto x = m_inputBuffer->Text->Data();
 	auto len = m_inputBuffer->Text->Length();
@@ -339,26 +343,26 @@ void MainView::OnTextChange(KeyboardInputBuffer ^sender, CoreTextChangedEventArg
 	}
 	s[i] = '\0';
 
-	debug("input ateh agora: %s", s);
+   TRACE("input ateh agora: %s", s);
 //	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y, -1);
 }
 
 void MainView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
 	m_windowVisible = args->Visible;
-	debug("onVisibilityChange");
+   TRACE("onVisibilityChange");
 }
 
 void MainView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
 	m_windowClosed = true;
-	debug("onWindowClose");
+   TRACE("onWindowClose");
 }
 
 void MainView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	TRACE("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
 	eventQueuePush(PENEVENT_PEN_DOWN, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 }
 
@@ -366,8 +370,9 @@ void MainView::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 {
 	// Insert your code here.
 	auto pos = args->CurrentPoint->Position;
-	if (lastX != pos.X || lastY != pos.Y) {
-		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	if (lastX != pos.X || lastY != pos.Y) 
+   {
+      TRACE("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
 		eventQueuePush(PENEVENT_PEN_DRAG, 0, lastX = pos.X, lastY = pos.Y - glShiftY, -1);
 		isDragging = true;
 	}
@@ -386,12 +391,12 @@ void MainView::OnActivated(CoreApplicationView^ applicationView, IActivatedEvent
 
 	HardwareButtons::BackPressed +=
 		ref new EventHandler<BackPressedEventArgs^>(this, &MainView::OnBackPressed);
-	debug("onActivate");
+	TRACE("onActivate");
 }
 
 void MainView::OnBackPressed(Object ^sender, BackPressedEventArgs ^args)
 {
-	debug("onBackPressed");
+   TRACE("onBackPressed");
 	if (currentWindow.Get()->IsKeyboardInputEnabled) {
 		eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, 0);
 	}
@@ -404,7 +409,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
    // indicates that the application is busy performing suspending operations. Be
    // aware that a deferral may not be held indefinitely. After about five seconds,
    // the app will be forced to exit.
-	debug("onSuspending");
+   TRACE("onSuspending");
    SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
    
    //if (currentDirect3DBase)
@@ -420,7 +425,7 @@ void MainView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 
 void MainView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
-	debug("onResuming");
+   TRACE("onResuming");
 	// Restore any data or state that was unloaded on suspend. By default, data
 	// and state are persisted when resuming from suspend. Note that this event
 	// does not occur if the app was previously terminated.

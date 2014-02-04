@@ -239,6 +239,23 @@ void Direct3DBase::setup()
    blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
    m_d3dDevice->CreateBlendState(&blendStateDescription, &g_pBlendState);
+
+   // setup clipping
+   D3D11_RASTERIZER_DESC1 rasterizerState;
+   rasterizerState.FillMode = D3D11_FILL_SOLID;
+   rasterizerState.CullMode = D3D11_CULL_FRONT;
+   rasterizerState.FrontCounterClockwise = true;
+   rasterizerState.DepthBias = false;
+   rasterizerState.DepthBiasClamp = 0;
+   rasterizerState.SlopeScaledDepthBias = 0;
+   rasterizerState.DepthClipEnable = true;
+   rasterizerState.ScissorEnable = true;
+   rasterizerState.MultisampleEnable = false;
+   rasterizerState.AntialiasedLineEnable = false;
+   rasterizerState.ForcedSampleCount = 0;
+   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
+   rasterizerState.ScissorEnable = false;
+   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
 }
 
 void Direct3DBase::setColor(int color)
@@ -415,6 +432,8 @@ void Direct3DBase::PreRender()
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
    m_d3dContext->IASetInputLayout(m_inputLayout.Get());
    curProgram = PROGRAM_NONE;
+
+   m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 bool Direct3DBase::Render()
@@ -470,6 +489,17 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    xmemmove(&texture, &textureId, sizeof(void*));
    setProgram(PROGRAM_TEX);
 
+   if (clip)
+   {
+      m_d3dContext->RSSetState(pRasterStateEnableClipping);
+      D3D11_RECT rects[1];
+      rects[0].left = clip[0];
+      rects[0].right = clip[2];
+      rects[0].top = clip[1];
+      rects[0].bottom = clip[3];
+
+      m_d3dContext->RSSetScissorRects(1, rects);
+   }
    //dstY += glShiftY;
    int32 dstY2 = dstY + h;
    int32 dstX2 = dstX + w;
@@ -527,6 +557,8 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
+   if (clip)
+      m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 

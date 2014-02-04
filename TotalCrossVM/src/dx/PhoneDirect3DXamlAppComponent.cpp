@@ -42,7 +42,7 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 void Direct3DBackground::OnPointerPressed(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-	debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	//debug("pressed lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
    eventQueuePush(PENEVENT_PEN_DOWN, 0, (int32)(lastX = pos.X), (int32)(lastY = pos.Y - glShiftY), -1);
 }
 
@@ -50,8 +50,9 @@ void Direct3DBackground::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, 
 {
 	// Insert your code here.
 	auto pos = args->CurrentPoint->Position;
-	if (lastX != pos.X || lastY != pos.Y) {
-		debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
+	if (lastX != pos.X || lastY != pos.Y) 
+   {
+		//debug("moving lastY %.2f lastX %.2f Y %.2f X %.2f", lastY, lastX, pos.Y, pos.X);
       eventQueuePush(PENEVENT_PEN_DRAG, 0, (int32)(lastX = pos.X), (int32)(lastY = pos.Y - glShiftY), -1);
 		isDragging = true;
 	}

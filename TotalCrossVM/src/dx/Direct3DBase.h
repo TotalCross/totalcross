@@ -108,6 +108,7 @@ private:
    Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 
    ProjectionConstantBuffer m_constantBufferData;
+   ID3D11RasterizerState1 *pRasterStateEnableClipping, *pRasterStateDisableClipping;
 
 protected private:
 	// Direct3D Objects.

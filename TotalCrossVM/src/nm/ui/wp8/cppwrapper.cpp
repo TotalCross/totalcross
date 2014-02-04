@@ -75,7 +75,7 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	//}
 
 	fim = GetTickCount64() & 0x3FFFFFFF;
-	debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
+	//debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
 }
 
 struct eventQueueMember eventQueuePop(void)
@@ -103,7 +103,7 @@ struct eventQueueMember eventQueuePop(void)
 	}
 
 	fim = GetTickCount64() & 0x3FFFFFFF;
-	debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());
+	//debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());
 
 	return top;
 }
