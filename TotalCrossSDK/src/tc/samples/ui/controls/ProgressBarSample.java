@@ -83,6 +83,8 @@ public class ProgressBarSample extends BaseContainer
          Window.enableUpdateScreen = true;
          pbzv.setValue(v);
       }
-      setInfo("Elapsed: "+(Vm.getTimeStamp()-ini)+"ms");
+      String s = "Elapsed: "+(Vm.getTimeStamp()-ini)+"ms";
+      setInfo(s);
+      Vm.debug(s);
    }
 }

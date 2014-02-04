@@ -256,6 +256,15 @@ void Direct3DBase::setup()
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
    rasterizerState.ScissorEnable = false;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
+
+   TextureVertex v[8];
+   D3D11_SUBRESOURCE_DATA vertexBufferData = { v, 0, 0 };
+   D3D11_BUFFER_DESC bd = { 0 };
+   bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+   bd.ByteWidth = sizeof(v);             // size is the VERTEX struct * 3
+   bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+   bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+   m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
 }
 
 void Direct3DBase::setColor(int color)
@@ -518,17 +527,6 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
       { XMFLOAT2((float)dstX2, (float)dstY2), XMFLOAT2(right, bottom) },
       { XMFLOAT2((float)dstX,  (float)dstY2), XMFLOAT2(left, bottom) },
    };
-   if (!texVertexBuffer)
-   {
-      TextureVertex v[8];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { cubeVertices, 0, 0 };
-      D3D11_BUFFER_DESC bd = { 0 };
-      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(v);             // size is the VERTEX struct * 3
-      bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
-   }
    D3D11_MAPPED_SUBRESOURCE ms;
    m_d3dContext->Map(texVertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
