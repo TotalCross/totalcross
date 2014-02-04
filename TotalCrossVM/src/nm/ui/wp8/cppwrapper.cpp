@@ -285,7 +285,7 @@ void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
 
 void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
-   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
+   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)

@@ -334,15 +334,13 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       for (i = n; --i >= 0;) cubeIndexes[i] = i;
       lastPixelsCount = n;
 
-      D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-      indexBufferData.pSysMem = cubeIndexes;
+      D3D11_SUBRESOURCE_DATA indexBufferData = { cubeIndexes,0,0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndexes[0]) * n, D3D11_BIND_INDEX_BUFFER);
       DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
       delete cubeIndexes;
 
       VertexPosition *cubeVertices = new VertexPosition[n];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-      vertexBufferData.pSysMem = cubeVertices;
+      D3D11_SUBRESOURCE_DATA vertexBufferData = { cubeVertices,0,0 };
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
       bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
@@ -466,7 +464,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 }
-void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    ID3D11Texture2D *texture;
    xmemmove(&texture, &textureId, sizeof(void*));
@@ -486,12 +484,21 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
       { XMFLOAT2((float)dstX2, (float)dstY2), XMFLOAT2(right, bottom) },
       { XMFLOAT2((float)dstX,  (float)dstY2), XMFLOAT2(left, bottom) },
    };
-   D3D11_BUFFER_DESC vertexBufferDesc = { 0 };
-   vertexBufferDesc.ByteWidth = sizeof(TextureVertex)* ARRAYSIZE(cubeVertices);
-   vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-   D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-   vertexBufferData.pSysMem = cubeVertices;
-   DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &vertexBuffer));
+   if (!texVertexBuffer)
+   {
+      TextureVertex v[8];
+      D3D11_SUBRESOURCE_DATA vertexBufferData = { cubeVertices, 0, 0 };
+      D3D11_BUFFER_DESC bd = { 0 };
+      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+      bd.ByteWidth = sizeof(v);             // size is the VERTEX struct * 3
+      bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+      m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
+   }
+   D3D11_MAPPED_SUBRESOURCE ms;
+   m_d3dContext->Map(texVertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
+   m_d3dContext->Unmap(texVertexBuffer, NULL);                                     // unmap the buffer
 
    // SHADER VIEW
    // Once the texture is created, we must create a shader resource view of it so that shaders may use it.  
@@ -512,7 +519,7 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    // Set the vertex and index buffers, and specify the way they define geometry.
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+   m_d3dContext->IASetVertexBuffers(0, 1, &texVertexBuffer, &stride, &offset);
    m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
