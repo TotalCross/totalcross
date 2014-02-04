@@ -476,6 +476,7 @@ extern size_t  _msize(void *);
 #endif
 
 #if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+size_t dlmalloc_usable_size(void*); 
 static uint32 getPtrSize(void *p)
 {
 #if defined(WIN32)

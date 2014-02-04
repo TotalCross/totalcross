@@ -24,8 +24,8 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH,glShiftY,desiredglShiftY;
-extern GLfloat ftransp[16], f255[256];
-extern GLfloat *glcoords, *glcolors;
+extern float ftransp[16], f255[256];
+extern float *glcoords, *glcolors;
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -205,8 +205,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    srcPixels = getSurfacePixels(srcSurf);
    if (Surface_isImage(srcSurf))
    {
-      srcPitch = srcWidth = Image_width(srcSurf) * Image_hwScaleW(srcSurf);
-      srcHeight = Image_height(srcSurf) * Image_hwScaleH(srcSurf);
+      srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
+      srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
    }
    else
    {
@@ -974,7 +974,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    int32 fcR,fcG,fcB;
 #ifdef __gl2_h_
    int32 clip[4];
-   GLfloat *glC, *glV;
+   float *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
 
@@ -1152,8 +1152,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                      // alpha
                      *glC++ = ftransp[transparency];
                      // vertices
-                     *glV++ = x;
-                     *glV++ = y + ty;
+                     *glV++ = (float)x;
+                     *glV++ = (float)(y + ty);
                   }
                }
                if (glC != glcolors) // flush vertices buffer
@@ -2081,8 +2081,7 @@ int32 desiredScreenShiftY;
 // not used with opengl
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
-   int32 y, screenW, screenH, shiftY=0, shiftH=0;
-   uint32 count;
+   int32 screenW, screenH, shiftY = 0, shiftH = 0;
    TCClass window;
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
@@ -2150,6 +2149,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 #ifdef __gl2_h_
    desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
 #else
+   int32 y, count;
    screen.shiftY = shiftY;
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
@@ -2696,7 +2696,6 @@ static void drawHLineA(Context currentContext, TCObject g, int32 x, int32 y, int
       */
       if (Graphics_clipY1(g) <= y && y < Graphics_clipY2(g) && Graphics_clipX1(g) <= (x+width) && x < Graphics_clipX2(g)) // NOPT
       {
-         Pixel* pTgt;
          if (x < Graphics_clipX1(g))           // line start before clip x1
          {
             width -= Graphics_clipX1(g)-x;
@@ -2730,9 +2729,7 @@ static void drawVLineA(Context currentContext, TCObject g, int32 x, int32 y, int
       */
       if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
       {
-         Pixel * pTgt;
          int32 pitch = Graphics_pitch(g);
-         uint32 n;
          if (y < Graphics_clipY1(g))           // line start before clip y1
          {
             height -= Graphics_clipY1(g)-y;
@@ -2949,7 +2946,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
    int32 red = startRed << 16;
    int32 green = startGreen << 16;
    int32 blue = startBlue << 16;
-   int32 rr,gg,bb,sx,sy,ii,i2,i;
+   int32 rr,gg,bb,sx,sy,i;
    Pixel foreColor;
    PixelConv pc;
    pc.a = 255;      
@@ -2973,6 +2970,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
    else
       currentContext->fullDirty = true;
 #else
+   int32 ii,i2;
    for (i = 0; i < numSteps; i++)
    {
       rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
@@ -3000,7 +2998,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
 void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
 {
    PixelConv pc1,pc2;
-#ifdef __gl2_h_
+#if defined(__gl2_h_) && !defined(WP8) // TODO implement in DX
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);

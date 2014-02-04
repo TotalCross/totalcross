@@ -58,7 +58,7 @@
  #if !defined WP8
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
- #endif
+#endif
 #endif
 
 #include <stdarg.h>
@@ -80,7 +80,7 @@
 
 #define GetSystemInfo(a) GetNativeSystemInfo(a)
 
-#define Beep() 1
+#define Beep(t,d) do {} while (0)
 #define GetTickCount() GetTickCount64()
 
 #define LoadLibrary(x) LoadPackagedLibrary(x, 0)

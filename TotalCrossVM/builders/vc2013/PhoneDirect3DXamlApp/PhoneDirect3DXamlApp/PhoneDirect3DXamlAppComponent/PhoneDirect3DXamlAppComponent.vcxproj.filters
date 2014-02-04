@@ -520,6 +520,15 @@
     <ClCompile Include="..\..\..\..\..\src\dx\Direct3DBase.cpp" />
     <ClCompile Include="..\..\..\..\..\src\dx\Direct3DContentProvider.cpp" />
     <ClCompile Include="..\..\..\..\..\src\dx\PhoneDirect3DXamlAppComponent.cpp" />
+    <ClCompile Include="..\..\..\..\..\src\nm\lang\Reflection.c">
+      <Filter>TCVM\Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\nm\db\NativeDB.c">
+      <Filter>TCVM\Native methods\db</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\sqlite\sqlite3.c">
+      <Filter>TCVM\sqlite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\src\zlib\crc32.h">
@@ -1044,6 +1053,12 @@
     </Filter>
     <Filter Include="TCVM\jpeg\headers">
       <UniqueIdentifier>{ab7661bf-e8a1-44ab-8679-f9a64aa18cd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\Native methods\db">
+      <UniqueIdentifier>{5be91329-8859-4e92-8400-0bf4bfa3ea16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\sqlite">
+      <UniqueIdentifier>{10717db5-9cc4-4027-aaf4-53badceb14df}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

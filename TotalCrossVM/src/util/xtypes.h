@@ -212,7 +212,11 @@ CharP xstrrchr(CharP str, int32 what);
       ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
       ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
    } while(0)
+#ifdef WP8 // remove vc2013 warnings
 #define xmoveptr(dest,src)                       \
+   xmove4(dest, src);                       
+#else
+#define xmoveptr(dest, src)                       \
    do                                            \
    {                                             \
       if (PTRSIZE == 4)                          \
@@ -220,6 +224,7 @@ CharP xstrrchr(CharP str, int32 what);
       else                                       \
          xmove8(dest,src);                       \
    } while(0)
+#endif
 
 #define xmemmove(dest, src, len) memmove(dest, src, len)
 #define xmemzero(mem, len) memset(mem, 0, len)

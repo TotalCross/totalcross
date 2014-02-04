@@ -215,7 +215,7 @@ int rdGetStateCPP(int type)
 
 bool isAvailableCPP(int type)
 {
-   return rdGetStateCPP(type - 2);
+   return rdGetStateCPP(type - 2) ? true : false;
 }
 
 bool nativeStartGPSCPP()
@@ -283,7 +283,7 @@ void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
    Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
 }
 
-void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
 }

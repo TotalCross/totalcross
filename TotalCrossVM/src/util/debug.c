@@ -11,10 +11,6 @@
 
 #define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
 
-#ifdef DEBUG_TO_ADB_ONLY
-#pragma warn ============================ DEBUGGING TO ADB ==========================
-#endif
-
 #include "tcvm.h"
 
 #if defined(WINCE) || defined(WIN32)

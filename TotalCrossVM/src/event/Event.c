@@ -140,8 +140,6 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
 {
    if (mainClass != null && _postEvent != null)
    {
-	   int ini, fim;
-	   int ini2;
       executeMethod(currentContext, _postEvent, mainClass, (int32)type, key, x, y, keyGetPortableModifiers(mods), getTimeStamp()); // events are always posted to the main execution line
       updateScreen(currentContext); // update the screen after the event was called, otherwise ListBox selection will not work
    }

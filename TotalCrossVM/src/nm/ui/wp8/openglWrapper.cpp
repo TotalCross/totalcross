@@ -148,8 +148,8 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 
 void glDrawPixels(int32 n, int32 rgb)
 {
+#if 0 // CORRIGIR PARA LEVAR EM CONSIDERACAO O ALPHA!!!
    Pixel colour = getGlColor(rgb,0xFF);
-   int ini = getTimeStamp();
 
    int* x;
    int* y;
@@ -169,28 +169,19 @@ void glDrawPixels(int32 n, int32 rgb)
       xfree(x);
       xfree(y);
    }
-
-   int end = getTimeStamp();
+#endif
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
-   int ini = getTimeStamp();
    Pixel colour = getGlColor(rgb, a);
    dxDrawPixels(&x, &y, 1, colour);
-   int end = getTimeStamp();
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-   int ini = getTimeStamp();
    Pixel colour = getGlColor(rgb, a);
-
-   {
-      dxDrawLine(x1, y1, x2, y2, colour);
-   }
-
-   int end = getTimeStamp();
+   dxDrawLine(x1, y1, x2, y2, colour);
 }
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -200,14 +191,15 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
-	if (setShiftYonNextUpdateScreen) {
+	if (setShiftYonNextUpdateScreen) 
+   {
 		int32 componentPos;
 		int siph = 100;//XXX MainView::GetLastInstance()->GetSIPHeight();
 		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
 		setShiftYonNextUpdateScreen = false;
 
 		if (componentPos <= 100)//XXX MainView::GetLastInstance()->GetSIPHeight())
-		glShiftY = 0;
+         glShiftY = 0;
 		else
 			glShiftY = -(componentPos - 100);//XXX MainView::GetLastInstance()->GetSIPHeight());
 	}
@@ -232,7 +224,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
 }
 
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
-   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }

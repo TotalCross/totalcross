@@ -83,12 +83,12 @@ static void throw_errorcod_and_msg(Context currentContext, TCObject this_, int32
     setObjectLock(o,UNLOCKED);
 }
 
-inline static sqlite3 * gethandle(Context currentContext, TCObject this_)
+static sqlite3 * gethandle(Context currentContext, TCObject this_)
 {
    return (sqlite3 *)NativeDB_pointer(this_);
 }
 
-inline static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref)
+static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref)
 {
    NativeDB_pointer(this_) = (int64)ref;
 }
@@ -96,14 +96,14 @@ inline static void sethandle(Context currentContext, TCObject this_, sqlite3 * r
 #define LOCKDB int32 dumbmutex = lockdb(p->obj[0]);
 #define UNLOCKDB unlockdb(p->obj[0],dumbmutex);
 
-inline static int32 lockdb(TCObject this_)
+static int32 lockdb(TCObject this_)
 {
    MUTEX_TYPE mutex = *getSqlite3Mutex(gethandle(null,this_));
    RESERVE_MUTEX_VAR(mutex);   
    return 0;
 }
 
-inline static void unlockdb(TCObject this_, int32 dumb)
+static void unlockdb(TCObject this_, int32 dumb)
 {
    MUTEX_TYPE mutex = *getSqlite3Mutex(gethandle(null,this_));
    RELEASE_MUTEX_VAR(mutex);

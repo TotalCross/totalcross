@@ -73,9 +73,5 @@ void privateUnloadLibrary(VoidP libPtr)
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
-   TCHAR szFuncName[128];
-   VoidP procAddress;
-
-   procAddress = GetProcAddress(!module ? hModuleTCVM : module, funcName);
-   return procAddress;
+   return GetProcAddress(!module ? hModuleTCVM : module, funcName);
 }

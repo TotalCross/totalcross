@@ -417,16 +417,17 @@ Cleanup: /* CLEANUP */
 }
 
 #ifdef __gl2_h_
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
 int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
 {
    int32 *id = &uf->textureIds[ch];
    if (*id == 0)
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
-      int32 offset = uf->bitIndexTable[ch], y, x, idx;
+      int32 offset = uf->bitIndexTable[ch], y, x;
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      p += width; // skip a line at top
       bool isLow = uf->fontP.maxHeight < 18;
+      p += width; // skip a line at top
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
@@ -438,7 +439,7 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
                p->a = *alpha;
          p->a = 0; p++; // skip a row at right
       }
-      glLoadTexture(currentContext, null, id, pixels, width+1, height+1, false);
+      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width+1, height+1, false);
    }
    return *id;
 }

@@ -56,9 +56,9 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 {
    VoidP startInfo = null;
    int32 ret=-1;
-   TCHAR pathargs[1024];
 
 #if !defined(WP8)
+   TCHAR pathargs[1024];
    BOOL ok;
    DWORD err;
    PROCESS_INFORMATION processInfo;
@@ -229,10 +229,10 @@ void vmSetAutoOff(bool enable)
 //XXX: O que são hot keys? Não faço a menor idéia do que fazer aqui e acho que nem faz sentido
 void registerHotkeys(Int32Array keys, bool isRegister)
 {
-   int32 n;
    if (mainHWnd != null)
    {
       #ifdef WINCE
+      int32 n;
       typedef BOOL (__stdcall *UnregisterFunc1Proc)( UINT, UINT );
       HINSTANCE hCoreDll;
       if ((hCoreDll = LoadLibrary(TEXT("coredll.dll"))) != null)
@@ -252,6 +252,7 @@ void registerHotkeys(Int32Array keys, bool isRegister)
       }
       //throwException(currentContext, RuntimeException, "Could not find entry point for hotkeys registration");
       #elif !defined WP8
+      int32 n;
       for (n = ARRAYLEN(keys); n-- > 0; keys++)
          if (isRegister)
             RegisterHotKey(mainHWnd, *keys, MOD_WIN, *keys);

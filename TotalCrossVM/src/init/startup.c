@@ -311,7 +311,7 @@ jumpArgument:
          // 5. create an instance and call the constructor
          mainClass = createObject(currentContext, mainClassName); // keep it locked
       }
-#if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
+#if !defined(DEBUG) && (defined(ENABLE_NORAS) || defined(ENABLE_RAS))
    }
 #endif
    if (currentContext->thrownException == null && mainClass != null) // no unhandled exception was thrown?
