@@ -90,7 +90,7 @@ private:
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
-   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *texClipBuffer;
+   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer;
    int lastPixelsCount;
    VertexPosition *pixelsVertices;
 

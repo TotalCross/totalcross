@@ -78,7 +78,7 @@ void Direct3DBase::CreateDeviceResources()
       DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShader));
       CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
       DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer));
-	  loadCompleted[task_n] = true;
+	   loadCompleted[task_n] = true;
    });
 
    // texture vertex
@@ -92,7 +92,7 @@ void Direct3DBase::CreateDeviceResources()
          { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
       DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayoutT));
-	  loadCompleted[task_n] = true;
+	   loadCompleted[task_n] = true;
    });
 
    // texture pixel
@@ -100,7 +100,7 @@ void Direct3DBase::CreateDeviceResources()
    auto createPSTask2 = loadPSTask2.then([this, task_n](Platform::Array<byte>^ fileData)
    {
       DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShaderT));
-	  loadCompleted[task_n] = true;
+	   loadCompleted[task_n] = true;
    });
 }
 
@@ -174,7 +174,7 @@ void Direct3DBase::setup()
    CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
    m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer);
 
-   // used in setColor
+   // used in setColor for fillRect and drawLine and also textures
    {
       VertexColor cubeColor[1];
       D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
@@ -489,8 +489,12 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    xmemmove(&texture, &textureId, sizeof(void*));
    setProgram(PROGRAM_TEX);
 
-   if (clip)
+   if (!clip)
+      setColor(0);
+   else
    {
+      int32 ncolor = 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b;
+      setColor(ncolor);
       m_d3dContext->RSSetState(pRasterStateEnableClipping);
       D3D11_RECT rects[1];
       rects[0].left = clip[0];

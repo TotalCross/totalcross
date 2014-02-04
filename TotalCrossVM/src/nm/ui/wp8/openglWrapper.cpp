@@ -143,7 +143,7 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 {
    PixelConv pc;
    pc.pixel = rgb;
-   return (a << 24) | (pc.r << 16) | (pc.g << 8) | pc.b;// (a << 24) | rgb;// MAKE_RGBA(rgb, a);
+   return (a << 24) | (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
 void glDrawPixels(int32 n, int32 rgb)
