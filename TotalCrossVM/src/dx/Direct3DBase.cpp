@@ -235,15 +235,13 @@ void Direct3DBase::setup()
    m_d3dDevice->CreateBlendState(&blendStateDescription, &g_pBlendState);
 
    // setup clipping
-   D3D11_RASTERIZER_DESC1 rasterizerState = {};
-   rasterizerState.FillMode = D3D11_FILL_SOLID;
+   D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
    rasterizerState.CullMode = D3D11_CULL_NONE;
    rasterizerState.FrontCounterClockwise = true;
-   rasterizerState.ScissorEnable = true;
-   rasterizerState.AntialiasedLineEnable = false;
-   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
-   rasterizerState.ScissorEnable = false;
+   //rasterizerState.AntialiasedLineEnable = false;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
+   rasterizerState.ScissorEnable = true;
+   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
 
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
