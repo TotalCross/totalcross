@@ -9,14 +9,12 @@
 #include <d3d11_1.h>
 #endif
 
-#include "MainView.h"
 #include "cppwrapper.h"
 #include "tcvm.h"
 #include <wrl/client.h>
 #include "tcclass.h"
 #include "Direct3DBase.h"
 
-using namespace TotalCross;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 using namespace Windows::Phone::System::Memory;
@@ -164,7 +162,7 @@ void windowSetDeviceTitle(TCObject titleObj)
 
 void windowSetSIP(enum TCSIP kb)
 {
-	MainView::GetLastInstance()->setKeyboard(kb); //XXX
+	//XXX
 }
 
 DWORD32 getRemainingBatery()
@@ -279,10 +277,12 @@ void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 {
    Direct3DBase::GetLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
 }
+
 void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
    Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
 }
+
 void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
 {
    Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH);
@@ -301,4 +301,9 @@ void dxFillRect(int x1, int y1, int x2, int y2, int color)
 void dxDrawPixels(int *x, int *y, int count, int color)
 {
 	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
+}
+
+double getFontHeightCPP()
+{
+	return Direct3DBase::GetLastInstance()->getCSwrapper()->getFontHeightCS();
 }

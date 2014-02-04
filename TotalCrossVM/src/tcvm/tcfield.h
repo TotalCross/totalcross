@@ -67,12 +67,12 @@ void getIField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 void getSField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* className);
 
 /// Returns the instance field index of a field in a class.
-extern inline uint16 getIField_Index(ConstantPool cp, TCObject o, int32 classAndField, RegType t);
+extern uint16 getIField_Index(ConstantPool cp, TCObject o, int32 classAndField, RegType t);
 /// Returns a reference to a static field.
 extern VoidP getSField_Ref(Context currentContext, TCClass c, int32 classAndField, RegType t);
 
 /// Returns the index to the given instance field.
-extern inline uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t);
+extern uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t);
 
 #ifdef __cplusplus
 }

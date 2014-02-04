@@ -72,13 +72,13 @@ static int32 digitOf(char c) // don't inline!
 }
 
 // given the 3-char hex value, return its decimal value
-inline static int32 hex2unsigned3(CharP p)
+static int32 hex2unsigned3(CharP p)
 {
    return (digitOf(*(p)) << 8) | (digitOf(*(p+1)) << 4) | digitOf(*(p+2));
 }
 
 // given the 4-char hex value, return its decimal value
-inline static int32 hex2unsigned4(CharP p)
+static int32 hex2unsigned4(CharP p)
 {
    return (digitOf(*p) << 12) | (digitOf(*(p+1)) << 8) | (digitOf(*(p+2)) << 4) | digitOf(*(p+3));
 }

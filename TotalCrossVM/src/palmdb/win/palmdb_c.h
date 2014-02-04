@@ -30,12 +30,12 @@ DWORD WINAPI SetFilePointer(
 
 typedef HANDLE PDBFileRef;
 
-Err inline PDBGetLastErr()
+Err PDBGetLastErr()
 {
    return GetLastError();
 }
 
-bool inline PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
+bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
 {
    return (*fileRef = CreateFile(fullPath,
       readOnly ? GENERIC_READ:(GENERIC_READ|GENERIC_WRITE), // font files must be open in readonly, or two instances will not be able to run
@@ -46,12 +46,12 @@ bool inline PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFile
       null)) != INVALID_HANDLE_VALUE;
 }
 
-bool inline PDBCloseFile(PDBFileRef fileRef)
+bool PDBCloseFile(PDBFileRef fileRef)
 {
    return CloseHandle(fileRef);
 }
 
-bool inline PDBRename(TCHARP oldName, TCHARP newName)
+bool PDBRename(TCHARP oldName, TCHARP newName)
 {
 #if defined (WP8)
    return MoveFileEx(oldName, newName, 0);
@@ -60,17 +60,17 @@ bool inline PDBRename(TCHARP oldName, TCHARP newName)
 #endif
 }
 
-bool inline PDBRemove(TCHARP fileName)
+bool PDBRemove(TCHARP fileName)
 {
    return DeleteFile(fileName);
 }
 
-bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
+bool PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
    return ReadFile(fileRef, buf, size, read, null);
 }
 
-bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
+bool PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
 #if defined WP8 && !defined ARM
@@ -82,12 +82,12 @@ bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, i
 #endif
 }
 
-bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
+bool PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 {
    return WriteFile(fileRef, buf, size, written, null);
 }
 
-bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
+bool PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
 #if defined WP8 && !defined ARM
@@ -99,7 +99,7 @@ bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, 
 #endif
 }
 
-bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
+bool PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
 #ifndef WP8
    return (*size = GetFileSize(fileRef, null)) != 0xFFFFFFFFL;
@@ -117,7 +117,7 @@ bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
 #endif
 }
 
-bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
+bool PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
 #if defined WP8 && !defined ARM

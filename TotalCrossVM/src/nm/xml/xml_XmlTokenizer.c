@@ -79,96 +79,96 @@ typedef struct
 //                 Java methods that will be called                     //
 //////////////////////////////////////////////////////////////////////////
 
-inline static BoundMethods getBoundMethods(TCObject xml)
+static BoundMethods getBoundMethods(TCObject xml)
 {
    return (BoundMethods)ARRAYOBJ_START(XmlTokenizer_bag(xml));
 }
 
-inline static void foundStartTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundStartTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundStartTagName != null)
       executeMethod(currentContext, b->foundStartTagName, xml, input, offset, count);
 }
 
-inline static void foundEndTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundEndTagName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndTagName != null)
       executeMethod(currentContext, b->foundEndTagName, xml, input, offset, count);
 }
 
-inline static void foundEndEmptyTag(Context currentContext, TCObject xml)
+static void foundEndEmptyTag(Context currentContext, TCObject xml)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndEmptyTag != null)
       executeMethod(currentContext, b->foundEndEmptyTag, xml);
 }
 
-inline static void foundCharacterData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundCharacterData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundCharacterData != null)
       executeMethod(currentContext, b->foundCharacterData, xml, input, offset, count);
 }
 
-inline static void foundCharacter(Context currentContext, TCObject xml, JChar charFound)
+static void foundCharacter(Context currentContext, TCObject xml, JChar charFound)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundCharacter != null)
       executeMethod(currentContext, b->foundCharacter, xml, charFound);
 }
 
-inline static void foundAttributeName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundAttributeName(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundAttributeName != null)
       executeMethod(currentContext, b->foundAttributeName, xml, input, offset, count);
 }
 
-inline static void foundAttributeValue(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count, uint8 dlm)
+static void foundAttributeValue(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count, uint8 dlm)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundAttributeValue != null)
       executeMethod(currentContext, b->foundAttributeValue, xml, input, offset, count, dlm);
 }
 
-inline static void foundComment(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundComment(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundComment != null)
       executeMethod(currentContext, b->foundComment, xml, input, offset, count);
 }
 
-inline static void foundProcessingInstruction(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundProcessingInstruction(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundProcessingInstruction != null)
       executeMethod(currentContext, b->foundProcessingInstruction, xml, input, offset, count);
 }
 
-inline static void foundDeclaration(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundDeclaration(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundDeclaration != null)
       executeMethod(currentContext, b->foundDeclaration, xml, input, offset, count);
 }
 
-inline static void foundReference(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundReference(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundReference != null)
       executeMethod(currentContext, b->foundReference, xml, input, offset, count);
 }
 
-inline static void foundInvalidData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
+static void foundInvalidData(Context currentContext, TCObject xml, TCObject input, int32 offset, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundInvalidData != null)
       executeMethod(currentContext, b->foundInvalidData, xml, input, offset, count);
 }
 
-inline static void foundEndOfInput(Context currentContext, TCObject xml, int32 count)
+static void foundEndOfInput(Context currentContext, TCObject xml, int32 count)
 {
    BoundMethods b = getBoundMethods(xml);
    if (b->foundEndOfInput != null)

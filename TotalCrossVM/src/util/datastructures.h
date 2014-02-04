@@ -270,9 +270,9 @@ typedef struct
 
 TC_API Stack newStack(int32 elemCount, int32 elemSize, Heap defHeap);
 typedef Stack (*newStackFunc)(int32 elemCount, int32 elemSize, Heap defHeap);
-TC_API inline bool stackPop(Stack s, VoidP out);
+TC_API bool stackPop(Stack s, VoidP out);
 typedef bool (*stackPopFunc)(Stack s, VoidP out);
-TC_API inline void stackPush(Stack s, VoidP in);
+TC_API void stackPush(Stack s, VoidP in);
 typedef void (*stackPushFunc)(Stack s, VoidP in);
 
 #define stackPeek(s) *s->pos

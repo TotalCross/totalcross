@@ -55,7 +55,7 @@ void markWholeScreenDirty(Context currentContext);
 
 // >>>>>>>>>
 // DO NOT LOCK THE SCREEN ON THESE METHODS. THE CALLER MUST DO THAT.
-static inline Pixel* getSurfacePixels(TCObject surf)
+static Pixel* getSurfacePixels(TCObject surf)
 {
    TCObject pix;
    bool isImage=false;
@@ -70,7 +70,7 @@ static inline Pixel* getSurfacePixels(TCObject surf)
    return (Pixel*)ARRAYOBJ_START(pix);
 }
 
-static inline Pixel* getGraphicsPixels(TCObject g)
+static Pixel* getGraphicsPixels(TCObject g)
 {
    TCObject surf = Graphics_surface(g);
    return getSurfacePixels(surf);
@@ -380,7 +380,7 @@ static PixelConv getPixelConv(TCObject g, int32 x, int32 y)
 
 // Device specific routine.
 // Sets the pixel to the given color, translating and clipping
-static inline void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel pixel)
+static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel pixel)
 {
    x += Graphics_transX(g);
    y += Graphics_transY(g);
@@ -413,7 +413,7 @@ static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
    return c.pixel;
 }
 
-static inline bool surelyOutsideClip(TCObject g, int32 x1, int32 y1, int32 x2, int32 y2)
+static bool surelyOutsideClip(TCObject g, int32 x1, int32 y1, int32 x2, int32 y2)
 {
    int cx1 = Graphics_clipX1(g);
    int cx2 = Graphics_clipX2(g);
@@ -855,7 +855,7 @@ static void drawLineAA(Context currentContext, TCObject g, int32 x1, int32 y1, i
   setPixel(currentContext, g, x2, y2, color_);
 }
 
-inline static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
+static void drawLine(Context currentContext, TCObject g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
 #ifndef __gl2_h_
    if (Graphics_useAA(g))
@@ -1269,7 +1269,7 @@ static SurfaceType getSurfaceType(Context currentContext, TCObject surface)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-inline static void quadPixel(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+static void quadPixel(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
 {
    // draw 4 points using symetry
    setPixel(currentContext, g,xc + x, yc + y, c);
@@ -1278,7 +1278,7 @@ inline static void quadPixel(Context currentContext, TCObject g, int32 xc, int32
    setPixel(currentContext, g,xc - x, yc - y, c);
 }
 
-inline static void quadLine(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
+static void quadLine(Context currentContext, TCObject g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
 {
    int32 w = x+x+1; // plus 1 for the drawHLine (draws to width-1)
    // draw 2 lines using symetry
@@ -2503,7 +2503,7 @@ static void fillVistaRect(Context currentContext, TCObject g, int32 x, int32 y, 
    }
 }
 
-inline static int getOffset(int radius, int y)
+static int getOffset(int radius, int y)
 {
    return radius - (int32)sqrt((double)radius * radius - y * y);
 }
@@ -2859,7 +2859,7 @@ static void drawWindowBorder(Context currentContext, TCObject g, int32 xx, int32
    fillRect(currentContext, g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
 }
 
-static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
+static void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
 {
    int32 r,g,b;
    if (x >= w || y >= h || x < 0) return;

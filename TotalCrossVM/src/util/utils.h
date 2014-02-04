@@ -35,8 +35,8 @@ typedef void (*int2hexFunc)(int32 b, int32 places, CharP outBuf);
 void long2hex(int64 b, int32 places, CharP outBuf);
 bool radix2int(CharP hex, int32 radix, int32* result);
 bool radix2long(CharP str, int32 radix, int64* result);
-extern inline int32 min32(int32 i1, int32 i2);
-extern inline int32 max32(int32 i1, int32 i2);
+extern int32 min32(int32 i1, int32 i2);
+extern int32 max32(int32 i1, int32 i2);
 
 /// simple case convertions: only supports a-z/A-Z
 TC_API char toLower(char c);
