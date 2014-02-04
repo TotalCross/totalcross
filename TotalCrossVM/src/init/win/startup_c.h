@@ -9,46 +9,45 @@
  *                                                                               *
  *********************************************************************************/
 
-TC_API DWORD TCS_Close(DWORD dwData)
+TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
+TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}
+TC_API DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
+TC_API DWORD TSV_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode) {return 0;}
+TC_API DWORD TSV_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen) {return 0;}
+TC_API DWORD TSV_Seek(DWORD dwData, long pos, DWORD type) {return 0;}
+TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
+
+unsigned long __cdecl StartVMFromService(void* nnn) 
 {
-	return 0;
+   // get the tcz name from the registry
+   HKEY handle=(HKEY)0;
+   DWORD err,size;
+   TCHAR buf[64];
+   char name[64];
+   int32 ret;
+
+   err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("\\Services\\TotalCrossSrv"), 0, KEY_ALL_ACCESS, &handle);
+   size = sizeof(buf);
+   buf[0] = 0;
+   RegQueryValueEx(handle,TEXT("TCZ"),null,null,(uint8*)buf,&size);
+   RegCloseKey(handle);
+   TCHARP2CharPBuf(buf,name);
+
+   ret = executeProgram(name);
+   if (ret != 0)
+   {
+      wsprintf(buf,TEXT("%d"),ret);
+      MessageBox(0,buf,TEXT("Service Exit Code"),MB_OK);
+   }
+   return 0;
 }
 
-TC_API DWORD TCS_Deinit(DWORD dwData)
+TC_API DWORD TSV_Init(DWORD dwData)
 {
-	return 0;
-}
-
-TC_API DWORD TCS_Init(DWORD dwData)
-{
-   MessageBox(0,"babidedenak","eu amo voces", MB_OK);
-	//HANDLE hThread = CreateThread( 0, 0, PTControllingFunction, 0, 0, 0);
+#ifdef WINCE
+	HANDLE hThread = CreateThread( 0, 0, StartVMFromService, 0, 0, 0);
+#endif
 	return 1;
-}
-
-TC_API DWORD TCS_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut)
-{
-	return 1;
-}
-
-TC_API DWORD TCS_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Seek(DWORD dwData, long pos, DWORD type)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen)
-{
-	return 0;
 }
 ///////////////////////////////
 

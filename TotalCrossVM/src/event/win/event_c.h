@@ -158,7 +158,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          }
          break;
       }
-#endif      
+#endif
       case WM_ACTIVATE:
       {
          applyPalette();

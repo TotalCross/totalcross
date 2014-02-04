@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 
-#if defined(ANDROID) || defined(__SYMBIAN32__)
+#if defined(ANDROID)
 #include <netinet/in.h>
 #endif
 
@@ -107,7 +107,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    res = iphoneSocket(hostname, (struct sockaddr*) &destination_sin);
    if (res < 0)
    {
-      debug("res: %d", res);
+      //debug("res: %d", res);
       *isUnknownHost = true;
       goto Error;
    }

@@ -37,7 +37,6 @@ CharP xstrrchr(CharP str, int32 ch)
    return resP;
 }
 
-#if !defined (PALMOS)
 int32 xstrncasecmp(const char *a1, const char *a2, int32 size)
 {
    char c1, c2;
@@ -52,4 +51,3 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size)
    }
    return 0;
 }
-#endif

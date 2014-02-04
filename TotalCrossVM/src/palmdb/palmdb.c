@@ -13,9 +13,7 @@
 
 #include "palmdb.h"
 
-#if defined PALMOS
-// #include "palm/Palmdb_c.h"
-#elif defined WIN32 || defined WINCE
+#if defined WIN32 || defined WINCE
  #if defined _RAPI_
    #include "rapi/palmdb_c.h"
  #else
@@ -34,7 +32,7 @@
 #endif
 
 
-#if defined(WIN32) || defined(linux) || defined(__SYMBIAN32__) || defined(ANDROID)
+#if defined(WIN32) || defined(linux) || defined(ANDROID)
 
 /* INTERNAL USE FUNCTIONS */
 static void destroyRecPtrs(PDBFile db);

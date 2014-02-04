@@ -12,30 +12,17 @@
 
 package ras;
 
-import ras.comm.CommException;
-import ras.comm.Packet;
-import ras.comm.RASConnection;
-import ras.comm.v1.ActivationFailure;
-import ras.comm.v1.ActivationRequest;
-import ras.comm.v1.ActivationSuccess;
-import totalcross.crypto.CryptoException;
-import totalcross.crypto.cipher.AESCipher;
-import totalcross.crypto.cipher.AESKey;
-import totalcross.crypto.cipher.RSAPublicKey;
-import totalcross.crypto.digest.MD5Digest;
-import totalcross.crypto.signature.PKCS1Signature;
-import totalcross.crypto.signature.Signature;
-import totalcross.io.ByteArrayStream;
-import totalcross.io.DataStream;
-import totalcross.io.FileNotFoundException;
-import totalcross.io.IOException;
-import totalcross.io.PDBFile;
-import totalcross.net.ConnectionManager;
-import totalcross.sys.Convert;
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
-import totalcross.util.Hashtable;
-import totalcross.util.Logger;
+import ras.comm.*;
+import ras.comm.v1.*;
+
+import totalcross.crypto.*;
+import totalcross.crypto.cipher.*;
+import totalcross.crypto.digest.*;
+import totalcross.crypto.signature.*;
+import totalcross.io.*;
+import totalcross.net.*;
+import totalcross.sys.*;
+import totalcross.util.*;
 
 final class ActivationClientImpl extends ActivationClient
 {
@@ -53,8 +40,26 @@ final class ActivationClientImpl extends ActivationClient
    private final String PDBFILE_TCRAS_REQUEST = "tcreq.TCvm.RASD"; // the pdb file containing the activation request
    private final String PDBFILE_TCRAS_SUCCESS = "tcsuc.TCvm.RASD"; // the pdb file containing the activation success
    private final String RESFILE_TCKEY = "tckey.bin"; // the resource file containing the registration key
-   private static Logger logger = Logger.getLogger("ras.ActivationClient", Logger.WARNING | Logger.SEVERE,
-         Logger.DEBUG_CONSOLE);
+   private static Logger logger;
+   static
+   {
+      Stream s = Logger.DEBUG_CONSOLE;
+      int atr = Logger.WARNING | Logger.SEVERE;
+      if (Settings.ANDROID.equals(Settings.platform))
+         try
+         {
+            String dir = Settings.appPath+"/logs";
+            try {new File(dir).createDir();} catch (Exception ee) {}
+            File f = new File(dir+"/ras.log",File.CREATE);
+            int len = f.getSize();
+            if (len > 0) // if we had already any trouble, log everything
+               atr = Logger.ALL;
+            f.setPos(len);
+            s = f;
+         }
+         catch (Exception e) {} // use default Stream
+      logger = Logger.getLogger("ras.ActivationClient", atr, s);
+   }
 
    public ActivationClientImpl()
    {
@@ -228,6 +233,20 @@ final class ActivationClientImpl extends ActivationClient
       }
    }
 
+   private boolean hasInternet()
+   {
+      try
+      {
+         Socket s = new Socket("www.google.com",80,30*1000);
+         s.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         return false;
+      }
+   }
+
    public void activate() throws ActivationException
    {
       Hashtable productInfo = Utils.getProductInfo();
@@ -258,7 +277,12 @@ final class ActivationClientImpl extends ActivationClient
          logger.info("Connecting to server");
          connection = RASConnection.connect(30000, 20000);
          if (connection == null)
-            throw new Exception("Could not connect to the activation server");
+         {
+            if (hasInternet())
+               throw new Exception("Could not connect to the activation server, but there's internet available.");
+            else
+               throw new Exception("Could not connect to the activation server");
+         }
          connection.sayHello(); // say hello
 
          // Send activation request
@@ -318,6 +342,10 @@ final class ActivationClientImpl extends ActivationClient
          ActivationException ex = Utils.processException("Activation", e, true);
          logger.throwing("ras.ActivationClient", "activate", ex);
          logger.throwing("ras.ActivationClient", "original exception", e); // log also the original exception.
+         String st = Vm.getStackTrace(e);
+         logger.log(Logger.SEVERE,st,true);
+         logger.log(Logger.SEVERE,e.getClass().getName(),true);
+         logger.log(Logger.SEVERE,e.getMessage()+"",true);
 
          throw ex;
       }

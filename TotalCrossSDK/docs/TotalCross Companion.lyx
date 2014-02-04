@@ -541,21 +541,11 @@ Supported Platforms
 \end_layout
 
 \begin_layout Itemize
-Android 1.6 and above.
+Android 2.3 and above.
 \end_layout
 
 \begin_layout Itemize
-iOS 4.0 and above.
-\end_layout
-
-\begin_layout Itemize
-BlackBerry 4.3.0 and above.
- 
-\end_layout
-
-\begin_layout Itemize
-Palm OS 5 with NVFS.
- 
+iOS 5.0 and above.
 \end_layout
 
 \begin_layout Itemize
@@ -750,9 +740,8 @@ Thread support
 \begin_layout Standard
 TotalCross supports preemptive threads using the native thread mechanism
  of each supported platform.
- On Android, iOS, and Linux, it uses pthread; on Palm OS, it uses the undocument
-ed (and quite limited) thread api; on Windows, it uses the quite well documented
- thread api, in BlackBerry, it uses the Java's thread scheduler.
+ On Android, iOS, and Linux, it uses pthread, and on Windows, it uses the
+ quite well documented thread api.
 \end_layout
 
 \begin_layout Standard
@@ -1334,66 +1323,14 @@ applet
 \begin_layout Itemize
 
 \family typewriter
-bb
-\family default
-: BlackBerry installation files.
- The 
-\family typewriter
-.alx
-\family default
-, 
-\family typewriter
-.cod
-\family default
- and 
-\family typewriter
-.jad
-\family default
- files are used to deploy the file to the device, and the 
-\family typewriter
-.csl
-\family default
- and 
-\family typewriter
-.cso
-\family default
- to sign the file.
- (more information on the BlackBerry installation section).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
 iOS
 \family default
-: for newer versions of the iOS (iPhone and iPad), contains a 
+: for newer versions of iOS (iPhone, iPad, and iPod), contains an 
 \family typewriter
-.deb
+.ipa
 \family default
  file.
  
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-palm
-\family default
-: contains the 
-\family typewriter
-.pdb
-\family default
- and 
-\family typewriter
-.prc
-\family default
- files to be installed on the device.
- Optionally, you may use the 
-\family typewriter
-install.exe
-\family default
- file, which installs the same files, but provides a simple installation
- interface.
 \end_layout
 
 \begin_layout Itemize
@@ -1513,18 +1450,6 @@ vm
 \begin_layout Itemize
 
 \family typewriter
-bb
-\family default
-: open the 
-\family typewriter
-TotalCross.alx
-\family default
- file in your BlackBerry desktop software.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
 iOS
 \family default
 : copy the 
@@ -1536,31 +1461,6 @@ iOS
 dpkg -i <deb file>
 \family default
 .
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-palm
-\family default
-: install 
-\family typewriter
-TCBase.pdb
-\family default
-, 
-\family typewriter
-TCFont.pdb
-\family default
-, and 
-\family typewriter
-TCVM.prc
-\family default
-.
- Optionally, you may simply execute the 
-\family typewriter
-Install.exe
-\family default
- file which installs the same files.
 \end_layout
 
 \begin_layout Itemize
@@ -2415,14 +2315,13 @@ status open
 
 \begin_layout Plain Layout
 Some people think that running the application on the desktop under an IDE
- (such as Eclipse or Netbeans) or on BlackBerry will use the TotalCross
- virtual machine.
+ (such as Eclipse or Netbeans) will use the TotalCross virtual machine.
  This is not true: the actual virtual machine used is the one provided in
  the Java Development Kit installed (or 
 \family typewriter
 java.exe
 \family default
-) on the desktop and a virtual machine based on J2ME on BlackBerry.
+) on the desktop.
 \end_layout
 
 \end_inset
@@ -2500,143 +2399,11 @@ status open
 \begin_inset space ~
 \end_inset
 
-PalmLo
-\family default
-: Palm OS low (same of 
-\family typewriter
-/scr 160x160x8
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-PalmHI
-\family default
-: Palm OS high (same of 
-\family typewriter
-/scr 320x320x16
-\family default
-), the 
-\series bold
-default
-\series default
-.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-PalmTall
-\family default
-: Palm OS tall (same of 
-\family typewriter
-/scr 320x480x16
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-PalmWide
-\family default
-: Palm OS wide (same of 
-\family typewriter
-/scr 480x320x16
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-WinCE
-\family default
-: Windows CE (same of 
-\family typewriter
-/scr 240x320x16
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
 Win32
 \family default
 : Windows 32 (same of 
 \family typewriter
 /scr 240x320x24
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-bbLo
-\family default
-: BlackBerry low (same of 
-\family typewriter
-/scr 320x240x16
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-bbBold
-\family default
-: BlackBerry Bold (same of 
-\family typewriter
-/scr 480x360x16
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/scr
-\begin_inset space ~
-\end_inset
-
-bbStorm
-\family default
-: BlackBerry Storm (same of 
-\family typewriter
-/scr 480x320x16
 \family default
 ).
 \end_layout
@@ -2778,30 +2545,6 @@ status open
 \begin_inset space ~
 \end_inset
 
-WinCE
-\family default
-: Windows CE user interface style.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/uiStyle
-\begin_inset space ~
-\end_inset
-
-PalmOS
-\family default
-: Palm OS user interface style.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/uiStyle
-\begin_inset space ~
-\end_inset
-
 Flat
 \family default
 : Flat user interface style.
@@ -2899,16 +2642,6 @@ Edit
 MultiEdit
 \family default
  gains focus.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/keypadOnly
-\family default
-: acts as a device that has only the 0-9{*}
-\backslash
-# keys.
 \end_layout
 
 \begin_layout Itemize
@@ -3455,35 +3188,6 @@ App.zip
 \begin_layout Itemize
 
 \family typewriter
-palm
-\begin_inset space ~
-\end_inset
-
-or
-\begin_inset space ~
-\end_inset
-
--palmos
-\family default
- Creates the Palm OS files (
-\family typewriter
-.pdb
-\family default
- and 
-\family typewriter
-.prc
-\family default
- if a main class is detected, otherwise only a 
-\family typewriter
-.pdb
-\family default
- file) and also an installer, which is an executable that contains the created
- files.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
 ce
 \begin_inset space ~
 \end_inset
@@ -3520,26 +3224,6 @@ winmo
 win32
 \family default
  Creates an executable file to run the application in Win32.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-bb
-\begin_inset space ~
-\end_inset
-
-or
-\begin_inset space ~
-\end_inset
-
--blackberry
-\family default
- Creates the 
-\family typewriter
-.cod
-\family default
- file for BlackBerry.
 \end_layout
 
 \begin_layout Itemize
@@ -3584,6 +3268,22 @@ linux
 .tcz
 \family default
  files for Linux.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+iOS
+\family default
+ or 
+\family typewriter
+iPhone
+\family default
+ Creates an 
+\family typewriter
+.ipa
+\family default
+ for iOS.
 \end_layout
 
 \begin_layout Itemize
@@ -3919,21 +3619,6 @@ key
 \begin_layout Itemize
 
 \family typewriter
-/s
-\begin_inset space ~
-\end_inset
-
-pass
-\family default
-: Launches the BlackBerry SignatureTool and automatically sign the COD module
- using the password provided.
- If no password is provided, the SignatureTool will be launched and you
- will have to specify a password manually.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
 /t
 \family default
 : Only tests if the class is ok to be deployed; no 
@@ -4152,8 +3837,8 @@ Resulting
 \end_inset
 
 property "Crtr" will be the creator id (in TotalCross it is called application
- id, which is the correct name that Palm should use or BlackBerry and Android,
- when using a single package, application folder).
+ id, which is the correct name that Android, when using a single package,
+ application folder).
 \end_layout
 
 \end_inset
@@ -4388,7 +4073,7 @@ property The
 \family typewriter
 appCategory
 \family default
- is used on the iPhone and palm platforms.
+ is used on the iOS platform.
 \begin_inset Newline newline
 \end_inset
 
@@ -4396,7 +4081,7 @@ The
 \family typewriter
 appLocation
 \family default
- is used on the iPhone platform.
+ is used on the iOS platform.
 \begin_inset Newline newline
 \end_inset
 
@@ -4404,7 +4089,7 @@ The
 \family typewriter
 appDescription
 \family default
- is used on the iPhone and BlackBerry platforms.
+ is used on the iOS platform.
 \end_layout
 
 \end_inset
@@ -4525,33 +4210,6 @@ status open
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-Palm
-\begin_inset space ~
-\end_inset
-
-OS 
-\family typewriter
-icon15x9x8.bmp
-\family default
-, 
-\family typewriter
-icon30x18x8.bmp
-\family default
-, 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-icon22x22x8.bmp
-\family default
-, 
-\family typewriter
-icon44x44x8.bmp
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
 Windows 
 \family typewriter
 icon16x16x8.bmp
@@ -4574,19 +4232,12 @@ icon60x60.png
 
 \begin_layout Labeling
 \labelwidthstring Blackberry0
-BlackBerry 
-\family typewriter
-icon80x80.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
 Android 
 \family typewriter
 icon72x72.png
 \family default
 .
- Use alpha-channel on PNG for better appearance).
+ (use alpha-channel on PNG for better appearance).
 \end_layout
 
 \end_inset
@@ -4667,23 +4318,15 @@ The possible
 \family default
  files are: 
 \family typewriter
-palm.pkg
-\family default
-, 
-\family typewriter
 wince.pkg
 \family default
 , 
 \family typewriter
 iphone.pkg
 \family default
-, 
+ (also used por iPad and iPod), 
 \family typewriter
 android.pkg
-\family default
-, 
-\family typewriter
-bb.pkg
 \family default
 , 
 \family typewriter
@@ -4698,15 +4341,7 @@ win32.pkg
 all.pkg
 \family default
  for all platforms.
- The files for 
-\family typewriter
-palm.pkg
-\family default
- must be 
-\family typewriter
-.pdb
-\family default
-s, whereas the files for the other platforms must be 
+ The files must be 
 \family typewriter
 .tcz
 \family default
@@ -4764,30 +4399,6 @@ status open
 \end_layout
 
 \begin_layout Standard
-For Palm, you must add the 
-\family typewriter
-.pdb
-\family default
-s.
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-[L] BLib.pdb
-\end_layout
-
-\begin_layout Plain Layout
-
-[L] CLib.pdb
-\end_layout
-
-\end_inset
-
 
 \end_layout
 
@@ -4823,294 +4434,7 @@ Installing your application
 \end_layout
 
 \begin_layout Section
-BlackBerry
-\end_layout
-
-\begin_layout Subsection
-Deployment
-\end_layout
-
-\begin_layout Standard
-You must update your ROM to version 4.3.
- TotalCross will not run on versions before that one.
-\end_layout
-
-\begin_layout Standard
-To deploy a TotalCross application or library for BlackBerry devices, run
- tc.Deploy as follows:
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-tc.Deploy [-Drim.root=“rim_root”] 
-\begin_inset Newline newline
-\end_inset
-
-[-Drim.class.path=“rim_class_path”] [/s [password]] “application” -bb 
-\end_layout
-
-\begin_layout Standard
-Where:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-rim_root
-\family default
- is the path to the BlackBerry JDE or BlackBerry Component Package root
- directory.
- If not specified, 
-\family typewriter
-tc.Deploy
-\family default
- will use the internal BlackBerry Component Package distribution: 
-\family typewriter
-…/TotalCrossSDK/etc/tools/bb
-\family default
-.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-rim_class_path
-\family default
- is the set of paths to search for BlackBerry libraries (
-\family typewriter
-.jar
-\family default
- files).
- This path must include the BlackBerry library (
-\family typewriter
-net_rim_api.jar
-\family default
-), the TotalCross for BlackBerry (
-\family typewriter
-TotalCross.jar
-\family default
-) and any other TotalCross libraries needed by your application (like Litebase,
- for example).
- If not specified, 
-\family typewriter
-tc.Deploy
-\family default
- will search for libraries only under the default library directory: 
-\family typewriter
-rim.root/lib
-\family default
-.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-application
-\family default
- is the path to the main class of your application, or the 
-\family typewriter
-.jar
-\family default
- file containing the application or the library to be deployed.
-\end_layout
-
-\begin_layout Standard
-If the optional parameter 
-\family typewriter
-/s
-\family default
- is specified, 
-\family typewriter
-tc.Deploy
-\family default
- will automatically open the SignatureTool after the TotalCross application
- or library has been deployed, so you can type the password (you may also
- give the password as a parameter to 
-\family typewriter
-/s
-\family default
-).
- It is important to say that the two signature files (see the Signature
- section for details) must be placed under the 
-\family typewriter
-TotalCrossSDK/etc/tools/bb/bin
-\family default
- directory, otherwise the deployer will claim that no signature key was
- found.
-\end_layout
-
-\begin_layout Subsection
-Installation
-\end_layout
-
-\begin_layout Standard
-To install a TotalCross application or library on BlackBerry devices or
- the simulators, first you have to deploy it.
- Then, make sure 
-\family typewriter
-tc.Deploy
-\family default
- has generated the following files under the 
-\family typewriter
-…/install/ bb
-\family default
- directory:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-<application_name
-\family default
->
-\family typewriter
-.cod
-\family default
- contains the application modules for BlackBerry.
- It is used both in desktop and OTA (over-the-air, refer to 
-\family typewriter
-http://www.blackberry.com/
-\begin_inset Newline newline
-\end_inset
-
-developers
-\family default
-) installations.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-<application_name
-\family default
->
-\family typewriter
-.alx
-\family default
- is used together with 
-\family typewriter
-<application_name>.cod
-\family default
- to install the application or library using the BlackBerry Desktop Software.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-<application_name
-\family default
->
-\family typewriter
-.jad
-\family default
- is used together with 
-\family typewriter
-<application_name>.cod
-\family default
- to install the application or library using the OTA method.
-\end_layout
-
-\begin_layout Standard
-The Desktop installation method is pretty straightforward.
- In the BlackBerry Desktop Software, open the “Application Loader” and follow
- the instructions.
- When the list box containing all the applications that are currently installed
- on the device is displayed, click “Add…”, select the
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-<application_name>.alx
-\family default
- file and confirm.
- The selected application should appear on the list.
- If so, click “Next” and wait until the process is finished.
- 
-\end_layout
-
-\begin_layout Standard
-You must always install 
-\family typewriter
-TotalCross.cod
-\family default
-, then 
-\family typewriter
-Litebase.cod
-\family default
-, then your application's 
-\family typewriter
-.cod
-\family default
- file.
- If you don't follow this order, you will have problems.
- It is also possible to install the above three modules at the same time
- using BlackBerry Desktop Software.
-\end_layout
-
-\begin_layout Subsection
-Signature
-\end_layout
-
-\begin_layout Standard
-Before a TotalCross application can be installed on a BlackBerry device
- it is necessary to sign its module using the SignatureTool and the keys
- provided by RIM – Research In Motion.
- 
-\end_layout
-
-\begin_layout Standard
-If you do not have the signature keys, you must request them directly to
- RIM.
- More information can be found here: http://na.blackberry.com/eng/developers/javaa
-ppdev/codekeys.jsp (if this link is broken, go to www.blackberry.com, click
- Developers at the top row, then click “Java Application Development” at
- the left menu, and then “Development Tools and Downloads”) .
- After receiving and registering your keys in your computer, you will see
- the two key files in your BlackBerry JDE or BlackBerry Component Package
- root directory: 
-\family typewriter
-sigtool.csk
-\family default
- and 
-\family typewriter
-sigtool.db
-\family default
-.
- 
-\end_layout
-
-\begin_layout Standard
-Signing a TotalCross application or library is the same as signing any other
- BlackBerry application: you must open SignatureTool (the RIM signature
- application) and load the application 
-\family typewriter
-.cod
-\family default
- module.
- Then, click request, type your password and wait until the signing process
- is finished.
- 
-\end_layout
-
-\begin_layout Standard
-You can also automatically sign TotalCross applications or libraries during
- the deployment process.
- To do this, you must specify the option 
-\family typewriter
-/s
-\family default
- when running 
-\family typewriter
-tc.Deploy
-\family default
- (see the Deployment section for details).
- 
-\end_layout
-
-\begin_layout Section
-iPhone/iPad
+iOS (iPhone/iPad/iPod)
 \end_layout
 
 \begin_layout Subsection
@@ -5472,180 +4796,468 @@ java tc.Deploy .....
 \end_layout
 
 \begin_layout Subsection
-Deploying as .deb for jailbroken devices
+Deploying as IPA for Apple Store
 \end_layout
 
 \begin_layout Standard
-First, to deploy TotalCross in your iPhone/iPad, you will have to JailBreak
- it.
+The process is similar to the above one.
+ However, you should use an appropriate key to publish your application
+ on the Apple Store.
+ You should not use a certificate for distributing in-house applications.
 \end_layout
 
 \begin_layout Standard
-To install a TotalCross application on iPhone, you have two choices: perform
- a manual installation or support the package manager named “Cydia”.
+You should also provide a 
+\family typewriter
+splash.png
+\family default
+ image whose size must be 640x1136.
+ The image should be with this size and name.
+ Otherwise, Apple will reject your application.
 \end_layout
 
-\begin_layout Standard
-When the iOS is jailbroken, most programs have problems to keep the wifi
- connection working.
- We found an easy way to bypass this: all you have to do is ping the device.
- The best way to do this is to give your iOS device a fixed ip.
- Suppose it is 192.168.2.100; open a command prompt, and type: 
-\family typewriter
-ping 192.168.2.100 -n 1000000
-\family default
-.
- This will keep pinging the device 1 million times.
- If at the start of the ping you get that the ip is unreachable, open any
- URL at Safari on the device.
- Note that the device's wifi will continue to work even if the screen is
- dimmed, thus, consuming batteries.
- To completely turn off the device, you must press the on-off button.
+\begin_layout Subsection
+Updating an application on the Apple Store
 \end_layout
 
-\begin_layout Subsubsection
-"Cydia" support 
-\end_layout
+\begin_layout Enumerate
+Go to iTunes Connect (
+\begin_inset CommandInset href
+LatexCommand href
+name "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa"
+target "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa"
 
-\begin_layout Standard
-Upload the 2 files (
-\family typewriter
-.bz2
-\family default
- and 
-\family typewriter
-.deb
-\family default
-) that were created by 
-\family typewriter
-tc.Deploy
-\family default
- to a site.
- For example, we will use 
-\family typewriter
-www.totalcross.com/androidui
-\family default
-.
-\end_layout
-
-\begin_layout Standard
-Run Cydia on the iphone/ipad, press Manage and then the Sources button.
- Press Edit, then Add button.
- Then type the site url you created (e.g.: http://www.totalcross.com/androidui).
- Cydia will then add this site as a source.
- When it returns to the list, select the url in the list and select the
- application you want to install.
- 
-\end_layout
-
-\begin_layout Standard
-If you're running a Windows server, you must add two mimetypes to it: 
-\family typewriter
-.bz2
-\family default
- (
-\family typewriter
-application/ bzip2
-\family default
-) and 
-\family typewriter
-.deb
-\family default
- (
-\family typewriter
-application/x-deb
-\family default
-).
- Otherwise, Cydia will fail to locate the files in the folder.
-\end_layout
-
-\begin_layout Standard
-By default, the option 
-\family typewriter
--iphone
-\family default
- will create a 
-\family typewriter
-.bz2
-\family default
- file with a simple program.
- You can join 
-\family typewriter
-.bz2
-\family default
- files of many programs using the 
-\family typewriter
-tc.tools.deployer.IPhoneBuildSource
-\family default
- tool.
-\end_layout
-
-\begin_layout Subsubsection
-Manual installation of .deb files 
-\end_layout
-
-\begin_layout Standard
-You can also follow these instructions, which shows two ways to install
- a 
-\family typewriter
-.deb
-\family default
- file manually:
-\end_layout
-
-\begin_layout Standard
-Prerequisites: 
-\end_layout
-
-\begin_layout Itemize
-A Jailbroken iPhone/iPad/iPodTouch.
-\end_layout
-
-\begin_layout Itemize
-iSpirit (for Windows) installed.
-\begin_inset Newline newline
 \end_inset
 
-This free software can be found at http://www.ithemesky.com/ispirit.
+)
 \end_layout
 
-\begin_layout Itemize
-Optional: you may also use WinSCP, which can be found at http://winscp.net/eng/do
-wnload.php.
- Note that iSpirit is much easier.
+\begin_layout Enumerate
+Click on Manage Your Apps 
+\end_layout
+
+\begin_layout Enumerate
+Select an application 
+\end_layout
+
+\begin_layout Enumerate
+Click on Add version (it will go to "Prepare for upload" state)
+\end_layout
+
+\begin_layout Enumerate
+Click on the button at the top "Ready for upload".
+ Answer the questions until coming back to the screen and the status become
+ "Waiting for upload"
+\end_layout
+
+\begin_layout Enumerate
+Open the Application Loader
+\end_layout
+
+\begin_layout Enumerate
+Click on 
+\begin_inset Quotes eld
+\end_inset
+
+Deliver your app
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+If you indicate that you don't have an application to send, repeat the steps
+ 1 to 5
+\end_layout
+
+\begin_layout Enumerate
+In the Application Information screen, click on Choose and select the 
+\family typewriter
+.ipa
+\family default
+ genereated with the distribution certificate
+\end_layout
+
+\begin_layout Enumerate
+Click on send.
+\end_layout
+
+\begin_layout Subsection
+OTA (Over the air updates) with Totalcross and iOS
 \end_layout
 
 \begin_layout Standard
-Using iSpirit
+It is possible to push down over the air updates of your Totalcross application.
 \end_layout
 
-\begin_layout Enumerate
-Select the [Connection Mode].
- If you want to use wifi, select wifi and put the ip address of the phone.
+\begin_layout Standard
+To do this you need the following: 
 \end_layout
 
-\begin_layout Enumerate
-Press the [Install app] button from the iSpirit menu.
-\end_layout
-
-\begin_layout Enumerate
-From the file browser dialog box that appears below, navigate to and select
- the desired 
+\begin_layout Itemize
+Have a packaged 
 \family typewriter
-.deb
+.ipa
 \family default
- file by tapping the Select File button.
+ of your TotalCross application
+\end_layout
+
+\begin_layout Itemize
+Have 
+\begin_inset Quotes eld
+\end_inset
+
+iPhone Configuration Utility
+\begin_inset Quotes erd
+\end_inset
+
+ installed
+\end_layout
+
+\begin_layout Itemize
+A web server that will host: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+A 
+\family typewriter
+.plist
+\family default
+ file used by iOS to load your application OTA 
+\end_layout
+
+\begin_layout Itemize
+Your application 
+\family typewriter
+.ipa
+\family default
+ file
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+The 
+\family typewriter
+.plist
+\family default
+ file is a special type of file that points to the 
+\family typewriter
+.ipa
+\family default
+ file of your application on the webserver.
+ It is used by Safari on iOS to install the application.
+ It looks like the below.
+ Just copy this into a file and save it with a 
+\family typewriter
+.plist
+\family default
+ extension.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<?xml version="1.0" encoding="UTF-8"?>
+\end_layout
+
+\begin_layout Plain Layout
+
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/Pro
+pertyList-1.0.dtd">
+\end_layout
+
+\begin_layout Plain Layout
+
+<plist version="1.0">
+\end_layout
+
+\begin_layout Plain Layout
+
+	<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>items</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>assets</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<array>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>kind</key> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>software-package</string> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>url</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>http://yourserver/yourapplication.ipa
+\end_layout
+
+\begin_layout Plain Layout
+
+		</string> 		
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>metadata</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<dict>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>bundle-identifier</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>application identifier</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>bundle-version</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>1.0</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>kind</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>software</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<key>title</key>
+\end_layout
+
+\begin_layout Plain Layout
+
+		<string>application name</string>
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+		</array> 
+\end_layout
+
+\begin_layout Plain Layout
+
+	</dict> 
+\end_layout
+
+\begin_layout Plain Layout
+
+</plist>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then you need to edit the 
+\family typewriter
+.plist
+\family default
+ file in the following way: 
+\end_layout
+
+\begin_layout Itemize
+Edit the URL
+\family typewriter
+ <string>
+\family default
+ element to point to your 
+\family typewriter
+.ipa
+\family default
+ file as available via your web server 
+\end_layout
+
+\begin_layout Itemize
+Edit the bundle-identifier 
+\family typewriter
+<string>
+\family default
+ element to the identifier of your application 
+\end_layout
+
+\begin_layout Itemize
+To get the bundle-identifier you can use the 
+\begin_inset Quotes eld
+\end_inset
+
+iPhone Configuration Utility
+\begin_inset Quotes erd
+\end_inset
+
  
 \end_layout
 
-\begin_layout Enumerate
-After selecting the desired 
+\begin_layout Itemize
+You need to load your 
 \family typewriter
-.deb
+.ipa
 \family default
- file, press the install button shown in the above dialog box, and iSpirit
- will do the rest.
- When it completes, your application will be installed and ready to run.
+ file into the application, then click on the "applications" section under
+ "Library" and it will display the identifier there.
+ 
+\end_layout
+
+\begin_layout Itemize
+Finally change the key 
+\family typewriter
+<string>
+\family default
+ element to your application name.
+\end_layout
+
+\begin_layout Standard
+One last step and you will be able to install your application over the
+ air.
+ Create a web page 
+\family typewriter
+test.html
+\family default
+ on the webserver that contains an anchor element as follows: 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<a href="itms-services://?action=download-manifest&url=http://yourserver/yourfil
+e.plist">Application Name>>></a>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+At this point if you have setup everything correctly you will be able to
+ manually update / install your application by pointing the iOS Safari browser
+ to 
+\family typewriter
+test.html
+\family default
+ on you hosted web server.
+ When you click on the link iOS will popup a screen asking if you would
+ like to install the application.
+\end_layout
+
+\begin_layout Standard
+So now you can manually update your TotalCross application.
+ If you want to be able to do automatic updates via TotalCross all you need
+ to do is execute the following once your application detects a new version
+ is available
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Vm.exec("url","itms-services://?action=download-manifest&url=http://yourserv
+ er/yourfile.plist")
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This will launch Safari and execute the same process as doing an update
+ manually.
+\end_layout
+
+\begin_layout Standard
+Of course your application has to have a mechanism to detect when a new
+ version is available and be able to update itself, but that is outside
+ the scope of these instructions.
+\end_layout
+
+\begin_layout Standard
+So there you have it, how to do OTA updates on iOS without needing the App
+ Store.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -5673,47 +5285,6 @@ debugConsole.txt
 Documents
 \family default
 .
-\end_layout
-
-\begin_layout Section
-Palm OS
-\end_layout
-
-\begin_layout Standard
-By default, the application will be installed under the "TotalCross Apps"
- category.
- To change it to another category, set the 
-\family typewriter
-Settings.appCategory
-\family default
- field to the desired category.
- Note that there's a limit in the number of categories a Palm device can
- have; the new category is ignored if this limit is reached.
-\end_layout
-
-\begin_layout Subsection
-Using the installer
-\end_layout
-
-\begin_layout Standard
-Just execute the installer created by the deployer under the palm directory.
-\end_layout
-
-\begin_layout Subsection
-Manual installation
-\end_layout
-
-\begin_layout Standard
-If the installer fails for some reason (required libraries not found or
- incompatible version), you can manually install the 
-\family typewriter
-.pdb
-\family default
- and 
-\family typewriter
-.prc
-\family default
- files using the Palm Quick Install.
 \end_layout
 
 \begin_layout Section
@@ -6284,6 +5855,161 @@ adb bugreport >bug.txt
 
 \begin_layout Standard
 Then zip this 1MB file and send to us.
+\end_layout
+
+\begin_layout Subsection
+More on ADB
+\end_layout
+
+\begin_layout Standard
+On some devices it is not easy to access the debugging or using other commands
+ using ADB.
+ Moreover, since an Android device can be built from different enterprises,
+ their settings and configuration menu will look differently from each other.
+ 
+\end_layout
+
+\begin_layout Standard
+For instance, the following steps leads you to get USB debugging turned
+ on the Galaxy S4, OS 4.3.
+ On other Androids, it may be different.
+\end_layout
+
+\begin_layout Standard
+From within the GS4 you have to enable the "unknown sources" option for
+ the installation of applications, though the "allow debug" checkbox doesn't
+ seem to be included anymore.
+ It should be in Developer Options.
+ If your device is running Android 4.2, 
+\begin_inset Quotes eld
+\end_inset
+
+Developer Options
+\begin_inset Quotes erd
+\end_inset
+
+ is hidden by default.
+ To enable it: 
+\end_layout
+
+\begin_layout Enumerate
+Go into Settings > About Device 
+\end_layout
+
+\begin_layout Enumerate
+Tap on the Build Number entry seven times (a status pop up will appear to
+ help you keep count) 
+\end_layout
+
+\begin_layout Enumerate
+Press BACK, and 
+\begin_inset Quotes eld
+\end_inset
+
+Developer Options
+\begin_inset Quotes erd
+\end_inset
+
+ should be in the 
+\begin_inset Quotes eld
+\end_inset
+
+Settings
+\begin_inset Quotes erd
+\end_inset
+
+ list
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+
+\series bold
+Note
+\series default
+: When you connect a device running Android 4.2.2 or higher to your computer,
+ the system shows a dialog asking whether to accept an RSA key that allows
+ debugging through this computer.
+ This security mechanism protects user devices because it ensures that USB
+ debugging and other adb commands cannot be executed unless you're able
+ to unlock the device and acknowledge the dialog.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After that, when issuing the following ADB command, you will get as result:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+C:
+\backslash
+Users
+\backslash
+User
+\backslash
+Documents
+\backslash
+workspace42>adb devices 
+\end_layout
+
+\begin_layout Plain Layout
+
+* daemon not running.
+ starting it now on port 5037 * 
+\end_layout
+
+\begin_layout Plain Layout
+
+* daemon started successfully *
+\end_layout
+
+\begin_layout Plain Layout
+
+List of devices attached 
+\end_layout
+
+\begin_layout Plain Layout
+
+0e9def03 offline
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note above that the device status is still listed as "offline".
+ Give your device a minute or so and it will pop up a dialog asking to accept
+ an RSA key.
+ Confirm that this is OK.
+ Now, when you reissue the adb devices command, you should see your device
+ in the list, and its no longer offline, so you can now use adb as expected.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -6930,6 +6656,284 @@ erial);
 \end_layout
 
 \begin_layout Chapter
+TotalCross 2 Differences
+\end_layout
+
+\begin_layout Section
+Platforms
+\end_layout
+
+\begin_layout Standard
+In TotalCross 2 we dropped support for Palm OS and BlackBerry platforms,
+ since these platforms are discontinued or replaced in the market by Android
+ and iOS.
+\end_layout
+
+\begin_layout Standard
+If you want to support these platforms, you must download TotalCross 1.7,
+ which still supports these platforms.
+ Note that Litebase 2.7 works for both TotalCross 1.7 (and up) and TotalCross
+ 2.0 (and up).
+\end_layout
+
+\begin_layout Standard
+What we recommend is that you use TotalCross 1.7 only for those two platforms,
+ and use TotalCross 2 for all other platforms.
+ Both SDKs can coexist in the same machine, just rename them.
+\end_layout
+
+\begin_layout Standard
+So:
+\end_layout
+
+\begin_layout Enumerate
+Developing for all platforms: use 
+\family typewriter
+TotalCross2/dist/tc.jar
+\family default
+ 
+\end_layout
+
+\begin_layout Enumerate
+Deploying for Android, iOS, Windows 32, Windows CE, Linux, and browser:
+ use 
+\family typewriter
+TotalCross2 /dist/tc.jar
+\family default
+ 
+\end_layout
+
+\begin_layout Enumerate
+Deploying for Palm OS and Blackberry: use 
+\family typewriter
+TotalCross1.7/dist/tc.jar
+\end_layout
+
+\begin_layout Standard
+Applications created with TotalCross 2 can be hosted at Apple's Appstore,
+ using the developer distibution certificate, so we dropped support for
+ Cydia in TotalCross 2.
+ Due to this, all iOS samples are not included in the SDK, because to install
+ them you need a certificate.
+ We intend to put some samples at Apple´s Appstore.
+ 
+\end_layout
+
+\begin_layout Section
+Graphics
+\end_layout
+
+\begin_layout Standard
+TotalCross 2 was created to improve graphics perfomance.
+ We made a full rewrite of the native Graphics API to use Open GL.
+\end_layout
+
+\begin_layout Standard
+In TotalCross 1, the screen is drawn in a native bitmap, and then the bitmap
+ is drawn on the screen using the device's graphics API.
+ Everything, like lines, filled rectangles, and images are rendered by software.
+\end_layout
+
+\begin_layout Standard
+In TotalCross 2, we use Open GL, where everything is rendered by the hardware
+ graphics processor.
+ So, when you load an image, it is moved inside the video memory, and then
+ all draws of the image are instantaneous.
+\end_layout
+
+\begin_layout Standard
+Open GL is used on Android and iOS.
+ For Java SE, Windows 32, and Windows CE, it uses the old scheme of bitmaps.
+\end_layout
+
+\begin_layout Standard
+Besides the speed performance that Open GL provides, there are some drawbacks.
+ The main one is that Open GL requires that the whole screen is painted
+ on each screen update.
+ For example, in TotalCross 1, when an Edit's cursor is blinking, only the
+ cursor is painted at each screen update, while in TotalCross 2, the whole
+ screen is painted each time the cursor blinks.
+\end_layout
+
+\begin_layout Standard
+Another consequence of this requirement is that you cannot update the screen
+ in a thread.
+ So, in TotalCross 1, the spinner class was able to draw only the spinner
+ in a thread; this is impossible in TotalCross 2, which makes the spinner
+ useless under some circunstances.
+\end_layout
+
+\begin_layout Standard
+An advantage of Open GL is that it supports alpha channel by hardware.
+ Due to this, we removed support for the 
+\family typewriter
+Image
+\family default
+'s transparent color.
+ So, all 
+\family typewriter
+Image
+\family default
+ methods that would receive a transparent color were deprecated (like rotate,
+ scale, etc), and you must use images with alpha-channel.
+\end_layout
+
+\begin_layout Standard
+In Open GL, the 
+\family typewriter
+getPixels()
+\family default
+ operation is veeeeryyyy sloooowwww, and can cut all the performance gain
+ that you have with Open GL, so we removed support and deprecated for all
+ graphics methods that requires the read of the screen pixels (the methods
+ are still there but their effects are ignored):
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.useAA
+\family default
+ (for smooth antialiased lines) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawOp
+\family default
+ for controls that use 
+\family typewriter
+DRAW_SPRITE
+\family default
+, call the 
+\family typewriter
+Image.
+\begin_inset Newline newline
+\end_inset
+
+setTransparentColor()
+\family default
+ method.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawHighlightFrame()
+\family default
+,
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.eraseRect()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.getVistaColors()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.fillCursor()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawCursor()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Graphics.drawDottedCursor()
+\end_layout
+
+\begin_layout Standard
+We also deprecated these: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.NO_TRANSPARENT_COLOR
+\family default
+ (removed) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.useAlpha
+\family default
+ (now all images use alpha channel) 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TabbedContainer
+\family default
+: the constructor that receives a transparent color 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Window.highResPrepared
+\end_layout
+
+\begin_layout Standard
+And added: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Image.applyChanges()
+\family default
+: in TotalCross 2, moves the image inside the video memory; in TotalCross
+ 1, does nothing.
+ Note that you do not have to call this method.
+ 
+\end_layout
+
+\begin_layout Section
+Font
+\end_layout
+
+\begin_layout Standard
+The original font of TotalCross was a Tahoma font generated inside a Windows
+ CE device.
+ When we moved it to Open GL, the results were very poor, so we decided
+ to change the font to the Android's default font and created the font inside
+ an Android 4.1 device.
+ This font is used in both TotalCross 1.7 and 2.0.
+ We also changed the minimum size to 7 and the maximum size to 48.
+ This new font is a bit narrower than the previous one, so it may not cause
+ impacts in the user interface.
+ 
+\end_layout
+
+\begin_layout Section
+Litebase
+\end_layout
+
+\begin_layout Standard
+Please notice that all indices files must be erased in order to use Litebase
+ tables created with version 2.67 with Litebase 2.7 and vice-versa.
+ Moreover, tables using cryptography created in version 2.7 can't be used
+ with version 2.67.
+\end_layout
+
+\begin_layout Chapter
 SuperWaba to TotalCross conversion
 \end_layout
 
@@ -6957,7 +6961,11 @@ This converter takes care of about 99% of the problems, remaining only 1%
  Also, the program is just a token replacer, therefore, it cannot find that
  in "xxx.yyy", xxx is a ListBox nor a hotdog, so it cannot replace tokens
  based on the type.
- Always refer to this table ( 
+ Always refer to this table 
+\begin_inset Newline newline
+\end_inset
+
+(
 \begin_inset CommandInset href
 LatexCommand href
 target "http://www.superwaba.com.br/pt/sw2tc.asp"
@@ -8305,8 +8313,8 @@ Exit Codes
 \begin_layout Standard
 When the VM exits, it returns an exit code.
  Obviously, this chapter only concerns TotalCross applications running on
- Windows 32, Windows CE/Mobile, Palm OS, iOS, and Android since on Java
- SE and BlackBerry the TotalCross VM is not used.
+ Windows 32, Windows CE/Mobile, iOS, and Android since on Java SE the TotalCross
+ VM is not used.
  
 \end_layout
 
@@ -8478,28 +8486,6 @@ TotalCross has five look-and-feel types of user interfaces:
 \begin_layout Itemize
 
 \family typewriter
-WinCE
-\family default
- – Defines a Windows CE user interface style.
- This is the default look-and-feel.
- People that use Microsoft Windows may feel better with it.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-PalmOS
-\family default
- – Defines a Palm OS user interface style.
- The controls are flat with round borders.
- Unlike the other styles, the default background color is white instead
- of blue.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
 Flat
 \family default
  – Defines a FLAT user interface style that looks like the Pocket PC look-and-fe
@@ -8607,14 +8593,6 @@ type
 \family default
  are: 
 \family typewriter
-Settings.PalmOS
-\family default
-, 
-\family typewriter
-Settings.WinCE
-\family default
-, 
-\family typewriter
 Settings.Flat
 \family default
 , and 
@@ -8622,10 +8600,6 @@ Settings.Flat
 Settings.Vista
 \family default
 .
-\begin_inset Newpage newpage
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -8633,6 +8607,13 @@ In the pictures below you can see snapshots of the UIGadgets sample running
  on JDK using different resolutions and user interface styles.
  After each picture you'll find the command line options provided to the
  launcher on each case:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -8758,7 +8739,7 @@ iPhone
 
 \size small
 \begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="2">
+<lyxtabular version="3" rows="1" columns="2">
 <features tabularvalignment="middle" tabularwidth="100col%">
 <column alignment="center" valignment="top" width="50col%">
 <column alignment="center" valignment="top" width="50col%">
@@ -8767,14 +8748,6 @@ iPhone
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_WinCE.png
-	width 40col%
-
-\end_inset
-
 
 \end_layout
 
@@ -8785,10 +8758,36 @@ iPhone
 
 \begin_layout Plain Layout
 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\size small
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="1">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \size small
 \begin_inset Graphics
 	filename companion_resources/images/companion_UIGadgets_Win32.png
-	width 40col%
+	scale 82
 
 \end_inset
 
@@ -8799,40 +8798,6 @@ iPhone
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-WinCE
-\family default
-:
-\family typewriter
-
-\begin_inset space ~
-\end_inset
-
-
-\family default
-Windows
-\begin_inset space ~
-\end_inset
-
-CE
-\begin_inset space ~
-\end_inset
-
-(240x320x16)
-\end_layout
-
-\end_inset
-</cell>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
@@ -8876,6 +8841,7 @@ Windows
 \end_layout
 
 \begin_layout Standard
+\align center
 \begin_inset Newpage pagebreak
 \end_inset
 
@@ -8884,450 +8850,6 @@ Windows
 
 \begin_layout Standard
 \align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_PalmTall.png
-	scale 82
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-PalmTall
-\family default
-:
-\family typewriter
-
-\begin_inset space ~
-\end_inset
-
-
-\family default
-Palm
-\begin_inset space ~
-\end_inset
-
-OS
-\begin_inset space ~
-\end_inset
-
-tall
-\begin_inset space ~
-\end_inset
-
-(320x480x16)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_PalmWide.png
-	scale 82
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-PalmWide
-\family default
-:
-\family typewriter
-
-\begin_inset space ~
-\end_inset
-
-
-\family default
-Palm
-\begin_inset space ~
-\end_inset
-
-OS
-\begin_inset space ~
-\end_inset
-
-wide
-\begin_inset space ~
-\end_inset
-
-(480x320x16)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_bbLo.png
-	scale 82
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-bbLo
-\family default
-:
-\family typewriter
-
-\begin_inset space ~
-\end_inset
-
-
-\family default
-BlackBerry
-\begin_inset space ~
-\end_inset
-
-low
-\begin_inset space ~
-\end_inset
-
-(320x240x16)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_bbBold.png
-	scale 82
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-bbBold
-\family default
-:
-\begin_inset space ~
-\end_inset
-
-BlackBerry
-\begin_inset space ~
-\end_inset
-
-Bold
-\begin_inset space ~
-\end_inset
-
-(480x360x16)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="1">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_bbStorm.png
-	scale 82
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/scr
-\begin_inset space ~
-\end_inset
-
-bbStorm
-\family default
-:
-\begin_inset space ~
-\end_inset
-
-BlackBerry
-\begin_inset space ~
-\end_inset
-
-Storm
-\begin_inset space ~
-\end_inset
-
-(480x320x16)
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
-
-\size default
-
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\align center
-
-\size small
-\begin_inset Tabular
-<lyxtabular version="3" rows="2" columns="2">
-<features tabularvalignment="middle" tabularwidth="100col%">
-<column alignment="center" valignment="top" width="50col%">
-<column alignment="center" valignment="top" width="50col%">
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_uiStyleWinCE.png
-	width 40col%
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Graphics
-	filename companion_resources/images/companion_UIGadgets_uiStylePalmOS.png
-	width 40col%
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/uiStyle WinCE
-\family default
-: Windows CE
-\begin_inset Newline newline
-\end_inset
-
-(default style on JDK)
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\family typewriter
-\size small
-/uiStyle PalmOS
-\family default
-: Palm OS user interface style
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
-\end_inset
-
 
 \end_layout
 
@@ -9462,10 +8984,6 @@ Storm
 \end_inset
 
 
-\begin_inset Newpage pagebreak
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -9473,8 +8991,8 @@ Support for devices without pen
 \end_layout
 
 \begin_layout Standard
-The iPhone and Android platforms introduced the use of finger instead of
- pen (however, some new Android works better with pens than with finger).
+The iOS and Android platforms introduced the use of finger instead of pen
+ (however, some new Android works better with pens than with finger).
  A finger is much less precise than a pen, thus an algorithm is used to
  locate the closest control.
  These platforms also introduced the concept of drag and flick: drag means
@@ -9837,21 +9355,6 @@ int
 \end_inset
 
 size) Gets the instance of a font of the given name, style and size.
- BlackBerry supports the use of native system fonts, which are formed by
- the font family name preceded by a 
-\family typewriter
-$
-\family default
- (e.g.: 
-\family typewriter
-$BBCasual
-\family default
-).
- You can also specify only 
-\family typewriter
-$
-\family default
- for the font name, which means the default system font.
  
 \family typewriter
 Font.DEFAULT
@@ -10538,7 +10041,7 @@ onExit()
 exitCode
 \family default
  passed is returned to the program that started the application.
- Note: on Palm OS and on AppletViewer/Browser the 
+ Note: on AppletViewer/Browser the 
 \family typewriter
 exitCode
 \family default
@@ -10773,8 +10276,8 @@ onRestore()
 
 \begin_layout FieldList
 onMinimize() Called just after the application is minimized.
- Currently, this is only supported on Java, BlackBerry, Windows CE, Windows
- 32, and Android.
+ Currently, this is only supported on Java, Windows CE, Windows 32, and
+ Android.
  When the 
 \family typewriter
 onMinimize()
@@ -10798,8 +10301,8 @@ onMinimize()
 
 \begin_layout FieldList
 onRestore() Called just after the application is restored.
- Currently, this is only supported on Java, BlackBerry, Windows CE, Windows
- 32, and Android.
+ Currently, this is only supported on Java, Windows CE, Windows 32, and
+ Android.
 \end_layout
 
 \begin_layout Section
@@ -12382,7 +11885,7 @@ removeTimer()
  to remove the timer.
  On Windows, the timer has a minimum resolution of 55 ms due to the native
  Windows system clock resolution of 55 ms.
- On Palm OS and other platforms, the minimum timer resolution is 10 ms.
+ On the other platforms, the minimum timer resolution is 10 ms.
  
 \begin_inset Newline newline
 \end_inset
@@ -12814,6 +12317,10 @@ fore)
  Sets background and foreground colors at once.
  Calling this method is faster than calling 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 setBackColor()
 \family default
  and 
@@ -15367,8 +14874,7 @@ absoluteY The absolute location of the event.
 \end_layout
 
 \begin_layout FieldList
-modifiers This is not used on the Palm OS platform, only on the other platforms,
- which is the state of the modifier keys when the event occured.
+modifiers The state of the modifier keys when the event occured.
  This is an 
 \family typewriter
 OR
@@ -17069,8 +16575,7 @@ ScrollBars
 \end_layout
 
 \begin_layout Itemize
-You can change the color used when the button is pressed (useful when the
- UI is in PalmOS style) using the 
+You can change the color used when the button is pressed using the 
 \family typewriter
 setPressedColor()
 \family default
@@ -17880,11 +17385,7 @@ setMode()
 NORMAL
 \family default
 : in this mode any character can be entered.
- For Palm OS only, when pressing the abc/123 keys the 
-\family typewriter
-totalcross.ui.KeyboardBox
-\family default
- is popped up; on all other platforms, the default input method is used.
+ On all platforms the default input method is used.
 \end_layout
 
 \begin_layout Itemize
@@ -21298,9 +20799,8 @@ ComboBoxDropDown
 
 \end_deeper
 \begin_layout Itemize
-Using the Palm OS UI style, the combo box drop down control covers the combo
- box control, otherwise it is placed above or below the combo box, without
- covering it.
+The combo box drop down control is placed above or below the combo box,
+ without covering it.
 \end_layout
 
 \begin_layout Itemize
@@ -31566,151 +31066,6 @@ null
 \end_layout
 
 \begin_layout Section
-Keypad
-\end_layout
-
-\begin_layout Standard
-This class is used to handle letters and numbers input on devices with only
- a keypad (
-\family typewriter
-Settings .keypadOnly = true
-\family default
-).
- This is used only on old BlackBerry devices.
-\end_layout
-
-\begin_layout Standard
-This class has no public constructors and has the following public attributes
- and methods (excluding some fields from its superclasses):
-\end_layout
-
-\begin_layout FieldList
-numberKeyset Only numbers: 0 ...
- 9.
-\end_layout
-
-\begin_layout FieldList
-defaultKeyset The default character set.
- All letters must be in lowercase.
-\end_layout
-
-\begin_layout FieldList
-defaultSymbolKeyset The default symbol character set.
-\end_layout
-
-\begin_layout FieldList
-mode The current mode.
- Use the 
-\family typewriter
-MODE_xxx
-\family default
- constants, which are 
-\family typewriter
-MODE_LOWER
-\family default
- (lowercase mode), 
-\family typewriter
-MODE_UPPER
-\family default
- (uppercase mode), and 
-\family typewriter
-MODE_NUMBER
-\family default
- (number mode).
-\end_layout
-
-\begin_layout FieldList
-firstChar The ASCII code of the first character represented in the keyset.
- Defaults to 
-\family typewriter
-0
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-lastChar The ASCII code of the last character represented in the keyset.
- Defaults to 
-\family typewriter
-9
-\family default
-.
- 
-\end_layout
-
-\begin_layout FieldList
-backspaceChar The ASCII code of the character corresponding to a backspace.
- Defaults to 
-\family typewriter
-*
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-symbolsTriggerChar The ASCII code of the character that triggers the symbols
- character mode.
- Defaults to 
-\family typewriter
-#
-\family default
-.
-\end_layout
-
-\begin_layout FieldList
-getInstance() Returns the single instance of this class.
- Instead of calling this method many times, it is better to hold the instance
- of the keypad in a hook variable to reduce the number of methods called.
-\end_layout
-
-\begin_layout FieldList
-setKeys(String[]
-\begin_inset space ~
-\end_inset
-
-newKeyset) Call this passing a new set to change the keys associated with
- each pad number.
- Or pass 
-\family typewriter
-null
-\family default
- to restore the default key set.
-\end_layout
-
-\begin_layout FieldList
-setSymbolKeys(String
-\begin_inset space ~
-\end_inset
-
-nk) Call this to change the default 
-\family typewriter
-#
-\family default
- to a set of characters to be selected.
- Remember to set it to 
-\family typewriter
-null
-\family default
- afterward to restore the original behaviour!
-\end_layout
-
-\begin_layout FieldList
-handleKey(int
-\begin_inset space ~
-\end_inset
-
-key) Called by the system to handle the pressed key.
-\end_layout
-
-\begin_layout FieldList
-onEvent(Event
-\begin_inset space ~
-\end_inset
-
-e) On a timeout of the close timer, closes this control.
-\end_layout
-
-\begin_layout Section
 ListContainer
 \end_layout
 
@@ -32738,8 +32093,7 @@ String p = Settings.platform;
 \begin_layout Plain Layout
 
 col0[1].isEnabled = p.equals(Settings.JAVA) || p.equals(Settings.ANDROID) ||
- p.equals(Settings.BLACKBERRY) || Settings.isWindowsDevice() || p.equals(Settings.WIN
-32);
+ Settings.isWindowsDevice() || p.equals(Settings.WIN32);
 \end_layout
 
 \begin_layout Plain Layout
@@ -34021,7 +33375,7 @@ PagePosition
 PagePosition
 \family default
  implements the empty and filled balls that indicates the current page in
- a set of pages, very common on Android and iPhone.
+ a set of pages, very common on Android and iOS.
  
 \family typewriter
 PagePosition
@@ -35954,7 +35308,7 @@ true
 \begin_layout FieldList
 minDragBarSize The minimum drag bar size in pixels.
  By default, it is 5.
- This has no effect if the user interface style is Palm OS.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -37693,7 +37047,7 @@ spinnerType Defines the type of spinner for all instances.
 \family typewriter
 Spinner.IPHONE
 \family default
- when running on iPhone and 
+ when running on iOS and 
 \family typewriter
 Spinner.ANDROID
 \family default
@@ -41818,18 +41172,12 @@ totalcross.ui.Control
 \end_layout
 
 \begin_layout Itemize
-Using the 
+The method 
 \family typewriter
 setStatePosition()
 \family default
- method can show PalmOS grafitti state characters.
- To hide it, call 
-\family typewriter
-setStatePosition(HIDE_STATE, HIDE_STATE)
-\family default
-.
- This method is also used in Windows CE and Pocket PC to show/hide the virtual
- keyboard (when applicable).
+ is used on Windows CE and Pocket PC to show/hide the virtual keyboard (when
+ applicable).
  Just use as parameter 
 \family typewriter
 VK_HIDE
@@ -42089,8 +41437,7 @@ true
 
 \begin_layout FieldList
 highResPrepared (protected) This extremely important member is used when
- your program runs on devices with a screen resolution greater than the
- default 160x160 of Palm OS.
+ your program runs on devices with a screen resolution greater than 160x160.
  Some devices have 320x320, 240x320, etc.
  For each device, the font is usually proportional to the resolution.
  Since TotalCross programs are placed in a relative way, and since the relativen
@@ -42231,7 +41578,7 @@ setDeviceTitle(String
 \begin_inset space ~
 \end_inset
 
-title) Sets the title text in the task bar for non-Palm OS operating systems.
+title) Sets the title text in the task bar.
  Does not work in full-screen mode.
 \end_layout
 
@@ -42334,11 +41681,11 @@ Edit
 \family typewriter
 MultiEdit
 \family default
- (iPhone only), and 
+ (iOS only), and 
 \family typewriter
 secret
 \family default
- is to enable password entry (iPhone only).
+ is to enable password entry (iOS only).
 \end_layout
 
 \begin_layout FieldList
@@ -46734,8 +46081,7 @@ Image img2 = img.getSmoothScaledInstance(200,200, getBackColor());
 
 \end_inset
 
-On device and JavaSE it uses a Catmull-rom resampling, and on Blackberry
- it uses an area-average resampling.
+On device and JavaSE it uses a Catmull-rom resampling.
  The reason is that the Catmull-rom consumes more memory and is also slower
  than the area-average, although the final result is much better.
  
@@ -47736,8 +47082,7 @@ Camera
 
 \begin_layout Standard
 This class is used to enable the camera of the underlying device.
- The following platforms are supported: Windows Mobile, Blackberry, Palm
- OS, Android, and iOS.
+ The following platforms are supported: Windows Mobile, Android, and iOS.
  It is not possible to use the webcam on PC platforms (JavaSE, Windows 2000,
  XP, Vista, Seven and Linux).
  
@@ -60273,10 +59618,6 @@ JAVA
 \family default
 , 
 \family typewriter
-PALMOS
-\family default
-, 
-\family typewriter
 WINDOWSCE
 \family default
 , 
@@ -60303,10 +59644,6 @@ LINUX
 \family typewriter
 IPHONE
 \family default
-, 
-\family typewriter
-BLACKBERRY
-\family default
 , and 
 \family typewriter
 ANDROID
@@ -60328,7 +59665,7 @@ null
 \family default
  under most Windows CE devices.
  On Windows 32, this has the currently logged in user.
- On Android, iOS, Palm OS, and BlackBerry, it is also 
+ On Android and iOS it is also 
 \family typewriter
 null
 \family default
@@ -60343,8 +59680,6 @@ appSettingsBin Application defined settings, stored as a byte array.
 null
 \family default
 , the VM will save it when exiting and load it when restarting.
- On Palm OS, the value is stored in the unsaved preferences database, which
- is not backed up during hot-sync.
  On the desktop, a file named 
 \family typewriter
 settings4<application id>.pdb
@@ -60474,9 +59809,6 @@ appSecretKey Application defined secret key.
 applicationId The application's ID.
  MUST BE CHANGED IN THE STATIC INITIALIZER! Used by the deployer and by
  the virtual machine.
- On Palm OS, all data created is assigned to an application id.
- So when a program is uninstalled, all of its data is also removed from
- device.
  On Android, when the single package option is passed to 
 \family typewriter
 tc.Deploy
@@ -60490,8 +59822,6 @@ tc.Deploy
 totalcross.app<application id>
 \family default
 .
- On BlackBerry, it is used to define the folder where the application is
- stored.
  It must have 4 letters or digits, and the first character must be a letter.
  
 \end_layout
@@ -60508,14 +59838,6 @@ setUIStyle()
 \family default
 .
  The values can be 
-\family typewriter
-PalmOS
-\family default
-, 
-\family typewriter
-WinCE
-\family default
-, 
 \family typewriter
 Flat
 \family default
@@ -60626,12 +59948,7 @@ romSerialNumber Field that represents the ROM serial number for this device.
 Important
 \series default
 : don't rely only on this information to uniquely identify a device! Its
- very easy to change this number, and it won't be available in all devices.
- It will contain 
-\family typewriter
-null
-\family default
- if unavailable, such as some Palm OS 5 devices, like Treo 6xx.
+ very easy to change this number, and it won't be available on all devices.
  
 \begin_inset Newline newline
 \end_inset
@@ -60640,51 +59957,9 @@ null
 \series bold
 Note
 \series default
-: this was correctly tested; you can ensure that your Palm OS device has
- or not a serial number pressing App/Info/Version: the serial number will
- appear in the top; if nothing appears, it means that the device doesn't
- have a serial number.
- If it appears but nothing is returned from here, it means that the device
- has a non-standard function that retrieves the serial number, and thus
- we don't support it.
- On Android 3.0 or greater it will have the serial number; On Androids 1.x
+: On Android 3.0 or greater it will have the serial number; On Androids 1.x
  and 2.x it will have a consistent number that MAY be the same across resets,
  but has no relation to the real serial number.
- 
-\end_layout
-
-\begin_layout FieldList
-showSecrets Field that represents if the PDA has a password and the user
- choosen to hide the secret records (via the Apps/Security/Current Privacy).
- Returns 
-\family typewriter
-true
-\family default
- in all other cases.
- Specific for Palm OS (the other devices do not let the user hide records).
- This can be used to let the operating system do the login for a program
- that requires privacy.
- 
-\end_layout
-
-\begin_layout FieldList
-keypadOnly Field that represents if this device has a keypad only (old BlackBerr
-y devices only).
- On such devices, presses in the 1-9 and *# pops up the 
-\family typewriter
-Keypad
-\family default
- class (used in phones without alpha keys).
- You can set 
-\family typewriter
-keypadOnly
-\family default
- to enable/disable the the 
-\family typewriter
-Keypad
-\family default
- popup.
- The disabling occurs everytime a non-digit is pressed.
  
 \end_layout
 
@@ -60704,25 +59979,6 @@ true
 \begin_layout FieldList
 deviceId Field that represents a device id that can be used to identify
  the device's name.
- For Palm OS devices, see: 
-\begin_inset CommandInset href
-LatexCommand href
-target "http://www.mobilegeographics.com/dev/devices.php"
-
-\end_inset
-
- and 
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset CommandInset href
-LatexCommand href
-target "http://homepage.mac.com/alvinmok/palm/codenames.html"
-
-\end_inset
-
-.
  For Windows CE devices, it will have the device's name.
  For Windows 32 VM, it will have the computer name.
  On iOS devices it will have the model identifier.
@@ -60746,11 +60002,6 @@ appPath
 
 \begin_layout FieldList
 appPath The path from where the application is running from.
- On Palm OS devices, it will be 
-\family typewriter
-null
-\family default
-.
  This is the default location where the files are created.
  This is a read-only property: changing it will have no effect.
  
@@ -60770,12 +60021,6 @@ MINIMIZE_BUTTON
 CLOSE_BUTTON
 \family default
 , which closes the application.
- On BlackBerry, if this is set to 
-\family typewriter
-CLOSE_BUTTON
-\family default
-, the application is closed when the END key is pressed; otherwise, it is
- sent to background (minimized).
  The default behavior is sending the application to background (set to 
 \family typewriter
 MINIMIZE_BUTTON
@@ -60930,11 +60175,6 @@ false
 \end_layout
 
 \begin_layout FieldList
-nvfsVolume Field that represents the number of the hidden volume (flash
- memory), or -1 if the device does not have it or if its not a Palm OS device.
-\end_layout
-
-\begin_layout FieldList
 imei Field that represents the smartphone IMEI (if this device is a GSM,
  UMTS or IDEN smartphone), or 
 \family typewriter
@@ -60969,8 +60209,6 @@ true
 \family default
 , the application will ignore the event "Close application" issued by the
  operating system.
- This is specially useful to avoid that an incoming call exits the application
- on Palm OS.
  You must provide a way to terminate the application by calling the 
 \family typewriter
 exit()
@@ -61166,14 +60404,13 @@ timeZoneStr Textual description of the time zone currently used by the device.
 \begin_layout FieldList
 fingerTouch Defines platforms that the touchscreen is used MOSTLY with the
  finger.
- We say mostly because there are special pens that can be used with iPhone;
+ We say mostly because there are special pens that can be used with iOS;
  however, we consider this an exception, not the rule.
  Currently this value is 
 \family typewriter
 true
 \family default
- for iPhone and Android platforms, and the BlackBerry Storm.
- 
+ for iOS and Android platforms.
 \begin_inset Newline newline
 \end_inset
 
@@ -61702,7 +60939,7 @@ isIOS() Returns
 \family typewriter
 true
 \family default
- if this is an iPad or an iPhone.
+ if this is an iPad, an iPhone, or an iPod.
  
 \end_layout
 
@@ -61979,64 +61216,12 @@ However, trying to update the program itself or the vm will close the program.
 \begin_inset Newline newline
 \end_inset
 
-This example executes the Scribble program on Palm OS: 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-Vm.exec("Scribble", null, 0, false);
-\begin_inset Newline newline
-\end_inset
-
-
-\family default
-This example executes the web clipper program on Palm OS, telling it to
- display a web page by using 
-\family typewriter
-launchCode
-\family default
- 54 (
-\family typewriter
-CmdGoToURL
-\family default
-):
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-Vm.exec("Clipper", "http://www.yahoo.com", 54, true);
-\begin_inset Newline newline
-\end_inset
-
-
-\family default
 The 
 \family typewriter
 args
 \family default
  parameter passed to this method is the arguments string to pass to the
  program being executed.
-\begin_inset Newline newline
-\end_inset
-
-The 
-\family typewriter
-launchCode
-\family default
- parameter is only used on Palm OS.
- On Palm OS, it is the launch code value to use when the VM calls 
-\family typewriter
-SysUIAppSwitch()
-\family default
-.
- If 0 is passed, the default launch code (
-\family typewriter
-CmdNormalLaunch
-\family default
-) is used to execute the program.
- 
 \begin_inset Newline newline
 \end_inset
 
@@ -62058,17 +61243,7 @@ true
 \family default
 , the method will wait for the program to finish executing and the return
  value of the method will be the value returned from the application on
- all platforms except for Palm OS, wehere only a few headless applications
- can be called with 
-\family typewriter
-wait
-\family default
- being 
-\family typewriter
-true
-\family default
-.
- 
+ all platforms.
 \begin_inset Newline newline
 \end_inset
 
@@ -62139,36 +61314,6 @@ null
 \family default
  in the args, or you'll get error 87.
  IExplore requires a page to open; in this case, we open the blank page.
-\begin_inset Newline newline
-\end_inset
-
-To run another TotalCross program on Palm OS devices, use: 
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-Vm.exec("ProgName", null, 0, false);
-\family default
-  
-\begin_inset Newline newline
-\end_inset
-
-In other words, you must call the program's executable.
- Note that on Palm OS, the program's name is the name of the 
-\family typewriter
-.prc
-\family default
- appended by the 
-\family typewriter
-_
-\family default
- character.
- For example, to launch UIGadgets, you must pass 
-\family typewriter
-UIGadgets_
-\family default
- as the command.
 \begin_inset Newline newline
 \end_inset
 
@@ -62317,31 +61462,8 @@ If you're using
 , which will keep the open window instead of closing it, so you can see
  the error cause.
  
-\begin_inset Newline newline
-\end_inset
-
-On BlackBerry, the command must be a module name.
- For instance, you can open TotalCross programs, just providing its module
- (
 \family typewriter
-.cod
-\family default
-) name.
- The command below launchs a URL:
-\begin_inset Newline newline
-\end_inset
 
-
-\family typewriter
-Vm.exec("net_rim_bb_browser_daemon",
-\begin_inset Newline newline
-\end_inset
-
-"http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,
-\begin_inset Newline newline
-\end_inset
-
-true);
 \begin_inset Newline newline
 \end_inset
 
@@ -62666,14 +61788,6 @@ s) Sends a text, followed by a line feed, to:
 \begin_inset Newline newline
 \end_inset
 
-• Palm OS: the 
-\family typewriter
-DebugConsole
-\family default
- file in the NVFS volume.
-\begin_inset Newline newline
-\end_inset
-
 • Windows CE / 32: the 
 \family typewriter
 DebugConsole.txt
@@ -62683,16 +61797,7 @@ DebugConsole.txt
 \begin_inset Newline newline
 \end_inset
 
-• Blackberry: the event logger, which can be accessed using alt+LGLG, and
- 
-\family typewriter
-DebugConsole.txt
-\family default
-.
-\begin_inset Newline newline
-\end_inset
-
-• iPhone: the 
+• iOS: the 
 \family typewriter
 DebugConsole.txt
 \family default
@@ -62779,12 +61884,7 @@ s) Shows an alert IMMEDIATELY on screen.
 MessageBox
 \family default
  class.
- Showing an alert from Palm OS threads may reset the device.
- 
-\begin_inset Newline newline
-\end_inset
-
-Note that unicode characters are not displayed on alerts.
+ Note that unicode characters are not displayed on alerts.
 \end_layout
 
 \begin_layout FieldList
@@ -63275,7 +62375,7 @@ Vm.preallocateArray(new ListContainer.Item(layout), itemCount);
 
 \end_inset
 
-This method does nothing on BlackBerry and Java SE.
+This method does nothing on Java SE.
  
 \end_layout
 
@@ -63494,10 +62594,8 @@ RemotePDBFile
 \family typewriter
 RemotePDBRecord
 \family default
-) are ommited because they are inefficient on all platforms except on Palm
- OS, a platform which is not recommended anymore.
- Unless you need to develop a TotalCross program only for Palm and will
- never use another platform, don't use PDB files.
+) are ommited because they are inefficient on all platforms.
+ Unless you use a legacy TotalCross program, don't use PDB files.
 \end_layout
 
 \begin_layout Chapter
@@ -64534,11 +63632,7 @@ charAt()
 String
 \family default
  class.
- This method is faster than the other 
-\family typewriter
-writeChars()
-\family default
- method on blackberry, but slower on other devices.
+ This method is slower on all devices.
  The 
 \family typewriter
 char
@@ -67164,17 +66258,8 @@ SIR SIR Port (Physical Layer of IrDA Stack).
  Important! In order to access the SIR port on the Pocket PCs the following
  has to be UNCHECKED: Settings/Connections/Beam/Receive all incoming beams
  and select discoverable mode.
- Note that Palm OS OMAP-based devices do NOT support SIR (aka raw IR); see
- this: 
-\begin_inset CommandInset href
-LatexCommand href
-target "http://www.alanjmcf.me.uk/comms/infrared/IrDA%20FAQ.html"
-
-\end_inset
-
-.
- Note also that there's no handshaking support on SIR, and that not all
- devices work with it.
+ Note that there's no handshaking support on SIR, and that not all devices
+ work with it.
  Use IRCOMM instead when possible.
 \end_layout
 
@@ -67246,8 +66331,8 @@ number
 \family default
  parameter passed is the number of the port for devices with multiple ports.
  Port number 0 defines the "default port" of a given type.
- For Windows CE and Palm OS devices, you should pass 0 as the port number
- to access the device's single serial or usb port.
+ For Windows CE devices, you should pass 0 as the port number to access
+ the device's single serial or usb port.
  On Windows 32 and Windows CE the port number is the number of the COM port.
  For example, serial port 2 maps to "COM2:".
  
@@ -67297,20 +66382,6 @@ stopBits
  is the number of stop bits.
  
 \begin_inset Newline newline
-\end_inset
-
-Here is an example showing how to open the serial port of a Palm OS device
- at 9600 baud with settings of 8 bits, no partity and one stop bit (8/N/1):
- 
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-PortConnector port = new PortConnector(0, 9600, 8, false, 1);
-\end_layout
-
 \end_inset
 
 Here is an example of opening serial port COM2: on a Window 32 or Windows
@@ -67370,11 +66441,6 @@ PARITY_ODD
 No serial XON/XOFF flow control (commonly called software flow control)
  is used and RTS/CTS flow control (commonly called hardware flow control)
  is turn on by default on all platforms but Windows CE.
- For Palm OS, 
-\family typewriter
-PARITY_ODD
-\family default
- turns on XON/XOFF mode.
  
 \end_layout
 
@@ -67626,7 +66692,7 @@ CREATE_EMPTY The given path denotes an archive that may not exist.
 \begin_layout FieldList
 READ_ONLY Works only for files, must not be used for folders.
  With this mode it is possible to access an already opened file in any mode
- on all platforms except on Palm OS.
+ on all platforms.
  All the other modes are exclusive with each other except on Android, iOS,
  and Linux.
  Obvioulsy it is not possible to write in the file using this mode.
@@ -67674,7 +66740,8 @@ slot) Creates a
 File
 \family default
  object with the given path, using the given mode (which should be one of
- the above constants) and the specified slot used only on Palm OS.
+ the above constants) and the specified slot which was used only on Palm
+ OS, not supported anymore.
 \end_layout
 
 \begin_layout FieldList
@@ -67720,22 +66787,6 @@ When creating a new file, you may start the path using the alias
 device/
 \family default
 , which evaluates to the platform's base user directory: 
-\end_layout
-
-\begin_layout Itemize
-Palm OS and Windows CE - 
-\family typewriter
-/
-\family default
- (root) 
-\end_layout
-
-\begin_layout Itemize
-BlackBerry - 
-\family typewriter
-/store/home/user/
-\family default
- 
 \end_layout
 
 \begin_layout Itemize
@@ -67798,75 +66849,11 @@ device/
 \end_layout
 
 \begin_layout Standard
-The argument slot specifies the index of the storage media to be used only
- for Palm OS.
- This parameter is ignored on all other platforms.
- Usually the value used will be 1, which defaults to the device's internal
- non-volatile memory.
- 
-\end_layout
-
-\begin_layout Standard
-If the device has one or more slots for external storage medias (e.g.
- MM Cards and SD Cards), you may access them using a value greater than
- 1 (e.g.
- if the device has one slot for a memory card, you may address it using
- the value 2).
- Note that writing to a storage card can be much slower than writing to
- the main internal non-volatile memory.
- 
-\end_layout
-
-\begin_layout Standard
-You may also use the value -1 to access the storage media of higher index
- (i.e.
- 1 if no external media is available, 2 if one external media is available,
- and so on...).
- 0, the internal memory, MUST NOT be used, because it will cause a device
- reset.
- 
-\end_layout
-
-\begin_layout Standard
-This may vary on some Palm devices, so prefer using the
-\family typewriter
- Settings.nvfsVolume
-\family default
- property.
- You can find the available slots using this code: 
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-for (int i = 0; i < 10; i++) 
-\end_layout
-
-\begin_layout Plain Layout
-
-	if (File.isCardInserted(i)) 
-\end_layout
-
-\begin_layout Plain Layout
-
-		add(new Label("found " + i), LEFT, AFTER);
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
 The method 
 \family typewriter
 isCardInserted(int slot)
 \family default
- also works on Android, but its parameter is ignored.
+works on Android but its parameter is ignored.
 \end_layout
 
 \begin_layout Standard
@@ -68083,7 +67070,7 @@ ty between all platforms.
 \family typewriter
 rename()
 \family default
-, while Palm OS does not let you move the file.
+.
  The file is automatically closed prior to renaming.
  After this operation, the 
 \family typewriter
@@ -68282,8 +67269,8 @@ true
 \end_layout
 
 \begin_layout FieldList
-getCardVolume() Returns the volume file for the Windows CE and Pocket PC,
- and BlackBerry devices.
+getCardVolume() Returns the volume file for the Windows CE and Pocket PC
+ devices.
  On these devices, the volume has a special folder name, but since there's
  no system call that informs this, we first try to find a registry variable
  containing it.
@@ -68304,35 +67291,13 @@ d/", "/CF Card/"}
 \end_layout
 
 \begin_layout FieldList
-getCardSerialNumber(int
-\begin_inset space ~
-\end_inset
-
-slot) Returns the card serial number for the given slot.
- This method only works on Palm OS.
- 
-\family typewriter
-slot
-\family default
- is the slot number, or -1 to use the last slot (which is usually an external
- card if the device has such slot).
- 
-\end_layout
-
-\begin_layout FieldList
-getSlot() Returns the slot number passed in the constructor, or -1 if no
- slot was given.
- 
-\end_layout
-
-\begin_layout FieldList
 listRoots() Lists the root drives.
  If there are no roots, returns 
 \family typewriter
 null
 \family default
 .
- Works on Windows 32, Java, and BlackBerry platforms.
+ Works on Windows 32 and Java platforms.
  
 \end_layout
 
@@ -68627,20 +67592,6 @@ if (Settings.platform.equals("Win32") || Settings.platform.equals("Java"))
 
 \backslash
 ").getSize();
-\end_layout
-
-\begin_layout Plain Layout
-
-else if (Settings.platform.equals("PalmOS"))
-\end_layout
-
-\begin_layout Plain Layout
-
-   freeSpace = new File("
-\backslash
-
-\backslash
-", 1).getSize(); // hidden volume
 \end_layout
 
 \begin_layout Plain Layout
@@ -69772,63 +68723,6 @@ WinCE Full support.
 
 \begin_layout Labeling
 \labelwidthstring BlackBerry0
-PalmOS Full support, but the usage of the 
-\family typewriter
-ATTR_READ_ONLY
-\family default
- constant is not advised.
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100line%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-Files on Palm OS must be opened with write access to have their attributes
- changed, therefore, you cannot change the attributes of a read only file,
- because you're not allowed to open it with write access.
- A read only file cannot be changed, moved, or deleted; only reading is
- allowed.
- Moreover, some devices do not allow this attribute to be changed after
- it is first set.
- This results in a read-only file that cannot be changed or deleted.
- The only way to remove a file marked as read only is performing a hard
- reset.
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring BlackBerry0
-BlackBerry Supports only 
-\family typewriter
-ATTR_HIDDEN
-\family default
- and 
-\family typewriter
-ATTR_READ_ONLY
-\family default
-.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring BlackBerry0
 iOS Supports only 
 \family typewriter
 ATTR_READ_ONLY
@@ -69970,32 +68864,6 @@ TIME_MODIFIED
  If the file is stored in an external FAT storage, it also supports 
 \family typewriter
 TIME_CREATED
-\family default
-.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring BlackBerry0
-PalmOS Full support.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring BlackBerry0
-BlackBerry Supports only 
-\family typewriter
-TIME_MODIFIED
-\family default
- with 
-\family typewriter
-getTime()
-\family default
- – you may retrieve the time the file was last modified with 
-\family typewriter
-getTime()
-\family default
-, but you cannot change it with 
-\family typewriter
-setTime()
 \family default
 .
 \end_layout
@@ -71075,8 +69943,7 @@ GPS
 GPS
 \family default
  is a class that retrieves GPS coordinates read from the COM (or Bluetooth,
- or IR) port on Palm OS.
- Windows Mobile, Android, BlackBerry, and iOS use the native API instead
+ or IR) port on Windows Mobile, Android, and iOS use the native API instead
  of reading from the COM port.
  This class only retrieves data updating the internal fields.
  If you want to display that data, you may use the 
@@ -71634,8 +70501,8 @@ Shows a Google Maps viewer on a separate window.
  Internet connection is required.
  Currently works on Android and iOS only.
  Pressing back returns to the application on Android.
- On iPhone you must do a double-click on the home button to open the task
- manager to return to your application.
+ On iOS you must do a double-click on the home button to open the task manager
+ to return to your application.
  This class only has a default constructor and a method, which is described
  below:
 \end_layout
@@ -71760,15 +70627,6 @@ BLUETOOTH
 \end_inset
 
 Fully functional on Windows CE and Android devices.
- BlackBerry supports only 
-\family typewriter
-WIFI
-\family default
-, always returning 
-\family typewriter
-false
-\family default
- for other types.
  Always return 
 \family typewriter
 false
@@ -71785,32 +70643,14 @@ type) Retrieves the current state of the provided radio.
 \begin_inset Newline newline
 \end_inset
 
-Currently works only on Windows CE, Android devices, and BlackBerry.
+Currently works only on Windows CE and Android devices.
  However, it will always return 
-\family typewriter
-RADIO_STATE_DISABLED
-\family default
- for 
-\family typewriter
-BLUETOOTH
-\family default
- on BlackBerry.
- Always return
 \begin_inset Newline newline
 \end_inset
 
 
 \family typewriter
 RADIO_STATE_DISABLED
-\family default
- on the other platforms.
- The other possible return is
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-RADIO_STATE_ENABLED
 \family default
 .
 \end_layout
@@ -71830,11 +70670,6 @@ int
 
 state) Change the state of the provided radio.
  Fully functional on Windows CE and Android devices.
- BlackBerry supports only 
-\family typewriter
-WIFI
-\family default
-.
  Does nothing on other platforms.
  
 \end_layout
@@ -73273,7 +72108,7 @@ Conduits can only be used on Windows 2000 and above, because currently this
 \end_layout
 
 \begin_layout Itemize
-Currently the synchronization API only supports WinCE and PalmOS devices.
+The synchronization API only supports WinCE devices.
 \end_layout
 
 \begin_layout Itemize
@@ -73322,13 +72157,6 @@ WinCE device and Windows 2000 or XP – requires Microsoft ActiveSync.
  specific version.
 \end_layout
 
-\begin_layout Itemize
-PalmOS device and Windows – requires the Palm Desktop with the HotSync Manager
- 6.0.1.
- The conduit may work with other versions of the HotSync Manager, but the
- version 6.0.1 is recommended.
-\end_layout
-
 \end_deeper
 \begin_layout Standard
 A conduit is usually triggered by the desktop synchronization software under
@@ -73341,11 +72169,6 @@ WinCE – The conduit is executed whenever a device is connected to the desktop
  and recognized by the Microsoft ActiveSync or the Windows Mobile Device
  Center.
  No extra interaction is required.
-\end_layout
-
-\begin_layout Itemize
-PalmOS – The conduit is executed during the HotSync operation, which must
- be started by the user.
 \end_layout
 
 \begin_layout Chapter
@@ -73369,32 +72192,12 @@ Conduit
 
 \begin_layout Labeling
 \labelwidthstring 00.00
-/rp Registers this conduit for PalmOS devices.
+/rw /ra Registers this conduit for WinCE devices.
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00
-/up Unregisters this conduit for PalmOS devices.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00
-/rw Registers this conduit for WinCE devices.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00
-/uw Unregisters this conduit for WinCE devices.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00
-/ra Registers this conduit for WinCE and PalmOS devices.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00
-/ua Unregisters this conduit for WinCE and PalmOS devices.
+/uw /ua Unregisters this conduit for WinCE devices.
 \end_layout
 
 \begin_layout Labeling
@@ -73404,13 +72207,13 @@ Conduit
 
 \begin_layout Standard
 For example, to register the PainterConduit sample to retrieve the image
- created with the Painter sample for a PalmOS device:
+ created with the Painter sample for a Windows CE device:
 \end_layout
 
 \begin_layout Standard
 
 \family typewriter
-PainterConduit.exe /rp
+PainterConduit.exe /rw
 \end_layout
 
 \begin_layout Standard
@@ -73420,7 +72223,7 @@ To unregister:
 \begin_layout Standard
 
 \family typewriter
-PainterConduit.exe /up
+PainterConduit.exe /uw
 \end_layout
 
 \begin_layout Standard
@@ -73456,18 +72259,8 @@ This class has the following constants, public attributes, constructors,
 \end_layout
 
 \begin_layout FieldList
-TARGETING_WINCE Used internally to indicate that the target platform for
- synchronization is Windows CE.
-\end_layout
-
-\begin_layout FieldList
-TARGETING_PALMOS Used internally to indicate that the target platform for
- synchronization is Palm OS.
-\end_layout
-
-\begin_layout FieldList
-TARGETING_ALL Used internally to indicate that the target platform for synchroni
-zation is Windows CE or Palm OS.
+TARGETING_WINCE,TARGETING_ALL Used internally to indicate that the target
+ platform for synchronization is Windows CE.
 \end_layout
 
 \begin_layout FieldList
@@ -73516,9 +72309,7 @@ log(String
 \begin_inset space ~
 \end_inset
 
-text) When synchronizing Palm OS devices, logs the given text on the HotSync
- log.
- When synchronizing Windows CE, the text is logged on the debug console
+text) When synchronizing Windows CE, the text is logged on the debug console
  instead.
  This is a static method.
 \end_layout
@@ -73622,23 +72413,7 @@ false
 onRegister()
 \family default
  method, inherited by your conduit.
- This is a sample that sets the screen size to be the same of 
-\family typewriter
-/scr palmhi
-\family default
- when running on the desktop: 
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-setConduitRect(-2,-2,320,320,false); 
-\end_layout
-
-\end_inset
-
-
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -73648,10 +72423,7 @@ RemoteFile
 \begin_layout Standard
 Allows you to access a file on the device from the desktop during the conduit
  synchronization.
- It may only be used on files stored using a file system, therefore, it
- cannot be used to handle files on the Palm OS internal memory.
- But you may use it to handle files on the device's built-in memory or an
- inserted external card.
+ It may only be used on files stored using a file system.
  
 \end_layout
 
@@ -73677,17 +72449,6 @@ null
 /
 \family default
 , so it is easy to distinguish them from a file.
- On Palm OS, passing an empty string will return all installed cards.
- The flash memory slot will be named builtin (which is usually slot 1).
- Then, to copy to/from a slot, you must use 
-\family typewriter
-slot:/full_path_to_file
-\family default
- (e.g.: 
-\family typewriter
-1:/dbs/myapp/MyPDBFile.pdb
-\family default
-).
  
 \end_layout
 
@@ -74040,32 +72801,6 @@ key=value
 p1=v1;p2=v2
 \family default
 .
- On BlackBerry, the following parameters are valid: 
-\family typewriter
-apn=[value]
-\family default
-, 
-\family typewriter
-apnuser=[value]
-\family default
-, 
-\family typewriter
-apnpass=[value]
-\family default
-, 
-\family typewriter
-directtcp=[true | false]
-\family default
-, and 
-\family typewriter
-nolinger=[true | false]
-\family default
-.
- On Palm OS devices, the only valid parameter is 
-\family typewriter
-nolinger=[true | false]
-\family default
-.
  If 
 \family typewriter
 true
@@ -74125,40 +72860,6 @@ writeTimeout The timeout value for write operations.
 Socket.DEFAULT_WRITE_TIMEOUT
 \family default
 .
-\end_layout
-
-\begin_layout FieldList
-refreshBeforeEachRead If set to 
-\family typewriter
-true
-\family default
-, the status of all connections will be checked and closed connections will
- be reopened before each read/write operation.
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100line%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-This field is ONLY used on PalmOS devices.
- It is simply ignored on other platforms.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -75203,8 +73904,7 @@ target "http://axtls.cerocclub.com.au/index.htm"
 
 \begin_layout Standard
 The original package supports Linux, Win32, Solaris & Cygwin.
- The SuperWaba team added support for Palm OS 5.0 and Symbian through an
- integration with the existing TotalCross VM network capabilities.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -78372,7 +77072,7 @@ Dial
 Used to dial a number in a smartphone.
  A single listener can receive messages from the system informing the current
  status.
- Currently works on Windows CE, BlackBerry, Android, and iOS.
+ Currently works on Windows CE, Android, and iOS.
  It is not possible to complete a call if there is no chip.
  On Android and iOS, the application goes to background and another window
  is opened.
@@ -78426,7 +77126,7 @@ SMS
 
 \begin_layout Standard
 Class used to send and receive SMS messages.
- Currently supports Windows CE and Blackberry only.
+ Currently supports Windows CE only.
  
 \end_layout
 
@@ -83188,7 +81888,7 @@ PortConnector
 \family default
  can use any port (including infrared), however, it is not guaranteed that
  it will work with that port.
- For example, IR does not work on Palm OS devices.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -83436,7 +82136,7 @@ PortConnector
 \family default
  can use any port (including infrared), however, it is not guaranteed that
  it will work with that port.
- For example, IR does not work on Palm OS devices.
+ 
 \end_layout
 
 \begin_layout FieldList
@@ -86653,11 +85353,6 @@ Scanner
 \end_layout
 
 \begin_layout Standard
-For Palm OS, you may use the Janam devices along with its native WEDGE applicati
-on.
-\end_layout
-
-\begin_layout Standard
 TotalCross also supports the Opticon H16 bluetooth scanner.
 \end_layout
 
@@ -86864,10 +85559,7 @@ activate()
 \begin_inset Newline newline
 \end_inset
 
-Note: the Symbol Scanner API differs on Palm and PocketPC (the Java emulation
- works the same as PocketPC).
- On Palm activating the scanner will allow the user to scan any number of
- barcodes until the scanner is deactivated.
+Note: the Java emulation works the same as PocketPC.
  On Java/PocketPC activating the scanner only schedules a single scan.
  
 \begin_inset Newline newline
@@ -90783,15 +89475,6 @@ The TotalCross VM has an interpreter, which makes it a little slow for certain
 \end_layout
 
 \begin_layout Standard
-TotalCross uses the virtual machine of BlackBerry (there's no C development
- kit for it, so we can't build our virtual machine on BlackBerry; instead,
- we only ported the TotalCross classes to run on the top of the RIM Java
- API).
- This is the reason why the BlackBerry timings are different.
- 
-\end_layout
-
-\begin_layout Standard
 These tips and tricks can make a very big difference in speed not only when
  running your program in PDAs, but also on desktop systems.
  Most of them can be used in any Java environment, and are actually referenced
@@ -90808,15 +89491,7 @@ There are some proof timings (measured in microseconds – µ = 1 second /
 \end_layout
 
 \begin_layout Itemize
-Palm OS: Palm Centro, 312MHz – named Palm
-\end_layout
-
-\begin_layout Itemize
 Windows Mobile: Toshiba G900, 400MHz – named Win
-\end_layout
-
-\begin_layout Itemize
-BlackBerry Curve 8330, 312MHz – named BB
 \end_layout
 
 \begin_layout Itemize
@@ -90866,7 +89541,7 @@ for (int i =0; i < v.size(); i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 2.0, Win: 1.00, BB: 3.00, iPhone: 5.47
+Win: 1.00, iPhone: 5.47
 \end_layout
 
 \begin_layout Standard
@@ -90894,7 +89569,7 @@ for (int i=0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 0.67, Win: 0.40, BB: 1.07, iPhone: 1.47
+Win: 0.40, iPhone: 1.47
 \end_layout
 
 \begin_layout Standard
@@ -90918,7 +89593,7 @@ for (int i=v.size()-1; i >= 0; i--)
 \end_layout
 
 \begin_layout Standard
-Palm: 0.67, Win: 0.40, BB: 0.93, iPhone: 1.40
+Win: 0.40, iPhone: 1.40
 \end_layout
 
 \begin_layout Standard
@@ -90952,7 +89627,7 @@ for (int i =0; i < items.length; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 0.67, Win: 0.47, BB: 3.20, iPhone: 1.53
+Win: 0.47, iPhone: 1.53
 \end_layout
 
 \end_deeper
@@ -90986,7 +89661,7 @@ public void setS(String newS) {s = newS;}
 \end_layout
 
 \begin_layout Standard
-Palm: 1.66, Win: 0.87, BB: 1.06, iPh: 2.65
+Win: 0.87, iPhone: 2.65
 \end_layout
 
 \begin_layout Standard
@@ -91005,7 +89680,7 @@ public String getS() {return s;}
 \end_layout
 
 \begin_layout Standard
-Palm: 1.62, Win: 0.86, BB: 1.05, iPhone: 2.76
+Win: 0.86, iPhone: 2.76
 \end_layout
 
 \begin_layout Standard
@@ -91032,7 +89707,7 @@ direct set (
 \family typewriter
 s = ...
 \family default
-): Palm: 0.51, Win: 0.28, BB: 0.67, iPhone: 0.69
+): Win: 0.28, iPhone: 0.69
 \end_layout
 
 \begin_layout Standard
@@ -91041,7 +89716,7 @@ direct get (
 ...
  = s
 \family default
-): Palm: 0.54, Win: 0.31, BB: 0.62, iPhone: 0.82
+): Win: 0.31, iPhone: 0.82
 \end_layout
 
 \begin_layout Standard
@@ -91081,7 +89756,7 @@ Avoid using Interfaces.
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring abstract classes0
-interfaces Palm: 4.11, Win: 2.16, BB: 1.66, iPhone: 8.83
+interfaces Win: 2.16, iPhone: 8.83
 \end_layout
 
 \begin_layout Labeling
@@ -91090,7 +89765,7 @@ abstract
 \begin_inset space ~
 \end_inset
 
-classes Palm: 1.70, Win: 0.79, BB: 1.53, iPhone: 2.54
+classes Win: 0.79, iPhone: 2.54
 \end_layout
 
 \begin_layout Labeling
@@ -91099,7 +89774,7 @@ normal
 \begin_inset space ~
 \end_inset
 
-classes Palm: 1.70, Win: 0.79, BB: 1.46, iPhone: 2.53
+classes Win: 0.79, iPhone: 2.53
 \end_layout
 
 \end_deeper
@@ -91137,7 +89812,7 @@ x/4 = x>>2
 \family typewriter
 */
 \family default
- Palm: 0.79, Win: 0.58, BB: 1.39, iPhone: 1.02
+ Win: 0.58, iPhone: 1.02
 \end_layout
 
 \begin_layout Labeling
@@ -91146,7 +89821,7 @@ x/4 = x>>2
 \family typewriter
 <<>>
 \family default
- Palm: 0.63, Win: 0.37, BB: 0.86, iPhone: 0.93
+ Win: 0.37, iPhone: 0.93
 \end_layout
 
 \end_deeper
@@ -91233,7 +89908,7 @@ n
 \family typewriter
 %
 \family default
- Palm: 0.57, Win: 0.48, BB: 1.03, iPhone: 0.76
+ Win: 0.48, iPhone: 0.76
 \end_layout
 
 \begin_layout Labeling
@@ -91242,7 +89917,7 @@ n
 \family typewriter
 &
 \family default
- Palm: 0.49, Win: 0.27, BB: 0.63, iPhone: 0.70
+ Win: 0.27, iPhone: 0.70
 \end_layout
 
 \end_deeper
@@ -91273,7 +89948,7 @@ centerY = pos[i].y;
 \end_layout
 
 \begin_layout Standard
-Palm: 1.15, Win: 0.63, BB: 1.35, iPhone: 1.61
+Win: 0.63, iPhone: 1.61
 \end_layout
 
 \begin_layout Standard
@@ -91306,7 +89981,7 @@ centerY = c.y;
 \end_layout
 
 \begin_layout Standard
-Palm: 1.03, Win: 0.57, BB: 1.18, iPhone: 1.48
+Win: 0.57, iPhone: 1.48
 \end_layout
 
 \begin_layout Standard
@@ -91448,7 +90123,7 @@ for (int i=0; i < LOOP3; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 126.00, Win: 134.00, BB: 331.40, iPhone: 225.2
+Win: 134.00, iPhone: 225.2
 \end_layout
 
 \begin_layout Standard
@@ -91507,13 +90182,7 @@ for (int i=0; i < LOOP3; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 6.00, Win: 2.40, BB: 70.00, iPhone: 7.00
-\end_layout
-
-\begin_layout Standard
-From this test, you can see that BlackBerry's garbage collector has a very
- poor performance, and thus, on that platform, you should avoid the creation
- of many objects.
+Win: 2.40, iPhone: 7.00
 \end_layout
 
 \end_deeper
@@ -91569,7 +90238,7 @@ for (int i=0; i < 10000; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 35.00, Win: 45.60, BB: 212.30, iPhone: 76.60
+Win: 45.60, iPhone: 76.60
 \end_layout
 
 \begin_layout Standard
@@ -91603,7 +90272,7 @@ lb.add(s);
 \end_layout
 
 \begin_layout Standard
-Palm: 19.00, Win: 8.80, BB: 132.80, iPhone: 33.10
+Win: 8.80, iPhone: 33.10
 \end_layout
 
 \end_deeper
@@ -91645,7 +90314,7 @@ int
 \family typewriter
 long
 \family default
- Palm: 2.04, Win: 3.88, BB: 2.72, iPhone: 1.99
+ Win: 3.88, iPhone: 1.99
 \end_layout
 
 \begin_layout Labeling
@@ -91654,7 +90323,7 @@ long
 \family typewriter
 double
 \family default
- Palm: 1.72, Win: 0.99, BB: 3.58, iPhone: 1.34
+ Win: 0.99, iPhone: 1.34
 \end_layout
 
 \begin_layout Labeling
@@ -91663,7 +90332,7 @@ double
 \family typewriter
 int
 \family default
- Palm: 0.72, Win: 0.63, BB: 1.52, iPhone: 0.90
+ Win: 0.63, iPhone: 0.90
 \end_layout
 
 \end_deeper
@@ -91710,12 +90379,12 @@ reference "sec:Event-Handling"
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-if/else Palm: 0.84, Win: 0.48, BB: 1.19, iPhone: 1.23
+if/else Win: 0.48, iPhone: 1.23
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-switch Palm: 0.72, Win: 0.43, BB: 1.04, iPhone: 1.20
+switch Win: 0.43, iPhone: 1.20
 \end_layout
 
 \end_deeper
@@ -91754,7 +90423,7 @@ from
 \begin_inset space ~
 \end_inset
 
-10 Palm: 5.00, Win: 2.4, BB: 43.60, iPhone: 7.30
+10 Win: 2.4, iPhone: 7.30
 \end_layout
 
 \begin_layout Labeling
@@ -91767,7 +90436,7 @@ from
 \begin_inset space ~
 \end_inset
 
-10000 Palm: 3.00, Win: 1.7, BB: 16.90, iPhone: 6.30
+10000 Win: 1.7, iPhone: 6.30
 \end_layout
 
 \end_deeper
@@ -91798,7 +90467,7 @@ char
 \family typewriter
 int
 \family default
- Palm: 3.42, Win: 1.64, BB: 18.05, iPhone: 4.98
+ Win: 1.64, iPhone: 4.98
 \end_layout
 
 \begin_layout Labeling
@@ -91807,7 +90476,7 @@ int
 \family typewriter
 String
 \family default
- Palm: 3.94, Win: 1.90, BB: 56.74, iPhone: 6.08
+ Win: 1.90, iPhone: 6.08
 \end_layout
 
 \end_deeper
@@ -91928,7 +90597,7 @@ x
 
 x+y
 \family default
- Palm: 0.53, Win: 0.27, BB: 0.70, iPhone: 0.71
+ Win: 0.27, iPhone: 0.71
 \end_layout
 
 \begin_layout Labeling
@@ -91945,7 +90614,7 @@ x
 
 y
 \family default
- Palm: 0.37, Win: 0.22, BB: 0.45, iPhone: 0.57
+ Win: 0.22, iPhone: 0.57
 \end_layout
 
 \end_deeper
@@ -92029,7 +90698,7 @@ instance
 \begin_inset space ~
 \end_inset
 
-variable Palm: 0.92, Win: 0.46, BB: 1.03, iPhone: 1.25
+variable Win: 0.46, iPhone: 1.25
 \end_layout
 
 \begin_layout Labeling
@@ -92038,7 +90707,7 @@ local
 \begin_inset space ~
 \end_inset
 
-variable Palm: 0.40, Win: 0.22, BB: 0.49, iPhone: 0.57
+variable Win: 0.22, iPhone: 0.57
 \end_layout
 
 \begin_layout Standard
@@ -92172,7 +90841,7 @@ for (int i =0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 98.50, Win: 61.95, BB: 243.20, iPhone: 151.10
+Win: 61.95, iPhone: 151.10
 \end_layout
 
 \begin_layout Standard
@@ -92214,7 +90883,7 @@ for (int j =0; j < n; j++)
 \end_layout
 
 \begin_layout Standard
-Palm: 94.50, Win: 54.75, BB: 155.75, iPhone: 363.85
+Win: 54.75, iPhone: 363.85
 \end_layout
 
 \begin_layout Standard
@@ -92252,7 +90921,7 @@ for (int i =0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Palm: 272.5, Win: 134.55, BB: 108.90, iPhone: 557.30
+Win: 134.55, iPhone: 557.30
 \end_layout
 
 \begin_layout Standard
@@ -92285,8 +90954,8 @@ chars2bytes()
 \end_layout
 
 \begin_layout Standard
-The iPhone has a virtual memory that swaps unused portions to disk; this
- may explain why this test ran so slowly when comparing to the other platforms.
+iOS has a virtual memory that swaps unused portions to disk; this may explain
+ why this test ran so slowly when comparing to the other platform.
 \end_layout
 
 \end_deeper
@@ -92324,7 +90993,7 @@ int
 \family typewriter
 int
 \family default
- Palm: 0.47, Win: 0.27, BB: 0.72, iPhone: 0.68
+ Win: 0.27, iPhone: 0.68
 \end_layout
 
 \begin_layout Labeling
@@ -92333,7 +91002,7 @@ int
 \family typewriter
 short
 \family default
- Palm: 0.53, Win: 0.32, BB: 0.71, iPhone: 0.81
+ Win: 0.32, iPhone: 0.81
 \end_layout
 
 \begin_layout Labeling
@@ -92342,7 +91011,7 @@ short
 \family typewriter
 byte
 \family default
- Palm: 0.56, Win: 0.32, BB: 0.73, iPhone: 0.81
+ Win: 0.32, iPhone: 0.81
 \end_layout
 
 \end_deeper
@@ -92354,7 +91023,7 @@ Remember that although the time of each operation is small, in your whole
 
 \begin_layout Standard
 As a side note, running the same tests on SuperWaba 5.85, TotalCross 1.0 beta
- 4 was 32% faster on Palm OS, and 10% faster on Windows Mobile.
+ 4 was 10% faster on Windows Mobile.
 \end_layout
 
 \begin_layout Part
@@ -92386,19 +91055,6 @@ Platform specific known features/flaws
 \end_layout
 
 \begin_layout Section
-Palm OS
-\end_layout
-
-\begin_layout Standard
-Palm OS has a very limited number of threads available to the programmer.
- In our tests, we couldn't create more than 10 threads.
-\end_layout
-
-\begin_layout Standard
-When an application crashes, the device usually resets.
-\end_layout
-
-\begin_layout Section
 Windows CE
 \end_layout
 
@@ -92408,221 +91064,12 @@ When an application crashes, it usually freezes and must be closed by the
 \end_layout
 
 \begin_layout Section
-BlackBerry
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-try
-\family default
-/
-\family typewriter
-catch
-\family default
- block with 
-\family typewriter
-Throwable
-\end_layout
-
-\begin_deeper
-\begin_layout Quote
-“The BlackBerry JVM is optimized to eliminate the stack trace if it locates
- code that catches the exception using 
-\family typewriter
-catch (Exception e)
-\family default
-.
- It does not eliminate the stack trace if your application catches the 
-\family typewriter
-Throwable
-\family default
- exception.
-\end_layout
-
-\begin_layout Quote
-For example, the following code does not print a stack trace:
-\end_layout
-
-\begin_layout Quote
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-catch (IOException e) {
-\end_layout
-
-\begin_layout Plain Layout
-
-	e.printStackTrace()
-\end_layout
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Quote
-To print a stack trace, write code like in the following example:
-\end_layout
-
-\begin_layout Quote
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-catch (Throwable t) {
-\end_layout
-
-\begin_layout Plain Layout
-
-	t.printStackTrace();
-\end_layout
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Quote
-When you debug your application, to view the stack trace, catch a 
-\family typewriter
-Throwable
-\family default
- instance” - Excerpted from “BlackBerry Java Development Environment - Fundament
-als Guide”
-\end_layout
-
-\begin_layout Standard
-In short, the above means the following:
-\end_layout
-
-\begin_layout Itemize
-When you catch an exception as 
-\family typewriter
-Throwable
-\family default
-, you may print the stack trace using 
-\family typewriter
-printStackTrace()
-\family default
-.
- Otherwise, it assumes your code handled the exception properly and discards
- the stack trace.
- In this case 
-\family typewriter
-printStackTrace()
-\family default
- will print nothing.
-\end_layout
-
-\begin_layout Itemize
-When you catch an exception as 
-\family typewriter
-Throwable
-\family default
-, you don't actually stop the exception propagation.
- It only lets you inspect the exception for debugging purposes.
- The exception is still propagated to the caller method!
-\end_layout
-
-\begin_layout Itemize
-Catching as 
-\family typewriter
-Exception
-\family default
- (or a subclass of it) allows you to stop the propagation, but does not
- give you access to the stack trace.
-\end_layout
-
-\begin_layout Itemize
-It is not possible to retrieve stack trace or redirect the 
-\family typewriter
-prinStackTrace()
-\family default
- method to other stream.
- Therefore, it's not possible to log exceptions in BlackBerry!
-\end_layout
-
-\begin_layout Standard
-So be careful when using 
-\family typewriter
-try
-\family default
-/
-\family typewriter
-catch
-\family default
- blocks with 
-\family typewriter
-Throwable
-\family default
-, it does not the same way on BlackBerry.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\family typewriter
-finalize()
-\family default
- method support
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-Since BlackBerry does not support 
-\family typewriter
-finalize()
-\family default
- methods, TotalCross implements it in a manner that objects are finalized
- only after the program quits, instead of doing it after every garbage collector
- runs.
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-When an application crashes, the devices shows a white screen with the name
- of the exception that occurred.
- Holding Alt and pressing l+g+l+g shows its event log.
- Searching it, it is possible to see the exception stack trace.
-\end_layout
-
-\begin_layout Itemize
-It is not possible to access the root (
-\family typewriter
-/
-\family default
-) directory.
-\end_layout
-
-\begin_layout Section
-iPhone and Android
+iOS and Android
 \end_layout
 
 \begin_layout Standard
 When an application crashes, it is usually closed by the system.
-\end_layout
-
-\begin_layout Standard
-After closing a TotalCross application on a iPhone jailbroken device, you
- must wait some seconds to open another TotalCross application.
- Trying to open it again almost instantaneously after closing another one,
- it will start its opening and suddenly close.
+ But on Android the system might reboot.
 \end_layout
 
 \begin_layout Standard
@@ -92633,8 +91080,7 @@ Pressing the home button puts it to background.
 \end_layout
 
 \begin_layout Standard
-Unless you are using a jailbroken iPhone, your application cannot access
- another application folder.
+On iOS, your application cannot access another application folder.
  On Android is also possible for it to access a memory card.
 \end_layout
 
@@ -92904,7 +91350,7 @@ platforms
 \begin_layout Plain Layout
 
 \family typewriter
-“-palm -wince -win32”
+“-wince -win32”
 \end_layout
 
 \end_inset

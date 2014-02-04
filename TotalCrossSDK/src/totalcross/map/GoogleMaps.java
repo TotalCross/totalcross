@@ -49,4 +49,10 @@ public class GoogleMaps
       return true;
    }
    native static boolean showAddress4D(String address, boolean showSatellitePhotos);
+
+   public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
+   {
+      return true;
+   }
+   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
 }

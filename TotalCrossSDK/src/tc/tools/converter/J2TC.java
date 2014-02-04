@@ -25,7 +25,6 @@ import tc.tools.deployer.*;
 import totalcross.crypto.cipher.*;
 import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.font.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
@@ -38,6 +37,7 @@ public final class J2TC implements JConstants, TCConstants
    public static Hashtable htExcludedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    private static Hashtable htValidExtensions = new Hashtable(0xF);
    private static String totalcrossMain = "totalcross/MainClass";
+   private static String totalcrossService = "totalcross/Service";
    private static String totalcrossUiMainWindow = "totalcross/ui/MainWindow";
    public static boolean dump, dumpBytecodes;
    /** The output converted TCClass */
@@ -62,9 +62,8 @@ public final class J2TC implements JConstants, TCConstants
    {
       jc.className = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(jc.className);
       //  if xxx is the current class, compile it if and only if not exist a class xxx4D
-      boolean isBB = isBlackberry(jc.className);
       boolean has4D = htAddedClasses.exists(jc.className+"4D.class");
-      if (!isBB && !has4D)
+      if (!has4D)
       {
          if (isInnerClassOfNon4DClass(jc.className))
             return;
@@ -79,7 +78,7 @@ public final class J2TC implements JConstants, TCConstants
          bytes = tcbasz.toByteArray();
       }
       else
-         Utils.println(isBB ? ("Skipping 4B class: "+jc.className) : ("Replacing "+jc.className+" by its 4D"));
+         Utils.println("Replacing "+jc.className+" by its 4D");
    }
 
    private static boolean isInnerClassOfNon4DClass(String className) // guich@tc100b5_27
@@ -116,8 +115,10 @@ public final class J2TC implements JConstants, TCConstants
       bytes = tcbasz.toByteArray();
    }
 
-   private static boolean implementsMainClass(JavaClass jc)
+   private static boolean isMainClassOrService(JavaClass jc)
    {
+      if (jc.superClass.equals(totalcrossService))
+         return DeploySettings.isService = true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)
             if (totalcrossMain.equals(jc.interfaces[i]))
@@ -216,9 +217,6 @@ public final class J2TC implements JConstants, TCConstants
                if (p.className.equals("totalcross/sys/Settings"))
                {
                   String field = p.fieldName;
-                  if (field.equals("useNewFont") && bcs[j-1] instanceof BC004_iconst_1)
-                     DeploySettings.fontTCZ =  Font.NEW_FONT_SET+".tcz";
-                  else
                   if (field.equals("resizableWindow"))
                      DeploySettings.resizableWindow = bcs[j-1] instanceof BC004_iconst_1;
                   else
@@ -305,7 +303,9 @@ public final class J2TC implements JConstants, TCConstants
    private static void setApplicationProperties(JavaClass jc) throws Exception
    {
       TCZ.mainClassName = DeploySettings.mainClassName = jc.className;
-      DeploySettings.isMainWindow = !implementsMainClass(jc);
+      DeploySettings.isMainWindow = !isMainClassOrService(jc);
+      if (!DeploySettings.isMainWindow) 
+         System.out.println("Application is MainClass or Service");
 
       for (int i =0; i < jc.methods.length; i++)
          if (jc.methods[i].signature.equals("<init>()")) // first check in the constructor
@@ -328,11 +328,6 @@ public final class J2TC implements JConstants, TCConstants
       return f;
    }
 
-   private static boolean isBlackberry(String name)
-   {
-      return name.endsWith("4B") || name.indexOf("4B$") >= 0;
-   }
-
    private void convertMethods(JavaClass jc, TCClass tc) throws Exception
    {
       JavaMethod[] jms = jc.methods;
@@ -352,7 +347,7 @@ public final class J2TC implements JConstants, TCConstants
          else
          {
             String sign = jm.name + "4D" + jm.signature.substring(jm.name.length());
-            if (isBlackberry(jm.name) || Bytecode2TCCode.hasMethodWith4D(jc, sign))
+            if (Bytecode2TCCode.hasMethodWith4D(jc, sign))
             {
                methodsIgnored.put(i, i); // put its index
                newMethodCount--;
@@ -1088,6 +1083,7 @@ public final class J2TC implements JConstants, TCConstants
       htValidExtensions.put(".jpeg","");
       htValidExtensions.put(".png","");
       htValidExtensions.put(".wav","");
+      htValidExtensions.put(".pdf","");
       htValidExtensions.put(".class","");
    }
 
@@ -1158,7 +1154,7 @@ public final class J2TC implements JConstants, TCConstants
                            f.readBytes(bytes,0,bytes.length);
                            f.close();
                            JavaClass jc = new JavaClass(bytes, true);
-                           if (isMain(jc))
+                           if (isMain(jc) && !jc.className.contains("$"))
                            {
                               if (found)
                                  throw new IllegalArgumentException("More than one MainWindow/MainClass found in the given folder: "+fName+" and "+files[i]+". You must use the other options to deploy your application (a jar or specify the main class name)");
@@ -1240,9 +1236,8 @@ public final class J2TC implements JConstants, TCConstants
 				vin.addElement(new TCZ.Entry(htDump, "tcparms.bin", htDump.length));
 			}
 
-         boolean generateTCZ = options != tc.Deploy.BUILD_BB; // guich@tc100b5_30: if only for bb, don't build the tcz
-         TCMethod.checkJavaCalls = generateTCZ;
-         GlobalConstantPool.checkLimit = generateTCZ;
+         TCMethod.checkJavaCalls = true;
+         GlobalConstantPool.checkLimit = true;
 
          inSize = processFiles(vin, vout);
          if (notResolvedForNameFound && !DeploySettings.isJarOrZip)
@@ -1250,7 +1245,7 @@ public final class J2TC implements JConstants, TCConstants
                   "the class name, but cannot handle when x is a variable. Thus, the referenced classes will not be added to the deploy. " +
                   "Consider to use a jar file with all the project classes and pass it as parameter to tc.Deploy.");
 
-         if (generateTCZ && !GlobalConstantPool.isEmpty()) // guich@tc111_2: only store if there's at least one user class
+         if (!GlobalConstantPool.isEmpty()) // guich@tc111_2: only store if there's at least one user class
          {
             // convert the global constant pool
             tcbas.reset();
@@ -1272,8 +1267,6 @@ public final class J2TC implements JConstants, TCConstants
          }
          else
             cn = fName;
-         if (!DeploySettings.fontTCZ.startsWith(Font.OLD_FONT_SET)) // new: TCFont.tcz; old: TCFontOld.tcz
-            attr |= TCZ.ATTR_NEW_FONT_SET;
          if (DeploySettings.resizableWindow)
             attr |= TCZ.ATTR_RESIZABLE_WINDOW;
          if (DeploySettings.windowFont == Settings.WINDOWFONT_DEFAULT)
@@ -1301,7 +1294,7 @@ public final class J2TC implements JConstants, TCConstants
          // create the TCZ file
          if (isEmpty(vout))
             throw new DeployerException("ERROR: no files added to the TCZ!");
-         if (generateTCZ && !DeploySettings.testClass)
+         if (!DeploySettings.testClass)
          {
             TCZ out = new TCZ(vout, DeploySettings.tczFileName, attr);
             int ratio = inSize == 0 ? 0 : out.size * 100 / inSize;
@@ -1364,7 +1357,7 @@ public final class J2TC implements JConstants, TCConstants
    {
       if ("totalcross/ui/MainWindow".equals(jc.superClass)   || "totalcross/game/GameEngineMainWindow".equals(jc.superClass) ||
           "totalcross/game/GameEngine".equals(jc.superClass) || "totalcross/unit/TestSuite".equals(jc.superClass) ||
-          "totalcross/io/sync/Conduit".equals(jc.superClass))
+          "totalcross/io/sync/Conduit".equals(jc.superClass) || "totalcross/Service".equals(jc.superClass))
          return true;
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)

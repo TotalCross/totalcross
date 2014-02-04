@@ -166,8 +166,8 @@ target: compile
   <mkdir dir="${output}/classes" />
   <mkdir dir="${output}/devicesrc" />
   <copy todir="${output}/devicesrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*,**/*4B*" />
-     <fileset dir="${src}" includes="ras/CompilationDate4B.java,tc/tools/deployer/Deployer4BB.java" />
+     <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/zxing/**,totalcross/android/**,**/*4A.*,**/*4B*" />
+     <fileset dir="${src}" includes="ras/CompilationDate4B.java" />
   </copy>
   <replaceregexp file="${output}/devicesrc/tc/Deploy.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 
@@ -184,7 +184,6 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
-        <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -208,51 +207,6 @@ target: compile
 
 </target>
   
-<target name="compile-blackberry" description="compiles everything for BlackBerry">
-
-  <echo message="compile the TotalCross SDK for BlackBerry with JDK ${ant.java.version}"/>
-  <mkdir dir="${output}/classes_bb" />
-  <mkdir dir="${output}/src_bb" />
-  <copy todir="${output}/src_bb" overwrite="true" preservelastmodified="true">
-    <fileset dir="${src}" excludes="tc/tools/InvalidateIPA.java,totalcross/android/**,**/*4A.*" />
-  </copy>
-  
-  <taskdef name="bbprecomp" classname="tc.tools.ant.BBPreComp" classpath="${etc}/tools/ant/tctasks.jar" />
-  <bbprecomp defines="${bb.defines}" keeporiginal="true">
-    <fileset dir="${output}/src_bb" includes="**/*4B.java" />
-  </bbprecomp>
-  
-  <javac srcdir="${output}/src_bb"
-     sourcepath=""
-     encoding="ISO-8859-1"
-     debug="${compile.debug}"
-     optimize="${compile.optimize}"
-     target="${compile.target}"
-     source="${compile.source}"
-     destdir="${output}/classes_bb"
-     excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
-     nowarn="true"
-  	includeAntRuntime="false"
-  >
-     <classpath>
-        <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-        <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-        <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-        <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
-        <pathelement location="${tools}/ipa/dd-plist.jar"/>
-        <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
-     </classpath>
-  </javac>
-
-  <!--<delete dir="${output}/src_bb"/>-->
-</target>
-
 <target name="compile-desktop" 
       description="compiles everything for desktop">
 
@@ -260,7 +214,7 @@ target: compile
   <mkdir dir="${output}/classes_desktop" />
   <mkdir dir="${output}/desktopsrc" />
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true">
-     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/android/,tc/tools/InvalidateIPA.java,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
+     <fileset dir="${src}" excludes="**/*4A.*,**/*4B.*,**/*4D.*,totalcross/zxing/,totalcross/android/,tc/tools/InvalidateIPA.java,tc/samples/**,tc/test/**,ras/**,**/*4B$*" />
      <fileset dir="${src}" includes="ras/ActivationClient.java,ras/ActivationException.java" />
   </copy>
   
@@ -293,7 +247,6 @@ target: compile
   >
   	
     <classpath>
-       <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
        <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
@@ -397,7 +350,6 @@ target: desktop
   <delete file="${dist}/tcweb.jar"/>
   <delete file="${dist}/tcweb_.jar"/>
   <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_desktop"/>
-  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_desktop"/>
   <jar destfile="${dist}/tcweb.jar" compress="yes" update="no">
     <fileset dir="${output}/classes_desktop"
     excludes="tc/**,PostInstall.class"
@@ -460,7 +412,7 @@ target: javadoc
   <mkdir dir="${output}/javadoc" />
   <copy todir="${output}/javadoc">
     <fileset dir="${src}"
-    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/android/**"/>
+    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**"/>
   </copy>
 
   <echo message="Removing 4D and 4B methods" />
@@ -518,8 +470,8 @@ target: device
   <delete file="${output}/tcsdk_.jar"/>
   <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="ras/**/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
-    excludes="totalcross/android/**,**/*4A*,totalcross/TCEventThread*"
+    includes="ras/**/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
+    excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*"
     />
     <fileset dir="${src}" includes="totalcross/res/**" />
   </jar>
@@ -545,244 +497,13 @@ target: device
     <arg value="${output}/tcsdk.jar"/>
     <arg line="/n TCBase"/>
     <arg line="${tcdeploy_line}"/>
-    <arg line="-palm -win32"/>
+    <arg line="-win32"/>
     <arg line="/a TCvm"/>
   </java>
 
   <copy file="${output}/install/win32/TCBase.tcz" todir="${dist}/vm"/>
-  <copy file="${output}/install/palm/TCBase.pdb" todir="${dist}/vm/palm"/>
   <copy file="${fonts}/TCFont.tcz" todir="${dist}/vm"/>
-  <copy file="${fonts}/TCFont.pdb" todir="${dist}/vm/palm"/>
-  <copy file="${fonts}/TCFontOld.tcz" todir="${dist}/vm"/>
-  <copy file="${fonts}/TCFontOld.pdb" todir="${dist}/vm/palm"/>
 
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: blackberry_sdk
-
--description:
-        build the TotalCross BlackBerry module in demo version
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="blackberry" depends="compile-blackberry">
-
-  <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_bb" />
-  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_bb" />
-  <copy todir="${output}/classes_bb/totalcross/res" verbose="true">
-   <fileset dir="${src}/totalcross/res" includes="**/*.png"/>
-  </copy>
-
-  
-  <delete file="${output}/TotalCross.jar"/>
-  <jar destfile="${output}/TotalCross.jar" compress="no" update="no">
-    <fileset dir="${output}/classes_bb" includes="${bb.includes}" excludes="totalcross/util/zip/ZipFile*"/>
-  </jar>
-
-  <echo message="creating the TotalCross.cod file" />
-  <copy file="${etc}/tools/bb/lib/${bb.minor.os.version}/net_rim_api.jar" tofile="${etc}/tools/bb/lib/net_rim_api.jar" overwrite="true" />
-  <java classname="tc.Deploy" fork="yes" dir="${output}" failonerror="yes" >
-    <classpath>
-      <pathelement location="${output}/classes_bb" />
-      <pathelement location="${sdk.root}" />
-    </classpath>
-    <arg value="${output}/TotalCross.jar" />
-    <arg line="/n TotalCross" />
-    <arg line="${tcdeploy_line}" />
-    <arg line="/a TCvm"/>
-    <arg value="-bb" />
-  </java>
-  <delete file="${etc}/tools/bb/lib/net_rim_api.jar" />
-  
-  <mkdir dir="${dist}/vm/bb/${bb.minor.os.version}" />
-  <move file="${output}/install/bb/TotalCross.alx" todir="${dist}/vm/bb/${bb.minor.os.version}" overwrite="true">
-    <filterchain>
-      <replaceregex pattern="(\x3Capplication.*)(\x22)(\x3E)" replace="\1\2 _blackberryVersion=\2[${bb.minor.os.version},${bb.major.os.version})\2\3" />
-      <replaceregex pattern="(\x3Cdescription\x3E).*(\x3C/description\x3E)" replace="\1${bb.description}\2" />
-      <replaceregex pattern="(\x3Cversion\x3E).*(\x3C/version\x3E)" replace="\1${versionStr}\2" />
-      <replaceregex pattern="(\x3Cvendor\x3E).*(\x3C/vendor\x3E)" replace="\1SuperWaba Ltda.\2" />
-      <replaceregex pattern="(\x3Ccopyright\x3E).*(\x3C/copyright\x3E)" replace="\1Copyright \(C\) 2000\-2012 SuperWaba Ltda\.\2" />
-      <expandproperties />
-    </filterchain>
-  </move>
-  <move file="${output}/install/bb/TotalCross.jad" todir="${dist}/vm/bb/${bb.minor.os.version}" overwrite="true">
-    <filterchain>
-      <replaceregex pattern="(MIDlet-Description: ).*" replace="\1${bb.description}" />
-      <replaceregex pattern="(MIDlet-Version: ).*" replace="\1${versionStr}" />
-      <replaceregex pattern="(MIDlet-Vendor: ).*" replace="\1SuperWaba Ltda." />
-      <expandproperties />
-    </filterchain>
-  </move>
-  <move todir="${dist}/vm/bb/${bb.minor.os.version}" overwrite="true">
-    <fileset dir="${output}/install/bb" includes="TotalCross*" excludes="TotalCross.jar,TotalCross*.debug" />
-  </move>
-
-</target>
-
-<target name="blackberry_sdk_430" >
-
-  <property name="bb.minor.os.version" value="4.3.0" />
-  <property name="bb.major.os.version" value="4.7.0" />
-  <property name="bb.defines" value="DEMOVERSION,OSVERSION=430" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-
-<target name="blackberry_sdk_470" >
-
-  <property name="bb.minor.os.version" value="4.7.0" />
-  <property name="bb.major.os.version" value="5.0.0" />
-  <property name="bb.defines" value="DEMOVERSION,OSVERSION=470" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_sdk_500" >
-  
-  <property name="bb.minor.os.version" value="5.0.0" />
-  <property name="bb.major.os.version" value="" />
-  <property name="bb.defines" value="DEMOVERSION,OSVERSION=500" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
-  
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_sdk" description="build the TotalCross.cod in demo mode for all OS versions">
-  
-  <antcall target="blackberry_sdk_430" />
-  <antcall target="blackberry_sdk_470" />
-  <antcall target="blackberry_sdk_500" />
-  
-  <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
-  
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Demo" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
-    <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
-  </alxjoin>
-  
-</target>
-
-<target name="blackberry_vms_430" >
-
-  <property name="bb.minor.os.version" value="4.3.0" />
-  <property name="bb.major.os.version" value="4.7.0" />
-  <property name="bb.defines" value="FULLVERSION,OSVERSION=430" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-
-<target name="blackberry_vms_470" >
-
-  <property name="bb.minor.os.version" value="4.7.0" />
-  <property name="bb.major.os.version" value="5.0.0" />
-  <property name="bb.defines" value="FULLVERSION,OSVERSION=470" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_vms_500" >
-
-  <property name="bb.minor.os.version" value="5.0.0" />
-  <property name="bb.major.os.version" value="" />
-  <property name="bb.defines" value="FULLVERSION,OSVERSION=500" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_vms" description="build the TotalCross.cod in full mode for all OS versions">
-  
-  <antcall target="blackberry_vms_430" />
-  <antcall target="blackberry_vms_470" />
-  <antcall target="blackberry_vms_500" />
-  
-  <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
-  
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
-    <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
-  </alxjoin>
-  
-</target>
-
-<target name="blackberry_vms_noras_430" >
-
-  <property name="bb.minor.os.version" value="4.3.0" />
-  <property name="bb.major.os.version" value="4.7.0" />
-  <property name="bb.defines" value="OSVERSION=430" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-
-<target name="blackberry_vms_noras_470" >
-
-  <property name="bb.minor.os.version" value="4.7.0" />
-  <property name="bb.major.os.version" value="5.0.0" />
-  <property name="bb.defines" value="OSVERSION=470" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_vms_noras_500" >
-
-  <property name="bb.minor.os.version" value="5.0.0" />
-  <property name="bb.major.os.version" value="" />
-  <property name="bb.defines" value="OSVERSION=500" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class,totalcross/**/*.png" />
-  <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
-
-  <antcall target="blackberry" />
-
-</target>
-  
-<target name="blackberry_vms_noras" description="build the TotalCross.cod in development mode (no RAS) for all OS versions">
-  
-  <antcall target="blackberry_vms_noras_430" />
-  <antcall target="blackberry_vms_noras_470" />
-  <antcall target="blackberry_vms_noras_500" />
-  
-  <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
-  
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full - No RAS" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
-    <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
-  </alxjoin>
-  
-</target>
-
-<target name="bb-codesign" description="Signs all the cods in the output path">
-   <retry retrycount="3">
-      <sequential>
-         <var name="signaturetool.output" unset="true"/>
-         <java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output" timeout="180000">
-            <arg line="-a -c -C -p superwaba -r ${target}" />
-         </java>
-         <fail>
-            <condition>
-               <not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
-            </condition>
-         </fail>
-      </sequential>
-   </retry>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -847,7 +568,7 @@ target: samples
    <mkdir dir="${target.dir}" />
 
    <!-- win32 packaging not supported on Linux -->
-   <condition property="supportedPlatforms" value="-palm -iphone -linux">
+   <condition property="supportedPlatforms" value="-iphone -linux">
 	<os family="unix"/>
    </condition>
    <property name="supportedPlatforms" value="-all"/>	
@@ -868,4 +589,5 @@ target: samples
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
 
+<target name="bb-codesign" />
 </project>

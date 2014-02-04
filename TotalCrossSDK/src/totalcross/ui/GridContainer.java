@@ -48,9 +48,11 @@ public class GridContainer extends Container
    public static final int VERTICAL_ORIENTATION = 1;
    
    private int orientation, cols, rows, rpp, pageCount;
-   private ScrollContainer sc;
+   /** The ScrollContainer used in this control. */
+   public ScrollContainer sc;
    private Cell[] cells;
    private ArrowButton btFirst, btLast;
+   private ArrowButton btPrev, btNext;
       
    /** The container that has the page number and first/last arrows.
     * Only works when orientation is horizontal, and is null otherwise. */
@@ -120,6 +122,25 @@ public class GridContainer extends Container
       sc.setFont(font);
    }
    
+   private class FLArrowButton extends ArrowButton
+   {
+      public FLArrowButton(byte direction, int prefWH, int arrowColor)
+      {
+         super(direction, prefWH, arrowColor);
+         setBorder(BORDER_NONE);
+      }
+      
+      public void onPaint(Graphics g)
+      {
+         super.onPaint(g);
+         g.backColor = arrowColor;
+         if (direction == Graphics.ARROW_LEFT)
+            g.fillRect(xx-2,yy,2,height);
+         else
+            g.fillRect(xx+fmH/2,yy,2,height);
+      }
+   }
+   
    public void initUI()
    {
       boolean isHoriz = orientation == HORIZONTAL_ORIENTATION;
@@ -129,18 +150,41 @@ public class GridContainer extends Container
          add(pagepos,CENTER,BOTTOM,PARENTSIZE+30,fmH);
          pagepos.setPosition(1);      
          sc.flick.setScrollDistance(width);
+
+         btFirst = new FLArrowButton(Graphics.ARROW_LEFT,fmH/2,foreColor);
+         add(btFirst,LEFT,BOTTOM,PARENTSIZE+18,fmH);
+
+         btPrev = new ArrowButton(Graphics.ARROW_LEFT,fmH/2,foreColor);
+         btPrev.setBorder(Button.BORDER_NONE);
+         add(btPrev,AFTER,BOTTOM,PARENTSIZE+17,fmH);
+         btPrev.autoRepeat = true;
+
+         add(sc,LEFT,TOP,FILL,FIT);
+
+         btLast = new FLArrowButton(Graphics.ARROW_RIGHT,fmH/2,foreColor);
+         add(btLast,RIGHT,BOTTOM,PARENTSIZE+18,fmH);
+
+         btNext = new ArrowButton(Graphics.ARROW_RIGHT,fmH/2,foreColor);
+         btNext.setBorder(Button.BORDER_NONE);
+         add(btNext,BEFORE,BOTTOM,PARENTSIZE+17,fmH);
+         btNext.autoRepeat = true;
+
+         sc.flick.forcedFlickDirection = orientation == HORIZONTAL_ORIENTATION ? Flick.HORIZONTAL_DIRECTION_ONLY : Flick.VERTICAL_DIRECTION_ONLY;
       }
-      btFirst = new ArrowButton(isHoriz ? Graphics.ARROW_LEFT : Graphics.ARROW_UP,fmH/2,foreColor);
-      btFirst.setBorder(Button.BORDER_NONE);
-      add(btFirst,LEFT,BOTTOM,PARENTSIZE+(isHoriz?35:50),fmH);
-      if (!isHoriz) btFirst.setArrowSize(fmH/2);
-      
-      add(sc,LEFT,TOP,FILL,FIT);
-      
-      btLast = new ArrowButton(isHoriz ? Graphics.ARROW_RIGHT : Graphics.ARROW_DOWN,fmH/2,foreColor);
-      btLast.setBorder(Button.BORDER_NONE);
-      add(btLast,RIGHT,BOTTOM,PARENTSIZE+(isHoriz?35:50),fmH);
-      if (!isHoriz) btLast.setArrowSize(fmH/2);
+      else
+      {
+         btFirst = new ArrowButton(Graphics.ARROW_UP,fmH/2,foreColor);
+         btFirst.setBorder(Button.BORDER_NONE);
+         add(btFirst,LEFT,BOTTOM,PARENTSIZE+50,fmH);
+         btFirst.setArrowSize(fmH/2);
+         
+         add(sc,LEFT,TOP,FILL,FIT);
+         
+         btLast = new ArrowButton(Graphics.ARROW_DOWN,fmH/2,foreColor);
+         btLast.setBorder(Button.BORDER_NONE);
+         add(btLast,RIGHT,BOTTOM,PARENTSIZE+50,fmH);
+         btLast.setArrowSize(fmH/2);
+      }
       sc.flick.forcedFlickDirection = orientation == HORIZONTAL_ORIENTATION ? Flick.HORIZONTAL_DIRECTION_ONLY : Flick.VERTICAL_DIRECTION_ONLY;
    }
    
@@ -221,6 +265,12 @@ public class GridContainer extends Container
          else
          if (e.target == btLast)
             sc.scrollToPage(pageCount);
+         else
+         if (e.target == btPrev)
+            sc.scrollPage(true);
+         else
+         if (e.target == btNext)
+            sc.scrollPage(false);
       }
    }
 }

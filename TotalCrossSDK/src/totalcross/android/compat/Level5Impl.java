@@ -23,7 +23,6 @@ import java.util.*;
 
 import android.bluetooth.*;
 import android.content.*;
-import android.hardware.Camera.*;
 import android.os.*;
 
 public class Level5Impl extends Level5
@@ -133,6 +132,7 @@ public class Level5Impl extends Level5
          else
          {
             os.write(byteArray, ofs, count);
+            os.flush();
             setResponse(count,null);
          }
       }
@@ -180,9 +180,16 @@ public class Level5Impl extends Level5
          try {Thread.sleep(500);} catch (Exception eee) {}
       }
    }
-*/   
+*/
    private void btConnect(String addr) throws Exception
    {
+      boolean unsecure = false;
+      if (addr.startsWith("*"))
+      {
+         println("unsecure connection");
+         unsecure = true;
+         addr = addr.substring(1);
+      }         
       BluetoothSocket sock = htbt.get(addr);
       if (sock == null)
       {
@@ -190,7 +197,7 @@ public class Level5Impl extends Level5
             btAdapter.cancelDiscovery();
          String formattedAddr = formatAddress(addr);
          BluetoothDevice device = btAdapter.getRemoteDevice(formattedAddr);
-         sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
+         sock = unsecure ? device.createInsecureRfcommSocketToServiceRecord(SPP_UUID) : device.createRfcommSocketToServiceRecord(SPP_UUID);
          while (true)
             try
             {
@@ -222,12 +229,12 @@ public class Level5Impl extends Level5
                }
                else
                {
-                  e.fillInStackTrace();
+                  //e.fillInStackTrace();
                   throw e;
                }
             }
          println("sock "+sock+" connected on device "+addr);
-         htbt.put(addr,sock);
+         htbt.put(unsecure ? "*"+addr : addr,sock);
       }
       setResponse(sock != null,null);
    }
@@ -345,6 +352,12 @@ public class Level5Impl extends Level5
    
    private void btserverAccept(String uuid) throws Exception
    {
+      boolean unsecure = false;
+      if (uuid != null && uuid.startsWith("*"))
+      {
+         unsecure = true;
+         uuid = uuid.equals("*") ? "" : uuid.substring(1);
+      }         
       // cleanup previous instances
       if (serverSocket != null)
          try {serverSocket.close();} catch (Exception e) {AndroidUtils.handleException(e,false);}
@@ -352,7 +365,7 @@ public class Level5Impl extends Level5
          sst.interrupt();
       // create new ones
       UUID u = SPP_UUID;//UUID.fromString(uuid.replace("{","").replace("}","")); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
-      serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("MyBluetoothApp", u);
+      serverSocket = unsecure ? btAdapter.listenUsingInsecureRfcommWithServiceRecord("MyBluetoothApp", u) : btAdapter.listenUsingRfcommWithServiceRecord("MyBluetoothApp", u);
       sst = new ServerSocketThread();
       sst.uuid = uuid; // must be the original uuid
       sst.start();
@@ -371,16 +384,5 @@ public class Level5Impl extends Level5
             AndroidUtils.handleException(e,false);
          }
       setResponse(true,null);
-   }
-   
-   ///////////////////  CAMERA METHODS ////////////////////
-   public void setPictureParameters(Parameters parameters, int stillQuality, int ww, int hh)
-   {
-      parameters.setPreviewSize(ww,hh);
-      parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
-   }
-   public List<Size> getSupportedPictureSizes(Parameters parameters)
-   {
-      return parameters.getSupportedPictureSizes();
    }
 }

@@ -37,7 +37,6 @@ import totalcross.util.Hashtable;
  * <li> In JavaSE you can choose the default font size passing <code>/fontsize &lt;size&gt;</code> as argument, 
  * before the application's name.
  * </ol>
- * @see totalcross.sys.Settings#useNewFont
  */
 
 public final class Font
@@ -52,20 +51,14 @@ public final class Font
    public Object hv_UserFont;
    public FontMetrics fm;
 
-   /** The name of the file that has the old font set (prior to TotalCross 1.3). */
-   public static final String OLD_FONT_SET = "TCFontOld";
-   /** The name of the file that has the current font set (after TotalCross 1.3). */
-   public static final String NEW_FONT_SET = "TCFont";
-   
    /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
     * If a specified font is not found, this one is used instead. 
     */
-   public static final String DEFAULT = Settings.useNewFont ? NEW_FONT_SET : OLD_FONT_SET;
+   public static final String DEFAULT = "TCFont";
    /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 44 for Palm OS, 60 for other platforms. */
-   public static int MAX_FONT_SIZE = Settings.PALMOS.equals(Settings.platform) ? 44 : 70;
-
+   public static int MAX_FONT_SIZE = 70;
 
    /** Returns the default font size, based on the screen's size.
     */
@@ -77,16 +70,8 @@ public final class Font
 
       // determine fonts as if we were in portrait mode
       int w,h;
-      if (Settings.BLACKBERRY.equals(Settings.platform)) // blackberry devices are often landscape
-      {
-         w = Settings.screenWidth;
-         h = Settings.screenHeight;
-      }
-      else
-      {
-         w = Math.min(Settings.screenWidth,Settings.screenHeight);
-         h = Math.max(Settings.screenWidth,Settings.screenHeight);
-      }
+      w = Math.min(Settings.screenWidth,Settings.screenHeight);
+      h = Math.max(Settings.screenWidth,Settings.screenHeight);
 
       if (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)
          fontSize = Settings.deviceFontHeight;
@@ -97,8 +82,8 @@ public final class Font
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
       else
-      if (Settings.BLACKBERRY.equals(Settings.platform) && w >= 640)
-         fontSize = 26; // storm 7.0 with 640x480         
+      if (Settings.isIOS() && Settings.deviceFontHeight != 0)
+         fontSize = Settings.deviceFontHeight;
       else
          switch (w)
          {
@@ -125,11 +110,6 @@ public final class Font
                else
                   fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
          }
-      if (Settings.useNewFont && ((Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_12) || Settings.deviceFontHeight == 0)) // keep font height of the new font the same as before on platforms that are not Android
-      {
-         byte[] new2oldInc = {1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7};
-         fontSize += new2oldInc[fontSize-MIN_FONT_SIZE];
-      }
       if (fontSize < MIN_FONT_SIZE)
          fontSize = MIN_FONT_SIZE;
       else

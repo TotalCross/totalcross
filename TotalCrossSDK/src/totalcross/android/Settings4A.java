@@ -119,7 +119,7 @@ public final class Settings4A
       userName = null; // still looking for a way to retrieve this on droid.	   
 	   
       // imei
-      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
       lineNumber = telephonyMgr.getLine1Number();
       // handle dual-sim phones. Usually, they overload the method with a
       Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
@@ -241,7 +241,7 @@ public final class Settings4A
 	   
 	   if (!Loader.IS_EMULATOR) // running on emulator, right now there's no way to retrieve more settings from it.
 	   {
-	      ContentResolver cr = Launcher4A.getAppContext().getContentResolver();
+	      ContentResolver cr = Launcher4A.loader.getContentResolver();
 	      
 	      Configuration config = new Configuration();
 	      Settings.System.getConfiguration(cr, config);

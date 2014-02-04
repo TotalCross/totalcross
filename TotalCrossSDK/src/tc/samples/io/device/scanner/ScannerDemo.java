@@ -54,11 +54,6 @@ import totalcross.io.device.scanner.*;
 
 public class ScannerDemo extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    // by making the members private, the compiler can optimize them.
    private String barCode;
    private Check chkScanner;

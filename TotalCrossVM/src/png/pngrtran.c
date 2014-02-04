@@ -17,7 +17,7 @@
 #include "png.h"
 
 // guich start
-#if defined(PNG_FLOATING_POINT_SUPPORTED) && defined(TOTALCROSS) /*&& defined(PALMOS)*/
+#if defined(PNG_FLOATING_POINT_SUPPORTED) && defined(TOTALCROSS)
 static double fabs(double a)
 {
    return (a < 0) ? -a : a;

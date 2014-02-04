@@ -56,8 +56,6 @@ typedef struct
    int32* timeZoneMinutesPtr;            // int
    int32* daylightSavingsMinutesPtr;     // int
    int32* showSecretsPtr;                // boolean
-   int32* nvfsVolumePtr;                 // int
-   int32* keypadOnlyPtr;                 // boolean
    int32* keyboardFocusTraversablePtr;   // boolean
    int32* closeButtonTypePtr;            // int
    int32* isFullScreenPtr;               // boolean
@@ -78,10 +76,10 @@ typedef struct
    int32* disableScreenRotation;         // boolean
    int32* deviceFontHeightPtr;           // int
    Object* iccidPtr;                     // java.lang.String
-   int32* useNewFont;                    // boolean
    int32* resizableWindow;               // boolean
-   int32* windowFont;                    // int
-   Object* lineNumber;                  // java.lang.String
+   int32* windowFont;                    // int 
+   int32* isOpenGL;                      // boolean
+   Object* lineNumber;                   // java.lang.String
 } TTCSettings, *TCSettings;
 
 typedef struct

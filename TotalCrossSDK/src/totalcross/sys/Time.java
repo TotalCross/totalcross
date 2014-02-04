@@ -80,18 +80,6 @@ public final class Time
       millis = d.get(java.util.GregorianCalendar.MILLISECOND);
    }
 
-   public void update4B()
-   {
-      java.util.Calendar d = java.util.Calendar.getInstance();
-      year = d.get(java.util.Calendar.YEAR);
-      month = d.get(java.util.Calendar.MONTH) + 1;
-      day = d.get(java.util.Calendar.DATE);
-      hour = d.get(java.util.Calendar.HOUR_OF_DAY);
-      minute = d.get(java.util.Calendar.MINUTE);
-      second = d.get(java.util.Calendar.SECOND);
-      millis = d.get(java.util.Calendar.MILLISECOND);
-   }
-
    public native void update4D();
 
    /** Constructs a time object from the given value. 

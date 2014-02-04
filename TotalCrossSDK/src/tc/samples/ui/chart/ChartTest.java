@@ -21,6 +21,7 @@ package tc.samples.ui.chart;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.chart.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
@@ -30,7 +31,6 @@ public class ChartTest extends MainWindow
    {
       Settings.applicationId = "Chrt";
       Settings.appVersion = "1.1";
-      Settings.useNewFont = true;
    }
 
    
@@ -44,6 +44,7 @@ public class ChartTest extends MainWindow
    Check is3D,showTitle,showCategories,showHGrids,
      showVGrids, isVGrad, isHGrad, isInvGrad, isDarker, showYValues;
    ComboBox legendPosition;
+   Button bt;
 
    public ChartTest()
    {
@@ -75,28 +76,29 @@ public class ChartTest extends MainWindow
       showHGrids = new Check("HGrids");
       showVGrids = new Check("VGrids");
       showYValues = new Check("YValues");
-      boolean lowRes = Settings.screenWidth < 200;
-      isHGrad = new Check(lowRes ? "H" : "Horiz");
-      isVGrad = new Check(lowRes ? "V" : "Vert");
-      isInvGrad = new Check(lowRes ? "Inv" : "Invert");
+      isHGrad = new Check("Horiz");
+      isVGrad = new Check("Vert");
+      isInvGrad = new Check("Invert");
       isDarker = new Check("Dark");
       rgType = new RadioGroupController();
       add(new Radio("Pie", rgType), RIGHT, 0);
       add(new Radio("Line", rgType), BEFORE-2, SAME);
-      add(new Radio(lowRes ? "Col" : "Column",rgType), BEFORE-2, SAME);
+      add(new Radio("Column",rgType), BEFORE-2, SAME);
       rgType.setSelectedIndex(2);
+      add(bt = new Button("*"),BEFORE-fmH/2,SAME,PREFERRED,SAME);
 
-      add(showTitle, LEFT, TOP + 2);
+      int gap =Settings.screenWidth > 320 ? fmH/2 : 0;
+      add(showTitle, LEFT, TOP + 2+gap);
       add(legendPosition, AFTER + 2, SAME,PREFERRED,SAME);
       add(showCategories, AFTER + 2, SAME);
       add(showYValues, AFTER+2, SAME);
-      add(showHGrids, LEFT, AFTER + 2);
+      add(showHGrids, LEFT, AFTER + 2 + gap);
       add(showVGrids, AFTER + 2, SAME);
       add(is3D, AFTER + 2, SAME);
 
       int r = width - is3D.getRect().x2()-6;
-      add(sh = new Slider(),AFTER+2,SAME,r/2,PREFERRED);
-      add(sv = new Slider(),AFTER+2,SAME,r/2,PREFERRED);
+      add(sh = new Slider(),AFTER+2,SAME,r/2,fmH);
+      add(sv = new Slider(),AFTER+2,SAME,r/2,fmH);
       sh.setMinimum(-6); sh.setMaximum(6); sv.setMaximum(6);
       sh.drawTicks = sv.drawTicks = true;
       sh.drawFilledArea = sv.drawFilledArea = false;
@@ -105,7 +107,7 @@ public class ChartTest extends MainWindow
       sh.setLiveScrolling(true);
       sv.setLiveScrolling(true);
 
-      add(new Label("Gradient"), LEFT, AFTER+2, PREFERRED, SAME, is3D);
+      add(new Label("Gradient"), LEFT, AFTER+2+gap, PREFERRED, SAME, is3D);
       add(isHGrad, AFTER+2, SAME);
       add(isVGrad, AFTER+2, SAME);
       add(isInvGrad, AFTER+2, SAME);
@@ -150,6 +152,15 @@ public class ChartTest extends MainWindow
    {
       if (e.type == ControlEvent.PRESSED)
       {
+         if (e.target == bt)
+         {
+            int ini = Vm.getTimeStamp();
+            for (int i = 0; i < 50; i++)
+               repaintNow();
+            int fim = Vm.getTimeStamp();
+            new MessageBox("Benchmark", "Elapsed: "+(fim-ini)+"ms").popup();
+         }
+         else
          if (e.target == mbar && mbar.getSelectedIndex() == 1)
             exit(0);
          else

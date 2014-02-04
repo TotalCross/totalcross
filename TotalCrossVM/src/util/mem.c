@@ -13,7 +13,7 @@
 
 #include "tcvm.h"
 
-#ifdef WIN32 // windows always give us aligned blocks
+#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
 #define EXTRA4ALIGN 0
 #else
 #define EXTRA4ALIGN 4
@@ -22,14 +22,6 @@
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
 #define dlmalloc malloc
 #define dlfree free
-#endif
-
-#if defined __SYMBIAN32__
-// define specific mem syscalls
-#include "symbian/_alloc.h"
-#define malloc epoc_malloc
-#define free epoc_free
-#define realloc epoc_realloc
 #endif
 
 #define XMALLOC_MARK_START 8  // note: start must be multiple of 4, otherwise a "datatype misnaligned" will be thrown in wince
@@ -189,11 +181,13 @@ TC_API Heap privateHeapCreate(const char *file, int32 line)
       xstrcpy(p->ex.creationFile, max32(0,len-(sizeof(p->ex.creationFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
       p->ex.creationLine = line;
       p->count = ++hpcount;
+      LOCKVAR(createdHeaps);
       ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
       if (ch == null)
          xfree(p);
       else
          createdHeaps = ch;
+      UNLOCKVAR(createdHeaps);
    }
    return p;
 }
@@ -332,7 +326,9 @@ TC_API void heapDestroyPrivate(Heap m)
       m->current = mb;
    }
    m->finalizerFunc = null;
+   LOCKVAR(createdHeaps);
    createdHeaps = VoidPsRemove(createdHeaps, m, null);
+   UNLOCKVAR(createdHeaps);
    xfree(m);
 }
 
@@ -377,11 +373,7 @@ struct htmElem
    uint32 addr;
    void* memH;
    int32 line;
-#ifdef PALMOS
-   char src[16]; // can't be a char pointer because an external library may release the pointer before we show the leak error
-#else
    char src[64];
-#endif
    int32 count;
    struct htmElem *next;
 };
@@ -480,7 +472,7 @@ static bool htmDispose()
 extern size_t  _msize(void *);
 #endif
 
-#if !defined(PALMOS) && !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
 static uint32 getPtrSize(void *p)
 {
 #if defined(WIN32)
@@ -489,8 +481,6 @@ static uint32 getPtrSize(void *p)
    #else
       return dlmalloc_usable_size(p);
    #endif
-#elif defined(__SYMBIAN32__)
-   return epoc_malloc_usable_size(p);
 #else
    return malloc_usable_size(p);
 #endif
@@ -550,9 +540,7 @@ static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks
 
 static uint8* memError(char* func, int32 origSize, const char* file, int line)
 {
-#ifdef PALMOS
-   debug("%s(%d) RETURNING NULL TO %s, line %d. Free memory: %d, max block: %d",func, (int)origSize,file,line,(int)getFreeMemory(false),(int)getFreeMemory(true));
-#elif defined WIN32
+#ifdef WIN32
    debug("%s(%d) RETURNING NULL TO %s, line %d. Free memory: %d, avail per process: %d",func, (int)origSize,file,line,(int)getFreeMemory(false),(int)getFreeMemory(true));
 #else
    debug("%s(%d) RETURNING NULL TO %s, line %d. Free memory: %d",func, (int)origSize,file,line,(int)getFreeMemory(false));
@@ -622,7 +610,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
 // fdie: If you want to use a memory checking tool such as Valgrind,
 // you have to define USE_MEMCHECKER to limit your memory use to the requested
 // memory size or the checking tool may detect many false memory corruptions.
-#if !defined(PALMOS) && !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
    size = getPtrSize(p);
 #endif
 
@@ -739,7 +727,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
 // fdie: If you want to use a memory checking tool such as Valgrind,
 // you have to define USE_MEMCHECKER to limit your memory use to the requested
 // memory size or the checking tool may detect many false memory corruptions.
-#if !defined(PALMOS) && !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
    size = getPtrSize(p);
 #endif
    if (origSize > oldSize) // if size increased, erase the new memory area
@@ -761,59 +749,3 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
    return p;
 #endif
 }
-
-
-#ifdef PALMOS
-
-/*
- *	setjmp.c	-	setjmp() and longjmp() routines for ARM family
- *
- *	THEORY OF OPERATION
- *
- *	The runtime support routines __setjmp() and longjmp() support the C <setjmp.h>
- *	facilities. __setjmp() captures the state of the program in a jmp_buf data structure
- *	which has the following C definition:
- *
- *		typedef long jmp_buf[16];		 // saved registers (see below for order)
- *
- *	setjmp() and longjmp() are defined as follows:
- *
- *		int __setjmp(jmp_buf env);
- *		#define setjmp(env) __setjmp(env)
- *		void longjmp(jmp_buf env, int val);
- *
- */
-
-#pragma thumb off
-
-/*
- *	__setjmp	-	C setjmp() routine
- *	On entry a1 points to a jmp_buf struct. On exit, a1 is 0.
- */
-
-int __setjmp(__attribute__ ((unused)) register jmp_buf env)
-{
-  asm volatile ("stmia a1,{v1-v8,sp,lr}\n");
-  asm volatile ("mov a1,$0\n");   // return 0 to indicate initial setjmp
-  asm volatile ("bx lr\n");       // return to caller using interworking return
-  return 0;                       // never reached, just to prevent a warning
-}
-
-
-/*
- *	longjmp		-	C longjmp() routine
- *	On entry a1 points to a jmp_buf struct and a2 contains the return value.
- *	On exit, a1 contains 1 if a2 was 0, otherwise it contains the value from a2.
- */
-
-void longjmp(__attribute__ ((unused)) register jmp_buf env, __attribute__ ((unused)) register int val)
-{
-  asm volatile ("ldmia a1,{v1-v8,sp,lr}\n");
-  asm volatile ("movs a1,a2\n");     // move value to result register
-  asm volatile ("moveq a1,#1\n");    // if 0, return 1 instead
-  asm volatile ("bx lr\n");          // return to caller using interworking
-}
-
-#pragma thumb reset
-
-#endif

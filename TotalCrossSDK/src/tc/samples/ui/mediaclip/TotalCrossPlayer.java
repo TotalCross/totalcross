@@ -18,31 +18,18 @@
 
 package tc.samples.ui.mediaclip;
 
-import totalcross.io.File;
-import totalcross.io.FileNotFoundException;
-import totalcross.io.IOException;
-import totalcross.sys.*;
+import totalcross.io.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.FileChooserBox;
-import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.gfx.Graphics;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.ui.media.MediaClip;
-import totalcross.ui.media.MediaClipEvent;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.ui.media.*;
 
 /** A sample showing how to play audio. */
 
 public class TotalCrossPlayer extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    MenuBar playerMenuBar;
 
    Edit edFilePathPlay;
@@ -105,7 +92,7 @@ public class TotalCrossPlayer extends MainWindow
             return f.isDir() || f.getPath().toLowerCase().endsWith(".wav");
          }
       });
-      fcb.mountTree("device/", File.isCardInserted(2) ? 2 : 1);
+      fcb.mountTree("device/");
       fcb.popup();
       return fcb.getAnswer();
    }
@@ -183,7 +170,7 @@ public class TotalCrossPlayer extends MainWindow
                try
                {
                   String path = edFilePathPlay.getText();
-                  file = new File(path.length() == 0 ? "foo" : path, File.READ_WRITE, File.isCardInserted(2) ? 2 : 1);
+                  file = new File(path.length() == 0 ? "foo" : path, File.READ_WRITE);
                   media = new MediaClip(file);
                }
                catch (FileNotFoundException feof)
@@ -236,7 +223,6 @@ public class TotalCrossPlayer extends MainWindow
    {
       // stop: a blue rectangle
       imgStop = new Image(wh, wh);
-      imgStop.transparentColor = 0;
       Graphics g = imgStop.getGraphics();
       g.backColor = Color.RED;
       g.foreColor = 1;
@@ -244,12 +230,10 @@ public class TotalCrossPlayer extends MainWindow
       g.drawRect(0, 0, wh, wh);
       // play: a green right triangle
       imgPlay = new Image(wh, wh);
-      imgPlay.transparentColor = 0;
       g = imgPlay.getGraphics();
       g.drawArrow(wh / 3, 0, wh / 2, Graphics.ARROW_RIGHT, false, 0x00AA00);
       // pause: two vertical yellow rectangles
       imgPause = new Image(wh, wh);
-      imgPause.transparentColor = 0;
       g = imgPause.getGraphics();
       g.backColor = Color.YELLOW;
       g.foreColor = 1;

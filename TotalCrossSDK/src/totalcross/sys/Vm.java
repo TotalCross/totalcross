@@ -19,7 +19,6 @@ package totalcross.sys;
 
 import totalcross.*;
 import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -228,8 +227,11 @@ public final class Vm
     * <li> Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false): -- launches another TotalCross' application
     * <li> Vm.exec("com.android.calculator2","Calculator",0,true); -- runs the Calculator program 
     * <li> Vm.exec("/sdcard/myapp.apk",null,0,false); -- calls the apk installation tool. To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
-    * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L) and JPG files.
-    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store
+    * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store. Returns -1 if args is null, -2 if file was not found.
+    * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
+    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
+    * <li> Vm.exec("broadcast","broadcast package",flags,true); -- sends a broadcast intent. "flag" is used in intent.addFlags if different of 0.
     * </ul>
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
@@ -244,7 +246,7 @@ public final class Vm
     * However, trying to update the program itself or the vm will close the program. So, update it at last.
     * 
     * @param command the command to execute
-    * @param args command arguments
+    * @param args command arguments. Does not work on Android.
     * @param launchCode launch code for PalmOS applications.
     * @param wait whether to wait for the command to complete execution before returning. If wait is false,
     * don't forget to call the <code>exit</code> method right after this command is called, otherwise the application may
@@ -335,7 +337,7 @@ public final class Vm
          millis = end - cur;
          int s = millis > 100 ? 100 : millis;
          try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
-         if (Event.isAvailable())
+         //if (Event.isAvailable()) // always call pumpEvents, otherwise a thread that use this method will not be able to update the screen
             Window.pumpEvents();
          cur = getTimeStamp();
       }
@@ -474,7 +476,6 @@ public final class Vm
    private static java.awt.datatransfer.ClipboardOwner defaultClipboardOwner = new ClipboardObserver();
 
    /** Copies the specific string to the clipboard. 
-    * Does not work on Android (it has no clipboard).
     */
    public static void clipboardCopy(String s)
    {
@@ -482,7 +483,6 @@ public final class Vm
    }
 
    /** Gets the last string from the clipboard. if none, returns "". 
-    * Does not work on Android (it has no clipboard).
     */
    public static String clipboardPaste()
    {

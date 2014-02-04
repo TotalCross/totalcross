@@ -53,10 +53,7 @@
 		0F8C8C8D1549CFC700E0967F /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A391549CFC700E0967F /* globals.c */; };
 		0F8C8C8E1549CFC700E0967F /* globals.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A3A1549CFC700E0967F /* globals.h */; };
 		0F8C8C911549CFC700E0967F /* noras.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3E1549CFC700E0967F /* noras.inc */; };
-		0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3F1549CFC700E0967F /* noras_20.inc */; };
 		0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A401549CFC700E0967F /* noras_274.inc */; };
-		0F8C8C941549CFC700E0967F /* noras_338.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A411549CFC700E0967F /* noras_338.inc */; };
-		0F8C8C951549CFC700E0967F /* noras_none.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A421549CFC700E0967F /* noras_none.inc */; };
 		0F8C8C981549CFC700E0967F /* settings_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A471549CFC700E0967F /* settings_c.h */; };
 		0F8C8C991549CFC700E0967F /* startup_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A481549CFC700E0967F /* startup_c.h */; };
 		0F8C8C9A1549CFC700E0967F /* settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A491549CFC700E0967F /* settings.c */; };
@@ -406,7 +403,9 @@
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
+		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -823,8 +822,10 @@
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
+		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
+		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1162,6 +1163,7 @@
 		0F8C8ABA1549CFC700E0967F /* device */ = {
 			isa = PBXGroup;
 			children = (
+				3AFCD5FA174D474F008BA920 /* scanner */,
 				0F8C8ABB1549CFC700E0967F /* android */,
 				0F8C8ABD1549CFC700E0967F /* bluetooth */,
 				0F8C8AC91549CFC700E0967F /* gps */,
@@ -1535,6 +1537,7 @@
 		0F8C8B481549CFC700E0967F /* darwin */ = {
 			isa = PBXGroup;
 			children = (
+				3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */,
 				3A11E08915791A9D00F883EC /* childview.h */,
 				3A2B6B251577F4BD00E3993A /* childview.m */,
 				0F8C8B491549CFC700E0967F /* AudioPlayer.h */,
@@ -1862,6 +1865,14 @@
 			path = darwin;
 			sourceTree = "<group>";
 		};
+		3AFCD5FA174D474F008BA920 /* scanner */ = {
+			isa = PBXGroup;
+			children = (
+				3AFCD5FB174D474F008BA920 /* zxing.c */,
+			);
+			path = scanner;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2074,6 +2085,7 @@
 				0F7CBA0C1552CCB100E9BD43 /* nativeProcAddressesTC.h in Headers */,
 				3A11E08A15791A9D00F883EC /* childview.h in Headers */,
 				3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */,
+				3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2155,10 +2167,7 @@
 				0F8C8C8B1549CFC700E0967F /* demo.c in Sources */,
 				0F8C8C8D1549CFC700E0967F /* globals.c in Sources */,
 				0F8C8C911549CFC700E0967F /* noras.inc in Sources */,
-				0F8C8C921549CFC700E0967F /* noras_20.inc in Sources */,
 				0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */,
-				0F8C8C941549CFC700E0967F /* noras_338.inc in Sources */,
-				0F8C8C951549CFC700E0967F /* noras_none.inc in Sources */,
 				0F8C8C9A1549CFC700E0967F /* settings.c in Sources */,
 				0F8C8C9C1549CFC700E0967F /* startup.c in Sources */,
 				0F8C8CA21549CFC700E0967F /* jcapimin.c in Sources */,
@@ -2321,6 +2330,7 @@
 				0F8C8E361549CFC700E0967F /* zutil.c in Sources */,
 				0F7CBA0B1552CCB100E9BD43 /* nativeProcAddressesTC.c in Sources */,
 				3A2B6B261577F4BD00E3993A /* childview.m in Sources */,
+				3AFCD5FC174D474F008BA920 /* zxing.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

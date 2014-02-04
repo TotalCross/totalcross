@@ -372,9 +372,7 @@ extern double fabs(double);
 #  endif /* __linux__ */
 
    /* include setjmp.h for error handling */
-#ifndef PALMOS // guich start
 #  include <setjmp.h>
-#endif // guich end
 
 #  ifdef __linux__
 #    ifdef PNG_SAVE_BSD_SOURCE

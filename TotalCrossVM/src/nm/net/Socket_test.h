@@ -17,7 +17,7 @@ TESTCASE(Socket)
 {
 #if !DEBUG_SOCKET
    TEST_CANNOT_RUN;
-#elif defined(PALMOS) || defined (WIN32) || defined(ANDROID)
+#elif defined (WIN32) || defined(ANDROID)
    TNMParams p;
    Object objArray[2];
    int32 i32Array[3];

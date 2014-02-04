@@ -24,11 +24,6 @@ import totalcross.util.*;
 
 public class FileTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private String rootPath;
 
    public FileTest()
@@ -38,8 +33,6 @@ public class FileTest extends MainWindow
       // Platform dependent temporary test folder
       if (Settings.platform.equals(Settings.LINUX) || Settings.isIOS())
          rootPath = "/tmp/";
-      else if (Settings.platform.equals(Settings.BLACKBERRY))
-         rootPath = "/store/home/user/totalcross/temp/";
       else
          rootPath = "/";
    }
@@ -306,57 +299,32 @@ public class FileTest extends MainWindow
    public void initUI()
    {
       String sdId = null;
+      MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
+      mb.popupNonBlocking();
+
+      ListBox lb;
+      add(lb = new ListBox());
+      lb.enableHorizontalScroll();
+
+      if (sdId != null)
+         lb.add("SD unique id: " + sdId);
+      else
+         lb.add("Not a SD card");
+
       try
       {
-         if (Settings.platform.equals(Settings.PALMOS))
-         {
-            if (!File.isCardInserted(-1))
-               new MessageBox("Attention", "No card inserted, using built in storage.").popup();
-            else
-            {
-               new MessageBox("Attention", "Using external storage.").popup();
-               try
-               {
-                  sdId = File.getCardSerialNumber(-1);
-               }
-               catch (IOException e)
-               {
-                  e.printStackTrace();
-               }
-            }
-         }
-
-         MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
-         mb.popupNonBlocking();
-
-         ListBox lb;
-         add(lb = new ListBox());
-         lb.enableHorizontalScroll();
-
-         if (sdId != null)
-            lb.add("SD unique id: " + sdId);
-         else
-            lb.add("Not a SD card");
-
-         try
-         {
-            testFileList(lb);
-         }
-         catch (OutOfMemoryError oome)
-         {
-            lb.add("Not all files are shown");
-         }
-         lb.setRect(LEFT, AFTER + 2, FILL, FILL);
-         testAttrTime(lb);
-         testDirectory(lb);
-         testFileRename(lb);
-         testFileReadWrite(lb);
-
-         mb.unpop();
+         testFileList(lb);
       }
-      catch (totalcross.io.IllegalArgumentIOException e)
+      catch (OutOfMemoryError oome)
       {
-         MessageBox.showException(e, false);
+         lb.add("Not all files are shown");
       }
+      lb.setRect(LEFT, AFTER + 2, FILL, FILL);
+      testAttrTime(lb);
+      testDirectory(lb);
+      testFileRename(lb);
+      testFileReadWrite(lb);
+
+      mb.unpop();
    }
 }

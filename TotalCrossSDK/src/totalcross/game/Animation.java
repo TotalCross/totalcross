@@ -16,13 +16,11 @@
 
 package totalcross.game;
 
-import totalcross.ui.Control;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.TimerEvent;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.gfx.Graphics;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /**
  * The Animation control class. <br>
@@ -39,12 +37,6 @@ public class Animation extends Control
 {
   /** Set to true to stop the animation if its parent window is not the top most. */
   public boolean pauseIfNotVisible; // guich@tc100b5_42
-  /**
-   * drawOp drawing operation used when the animation images are copied to the
-   * screen buffer.
-   * @see totalcross.ui.gfx.Graphics
-   */
-  public int drawOp;
 
   /** Delay between two frames. */
   public int framePeriod;
@@ -55,9 +47,6 @@ public class Animation extends Control
   /** Reflects the animation pause state. */
   public boolean isPaused;
 
-  /** Transparency color. */
-  protected int transColor;
-
   /** Frames buffer. */
   public Image framesBuffer;
 
@@ -66,7 +55,6 @@ public class Animation extends Control
 
   private TimerEvent animTimer;
   private int startFrame,endFrame,incFrame,frameCount,loopCount;
-  private boolean useAlpha;
 
   /** Event notification mask,
    * default value is eventFinish, that means that an event is posted
@@ -88,6 +76,9 @@ public class Animation extends Control
   public static final int LOOPS_UNLIMITED 	= 0x7FFFFFFF;
 
   protected int curFrame;
+  
+  /** Dumb field to keep compilation compatibility with TC 1 */
+  public int drawOp;
 
   /**
    * Background image.
@@ -103,35 +94,34 @@ public class Animation extends Control
      super();
   }
 
-   /**
-    * Animation constructor.
-    * 
-    * @param frames
-    *           single image containing all frames. The number of frames and the transparent colors are gotten from the
-    *           image.
-    * @param framePeriod
-    *           delay in milliseconds between two frames
-    * @throws ImageException
-    */
+  /**
+   * Animation constructor.
+   * 
+   * @param frames
+   *           single image containing all frames. The number of frames and the transparent colors are gotten from the
+   *           image.
+   * @param framePeriod
+   *           delay in milliseconds between two frames
+   * @throws ImageException
+   */
   public Animation(Image frames, int framePeriod) throws ImageException
   {
-     this(frames, frames.getFrameCount(), frames.transparentColor, framePeriod);
+    this(frames, frames.getFrameCount(), framePeriod);
   }
 
   /**
    * Animation constructor.
    * @param frames single image containing all frames.
    * @param frameCount width in pixels of one frame.
-   * @param transColor the transparency color
    * @param framePeriod delay in milliseconds between two frames
    */
-  public Animation(Image frames,int frameCount,int transColor,int framePeriod) throws ImageException// fdie@341_2 : direct multi-frame image constructor
+  public Animation(Image frames,int frameCount,int framePeriod) throws ImageException// fdie@341_2 : direct multi-frame image constructor
   {
     super();
-    setImage(frames,frameCount,transColor,framePeriod);
+    setImage(frames,frameCount,framePeriod);
   }
 
-  public void setImage(Image frames,int frameCount,int transColor,int framePeriod) throws ImageException
+  public void setImage(Image frames,int frameCount,int framePeriod) throws ImageException
   {
       this.focusTraversable = false;
       boolean currentlyPlaying = this.isPlaying;
@@ -140,12 +130,6 @@ public class Animation extends Control
       frames.setFrameCount(frameCount);
       multiFramesImage = frames.getFrameCount() > 1;
 
-      this.useAlpha = frames.useAlpha;
-      this.transColor=transColor;
-      if (useAlpha)
-         drawOp = Graphics.DRAW_PAINT;
-      else
-      if (transColor!=-1) drawOp=Graphics.DRAW_SPRITE;
       this.framePeriod=framePeriod;
       this.frameCount = frameCount;
 
@@ -188,9 +172,8 @@ public class Animation extends Control
    /** Called by the system to draw the animation. **/
    public void onPaint(Graphics gfx)
    {
-      if (useAlpha || drawOp == Graphics.DRAW_SPRITE) // Guich proposed optimization
-      {
-         // fdie@400_51 : save animation background
+      // fdie@400_51 : save animation background - no need in OpenGL, since the screen is fully painted at each frame
+      if (!Settings.isOpenGL)
          if (background == null)
          {
             // guich@tc100: on a screen rotation, we would have to re-get the background!
@@ -198,22 +181,21 @@ public class Animation extends Control
             {
                background = new Image(width, height);
                // screen -> buffer
-               background.getGraphics().copyRect(parent/* this */, x, y, width, height, 0, 0);
+               background.getGraphics().copyRect(parent, x, y, width, height, 0, 0);
             }
             catch (ImageException e)
             {
             }            
          }
          else if (background != null)
-            gfx.copyRect(background, 0, 0, width, height, 0, 0); // buffer -> screen
-      }
+            gfx.drawImage(background,0,0);
 
       // frame lookup table, for special animations
       if (multiFramesImage)
          framesBuffer.setCurrentFrame(curFrame);
 
       // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
-      gfx.drawImage(framesBuffer, 0, 0, drawOp, useAlpha ? -1 : transColor == -1 ? Color.WHITE : transColor, true);
+      gfx.drawImage(framesBuffer, 0, 0, true);
    }
 
   /**

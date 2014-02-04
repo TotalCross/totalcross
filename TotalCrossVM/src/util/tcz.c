@@ -360,12 +360,6 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
 #endif   
    volatile TCZFile t=null,t2=null;
 
-#ifdef PALMOS
-   CharP dot;
-   if ((dot=xstrstr(tczName, ".tcz")) != null) // in Palm OS, we must cut off the extension
-      *dot = 0;
-#endif
-
 #ifdef ANDROID
    if ((t = tczOpen(tczName, false)) != null)
 #else      

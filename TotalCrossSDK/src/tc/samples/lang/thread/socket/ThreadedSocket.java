@@ -18,19 +18,12 @@
 
 package tc.samples.lang.thread.socket;
 
-import totalcross.net.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
 public class ThreadedSocket extends MainWindow implements Runnable
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    static interface SetX
    {
       public void incX(int x);
@@ -53,26 +46,7 @@ public class ThreadedSocket extends MainWindow implements Runnable
 
    public void initUI()
    {
-      Label l;
       Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS,true);
-      if (Settings.platform.equals(Settings.PALMOS)) // palm require netlib to be loaded in the main execution line
-      {
-         add(l = new Label("WAIT, OPENING SOCKET\nBEFORE STARTING THREADS.\nSEE THE DIALOG BELOW"),CENTER,TOP);
-         repaintNow();
-         try
-         {
-            new Socket("www.google.com",80,10000).close();
-         }
-         catch (Exception e)
-         {
-            new MessageBox("Error","Error when connecting. Aborting the sample... ("+e+")").popup();
-            exit(1);
-            return;
-         }
-         remove(l);
-         Vm.setAutoOff(false); // palm halts if using sockets in a thread and the device turns off
-      }
-
       directionButton = new Button("Switch Direction");
       containers = new SetX[3];
       containers[0] = new TypingContainer(true);

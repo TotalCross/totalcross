@@ -15,8 +15,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/Vm_c.h"
-#elif defined(PALMOS)
- #include "palm/Vm_c.h"
 #elif defined(ANDROID)
  #include "android/Vm_c.h"
 #else
@@ -218,7 +216,7 @@ TC_API void tsV_clipboardCopy_s(NMParams p) // totalcross/sys/Vm native public s
       throwNullArgumentException(p->currentContext, "s");
    else
    {   
-#if defined(PALMOS) || defined(WIN32)
+#if defined(WIN32)
       CharP s;
       int32 sLen;
 
@@ -366,7 +364,7 @@ TC_API void tsV_turnScreenOn_b(NMParams p) // totalcross/sys/Vm native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static void vibrate(int millis);
 {
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(darwin)
+#if defined(WIN32) || defined(ANDROID) || defined(darwin)
    vmVibrate(p->i32[0]);
 #endif   
 }

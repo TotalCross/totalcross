@@ -5,11 +5,7 @@ include $(CLEAR_VARS)
 TYPE ?= release
 
 ifeq ($(TYPE), noras)
-	ifeq ($(origin NORASID), undefined)
-		abort "Must provide a NORASID for noras build"
-	endif
 	include $(LOCAL_PATH)/options_noras.mk
-	EXTRA_DEFINES += -DNORASID=$(NORASID)
 endif
 ifeq ($(TYPE), release)
 	include $(LOCAL_PATH)/options_nodemo.mk
@@ -112,6 +108,7 @@ NM_IO_FILES =                                 \
 	$(TC_SRCDIR)/nm/io/File.c                  \
 	$(TC_SRCDIR)/nm/io/device_PortConnector.c  \
 	$(TC_SRCDIR)/nm/io/device/RadioDevice.c    \
+	$(TC_SRCDIR)/nm/io/device/scanner/zxing.c  \
 	$(TC_SRCDIR)/nm/io/device/gps/GPS.c
 
 NM_IO_DEVICE_BLUETOOTH_FILES =                \
@@ -149,12 +146,11 @@ NM_SYS_FILES =                                \
 	$(TC_SRCDIR)/nm/sys/Convert.c
 
 NM_UI_FILES =                                 \
+	$(TC_SRCDIR)/nm/ui/gfx_Graphics.c          \
 	$(TC_SRCDIR)/nm/ui/event_Event.c           \
 	$(TC_SRCDIR)/nm/ui/Control.c               \
 	$(TC_SRCDIR)/nm/ui/font_Font.c             \
 	$(TC_SRCDIR)/nm/ui/font_FontMetrics.c      \
-	$(TC_SRCDIR)/nm/ui/gfx_Graphics.c          \
-	$(TC_SRCDIR)/nm/ui/android/screen.cpp      \
 	$(TC_SRCDIR)/nm/ui/image_Image.c           \
 	$(TC_SRCDIR)/nm/ui/MainWindow.c            \
 	$(TC_SRCDIR)/nm/ui/media_Sound.c           \
@@ -243,6 +239,7 @@ SCANNER_FILES =                                \
 	$(TC_SRCDIR)/scanner/intermec/Intermec_barcode.c
 
 SOURCE_FILES =                                \
+	$(NM_UI_FILES)                             \
 	$(EVENT_FILES)                             \
 	$(XML_FILES)                               \
 	$(UTIL_FILES)                              \
@@ -255,7 +252,6 @@ SOURCE_FILES =                                \
 	$(NM_NET_FILES)                            \
 	$(NM_PIM_FILES)                            \
 	$(NM_SYS_FILES)                            \
-	$(NM_UI_FILES)                             \
 	$(NM_UTIL_FILES)                           \
 	$(NM_UTIL_ZIP_FILES)                       \
 	$(NM_PHONE_FILES)                          \
@@ -275,7 +271,7 @@ LOCAL_ARM_MODE   := arm
 LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner
-LOCAL_LDLIBS     := -llog -ldl
+LOCAL_LDLIBS     := -llog -ldl -lGLESv2 -lEGL -landroid
 LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
 

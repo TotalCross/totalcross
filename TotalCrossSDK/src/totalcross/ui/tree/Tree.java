@@ -128,12 +128,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private boolean         showIcons           = true;
    private int             x0;
 
-   private static int[] icons = {0x474E5089,0x0A1A0A0D,0x0D000000,0x52444849,0x33000000,0x0D000000,0x00000302,0xBEBF7900,0x00000064,0x544C500C,0xFFFFFF45,0x00808080,0xFFFF0000,0xA4486800,0x000000B5,0x41444989,0x455E7854,0xC20A31CB,0xE1801430,0x488A253F,0x8E024107,0x03E24ECE,0x83A3ADC1,0x3A9F4883,0x7A5928E6,0xDDE58E8F,0xBC53A5C2,
-      0x3A1DB593,0x05387C7F,0x00CC1DC2,0x3CA82B9F,0x56C122A4,0x8FCAED42,0x0F63CD56,0x393A581B,0xFDD15312,0xCCAECE4D,0x7BF53639,0x85FB9CB0,0x56262BEA,0xC5D87993,0x7993AF46,0xC36CCB91,0x227367EB,0xE5B8D9A7,0x505A3B6F,0xEDAAA27D,0xE3336B68,0x759AD660,0x270300FC,0xA4686D2D,0x000060C7,0x45490000,0x42AE444E,0x00008260};
    private static Image imgOpenDefault,imgCloseDefault,imgFileDefault;
    private boolean isScrolling;
    private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
 
+   /** Default line height. */
+   public int lineH;
+   
    /** Constructs a new Tree based on an empty TreeModel. */
    public Tree()
    {
@@ -233,7 +234,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          vbarDY += dy;
          int oldValue = vbar.getValue();
-         vbar.setValue(vbarY0 + vbarDY / fmH);
+         vbar.setValue(vbarY0 + vbarDY / lineH);
          lastV = vbar.getValue();
 
          if (oldValue != lastV)
@@ -349,12 +350,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          }
       }
       resetScrollBars();
-      if (imgPlus == null) initImage();
    }
 
    public void onFontChanged()
    {
-      initImage();
+      lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
    }
 
    /**
@@ -400,11 +400,9 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          if (imgOpenDefault == null)
          {
-            Image img = new Image(Convert.ints2bytes(icons, icons.length*4-2)); // the three icons are stored in the same file to save space
-            img.setFrameCount(3);
-            imgCloseDefault = img.getFrameInstance(0);
-            imgOpenDefault = img.getFrameInstance(1);
-            imgFileDefault = img.getFrameInstance(2);
+            imgCloseDefault = new Image("totalcross/res/closed_folder.png");
+            imgOpenDefault = new Image("totalcross/res/open_folder.png");
+            imgFileDefault = new Image("totalcross/res/document.png");
          }
          setIcon(ICON_PLUS, getIcon(true));
          setIcon(ICON_MINUS, getIcon(false));
@@ -412,7 +410,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          setIcon(ICON_OPEN, imgOpenDefault);
          setIcon(ICON_FILE, imgFileDefault);
       }
-      catch (ImageException e)
+      catch (Exception e)
       {
          // Should never happen
       }
@@ -420,7 +418,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    }
 
    /**
-    * plusIcon dynamically creates a "+" icon, based on current size of the "+" char
+    * plusIcon dynamically creates a "+" icon, based on current size of the font.
     * 
     * @return icon of a boxed plus icon
     * @throws ImageException
@@ -432,19 +430,20 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       Image img;
       Graphics gImg;
 
-      w = fm.charWidth(Settings.screenWidth == 240 ? 'O' : '$'); // 160=7 $, 240=9 O, 320=11 $
+      w = fmH/2;//fm.charWidth(Settings.screenWidth == 240 ? 'O' : '$'); // 160=7 $, 240=9 O, 320=11 $
       if ((w % 2) == 0) w++; // make sure we have an odd number of pixels for our plus sign
 
       img = new Image(w, w);
       gImg = img.getGraphics();
-      gImg.foreColor = (Color.BLACK);
-      gImg.backColor = (Color.WHITE);
+      gImg.backColor = Color.WHITE;
+      gImg.foreColor = Color.BLACK;
+      gImg.drawRect(0,0,w,w);
       gImg.fillRect(1, 1, w - 2, w - 2);
 
       mid = (w / 2); // where is the midpoint of our +
-      if (plus) gImg.drawLine(mid, 2, mid, w - 3); // vertical slash
+      if (plus)
+         gImg.drawLine(mid, 2, mid, w - 3); // vertical slash
       gImg.drawLine(2, mid, w - 3, mid); // draw horizontal slash
-
       return img;
    }
 
@@ -466,7 +465,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public void setIcon(int iconType, Image img) throws ImageException
    {
       if (iconType > 1)
-         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d, Color.WHITE); // guich@tc110_19
+      {
+         img = img.smoothScaledFixedAspectRatio(lineH > fmH ? fmH : lineH*8/10,true); // guich@tc110_19
+         if (iconType == ICON_OPEN || iconType == ICON_CLOSE)
+            img.applyColor2(backColor);
+      }
       switch (iconType)
       {
          case ICON_PLUS:
@@ -844,7 +847,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public int getPreferredHeight()
    {
       int n = itemCount;
-      int h = Math.max(fmH * n, vbar.getPreferredHeight()) + 6;
+      int h = Math.max(lineH * n, vbar.getPreferredHeight()) + 6;
       return (n == 1 ? h - 1 : h) + insets.top+insets.bottom;
    }
 
@@ -883,6 +886,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       }
    }
 
+   public void setBackColor(int c)
+   {
+      super.setBackColor(c);
+      if (imgPlus == null) 
+         initImage();
+   }
+   
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (colorsChanged)
@@ -904,11 +914,12 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      onFontChanged();
       int btnW = vbar.getPreferredWidth();
       int btnH = hbar.getPreferredHeight();
       if (Settings.fingerTouch && ScrollPosition.AUTO_HIDE)
          btnW = btnH = 0;
-      visibleItems = ((height - 2 - btnH) / fmH);
+      visibleItems = ((height - 2 - btnH) / lineH);
       vbar.setMaximum(itemCount);
       vbar.setVisibleItems(visibleItems);
       vbar.setEnabled(visibleItems < itemCount);
@@ -1029,17 +1040,15 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    
    private void computeSel(int pex, int pey)
    {
-      int sel = ((pey - 4) / fmH) + offset;
+      int sel = ((pey - 4) / lineH) + offset;
       if (sel < itemCount)
       {
          if (multipleSelection && pex < imgPlusSize+2)
             checkClicked(sel);
          if (pex < btnX && sel != selectedIndex)
          {
-            Graphics myg = getGraphics();
-            if (selectedIndex >= 0) drawCursor(myg, selectedIndex, false);
             selectedIndex = sel;
-            drawCursor(myg, selectedIndex, true);
+            Window.needsPaint = true;
          }
       }
    }
@@ -1055,7 +1064,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          computeSel(pe.x,pe.y);
       
       // Post the event
-      int sel = ((pe.y - 4) / fmH) + offset;
+      int sel = ((pe.y - 4) / lineH) + offset;
       if (isInsideOrNear(pe.x,pe.y) && pe.x < btnX && sel < itemCount)
       {
          postPressedEvent();
@@ -1165,12 +1174,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void onPaint(Graphics g)
    {
+      if (imgPlus == null)
+         initImage();
       // Draw background and borders
       g.backColor = bgColor0;
       g.fillRect(0, 0, btnX, height);
       g.foreColor = foreColor;
 
-      g.draw3dRect(0, 0, width, height, uiPalm ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
+      g.draw3dRect(0, 0, width, height, Graphics.R3D_CHECK, false, false, fourColors);
 
       // draw scrollbar border (why is it disappear in the first place? or is there a border for the scrollbar class??)
       g.drawRect(btnX - 1, 0, vbar.getPreferredWidth() + 1, height);
@@ -1180,11 +1191,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       int dy = 2;
 
       g.foreColor = fColor;
-      g.setClip(2, 1, btnX - 4, fmH * visibleItems + 1);
+      g.setClip(2, 1, btnX - 4, lineH * visibleItems + 1);
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems + offset); // code corrected by Bjoem Knafla
-      for (int i = offset; i < greatestVisibleItemIndex; ++i, dy += fmH)
+      for (int i = offset; i < greatestVisibleItemIndex; ++i, dy += lineH)
+      {
+         if (i == selectedIndex) 
+            drawCursor(g, selectedIndex);
          drawNode(g, i, dx - hsOffset, dy);
-      if (selectedIndex >= 0) drawCursor(g, selectedIndex, true);
+      }
    }
    
    /**
@@ -1203,7 +1217,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       boolean nodeIsLeaf = node.isLeaf(allowsChildren);
 
       // draw plus minus icon
-      y = dy + fmH / 2;
+      y = dy + lineH / 2;
       if (nodeIsLeaf)
          g.drawDots(x + imgPlusSize / 2, y, x + imgPlusSize, y);
       else
@@ -1220,7 +1234,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          g.foreColor = fColor; // restore text color
          g.backColor = backColor;
          int k = imgPlusSize+1;
-         y = (fmH-k)/2 + dy+1;
+         y = (lineH-k)/2 + dy+1;
          int rx = 3 - hsOffset;
          if (node.isChecked)
          {
@@ -1236,7 +1250,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       // draw folder icon (remember the gap needed)
       x += hline + gap;
 
-      y = dy + fmH / 2 - imgOpenH / 2;
+      y = dy + lineH / 2 - imgOpenH / 2;
       if (showIcons)
       {
          if (nodeIsLeaf)
@@ -1247,14 +1261,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
       dy--;
       x += imgOpenW + gap;
-      y = dy;
+      y = dy+(lineH-fmH)/2;
       String text = node.toString();
       if (Settings.screenWidth > 160)
          x += gap + 2;
       if (node.backColor != -1) // guich@tc120_13
       {
          g.backColor = node.backColor;
-        g.fillRect(x,y,fm.stringWidth(text),fmH);
+        g.fillRect(x,y,fm.stringWidth(text),lineH);
       }
       if (node.foreColor != -1) // guich@tc120_13
          g.foreColor = node.foreColor;
@@ -1317,22 +1331,22 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       // handles the last level 1 node
       if (level == 0 && next == null && prev != null && items.items[index] == node)
       {
-         ystart = dy - (fmH - imgPlusSize) / 2;
-         yend = dy + (fmH - imgPlusSize) / 2;
+         ystart = dy - (lineH - imgPlusSize) / 2;
+         yend = dy + (lineH - imgPlusSize) / 2;
          g.drawDots(x, ystart, x, yend);
       }
 
       // draw vertical connector lines for leaf node
       if (node.isLeaf(allowsChildren) || node.size() == 0)
       {
-         ystart = dy - (fmH - imgOpenH) / 2;
-         yend = dy + (fmH / 2);
+         ystart = dy - (lineH - imgOpenH) / 2;
+         yend = dy + (lineH / 2);
          g.drawDots(x, ystart, x, yend);
 
          if (next != null)
          {
             ystart = yend;
-            yend += (fmH / 2);
+            yend += (lineH / 2);
             g.drawDots(x, ystart, x, yend);
          }
       }
@@ -1341,15 +1355,15 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          if (next == null && node == items.items[index])
          {
-            ystart = dy - (fmH - imgPlusSize) / 2;
-            yend = dy + (fmH - imgPlusSize) / 2;
+            ystart = dy - (lineH - imgPlusSize) / 2;
+            yend = dy + (lineH - imgPlusSize) / 2;
             g.drawDots(x, ystart, x, yend); // draw from "+" to end of line
          }
 
          if (next != null)
          {
-            ystart = dy - (fmH - imgPlusSize) / 2;
-            yend = dy + fmH;
+            ystart = dy - (lineH - imgPlusSize) / 2;
+            yend = dy + lineH;
             g.drawDots(x, ystart, x, yend);
          }
       }
@@ -1359,7 +1373,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    /**
     * Method to draw the highlight box when user select a listbox's item.
     */
-   protected void drawCursor(Graphics g, int sel, boolean on)
+   protected void drawCursor(Graphics g, int sel)
    {
       if (offset <= sel && sel < visibleItems + offset && sel < itemCount)
       {
@@ -1378,16 +1392,15 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          if (Settings.screenWidth > 160) dx += 3;
 
          int dy = 4;
-         if (Settings.uiStyle == Settings.PalmOS) dy--;
 
-         dy += (sel - offset) * fmH;
-         g.setClip(useFullWidthOnSelection ? 2 : dx - 1, dy - 1, btnX - (useFullWidthOnSelection ? 2 : dx), Math.min(fmH * visibleItems, this.height - dy));
-         g.foreColor = (on ? bgColor0 : bgColor1);
-         g.backColor = (on ? bgColor1 : bgColor0);
+         dy += (sel - offset) * lineH;
+         g.setClip(useFullWidthOnSelection ? 2 : dx - 1, dy - 1, btnX - (useFullWidthOnSelection ? 2 : dx), Math.min(lineH * visibleItems, this.height - dy));
+         g.backColor = bgColor1;
          if (useFullWidthOnSelection)
-            g.eraseRect(2,dy-1,btnX-2,fmH + fm.descent - 1);
+            g.fillRect(2,dy-1,btnX-2,lineH + fm.descent - 1);
          else
-            g.eraseRect(dx + 1, dy-1, this.width-dx, fmH + fm.descent - 1);
+            g.fillRect(dx + 1, dy-1, this.width-dx, lineH + fm.descent - 1);
+         g.clearClip();
       }
    }
 

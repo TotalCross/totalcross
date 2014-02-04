@@ -148,7 +148,7 @@ public class AndroidUtils
    {
       try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
       {
-         String sharedId = AndroidUtils.pinfo.sharedUserId;
+         String sharedId = pinfo.sharedUserId;
          String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
          System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
       }
@@ -192,17 +192,6 @@ public class AndroidUtils
          debug("Updating application "+pack+"...");
          updateInstall(task);
       }
-   }
-   
-   public static int getSavedScreenSize()
-   {
-      return configs.saved_screen_size;
-   }
-
-   public static void setSavedScreenSize(int newValue)
-   {
-      configs.saved_screen_size = newValue;
-      configs.save();
    }
    
    public static void updateInstall(StartupTask task) throws Exception
@@ -273,6 +262,7 @@ public class AndroidUtils
    public static void handleException(Throwable e, boolean terminateProgram)
    {
       String stack = Log.getStackTraceString(e);
+      debug(terminateProgram ? "FATAL EXCEPTION" : "NON-FATAL EXCEPTION");
       debug(stack);
       if (terminateProgram)
          error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
@@ -368,5 +358,20 @@ public class AndroidUtils
       {
          handleException(e,false);
       }
+   }
+   
+   public static boolean isImage(String argl)
+   {
+      return argl.endsWith(".png") || argl.endsWith(".jpg") || argl.endsWith(".jpeg");
+   }
+
+   public static byte[] readFully(InputStream input) throws IOException
+   {
+       byte[] buffer = new byte[2048];
+       int bytesRead;
+       ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+       while ((bytesRead = input.read(buffer)) != -1)
+           output.write(buffer, 0, bytesRead);
+       return output.toByteArray();
    }
 }

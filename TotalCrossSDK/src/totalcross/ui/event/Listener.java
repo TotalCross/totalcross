@@ -34,6 +34,7 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
    public static final int MOUSE = 9;
    public static final int LISTCONTAINER = 10;
    public static final int ENABLED = 11;
+   public static final int MULTITOUCH = 12;
    
    /** The type of the event.
     * @see #PEN

@@ -215,7 +215,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
+   protected static boolean uiFlat,uiVista=true,uiAndroid;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -265,8 +265,8 @@ public class Control extends GfxSurface
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
    
-   /** True means that EventListeners will be called without verifying that the event target is this. */
-   public boolean callListenersOnAllTargets = false;
+   /** True means that EventListeners for PenEvent and KeyEvent will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets;
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
@@ -520,9 +520,14 @@ public class Control extends GfxSurface
      * @see #RIGHT_OF
      * @see #BOTTOM_OF
      * @see #SCREENSIZE
-     * @see #PARENTSIZE
      * @see #SCREENSIZEMIN
      * @see #SCREENSIZEMAX
+     * @see #PARENTSIZE
+<<<<<<< HEAD
+=======
+     * @see #SCREENSIZEMIN
+     * @see #SCREENSIZEMAX
+>>>>>>> refs/remotes/origin/develop
      * @see #PARENTSIZEMIN
      * @see #PARENTSIZEMAX
      * @see Container#add(Control, int, int)
@@ -576,7 +581,6 @@ public class Control extends GfxSurface
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
-            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
             if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
@@ -876,14 +880,30 @@ public class Control extends GfxSurface
    /** Redraws the control immediately. If this control is a Window, the whole window area is
      * marked for repaint (useful if you're removing some controls from a container).
      * This method affects only this control, while the repaint method affects the whole screen.
+     * 
+     * If Window.enableUpdateScreen is true, the method returns immediately.
      * @since SuperWaba 2.0 beta 4 release 3
      * @see #repaint()
      */
    public void repaintNow()
    {
+      if (!Window.enableUpdateScreen)
+         return;
       Window w = asWindow != null ? asWindow : getParentWindow();
       if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
       {
+         if (Settings.isOpenGL)
+         {
+            Window.needsPaint = true; // make sure the whole area is marked to be repainted
+            if (MainWindow.isMainThread())
+               Window.repaintActiveWindows();
+            else
+            {
+               MainWindow.mainWindowInstance.setTimerInterval(1);
+               Vm.safeSleep(1);
+            }
+         }
+         else
          if (asWindow != null) // guich@200b4: if this is a Window, paint everything
          {
             Window.needsPaint = true; // make sure the whole area is marked to be repainted
@@ -1215,8 +1235,6 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm    = Settings.uiStyle == Settings.PalmOS;
-         uiCE      = Settings.uiStyle == Settings.WinCE;
          uiFlat    = Settings.uiStyle == Settings.Flat;
          uiAndroid = Settings.uiStyle == Settings.Android;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
@@ -1299,7 +1317,7 @@ public class Control extends GfxSurface
    {
       if (enableUpdateScreen)
       {
-         totalcross.Launcher.instance.updateScreen(Container.getNextTransitionEffect());
+         totalcross.Launcher.instance.updateScreen();
          Graphics.needsUpdate = false;
       }
    }
@@ -1410,6 +1428,14 @@ public class Control extends GfxSurface
       addListener(Listener.PEN, listener);
    }
 
+   /** Adds a listener for MultiTouch events.
+    * @see totalcross.ui.event.MultiTouchListener
+    */
+   public void addMultiTouchListener(MultiTouchListener listener)
+   {
+      addListener(Listener.MULTITOUCH, listener);
+   }
+
    /** Adds a listener for mouse events.
     * @see totalcross.ui.event.MouseListener
     */
@@ -1495,6 +1521,15 @@ public class Control extends GfxSurface
    public void removeEnabledStateListener(EnabledStateChangeListener listener)
    {
       removeListener(Listener.ENABLED, listener);
+   }
+
+   /** Removes a listener for MultiTouch events.
+    * @see totalcross.ui.event.MultiTouchListener
+    * @since TotalCross 1.22
+    */
+   public void removeMultiTouchListener(MultiTouchListener listener)
+   {
+      removeListener(Listener.MULTITOUCH, listener);
    }
 
    /** Removes a listener for Pen events.
@@ -1593,12 +1628,13 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && e instanceof PenEvent)) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
             case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
             case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+            case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
             case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
             case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
             case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;

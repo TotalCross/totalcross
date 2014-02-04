@@ -32,7 +32,6 @@ public class CameraTest extends MainWindow
    static
    {
       Settings.isFullScreen = true;
-      Settings.useNewFont = true;
    }
 
    Button btnFilm, btnPhoto, btnRotate, btnExit;
@@ -105,7 +104,7 @@ public class CameraTest extends MainWindow
                   try
                   {
                      Image img = new Image(f);
-                     img.transparentColor = Image.NO_TRANSPARENT_COLOR; // doesn't make sense on photos to have a transparent background
+                     //img.transparentColor = Image.NO_TRANSPARENT_COLOR; // doesn't make sense on photos to have a transparent background
                      ic.setImage(img);
                      btnRotate.setEnabled(true);
                      if (Settings.platform.equals(Settings.ANDROID))

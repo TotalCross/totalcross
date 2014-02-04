@@ -24,8 +24,6 @@
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/utils_c.h"
-#elif defined(PALMOS)
- #include "palm/utils_c.h"
 #else
  #include "posix/utils_c.h"
 #endif
@@ -423,13 +421,7 @@ TC_API CharP long2str(int64 i, LongBuf buf)
    return c;
 }
 
-#if defined(PALMOS) || (defined(__SYMBIAN32__) && defined(__MARM__) && !defined(__GCCE__))
-#define DOUBLES_MIXED // Mixed endian for doubles only
-#define IEEE_I64_VALUE(x)  (((x & 0xFFFFFFFFUL) << 32) | (x >> 32))
-#else
 #define IEEE_I64_VALUE(x)  x
-#endif
-
 #define I64_BITS(VAL) (*(int64 *)(&VAL))
 #define DOUBLE_NAN_VALUE               IEEE_I64_VALUE(I64_CONST(0x7ff8000000000000))
 #define DOUBLE_POSITIVE_INFINITY_VALUE IEEE_I64_VALUE(I64_CONST(0x7ff0000000000000))
@@ -781,7 +773,6 @@ FILE* findFile(CharP name, CharP pathOut)
    // 1. search in current folder
    xstrprintf(fullName,"%s",name);
    f = fopen(fullName,"rb");
-#ifndef PALMOS
    // 2. search in vmPath
    if (f == null)
    {
@@ -830,7 +821,6 @@ FILE* findFile(CharP name, CharP pathOut)
    }
 #endif // ENABLE_TEST_SUITE only
 #endif // WIN32 only
-#endif // not PALM
 #ifdef ANDROID
    // 9. search also on litebase's path
    if (f == null)

@@ -94,27 +94,28 @@
 // totalcross.ui.gfx.Graphics
 #define Graphics_foreColor(o)       FIELD_I32(o, 0)
 #define Graphics_backColor(o)       FIELD_I32(o, 1)
-#define Graphics_drawOp(o)          FIELD_I32(o, 2)
-#define Graphics_useAA(o)           FIELD_I32(o, 3)
-#define Graphics_width(o)           FIELD_I32(o, 4)
-#define Graphics_height(o)          FIELD_I32(o, 5)
-#define Graphics_transX(o)          FIELD_I32(o, 6)
-#define Graphics_transY(o)          FIELD_I32(o, 7)
-#define Graphics_clipX1(o)          FIELD_I32(o, 8)
-#define Graphics_clipY1(o)          FIELD_I32(o, 9)
-#define Graphics_clipX2(o)          FIELD_I32(o, 10)
-#define Graphics_clipY2(o)          FIELD_I32(o, 11)
-#define Graphics_minX(o)            FIELD_I32(o, 12)
-#define Graphics_minY(o)            FIELD_I32(o, 13)
-#define Graphics_maxX(o)            FIELD_I32(o, 14)
-#define Graphics_maxY(o)            FIELD_I32(o, 15)
-#define Graphics_lastRX(o)          FIELD_I32(o, 16)
-#define Graphics_lastRY(o)          FIELD_I32(o, 17)
-#define Graphics_lastXC(o)          FIELD_I32(o, 18)
-#define Graphics_lastYC(o)          FIELD_I32(o, 19)
-#define Graphics_lastSize(o)        FIELD_I32(o, 20)
-#define Graphics_pitch(o)           FIELD_I32(o, 21)
+#define Graphics_useAA(o)           FIELD_I32(o, 2)
+#define Graphics_width(o)           FIELD_I32(o, 3)
+#define Graphics_height(o)          FIELD_I32(o, 4)
+#define Graphics_transX(o)          FIELD_I32(o, 5)
+#define Graphics_transY(o)          FIELD_I32(o, 6)
+#define Graphics_clipX1(o)          FIELD_I32(o, 7)
+#define Graphics_clipY1(o)          FIELD_I32(o, 8)
+#define Graphics_clipX2(o)          FIELD_I32(o, 9)
+#define Graphics_clipY2(o)          FIELD_I32(o, 10)
+#define Graphics_minX(o)            FIELD_I32(o, 11)
+#define Graphics_minY(o)            FIELD_I32(o, 12)
+#define Graphics_maxX(o)            FIELD_I32(o, 13)
+#define Graphics_maxY(o)            FIELD_I32(o, 14)
+#define Graphics_lastRX(o)          FIELD_I32(o, 15)
+#define Graphics_lastRY(o)          FIELD_I32(o, 16)
+#define Graphics_lastXC(o)          FIELD_I32(o, 17)
+#define Graphics_lastYC(o)          FIELD_I32(o, 18)
+#define Graphics_lastSize(o)        FIELD_I32(o, 19)
+#define Graphics_pitch(o)           FIELD_I32(o, 20)
+#define Graphics_alpha(o)           FIELD_I32(o, 21)
 #define Graphics_isVerticalText(o)  FIELD_I32(o, 22)
+
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 
 #define Graphics_surface(o)         FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -126,15 +127,22 @@
 // totalcross.ui.image.Image
 #define Image_width(o)              FIELD_I32(o, 1)
 #define Image_height(o)             FIELD_I32(o, 2)
-#define Image_transparentColor(o)   FIELD_I32(o, 3)
-#define Image_frameCount(o)         FIELD_I32(o, 4)
-#define Image_currentFrame(o)       FIELD_I32(o, 5)
-#define Image_widthOfAllFrames(o)   FIELD_I32(o, 6)
+#define Image_frameCount(o)         FIELD_I32(o, 3)
+#define Image_currentFrame(o)       FIELD_I32(o, 4)
+#define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
+#define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
+
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 2)
-#define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2)))
+#define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 3)
+#define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 4)
+#define Image_changed(o)            *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
+#define Image_instanceCount(o)      *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 6)))
+
+#define Image_hwScaleW(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Image_hwScaleH(o)         FIELD_DBL(o, OBJ_CLASS(o), 1)
 
 #define ImageOrControl_surfaceType(o) FIELD_I32(o, 0)
 
@@ -146,6 +154,11 @@
 
 // generic surface - for Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
+#ifdef __gl2_h_
+#define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
+#else
+#define Graphics_useOpenGL(g)             (false)
+#endif
 
 // totalcross.io.ByteArrayStream
 #define ByteArrayStream_pos(o)       FIELD_I32(o, 0)

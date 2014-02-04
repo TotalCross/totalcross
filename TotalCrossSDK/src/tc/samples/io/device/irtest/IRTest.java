@@ -20,18 +20,12 @@ package tc.samples.io.device.irtest;
 
 import totalcross.io.*;
 import totalcross.io.device.*;
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
 public class IRTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Button send, receive;
    private Edit dataEdit;
    private ListBox textArea;

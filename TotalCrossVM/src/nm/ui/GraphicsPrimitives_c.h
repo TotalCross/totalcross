@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #include "tcvm.h"
 #include "PalmFont.h"
 #include "GraphicsPrimitives.h"
@@ -20,9 +18,27 @@
 #define TRANSITION_OPEN  1
 #define TRANSITION_CLOSE 2
 
+#ifdef __gl2_h_
+extern int32 appW,appH,glShiftY,desiredglShiftY;
+extern GLfloat ftransp[16], f255[256];
+extern GLfloat *glcoords, *glcolors;
+
+static void glDrawPixelG(Object g, int32 xx, int32 yy, int32 color, int32 alpha)
+{
+   xx += Graphics_transX(g);
+   yy += Graphics_transY(g);
+   if (Graphics_clipX1(g) <= xx && xx <= Graphics_clipX2(g) && Graphics_clipY1(g) <= yy && yy <= Graphics_clipY2(g))
+      glDrawPixel(xx,yy,color,alpha);
+}
+#define graphicsLock(screenSurface, on) true
+#define NO_GRAPHICS_LOCK_NEEDED
+
+#endif
+
+
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect);
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen);
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
 #if !defined(NO_GRAPHICS_LOCK_NEEDED)
 bool graphicsLock(ScreenSurface screen, bool on);
@@ -57,9 +73,17 @@ static inline Pixel* getGraphicsPixels(Object g)
 }
 // <<<<<<<<<
 
+void repaintActiveWindows(Context currentContext)
+{
+   static Method repaintActiveWindows;
+   if (repaintActiveWindows == null && mainClass != null)
+      repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
+   if (repaintActiveWindows != null)
+      executeMethod(currentContext, repaintActiveWindows);
+}
+
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
-   callingScreenChange = true;
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
@@ -69,23 +93,14 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
    markWholeScreenDirty(currentContext);
    privateScreenChange(newWidth, newHeight);
    if (!nothingChanged)
-   {
+   {            
       graphicsDestroy(&screen, true);
       createScreenSurface(currentContext, true);
    }
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
-   callingScreenChange = false;
-}
-
-void repaintActiveWindows(Context currentContext)
-{
-   static Method repaintActiveWindows;
-   if (repaintActiveWindows == null && mainClass != null)
-      repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
-   if (repaintActiveWindows != null)
-      executeMethod(currentContext, repaintActiveWindows);
+   repaintActiveWindows(mainContext);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -103,7 +118,7 @@ Pixel makePixelA(int32 a, int32 r, int32 g, int32 b)
 Pixel makePixel(int32 r, int32 g, int32 b)
 {
    PixelConv p;
-   p.a = 0;
+   p.a = 0xFF;
    p.r = (uint8)(r & 0xFF);
    p.g = (uint8)(g & 0xFF);
    p.b = (uint8)(b & 0xFF);
@@ -112,7 +127,7 @@ Pixel makePixel(int32 r, int32 g, int32 b)
 Pixel makePixelRGB(int32 rgb) // from Java's big endian to native format
 {
    PixelConv p;
-   p.a = 0;
+   p.a = 0xFF;
    p.r = (uint8)((rgb >> 16) & 0xFF);
    p.g = (uint8)((rgb >> 8)  & 0xFF);
    p.b = (uint8)( rgb        & 0xFF);
@@ -175,29 +190,19 @@ static void markScreenDirty(Context currentContext, int32 x, int32 y, int32 w, i
 // This is the main routine that draws a surface (a Control or an Image) in the destination GfxSurface.
 // Destination is always a Graphics object.
 static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, int32 width, int32 height,
-                       int32 dstX, int32 dstY, int32 drawOp, Pixel backPixel, Pixel forePixel, int32 doClip)
+                       int32 dstX, int32 dstY, int32 doClip)
 {
-   #define WIN_PAINT         0  // Destination replaced with source pixels (copy mode).
-   #define WIN_ERASE         1  // Destination cleared where source pixels are off (AND mode).
-   #define WIN_MASK          2  // Destination cleared where source pixels are on (AND NOT mode).
-   #define WIN_INVERT        3  // Destination inverted where source pixels are on (XOR mode).
-   #define WIN_OVERLAY       4  // Destination set only where source pixels are on (OR mode).
-   #define WIN_PAINT_INVERSE 5  // Destination replaced with inverted source (copy NOT mode).
-   #define WIN_SPRITE        6  // Destination replaced if source pixels != color (simulating transparent color - added by guich)
-   #define WIN_REPLACE_COLOR 7  // Destination replaced with <color> if source pixels != 0
-   #define WIN_SWAP_COLORS   8  // Destination replaced with <color> if source pixels != 0
    uint32 i;
    Pixel * srcPixels;
    Pixel * dstPixels;
    int32 srcPitch, srcWidth, srcHeight;
-   bool useAlpha = false;
+   bool isSrcScreen = !Surface_isImage(srcSurf);
    dstPixels = getSurfacePixels(dstSurf);
    srcPixels = getSurfacePixels(srcSurf);
    if (Surface_isImage(srcSurf))
    {
-      srcPitch = srcWidth = Image_width(srcSurf);
-      srcHeight = Image_height(srcSurf);
-      useAlpha = Image_useAlpha(srcSurf);
+      srcPitch = srcWidth = Image_width(srcSurf) * Image_hwScaleW(srcSurf);
+      srcHeight = Image_height(srcSurf) * Image_hwScaleH(srcSurf);
    }
    else
    {
@@ -267,89 +272,60 @@ static void drawSurface(Context currentContext, Object dstSurf, Object srcSurf, 
 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
-   for (i=(uint32)height; i != 0 ; i--)
+#ifdef __gl2_h_
+   if (isSrcScreen)
+      glGetPixels(dstPixels,srcX,srcY,width,height,Graphics_pitch(dstSurf));
+   else
+   if (Graphics_useOpenGL(dstSurf))
    {
-      Pixel * pTgt = dstPixels;
-      Pixel * pSrc = srcPixels;
+      if (Image_changed(srcSurf))
+         applyChanges(currentContext, srcSurf,true);
+      int32 fc = Image_frameCount(srcSurf);
+      int frame = fc <= 1 ? 0 : Image_currentFrame(srcSurf);
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight);
+   }
+   else
+#endif
+   for (i=0; i < (uint32)height; i++) // in opengl, only case of image drawing on image
+   {
+      PixelConv *ps = (PixelConv*)srcPixels;
+      PixelConv *pt = (PixelConv*)dstPixels;
       uint32 count = width;
-      switch (drawOp)
-      {
-         case WIN_SPRITE:        // Dest replaced if source pixels != color
-            for (; count != 0; pTgt++,pSrc++, count--)
-               if (*pSrc != backPixel)
-                  *pTgt = *pSrc;
-            break;
-         case WIN_PAINT:         // Dest replaced with source pixels (copy mode)
-            if (useAlpha)
-            {
-               PixelConv *ps = (PixelConv*)pSrc;
-               PixelConv *pt = (PixelConv*)pTgt;
-               int32 a,r,g,b,ma;
-               for (;count != 0; pt++,ps++, count--)
-               {
-                  a = ps->a;
-                  if (a == 0xFF)
-                     pt->pixel = ps->pixel;
-                  else
-                  if (a != 0)
-                  {
-                     ma = 0xFF-a;
-                     r = (a * ps->r + ma * pt->r);
-                     g = (a * ps->g + ma * pt->g);
-                     b = (a * ps->b + ma * pt->b);
-                     pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                     pt->g = (g+1 + (g >> 8)) >> 8;
-                     pt->b = (b+1 + (b >> 8)) >> 8;
-                  }
-               }
-            }
+      if (isSrcScreen)
+         for (;count != 0; pt++,ps++, count--)
+         {
+            pt->pixel = ps->pixel;
+            pt->a = 0xFF;
+         }
+      else
+         for (;count != 0; pt++,ps++, count--)
+         {
+            int32 a = ps->a;
+            if (a == 0xFF)
+               pt->pixel = ps->pixel;
             else
+            if (a != 0)
             {
-               for (; count != 0; count--)
-                  *pTgt++ = *pSrc++;
+               int32 ma = 0xFF-a;
+               int32 r = (a * ps->r + ma * pt->r);
+               int32 g = (a * ps->g + ma * pt->g);
+               int32 b = (a * ps->b + ma * pt->b);
+               pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+               pt->g = (g+1 + (g >> 8)) >> 8;
+               pt->b = (b+1 + (b >> 8)) >> 8;
             }
-            break;
-         case WIN_ERASE:         // Dest cleared where source pixels are off
-            for (; count != 0; count--)
-               *pTgt++ &= *pSrc++;
-            break;
-         case WIN_MASK:          // T & !S
-            for (; count != 0; pTgt++,pSrc++, count--)
-               if (*pSrc == backPixel)
-                  *pTgt = backPixel;
-            break;
-         case WIN_INVERT:        // T ^ S
-            for (; count != 0; count--)
-               *pTgt++ = *pSrc++ ^ 0xFFFFFFFF;
-            break;
-         case WIN_OVERLAY:       // T | S
-            for (; count != 0; count--)
-               *pTgt++ |= *pSrc++;
-            break;
-         case WIN_PAINT_INVERSE: // Invert and paint
-            for (; count != 0; count--)
-               *pTgt++ = ~*pSrc++;
-            break;
-         case WIN_REPLACE_COLOR: // Dest replaced with <color> if source pixels != 0
-            for (; count != 0; pTgt++,pSrc++,count--)
-               if (*pSrc != backPixel)
-                  *pTgt = forePixel;
-            break;
-         case WIN_SWAP_COLORS:   // Dest replaced with <color> if source pixels != 0
-            for (; count != 0; pTgt++,pSrc++,count--)
-            {
-               if (*pSrc == backPixel)
-                  *pTgt = forePixel;
-               else
-               if (*pSrc == forePixel)
-                  *pTgt = backPixel;
-            }
-            break;
-      }
+         }
       srcPixels += srcPitch;
       dstPixels += Graphics_pitch(dstSurf);
    }
+#ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
+#else            
+   if (Surface_isImage(dstSurf))
+      Image_changed(dstSurf) = true;
+   else
+      currentContext->fullDirty = true;
+#endif
 end:
    ;
 }
@@ -357,9 +333,6 @@ end:
 //   Device specific routine.
 //   Gets the color value of the pixel, using the current translation
 //   Returns -1 if error (out of clip bounds)
-//   In PalmOS, returns the index to the current palette.
-//   In WindowsCE, returns the color itself
-//   In SDL, returns what's appropriate ;-)
 static int32 getPixel(Object g, int32 x, int32 y)
 {
    int32 ret = -1;
@@ -368,7 +341,12 @@ static int32 getPixel(Object g, int32 x, int32 y)
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
       PixelConv p;
-      p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
+         return glGetPixel(x,y);
+      else
+#endif
+         p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
       ret = (p.r << 16) | (p.g << 8) | p.b;
    }
    return ret;
@@ -381,25 +359,15 @@ static PixelConv getPixelConv(Object g, int32 x, int32 y)
    x += Graphics_transX(g);
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
-      p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
-   return p;
-}
-
-// Given a surface, replace a color by another one
-static void eraseRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel from, Pixel to)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
    {
-      Pixel *row;
-      Pixel *p;
-      uint32 i,j;
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (i=(uint32)height; i != 0; i--, row += Graphics_pitch(g))
-         for (p = row, j = (uint32)width; j != 0; p++,j--)
-            if (*p == from)
-               *p = to;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
+         p.pixel = glGetPixel(x,y);
+      else
+#endif
+         p.pixel = getGraphicsPixels(g)[y * Graphics_pitch(g) + x];
    }
+   return p;
 }
 
 // Device specific routine.
@@ -410,9 +378,31 @@ static inline void setPixel(Context currentContext, Object g, int32 x, int32 y, 
    y += Graphics_transY(g);
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y < Graphics_clipY2(g))
    {
-      getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
+      {
+         glDrawPixel(x,y,pixel,255);
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
+      }
+      else
+#endif
+      {
+         getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+      }
    }
+}
+
+static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
+{
+   int m = 255-factor;
+   c.r = (c.r*factor + d.r*m)/255;
+   c.g = (c.g*factor + d.g*m)/255;
+   c.b = (c.b*factor + d.b*m)/255;
+   return c.pixel;
 }
 
 static inline bool surelyOutsideClip(Object g, int32 x1, int32 y1, int32 x2, int32 y2)
@@ -451,31 +441,34 @@ static void drawHLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
       if (width <= 0)
          return;
-      pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
-      if (pixel1 == pixel2) // same color?
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         if ((width&1) == 0) // filling with even width?
-         {
-            int64* t = (int64*)pTgt;
-            int64 p2 = (((int64)pixel1) << 32) | pixel1;
-            width /= 2;
-            while (width-- > 0)
-               *t++ = p2;          // plot the pixel
-         }
+         glDrawLine(x,y,x+width,y,pixel1,255);
+         if (pixel1 != pixel2)
+            for (x++; width > 0; width -= 2, x += 2)
+               glDrawPixel(x,y, pixel2,255);
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
          else
+            currentContext->fullDirty = true;
+      }
+      else
 #endif
+      {
+         pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
+         if (pixel1 == pixel2) // same color?
          {
             while (width-- > 0)
                *pTgt++ = pixel1;          // plot the pixel
          }
-      }
-      else
-      {
-         int32 i=0;
-         while (width-- > 0)
-            *pTgt++ = (i++ & 1) ? pixel1 : pixel2;
+         else
+         {
+            int32 i=0;
+            while (width-- > 0)
+               *pTgt++ = (i++ & 1) ? pixel1 : pixel2;
+         }
       }
    }
 }
@@ -505,20 +498,36 @@ static void drawVLine(Context currentContext, Object g, int32 x, int32 y, int32 
 
       if (height <= 0)
          return;
-      pTgt = getGraphicsPixels(g) + y * pitch + x;
-      n = (uint32)height;
-      if (pixel1 == pixel2) // same color?
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
       {
-         for (; n != 0; pTgt += pitch, n--)
-            *pTgt = pixel1;          // plot the pixel
+         glDrawLine(x,y,x,y+height,pixel1,255);
+         if (pixel1 != pixel2)
+            for (y++; height > 0; height -= 2, y += 2)
+               glDrawPixel(x,y, pixel2,255);
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
+#endif
       {
-         uint32 i=0;
-         for (; n != 0; pTgt += pitch, n--)
-            *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
+         pTgt = getGraphicsPixels(g) + y * pitch + x;
+         n = (uint32)height;
+         if (pixel1 == pixel2) // same color?
+         {
+            for (; n != 0; pTgt += pitch, n--)
+               *pTgt = pixel1;          // plot the pixel
+         }
+         else
+         {
+            uint32 i=0;
+            for (; n != 0; pTgt += pitch, n--)
+               *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
+         }
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
       }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
    }
 }
 
@@ -531,6 +540,7 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
     int32 xInc,yInc,pyInc; // py incs by pixel, y incs by row
     // used in clipping
     int32 xMin,yMin;
+    int32 tX = Graphics_transX(g), tY = Graphics_transY(g);
 
     if (surelyOutsideClip(g, x1,y1,x2,y2)) // guich@tc115_63
        return;
@@ -563,9 +573,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
 
     // guich: if its a pixel, draw only the pixel
     if (dX == 0 && dY == 0)
-       setPixel(currentContext, g, xMin,yMin,pixel1); else
+       setPixel(currentContext, g, xMin,yMin,pixel1);
+    else
     if (dY == 0) // horizontal line?
-       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2); else
+       drawHLine(currentContext, g, min32(x1,x2),min32(y1,y2),dX+1,pixel1,pixel2);
+    else
     if (dX == 0) // vertical line?
        drawVLine(currentContext, g, min32(x1,x2),min32(y1,y2),dY+1,pixel1,pixel2);
     else // guich@566_43: removed the use of drawH/VLine to make sure that it will draw the same of desktop
@@ -577,14 +589,14 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
        int32 clipX1 = Graphics_clipX1(g), clipY1 = Graphics_clipY1(g), clipX2 = Graphics_clipX2(g), clipY2 = Graphics_clipY2(g);
        bool dontClip = true; // the most common will be draw lines that do not cross the clip bounds, so we may speedup a little
 
-       xMin += Graphics_transX(g);
-       yMin += Graphics_transY(g);
+       xMin += tX;
+       yMin += tY;
 
        if (xMin < clipX1 || (xMin+dX) >= clipX2 || yMin < clipY1 || (yMin+dY) >= clipY2)
           dontClip = false;
 
-       currentX = x1+Graphics_transX(g);
-       currentY = y1+Graphics_transY(g);
+       currentX = x1+tX;
+       currentY = y1+tY;
 
        row = getGraphicsPixels(g) + (pyInc>0 ? yMin : (yMin+dY)) * Graphics_pitch(g) + (xInc>0 ? xMin : (xMin+dX)); // currentX    | else start from the max value
 
@@ -603,7 +615,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = pixel1;                        // plot the pixel
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, pixel1, 255);
+                   else
+#endif
+                      *row = pixel1;                        // plot the pixel - never in opengl
                 row      += xInc;                        // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -619,6 +636,11 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
+                   else
+#endif
                    *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
                 row += xInc;                             // increment independent variable
                 currentX += xInc;
@@ -642,7 +664,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = pixel1;                        // plot the pixel
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, pixel1, 255);
+                   else
+#endif
+                      *row = pixel1;                        // plot the pixel
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -658,7 +685,12 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
-                   *row = (on++ & 1)?pixel1:pixel2;      // plot the pixel
+#ifdef __gl2_h_
+                   if (Graphics_useOpenGL(g))
+                      glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
+                   else
+#endif
+                   *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -671,7 +703,14 @@ static void drawDottedLine(Context currentContext, Object g, int32 x1, int32 y1,
                    p += dPr;                             // increment decision (for right)
              }
        }
+#ifndef __gl2_h_
        if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+#else
+      if (Surface_isImage(Graphics_surface(g)))
+         Image_changed(Graphics_surface(g)) = true;
+      else
+         currentContext->fullDirty = true;
+#endif
     }
 }
 
@@ -691,56 +730,67 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
   int32 xs,ys,DeltaX,DeltaY;
   int32 red, green, blue,rr,gg,bb;
   PixelConv bgColor,color;
+  int32 tX = Graphics_transX(g), tY = Graphics_transY(g);
 
   if (surelyOutsideClip(g, x1,y1,x2,y2)) // guich@tc115_63
      return;
+
+  DeltaX = abs32(dx);
+  DeltaY = abs32(dy);
 
   color.pixel = color_;
   rr = color.r;
   gg = color.g;
   bb = color.b;
-  DeltaX = abs32(dx);
-  DeltaY = abs32(dy);
 
   // Set start pixel
   setPixel(currentContext, g, x1, y1, color_);
-           
-  // X-dominant line
+
   if (DeltaX == 0 && DeltaY == 0) // the pixel was already drawn
      ;
   else
-  if (DeltaY == 0 || DeltaX == 0 || DeltaX == DeltaY)
-     drawDottedLine(currentContext, g,x1,y1,x2,y2, color_, color_);
-  else              
+  // X-dominant line
   if (DeltaX > DeltaY)
   {
-     // Exchange line end points
      if (dx < 0)
      {
         temp = x1; x1 = x2; x2 = temp;
         temp = y1; y1 = y2; y2 = temp;
      }
+     // Exchange line end points
      k = (dy<<16) / dx;
      // Set middle pixels
      yt = (y1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (xs=x1+1; xs<x2; xs++)
+        {
+           z = (yt>>16);
+           glDrawPixelG(g, xs, z, color_,192);
+           glDrawPixelG(g, xs, z+1, color_,64);
+           yt += k;
+        }
+     }
+     else
+#endif
      for (xs=x1+1; xs<x2; xs++)
      {
         z = (yt>>16);
         distance = yt - (z<<16);
         notdist = (1<<16) - distance;
 
-        bgColor = getPixelConv(g,xs, z);
+        bgColor = getPixelConv(g, xs, z);
         red   = (distance*bgColor.r + notdist*rr) >> 16;
         green = (distance*bgColor.g + notdist*gg) >> 16;
         blue  = (distance*bgColor.b + notdist*bb) >> 16;
         setPixel(currentContext, g, xs, z, makePixel(red,green,blue));
-                 
+
         bgColor = getPixelConv(g, xs, z+1);
         red   = (notdist*bgColor.r + distance*rr) >> 16;
         green = (notdist*bgColor.g + distance*gg) >> 16;
         blue  = (notdist*bgColor.b + distance*bb) >> 16;
         setPixel(currentContext, g, xs, z+1, makePixel(red,green,blue));
-                 
         yt += k;
      }
   }
@@ -757,6 +807,19 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
 
      // Set middle pixels
      xt = (x1<<16) + k;
+#ifdef __gl2_h_
+     if (Graphics_useOpenGL(g))
+     {
+        for (ys=y1+1; ys<y2; ys++)
+        {
+           z = xt>>16;
+           glDrawPixelG(g, z, ys, color_,192);
+           glDrawPixelG(g, z+1, ys, color_,64);
+           xt += k;
+        }
+     }
+     else
+#endif      
      for (ys=y1+1; ys<y2; ys++)
      {
         z = xt>>16;
@@ -768,28 +831,29 @@ static void drawLineAA(Context currentContext, Object g, int32 x1, int32 y1, int
         green = (distance*bgColor.g + notdist*gg) >> 16;
         blue  = (distance*bgColor.b + notdist*bb) >> 16;
         setPixel(currentContext, g, z, ys, makePixel(red,green,blue));
-                 
+
         bgColor = getPixelConv(g,z+1, ys);
         red   = (notdist*bgColor.r + distance*rr) >> 16;
         green = (notdist*bgColor.g + distance*gg) >> 16;
         blue  = (notdist*bgColor.b + distance*bb) >> 16;
         setPixel(currentContext, g, z+1, ys, makePixel(red,green,blue));
-                 
+
         xt += k;
      }
   }
-
   // Set end pixel
   setPixel(currentContext, g, x2, y2, color_);
-}          
+}
 
 inline static void drawLine(Context currentContext, Object g, int32 x1, int32 y1, int32 x2, int32 y2, Pixel pixel)
 {
+#ifndef __gl2_h_
    if (Graphics_useAA(g))
       drawLineAA(currentContext, g, x1,y1,x2,y2,pixel);
-   else          
+   else
+#endif      
       drawDottedLine(currentContext, g, x1, y1, x2, y2, pixel, pixel);
-}                    
+}
 
 //   Draws a rectangle with the given color
 static void drawRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
@@ -798,7 +862,7 @@ static void drawRect(Context currentContext, Object g, int32 x, int32 y, int32 w
    drawHLine(currentContext, g, x, y+height-1, width, pixel, pixel);
    drawVLine(currentContext, g, x, y, height, pixel, pixel);
    drawVLine(currentContext, g, x+width-1, y, height, pixel, pixel);
-}            
+}
 
 // Description:
 //   Device specific routine.
@@ -830,40 +894,31 @@ static void fillRect(Context currentContext, Object g, int32 x, int32 y, int32 w
 
    if (height > 0 && width > 0)
    {
-      uint32 count;
-      int32 pitch = Graphics_pitch(g);
-      Pixel* to = getGraphicsPixels(g) + y * pitch + x;
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-      if (x == 0 && width == pitch) // filling with full width?
+#ifdef __gl2_h_
+      if (Graphics_useOpenGL(g))
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         int64* t = (int64*)to;
-         int64 p2 = (((int64)pixel) << 32) | pixel;
-         count = width*height >> 1;
-#else
-         int32* t = (int32*)to;
-         int32 p2 = pixel;
-         count = width*height;
-#endif
-         for (; count != 0; count--)
-            *t++ = p2;
+         glFillRect(x,y,width,height,pixel,255);
+         if (Surface_isImage(Graphics_surface(g)))
+            Image_changed(Graphics_surface(g)) = true;
+         else
+            currentContext->fullDirty = true;
       }
       else
+#endif
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         if ((width&1) == 0) // filling with even width?
+         uint32 count;
+         int32 pitch = Graphics_pitch(g);
+         Pixel* to = getGraphicsPixels(g) + y * pitch + x;
+         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+         if (x == 0 && width == pitch) // filling with full width?
          {
-            uint32 i,j;
-            int64* t = (int64*)to;
-            int64 p2 = (((int64)pixel) << 32) | pixel;
-            pitch = (pitch-width)>>1;
-            width >>= 1;
-            for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
-               for (; i != 0; i--)
-                  *t++ = p2;
+            int32* t = (int32*)to;
+            int32 p2 = pixel;
+            count = width*height;
+            for (; count != 0; count--)
+               *t++ = p2;
          }
          else
-#endif
          {
             uint32 i = width, j = height;
             for (pitch -= width; j != 0;  to += pitch, i=width, j--)
@@ -894,6 +949,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
    uint8 *ands8 = _ands8;
    int32 fcR,fcG,fcB;
+#ifdef __gl2_h_
+   GLfloat *glC, *glV;
+#endif
    bool isVert = Graphics_isVerticalText(g);
 
    if (!text || chrCount == 0 || fontObj == null) return;
@@ -902,6 +960,11 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    fcR = fc.r;
    fcG = fc.g;
    fcB = fc.b;
+
+#ifdef __gl2_h_
+   flushPixels(1);
+#endif
+
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
    if (uf == null) return;
    rowWIB = uf->rowWidthInBytes;
@@ -941,6 +1004,7 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
 
    pitch = Graphics_pitch(g);
    clipX2 = Graphics_clipX2(g);
+
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
@@ -974,6 +1038,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
+#ifdef __gl2_h_
+         checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth);
+#endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
@@ -1025,29 +1092,57 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
       {
          start = bitmapTable + (offset >> 1) + rowWIB * istart;
          isNibbleStartingLow = (offset & 1) == 1;
-
+#ifdef __gl2_h_
          // draws the char, a row at a time
-         for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+         if (Graphics_useOpenGL(g))
          {
-            current = start;
-            isLowNibble = isNibbleStartingLow;
-            i = (PixelConv*)&row[x0];
-            for (x=x0; x < xMax; x++,i++)
+            int ty = glShiftY;
+            glC = glcolors;
+            glV = glcoords;
+            for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
             {
-               transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
-               isLowNibble = !isLowNibble;
-               if (transparency == 0 || x < xMin)
-                  continue;
-               if (transparency == 0xF)
-                  i->pixel = foreColor;
-               else
+               current = start;
+               isLowNibble = isNibbleStartingLow;
+               for (x=x0; x < xMax; x++)
                {
-                  i->r = INTERP(i->r, fcR);
-                  i->g = INTERP(i->g, fcG);
-                  i->b = INTERP(i->b, fcB);
+                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                  isLowNibble = !isLowNibble;
+                  if (transparency == 0 || x < xMin)
+                     continue;
+
+                  // alpha
+                  *glC++ = ftransp[transparency];
+                  // vertices
+                  *glV++ = x;
+                  *glV++ = y + ty;
                }
             }
+            if (glC != glcolors) // flush vertices buffer
+               glDrawPixels(((int32)(glC-glcolors)),foreColor);
          }
+         else
+#endif
+            for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
+            {
+               current = start;
+               isLowNibble = isNibbleStartingLow;
+               i = (PixelConv*)&row[x0];
+               for (x=x0; x < xMax; x++,i++)
+               {
+                  transparency = isLowNibble ? (*current++ & 0xF) : ((*current >> 4) & 0xF);
+                  isLowNibble = !isLowNibble;
+                  if (transparency == 0 || x < xMin)
+                     continue;
+                  if (transparency == 0xF)
+                     i->pixel = foreColor;
+                  else
+                  {
+                     i->r = INTERP(i->r, fcR);
+                     i->g = INTERP(i->g, fcG);
+                     i->b = INTERP(i->b, fcB);
+                  }
+               }
+            }
       }
       if (isVert)
       {
@@ -1068,7 +1163,14 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
             x0++;
       }
    }
+#ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
+#else
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
+#endif
 }
 
 static SurfaceType getSurfaceType(Context currentContext, Object surface)
@@ -1085,7 +1187,7 @@ inline static void quadPixel(Context currentContext, Object g, int32 xc, int32 y
    setPixel(currentContext, g,xc + x, yc - y, c);
    setPixel(currentContext, g,xc - x, yc + y, c);
    setPixel(currentContext, g,xc - x, yc - y, c);
-}           
+}
 
 inline static void quadLine(Context currentContext, Object g, int32 xc, int32 yc, int32 x, int32 y, Pixel c)
 {
@@ -1093,13 +1195,13 @@ inline static void quadLine(Context currentContext, Object g, int32 xc, int32 yc
    // draw 2 lines using symetry
    drawHLine(currentContext, g,xc - x, yc - y, w, c, c);
    drawHLine(currentContext, g,xc - x, yc + y, w, c, c);
-}            
+}
 
 // draws an ellipse incrementally
-static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel c1, Pixel c2, bool fill, bool gradient)
+static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32 yc, int32 rx, int32 ry, Pixel pc1, Pixel pc2, bool fill, bool gradient)
 {
    int32 numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
-   PixelConv c;
+   PixelConv c,c1,c2;
    // intermediate terms to speed up loop
    int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
    int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
@@ -1110,16 +1212,18 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
    int32 y = 0;       // ellipse points
    if (rx < 0 || ry < 0) // guich@501_13
       return;
-
+   c1.pixel = pc1;
+   c2.pixel = pc2;
+   
    if (gradient)
    {
       numSteps = ry + ry; // guich@tc110_11: support horizontal gradient
-      startRed = (c1 >> 16) & 0xFF;
-      startGreen = (c1 >> 8) & 0xFF;
-      startBlue = c1 & 0xFF;
-      endRed = (c2 >> 16) & 0xFF;
-      endGreen = (c2 >> 8) & 0xFF;
-      endBlue = c2 & 0xFF;
+      startRed   = c1.r;
+      startGreen = c1.g;
+      startBlue = c1.b;
+      endRed = c2.r;
+      endGreen = c2.g;
+      endBlue = c2.b;
       redInc = ((endRed - startRed) << 16) / numSteps;
       greenInc = ((endGreen - startGreen) << 16) / numSteps;
       blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -1127,7 +1231,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
       green = startGreen << 16;
       blue = startBlue << 16;
    }
-   else c.pixel = c1;
+   else c.pixel = c1.pixel;
 
    while (d2 < 0)          // til slope = -1
    {
@@ -1142,7 +1246,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
       }
       if (fill)
          quadLine(currentContext, g,xc,yc,x,y,c.pixel);
-      else        
+      else
          quadPixel(currentContext, g,xc,yc,x,y,c.pixel);
       y++;          // always move up here
       t9 += t3;
@@ -1174,7 +1278,7 @@ static void ellipseDrawAndFill(Context currentContext, Object g, int32 xc, int32
       // draw 4 points using symmetry
       if (fill)
          quadLine(currentContext, g,xc,yc,x,y,c.pixel);
-      else        
+      else
          quadPixel(currentContext, g,xc,yc,x,y,c.pixel);
       --x;        // always move left here
       t8 -= t6;
@@ -1199,7 +1303,7 @@ static void drawDottedRect(Context currentContext, Object g, int32 x, int32 y, i
       drawDottedLine(currentContext, g,x, y, x ,y2, c1, c2);
       drawDottedLine(currentContext, g,x2, y, x2, y2, c1, c2);
       drawDottedLine(currentContext, g,x, y2, x2, y2, c1, c2);
-   }                 
+   }
 }
 ////////////////////////////////////////////////////////////////////////////
 // Generalized Polygon Fill
@@ -1363,15 +1467,15 @@ static void fillPolygon(Context currentContext, Object g, int32 *xPoints1, int32
          {
             if (ints[1] > ints[0])
                drawHLine(currentContext, g,ints[0],y,ints[1]-ints[0]+1,c.pixel,c.pixel);
-            else         
+            else
                drawHLine(currentContext, g,ints[1],y,ints[0]-ints[1]+1,c.pixel,c.pixel);
-         }               
+         }
          else
          {
             qsortInts(ints, 0, n-1);
             for (n>>=1, yp = ints; --n >= 0; yp+=2)
                drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0]+1,c.pixel,c.pixel);
-         }               
+         }
       }
    }
 }
@@ -1388,7 +1492,7 @@ static void drawPolygon(Context currentContext, Object g, int32 *xPoints1, int32
       drawLine(currentContext, g,xPoints1[i-1], yPoints1[i-1], xPoints1[i], yPoints1[i], pixel);
    for (i=1; i < nPoints2; i++)
       drawLine(currentContext, g,xPoints2[i-1], yPoints2[i-1], xPoints2[i], yPoints2[i], pixel);
-}              
+}
 ////////////////////////////////////////////////////////////////////////////
 // draw an elliptical arc from startAngle to endAngle.
 // c is the fill color and c2 is the outline color
@@ -1431,7 +1535,7 @@ static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, i
       if (fill)
          ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c2, true, gradient);
       ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c, false, gradient);
-      return;            
+      return;
    }
 
    // step 0: if possible, use cached results
@@ -1637,13 +1741,13 @@ static void arcPiePointDrawAndFill(Context currentContext, Object g, int32 xc, i
       if (fill)
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, gradient ? c : c2, c2, gradient); // lower half, upper half
       if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, c);
-   }                             
+   }
    else
    {
       if (fill)
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, gradient ? c : c2, c2, gradient);
       if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, c);
-   }                             
+   }
    if (pie)  // restore saved points
    {
       endIndex-=2;
@@ -1671,7 +1775,7 @@ static void drawRoundRect(Context currentContext, Object g, int32 x, int32 y, in
    drawHLine(currentContext, g,x+r, y+height-1, w, c, c); // bottom
    drawVLine(currentContext, g,x, y+r, h, c, c); // left
    drawVLine(currentContext, g,x+width-1, y+r, h, c, c); // right
-             
+
    // draw the round rectangles.
    for (xx = 0, yy = r; xx <= yy; xx++)
    {
@@ -1679,7 +1783,7 @@ static void drawRoundRect(Context currentContext, Object g, int32 x, int32 y, in
       setPixel(currentContext, g,x2+xx, y1-yy, c);
       setPixel(currentContext, g,x1-xx, y2+yy, c);
       setPixel(currentContext, g,x1-xx, y1-yy, c);
-               
+
       setPixel(currentContext, g,x2+yy, y2+xx, c);
       setPixel(currentContext, g,x2+yy, y1-xx, c);
       setPixel(currentContext, g,x1-yy, y2+xx, c);
@@ -1710,101 +1814,13 @@ static void fillRoundRect(Context currentContext, Object g, int32 x, int32 y, in
    {
       drawLine(currentContext, g,x1-xx, y1-yy, x2+xx, y1-yy, c);
       drawLine(currentContext, g,x1-xx, y2+yy, x2+xx, y2+yy, c);
-               
+
       drawLine(currentContext, g,x1-yy, y1-xx, x2+yy, y1-xx, c);
       drawLine(currentContext, g,x1-yy, y2+xx, x2+yy, y2+xx, c);
-               
+
       if (dec >= 0)
          dec += -4*(yy--)+4;
       dec += 4*xx+6;
-   }
-}
-static void drawCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      int32 h = height-1;
-      int32 j;
-      Pixel *p, *pMax, *row;
-
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (j=0; ; j++)
-      {
-         if (j==0 || j==h)
-         {
-            p = row;
-            pMax = row + width;
-            while (p < pMax)
-               *p++ ^= 0xFFFFFFFF;
-            if (j == h)
-               break;
-         }
-         else
-         {
-            *row ^= 0xFFFFFFFF;
-            if (width > 1)
-               *(row + width-1) ^= 0xFFFFFFFF;
-         }
-         row += Graphics_pitch(g);
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-   }
-}
-
-static void fillCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {
-      Pixel *row, *p, *pMax;
-      int32 h = height;
-
-      for (row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x; h-- > 0; row += Graphics_pitch(g))
-      {
-         p = row;
-         pMax = p + width;
-         while (p < pMax)
-            *p++ ^= 0xFFFFFFFF;
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
-   }
-}
-
-static void drawDottedCursor(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height)
-{
-   if (width > 0 && height > 0) // guich@566_43
-   {
-      int32 h = height-1;
-      int32 i,j,x2;
-      Pixel* row;
-      x += Graphics_transX(g);
-      y += Graphics_transY(g);
-      x2 = x+width-1;
-
-      // TODO a better clipping algotithm
-      // NOTE: translateAndClip cannot be used for this routine!
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (i=0; i<=h; ++i)
-      {
-         int32 yy = i + y;
-         if ((i==0) || (i==h)) // draw the horizontal rows
-         {
-            Pixel * p = row;
-            if (Graphics_clipY1(g) <= yy && yy < Graphics_clipY2(g))
-               for (j=x; j < x2; j+=2, p+=2)
-                  if (Graphics_clipX1(g) <= j && j < Graphics_clipX2(g))
-                     *p ^= 0xFFFFFFFF;
-         }
-         else
-         if (i&1 && Graphics_clipY1(g) <= yy && yy < Graphics_clipY2(g))
-         {
-            if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g))
-               *row ^= 0xFFFFFFFF;
-            if (Graphics_clipX1(g) <= x2 && x2 < Graphics_clipX2(g))
-               *(row + width-1) ^= 0xFFFFFFFF;
-         }
-         row += Graphics_pitch(g);
-      }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
    }
 }
 
@@ -1892,8 +1908,10 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define BITMAP_PTR(p, dline, pitch)      (((uint8*)p) + (dline * pitch))
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
-int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
+int32 *shiftYfield, *shiftHfield, *lastShiftYfield, *needsPaint, lastShiftY=-1;
+#ifndef __gl2_h_
 static bool firstUpdate = true;
+#endif
 
 #ifdef darwin
 static int32 lastAppHeightOnSipOpen;
@@ -1921,10 +1939,9 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 #elif defined(ANDROID)
 extern int realAppH;
 static int32 lastAppHeightOnSipOpen;
-void markWholeScreenDirty(Context currentContext);
 static int desiredShiftY=-1;
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
-{                               
+{
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
 
@@ -1972,6 +1989,9 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 }
 #endif
 
+int32 desiredScreenShiftY;
+
+// not used with opengl
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
    int32 y, screenW, screenH, shiftY=0, shiftH=0;
@@ -1980,6 +2000,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
 
+#ifndef __gl2_h_
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
 
@@ -1990,9 +2011,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       return false;
    }
    firstUpdate = false;
+#endif
 
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
-   {
+   {              
+      needsPaint = getStaticFieldInt(window, "needsPaint");
       shiftYfield = getStaticFieldInt(window, "shiftY");
       shiftHfield = getStaticFieldInt(window, "shiftH");
       lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
@@ -2003,11 +2026,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    shiftH = *shiftHfield;
 #if defined ANDROID || defined darwin
    checkKeyboardAndSIP(currentContext, &shiftY,&shiftH);
-#ifdef ANDROID   
+#ifdef ANDROID
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)
 #else
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != realAppH)
-#endif      
+#endif
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
@@ -2016,20 +2039,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    screenW = screen.screenW;
    screenH = screen.screenH;
 
-#ifdef PALMOS
-   if (supportsDIA && screenW != screenH && SysGetOrientation() != sysOrientationPortrait) // strange! seems that Palm OS rotates the bitmap...
-   {
-      screenW = screen.screenH;
-      screenH = screen.screenW;
-      markWholeScreenDirty(currentContext);
-   }
-#endif
-
    if ((shiftY+shiftH) > screen.screenH)
       shiftH = screen.screenH - shiftY;
    if (shiftY != 0 && shiftH <= 0)
       return false;
-      
+
    if (!currentContext->fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
    {
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
@@ -2045,9 +2059,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          currentContext->dirtyY2 = currentContext->dirtyY1 + min32(currentContext->dirtyY2-(currentContext->dirtyY1+shiftY), shiftH);
       }
    }
+   
+#ifdef __gl2_h_
+   desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
+#else
    screen.shiftY = shiftY;
-
-#ifndef darwin // in darwin, the temporary buffer already is in the target format
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -2058,7 +2074,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(darwin)
+               #if defined(WIN32)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2066,7 +2082,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(darwin)
+               #if defined(WIN32)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2090,7 +2106,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = currentContext->dirtyX2 - currentContext->dirtyX1; count != 0; pf++, count--)
-                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(darwin)
+                  #if defined(WIN32)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
@@ -2154,12 +2170,12 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    else
    if (screen.bpp == 32)
    {
-#ifdef WIN32            
+#ifdef WIN32
       #define SETPIXEL_32(p) (((p)->pixel) >> 8)
 #else
       #define SETPIXEL_32(p) SETPIXEL32((p)->r, (p)->g, (p)->b)
 #endif
-      
+
       Pixel32 grayp = SETPIXEL_32(&gray);
       if (currentContext->fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
@@ -2296,21 +2312,21 @@ static void fillHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
       drawLine(currentContext, g,x+1,y+1, x2-1, y+1, c);       // 2nd line
       drawLine(currentContext, g,x+1, y2-1, x2-1, y2-1, c);    // last-1 line
       drawLine(currentContext, g,x+2, y2, x2-2, y2, c);        // last line
-   }           
+   }
    else
    if (top && !bottom)
    {
       drawLine(currentContext, g,x+2, y, x2-2, y, c);           // 1st line
       drawLine(currentContext, g,x+1, y+1, x2-1, y+1, c);       // 2nd line
       fillRect(currentContext, g,x, y+2, w, h-2, c);   // middle
-   }           
+   }
    else
    if (!top && bottom)
    {
       fillRect(currentContext, g,x, y, w, h-2, c);     // middle
       drawLine(currentContext, g,x+1,y2-1, x2-1, y2-1, c);      // last-1 line
       drawLine(currentContext, g,x+2, y2, x2-2, y2, c);         // last line
-   }           
+   }
 }
 
 static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
@@ -2327,7 +2343,7 @@ static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
       setPixel(currentContext, g,x2-1, y+1, c); // top right
       setPixel(currentContext, g,x+1, y2-1, c); // bottom left
       setPixel(currentContext, g,x2-1, y2-1, c); // bottom right
-   }           
+   }
    else
    if (top && !bottom)
    {
@@ -2337,7 +2353,7 @@ static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
       drawLine(currentContext, g,x+2, y, x2-2, y, c); // top
       setPixel(currentContext, g,x+1, y+1, c); // top left
       setPixel(currentContext, g,x2-1, y+1, c); // top right
-   }           
+   }
    else
    if (!top && bottom)
    {
@@ -2347,7 +2363,7 @@ static void drawHatchedRect(Context currentContext, Object g, int32 x, int32 y, 
       drawLine(currentContext, g,x, y, x2, y, c); // top
       setPixel(currentContext, g,x+1, y2-1, c); // bottom left
       setPixel(currentContext, g,x2-1, y2-1, c); // bottom right
-   }           
+   }
 }
 
 static void drawVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel topColor, Pixel rightColor, Pixel bottomColor, Pixel leftColor)
@@ -2360,73 +2376,75 @@ static void drawVistaRect(Context currentContext, Object g, int32 x, int32 y, in
    drawLine(currentContext, g,x2,y1,x2,y2-1, rightColor);
    drawLine(currentContext, g,x1,y2,x2-1,y2, bottomColor);
    drawLine(currentContext, g,x,y1,x,y2-1, leftColor);
-}           
-
-static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, Object colors)
-{
-   int32 dim,y0,hh,incY,lineH,lineY=0,yy,k,c=0;
-   int32 *vistaColors = (int32*)ARRAYOBJ_START(colors);
-   dim = rotate ? width : height;
-   y0 = rotate ? x : y;
-   hh = rotate ? x+dim : y+dim;
-   dim <<= 16;
-   incY = dim/10;
-   lineH = (incY>>16)+1;
-   for (; lineY < dim; c++, lineY += incY)
-   {
-      Pixel backColor = makePixelRGB(vistaColors[invert ? 10-c : c]);
-      yy = y0+(lineY>>16);
-      k = hh-yy;
-      if (!rotate)
-         fillRect(currentContext, g, x,yy,width,k < lineH ? k : lineH, backColor);
-      else        
-         fillRect(currentContext, g, yy,y,k < lineH ? k : lineH, height, backColor);
-   }              
 }
 
-static void drawHighLightFrame(Context currentContext, Object g, int32 x, int32 y, int32 w, int32 h, Pixel topLeft, Pixel bottomRight, bool yMirror)
+static Pixel darkerColor(Pixel rgb, int32 step)
 {
-   int32 x2 = x + w - 1;
-   int32 y2 = y + h - 1;
+   PixelConv pc;
+   pc.pixel = rgb;
+   pc.r = max32(pc.r - step,0);
+   pc.g = max32(pc.g - step,0);
+   pc.b = max32(pc.b - step,0);
+   return pc.pixel;
+}
 
-   drawVLine(currentContext, g,x, y, h, topLeft, topLeft);
-   drawHLine(currentContext, g,x, yMirror ? y2 : y, w, topLeft, topLeft);
-             
-   drawVLine(currentContext, g,x2, y, h, bottomRight, bottomRight);
-   drawHLine(currentContext, g,x, yMirror ? y : y2, w, bottomRight, bottomRight);
-}            
+void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor);
+static void fillVistaRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, Pixel back, bool invert, bool rotate)
+{
+   int32 step = *vistaFadeStepP;
+   int32 s = rotate ? width : height;
+   int32 mid = s * 5 / 11;
+   Pixel ini1 = back, end1 = darkerColor(ini1,3*step);
+   Pixel ini2 = darkerColor(end1,step), end2 = darkerColor(end1,step*7);
+   if (rotate)
+   {
+      fillShadedRect(currentContext,g,x,y,mid,height,!invert,rotate,invert?ini2:ini1,invert?end2:end1,100);
+      fillShadedRect(currentContext,g,x+mid,y,width-mid,height,!invert,rotate,invert?ini1:ini2,invert?end1:end2,100);
+   }
+   else
+   {
+      if (invert)
+      {                                                 
+         fillShadedRect(currentContext,g,x,y,width,mid,true,rotate,end2,ini2,100);
+         fillShadedRect(currentContext,g,x,y+mid,width,height-mid,true,rotate,end1,ini1,100);
+      }
+      else
+      {
+         fillShadedRect(currentContext,g,x,y,width,mid,true,rotate,ini1,end1,100);
+         fillShadedRect(currentContext,g,x,y+mid,width,height-mid,true,rotate,ini2,end2,100);
+      }
+   }
+}
 
 inline static int getOffset(int radius, int y)
 {
    return radius - (int32)sqrt(radius * radius - y * y);
 }
 
-static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
-{
-   int m = 255-factor;
-   c.r = (c.r*factor + d.r*m)/255;
-   c.g = (c.g*factor + d.g*m)/255;
-   c.b = (c.b*factor + d.b*m)/255;
-   return c.pixel;
-}
-
 static void drawFadedPixel(Context currentContext, Object g, int32 xx, int32 yy, int32 c) // guich@tc124_4
 {
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+      glDrawPixelG(g,xx,yy,c,20*255/100);
+   else
+#endif
+   {
    PixelConv c1,c2;
    c1.pixel = c;
    c2 = getPixelConv(g, xx, yy);
    setPixel(currentContext, g, xx, yy, interpolate(c1, c2, 20*255/100));
-}           
+   }
+}
 
-static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
+static void drawRoundGradient(Context currentContext, Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, PixelConv startColor, PixelConv endColor, bool vertical)
 {
    int32 numSteps = max32(1, vertical ? abs32(endY - startY) : abs32(endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = (startColor >> 16) & 0xFF;
-   int32 startGreen = (startColor >> 8) & 0xFF;
-   int32 startBlue = startColor & 0xFF;
-   int32 endRed = (endColor >> 16) & 0xFF;
-   int32 endGreen = (endColor >> 8) & 0xFF;
-   int32 endBlue = endColor & 0xFF;
+   int32 startRed = startColor.r;
+   int32 startGreen = startColor.g;
+   int32 startBlue = startColor.b;
+   int32 endRed = endColor.r;
+   int32 endGreen = endColor.g;
+   int32 endBlue = endColor.b;
    int32 redInc = ((endRed - startRed) << 16) / numSteps;
    int32 greenInc = ((endGreen - startGreen) << 16) / numSteps;
    int32 blueInc = ((endBlue - startBlue) << 16) / numSteps;
@@ -2477,94 +2495,17 @@ static void drawRoundGradient(Context currentContext, Object g, int32 startX, in
       {
          int32 fc = p;
          drawLine(currentContext, g, startX + leftOffset, startY+i, endX - rightOffset, startY+i, p);
-         drawFadedPixel(currentContext, g, endX - rightOffset+1, startY+i, fc);
-         drawFadedPixel(currentContext, g, startX+leftOffset-1, startY+i, fc);
-      }                 
+         if (rightOffset != 0)
+            drawFadedPixel(currentContext, g, endX - rightOffset+1, startY+i, fc);
+         if (leftOffset != 0)
+            drawFadedPixel(currentContext, g, startX+leftOffset-1, startY+i, fc);
+      }
       else
          drawLine(currentContext, g, startX+i, startY + leftOffset, startX+i, endY - rightOffset, p);
-                  
+
       red += redInc;
       green += greenInc;
       blue += blueInc;
-   }
-}
-
-static void eraseRectAA(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, int32 fromColor, int32 toColor, int32 textColor)
-{
-   Object fontObj = Graphics_font(g);
-   UserFont uf=null;
-   PixelConv from, to,text;
-
-   from.pixel = makePixelRGB(fromColor);
-   to.pixel   = makePixelRGB(toColor);
-   text.pixel = makePixelRGB(textColor);
-
-   uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
-   if (!uf->fontP.antialiased)
-      eraseRect(currentContext, g, x, y, width, height, from.pixel, to.pixel);
-   else         
-   if (translateAndClip(g, &x, &y, &width, &height))
-   {                    
-      Pixel *row;
-      Pixel *p, *pMax;
-      int32 transparency,i,j;
-      PixelConv *aafroms,*aatos;
-      PixelConv *f,*t;
-      row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      // select a cached version
-      if (currentContext->aaFromColor1 == fromColor && currentContext->aaToColor1 == toColor && currentContext->aaTextColor1 == textColor)
-      {
-         aafroms = currentContext->aafroms1;
-         aatos = currentContext->aatos1;
-      }
-      else
-      if (currentContext->aaFromColor2 == fromColor && currentContext->aaToColor2 == toColor && currentContext->aaTextColor2 == textColor)
-      {
-         aafroms = currentContext->aafroms2;
-         aatos = currentContext->aatos2;
-      }
-      else
-      {
-         // cache a version
-         f = aafroms = currentContext->lastWas1 ? currentContext->aafroms2 : currentContext->aafroms1;
-         t = aatos = currentContext->lastWas1 ? currentContext->aatos2 : currentContext->aatos1;
-         for (transparency = 16; transparency > 0; transparency--,f++,t++)
-         {
-            t->a = f->a = 0;
-            f->r = INTERP(from.r, text.r);
-            f->g = INTERP(from.g, text.g);
-            f->b = INTERP(from.b, text.b);
-            t->r = INTERP(to.r, text.r);
-            t->g = INTERP(to.g, text.g);
-            t->b = INTERP(to.b, text.b);
-         }
-         if (currentContext->lastWas1)
-         {
-            currentContext->aaFromColor2 = fromColor;
-            currentContext->aaToColor2 = toColor;
-            currentContext->aaTextColor2 = textColor;
-         }
-         else
-         {
-            currentContext->aaFromColor1 = fromColor;
-            currentContext->aaToColor1 = toColor;
-            currentContext->aaTextColor1 = textColor;
-         }
-         currentContext->lastWas1 = !currentContext->lastWas1;
-      }
-      // now replace the pixels
-      for (i=height; i > 0; i--, row += Graphics_pitch(g))
-         for (p = row, pMax = row + width; p < pMax; p++)
-            if (*p == from.pixel)
-               *p = to.pixel;
-            else
-            for (f=aafroms,j = 16; j > 0; j--,f++) // TODO put this in a hashtable
-               if (*p == f->pixel)
-               {
-                  *p = aatos[f-aafroms].pixel;
-                  break;
-               }
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
    }
 }
 
@@ -2582,7 +2523,12 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
       bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
-
+#ifdef __gl2_h_
+      currentContext->fullDirty |= markDirty;
+      if (isGet && Graphics_useOpenGL(g))
+         glGetPixels(data,x,y,w,h,w);
+      else
+#endif
       if (isGet)
          for (; h-- > 0; pixels += inc, data += w)
             xmemmove(data, pixels, w<<2);
@@ -2590,8 +2536,10 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
          for (; h-- > 0; pixels += inc, data += w)
          {
             xmemmove(pixels, data, w<<2);
+#ifndef __gl2_h_
             if (markDirty)
                markScreenDirty(currentContext, x, y++, w, 1);
+#endif
          }
       return count;
    }
@@ -2632,16 +2580,101 @@ static int32 windowBorderAlpha[3][7][7] =
    }
 };
 
+static void setPixelA(Context currentContext, Object g, int32 x, int32 y, PixelConv color, int32 alpha)
+{
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+   {
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      if (Graphics_clipX1(g) <= x && x <= Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y <= Graphics_clipY2(g))
+         glDrawPixel(x,y,color.pixel,alpha);
+   }
+   else
+#endif
+      setPixel(currentContext, g, x,y,interpolate(color, getPixelConv(g, x,y), alpha));
+}
+
+// only supports horizontal and vertical lines
+static void drawHLineA(Context currentContext, Object g, int32 x, int32 y, int32 width, PixelConv color, int32 alpha)
+{
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+   {
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      /*
+      | line must lie inside y clip bounds, must not end before clip x1
+      | and must not start after clip x2
+      */
+      if (Graphics_clipY1(g) <= y && y < Graphics_clipY2(g) && Graphics_clipX1(g) <= (x+width) && x < Graphics_clipX2(g)) // NOPT
+      {
+         Pixel* pTgt;
+         if (x < Graphics_clipX1(g))           // line start before clip x1
+         {
+            width -= Graphics_clipX1(g)-x;
+            x = Graphics_clipX1(g);
+         }
+         if ((x+width) > Graphics_clipX2(g))   // line stops after clip x2
+            width = Graphics_clipX2(g)-x;
+   
+         if (width > 0)
+            glDrawLine(x,y,x+width,y,color.pixel,alpha);
+      }
+   }
+   else
+#endif                                             
+   {
+      int32 c = interpolate(color, getPixelConv(g, x, y), alpha);
+      drawHLine(currentContext, g, x,y,width,c,c);
+   }
+}
+
+static void drawVLineA(Context currentContext, Object g, int32 x, int32 y, int32 height, PixelConv color, int32 alpha)
+{
+#ifdef __gl2_h_
+   if (Graphics_useOpenGL(g))
+   {
+      x += Graphics_transX(g);
+      y += Graphics_transY(g);
+      /*
+      | line must lie inside x clip bounds, must not end before clip y1
+      | and must not start after clip y2
+      */
+      if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
+      {
+         Pixel * pTgt;
+         int32 pitch = Graphics_pitch(g);
+         uint32 n;
+         if (y < Graphics_clipY1(g))           // line start before clip y1
+         {
+            height -= Graphics_clipY1(g)-y;
+            y = Graphics_clipY1(g);
+         }
+         if ((y+height) > Graphics_clipY2(g))
+            height = Graphics_clipY2(g)-y;           // line stops after clip y2
+   
+         if (height > 0)
+            glDrawLine(x,y,x,y+height,color.pixel,alpha);
+      }
+   }
+   else                                         
+#endif
+   {
+      int32 c = interpolate(color, getPixelConv(g, x, y), alpha);
+      drawVLine(currentContext, g, x,y,height,c,c);
+   }
+}
+
 static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
-   int32 kx, ky, a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
+   int32 a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
    int32 y2 = yy+hh-1;
    int32 x2 = xx+ww-1;
    int32 x1l = xx+7;
    int32 y1l = yy+7;
    int32 x2r = x2-6;
    int32 y2r = y2-6;
-   PixelConv c;
 
    // horizontal and vertical lines
    for (i = 0; i < 3; i++)
@@ -2649,24 +2682,11 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
       a = windowBorderAlpha[thickness-1][i][0];
       if (a == OUT_BORDER || a == IN_BORDER)
          continue;
-      kx = x1l;
-      ky = yy+i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2r,yy+i,interpolate(borderColor, c, a)); // top
-               
-      ky = y2-i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2r,y2-i,interpolate(borderColor, c, a)); // bottom
-               
-      kx = xx+i;
-      ky = y1l;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,xx+i,y2r,interpolate(borderColor, c, a)); // left
-               
-      kx = x2-i;
-      c = getPixelConv(g, kx, ky);
-      drawLine(currentContext, g, kx,ky,x2-i,y2r,interpolate(borderColor, c, a)); // right
-   }           
+      drawHLineA(currentContext, g, x1l,yy+i,x2r-x1l,borderColor, a); // top
+      drawHLineA(currentContext, g, x1l,y2-i,x2r-x1l,borderColor, a); // bottom
+      drawVLineA(currentContext, g, xx+i,y1l,y2r-y1l,borderColor, a); // left
+      drawVLineA(currentContext, g, x2-i,y1l,y2r-y1l,borderColor, a); // right
+   }
    // round corners
    for (j = 0; j < 7; j++)
    {
@@ -2678,39 +2698,51 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
          a = windowBorderAlpha[thickness-1][j][6-i];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, left,top,titleColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, left,top,interpolate(borderColor, titleColor, -a));
-            else        
-               setPixel(currentContext, g, left,top,interpolate(borderColor, getPixelConv(g, left,top), a));
-         }              
+            else
+               setPixelA(currentContext, g, left,top,borderColor, a);
+         }
 
          // top right
          a = windowBorderAlpha[thickness-1][j][i];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, right,top,titleColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, right,top,interpolate(borderColor, titleColor, -a));
-            else        
-               setPixel(currentContext, g, right,top,interpolate(borderColor, getPixelConv(g, right,top), a));
-         }              
+            else
+               setPixelA(currentContext, g, right,top,borderColor, a);
+         }
          // bottom left
          a = windowBorderAlpha[thickness-1][i][j];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, left,bot,footerColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, left,bot,interpolate(borderColor, footerColor, -a));
-            else        
-               setPixel(currentContext, g, left,bot,interpolate(borderColor, getPixelConv(g, left,bot), a));
-         }              
+            else
+               setPixelA(currentContext, g, left,bot,borderColor, a);
+         }
          // bottom right
          a = windowBorderAlpha[thickness-1][6-i][j];
          if (a != OUT_BORDER)
          {
-            if (a <= 0)
+            if (a == 0)
+               setPixel(currentContext, g, right,bot,footerColor.pixel);
+            else
+            if (a < 0)
                setPixel(currentContext, g, right,bot,interpolate(borderColor, footerColor, -a));
-            else        
-               setPixel(currentContext, g, right,bot,interpolate(borderColor, getPixelConv(g, right,bot), a));
-         }              
+            else
+               setPixelA(currentContext, g, right,bot,borderColor, a);
+         }
       }
    }
    // now fill text, body and footer
@@ -2730,15 +2762,15 @@ static void drawWindowBorder(Context currentContext, Object g, int32 xx, int32 y
    // separator
    if (drawSeparators && titleH > 0 && titleColor.pixel == bodyColor.pixel)
       drawLine(currentContext, g, rectX1,ty-1,rectX2,ty-1,interpolate(borderColor,titleColor,64));
-   // body     
+   // body
    fillRect(currentContext, g, rectX1,ty,rectW,bodyH, bodyColor.pixel); ty += bodyH;
    // separator
    if (drawSeparators && footerH > 0 && bodyColor.pixel == footerColor.pixel)
       {drawLine(currentContext, g, rectX1,ty,rectX2,ty,interpolate(borderColor,titleColor,64)); ty++; footerH--;}
-   // footer    
+   // footer
    fillRect(currentContext, g, rectX1,ty,rectW,footerH,footerColor.pixel); ty += footerH; // non-corners
    fillRect(currentContext, g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
-}           
+}
 
 static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
 {
@@ -2755,28 +2787,26 @@ static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h
    pixel->b = b;
 }
 
-static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w, int32 h, int32 ignoreColor)
+static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w, int32 h)
 {
    if (translateAndClip(g, &x0, &y0, &w, &h))
    {
       PixelConv *pixels;
       int32 oldR,oldG,oldB, newR,newG,newB, errR, errG, errB, pitch, x,y,yf=y0+h,xf=x0+w;
-      Pixel transp = makePixelRGB(ignoreColor);       
       pitch = Graphics_pitch(g);
 
       // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
-      for (y=y0; y < yf; y++) 
+      for (y=y0; y < yf; y++)
       {
          pixels = (PixelConv*)(getGraphicsPixels(g) + y * pitch + x0);
          for (x=x0; x < xf; x++,pixels++)
          {
-            if (pixels->pixel == transp) continue;
             // get current pixel values
             oldR = pixels->r;
             oldG = pixels->g;
             oldB = pixels->b;
             // convert to 565 component values
-            newR = oldR >> 3 << 3; 
+            newR = oldR >> 3 << 3;
             newG = oldG >> 2 << 2;
             newB = oldB >> 3 << 3;
             // compute error
@@ -2787,39 +2817,81 @@ static void dither(Context currentContext, Object g, int32 x0, int32 y0, int32 w
             pixels->r = newR;
             pixels->g = newG;
             pixels->b = newB;
-   
+
             addError(pixels+1      , x+1, y ,w,h, errR,errG,errB,7,16);
             addError(pixels-1+pitch, x-1,y+1,w,h, errR,errG,errB,3,16);
             addError(pixels  +pitch, x,y+1  ,w,h, errR,errG,errB,5,16);
             addError(pixels+1+pitch, x+1,y+1,w,h, errR,errG,errB,1,16);
          }
       }
+#ifndef __gl2_h_
       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
+#else
+      if (Surface_isImage(Graphics_surface(g)))
+         Image_changed(Graphics_surface(g)) = true;
+      else
+         currentContext->fullDirty = true;
+#endif
    }
 }
 
-static void drawCylindricShade(Context currentContext, Object g, int32 startColor, int32 endColor, int32 startX, int32 startY, int32 endX, int32 endY)
+void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
+static void drawThickRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixel pixel)
+{                    
+   if (translateAndClip(g, &x,&y,&width,&height))
+   {             
+      glDrawThickLine(x,y,x+width,y,pixel,255);
+      glDrawThickLine(x,y,x,y+height,pixel,255);
+      glDrawThickLine(x+width,y,x+width,y+height,pixel,255);
+      glDrawThickLine(x,y+height,x+width,y+height,pixel,255);
+   }
+}
+
+static void drawCylindricShade(Context currentContext, Object g, PixelConv startColor, PixelConv endColor, int32 startX, int32 startY, int32 endX, int32 endY)
 {
    int32 numSteps = max32(1,min32((endY - startY)/2, (endX - startX)/2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
-   int32 startRed = (startColor >> 16) & 0xFF;
-   int32 startGreen = (startColor >> 8) & 0xFF;
-   int32 startBlue = startColor & 0xFF;
-   int32 endRed = (endColor >> 16) & 0xFF;
-   int32 endGreen = (endColor >> 8) & 0xFF;
-   int32 endBlue = endColor & 0xFF;
+   int32 startRed = startColor.r;
+   int32 startGreen = startColor.g;
+   int32 startBlue = startColor.b;
+   int32 endRed = endColor.r;
+   int32 endGreen = endColor.g;
+   int32 endBlue = endColor.b;
    int32 redInc = (((endRed - startRed)*2) << 16) / numSteps;
    int32 greenInc = (((endGreen - startGreen)*2) << 16) / numSteps;
    int32 blueInc = (((endBlue - startBlue)*2) << 16) / numSteps;
    int32 red = startRed << 16;
    int32 green = startGreen << 16;
-   int32 blue = startBlue << 16;                    
-   int32 foreColor,rr,gg,bb,sx,sy,ii,i2,i;
+   int32 blue = startBlue << 16;
+   int32 rr,gg,bb,sx,sy,ii,i2,i;
+   Pixel foreColor;
+   PixelConv pc;
+   pc.a = 255;      
+#ifdef __gl2_h_
+   flushPixels(2);
+   glSetLineWidth(2);
    for (i = 0; i < numSteps; i++)
    {
       rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
       gg = ((green+i*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
       bb = ((blue+i*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-      foreColor = (rr << 16) | (gg << 8) | bb;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
+      sx = startX+i;
+      sy = startY+i;
+      drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
+   }
+   flushPixels(3);
+   glSetLineWidth(1);
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
+#else
+   for (i = 0; i < numSteps; i++)
+   {
+      rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
+      gg = ((green+i*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
+      bb = ((blue+i*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
       sx = startX+i;
       sy = startY+i;
       drawRect(currentContext, g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
@@ -2827,15 +2899,60 @@ static void drawCylindricShade(Context currentContext, Object g, int32 startColo
       rr = ((red+ii*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;
       gg = ((green+ii*greenInc) >> 16) & 0xFFFFFF; if (gg > endGreen) gg = endGreen;
       bb = ((blue+ii*blueInc) >> 16) & 0xFFFFFF;   if (bb > endBlue) bb = endBlue;
-      foreColor = (rr << 16) | (gg << 8) | bb;
+      pc.r = rr; pc.g = gg; pc.b = bb; foreColor = pc.pixel;
       i2 = i/8;
       drawLine(currentContext, g,sx-i2,sy+i2,sx+i2,sy-i2,foreColor);
       sx = endX-i; drawLine(currentContext, g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
       sy = endY-i; drawLine(currentContext, g,sx-i2,sy+i2,sx+i2,sy-i2,foreColor);
       sx = startX+i; drawLine(currentContext, g,sx-i2,sy-i2,sx+i2,sy+i2,foreColor);
-   }                          
-   if (screen.bpp < 24) dither(currentContext, g, startX, startY, endX-startX, endY-startY, -1);
-}                              
+   }
+   if (screen.bpp < 24) dither(currentContext, g, startX, startY, endX-startX, endY-startY);
+#endif
+}
+
+void fillShadedRect(Context currentContext, Object g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
+{
+   PixelConv pc1,pc2;
+#ifdef __gl2_h_
+   pc1.pixel = c1;
+   pc2.pixel = c2;
+   pc1.pixel = interpolate(pc1,pc2,factor*255/100);
+   if (translateAndClip(g, &x, &y, &width, &height))
+      glFillShadedRect(g,x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
+   if (Surface_isImage(Graphics_surface(g)))
+      Image_changed(Graphics_surface(g)) = true;
+   else
+      currentContext->fullDirty = true;
+#else
+   int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
+   pc1.pixel = c1;
+   pc2.pixel = c2;
+   dim = rotate ? width : height; dim0 = dim;
+   y0 = rotate ? x : y;
+   hh = rotate ? x+dim : y+dim;
+   dim <<= 16;
+   if (dim0 == 0) return;
+   inc = dim/dim0;
+   lineS = (inc>>16)+1;
+   line0=0;
+   lastF=-1;
+   // now paint the shaded area
+   for (c=0; line0 < dim; c++, line0 += inc)
+   {
+      i = c >= dim0 ? dim0-1 : c;
+      f = (invert ? dim0-1-i : i)*factor/dim0;
+      if (f != lastF) // colors repeat often
+         backColor = interpolate(pc1, pc2, lastF = f*255/100);
+      yy = y0+(line0>>16);
+      k = hh - yy;
+      if (k > lineS) k = lineS;
+      if (!rotate)
+         fillRect(currentContext,g,x,yy,width,k, backColor);
+      else
+         fillRect(currentContext,g,yy,y,k,height, backColor);
+   }
+#endif
+}
 
 /////////////// Start of Device-dependant functions ///////////////
 static bool startupGraphics(int16 appTczAttr) // there are no threads running at this point
@@ -2843,37 +2960,22 @@ static bool startupGraphics(int16 appTczAttr) // there are no threads running at
    return graphicsStartup(&screen, appTczAttr);
 }
 
-#ifdef darwin
-static Object constPixels;
-char* createPixelsBuffer(int width, int height) // called from childview.m
-{  
-   if (constPixels != null)
-      return constPixels;
-   constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
-   return ARRAYOBJ_START(constPixels);
-}
-#endif
-
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
    if (screen.screenW <= 0 || screen.screenH <= 0)
       return false;
-      
+
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
-      if (screen.mainWindowPixels == null)
-      {
+      if (controlEnableUpdateScreenPtr == null)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
-         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
-      }
-      *screenObj = screen.mainWindowPixels = constPixels;
       ret = true;
-#else                    
-      
+#else
+
       if (isScreenChange)
       {
          screen.mainWindowPixels = *screenObj = null;
@@ -2882,9 +2984,8 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
       else
       {
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
-         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
-                                                                                          
+
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
@@ -2905,50 +3006,42 @@ void markWholeScreenDirty(Context currentContext)
 
 static bool checkScreenPixels()
 {
-#ifdef ANDROID // android gets the pixels inside graphicsLock
-   if (screen.pixels == null)
-   {
-      if (!graphicsLock(&screen, true))
-         return false;
-      graphicsLock(&screen,false);
-   }
-#endif
    return screen.pixels != null;
 }
 
+void setShiftYgl();
 void updateScreen(Context currentContext)
 {
-#ifdef darwin   
-   if (callingScreenChange) return;
-#elif defined ANDROID
+#ifdef ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (currentContext->fullDirty || (currentContext->dirtyX1 != screen.screenW && currentContext->dirtyX2 != 0 && currentContext->dirtyY1 != screen.screenH && currentContext->dirtyY2 != 0)))
    {
-      int32 transitionEffect = *containerNextTransitionEffectPtr;
-   #ifdef PALMOS
-      if (threadCount > 0) currentContext->fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
-   #endif
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
       {
-         if (transitionEffect == -1)
-            transitionEffect = TRANSITION_NONE;
-#ifdef darwin            
+#ifdef darwin
          UNLOCKVAR(screen); // without this, a deadlock can occur in iOS if the user minimizes the application, since another thread can trigger a markScreenDirty
 #endif
-         graphicsUpdateScreen(currentContext, &screen, transitionEffect);
-#ifdef darwin            
-         LOCKVAR(screen);     
-#endif         
+         graphicsUpdateScreen(currentContext, &screen);
+#ifdef darwin
+         LOCKVAR(screen);
+#endif
       }
-      *containerNextTransitionEffectPtr = TRANSITION_NONE;
       currentContext->dirtyX1 = screen.screenW;
       currentContext->dirtyY1 = screen.screenH;
       currentContext->dirtyX2 = currentContext->dirtyY2 = 0;
-      currentContext->fullDirty = false; 
+      currentContext->fullDirty = false;
    }
+#ifdef __gl2_h_
+   else
+   if (keepRunning && controlEnableUpdateScreenPtr && !*controlEnableUpdateScreenPtr)
+      flushAll();
+#endif
    UNLOCKVAR(screen);
+#ifdef __gl2_h_
+   setShiftYgl();
+#endif   
 }
 
 void graphicsDestroyPrimitives()

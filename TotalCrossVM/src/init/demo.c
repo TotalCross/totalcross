@@ -49,11 +49,6 @@ bool getElapsed(int32 *value)
    if (err == 0)
       err = RegQueryValueEx(handle,TEXT("tone"),NULL,NULL,(uint8 *)value,&size);
    RegCloseKey(handle);
-#elif defined PALMOS
-   uint16 size=4;
-   int16 version;
-   version = PrefGetAppPreferences('GSMm', 0, value, &size, true);
-   err = version != 1;
 #elif defined ANDROID
    JNIEnv* env = getJNIEnv();
    *value = (*env)->CallStaticIntMethod(env, applicationClass, jsetElapsed, 0);
@@ -72,8 +67,6 @@ bool setElapsed(int32 value)
    if (err == 0)
       err = RegSetValueEx(handle,TEXT("tone"),0,REG_DWORD,(uint8*)&value,4);
    RegCloseKey(handle);
-#elif defined PALMOS
-   PrefSetAppPreferences('GSMm', 0, 1 /* version */, &value, 4, true);
 #elif defined ANDROID
    JNIEnv* env = getJNIEnv();
    (*env)->CallStaticIntMethod(env, applicationClass, jsetElapsed, value);

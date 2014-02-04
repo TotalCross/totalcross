@@ -14,9 +14,7 @@
 #include "tcvm.h"
 #include "guid.h"
 
-#if defined (PALMOS)
-// #include "palm/SerialPortClient_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/SerialPortClient_c.h"
 #elif defined ANDROID
  #include "android/SerialPortClient_c.h"

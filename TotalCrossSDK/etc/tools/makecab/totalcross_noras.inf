@@ -87,7 +87,6 @@ CopyFiles	= VMfiles
 tcvm.dll   = 1
 TCBase.tcz = 2
 TCFont.tcz = 3
-TCFontOld.tcz = 3
 
 ;==================================================
 
@@ -100,4 +99,3 @@ DefaultDestDir = 0, %InstallDir%
 tcvm.dll
 TCBase.tcz
 TCFont.tcz
-TCFontOld.tcz

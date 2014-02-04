@@ -367,11 +367,16 @@ public class MenuBar extends Window
       g.setFont(font);
       if (selected != -1)
       {
-         g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
          if (!uiAndroid && uiVista && borderStyle == BORDER_NONE)
-            g.fillVistaRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2, bColor, true,false);
-         else
+         {
+            g.backColor = popCursor; 
             g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
+         }
+         else
+         {
+            g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
+            g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
+         }
       }
       // paint captions
       int yy = (height-fmH)/2;

@@ -22,8 +22,6 @@ static char deviceId[128];
 
 #if defined (WINCE) || defined (WIN32)
  #include "win/settings_c.h"
-#elif defined(PALMOS)
- #include "palm/settings_c.h"
 #else
  #include "posix/settings_c.h"
 #endif
@@ -64,8 +62,6 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
    tcSettings.timeZoneMinutesPtr          = getStaticFieldInt(settingsClass, "timeZoneMinutes");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
-   tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
    tcSettings.closeButtonTypePtr          = getStaticFieldInt(settingsClass, "closeButtonType");
    tcSettings.isFullScreenPtr             = getStaticFieldInt(settingsClass, "isFullScreen");
@@ -86,14 +82,13 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
-   tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
+   tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
    tcSettings.lineNumber                 = getStaticFieldObject(settingsClass, "lineNumber");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
-      *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
    }
 }
 
@@ -124,10 +119,6 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
-#ifdef ANDROID
-extern int32 deviceFontHeight;
-#endif
-
 bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ)
 {
    xstrcpy(mainClassName, mainClassNameP);
@@ -139,11 +130,10 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#elif defined(ANDROID)
-   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
+   vistaFadeStepP = getStaticFieldInt(uiColorsClass, "vistaFadeStep");
    return true;
 }
 
@@ -178,9 +168,6 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    // sets the default creator id - it may be changed in the application's static initializer
    getDefaultCrid(mainClassName, applicationIdStr);
    applicationId = *((int32*)applicationIdStr);
-#ifdef PALMOS
-   applicationId = SWAP32_FORCED(applicationId);
-#endif
 
    setObjectLock(*getStaticFieldObject(settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
 #if !defined darwin
@@ -236,7 +223,7 @@ void storeSettings(bool quittingApp) // guich@230_22
    if (quittingApp)
    {
    restoreSoundSettings();
-#if defined(PALMOS) || defined(WINCE)
+#if defined(WINCE)
    restoreVKSettings();
 #endif
    }
@@ -244,13 +231,15 @@ void storeSettings(bool quittingApp) // guich@230_22
 
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
-   int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
-
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
+#if defined(ANDROID) || defined(darwin)
+    *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+    *tcSettings.isOpenGL = true;
+#endif
 }
 
 TC_API bool getDataPath(CharP storeInto)

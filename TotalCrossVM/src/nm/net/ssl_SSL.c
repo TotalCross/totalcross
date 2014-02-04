@@ -14,7 +14,7 @@
 #include "tcvm.h"
 
 // temporary
-#if defined(PALMOS) || defined(linux) || defined(WIN32) || defined(ANDROID)
+#if defined(linux) || defined(WIN32) || defined(ANDROID)
 #include "ssl.h"
 #define HAVE_IMPLEMENTATION
 #ifndef WIN32

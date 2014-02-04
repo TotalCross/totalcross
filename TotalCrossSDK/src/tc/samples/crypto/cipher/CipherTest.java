@@ -48,11 +48,6 @@ import totalcross.ui.event.Event;
 
 public class CipherTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Object[] ciphers;
    private Key[] encKeys;
    private Key[] decKeys;

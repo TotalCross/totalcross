@@ -69,6 +69,9 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       case totalcross_Launcher4A_PEN_DRAG:
          postEvent(mainContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
          break;
+      case totalcross_Launcher4A_MULTITOUCHEVENT_SCALE:
+         postEvent(mainContext, MULTITOUCHEVENT_SCALE, 0, x, y, modifiers);
+         break;
       case totalcross_Launcher4A_APP_PAUSED:
          postOnMinimizeOrRestore(true);
          break;

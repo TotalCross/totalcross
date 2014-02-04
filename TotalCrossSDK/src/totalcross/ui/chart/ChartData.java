@@ -1,8 +1,13 @@
 package totalcross.ui.chart;
 
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
+import totalcross.ui.Container;
+import totalcross.ui.Window;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.util.Properties;
+import totalcross.util.Vector;
 
 /**
     The ChartData class represents a table with data that would be displayed in the chart.
@@ -67,14 +72,12 @@ import totalcross.ui.gfx.*;
 
 public class ChartData extends Container
 {
-   public int decimalPlaces;
-   String[][] data;
-   String[] title;
-   Chart chart;
+   Vector rows = new Vector(10);
+   protected Chart chart;
    public int lineColor = Color.DARK;
    public int fillColor2 = 0xDDDDDD;
-   public int titleForeColor=-1, titleBackColor=-1;
-   public int selectedCol=-1,selectedRow=-1;
+   public int titleForeColor = -1, titleBackColor = -1;
+   public int selectedCol = -1, selectedRow = -1;
 
    public boolean snapToTop;
    public boolean snapToBottom;
@@ -86,118 +89,135 @@ public class ChartData extends Container
     */
    public int preferredCellHeight = 100;
 
-   /** Constructs a ChartData without title. 
-    * @param data The values to be displayed in the format [rows][cols] 
+   /**
+    * Constructs an empty ChartData.
     */
-   public ChartData(Chart chart, String[][] data)
-   {
-      this(chart, null, data);
-   }
-   
-   /** Constructs a ChartData with the given title and data.
-    * @param data The values to be displayed in the format [rows][cols] 
-    */
-   public ChartData(Chart chart, String[] title, String[][] data)
+   public ChartData(Chart chart)
    {
       this.chart = chart;
-      this.title = title;
-      this.data = data;
    }
-   
+
+   /**
+    * Constructs a ChartData with the given data.
+    * 
+    * @param data
+    *           The values to be displayed in the format [rows][cols]
+    */
+   public ChartData(Chart chart, ChartDataRow[] data)
+   {
+      this(chart);
+      this.rows.addElements(data);
+   }
+
    public void onPaint(Graphics g)
    {
       g.backColor = backColor;
       if (!transparentBackground)
       {
-         g.fillRect(0,0,width,height);
+         g.fillRect(0, 0, width, height);
          if (chart.axisBackColor != -1)
          {
             g.backColor = chart.axisBackColor;
-            g.fillRect(chart.xAxisX1,0,chart.xAxisX2-chart.xAxisX1,height);
+            g.fillRect(chart.xAxisX1, 0, chart.xAxisX2 - chart.xAxisX1, height);
          }
       }
       double inc = (chart.xAxisMaxValue - chart.xAxisMinValue) / chart.xAxisSteps;
       double val = chart.xAxisMinValue;
-      if (chart.getXValuePos(val) == 0) return;
-      int v0 = chart.getXValuePos(val),xx;
-      int cw = chart.getXValuePos(val+inc) - v0;
-      int ystep = this.height / data.length;
-      int yxtra = this.height % ystep;
+      if (chart.getXValuePos(val) == 0)
+         return;
+      int v0 = chart.getXValuePos(val), xx;
+      int cw = chart.getXValuePos(val + inc) - v0;
 
-      if (fillColor2 != -1)
+      int rowsLength = rows.size();
+      if (rowsLength > 0)
       {
-         double x0 = val + inc * use2ndColorEveryXColumns;
-         g.backColor = fillColor2;
-         for (int j = 1, n = data[0].length; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
-            g.fillRect(xx = chart.getXValuePos(x0),0,chart.getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,height);
-      }
-      
-      int xx0 = chart.getXValuePos(val);
-      if (titleBackColor != -1)
-      {
-         g.backColor = titleBackColor;
-         g.fillRect(0,0,xx0+1,height);
-      }
+         int ystep = this.height / rowsLength;
+         int yxtra = this.height % ystep;
 
-      g.backColor = backColor;
-      g.foreColor = foreColor;
-      int yy = 0;
-      for (int i = 0; i < data.length; i++)
-      {
-         double x0 = val;
-         int hh = ystep;
-         if (i < yxtra) hh++;
-         if (title != null)
-         {
-            g.setClip(0,yy,chart.getXValuePos(x0)-2,hh);
-            g.foreColor = titleForeColor != -1 ? titleForeColor : foreColor;
-            g.drawText(title[i],0,yy+(hh-fmH)/2);
-         }         
-         g.foreColor = foreColor;
-         for (int j = 0, n = data[i].length; j < n; j++, x0 += inc)
-         {
-            xx = chart.getXValuePos(x0);
-            g.setClip(xx,yy,cw,hh-1);
-            String d = data[i][j];
-            int sw = fm.stringWidth(d);
-            g.drawText(d,xx+(cw-sw)/2,yy+(hh-fmH)/2);
-         }
-         yy += hh;
-      }
-      if (lineColor != -1)
-      {
-         g.clearClip();
-         g.foreColor = chart.axisForeColor;
-         g.drawLine(xx = chart.getXValuePos(val),0,xx,height); // draw Y axis
-
-         g.backColor = chart.axisForeColor;
-         g.foreColor = fillColor2 != -1 ? fillColor2 : lineColor;
-         int xf = width - chart.border.right - 1;
-         double x0 = val+(fillColor2 != -1 ? inc : 0);
-         for (int j = fillColor2 != -1 ? 1 : 0, n = data[0].length; j <= n; j++, x0 += inc) // vertical lines
-            g.drawDots(xx = chart.getXValuePos(x0),0,xx,height);
-         yy = 0;
-         int hh = 0;
          if (fillColor2 != -1)
-            v0++;
-         for (int i = snapToBottom ? 1 : 0, n = data.length; i <= n; i++,yy += hh) // horizontal lines
          {
-            g.drawDots(v0,yy,xf,yy);
-            hh = ystep;
-            if (i < yxtra) hh++;
+            double x0 = val + inc * use2ndColorEveryXColumns;
+            g.backColor = fillColor2;
+            // vertical lines            
+            for (int j = 1, n = getRow(0).columns.length; j <= n; j += 2, x0 += inc * use2ndColorEveryXColumns * 2)
+            {
+               xx = chart.getXValuePos(x0);
+               g.fillRect(xx, 0, chart.getXValuePos(x0 + inc * use2ndColorEveryXColumns) - xx, height);
+            }
          }
-         if (!snapToTop)
-            g.drawDots(v0,height-1,xf,height-1);
+
+         int xx0 = chart.getXValuePos(val);
+         if (titleBackColor != -1)
+         {
+            g.backColor = titleBackColor;
+            g.fillRect(0, 0, xx0 + 1, height);
+         }
+
+         g.backColor = backColor;
+         g.foreColor = foreColor;
+         int yy = 0;
+         for (int i = 0; i < rowsLength; i++)
+         {
+            ChartDataRow row = getRow(i);
+            double x0 = val;
+            int hh = ystep;
+            if (i < yxtra)
+               hh++;
+            if (row.title != null)
+            {
+               g.setClip(0, yy, chart.getXValuePos(x0) - 2, hh);
+               g.foreColor = titleForeColor != -1 ? titleForeColor : foreColor;
+               g.drawText(row.title, 0, yy + (hh - fmH) / 2);
+            }
+            g.foreColor = foreColor;
+            for (int j = 0, n = row.columns.length; j < n; j++, x0 += inc)
+            {
+               xx = chart.getXValuePos(x0);
+               g.setClip(xx, yy, cw, hh - 1);
+               Properties.Value value = row.columns[j];
+               if (value != null)
+               {
+                  String d = value.toString();
+                  int sw = fm.stringWidth(d);
+                  g.drawText(d, xx + (cw - sw) / 2, yy + (hh - fmH) / 2);
+               }
+            }
+            yy += hh;
+         }
+         if (lineColor != -1)
+         {
+            g.clearClip();
+            g.foreColor = chart.axisForeColor;
+            g.drawLine(xx = chart.getXValuePos(val), 0, xx, height); // draw Y axis
+
+            g.backColor = fillColor2 != -1 ? fillColor2 : lineColor;
+            int xf = width - chart.border.right - 1;
+            double x0 = val + (fillColor2 != -1 ? inc : 0);
+            // vertical lines
+            for (int j = fillColor2 != -1 ? 1 : 0, n = getRow(0).columns.length; j <= n; j++, x0 += inc)
+               g.drawDots(xx = chart.getXValuePos(x0), 0, xx, height);
+            yy = 0;
+            int hh = 0;
+            for (int i = snapToBottom ? 1 : 0, n = rowsLength; i <= n; i++, yy += hh) // horizontal lines
+            {
+               g.drawDots(v0, yy, xf, yy);
+               hh = ystep;
+               if (i < yxtra)
+                  hh++;
+            }
+            if (!snapToTop)
+               g.drawDots(v0, height - 1, xf, height - 1);
+         }
       }
       if (chart.markPos != Chart.UNSET)
       {
          g.foreColor = chart.categoryMarkColor;
-         g.drawLine(chart.markPos-1,0,chart.markPos-1,height);
-         g.drawLine(chart.markPos,0,chart.markPos,height);
-         g.drawLine(chart.markPos+1,0,chart.markPos+1,height);
+         g.drawLine(chart.markPos - 1, 0, chart.markPos - 1, height);
+         g.drawLine(chart.markPos, 0, chart.markPos, height);
+         g.drawLine(chart.markPos + 1, 0, chart.markPos + 1, height);
       }
    }
-   
+
    public void onEvent(Event e)
    {
       switch (e.type)
@@ -206,18 +226,22 @@ public class ChartData extends Container
             if (enabled && !hadParentScrolled())
             {
                selectedRow = selectedCol = -1;
-               PenEvent pe = (PenEvent)e;
+               PenEvent pe = (PenEvent) e;
                int pex = pe.x, pey = pe.y;
-               if (chart.xAxisX1 <= pex && pex <= chart.xAxisX2 && chart.yAxisY2 <= pey && pey <= chart.yAxisY1)
+               int rowsLength = rows.size();
+               if (rowsLength > 0 &&
+                     chart.xAxisX1 <= pex && pex <= chart.xAxisX2 &&
+                     chart.yAxisY2 <= pey && pey <= chart.yAxisY1)
                {
-                  int ystep = this.height / data.length;
+                  int ystep = this.height / rowsLength;
                   int yxtra = this.height % ystep;
-                  selectedCol = (pex-chart.xAxisX1) / chart.columnW;
-                  for (int i = 0, n = data.length, hh, yy = chart.yAxisY2; i <= n; i++,yy += hh) // horizontal lines
+                  selectedCol = (pex - chart.xAxisX1) / chart.columnW;
+                  for (int i = 0, hh, yy = chart.yAxisY2; i <= rowsLength; i++, yy += hh) // horizontal lines
                   {
                      hh = ystep;
-                     if (i < yxtra) hh++;
-                     if (yy <= pey && pey < yy+hh)
+                     if (i < yxtra)
+                        hh++;
+                     if (yy <= pey && pey < yy + hh)
                      {
                         selectedRow = i;
                         break;
@@ -226,100 +250,108 @@ public class ChartData extends Container
                   postPressedEvent();
                }
             }
-            break;
+         break;
       }
    }
-   
+
    public void reposition()
    {
       super.reposition(false);
       removeAll();
       initUI();
    }
-   
+
    public int getPreferredHeight()
    {
-      return fmH * preferredCellHeight * data.length / 100;
-   }
-   
-   public String getSelectedCell()
-   {
-      return selectedCol >= 0 && selectedRow >= 0 ? data[selectedRow][selectedCol] : null;
+      int rowsLength = rows.size();
+      if (rowsLength == 0)
+         return 0;
+      return fmH * preferredCellHeight * rowsLength / 100;
    }
 
-   public String getCell(int col, int row)
+   public Properties.Value getSelectedCell()
    {
-      return selectedCol >= 0 && selectedRow >= 0 ? data[row][col] : null;
+      if (selectedCol >= 0 && selectedRow >= 0)
+         return getRow(selectedRow).columns[selectedCol];
+      return null;
    }
-   
-   public void setCell(String text, int col, int row)
+
+   public Properties.Value getCell(int col, int row)
    {
-      data[row][col] = text;
+      return getRow(row).columns[col];
+   }
+
+   public void setCell(Properties.Value value, int col, int row)
+   {
+      getRow(row).columns[col] = value;
       Window.needsPaint = true;
    }
-   
-   public String getTitle(int row)
+
+   public ChartDataRow getRow(int row)
    {
-      return title[row];
+      if (row < 0 || row >= rows.size())
+         throw new IndexOutOfBoundsException();
+      return (ChartDataRow) rows.items[row];
    }
-   
-   public void setTitle(String title, int row)
+
+   public ChartDataRow getSelectedRow()
    {
-      this.title[row] = title;
-   }
-   
-   public String[][] getData()
-   {
-      return data;
+      if (selectedRow >= 0)
+         return getRow(selectedRow);
+      return null;
    }
 
    /** Adds a new row. Pass -1 to add at the end */
-   public void addLine(int pos, String title)
+   public void addLine(int pos, ChartDataRow row)
    {
-      int rows = data.length;
-      int cols = data[0].length;
-      if (pos < 0 || pos > rows) pos = rows;
-      String[] newTitle = new String[this.title.length + 1];
-      String[] newRow = new String[cols]; for (int i = newRow.length; --i >= 0;) newRow[i] = "";
-      String[][] newData = new String[rows+1][];
-      int i = 0;
-      for (; i < pos; i++)
-      {
-         newTitle[i] = this.title[i];
-         newData[i] = data[i];
-      }
-      newTitle[i] = title;
-      newData[i++] = newRow;
-      for (; i <= rows; i++)
-      {
-         newTitle[i] = this.title[i];
-         newData[i] = data[i];
-      }
-      this.title = newTitle;
-      this.data = newData;
+      int rowCount = rows.size();
+      if (pos < 0 || pos > rowCount)
+         pos = rowCount;
+      rows.insertElementAt(row, pos);
    }
 
    public void removeLine(int pos)
    {
-      int rows = data.length;
+      int rowCount = rows.size();
       if (pos == -1)
-         pos = rows - 1;
-      if (pos < 0 || pos >= rows) return;
-      String[][] newData = new String[--rows][];
-      String[] newTitle = new String[rows];
-      int i = 0,j=0;
-      for (; i < pos; i++,j++)
+         pos = rowCount - 1;
+      if (pos < 0 || pos >= rowCount)
+         return;
+
+      this.rows.removeElementAt(pos);
+   }
+
+   public void removeLine(String title)
+   {
+      for (int i = rows.size() - 1; i >= 0; i--)
+         if (getRow(i).title.equals(title))
+            removeLine(i);
+   }
+
+   public class ChartDataRow
+   {
+      String title;
+      Properties.Value[] columns;
+
+      public ChartDataRow(int columnCount)
       {
-         newData[i] = data[j];
-         newTitle[i] = title[j];
+         this(null, new Properties.Value[columnCount]);
       }
-      j++; // skip line at pos
-      for (; i < rows; i++,j++)
+
+      public ChartDataRow(String title, int columnCount)
       {
-         newData[i] = data[j];
-         newTitle[i] = title[j];
+         this(title, new Properties.Value[columnCount]);
       }
-      this.title = newTitle;
-      this.data = newData;
+
+      public ChartDataRow(String title, Properties.Value[] data)
+      {
+         this.title = title;
+         this.columns = data;
+      }
+
+      public String getTitle()
+      {
+         return title;
+      }
    }
 }

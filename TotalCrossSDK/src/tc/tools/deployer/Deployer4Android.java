@@ -117,7 +117,7 @@ public class Deployer4Android
          isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
          tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"android/";
          if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "android/";
+            lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "android/";
          // source and target packages must have the exact length
          sourcePackage = "totalcross/android";
          targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();
@@ -131,9 +131,9 @@ public class Deployer4Android
          jar2dex();         // 2
       }
       updateResources(); // 3+4+5
+      Utils.jarSigner(fileName+".apk", targetDir);         // 6
       new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
       Utils.copyFile(targetDir+"/"+fileName+"_.apk",targetDir+"/"+fileName+".apk",true); 
-      Utils.jarSigner(fileName+".apk", targetDir);         // 6
       
       String extraMsg = "";
       if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
@@ -149,7 +149,7 @@ public class Deployer4Android
       if (adb == null)
          throw new DeployerException("File android/adb.exe not found!");
       String message = Utils.exec(new String[]{adb,"install","-r","*.apk"},targetDir);
-      if (message.indexOf("INPUT:Success") >= 0)
+      if (message != null && message.indexOf("INPUT:Success") >= 0)
          return " (installed)";
       System.out.println(message);
       return " (error on installl)";
@@ -203,6 +203,7 @@ public class Deployer4Android
       String apk = targetDir+fileName+".apk";
       ZipInputStream zis = new ZipInputStream(new FileInputStream(ap));
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
+
       ZipEntry ze,ze2;
 
       // search the input zip file, convert and write each entry to the output zip file
@@ -227,7 +228,41 @@ public class Deployer4Android
       if (singleApk)
       {
          processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "res/layout/main.xml", zos);
+         String[] extras = 
+         {
+            "res/drawable/launcher_icon.png",
+            "res/drawable/share_via_barcode.png",
+            "res/drawable/shopper_icon.png",
+            "res/drawable-hdpi/launcher_icon.png",
+            "res/drawable-hdpi/shopper_icon.png",
+            "res/drawable-xhdpi/launcher_icon.png",
+            "res/layout/bookmark_picker_list_item.xml",
+            "res/layout/capture.xml",
+            "res/layout/encode.xml",
+            "res/layout/help.xml",
+            "res/layout/history_list_item.xml",
+            "res/layout/main.xml",
+            "res/layout/search_book_contents.xml",
+            "res/layout/search_book_contents_header.xml",
+            "res/layout/search_book_contents_list_item.xml",
+            "res/layout/share.xml",
+            "res/layout-land/encode.xml",
+            "res/layout-land/share.xml",
+            "res/layout-ldpi/capture.xml",
+            "res/menu/capture.xml",
+            "res/menu/encode.xml",
+            "res/menu/history.xml",
+            "res/raw/beep.ogg",
+/*            "res/values/arrays.xml",
+            "res/values/colors.xml",
+            "res/values/dimens.xml",
+            "res/values/ids.xml",
+            "res/values/strings.xml",
+*/            "res/xml/preferences.xml",
+         };
+         
+         for (int i = 0; i < extras.length; i++)
+            copyZipEntry(tcFolder+"TotalCross.apk", extras[i], zos);
       }
       else
       {
@@ -292,8 +327,11 @@ public class Deployer4Android
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
 
       replaceBytes(bytes, sourcePackage.getBytes(), targetPackage.getBytes());
-      if (DeploySettings.autoStart)
-         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, new byte[]{0,0,0,0});
+      if (DeploySettings.autoStart || DeploySettings.isService)
+      {
+         System.out.println("Is service.");
+         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, DeploySettings.isService ? new byte[]{1,0,0,0} : new byte[]{0,0,0,0});
+      }
       calcSignature(bytes);
       calcChecksum(bytes);
       dstZip.write(bytes,0,bytes.length);
@@ -312,8 +350,20 @@ public class Deployer4Android
 
    private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
    {
-      dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+      ZipEntry ze = new ZipEntry(fileName);
+      
+      if (fileName.endsWith(".ogg")) // for zxing beep.ogg file 
+      {
+         CRC32 crc = new CRC32();
+         crc.update(bytes); 
+         ze.setCrc(crc.getValue());
+         ze.setMethod(ZipEntry.STORED);
+         ze.setCompressedSize(bytes.length);
+         ze.setSize(bytes.length);
+      }
+      
+      dstZip.putNextEntry(ze);
       dstZip.write(bytes,0,bytes.length);
       dstZip.closeEntry();
    }
@@ -622,10 +672,10 @@ public class Deployer4Android
          {
             case JavaConstant.CONSTANT_INTEGER:
                String cla = jclass.getClassName();
-               if (DeploySettings.autoStart && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
+               if ((DeploySettings.autoStart || DeploySettings.isService) && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
                {
                   Integer it = new Integer();
-                  it.value = 0;
+                  it.value = DeploySettings.isService ? 1 : 0;
                   constant.info = it;
                }
                break;

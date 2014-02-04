@@ -41,18 +41,18 @@ import totalcross.sys.*;
 
 public final class Color
 {
-   public static final int WHITE  = 0xFFFFFF;
-   public static final int BRIGHT = 0xBFBFBF;
-   public static final int DARK   = 0x7F7F7F;
-   public static final int BLACK  = 0x000000;
-   public static final int RED = 0xFF0000;
-   public static final int PINK = 0xFFAFAF;
-   public static final int ORANGE = 0xFFC800;
-   public static final int YELLOW = 0xFFFF00;
-   public static final int GREEN = 0x00FF00;
+   public static final int WHITE   = 0xFFFFFF;
+   public static final int BRIGHT  = 0xBFBFBF;
+   public static final int DARK    = 0x7F7F7F;
+   public static final int BLACK   = 0x000000;
+   public static final int RED     = 0xFF0000;
+   public static final int PINK    = 0xFFAFAF;
+   public static final int ORANGE  = 0xFFC800;
+   public static final int YELLOW  = 0xFFFF00;
+   public static final int GREEN   = 0x00FF00;
    public static final int MAGENTA = 0xFF00FF;
-   public static final int CYAN = 0x00FFFF;
-   public static final int BLUE = 0x0000FF;
+   public static final int CYAN    = 0x00FFFF;
+   public static final int BLUE    = 0x0000FF;
 
    /** Increase or decrease all RGB values by 96. To be used in the darker(step) and brighter(step) methods. */
    public static final int FULL_STEP = 96;
@@ -216,6 +216,25 @@ public final class Color
       int r = (r1*factor+r2*m)/100;
       int g = (g1*factor+g2*m)/100;
       int b = (b1*factor+b2*m)/100;
+      
+      return (r << 16) | (g << 8) | b;
+   }
+
+   /** Interpolates the given colors by the given factor, ranging from 0 to 255.
+    *  @since TotalCross 1.23
+    */
+   public static int interpolateA(int color1, int color2, int factor)
+   {
+      int m = 255-factor;
+      int r1 = (color1 >> 16) & 0xFF;
+      int g1 = (color1 >>  8) & 0xFF;
+      int b1 = (color1      ) & 0xFF;
+      int r2 = (color2 >> 16) & 0xFF;
+      int g2 = (color2 >>  8) & 0xFF;
+      int b2 = (color2      ) & 0xFF;
+      int r = (r1*factor+r2*m)/255;
+      int g = (g1*factor+g2*m)/255;
+      int b = (b1*factor+b2*m)/255;
       
       return (r << 16) | (g << 8) | b;
    }

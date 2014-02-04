@@ -685,31 +685,6 @@ public class HttpStream extends Stream
       }
    }
    
-   protected void writeResponseRequest4B(StringBuffer sb, Options options) throws totalcross.io.IOException
-   {
-      if (POST.equals(options.httpType) || options.doPost)
-      {
-         if (options.postPrefix != null)
-            sb.append(options.postPrefix);
-         if (options.postDataSB != null)
-            sb.append(options.postDataSB.toString());
-         if (options.postData != null)
-            sb.append(options.postData);
-         if (options.postSuffix != null)
-            sb.append(options.postSuffix);
-      }
-      
-      //flsobral@tc120_17
-      // Here is the real difference between the regular and the BlackBerry implementation:
-      // All data is written over the socket at once, no buffer is used, that's all!
-      //
-      // Apparently some BlackBerry devices have problems when sockets are used in a write-write-read sequence.
-      // This problem is probably related with the Nagle algorithm, and seems to occur more often with socket connections over BIS.
-      // It does not happen on BlackBerry Bold though, maybe it happens only on previous OS versions or only on devices that support networks slower than 3G.
-      // I tried using the socket options to disable the Nagle algorithm, but (just like the keep-alive) it didn't work.
-      socket.writeBytes(sb);      
-   }
-
    /**
    * Tell if this HttpStream is functioning properly.
    *

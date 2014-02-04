@@ -16,12 +16,10 @@
 
 package totalcross.ui.media;
 
-import totalcross.io.IOException;
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.PressListener;
-import totalcross.util.Vector;
+import totalcross.util.*;
 
 public class Camera4D
 {
@@ -58,26 +56,7 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.platform.equals(Settings.PALMOS))
-      {
-         cameraScreen = new Window();
-         Button bOk = new Button("Ok");
-         bOk.appObj = this;
-         cameraScreen.add(bOk, Control.LEFT, Control.BOTTOM);
-         initCamera();
-         bOk.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               Button bOk = (Button) e.target;
-               Camera4D camera = (Camera4D) bOk.appObj;
-               camera.defaultFileName = camera.nativeClick();
-               bOk.getParentWindow().unpop();
-            }
-         });
-         cameraScreen.popup();
-      }
-      else if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
+      if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
          return this.nativeClick();
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();

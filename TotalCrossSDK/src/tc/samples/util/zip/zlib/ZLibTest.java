@@ -26,11 +26,6 @@ import totalcross.util.zip.*;
 
 public class ZLibTest extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private Button btn;
    private ListBox lb;
 

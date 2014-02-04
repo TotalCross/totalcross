@@ -123,19 +123,6 @@ void methodHashCode(CharP name, uint16* cpParams, int32 n, ConstantPool cp, int3
       *hashParam += hashCode(cp->cls[*cpParams]);
 }
 
-#ifdef PALMOS // in Palm, double/long that comes from Java has the 32-bit swapped
-void swap64array(uint64* i, uint32 n)
-{
-   uint32* ii = (uint32*)i,a;
-   for (; n-- > 0; ii += 2)
-   {
-      a = *ii;
-      *ii = *(ii+1);
-      *(ii+1) = a;
-   }
-}
-#endif
-
 void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap heap)
 {
    int32 len,i,partSize;
@@ -162,9 +149,6 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
    {
       t->dbl = newPtrArrayOf(Double,t->dblCount, heap);
       tczRead(tcz, t->dbl+1, 8*(t->dblCount-1));
-#ifdef PALMOS // palm os requires that we invert the double nibbles
-      swap64array((uint64*)t->dbl+1, t->dblCount-1);
-#endif
    }
    if (t->sfieldCount > 0)
    {

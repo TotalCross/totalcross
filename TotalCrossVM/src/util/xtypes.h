@@ -40,7 +40,7 @@ extern "C" {
 #define UNUSED(x) x=x;
 #endif
 
-#if !defined(linux) && !defined(__arm__) && (defined(WINCE) || defined(WIN32) || defined(__SYMBIAN32__)/* || (_MSC_VER <= 1200) - gcc4win will fail with this*/)  // 1200 = VC6 and earlier
+#if !defined(linux) && !defined(__arm__) && (defined(WINCE) || defined(WIN32))
  #define I64_CONST(x) x##L
 #else
  #define I64_CONST(x) x##LL
@@ -71,7 +71,7 @@ typedef signed int int32;
 typedef unsigned int uint32;
 typedef signed short int16;
 typedef unsigned short uint16;
-#if defined(WINCE) || defined(WIN32) || (defined __SYMBIAN32__  && defined __WINS__)
+#if defined(WINCE) || defined(WIN32)
  typedef __int64 int64;
  typedef unsigned __int64 uint64;
 #else
@@ -81,21 +81,17 @@ typedef unsigned short uint16;
 typedef void* VoidP;
 typedef char* CharP;
 
-#if defined (PALMOS) || defined (WINCE)
+#if defined (WINCE)
  typedef int intptr_t;
 #endif
 
-#if defined(linux) || defined(__SYMBIAN32__)
+#if defined(linux)
 typedef unsigned char byte;
 #endif
 
-#if defined(__SYMBIAN32__)
- #include <e32def.h>
-#else
- typedef int16 TInt16;
- typedef int32 TInt32;
- typedef int64 TInt64;
-#endif
+typedef int16 TInt16;
+typedef int32 TInt32;
+typedef int64 TInt64;
 typedef uint16 TUInt16;
 typedef uint32 TUInt32;
 typedef uint8 TUInt8;
@@ -129,7 +125,7 @@ typedef int bool;
 #endif
 #endif
 
-#if !defined(PALMOS) && !defined(__HSDATATYPES__) && !(defined(darwin) && defined(__OBJC__)) // Palm OS defines these as non-ptr types, so we can't define them as ptr ones.
+#if !defined(__HSDATATYPES__) && !(defined(darwin) && defined(__OBJC__)) // Palm OS defines these as non-ptr types, so we can't define them as ptr ones.
 typedef TInt32 Int32;
 typedef TUInt32 UInt32;
 typedef TUInt16 UInt16;
@@ -137,23 +133,16 @@ typedef TInt16 Int16;
 typedef TUInt8 UInt8;
 #endif
 typedef TDouble Double;
-#if !defined(__SYMBIAN32__)
 typedef TInt64 Int64;
-#endif
 
 #ifndef INT32_MAX
  #define INT32_MAX (2147483647)
 #endif
 
 //Error handling
-#if !defined (PALMOS)
- typedef int32 Err;
-#endif
+typedef int32 Err;
 
-#if defined (WINCE) || defined (WIN32)
-#elif defined (PALMOS)
- #define NO_ERROR errNone
-#else
+#if !defined(WIN32)
  #define NO_ERROR 0
 #endif
 
@@ -236,11 +225,7 @@ CharP xstrrchr(CharP str, int32 what);
 #define xmemset(mem, what, len) memset(mem, what, len)
 #define xmemcmp(mem1, mem2, len) memcmp(mem1, mem2, len)
 
-#if defined (PALMOS)
-#define xstrncasecmp(str1, str2, len) StrNCaselessCompare(str1, str2, len)
-#else
 int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
-#endif
 
 #define strEq !xstrcmp
 #define strEqn !xstrncmp
@@ -276,9 +261,7 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
 #define TARGET_SLASH '/'
 #define MAX_PATHNAME 256
 
-#if defined(__SYMBIAN32__)
- #include <sys/param.h>
-#elif !defined(MIN)
+#if !defined(MIN)
  #define MIN(x,y) (((x) < (y)) ? (x) : (y))
  #define MAX(x,y) (((x) < (y)) ? (y) : (x))
 #endif

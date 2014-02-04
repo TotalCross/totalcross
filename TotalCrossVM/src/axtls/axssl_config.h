@@ -12,8 +12,6 @@
 #define CONFIG_PLATFORM_WIN32 1
 #elif defined(PALMOS)
 #define CONFIG_PLATFORM_PALMOS 1
-#elif defined(__SYMBIAN32__)
-#define CONFIG_PLATFORM_SYMBIAN 1
 #else
 #error "not supported platform"
 #endif

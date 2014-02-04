@@ -13,9 +13,7 @@
 
 #include "Net.h"
 
-#if defined PALMOS
- #include "palm/Socket_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/Socket_c.h"
 #else
  #include "posix/Socket_c.h"

@@ -50,9 +50,6 @@ TESTCASE(tnSS_serversocketCreate_iiis) // totalcross/net/ServerSocket native voi
    // READ AND WRITE ON OPEN CLIENT SOCKET.
 #if defined WIN32
    while ((bytesReceived = recv(s, str, 1024, 0)) <= 0);
-#elif defined PALMOS
-   timeout = timeout >= 0 ? millisToTicks(timeout) : -1;
-   while ((bytesReceived = NetLibReceive(s, str, 1024, 0, null, 0, timeout, &err)) <= 0);
 #endif
    str[bytesReceived] = 0;
    alert("%s", str);
