@@ -418,22 +418,28 @@ Cleanup: /* CLEANUP */
 
 #ifdef __gl2_h_
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-int32 getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color)
+void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret)
 {
    IdColor ic = uf->textureIds[ch];
    for (; ic != null; ic = ic->next)
       if (ic->color == color.pixel)
       {
-         if (ic->id)
-            return ic->id;
+         if (ic->id[0])
+         {
+            ret[0] = ic->id[0]; // id
+            ret[1] = ic->id[1]; // view
+            return;
+         }
          break;
       }
    // new color/char
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
-      int32 offset = uf->bitIndexTable[ch], y, x, id=0;
+      int32 offset = uf->bitIndexTable[ch], y, x;
+      int32 id[2];
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
       bool isLow = uf->fontP.maxHeight < 18;
+      id[0] = id[1] = 0;
       p += width; // skip a line at top
       for (y = 0; y < height; y++)
       {
@@ -457,14 +463,18 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv co
          p->a = 0; p++; // skip a row at right
       }
       
-      glLoadTexture(currentContext, null, &id, (Pixel*)pixels, width+1, height+1, false);
+      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width+1, height+1, false);
       if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
-         ic->id = id;
+      {
+         ret[0] = ic->id[0] = id[0];
+         ret[1] = ic->id[1] = id[1];
+      }
       else
       {
          ic = newXH(IdColor,fontsHeap);
          ic->color = color.pixel;
-         ic->id = id;
+         ret[0] = ic->id[0] = id[0];
+         ret[1] = ic->id[1] = id[1];
          if (uf->textureIds[ch] == null)
             uf->textureIds[ch] = ic;
          else
@@ -473,7 +483,6 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv co
             uf->textureIds[ch] = ic;
          }
       }
-      return ic->id;
    }
 }
 #endif
@@ -487,7 +496,7 @@ static void reset1Font(UserFont uf)
       {
          IdColor ic = uf->textureIds[i];
          for (; ic != null; ic = ic->next)
-            ic->id = 0;
+            ic->id[0] = 0;
       }
 }
 #endif

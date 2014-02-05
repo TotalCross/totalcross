@@ -709,7 +709,7 @@ void recreateTextures() // called by opengl when the application changes the ope
       {    
          TCObject img = (TCObject)current->value;
          //glDeleteTexture(img,&(Image_textureId(img)),false); - cannot delete the textures! they were already deleted when the window was disposed
-         *Image_textureId(img) = 0;
+         Image_textureId(img)[0] = 0;
          Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
          current = current->next;
       } while (imgTextures != current);

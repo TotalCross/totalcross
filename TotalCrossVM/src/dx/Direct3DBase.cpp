@@ -11,6 +11,7 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
 static Direct3DBase ^lastInstance = nullptr;
+int nfr, nl, nfsr, nt, np;
 
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
@@ -283,6 +284,7 @@ void Direct3DBase::setup()
 #define f255(x) ((float)x/255.0f)
 void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+   nfsr++;
    //y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
@@ -332,6 +334,7 @@ void Direct3DBase::setColor(int color)
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
+   nl++;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -355,6 +358,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
+   nfr++;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -380,6 +384,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
+   np++;
    int i;
    int n = count * 2;
    VertexPosition *cubeVertices = new VertexPosition[n];// position, color
@@ -440,6 +445,7 @@ void Direct3DBase::Present()
 	TheDrawCommand = DRAW_COMMAND_PRESENT;
 	while (TheDrawCommand == DRAW_COMMAND_PRESENT) 
 		Sleep(OCCUPIED_WAIT_TIME);
+   //debug("fillRect: %d, line: %d, fillSrect: %d, tex: %d, points: %d", nfr, nl, nfsr, nt, np);
 	//fim = GetTickCount64() & 0x3FFFFFFF; debug("vm thread occupied wait time elapsed: %d ms\n", fim - ini);
 }
 
@@ -528,16 +534,30 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    if (FAILED(m_d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
    else
-      xmemmove(textureId, &texture, sizeof(void*));
+   {
+      ID3D11ShaderResourceView* textureView;
+      D3D11_SHADER_RESOURCE_VIEW_DESC textureViewDesc;
+      ZeroMemory(&textureViewDesc, sizeof(textureViewDesc));
+      textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+      textureViewDesc.Texture2D.MipLevels = 1;
+      m_d3dDevice->CreateShaderResourceView(&texture[0], &textureViewDesc, &textureView);
+      xmoveptr(&textureId[0], &texture);
+      xmoveptr(&textureId[1], &textureView);
+   }
    xfree(pt0);
 }
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 }
-void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
 {
+   nt++;
    ID3D11Texture2D *texture;
-   xmemmove(&texture, &textureId, sizeof(void*));
+   ID3D11ShaderResourceView *textureView;
+
+   xmoveptr(&texture, &textureId[0]);
+   xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
 
    if (clip)
@@ -573,14 +593,6 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    // SHADER VIEW
    // Once the texture is created, we must create a shader resource view of it so that shaders may use it.  
    // In general, the view description will match the texture description.
-   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView;
-   D3D11_SHADER_RESOURCE_VIEW_DESC textureViewDesc;
-   ZeroMemory(&textureViewDesc, sizeof(textureViewDesc));
-   textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-   textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-   textureViewDesc.Texture2D.MipLevels = 1;
-   DX::ThrowIfFailed(m_d3dDevice->CreateShaderResourceView(texture, &textureViewDesc, &textureView));
-
    m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
@@ -593,7 +605,7 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    // Set the vertex and pixel shader stage state.
-   m_d3dContext->PSSetShaderResources(0, 1, textureView.GetAddressOf());
+   m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
    if (clip)
