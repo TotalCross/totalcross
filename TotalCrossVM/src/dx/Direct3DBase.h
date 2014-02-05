@@ -84,6 +84,9 @@ internal:
    static Direct3DBase ^GetLastInstance();
    PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
 
+   Platform::String^ GetAlertMsg();
+   void SetAlertMsg(Platform::String^ newAlertMsg);
+
 private:
    int loadCompleted[N_LOAD_TASKS];
    bool manipulationComplete;
@@ -132,6 +135,7 @@ protected private:
 
 	// DrawCommand internal variables
 	enum drawCommand TheDrawCommand;
+   Platform::String^ alertMsg;
 
 	int DrawCommand_x1;
 	int DrawCommand_x2;

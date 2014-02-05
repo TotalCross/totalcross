@@ -93,9 +93,11 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 	if (!m_renderer->isLoadCompleted()) {
 	   m_renderer->UpdateDevice(device, context, renderTargetView);
 	   RequestAdditionalFrame();
-	   
 	}
-	else {
+	else 
+   {
+      Platform::String^ alertMsg;
+
 		m_renderer->UpdateDevice(device, context, renderTargetView);
 		m_renderer->PreRender();
 		m_renderer->Render();
@@ -105,7 +107,12 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 		while (m_renderer->WaitDrawCommand() != DRAW_COMMAND_PRESENT) {
 			Sleep(OCCUPIED_WAIT_TIME);
 		}
+      
+      alertMsg = m_renderer->GetAlertMsg();
+      if (alertMsg != nullptr)
 
+         Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(alertMsg);
+      alertMsg = nullptr;
 		RequestAdditionalFrame();
 	}
 
