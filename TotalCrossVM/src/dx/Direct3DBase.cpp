@@ -469,6 +469,9 @@ void Direct3DBase::setProgram(whichProgram p)
          m_d3dContext->IASetInputLayout(m_inputLayoutLC.Get());
          break;
       case PROGRAM_TEX:
+         m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
+         m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
+         m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
          m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
          m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
@@ -590,13 +593,6 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
    m_d3dContext->Unmap(texVertexBuffer, NULL);                                     // unmap the buffer
 
-   // SHADER VIEW
-   // Once the texture is created, we must create a shader resource view of it so that shaders may use it.  
-   // In general, the view description will match the texture description.
-   m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
-   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
-   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-
    // Set the vertex and index buffers, and specify the way they define geometry.
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
@@ -619,11 +615,22 @@ int Direct3DBase::WaitDrawCommand()
 	return (int)TheDrawCommand;
 }
 
-void Direct3DBase::DoneDrawCommand() {
+void Direct3DBase::DoneDrawCommand() 
+{
 	TheDrawCommand = DRAW_COMMAND_INVALID;
 }
 
 void Direct3DBase::setManipulationComplete()
 {
 	this->manipulationComplete = true;
+}
+
+Platform::String^ Direct3DBase::GetAlertMsg()
+{
+   return alertMsg;
+}
+
+void Direct3DBase::SetAlertMsg(Platform::String^ newAlertMsg)
+{
+   alertMsg = newAlertMsg;
 }
