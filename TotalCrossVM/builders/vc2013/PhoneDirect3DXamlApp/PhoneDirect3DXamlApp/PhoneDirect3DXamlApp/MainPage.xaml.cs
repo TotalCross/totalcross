@@ -326,6 +326,20 @@ namespace PhoneDirect3DXamlAppInterop
         {
             InitializeComponent();
             this.LostFocus += MainPage_LostFocus;
+            this.BackKeyPress += MainPage_BackKeyPress;
+        }
+
+        void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (m_d3dBackground == null)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                e.Cancel = m_d3dBackground.backKeyPress();
+                //throw new NotImplementedException();
+            }
         }
 
         void MainPage_LostFocus(object sender, RoutedEventArgs e)
