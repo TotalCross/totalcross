@@ -160,7 +160,6 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	// Set the rendering viewport to target the entire window.
 	CD3D11_VIEWPORT viewport(0.0f,0.0f,m_renderTargetSize.Width,m_renderTargetSize.Height);
 	m_d3dContext->RSSetViewports(1, &viewport);
-	def_status = 1;
 }
 
 // Allocate all memory resources that depend on the window size.
@@ -454,6 +453,9 @@ void Direct3DBase::setProgram(whichProgram p)
    if (p == curProgram) return;
    lastRGB = 0xFAFFFFFF; // user may never use this color
    curProgram = p;
+   lastClip[2] = -1;
+   m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   clipSet = false;
    switch (p)
    {
       case PROGRAM_GC:
@@ -476,6 +478,8 @@ void Direct3DBase::setProgram(whichProgram p)
          m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
          m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
+         m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+         m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
          break;
    }
 }
@@ -492,17 +496,13 @@ void Direct3DBase::PreRender()
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
-
    m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 bool Direct3DBase::Render()
 {
    if (!isLoadCompleted()) 
-   {
-	   def_status = 0;
 	   return false;
-   }
    if (!VMStarted) 
    {
 	   auto lambda = [this]() 
@@ -555,6 +555,7 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
 }
 void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
 {
+   bool doClip = clip != null;
    nt++;
    ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
@@ -563,16 +564,26 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
 
-   if (clip)
+   if (!doClip && clipSet)
+      m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   else
+   if (doClip)
    {
-      m_d3dContext->RSSetState(pRasterStateEnableClipping);
-      D3D11_RECT rects[1];
-      rects[0].left = clip[0];
-      rects[0].right = clip[2];
-      rects[0].top = clip[1];
-      rects[0].bottom = clip[3];
-
-      m_d3dContext->RSSetScissorRects(1, rects);
+      if (!clipSet)
+         m_d3dContext->RSSetState(pRasterStateEnableClipping);
+      if (clip[0] != lastClip[0] || clip[1] != lastClip[1] || clip[2] != lastClip[2] || clip[3] != lastClip[3])
+      {
+         D3D11_RECT rects[1];
+         rects[0].left = clip[0];
+         rects[0].right = clip[2];
+         rects[0].top = clip[1];
+         rects[0].bottom = clip[3];
+         m_d3dContext->RSSetScissorRects(1, rects);
+         lastClip[0] = clip[0];
+         lastClip[1] = clip[1];
+         lastClip[2] = clip[2];
+         lastClip[3] = clip[3];
+      }
    }
    //dstY += glShiftY;
    int32 dstY2 = dstY + h;
@@ -597,15 +608,11 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
    m_d3dContext->IASetVertexBuffers(0, 1, &texVertexBuffer, &stride, &offset);
-   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
    // Set the vertex and pixel shader stage state.
    m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
-   if (clip)
-      m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 

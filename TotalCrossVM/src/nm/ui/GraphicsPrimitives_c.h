@@ -1193,7 +1193,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                int32 id[2];
                clip[0] = xMin;
                clip[1] = yMin;
-               clip[2] = xMax;
+               clip[2] = clipX2;
                clip[3] = yMax;
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
                glDrawTexture(id, 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, clip);

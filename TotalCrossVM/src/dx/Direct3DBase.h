@@ -104,6 +104,9 @@ private:
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
+   int lastClip[4];
+   bool clipSet;
+
    VertexPosition *pixelsVertices;
 
    // texture
@@ -128,8 +131,6 @@ protected private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
-
-	int def_status;
 
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
