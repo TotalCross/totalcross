@@ -71,30 +71,24 @@ static int32 *pixcoords, *pixcolors, *pixEnd;
       "attribute vec2 aTextureCoord;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
-      "uniform vec4 a_Color; varying vec4 v_Color;" \
       "void main()" \
       "{" \
       "    gl_Position = vertexPoint * projectionMatrix;" \
       "    vTextureCoord = aTextureCoord;" \
-      "    v_Color = a_Color;" \
       "}"
 
 #define TEXTURE_FRAGMENT_CODE \
       "precision mediump float;" \
       "varying vec2 vTextureCoord;" \
       "uniform sampler2D sTexture;" \
-      "varying vec4 v_Color;" \
       "void main()" \
       "{" \
-      "   vec4 texture = texture2D(sTexture, vTextureCoord);" \
-      "   if (v_Color.a == 1.0)" \
-      "      texture.rgb = v_Color.rgb;" \
-      "   gl_FragColor = texture;" \
+      "   gl_FragColor = texture2D(sTexture, vTextureCoord);" \
       "}"
 
 static GLuint textureProgram;
 static GLuint texturePoint;
-static GLuint textureCoord,textureS,textureColor;
+static GLuint textureCoord,textureS;
 
 //////////// points (text)
 
@@ -320,7 +314,6 @@ void initTexture()
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
-   textureColor = glGetUniformLocation(textureProgram, "a_Color"); GL_CHECK_ERROR
 
    glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
@@ -389,7 +382,6 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
    if (updateList)
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
-static int32 lastTexColor;
 void glClearClip()
 {            
    glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
@@ -416,7 +408,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    }
 }
 
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
 {         
    GLfloat* coords = texcoords;
    PixelConv pcolor;
@@ -441,20 +433,6 @@ void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 ds
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
    glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-
-   if (color == null)
-      pcolor.pixel = 0; // a = 0 : disable color
-   else
-   {
-      pcolor.pixel = color->pixel; // color in r,g,b
-      pcolor.a = 255;   // a = 1 : enable color
-   }
-   
-   if (lastTexColor != pcolor.pixel)
-   {                                      
-      lastTexColor = pcolor.pixel;
-      glUniform4f(textureColor, f255[pcolor.r], f255[pcolor.g], f255[pcolor.b],f255[pcolor.a]); GL_CHECK_ERROR
-   }                               
 
    if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
@@ -702,7 +680,6 @@ bool setupGL(int width, int height)
 {
     int i;
     pixLastRGB = -1;
-    lastTexColor = 0;
     appW = width;
     appH = height;
 

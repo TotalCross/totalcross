@@ -290,7 +290,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null, null);
+      glDrawTexture(*Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null);
    }
    else
 #endif
@@ -942,7 +942,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 #define INTERP(j,f,shift) (j + (((f - j) * transparency) >> shift)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-int32 getCharTexture(Context currentContext, UserFont uf, JChar ch); // PalmFont_c.h
+int32 getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color); // PalmFont_c.h
 uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
 
@@ -1194,7 +1194,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                clip[1] = yMin;
                clip[2] = xMax;
                clip[3] = yMax;
-               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch), 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, &fc, clip);
+               glDrawTexture(getCharTexture(currentContext, uf->ubase, ch, fc), 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, clip);
             }
             else
    #endif // case 2
