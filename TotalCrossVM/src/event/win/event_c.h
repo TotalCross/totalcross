@@ -457,7 +457,6 @@ bool privateIsEventAvailable()
 {
 #if defined WP8
    bool ret;
-   dispatcher_dispath();
    ret = !eventQueueEmpty();
    return ret;
 #else
