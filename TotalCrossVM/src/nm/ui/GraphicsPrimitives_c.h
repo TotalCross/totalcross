@@ -2998,7 +2998,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
 void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, bool invert, bool rotate, int32 c1, int32 c2, int32 factor) // guich@573_6
 {
    PixelConv pc1,pc2;
-#if defined(__gl2_h_) && !defined(WP8) // TODO implement in DX
+#if defined(__gl2_h_)
    pc1.pixel = c1;
    pc2.pixel = c2;
    pc1.pixel = interpolate(pc1,pc2,factor*255/100);
@@ -3010,6 +3010,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
       currentContext->fullDirty = true;
 #else
    int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
+   if (true) return;
    pc1.pixel = c1;
    pc2.pixel = c2;
    dim = rotate ? width : height; dim0 = dim;

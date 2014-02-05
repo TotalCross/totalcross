@@ -160,8 +160,8 @@ void glDrawPixels(int32 n, int32 rgb)
    {
       for (int i = 0; i < n; i++)
       {
-         x[i] = glcoords[pointsPosition + (i * 2)];
-         y[i] = glcoords[pointsPosition + (i * 2 + 1)];
+         x[i] = (int)glcoords[pointsPosition + (i * 2)];
+         y[i] = (int)glcoords[pointsPosition + (i * 2 + 1)];
       }
 
       dxDrawPixels(x, y, n, colour);
@@ -184,6 +184,7 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+   dxFillShadedRect(x, y, w, h, c1, c2, horiz);
 }
 
 void setTimerInterval(int32 t);
