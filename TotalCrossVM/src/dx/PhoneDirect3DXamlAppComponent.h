@@ -25,6 +25,9 @@ public:
 	property Windows::Foundation::Size NativeResolution;
 	property Windows::Foundation::Size RenderResolution;
 
+	// Forward the back key press event to the application; return false when the app should quit
+	bool backKeyPress();
+
 protected:
 
 	// Event Handlers

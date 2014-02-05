@@ -7,6 +7,9 @@ out.txt
 *.sdf
 *.suo
 *.ncb
+*.obj
+*.idb
+*.tlog
 memmap_*.txt
 DebugConsole.txt
 TotalCrossSDK/etc/tools/android/AndroidManifest_singleapk.xml

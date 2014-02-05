@@ -6,7 +6,7 @@
 #define HAS_TCHAR
 #include "tcvm.h"
 
-#define N_LOAD_TASKS 4
+#define TASKS_COMPLETED ((1 << 6)-1) // 6 tasks
 #define OCCUPIED_WAIT_TIME 1
 
 struct ProjectionConstantBuffer
@@ -23,6 +23,13 @@ struct VertexColor
 {
    DirectX::XMFLOAT4 color;
 };
+
+struct VertexPositionColor
+{
+   DirectX::XMFLOAT2 pos;
+   DirectX::XMFLOAT4 color;
+};
+
 
 struct TextureVertex
 {
@@ -43,8 +50,9 @@ enum drawCommand
 enum whichProgram
 {
    PROGRAM_NONE,
-   PROGRAM_LRP,
+   PROGRAM_GC,
    PROGRAM_TEX,
+   PROGRAM_LC,
 };
 
 #include "tcthread.h"
@@ -72,6 +80,7 @@ internal:
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
+   void fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
    void setColor(int color);
    void createTexture();
    void setup();
@@ -88,12 +97,12 @@ internal:
    void SetAlertMsg(Platform::String^ newAlertMsg);
 
 private:
-   int loadCompleted[N_LOAD_TASKS];
+   int loadCompleted;
    bool manipulationComplete;
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
-   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer;
+   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
    VertexPosition *pixelsVertices;
 
@@ -103,11 +112,11 @@ private:
    ID3D11BlendState* g_pBlendState;
 
    Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
-   Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout, m_inputLayoutT;
+   Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout, m_inputLayoutT, m_inputLayoutLC;
    Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
    Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer, pixelsIndexBuffer, colorBuffer;
-   Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader, m_vertexShaderT;
-   Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader, m_pixelShaderT;
+   Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader, m_vertexShaderT, m_vertexShaderLC;
+   Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader, m_pixelShaderT, m_pixelShaderLC;
    Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 
    ProjectionConstantBuffer m_constantBufferData;

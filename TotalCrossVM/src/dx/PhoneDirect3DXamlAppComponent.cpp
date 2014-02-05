@@ -24,6 +24,13 @@ IDrawingSurfaceBackgroundContentProvider^ Direct3DBackground::CreateContentProvi
 	return reinterpret_cast<IDrawingSurfaceBackgroundContentProvider^>(provider.Get());
 }
 
+bool Direct3DBackground::backKeyPress()
+{
+	eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_ESCAPE, 0, 0, 0);
+
+	return keepRunning;
+}
+
 // IDrawingSurfaceManipulationHandler
 void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ manipulationHost)
 {
