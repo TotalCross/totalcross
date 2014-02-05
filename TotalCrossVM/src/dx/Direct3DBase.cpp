@@ -12,7 +12,6 @@ using namespace Windows::UI::Core;
 
 static Direct3DBase ^lastInstance = nullptr;
 
-
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
 {
@@ -52,15 +51,17 @@ void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 // These are the resources that depend on the device.
 void Direct3DBase::CreateDeviceResources()
 {
-   int task_n = 0;
-   auto loadVSTask = DX::ReadDataAsync("VertexShaderGlobalColor.cso");
-   auto loadPSTask = DX::ReadDataAsync("PixelShaderGlobalColor.cso");
+   auto loadVSTask1 = DX::ReadDataAsync("VertexShaderGlobalColor.cso");
+   auto loadPSTask1 = DX::ReadDataAsync("PixelShaderGlobalColor.cso");
 
    auto loadVSTask2 = DX::ReadDataAsync("VertexShaderTexture.cso");
    auto loadPSTask2 = DX::ReadDataAsync("PixelShaderTexture.cso");
 
+   auto loadVSTask3 = DX::ReadDataAsync("VertexShaderLocalColor.cso");
+   auto loadPSTask3 = DX::ReadDataAsync("PixelShaderLocalColor.cso");
+
    // global color vertex
-   auto createVSTask = loadVSTask.then([this, task_n](Platform::Array<byte>^ fileData) 
+   auto createVSTask1 = loadVSTask1.then([this](Platform::Array<byte>^ fileData) 
    {
       DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShader));
       const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
@@ -68,22 +69,20 @@ void Direct3DBase::CreateDeviceResources()
          { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
       DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayout));
-      loadCompleted[task_n] = true;
+      loadCompleted |= 1;
    });
 
    // global color pixel
-   task_n++;
-   auto createPSTask = loadPSTask.then([this, task_n](Platform::Array<byte>^ fileData)
+   auto createPSTask1 = loadPSTask1.then([this](Platform::Array<byte>^ fileData)
    {
       DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShader));
       CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
       DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer));
-	   loadCompleted[task_n] = true;
+      loadCompleted |= 2;
    });
 
    // texture vertex
-   task_n++;
-   auto createVSTask2 = loadVSTask2.then([this, task_n](Platform::Array<byte>^ fileData) 
+   auto createVSTask2 = loadVSTask2.then([this](Platform::Array<byte>^ fileData) 
    {
       DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShaderT));
       const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
@@ -92,16 +91,36 @@ void Direct3DBase::CreateDeviceResources()
          { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
       DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayoutT));
-	   loadCompleted[task_n] = true;
+      loadCompleted |= 4;
    });
 
    // texture pixel
-   task_n++;
-   auto createPSTask2 = loadPSTask2.then([this, task_n](Platform::Array<byte>^ fileData)
+   auto createPSTask2 = loadPSTask2.then([this](Platform::Array<byte>^ fileData)
    {
       DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShaderT));
-	   loadCompleted[task_n] = true;
+      loadCompleted |= 8;
    });
+
+   // local color vertex
+   auto createVSTask3 = loadVSTask3.then([this](Platform::Array<byte>^ fileData)
+   {
+      DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShaderLC));
+      const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+      {
+         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+         { "COLOR", 0,    DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      };
+      DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayoutLC));
+      loadCompleted |= 16;
+   });
+
+   // local color pixel
+   auto createPSTask3 = loadPSTask3.then([this](Platform::Array<byte>^ fileData)
+   {
+      DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShaderLC));
+      loadCompleted |= 32;
+   });
+
 }
 
 void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
@@ -176,27 +195,30 @@ void Direct3DBase::setup()
 
    // used in setColor for fillRect and drawLine and also textures
    {
-      VertexColor cubeColor[1];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-      vertexBufferData.pSysMem = cubeColor;
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(cubeColor);             // size is the VERTEX struct * 3
+      bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor);       // create the buffer
    }
    // used in fillRect and drawLine
    {
-      VertexPosition cubeVertices[8];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-      vertexBufferData.pSysMem = cubeVertices;
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(cubeVertices);             // size is the VERTEX
+      bd.ByteWidth = sizeof(VertexPosition) * 4;     // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect);       // create the buffer
+   }
+   // used in fillShadedRect
+   {
+      D3D11_BUFFER_DESC bd = { 0 };
+      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+      bd.ByteWidth = sizeof(VertexPositionColor) * 4;             // size is the VERTEX
+      bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+      m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC);       // create the buffer
    }
 
    /////////// TEXTURE
@@ -241,30 +263,50 @@ void Direct3DBase::setup()
    m_d3dDevice->CreateBlendState(&blendStateDescription, &g_pBlendState);
 
    // setup clipping
-   D3D11_RASTERIZER_DESC1 rasterizerState;
-   rasterizerState.FillMode = D3D11_FILL_SOLID;
-   rasterizerState.CullMode = D3D11_CULL_FRONT;
+   D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
+   rasterizerState.CullMode = D3D11_CULL_NONE;
    rasterizerState.FrontCounterClockwise = true;
-   rasterizerState.DepthBias = false;
-   rasterizerState.DepthBiasClamp = 0;
-   rasterizerState.SlopeScaledDepthBias = 0;
-   rasterizerState.DepthClipEnable = true;
-   rasterizerState.ScissorEnable = true;
-   rasterizerState.MultisampleEnable = false;
-   rasterizerState.AntialiasedLineEnable = false;
-   rasterizerState.ForcedSampleCount = 0;
-   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
-   rasterizerState.ScissorEnable = false;
+   //rasterizerState.AntialiasedLineEnable = false;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
+   rasterizerState.ScissorEnable = true;
+   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
 
-   TextureVertex v[8];
-   D3D11_SUBRESOURCE_DATA vertexBufferData = { v, 0, 0 };
+   // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-   bd.ByteWidth = sizeof(v);             // size is the VERTEX struct * 3
+   bd.ByteWidth = sizeof(TextureVertex) * 8;             // size is the VERTEX struct * 3
    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
    m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
+}
+
+#define f255(x) ((float)x/255.0f)
+void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+{
+   //y += glShiftY;
+   float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
+   XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
+   XMFLOAT4 color2 = XMFLOAT4(f255(c1.r), f255(c1.g), f255(c1.b), f255(c1.a));
+   VertexPositionColor cubeVertices[] = // position, color
+   {
+      { XMFLOAT2(x1, y1), horiz ? color1 : color1 },
+      { XMFLOAT2(x2, y1), horiz ? color2 : color1 },
+      { XMFLOAT2(x2, y2), horiz ? color2 : color2 },
+      { XMFLOAT2(x1, y2), horiz ? color1 : color2 },
+   };
+
+   setProgram(PROGRAM_LC);
+   D3D11_MAPPED_SUBRESOURCE ms;
+   m_d3dContext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
+   m_d3dContext->Unmap(pBufferRectLC, NULL);                                     // unmap the buffer
+
+   UINT stride = sizeof(VertexPositionColor);
+   UINT offset = 0;
+   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRectLC, &stride, &offset);
+   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   m_d3dContext->DrawIndexed(6, 0, 0);
 }
 
 void Direct3DBase::setColor(int color)
@@ -277,7 +319,7 @@ void Direct3DBase::setColor(int color)
    bb = (color & 0xFF) / 255.0f;
 
    VertexColor vcolor;
-   vcolor.color = XMFLOAT4(rr, gg, bb, aa); // last is alpha
+   vcolor.color = XMFLOAT4(rr, gg, bb, aa);
 
    D3D11_MAPPED_SUBRESOURCE ms;
 
@@ -296,7 +338,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
       { XMFLOAT2((float)x2, (float)y2) },
    };
 
-   setProgram(PROGRAM_LRP);
+   setProgram(PROGRAM_GC);
    D3D11_MAPPED_SUBRESOURCE ms;
    m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -307,7 +349,6 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
    m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    setColor(color);
    m_d3dContext->DrawIndexed(2, 0, 0);
 }
@@ -322,7 +363,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
       { XMFLOAT2((float)x1, (float)y2) },
    };
 
-   setProgram(PROGRAM_LRP);
+   setProgram(PROGRAM_GC);
    D3D11_MAPPED_SUBRESOURCE ms;
    m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -351,7 +392,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       i++;
       x++; y++;
    }
-   setProgram(PROGRAM_LRP);
+   setProgram(PROGRAM_GC);
 
    if (n > lastPixelsCount)
    {
@@ -365,15 +406,12 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
       delete cubeIndexes;
 
-      VertexPosition *cubeVertices = new VertexPosition[n];
-      D3D11_SUBRESOURCE_DATA vertexBufferData = { cubeVertices,0,0 };
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
       bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
-      delete cubeVertices;
    }
 
    D3D11_MAPPED_SUBRESOURCE ms;
@@ -393,10 +431,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 
 bool Direct3DBase::isLoadCompleted() 
 {
-	for (int i = 0; i < N_LOAD_TASKS; i++)
-   	if (!loadCompleted[i])
-	   	return false;
-	return manipulationComplete;
+   return loadCompleted == TASKS_COMPLETED && manipulationComplete;
 }
 
 void Direct3DBase::Present()
@@ -411,19 +446,27 @@ void Direct3DBase::Present()
 void Direct3DBase::setProgram(whichProgram p)
 {
    if (p == curProgram) return;
-   lastRGB = 0xFAFFFFFF; // user may never use this one
+   lastRGB = 0xFAFFFFFF; // user may never use this color
    curProgram = p;
    switch (p)
    {
-      case PROGRAM_LRP:
+      case PROGRAM_GC:
          m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
          m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+         m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+         break;
+      case PROGRAM_LC:
+         m_d3dContext->VSSetShader(m_vertexShaderLC.Get(), nullptr, 0);
+         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+         m_d3dContext->PSSetShader(m_pixelShaderLC.Get(), nullptr, 0);
+         m_d3dContext->IASetInputLayout(m_inputLayoutLC.Get());
          break;
       case PROGRAM_TEX:
          m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
          m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
+         m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
          break;
    }
 }
@@ -439,7 +482,6 @@ void Direct3DBase::PreRender()
 
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
-   m_d3dContext->IASetInputLayout(m_inputLayout.Get());
    curProgram = PROGRAM_NONE;
 
    m_d3dContext->RSSetState(pRasterStateDisableClipping);
@@ -542,7 +584,6 @@ void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32
    m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
 
    // Set the vertex and index buffers, and specify the way they define geometry.
    UINT stride = sizeof(TextureVertex);
