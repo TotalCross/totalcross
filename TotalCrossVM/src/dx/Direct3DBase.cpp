@@ -18,6 +18,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
    cs = _cs;
    lastInstance = this;
    TheDrawCommand = DRAW_COMMAND_INVALID;
+   alertMsg = nullptr;
    manipulationComplete = false;
 }
 
@@ -615,3 +616,14 @@ void Direct3DBase::setManipulationComplete()
 {
 	this->manipulationComplete = true;
 }
+
+Platform::String^ Direct3DBase::GetAlertMsg()
+{
+   return alertMsg;
+}
+
+void Direct3DBase::SetAlertMsg(Platform::String^ newAlertMsg)
+{
+   alertMsg = newAlertMsg;
+}
+
