@@ -188,12 +188,12 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::GetLastInstance()->SetAlertMsg(ref new Platform::String((wchar_t*)jCharStr));
 }
 
 void vmSetAutoOffCPP(bool enable)
 {
-//XXX   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
+   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
