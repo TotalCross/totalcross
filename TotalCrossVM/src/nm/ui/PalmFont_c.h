@@ -418,13 +418,20 @@ Cleanup: /* CLEANUP */
 
 #ifdef __gl2_h_
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
+int32 getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color)
 {
-   int32 *id = &uf->textureIds[ch];
-   if (*id == 0)
+   IdColor ic = uf->textureIds[ch];
+   for (; ic != null; ic = ic->next)
+      if (ic->color == color.pixel)
+      {
+         if (ic->id)
+            return ic->id;
+         break;
+      }
+   // new color/char
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
-      int32 offset = uf->bitIndexTable[ch], y, x;
+      int32 offset = uf->bitIndexTable[ch], y, x, id=0;
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
       bool isLow = uf->fontP.maxHeight < 18;
       p += width; // skip a line at top
@@ -433,15 +440,41 @@ int32 getCharTexture(Context currentContext, UserFont uf, JChar ch)
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
          if (isLow) // for low res fonts, make it darker
             for (x = 0; x < width; x++, p++, alpha++)
+            {
                p->a = *alpha < 160 ? *alpha : 255;
+               p->r = color.r;
+               p->g = color.g;
+               p->b = color.b;
+            }
          else
             for (x = 0; x < width; x++, p++, alpha++)
+            {
                p->a = *alpha;
+               p->r = color.r;
+               p->g = color.g;
+               p->b = color.b;
+            }
          p->a = 0; p++; // skip a row at right
       }
-      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width+1, height+1, false);
+      
+      glLoadTexture(currentContext, null, &id, (Pixel*)pixels, width+1, height+1, false);
+      if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
+         ic->id = id;
+      else
+      {
+         ic = newXH(IdColor,fontsHeap);
+         ic->color = color.pixel;
+         ic->id = id;
+         if (uf->textureIds[ch] == null)
+            uf->textureIds[ch] = ic;
+         else
+         {
+            ic->next = uf->textureIds[ch];
+            uf->textureIds[ch] = ic;
+         }
+      }
+      return ic->id;
    }
-   return *id;
 }
 #endif
 
@@ -451,7 +484,11 @@ static void reset1Font(UserFont uf)
    int32 i;       
    if (uf)
       for (i = 256; --i >= 0;) 
-         uf->textureIds[i] = 0;
+      {
+         IdColor ic = uf->textureIds[i];
+         for (; ic != null; ic = ic->next)
+            ic->id = 0;
+      }
 }
 #endif
 
@@ -594,7 +631,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
    {
 #ifdef __gl2_h_
-      uf->textureIds = newPtrArrayOf(Int32, 256, fontsHeap);
+      uf->textureIds = (IdColor*)heapAlloc(fontsHeap, sizeof(IdColor) * 256);
 #endif
       uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth + 1) * (uf->fontP.maxHeight + 1), fontsHeap);
    }

@@ -534,18 +534,14 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 }
-void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+void Direct3DBase::drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
 {
    ID3D11Texture2D *texture;
    xmemmove(&texture, &textureId, sizeof(void*));
    setProgram(PROGRAM_TEX);
 
-   if (!clip)
-      setColor(0);
-   else
+   if (clip)
    {
-      int32 ncolor = 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b;
-      setColor(ncolor);
       m_d3dContext->RSSetState(pRasterStateEnableClipping);
       D3D11_RECT rects[1];
       rects[0].left = clip[0];
