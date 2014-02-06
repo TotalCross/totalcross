@@ -143,7 +143,7 @@ typedef struct TConstantPool TConstantPool;
 typedef TConstantPool* ConstantPool;
 
 typedef struct TContext TContext;
-#ifndef Context
+#if !defined Context && !defined __OBJC__
 typedef TContext* Context;
 #endif
 
