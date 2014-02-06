@@ -14,6 +14,8 @@
 #ifndef GRAPHICSPRIMITIVES_H
 #define GRAPHICSPRIMITIVES_H
 
+#include "tcclass.h"
+
 #if defined(WINCE) || defined(WIN32)
  #include "win/gfx_ex.h"
 #elif defined(darwin)
