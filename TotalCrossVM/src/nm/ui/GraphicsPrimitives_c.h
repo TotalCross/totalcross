@@ -956,38 +956,39 @@ static int lastJustify;
 static int lastCharCount;
 
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
-{                         
+{
    TCObject fontObj = Graphics_font(g);
-   int32 startBit,currentBit,incY,y1,r,rmax,istart;
+   int32 startBit, currentBit, incY, y1, r, rmax, istart;
    uint8 *bitmapTable, *ands, *current, *start;
    uint16* bitIndexTable;
-   int32 rowWIB,offset,xMin,xMax,yMin,yMax,x,y,yDif,width,height,spaceW=0,k,clipX2,pitch;
-   Pixel transparency,*row0, *row;
+   int32 rowWIB, offset, xMin, xMax, yMin, yMax, x, y, yDif, width, height, spaceW = 0, k, clipX2, pitch;
+   Pixel transparency, *row0, *row;
    PixelConv *i;
-   bool isNibbleStartingLow,isLowNibble;
+   bool isNibbleStartingLow, isLowNibble;
    int aaType;
-   JChar ch,first,last;
-   UserFont uf=null;
+   JChar ch, first, last;
+   UserFont uf = null;
    PixelConv fc;
-   int32 extraPixelsPerChar=0,extraPixelsRemaining=-1,rem;
+   int32 extraPixelsPerChar = 0, extraPixelsRemaining = -1, rem;
    uint8 *ands8 = _ands8;
-   int32 fcR,fcG,fcB;
+   int32 fcR, fcG, fcB;
 #ifdef __gl2_h_
    int32 clip[4];
+   int32 id[2];
    float *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
 
    {
-	   lastContext = currentContext;
-	   lastObject = g;
-	   lastText = text;
-	   lastForeColor = foreColor;
+      lastContext = currentContext;
+      lastObject = g;
+      lastText = text;
+      lastForeColor = foreColor;
 
-	   lx0 = x0;
-	   ly0 = y0;
-	   lastJustify = justifyWidth;
-	   lastCharCount = chrCount;
+      lx0 = x0;
+      ly0 = y0;
+      lastJustify = justifyWidth;
+      lastCharCount = chrCount;
    }
 
    if (!text || chrCount == 0 || fontObj == null) return;
@@ -1018,29 +1019,34 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    if (justifyWidth > 0)
    {
-      while (text[chrCount-1] <= (JChar)' ')
+      while (text[chrCount - 1] <= (JChar)' ')
          chrCount--;
       if (chrCount == 0) return;
-      rem = justifyWidth - getJCharPWidth(currentContext, fontObj, text,chrCount);
+      rem = justifyWidth - getJCharPWidth(currentContext, fontObj, text, chrCount);
       if (rem > 0)
       {
-         extraPixelsPerChar   = rem / chrCount;
+         extraPixelsPerChar = rem / chrCount;
          extraPixelsRemaining = rem % chrCount;
       }
    }
 
    xMax = xMin = (x0 < Graphics_clipX1(g)) ? Graphics_clipX1(g) : x0;
    yMax = y0 + (isVert ? chrCount * incY : height);
+   yMin = (y0 < Graphics_clipY1(g)) ? Graphics_clipY1(g) : y0;
+   clipX2 = Graphics_clipX2(g);
+#ifdef __gl2_h_
+   clip[0] = xMin;
+   clip[1] = yMin;
+   clip[2] = clipX2;
+   clip[3] = yMax;
+#endif
    if (yMax >= Graphics_clipY2(g))
       yMax = Graphics_clipY2(g);
-   yMin = (y0 < Graphics_clipY1(g))? Graphics_clipY1(g) : y0;
    row0 = getGraphicsPixels(g) + yMin * Graphics_pitch(g);
    yDif = yMin - y0;
    y = y0;
 
    pitch = Graphics_pitch(g);
-   clipX2 = Graphics_clipX2(g);
-
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
@@ -1189,12 +1195,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             // draws the char, a row at a time
    #ifdef __gl2_h_
             if (Graphics_useOpenGL(g))
-            {                                    
-               int32 id[2];
-               clip[0] = xMin;
-               clip[1] = yMin;
-               clip[2] = clipX2;
-               clip[3] = yMax;
+            {
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
                glDrawTexture(id, 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, clip);
             }
