@@ -290,7 +290,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth,srcHeight, null,null);
    }
    else
 #endif
@@ -1197,7 +1197,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             if (Graphics_useOpenGL(g))
             {
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
-               glDrawTexture(id, 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, clip);
+               glDrawTexture(id, 0, 0, width+1, height+1, x0, y-istart, width+1, height+1, &fc, clip);
             }
             else
    #endif // case 2

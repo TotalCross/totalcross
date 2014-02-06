@@ -551,7 +551,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 }
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    bool doClip = clip != null;
    nt++;
@@ -561,6 +561,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&texture, &textureId[0]);
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
+   setColor(!color ? null : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
 
    if (!doClip && clipSet)
       m_d3dContext->RSSetState(pRasterStateDisableClipping);

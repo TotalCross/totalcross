@@ -421,6 +421,14 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret)
 {
    IdColor ic = uf->textureIds[ch];
+#ifdef WP8
+   if (ic != null && ic->id[0])
+   {
+      ret[0] = ic->id[0]; // id
+      ret[1] = ic->id[1]; // view
+      return;
+   }
+#else
    for (; ic != null; ic = ic->next)
       if (ic->color == color.pixel)
       {
@@ -432,6 +440,7 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
          }
          break;
       }
+#endif
    // new color/char
    {
       PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;

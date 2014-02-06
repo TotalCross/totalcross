@@ -21,7 +21,7 @@ void glDrawPixels(int32 n, int32 rgb);
 int32 glGetPixel(int32 x, int32 y);
 void glDeleteTexture(TCObject img, int32* textureId, bool removeFromList);
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip);
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip);
 void applyChanges(Context currentContext, TCObject obj, bool updateList);
 void freeTexture(TCObject obj, bool updateList);
 bool checkGLfloatBuffer(Context c, int32 n);

@@ -408,7 +408,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    }
 }
 
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
 {         
    GLfloat* coords = texcoords;
    PixelConv pcolor;
